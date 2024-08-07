@@ -1,6 +1,6 @@
 module github.com/vdaas/vald
 
-go 1.22.5
+go 1.22.6
 
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.115.0
@@ -15,7 +15,7 @@ replace (
 	cloud.google.com/go/secretmanager => cloud.google.com/go/secretmanager v1.13.5
 	cloud.google.com/go/storage => cloud.google.com/go/storage v1.43.0
 	cloud.google.com/go/trace => cloud.google.com/go/trace v1.10.11
-	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt v0.0.0-20240804182054-0a63f33a903d
+	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt v0.0.0-20240806182212-6cf545ebdd6b
 	contrib.go.opencensus.io/exporter/aws => contrib.go.opencensus.io/exporter/aws v0.0.0-20230502192102-15967c811cec
 	contrib.go.opencensus.io/exporter/prometheus => contrib.go.opencensus.io/exporter/prometheus v0.4.2
 	contrib.go.opencensus.io/integrations/ocsql => contrib.go.opencensus.io/integrations/ocsql v0.1.7
@@ -294,21 +294,21 @@ replace (
 	go.uber.org/multierr => go.uber.org/multierr v1.11.0
 	go.uber.org/zap => go.uber.org/zap v1.27.0
 	gocloud.dev => gocloud.dev v0.38.0
-	golang.org/x/crypto => golang.org/x/crypto v0.25.0
+	golang.org/x/crypto => golang.org/x/crypto v0.26.0
 	golang.org/x/exp => golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56
 	golang.org/x/exp/typeparams => golang.org/x/exp/typeparams v0.0.0-20240719175910-8a7402abbf56
-	golang.org/x/image => golang.org/x/image v0.18.0
+	golang.org/x/image => golang.org/x/image v0.19.0
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
-	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20240716161057-1ad2df20a8b6
+	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20240806205939-81131f6468ab
 	golang.org/x/mod => golang.org/x/mod v0.20.0
-	golang.org/x/net => golang.org/x/net v0.27.0
+	golang.org/x/net => golang.org/x/net v0.28.0
 	golang.org/x/oauth2 => golang.org/x/oauth2 v0.22.0
 	golang.org/x/sync => golang.org/x/sync v0.8.0
 	golang.org/x/sys => golang.org/x/sys v0.23.0
-	golang.org/x/term => golang.org/x/term v0.22.0
-	golang.org/x/text => golang.org/x/text v0.16.0
+	golang.org/x/term => golang.org/x/term v0.23.0
+	golang.org/x/text => golang.org/x/text v0.17.0
 	golang.org/x/time => golang.org/x/time v0.6.0
-	golang.org/x/tools => golang.org/x/tools v0.23.0
+	golang.org/x/tools => golang.org/x/tools v0.24.0
 	golang.org/x/xerrors => golang.org/x/xerrors v0.0.0-20240716161551-93cc26a95ae9
 	gomodules.xyz/jsonpatch/v2 => gomodules.xyz/jsonpatch/v2 v2.4.0
 	gonum.org/v1/gonum => gonum.org/v1/gonum v0.15.0
@@ -396,13 +396,13 @@ require (
 	go.uber.org/ratelimit v0.3.1
 	go.uber.org/zap v1.27.0
 	gocloud.dev v0.0.0-00010101000000-000000000000
-	golang.org/x/net v0.27.0
+	golang.org/x/net v0.28.0
 	golang.org/x/oauth2 v0.21.0
-	golang.org/x/sync v0.7.0
+	golang.org/x/sync v0.8.0
 	golang.org/x/sys v0.23.0
-	golang.org/x/text v0.16.0
+	golang.org/x/text v0.17.0
 	golang.org/x/time v0.5.0
-	golang.org/x/tools v0.23.0
+	golang.org/x/tools v0.24.0
 	gonum.org/v1/hdf5 v0.0.0-00010101000000-000000000000
 	gonum.org/v1/plot v0.14.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240730163845-b1a4ccb954bf
@@ -505,12 +505,12 @@ require (
 	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.25.0 // indirect
+	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20240213143201-ec583247a57a // indirect
-	golang.org/x/image v0.18.0 // indirect
-	golang.org/x/mod v0.19.0 // indirect
-	golang.org/x/term v0.22.0 // indirect
+	golang.org/x/image v0.19.0 // indirect
+	golang.org/x/mod v0.20.0 // indirect
+	golang.org/x/term v0.23.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/api v0.189.0 // indirect

@@ -582,6 +582,27 @@ spec:
                                       properties:
                                         handler_timeout:
                                           type: string
+                                        http2:
+                                          type: object
+                                          properties:
+                                            enabled:
+                                              type: boolean
+                                            handler_limit:
+                                              type: integer
+                                            max_concurrent_streams:
+                                              type: integer
+                                            max_decoder_header_table_size:
+                                              type: integer
+                                            max_encoder_header_table_size:
+                                              type: integer
+                                            max_read_frame_size:
+                                              type: integer
+                                            max_upload_buffer_per_connection:
+                                              type: integer
+                                            max_upload_buffer_per_stream:
+                                              type: integer
+                                            permit_prohibited_cipher_suites:
+                                              type: boolean
                                         idle_timeout:
                                           type: string
                                         read_header_timeout:
@@ -678,6 +699,27 @@ spec:
                                       properties:
                                         handler_timeout:
                                           type: string
+                                        http2:
+                                          type: object
+                                          properties:
+                                            enabled:
+                                              type: boolean
+                                            handler_limit:
+                                              type: integer
+                                            max_concurrent_streams:
+                                              type: integer
+                                            max_decoder_header_table_size:
+                                              type: integer
+                                            max_encoder_header_table_size:
+                                              type: integer
+                                            max_read_frame_size:
+                                              type: integer
+                                            max_upload_buffer_per_connection:
+                                              type: integer
+                                            max_upload_buffer_per_stream:
+                                              type: integer
+                                            permit_prohibited_cipher_suites:
+                                              type: boolean
                                         idle_timeout:
                                           type: string
                                         read_header_timeout:
@@ -786,6 +828,27 @@ spec:
                                       properties:
                                         handler_timeout:
                                           type: string
+                                        http2:
+                                          type: object
+                                          properties:
+                                            enabled:
+                                              type: boolean
+                                            handler_limit:
+                                              type: integer
+                                            max_concurrent_streams:
+                                              type: integer
+                                            max_decoder_header_table_size:
+                                              type: integer
+                                            max_encoder_header_table_size:
+                                              type: integer
+                                            max_read_frame_size:
+                                              type: integer
+                                            max_upload_buffer_per_connection:
+                                              type: integer
+                                            max_upload_buffer_per_stream:
+                                              type: integer
+                                            permit_prohibited_cipher_suites:
+                                              type: boolean
                                         idle_timeout:
                                           type: string
                                         read_header_timeout:
@@ -975,6 +1038,27 @@ spec:
                                       properties:
                                         handler_timeout:
                                           type: string
+                                        http2:
+                                          type: object
+                                          properties:
+                                            enabled:
+                                              type: boolean
+                                            handler_limit:
+                                              type: integer
+                                            max_concurrent_streams:
+                                              type: integer
+                                            max_decoder_header_table_size:
+                                              type: integer
+                                            max_encoder_header_table_size:
+                                              type: integer
+                                            max_read_frame_size:
+                                              type: integer
+                                            max_upload_buffer_per_connection:
+                                              type: integer
+                                            max_upload_buffer_per_stream:
+                                              type: integer
+                                            permit_prohibited_cipher_suites:
+                                              type: boolean
                                         idle_timeout:
                                           type: string
                                         read_header_timeout:
@@ -1459,6 +1543,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -1555,6 +1660,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -1663,6 +1789,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -1852,6 +1999,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -2310,6 +2478,27 @@ spec:
                                       properties:
                                         handler_timeout:
                                           type: string
+                                        http2:
+                                          type: object
+                                          properties:
+                                            enabled:
+                                              type: boolean
+                                            handler_limit:
+                                              type: integer
+                                            max_concurrent_streams:
+                                              type: integer
+                                            max_decoder_header_table_size:
+                                              type: integer
+                                            max_encoder_header_table_size:
+                                              type: integer
+                                            max_read_frame_size:
+                                              type: integer
+                                            max_upload_buffer_per_connection:
+                                              type: integer
+                                            max_upload_buffer_per_stream:
+                                              type: integer
+                                            permit_prohibited_cipher_suites:
+                                              type: boolean
                                         idle_timeout:
                                           type: string
                                         read_header_timeout:
@@ -2406,6 +2595,27 @@ spec:
                                       properties:
                                         handler_timeout:
                                           type: string
+                                        http2:
+                                          type: object
+                                          properties:
+                                            enabled:
+                                              type: boolean
+                                            handler_limit:
+                                              type: integer
+                                            max_concurrent_streams:
+                                              type: integer
+                                            max_decoder_header_table_size:
+                                              type: integer
+                                            max_encoder_header_table_size:
+                                              type: integer
+                                            max_read_frame_size:
+                                              type: integer
+                                            max_upload_buffer_per_connection:
+                                              type: integer
+                                            max_upload_buffer_per_stream:
+                                              type: integer
+                                            permit_prohibited_cipher_suites:
+                                              type: boolean
                                         idle_timeout:
                                           type: string
                                         read_header_timeout:
@@ -2514,6 +2724,27 @@ spec:
                                       properties:
                                         handler_timeout:
                                           type: string
+                                        http2:
+                                          type: object
+                                          properties:
+                                            enabled:
+                                              type: boolean
+                                            handler_limit:
+                                              type: integer
+                                            max_concurrent_streams:
+                                              type: integer
+                                            max_decoder_header_table_size:
+                                              type: integer
+                                            max_encoder_header_table_size:
+                                              type: integer
+                                            max_read_frame_size:
+                                              type: integer
+                                            max_upload_buffer_per_connection:
+                                              type: integer
+                                            max_upload_buffer_per_stream:
+                                              type: integer
+                                            permit_prohibited_cipher_suites:
+                                              type: boolean
                                         idle_timeout:
                                           type: string
                                         read_header_timeout:
@@ -2703,6 +2934,27 @@ spec:
                                       properties:
                                         handler_timeout:
                                           type: string
+                                        http2:
+                                          type: object
+                                          properties:
+                                            enabled:
+                                              type: boolean
+                                            handler_limit:
+                                              type: integer
+                                            max_concurrent_streams:
+                                              type: integer
+                                            max_decoder_header_table_size:
+                                              type: integer
+                                            max_encoder_header_table_size:
+                                              type: integer
+                                            max_read_frame_size:
+                                              type: integer
+                                            max_upload_buffer_per_connection:
+                                              type: integer
+                                            max_upload_buffer_per_stream:
+                                              type: integer
+                                            permit_prohibited_cipher_suites:
+                                              type: boolean
                                         idle_timeout:
                                           type: string
                                         read_header_timeout:
@@ -3177,6 +3429,27 @@ spec:
                                       properties:
                                         handler_timeout:
                                           type: string
+                                        http2:
+                                          type: object
+                                          properties:
+                                            enabled:
+                                              type: boolean
+                                            handler_limit:
+                                              type: integer
+                                            max_concurrent_streams:
+                                              type: integer
+                                            max_decoder_header_table_size:
+                                              type: integer
+                                            max_encoder_header_table_size:
+                                              type: integer
+                                            max_read_frame_size:
+                                              type: integer
+                                            max_upload_buffer_per_connection:
+                                              type: integer
+                                            max_upload_buffer_per_stream:
+                                              type: integer
+                                            permit_prohibited_cipher_suites:
+                                              type: boolean
                                         idle_timeout:
                                           type: string
                                         read_header_timeout:
@@ -3273,6 +3546,27 @@ spec:
                                       properties:
                                         handler_timeout:
                                           type: string
+                                        http2:
+                                          type: object
+                                          properties:
+                                            enabled:
+                                              type: boolean
+                                            handler_limit:
+                                              type: integer
+                                            max_concurrent_streams:
+                                              type: integer
+                                            max_decoder_header_table_size:
+                                              type: integer
+                                            max_encoder_header_table_size:
+                                              type: integer
+                                            max_read_frame_size:
+                                              type: integer
+                                            max_upload_buffer_per_connection:
+                                              type: integer
+                                            max_upload_buffer_per_stream:
+                                              type: integer
+                                            permit_prohibited_cipher_suites:
+                                              type: boolean
                                         idle_timeout:
                                           type: string
                                         read_header_timeout:
@@ -3381,6 +3675,27 @@ spec:
                                       properties:
                                         handler_timeout:
                                           type: string
+                                        http2:
+                                          type: object
+                                          properties:
+                                            enabled:
+                                              type: boolean
+                                            handler_limit:
+                                              type: integer
+                                            max_concurrent_streams:
+                                              type: integer
+                                            max_decoder_header_table_size:
+                                              type: integer
+                                            max_encoder_header_table_size:
+                                              type: integer
+                                            max_read_frame_size:
+                                              type: integer
+                                            max_upload_buffer_per_connection:
+                                              type: integer
+                                            max_upload_buffer_per_stream:
+                                              type: integer
+                                            permit_prohibited_cipher_suites:
+                                              type: boolean
                                         idle_timeout:
                                           type: string
                                         read_header_timeout:
@@ -3570,6 +3885,27 @@ spec:
                                       properties:
                                         handler_timeout:
                                           type: string
+                                        http2:
+                                          type: object
+                                          properties:
+                                            enabled:
+                                              type: boolean
+                                            handler_limit:
+                                              type: integer
+                                            max_concurrent_streams:
+                                              type: integer
+                                            max_decoder_header_table_size:
+                                              type: integer
+                                            max_encoder_header_table_size:
+                                              type: integer
+                                            max_read_frame_size:
+                                              type: integer
+                                            max_upload_buffer_per_connection:
+                                              type: integer
+                                            max_upload_buffer_per_stream:
+                                              type: integer
+                                            permit_prohibited_cipher_suites:
+                                              type: boolean
                                         idle_timeout:
                                           type: string
                                         read_header_timeout:
@@ -4548,6 +4884,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -4644,6 +5001,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -4752,6 +5130,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -4941,6 +5340,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -5892,6 +6312,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -5988,6 +6429,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -6096,6 +6558,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -6285,6 +6768,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -6956,6 +7460,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -7052,6 +7577,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -7160,6 +7706,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -7349,6 +7916,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -8204,6 +8792,27 @@ spec:
                                               properties:
                                                 handler_timeout:
                                                   type: string
+                                                http2:
+                                                  type: object
+                                                  properties:
+                                                    enabled:
+                                                      type: boolean
+                                                    handler_limit:
+                                                      type: integer
+                                                    max_concurrent_streams:
+                                                      type: integer
+                                                    max_decoder_header_table_size:
+                                                      type: integer
+                                                    max_encoder_header_table_size:
+                                                      type: integer
+                                                    max_read_frame_size:
+                                                      type: integer
+                                                    max_upload_buffer_per_connection:
+                                                      type: integer
+                                                    max_upload_buffer_per_stream:
+                                                      type: integer
+                                                    permit_prohibited_cipher_suites:
+                                                      type: boolean
                                                 idle_timeout:
                                                   type: string
                                                 read_header_timeout:
@@ -8300,6 +8909,27 @@ spec:
                                               properties:
                                                 handler_timeout:
                                                   type: string
+                                                http2:
+                                                  type: object
+                                                  properties:
+                                                    enabled:
+                                                      type: boolean
+                                                    handler_limit:
+                                                      type: integer
+                                                    max_concurrent_streams:
+                                                      type: integer
+                                                    max_decoder_header_table_size:
+                                                      type: integer
+                                                    max_encoder_header_table_size:
+                                                      type: integer
+                                                    max_read_frame_size:
+                                                      type: integer
+                                                    max_upload_buffer_per_connection:
+                                                      type: integer
+                                                    max_upload_buffer_per_stream:
+                                                      type: integer
+                                                    permit_prohibited_cipher_suites:
+                                                      type: boolean
                                                 idle_timeout:
                                                   type: string
                                                 read_header_timeout:
@@ -8408,6 +9038,27 @@ spec:
                                               properties:
                                                 handler_timeout:
                                                   type: string
+                                                http2:
+                                                  type: object
+                                                  properties:
+                                                    enabled:
+                                                      type: boolean
+                                                    handler_limit:
+                                                      type: integer
+                                                    max_concurrent_streams:
+                                                      type: integer
+                                                    max_decoder_header_table_size:
+                                                      type: integer
+                                                    max_encoder_header_table_size:
+                                                      type: integer
+                                                    max_read_frame_size:
+                                                      type: integer
+                                                    max_upload_buffer_per_connection:
+                                                      type: integer
+                                                    max_upload_buffer_per_stream:
+                                                      type: integer
+                                                    permit_prohibited_cipher_suites:
+                                                      type: boolean
                                                 idle_timeout:
                                                   type: string
                                                 read_header_timeout:
@@ -8597,6 +9248,27 @@ spec:
                                               properties:
                                                 handler_timeout:
                                                   type: string
+                                                http2:
+                                                  type: object
+                                                  properties:
+                                                    enabled:
+                                                      type: boolean
+                                                    handler_limit:
+                                                      type: integer
+                                                    max_concurrent_streams:
+                                                      type: integer
+                                                    max_decoder_header_table_size:
+                                                      type: integer
+                                                    max_encoder_header_table_size:
+                                                      type: integer
+                                                    max_read_frame_size:
+                                                      type: integer
+                                                    max_upload_buffer_per_connection:
+                                                      type: integer
+                                                    max_upload_buffer_per_stream:
+                                                      type: integer
+                                                    permit_prohibited_cipher_suites:
+                                                      type: boolean
                                                 idle_timeout:
                                                   type: string
                                                 read_header_timeout:
@@ -9186,6 +9858,27 @@ spec:
                                               properties:
                                                 handler_timeout:
                                                   type: string
+                                                http2:
+                                                  type: object
+                                                  properties:
+                                                    enabled:
+                                                      type: boolean
+                                                    handler_limit:
+                                                      type: integer
+                                                    max_concurrent_streams:
+                                                      type: integer
+                                                    max_decoder_header_table_size:
+                                                      type: integer
+                                                    max_encoder_header_table_size:
+                                                      type: integer
+                                                    max_read_frame_size:
+                                                      type: integer
+                                                    max_upload_buffer_per_connection:
+                                                      type: integer
+                                                    max_upload_buffer_per_stream:
+                                                      type: integer
+                                                    permit_prohibited_cipher_suites:
+                                                      type: boolean
                                                 idle_timeout:
                                                   type: string
                                                 read_header_timeout:
@@ -9282,6 +9975,27 @@ spec:
                                               properties:
                                                 handler_timeout:
                                                   type: string
+                                                http2:
+                                                  type: object
+                                                  properties:
+                                                    enabled:
+                                                      type: boolean
+                                                    handler_limit:
+                                                      type: integer
+                                                    max_concurrent_streams:
+                                                      type: integer
+                                                    max_decoder_header_table_size:
+                                                      type: integer
+                                                    max_encoder_header_table_size:
+                                                      type: integer
+                                                    max_read_frame_size:
+                                                      type: integer
+                                                    max_upload_buffer_per_connection:
+                                                      type: integer
+                                                    max_upload_buffer_per_stream:
+                                                      type: integer
+                                                    permit_prohibited_cipher_suites:
+                                                      type: boolean
                                                 idle_timeout:
                                                   type: string
                                                 read_header_timeout:
@@ -9390,6 +10104,27 @@ spec:
                                               properties:
                                                 handler_timeout:
                                                   type: string
+                                                http2:
+                                                  type: object
+                                                  properties:
+                                                    enabled:
+                                                      type: boolean
+                                                    handler_limit:
+                                                      type: integer
+                                                    max_concurrent_streams:
+                                                      type: integer
+                                                    max_decoder_header_table_size:
+                                                      type: integer
+                                                    max_encoder_header_table_size:
+                                                      type: integer
+                                                    max_read_frame_size:
+                                                      type: integer
+                                                    max_upload_buffer_per_connection:
+                                                      type: integer
+                                                    max_upload_buffer_per_stream:
+                                                      type: integer
+                                                    permit_prohibited_cipher_suites:
+                                                      type: boolean
                                                 idle_timeout:
                                                   type: string
                                                 read_header_timeout:
@@ -9579,6 +10314,27 @@ spec:
                                               properties:
                                                 handler_timeout:
                                                   type: string
+                                                http2:
+                                                  type: object
+                                                  properties:
+                                                    enabled:
+                                                      type: boolean
+                                                    handler_limit:
+                                                      type: integer
+                                                    max_concurrent_streams:
+                                                      type: integer
+                                                    max_decoder_header_table_size:
+                                                      type: integer
+                                                    max_encoder_header_table_size:
+                                                      type: integer
+                                                    max_read_frame_size:
+                                                      type: integer
+                                                    max_upload_buffer_per_connection:
+                                                      type: integer
+                                                    max_upload_buffer_per_stream:
+                                                      type: integer
+                                                    permit_prohibited_cipher_suites:
+                                                      type: boolean
                                                 idle_timeout:
                                                   type: string
                                                 read_header_timeout:
@@ -10430,6 +11186,27 @@ spec:
                                               properties:
                                                 handler_timeout:
                                                   type: string
+                                                http2:
+                                                  type: object
+                                                  properties:
+                                                    enabled:
+                                                      type: boolean
+                                                    handler_limit:
+                                                      type: integer
+                                                    max_concurrent_streams:
+                                                      type: integer
+                                                    max_decoder_header_table_size:
+                                                      type: integer
+                                                    max_encoder_header_table_size:
+                                                      type: integer
+                                                    max_read_frame_size:
+                                                      type: integer
+                                                    max_upload_buffer_per_connection:
+                                                      type: integer
+                                                    max_upload_buffer_per_stream:
+                                                      type: integer
+                                                    permit_prohibited_cipher_suites:
+                                                      type: boolean
                                                 idle_timeout:
                                                   type: string
                                                 read_header_timeout:
@@ -10526,6 +11303,27 @@ spec:
                                               properties:
                                                 handler_timeout:
                                                   type: string
+                                                http2:
+                                                  type: object
+                                                  properties:
+                                                    enabled:
+                                                      type: boolean
+                                                    handler_limit:
+                                                      type: integer
+                                                    max_concurrent_streams:
+                                                      type: integer
+                                                    max_decoder_header_table_size:
+                                                      type: integer
+                                                    max_encoder_header_table_size:
+                                                      type: integer
+                                                    max_read_frame_size:
+                                                      type: integer
+                                                    max_upload_buffer_per_connection:
+                                                      type: integer
+                                                    max_upload_buffer_per_stream:
+                                                      type: integer
+                                                    permit_prohibited_cipher_suites:
+                                                      type: boolean
                                                 idle_timeout:
                                                   type: string
                                                 read_header_timeout:
@@ -10634,6 +11432,27 @@ spec:
                                               properties:
                                                 handler_timeout:
                                                   type: string
+                                                http2:
+                                                  type: object
+                                                  properties:
+                                                    enabled:
+                                                      type: boolean
+                                                    handler_limit:
+                                                      type: integer
+                                                    max_concurrent_streams:
+                                                      type: integer
+                                                    max_decoder_header_table_size:
+                                                      type: integer
+                                                    max_encoder_header_table_size:
+                                                      type: integer
+                                                    max_read_frame_size:
+                                                      type: integer
+                                                    max_upload_buffer_per_connection:
+                                                      type: integer
+                                                    max_upload_buffer_per_stream:
+                                                      type: integer
+                                                    permit_prohibited_cipher_suites:
+                                                      type: boolean
                                                 idle_timeout:
                                                   type: string
                                                 read_header_timeout:
@@ -10823,6 +11642,27 @@ spec:
                                               properties:
                                                 handler_timeout:
                                                   type: string
+                                                http2:
+                                                  type: object
+                                                  properties:
+                                                    enabled:
+                                                      type: boolean
+                                                    handler_limit:
+                                                      type: integer
+                                                    max_concurrent_streams:
+                                                      type: integer
+                                                    max_decoder_header_table_size:
+                                                      type: integer
+                                                    max_encoder_header_table_size:
+                                                      type: integer
+                                                    max_read_frame_size:
+                                                      type: integer
+                                                    max_upload_buffer_per_connection:
+                                                      type: integer
+                                                    max_upload_buffer_per_stream:
+                                                      type: integer
+                                                    permit_prohibited_cipher_suites:
+                                                      type: boolean
                                                 idle_timeout:
                                                   type: string
                                                 read_header_timeout:
@@ -11100,6 +11940,27 @@ spec:
                                                   properties:
                                                     handler_timeout:
                                                       type: string
+                                                    http2:
+                                                      type: object
+                                                      properties:
+                                                        enabled:
+                                                          type: boolean
+                                                        handler_limit:
+                                                          type: integer
+                                                        max_concurrent_streams:
+                                                          type: integer
+                                                        max_decoder_header_table_size:
+                                                          type: integer
+                                                        max_encoder_header_table_size:
+                                                          type: integer
+                                                        max_read_frame_size:
+                                                          type: integer
+                                                        max_upload_buffer_per_connection:
+                                                          type: integer
+                                                        max_upload_buffer_per_stream:
+                                                          type: integer
+                                                        permit_prohibited_cipher_suites:
+                                                          type: boolean
                                                     idle_timeout:
                                                       type: string
                                                     read_header_timeout:
@@ -11196,6 +12057,27 @@ spec:
                                                   properties:
                                                     handler_timeout:
                                                       type: string
+                                                    http2:
+                                                      type: object
+                                                      properties:
+                                                        enabled:
+                                                          type: boolean
+                                                        handler_limit:
+                                                          type: integer
+                                                        max_concurrent_streams:
+                                                          type: integer
+                                                        max_decoder_header_table_size:
+                                                          type: integer
+                                                        max_encoder_header_table_size:
+                                                          type: integer
+                                                        max_read_frame_size:
+                                                          type: integer
+                                                        max_upload_buffer_per_connection:
+                                                          type: integer
+                                                        max_upload_buffer_per_stream:
+                                                          type: integer
+                                                        permit_prohibited_cipher_suites:
+                                                          type: boolean
                                                     idle_timeout:
                                                       type: string
                                                     read_header_timeout:
@@ -11304,6 +12186,27 @@ spec:
                                                   properties:
                                                     handler_timeout:
                                                       type: string
+                                                    http2:
+                                                      type: object
+                                                      properties:
+                                                        enabled:
+                                                          type: boolean
+                                                        handler_limit:
+                                                          type: integer
+                                                        max_concurrent_streams:
+                                                          type: integer
+                                                        max_decoder_header_table_size:
+                                                          type: integer
+                                                        max_encoder_header_table_size:
+                                                          type: integer
+                                                        max_read_frame_size:
+                                                          type: integer
+                                                        max_upload_buffer_per_connection:
+                                                          type: integer
+                                                        max_upload_buffer_per_stream:
+                                                          type: integer
+                                                        permit_prohibited_cipher_suites:
+                                                          type: boolean
                                                     idle_timeout:
                                                       type: string
                                                     read_header_timeout:
@@ -11493,6 +12396,27 @@ spec:
                                                   properties:
                                                     handler_timeout:
                                                       type: string
+                                                    http2:
+                                                      type: object
+                                                      properties:
+                                                        enabled:
+                                                          type: boolean
+                                                        handler_limit:
+                                                          type: integer
+                                                        max_concurrent_streams:
+                                                          type: integer
+                                                        max_decoder_header_table_size:
+                                                          type: integer
+                                                        max_encoder_header_table_size:
+                                                          type: integer
+                                                        max_read_frame_size:
+                                                          type: integer
+                                                        max_upload_buffer_per_connection:
+                                                          type: integer
+                                                        max_upload_buffer_per_stream:
+                                                          type: integer
+                                                        permit_prohibited_cipher_suites:
+                                                          type: boolean
                                                     idle_timeout:
                                                       type: string
                                                     read_header_timeout:
@@ -12104,6 +13028,27 @@ spec:
                                               properties:
                                                 handler_timeout:
                                                   type: string
+                                                http2:
+                                                  type: object
+                                                  properties:
+                                                    enabled:
+                                                      type: boolean
+                                                    handler_limit:
+                                                      type: integer
+                                                    max_concurrent_streams:
+                                                      type: integer
+                                                    max_decoder_header_table_size:
+                                                      type: integer
+                                                    max_encoder_header_table_size:
+                                                      type: integer
+                                                    max_read_frame_size:
+                                                      type: integer
+                                                    max_upload_buffer_per_connection:
+                                                      type: integer
+                                                    max_upload_buffer_per_stream:
+                                                      type: integer
+                                                    permit_prohibited_cipher_suites:
+                                                      type: boolean
                                                 idle_timeout:
                                                   type: string
                                                 read_header_timeout:
@@ -12200,6 +13145,27 @@ spec:
                                               properties:
                                                 handler_timeout:
                                                   type: string
+                                                http2:
+                                                  type: object
+                                                  properties:
+                                                    enabled:
+                                                      type: boolean
+                                                    handler_limit:
+                                                      type: integer
+                                                    max_concurrent_streams:
+                                                      type: integer
+                                                    max_decoder_header_table_size:
+                                                      type: integer
+                                                    max_encoder_header_table_size:
+                                                      type: integer
+                                                    max_read_frame_size:
+                                                      type: integer
+                                                    max_upload_buffer_per_connection:
+                                                      type: integer
+                                                    max_upload_buffer_per_stream:
+                                                      type: integer
+                                                    permit_prohibited_cipher_suites:
+                                                      type: boolean
                                                 idle_timeout:
                                                   type: string
                                                 read_header_timeout:
@@ -12308,6 +13274,27 @@ spec:
                                               properties:
                                                 handler_timeout:
                                                   type: string
+                                                http2:
+                                                  type: object
+                                                  properties:
+                                                    enabled:
+                                                      type: boolean
+                                                    handler_limit:
+                                                      type: integer
+                                                    max_concurrent_streams:
+                                                      type: integer
+                                                    max_decoder_header_table_size:
+                                                      type: integer
+                                                    max_encoder_header_table_size:
+                                                      type: integer
+                                                    max_read_frame_size:
+                                                      type: integer
+                                                    max_upload_buffer_per_connection:
+                                                      type: integer
+                                                    max_upload_buffer_per_stream:
+                                                      type: integer
+                                                    permit_prohibited_cipher_suites:
+                                                      type: boolean
                                                 idle_timeout:
                                                   type: string
                                                 read_header_timeout:
@@ -12497,6 +13484,27 @@ spec:
                                               properties:
                                                 handler_timeout:
                                                   type: string
+                                                http2:
+                                                  type: object
+                                                  properties:
+                                                    enabled:
+                                                      type: boolean
+                                                    handler_limit:
+                                                      type: integer
+                                                    max_concurrent_streams:
+                                                      type: integer
+                                                    max_decoder_header_table_size:
+                                                      type: integer
+                                                    max_encoder_header_table_size:
+                                                      type: integer
+                                                    max_read_frame_size:
+                                                      type: integer
+                                                    max_upload_buffer_per_connection:
+                                                      type: integer
+                                                    max_upload_buffer_per_stream:
+                                                      type: integer
+                                                    permit_prohibited_cipher_suites:
+                                                      type: boolean
                                                 idle_timeout:
                                                   type: string
                                                 read_header_timeout:
@@ -12630,6 +13638,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -12726,6 +13755,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -12834,6 +13884,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
@@ -13023,6 +14094,27 @@ spec:
                                           properties:
                                             handler_timeout:
                                               type: string
+                                            http2:
+                                              type: object
+                                              properties:
+                                                enabled:
+                                                  type: boolean
+                                                handler_limit:
+                                                  type: integer
+                                                max_concurrent_streams:
+                                                  type: integer
+                                                max_decoder_header_table_size:
+                                                  type: integer
+                                                max_encoder_header_table_size:
+                                                  type: integer
+                                                max_read_frame_size:
+                                                  type: integer
+                                                max_upload_buffer_per_connection:
+                                                  type: integer
+                                                max_upload_buffer_per_stream:
+                                                  type: integer
+                                                permit_prohibited_cipher_suites:
+                                                  type: boolean
                                             idle_timeout:
                                               type: string
                                             read_header_timeout:
