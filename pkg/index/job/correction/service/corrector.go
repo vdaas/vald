@@ -309,7 +309,12 @@ type vectorReplica struct {
 func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorReplica, targetAgentIdx int) error {
 	// leftAgentAddrs is the agents' addr that hasn't been corrected yet.
 	leftAgentAddrs := c.sortedByIndexCntAddrs[targetAgentIdx+1:]
-
+	if len(leftAgentAddrs) == 0 {
+		if err := c.correctReplica(ctx, targetReplica, nil); err != nil {
+			return fmt.Errorf("failed to fix final agent's index replica: %w", err)
+		}
+		return nil
+	}
 	// Vector with time after this should not be processed
 	correctionStartTime, err := correctionStartTime(ctx)
 	if err != nil {
@@ -441,7 +446,7 @@ func (c *correct) correctReplica(
 		if addr == targetReplica.addr {
 			continue
 		}
-		if slices.ContainsFunc(foundReplicas, func(replica *vectorReplica) bool {
+		if foundReplicas != nil && slices.ContainsFunc(foundReplicas, func(replica *vectorReplica) bool {
 			return replica.addr == addr
 		}) {
 			continue

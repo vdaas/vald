@@ -89,9 +89,9 @@ LABEL maintainer="${MAINTAINER}"
 
 ENV APP_NAME index-correction
 
-COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
+COPY --from=builder /usr/bin/${APP_NAME} /usr/bin/${APP_NAME}
 COPY --from=builder /tmp/config.yaml /etc/server/config.yaml
 
 USER nonroot:nonroot
 
-ENTRYPOINT ["/go/bin/index-correction"]
+ENTRYPOINT ["/usr/bin/index-correction"]
