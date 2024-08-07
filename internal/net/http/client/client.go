@@ -49,8 +49,9 @@ func New(opts ...Option) (*http.Client, error) {
 		}
 	}
 
-	if err := http2.ConfigureTransport(tr.Transport); err != nil {
-		return nil, err
+	err := http2.ConfigureTransport(tr.Transport)
+	if err != nil {
+		log.Warnf("Transport is already configured for HTTP2 error: %v", err)
 	}
 
 	return &http.Client{

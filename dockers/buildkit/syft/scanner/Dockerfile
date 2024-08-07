@@ -1,3 +1,4 @@
+# syntax = docker/dockerfile:latest
 #
 # Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
@@ -13,19 +14,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata:
-  name: vald-manager-index
-  labels:
-    app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.13
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.13
-    app.kubernetes.io/component: manager-index
-spec:
-  maxUnavailable: 50%
-  selector:
-    matchLabels:
-      app: vald-manager-index
+
+FROM docker/buildkit-syft-scanner:edge AS scanner

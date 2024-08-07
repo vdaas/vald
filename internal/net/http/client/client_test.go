@@ -134,12 +134,11 @@ func TestNew(t *testing.T) {
 			want: want{
 				want: &http.Client{
 					Transport: htr.NewExpBackoff(
-						htr.WithRoundTripper(func() *http.Transport {
-							t := new(http.Transport)
-							t.Proxy = http.ProxyFromEnvironment
-							_ = http2.ConfigureTransport(t)
-
-							return t
+						htr.WithRoundTripper(func() http.RoundTripper {
+							tr := new(http.Transport)
+							tr.Proxy = http.ProxyFromEnvironment
+							_ = http2.ConfigureTransport(tr)
+							return tr
 						}()),
 						htr.WithBackoff(
 							backoff.New(),
@@ -160,12 +159,11 @@ func TestNew(t *testing.T) {
 			want: want{
 				want: &http.Client{
 					Transport: htr.NewExpBackoff(
-						htr.WithRoundTripper(func() *http.Transport {
-							t := new(http.Transport)
-							t.Proxy = http.ProxyFromEnvironment
-							_ = http2.ConfigureTransport(t)
-
-							return t
+						htr.WithRoundTripper(func() http.RoundTripper {
+							tr := new(http.Transport)
+							tr.Proxy = http.ProxyFromEnvironment
+							_ = http2.ConfigureTransport(tr)
+							return tr
 						}()),
 						htr.WithBackoff(
 							backoff.New(),

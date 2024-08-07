@@ -25,6 +25,7 @@ docker/build: \
 	docker/build/binfmt \
 	docker/build/buildbase \
 	docker/build/buildkit \
+	docker/build/buildkit-syft-scanner \
 	docker/build/ci-container \
 	docker/build/dev-container \
 	docker/build/discoverer-k8s \
@@ -67,7 +68,7 @@ ifeq ($(REMOTE),true)
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg RUST_VERSION=$(RUST_VERSION) \
 		--build-arg MAINTAINER=$(MAINTAINER) \
-		--sbom=true \
+		--attest type=sbom,generator=docker/buildkit-syft-scanner:edge \
 		--provenance=mode=max \
 		-t $(CRORG)/$(IMAGE):$(TAG) \
 		-t $(GHCRORG)/$(IMAGE):$(TAG) \
@@ -217,6 +218,17 @@ docker/name/binfmt:
 docker/build/binfmt:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/binfmt/Dockerfile" \
 		IMAGE=$(BINFMT_IMAGE) \
+		docker/build/image
+
+PHONY: docker/name/buildkit-syft-scanner
+docker/name/buildkit-syft-scanner:
+	@echo "$(ORG)/$(BUILDKIT_SYFT_SCANNER_IMAGE)"
+
+.PHONY: docker/build/buildkit-syft-scanner
+## build buildkit-syft-scanner image
+docker/build/buildkit-syft-scanner:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/buildkit/syft/scanner/Dockerfile" \
+		IMAGE=$(BUILDKIT_SYFT_SCANNER_IMAGE) \
 		docker/build/image
 
 .PHONY: docker/name/ci-container
