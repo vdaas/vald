@@ -37,6 +37,7 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
+	"golang.org/x/net/http2"
 )
 
 type Option func(*server) error
@@ -270,6 +271,107 @@ func WithHTTPServer(srv *http.Server) Option {
 	return func(s *server) error {
 		if srv != nil {
 			s.http.srv = srv
+		}
+		return nil
+	}
+}
+
+func WithHTTP2Enabled(enabled bool) Option {
+	return func(s *server) error {
+		s.http.enableH2 = enabled
+		return nil
+	}
+}
+
+func WithHandlerLimit(size int) Option {
+	return func(s *server) error {
+		if size != 0 {
+			if s.http.h2srv == nil {
+				s.http.h2srv = new(http2.Server)
+			}
+			s.http.h2srv.MaxHandlers = size
+		}
+		return nil
+	}
+}
+
+func WithPermitProhibitedCipherSuites(perm bool) Option {
+	return func(s *server) error {
+		if s.http.h2srv == nil {
+			s.http.h2srv = new(http2.Server)
+		}
+		s.http.h2srv.PermitProhibitedCipherSuites = perm
+		return nil
+	}
+}
+
+func WithMaxUploadBufferPerConnection(size int32) Option {
+	return func(s *server) error {
+		if size > 0 {
+			if s.http.h2srv == nil {
+				s.http.h2srv = new(http2.Server)
+			}
+			s.http.h2srv.MaxUploadBufferPerConnection = size
+		}
+		return nil
+	}
+}
+
+func WithMaxUploadBufferPerStream(size int32) Option {
+	return func(s *server) error {
+		if size > 0 {
+			if s.http.h2srv == nil {
+				s.http.h2srv = new(http2.Server)
+			}
+			s.http.h2srv.MaxUploadBufferPerStream = size
+		}
+		return nil
+	}
+}
+
+func WithMaxConcurrentStreams(size uint32) Option {
+	return func(s *server) error {
+		if size > 0 {
+			if s.http.h2srv == nil {
+				s.http.h2srv = new(http2.Server)
+			}
+			s.http.h2srv.MaxConcurrentStreams = size
+		}
+		return nil
+	}
+}
+
+func WithMaxDecoderHeaderTableSize(size uint32) Option {
+	return func(s *server) error {
+		if size > 0 {
+			if s.http.h2srv == nil {
+				s.http.h2srv = new(http2.Server)
+			}
+			s.http.h2srv.MaxDecoderHeaderTableSize = size
+		}
+		return nil
+	}
+}
+
+func WithMaxEncoderHeaderTableSize(size uint32) Option {
+	return func(s *server) error {
+		if size > 0 {
+			if s.http.h2srv == nil {
+				s.http.h2srv = new(http2.Server)
+			}
+			s.http.h2srv.MaxEncoderHeaderTableSize = size
+		}
+		return nil
+	}
+}
+
+func WithMaxReadFrameSize(size uint32) Option {
+	return func(s *server) error {
+		if size > 0 {
+			if s.http.h2srv == nil {
+				s.http.h2srv = new(http2.Server)
+			}
+			s.http.h2srv.MaxReadFrameSize = size
 		}
 		return nil
 	}

@@ -32,6 +32,7 @@ BENCHMARK_OPERATOR_IMAGE        = $(NAME)-benchmark-operator
 BINFMT_IMAGE                    = $(NAME)-binfmt
 BUILDBASE_IMAGE                 = $(NAME)-buildbase
 BUILDKIT_IMAGE                  = $(NAME)-buildkit
+BUILDKIT_SYFT_SCANNER_IMAGE     = $(NAME)-buildkit-syft-scanner
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
 DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
@@ -478,7 +479,13 @@ format: \
 	format/go \
 	format/json \
 	format/md \
-	format/yaml
+	format/yaml \
+	remove/empty/file
+
+.PHONY: remove/empty/file
+## removes empty file such as just includes \r \n space tab
+remove/empty/file:
+	find $(ROOTDIR)/ -type f ! -name ".gitkeep" -print0 | xargs -0 -P$(CORES) -n 1 sh -c 'grep -qvE "^[ \t\n]*$$" "$$1" || rm "$$1"' sh
 
 .PHONY: format/go
 ## run golines, gofumpt, goimports for all go files

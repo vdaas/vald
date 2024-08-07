@@ -94,6 +94,35 @@ defaults:
             # @schema {"name": "defaults.server_config.servers.rest.server.http.write_timeout", "type": "string"}
             # defaults.server_config.servers.rest.server.http.write_timeout -- REST server write timeout
             write_timeout: 1s
+            # @schema {"name": "defaults.server_config.servers.rest.server.http.http2", "type": "object", "anchor": "http2_server_config"}
+            http2:
+              # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.enabled", "type": "boolean"}
+              # defaults.server_config.servers.rest.server.http.http2.enabled -- HTTP2 server enabled
+              enabled: false
+              # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.handler_limit", "type": "integer"}
+              # defaults.server_config.servers.rest.server.http.http2.handler_limit -- Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit.
+              handler_limit: 0
+              # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.permit_prohibited_cipher_suites", "type": "boolean"}
+              # defaults.server_config.servers.rest.server.http.http2.permit_prohibited_cipher_suites -- if true, permits the use of cipher suites prohibited by the HTTP/2 spec.
+              permit_prohibited_cipher_suites: true
+              # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.max_upload_buffer_per_connection", "type": "integer"}
+              # defaults.server_config.servers.rest.server.http.http2.max_upload_buffer_per_connection -- The size of the initial flow control window for each connections.
+              max_upload_buffer_per_connection: 0
+              # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.max_upload_buffer_per_stream", "type": "integer"}
+              # defaults.server_config.servers.rest.server.http.http2.max_upload_buffer_per_stream -- The size of the initial flow control window for each streams.
+              max_upload_buffer_per_stream: 0
+              # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.max_concurrent_streams", "type": "integer"}
+              # defaults.server_config.servers.rest.server.http.http2.max_concurrent_streams -- The number of concurrent streams that each client may have open at a time.
+              max_concurrent_streams: 0
+              # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.max_decoder_header_table_size", "type": "integer"}
+              # defaults.server_config.servers.rest.server.http.http2.max_decoder_header_table_size -- Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used.
+              max_decoder_header_table_size: 4096
+              # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.max_encoder_header_table_size", "type": "integer"}
+              # defaults.server_config.servers.rest.server.http.http2.max_encoder_header_table_size -- An upper limit for the header compression table used for encoding request headers.
+              max_encoder_header_table_size: 4096
+              # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.max_read_frame_size", "type": "integer"}
+              # defaults.server_config.servers.rest.server.http.http2.max_read_frame_size -- The largest frame this server is willing to read.
+              max_read_frame_size: 0
           # @schema {"name": "defaults.server_config.servers.rest.server.socket_option", "type": "object", "anchor": "socket_option"}
           socket_option:
             # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.reuse_port", "type": "boolean"}
@@ -356,6 +385,26 @@ defaults:
             # @schema {"name": "defaults.server_config.healths.liveness.server.http.write_timeout", "type": "string"}
             # defaults.server_config.healths.liveness.server.http.write_timeout -- liveness server write timeout
             write_timeout: ""
+            # @schema {"name": "defaults.server_config.healths.liveness.server.http.http2", "type": "object", "alias": "http2_server_config"}
+            http2:
+              # defaults.server_config.healths.liveness.server.http.http2.enabled -- HTTP2 server enabled
+              enabled: false
+              # defaults.server_config.healths.liveness.server.http.http2.handler_limit -- Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit.
+              handler_limit: 0
+              # defaults.server_config.healths.liveness.server.http.http2.permit_prohibited_cipher_suites -- if true, permits the use of cipher suites prohibited by the HTTP/2 spec.
+              permit_prohibited_cipher_suites: true
+              # defaults.server_config.healths.liveness.server.http.http2.max_upload_buffer_per_connection -- The size of the initial flow control window for each connections.
+              max_upload_buffer_per_connection: 0
+              # defaults.server_config.healths.liveness.server.http.http2.max_upload_buffer_per_stream -- The size of the initial flow control window for each streams.
+              max_upload_buffer_per_stream: 0
+              # defaults.server_config.healths.liveness.server.http.http2.max_concurrent_streams -- The number of concurrent streams that each client may have open at a time.
+              max_concurrent_streams: 0
+              # defaults.server_config.healths.liveness.server.http.http2.max_decoder_header_table_size -- Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used.
+              max_decoder_header_table_size: 4096
+              # defaults.server_config.healths.liveness.server.http.http2.max_encoder_header_table_size -- An upper limit for the header compression table used for encoding request headers.
+              max_encoder_header_table_size: 4096
+              # defaults.server_config.healths.liveness.server.http.http2.max_read_frame_size -- The largest frame this server is willing to read.
+              max_read_frame_size: 0
           # @schema {"name": "defaults.server_config.healths.liveness.server.socket_option", "alias": "socket_option"}
           socket_option:
             # defaults.server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -455,6 +504,26 @@ defaults:
             # @schema {"name": "defaults.server_config.healths.readiness.server.http.write_timeout", "type": "string"}
             # defaults.server_config.healths.readiness.server.http.write_timeout -- readiness server write timeout
             write_timeout: ""
+            # @schema {"name": "defaults.server_config.healths.readiness.server.http.http2", "type": "object", "alias": "http2_server_config"}
+            http2:
+              # defaults.server_config.healths.readiness.server.http.http2.enabled -- HTTP2 server enabled
+              enabled: false
+              # defaults.server_config.healths.readiness.server.http.http2.handler_limit -- Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit.
+              handler_limit: 0
+              # defaults.server_config.healths.readiness.server.http.http2.permit_prohibited_cipher_suites -- if true, permits the use of cipher suites prohibited by the HTTP/2 spec.
+              permit_prohibited_cipher_suites: true
+              # defaults.server_config.healths.readiness.server.http.http2.max_upload_buffer_per_connection -- The size of the initial flow control window for each connections.
+              max_upload_buffer_per_connection: 0
+              # defaults.server_config.healths.readiness.server.http.http2.max_upload_buffer_per_stream -- The size of the initial flow control window for each streams.
+              max_upload_buffer_per_stream: 0
+              # defaults.server_config.healths.readiness.server.http.http2.max_concurrent_streams -- The number of concurrent streams that each client may have open at a time.
+              max_concurrent_streams: 0
+              # defaults.server_config.healths.readiness.server.http.http2.max_decoder_header_table_size -- Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used.
+              max_decoder_header_table_size: 4096
+              # defaults.server_config.healths.readiness.server.http.http2.max_encoder_header_table_size -- An upper limit for the header compression table used for encoding request headers.
+              max_encoder_header_table_size: 4096
+              # defaults.server_config.healths.readiness.server.http.http2.max_read_frame_size -- The largest frame this server is willing to read.
+              max_read_frame_size: 0
           # @schema {"name": "defaults.server_config.healths.readiness.server.socket_option", "alias": "socket_option"}
           socket_option:
             # defaults.server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -528,6 +597,26 @@ defaults:
             # @schema {"name": "defaults.server_config.metrics.pprof.server.http.write_timeout", "type": "string"}
             # defaults.server_config.metrics.pprof.server.http.write_timeout -- pprof server write timeout
             write_timeout: 1m
+            # @schema {"name": "defaults.server_config.metrics.pprof.server.http.http2", "type": "object", "alias": "http2_server_config"}
+            http2:
+              # defaults.server_config.metrics.pprof.server.http.http2.enabled -- HTTP2 server enabled
+              enabled: false
+              # defaults.server_config.metrics.pprof.server.http.http2.handler_limit -- Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit.
+              handler_limit: 0
+              # defaults.server_config.metrics.pprof.server.http.http2.permit_prohibited_cipher_suites -- if true, permits the use of cipher suites prohibited by the HTTP/2 spec.
+              permit_prohibited_cipher_suites: true
+              # defaults.server_config.metrics.pprof.server.http.http2.max_upload_buffer_per_connection -- The size of the initial flow control window for each connections.
+              max_upload_buffer_per_connection: 0
+              # defaults.server_config.metrics.pprof.server.http.http2.max_upload_buffer_per_stream -- The size of the initial flow control window for each streams.
+              max_upload_buffer_per_stream: 0
+              # defaults.server_config.metrics.pprof.server.http.http2.max_concurrent_streams -- The number of concurrent streams that each client may have open at a time.
+              max_concurrent_streams: 0
+              # defaults.server_config.metrics.pprof.server.http.http2.max_decoder_header_table_size -- Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used.
+              max_decoder_header_table_size: 4096
+              # defaults.server_config.metrics.pprof.server.http.http2.max_encoder_header_table_size -- An upper limit for the header compression table used for encoding request headers.
+              max_encoder_header_table_size: 4096
+              # defaults.server_config.metrics.pprof.server.http.http2.max_read_frame_size -- The largest frame this server is willing to read.
+              max_read_frame_size: 0
           # @schema {"name": "defaults.server_config.metrics.pprof.server.socket_option", "alias": "socket_option"}
           socket_option:
             # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
