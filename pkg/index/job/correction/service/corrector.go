@@ -137,7 +137,7 @@ func (c *correct) Start(ctx context.Context) (err error) {
 	}
 	counts := detail.GetCounts()
 	agents := make([]string, 0, len(counts))
-	for agent:= range counts {
+	for agent := range counts {
 		agents = append(agents, agent)
 	}
 	slices.SortFunc(agents, func(left, right string) int {
