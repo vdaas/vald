@@ -68,7 +68,7 @@ ifeq ($(REMOTE),true)
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg RUST_VERSION=$(RUST_VERSION) \
 		--build-arg MAINTAINER=$(MAINTAINER) \
-		--attest type=sbom,generator=docker/buildkit-syft-scanner:edge \
+		--attest type=sbom,generator=$(DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE) \
 		--provenance=mode=max \
 		-t $(CRORG)/$(IMAGE):$(TAG) \
 		-t $(GHCRORG)/$(IMAGE):$(TAG) \
@@ -229,6 +229,7 @@ docker/name/buildkit-syft-scanner:
 docker/build/buildkit-syft-scanner:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/buildkit/syft/scanner/Dockerfile" \
 		IMAGE=$(BUILDKIT_SYFT_SCANNER_IMAGE) \
+		DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE="docker/buildkit-syft-scanner:edge" \
 		docker/build/image
 
 .PHONY: docker/name/ci-container
