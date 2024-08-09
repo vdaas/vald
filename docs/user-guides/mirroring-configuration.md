@@ -58,7 +58,7 @@ gateway:
 
 The cluster role configuration is required when you deploy Vald clusters with Vald Mirror Gateway on multiple Namespaces in the Kubernetes cluster.
 
-Please refer to [Cluster Role Configuration](./cluster-role-binding.md) about cluster role settings for Mirror Gateway.
+Please refer to [Cluster Role Configuration](../user-guides/cluster-role-binding.md) about cluster role settings for Mirror Gateway.
 
 ### Custom Resource Configuration
 
