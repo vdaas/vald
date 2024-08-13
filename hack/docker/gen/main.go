@@ -292,7 +292,7 @@ var (
 		"PATH":        "${PATH}:${GOROOT}/bin:${GOPATH}/bin:/usr/local/bin",
 	}
 	rustDefaultEnvironments = map[string]string{
-		"RUST_HOME":   "/usr/local/lib/rust",
+		"RUST_HOME":   "/usr/loacl/lib/rust",
 		"RUSTUP_HOME": "${RUST_HOME}/rustup",
 		"CARGO_HOME":  "${RUST_HOME}/cargo",
 		"PATH":        "${PATH}:${RUSTUP_HOME}/bin:${CARGO_HOME}/bin:/usr/local/bin",

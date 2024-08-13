@@ -1904,6 +1904,11 @@ rust/libs/ngt-rs/src/input.h
 rust/libs/ngt-rs/src/lib.rs
 rust/libs/ngt/Cargo.toml
 rust/libs/ngt/src/lib.rs
+rust/libs/observability/Cargo.toml
+rust/libs/observability/src/config.rs
+rust/libs/observability/src/lib.rs
+rust/libs/observability/src/macros.rs
+rust/libs/observability/src/observability.rs
 rust/libs/proto/Cargo.toml
 rust/libs/proto/src/core.v1.tonic.rs
 rust/libs/proto/src/discoverer.v1.tonic.rs
