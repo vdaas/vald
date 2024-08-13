@@ -54,6 +54,48 @@
         "tags": ["Index"]
       }
     },
+    "/index/property": {
+      "get": {
+        "summary": "Represent the RPC to get the index property.",
+        "operationId": "Index_IndexProperty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/IndexProperty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": ["Index"]
+      }
+    },
+    "/index/property/detail": {
+      "get": {
+        "summary": "Represent the RPC to get the index properties for each agents.",
+        "operationId": "Index_IndexPropertyDetail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/IndexPropertyDetail"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": ["Index"]
+      }
+    },
     "/index/statistics": {
       "get": {
         "summary": "Represent the RPC to get the index statistics.",
@@ -144,6 +186,150 @@
         }
       },
       "description": "Represent the index count for each Agents message."
+    },
+    "IndexProperty": {
+      "type": "object",
+      "properties": {
+        "dimension": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "threadPoolSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "objectType": {
+          "type": "string"
+        },
+        "distanceType": {
+          "type": "string"
+        },
+        "indexType": {
+          "type": "string"
+        },
+        "databaseType": {
+          "type": "string"
+        },
+        "objectAlignment": {
+          "type": "string"
+        },
+        "pathAdjustmentInterval": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "graphSharedMemorySize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "treeSharedMemorySize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "objectSharedMemorySize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "prefetchOffset": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "prefetchSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "accuracyTable": {
+          "type": "string"
+        },
+        "searchType": {
+          "type": "string"
+        },
+        "maxMagnitude": {
+          "type": "number",
+          "format": "float"
+        },
+        "nOfNeighborsForInsertionOrder": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "epsilonForInsertionOrder": {
+          "type": "number",
+          "format": "float"
+        },
+        "refinementObjectType": {
+          "type": "string"
+        },
+        "truncationThreshold": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "edgeSizeForCreation": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "edgeSizeForSearch": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "edgeSizeLimitForCreation": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "insertionRadiusCoefficient": {
+          "type": "number",
+          "format": "double"
+        },
+        "seedSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "seedType": {
+          "type": "string"
+        },
+        "truncationThreadPoolSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "batchSizeForCreation": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "graphType": {
+          "type": "string"
+        },
+        "dynamicEdgeSizeBase": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "dynamicEdgeSizeRate": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "buildTimeLimit": {
+          "type": "number",
+          "format": "float"
+        },
+        "outgoingEdge": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "incomingEdge": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "Represents index Property"
+    },
+    "IndexPropertyDetail": {
+      "type": "object",
+      "properties": {
+        "details": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/IndexProperty"
+          }
+        }
+      },
+      "title": "Represents index Properties for each Agents"
     },
     "IndexStatistics": {
       "type": "object",

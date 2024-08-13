@@ -124,8 +124,6 @@ pub mod filter_client {
                 .insert(GrpcMethod::new("vald.v1.Filter", "SearchObject"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to search multiple objects.
-*/
         pub async fn multi_search_object(
             &mut self,
             request: impl tonic::IntoRequest<
@@ -477,8 +475,6 @@ pub mod filter_server {
             tonic::Response<super::super::super::payload::v1::search::Response>,
             tonic::Status,
         >;
-        /** A method to search multiple objects.
-*/
         async fn multi_search_object(
             &self,
             request: tonic::Request<
@@ -1757,8 +1753,6 @@ pub mod index_client {
             req.extensions_mut().insert(GrpcMethod::new("vald.v1.Index", "IndexInfo"));
             self.inner.unary(req, path, codec).await
         }
-        /** Represent the RPC to get the index information for each agents.
-*/
         pub async fn index_detail(
             &mut self,
             request: impl tonic::IntoRequest<super::super::super::payload::v1::Empty>,
@@ -1839,6 +1833,62 @@ pub mod index_client {
                 .insert(GrpcMethod::new("vald.v1.Index", "IndexStatisticsDetail"));
             self.inner.unary(req, path, codec).await
         }
+        /** Represent the RPC to get the index property.
+*/
+        pub async fn index_property(
+            &mut self,
+            request: impl tonic::IntoRequest<super::super::super::payload::v1::Empty>,
+        ) -> std::result::Result<
+            tonic::Response<super::super::super::payload::v1::info::index::Property>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/vald.v1.Index/IndexProperty",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("vald.v1.Index", "IndexProperty"));
+            self.inner.unary(req, path, codec).await
+        }
+        /** Represent the RPC to get the index properties for each agents.
+*/
+        pub async fn index_property_detail(
+            &mut self,
+            request: impl tonic::IntoRequest<super::super::super::payload::v1::Empty>,
+        ) -> std::result::Result<
+            tonic::Response<
+                super::super::super::payload::v1::info::index::PropertyDetail,
+            >,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/vald.v1.Index/IndexPropertyDetail",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("vald.v1.Index", "IndexPropertyDetail"));
+            self.inner.unary(req, path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -1855,8 +1905,6 @@ pub mod index_server {
             tonic::Response<super::super::super::payload::v1::info::index::Count>,
             tonic::Status,
         >;
-        /** Represent the RPC to get the index information for each agents.
-*/
         async fn index_detail(
             &self,
             request: tonic::Request<super::super::super::payload::v1::Empty>,
@@ -1881,6 +1929,26 @@ pub mod index_server {
         ) -> std::result::Result<
             tonic::Response<
                 super::super::super::payload::v1::info::index::StatisticsDetail,
+            >,
+            tonic::Status,
+        >;
+        /** Represent the RPC to get the index property.
+*/
+        async fn index_property(
+            &self,
+            request: tonic::Request<super::super::super::payload::v1::Empty>,
+        ) -> std::result::Result<
+            tonic::Response<super::super::super::payload::v1::info::index::Property>,
+            tonic::Status,
+        >;
+        /** Represent the RPC to get the index properties for each agents.
+*/
+        async fn index_property_detail(
+            &self,
+            request: tonic::Request<super::super::super::payload::v1::Empty>,
+        ) -> std::result::Result<
+            tonic::Response<
+                super::super::super::payload::v1::info::index::PropertyDetail,
             >,
             tonic::Status,
         >;
@@ -2145,6 +2213,104 @@ pub mod index_server {
                     let fut = async move {
                         let inner = inner.0;
                         let method = IndexStatisticsDetailSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/vald.v1.Index/IndexProperty" => {
+                    #[allow(non_camel_case_types)]
+                    struct IndexPropertySvc<T: Index>(pub Arc<T>);
+                    impl<
+                        T: Index,
+                    > tonic::server::UnaryService<
+                        super::super::super::payload::v1::Empty,
+                    > for IndexPropertySvc<T> {
+                        type Response = super::super::super::payload::v1::info::index::Property;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<
+                                super::super::super::payload::v1::Empty,
+                            >,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Index>::index_property(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = IndexPropertySvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/vald.v1.Index/IndexPropertyDetail" => {
+                    #[allow(non_camel_case_types)]
+                    struct IndexPropertyDetailSvc<T: Index>(pub Arc<T>);
+                    impl<
+                        T: Index,
+                    > tonic::server::UnaryService<
+                        super::super::super::payload::v1::Empty,
+                    > for IndexPropertyDetailSvc<T> {
+                        type Response = super::super::super::payload::v1::info::index::PropertyDetail;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<
+                                super::super::super::payload::v1::Empty,
+                            >,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Index>::index_property_detail(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = IndexPropertyDetailSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
@@ -4051,8 +4217,6 @@ pub mod search_client {
             req.extensions_mut().insert(GrpcMethod::new("vald.v1.Search", "Search"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to search indexed vectors by ID.
-*/
         pub async fn search_by_id(
             &mut self,
             request: impl tonic::IntoRequest<
@@ -4403,8 +4567,6 @@ pub mod search_server {
             tonic::Response<super::super::super::payload::v1::search::Response>,
             tonic::Status,
         >;
-        /** A method to search indexed vectors by ID.
-*/
         async fn search_by_id(
             &self,
             request: tonic::Request<super::super::super::payload::v1::search::IdRequest>,

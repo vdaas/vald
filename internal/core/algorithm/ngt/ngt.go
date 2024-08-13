@@ -87,6 +87,9 @@ type (
 
 		GetGraphStatistics(m statisticsType) (stats *GraphStatistics, err error)
 
+		// GetProperty returns NGT Index Property.
+		GetProperty() (*Property, error)
+
 		// Close Without save index.
 		CloseWithoutSaveIndex()
 
@@ -155,6 +158,43 @@ type (
 		OutdegreeHistogram               []uint64
 		IndegreeHistogram                []uint64
 	}
+
+	Property struct {
+		Dimension                     int32
+		ThreadPoolSize                int32
+		ObjectType                    objectType
+		DistanceType                  distanceType
+		IndexType                     indexType
+		DatabaseType                  databaseType
+		ObjectAlignment               objectAlignment
+		pathAdjustmentInterval        int32
+		graphSharedMemorySize         int32
+		treeSharedMemorySize          int32
+		ObjectSharedMemorySize        int32
+		PrefetchOffset                int32
+		PrefetchSize                  int32
+		AccuracyTable                 string
+		SearchType                    string
+		MaxMagnitude                  float32
+		NOfNeighborsForInsertionOrder int32
+		EpsilonForInsersionOrder      float32
+		RefinementObjectType          objectType
+		TruncationThreshold           int32
+		EdgeSizeForCreation           int32
+		EdgeSizeForSearch             int32
+		EdgeSizeLimitForCreation      int32
+		InsertionRadiusCoefficient    float64
+		SeedSize                      string
+		SeedType                      seedType
+		TruuncationThreadPoolSize     int32
+		BatchSizeForCreation          int32
+		GraphType                     graphType
+		DynamicEdgeSizeBase           int32
+		DynamicEdgeSizeRate           int32
+		BuildTimeLimit                float32
+		OutgoingEdge                  int32
+		IncomingEdge                  int32
+	}
 )
 
 func newNGTError() (n *ngtError) {
@@ -182,6 +222,21 @@ type objectType int
 type distanceType int
 
 type statisticsType int
+
+// IndexType is alias of index type in NGT.
+type indexType int
+
+// DatabaseType is alias of database type in NGT.
+type databaseType int
+
+// ObjectAlignment is alias of object alignment in NGT.
+type objectAlignment int
+
+// SeedType is alias of seed type in NGT.
+type seedType int
+
+// GraphType is alias of graph type in NGT.
+type graphType int
 
 const (
 	// -------------------------------------------------------------
@@ -228,6 +283,50 @@ const (
 	NormalizedCosine
 	// InnerProduct is inner product distance.
 	InnerProduct
+
+	// -------------------------------------------------------------
+	// IndexType Definition
+	// -------------------------------------------------------------
+	IndexTypeNone = iota
+	GraphAndTree
+	Graph
+
+	// -------------------------------------------------------------
+	// DatabaseType Definition
+	// -------------------------------------------------------------
+	DatabaseTypeNone = iota
+	Memory
+	MemoryMappedFile
+
+	// -------------------------------------------------------------
+	// ObjectAlignment Definition
+	// -------------------------------------------------------------
+	ObjectAlignmentNone = iota
+	ObjectAlignmentTrue
+	ObjectAlignmentFalse
+
+	// -------------------------------------------------------------
+	// SeedType Definition
+	// -------------------------------------------------------------
+	// SeedTypeNone is unknown seed type.
+	SeedTypeNone seedType = iota
+	RandomNodes
+	FixedNodes
+	FirstNode
+	AllLeafNodes
+
+	// -------------------------------------------------------------
+	// GraphType Definition
+	// -------------------------------------------------------------
+	GraphTypeNone graphType = iota
+	ANNG
+	KNNG
+	BKNNG
+	ONNG
+	IANNG
+	DNNG
+	RANNG
+	RIANNG
 
 	// -------------------------------------------------------------.
 
@@ -281,6 +380,72 @@ func (d distanceType) String() string {
 		return "NormalizedCosine"
 	case InnerProduct:
 		return "InnerProduct"
+	}
+	return "Unknown"
+}
+
+func (i indexType) String() string {
+	switch i {
+	case GraphAndTree:
+		return "GraphAndTree"
+	case Graph:
+		return "Graph"
+	}
+	return "Unknown"
+}
+
+func (d databaseType) String() string {
+	switch d {
+	case Memory:
+		return "Memory"
+	case MemoryMappedFile:
+		return "MemoryMappedFile"
+	}
+	return "Unknown"
+}
+
+func (o objectAlignment) String() string {
+	switch o {
+	case ObjectAlignmentTrue:
+		return "true"
+	case ObjectAlignmentFalse:
+		return "false"
+	}
+	return "Unknown"
+}
+
+func (s seedType) String() string {
+	switch s {
+	case RandomNodes:
+		return "RandomNodes"
+	case FixedNodes:
+		return "FixedNodes"
+	case FirstNode:
+		return "FirstNode"
+	case AllLeafNodes:
+		return "AllLeafNodes"
+	}
+	return "Unknown"
+}
+
+func (g graphType) String() string {
+	switch g {
+	case ANNG:
+		return "ANNG"
+	case KNNG:
+		return "KNNG"
+	case BKNNG:
+		return "BKNNG"
+	case ONNG:
+		return "ONNG"
+	case IANNG:
+		return "IANNG"
+	case DNNG:
+		return "DNNG"
+	case RANNG:
+		return "RANNG"
+	case RIANNG:
+		return "RIANNG"
 	}
 	return "Unknown"
 }
@@ -978,4 +1143,9 @@ func (n *ngt) GetGraphStatistics(m statisticsType) (stats *GraphStatistics, err 
 	n.PutErrorBuffer(ne)
 	defer C.ngt_free_graph_statistics(&cstats)
 	return fromCGraphStatistics(&cstats), nil
+}
+
+func (n *ngt) GetProperty() (prop *Property, err error) {
+	ne := n.GetErrorBuffer()
+	cprop := C.ngt_get_property_info(n.index, ne.err)
 }
