@@ -41,11 +41,11 @@ ENV LC_ALL=en_US.UTF-8
 ENV ORG=vdaas
 ENV PKG=dev
 ENV REPO=vald
-ENV RUST_HOME=/usr/loacl/lib/rust
+ENV RUST_HOME=/usr/local/lib/rust
 ENV TZ=Etc/UTC
 ENV USER=root
-ENV CARGO_HOME=${RUST_HOME}/cargo
 ENV RUSTUP_HOME=${RUST_HOME}/rustup
+ENV CARGO_HOME=${RUST_HOME}/cargo
 ENV PATH=${CARGO_HOME}/bin:${GOPATH}/bin:${GOROOT}/bin:${RUSTUP_HOME}/bin:/usr/local/bin:${PATH}
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
