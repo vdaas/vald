@@ -472,6 +472,7 @@ bool faiss_search_binaryivf(
   for(int i = 0; i < nq*k; i++) {
     D[i] = tmpD[i];
   }
+  delete[] tmpD;
 
   return true;
 }
