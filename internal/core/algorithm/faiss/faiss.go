@@ -47,7 +47,7 @@ type (
 		Add(nb int, xb []float32, xids []int64) (int, error)
 
 		// Search returns search result as []algorithm.SearchResult.
-		Search(k, nq int, xq []float32) ([]algorithm.SearchResult, error)
+		Search(k, nprobe, nq int, xq []float32) ([]algorithm.SearchResult, error)
 
 		// Remove removes from faiss index.
 		Remove(size int, ids []int64) (int, error)
@@ -215,7 +215,7 @@ func (f *faiss) Add(nb int, xb []float32, xids []int64) (int, error) {
 }
 
 // Search returns search result as []algorithm.SearchResult.
-func (f *faiss) Search(k, nq int, xq []float32) ([]algorithm.SearchResult, error) {
+func (f *faiss) Search(k, nprobe, nq int, xq []float32) ([]algorithm.SearchResult, error) {
 	if len(xq) != nq*int(f.dimension) {
 		return nil, errors.ErrIncompatibleDimensionSize(len(xq), int(f.dimension))
 	}
@@ -223,7 +223,7 @@ func (f *faiss) Search(k, nq int, xq []float32) ([]algorithm.SearchResult, error
 	I := make([]int64, k*nq)
 	D := make([]float32, k*nq)
 	f.mu.RLock()
-	ret := C.faiss_search(f.st, (C.int)(k), (C.int)(nq), (*C.float)(&xq[0]), (*C.long)(&I[0]), (*C.float)(&D[0]), C.int(f.methodType))
+	ret := C.faiss_search(f.st, (C.int)(k), (C.int)(nprobe), (C.int)(nq), (*C.float)(&xq[0]), (*C.long)(&I[0]), (*C.float)(&D[0]), C.int(f.methodType))
 	f.mu.RUnlock()
 	if ret == ErrorCode {
 		return nil, errors.NewFaissError("failed to faiss_search")

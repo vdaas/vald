@@ -90,6 +90,7 @@ extern "C" {
   bool faiss_search(
       const FaissStruct* st,
       const int k,
+      const int nprobe,
       const int nq,
       const float* xq,
       long* I,
@@ -98,6 +99,7 @@ extern "C" {
   bool faiss_search_ivfpq(
       const FaissStruct* st,
       const int k,
+      const int nprobe,
       const int nq,
       const float* xq,
       long* I,
@@ -105,6 +107,7 @@ extern "C" {
   bool faiss_search_binaryivf(
       const FaissStruct* st,
       const int k,
+      const int nprobe,
       const int nq,
       const uint8_t* xq,
       long* I,

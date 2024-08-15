@@ -47,10 +47,8 @@ FaissStruct* faiss_create_index(
   switch (method_type) {
     case IVFPQ:
       return faiss_create_index_ivfpq(d, nlist, m, nbits_per_idx, metric_type);
-      break;
     case BINARYIVF:
       return faiss_create_index_binaryivf(d*8, nlist);
-      break;
     default:
       std::stringstream ss;
       ss << "Capi : " << __FUNCTION__ << "() : Error: no method type.";
@@ -75,10 +73,8 @@ FaissStruct* faiss_create_index_ivfpq(
     switch (metric_type) {
       case faiss::METRIC_INNER_PRODUCT:
         quantizer = new faiss::IndexFlat(d, faiss::METRIC_INNER_PRODUCT);
-        break;
       case faiss::METRIC_L2:
         quantizer = new faiss::IndexFlat(d, faiss::METRIC_L2);
-        break;
       default:
         std::stringstream ss;
         ss << "Capi : " << __FUNCTION__ << "() : Error: no metric type.";
@@ -134,10 +130,8 @@ FaissStruct* faiss_read_index(const char* fname, const int method_type) {
   switch (method_type) {
     case IVFPQ:
       return faiss_read_index_ivfpq(fname);
-      break;
     case BINARYIVF:
       return faiss_read_index_binaryindex(fname);
-      break;
     default:
       std::stringstream ss;
       ss << "Capi : " << __FUNCTION__ << "() : Error: no method type.";
@@ -197,10 +191,8 @@ bool faiss_write_index(
   switch (method_type) {
     case IVFPQ:
       return faiss_write_index_ivfpq(st, fname);
-      break;
     case BINARYIVF:
       return faiss_write_index_binaryivf(st, fname);
-      break;
     default:
       std::stringstream ss;
       ss << "Capi : " << __FUNCTION__ << "() : Error: no method type.";
@@ -261,10 +253,8 @@ bool faiss_train(
   switch (method_type) {
     case IVFPQ:
       return faiss_train_ivfpq(st, nb, xb);
-      break;
     case BINARYIVF:
       return faiss_train_binaryivf(st, nb, reinterpret_cast<const uint8_t*>(xb));
-      break;
     default:
       std::stringstream ss;
       ss << "Capi : " << __FUNCTION__ << "() : Error: no method type.";
@@ -332,10 +322,8 @@ int faiss_add(
   switch (method_type) {
     case IVFPQ:
       return faiss_add_ivfpq(st, nb, xb, xids);
-      break;
     case BINARYIVF:
       return faiss_add_binaryivf(st, nb, reinterpret_cast<const uint8_t*>(xb), xids);
-      break;
     default:
       std::stringstream ss;
       ss << "Capi : " << __FUNCTION__ << "() : Error: no method type.";
@@ -395,6 +383,7 @@ int faiss_add_binaryivf(
 bool faiss_search(
     const FaissStruct* st,
     const int k,
+    const int nprobe,
     const int nq,
     const float* xq,
     long* I,
@@ -406,11 +395,9 @@ bool faiss_search(
 
   switch (method_type) {
     case IVFPQ:
-      return faiss_search_ivfpq(st, k, nq, xq, I, D);
-      break;
+      return faiss_search_ivfpq(st, k, nprobe, nq, xq, I, D);
     case BINARYIVF:
-      return faiss_search_binaryivf(st, k, nq, reinterpret_cast<const uint8_t*>(xq), I, D);
-      break;
+      return faiss_search_binaryivf(st, k, nprobe, nq, reinterpret_cast<const uint8_t*>(xq), I, D);
     default:
       std::stringstream ss;
       ss << "Capi : " << __FUNCTION__ << "() : Error: no method type.";
@@ -422,6 +409,7 @@ bool faiss_search(
 bool faiss_search_ivfpq(
     const FaissStruct* st,
     const int k,
+    const int nprobe,
     const int nq,
     const float* xq,
     long* I,
@@ -433,6 +421,7 @@ bool faiss_search_ivfpq(
   try {
     //printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
     //printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
+    (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->nprobe = nprobe;
     (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->search(nq, xq, k, D, I);
     //printf("I=\n");
     //for(int i = 0; i < nq; i++) {
@@ -461,6 +450,7 @@ bool faiss_search_ivfpq(
 bool faiss_search_binaryivf(
     const FaissStruct* st,
     const int k,
+    const int nprobe,
     const int nq,
     const uint8_t* xq,
     long* I,
@@ -471,6 +461,7 @@ bool faiss_search_binaryivf(
 
   int32_t* tmpD = new int32_t[nq*k];
   try {
+    (static_cast<faiss::IndexBinaryIVF*>(st->faiss_index))->nprobe = nprobe;
     (static_cast<faiss::IndexBinaryIVF*>(st->faiss_index))->search(nq, xq, k, tmpD, I);
   } catch(std::exception &err) {
     std::stringstream ss;
@@ -497,10 +488,8 @@ int faiss_remove(
   switch (method_type) {
     case IVFPQ:
       return faiss_remove_ivfpq(st, size, ids);
-      break;
     case BINARYIVF:
       return faiss_remove_binaryivf(st, size, ids);
-      break;
     default:
       std::stringstream ss;
       ss << "Capi : " << __FUNCTION__ << "() : Error: no method type.";
