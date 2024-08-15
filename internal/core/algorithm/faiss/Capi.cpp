@@ -464,6 +464,7 @@ bool faiss_search_binaryivf(
     (static_cast<faiss::IndexBinaryIVF*>(st->faiss_index))->nprobe = nprobe;
     (static_cast<faiss::IndexBinaryIVF*>(st->faiss_index))->search(nq, xq, k, tmpD, I);
   } catch(std::exception &err) {
+    delete[] tmpD;
     std::stringstream ss;
     ss << "Capi : " << __FUNCTION__ << "() : Error: " << err.what();
     std::cerr << ss.str() << std::endl;
