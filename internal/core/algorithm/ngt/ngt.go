@@ -251,7 +251,9 @@ const (
 	// HalfFloat is 16bit floating point number.
 	HalfFloat
 	// -------------------------------------------------------------.
+)
 
+const (
 	// -------------------------------------------------------------
 	// Distance Type Definition
 	// -------------------------------------------------------------
@@ -283,28 +285,36 @@ const (
 	NormalizedCosine
 	// InnerProduct is inner product distance.
 	InnerProduct
+)
 
+const (
 	// -------------------------------------------------------------
 	// IndexType Definition
 	// -------------------------------------------------------------
-	IndexTypeNone = iota
+	IndexTypeNone indexType = iota
 	GraphAndTree
 	Graph
+)
 
+const (
 	// -------------------------------------------------------------
 	// DatabaseType Definition
 	// -------------------------------------------------------------
-	DatabaseTypeNone = iota
+	DatabaseTypeNone databaseType = iota
 	Memory
 	MemoryMappedFile
+)
 
+const (
 	// -------------------------------------------------------------
 	// ObjectAlignment Definition
 	// -------------------------------------------------------------
-	ObjectAlignmentNone = iota
+	ObjectAlignmentNone objectAlignment = iota
 	ObjectAlignmentTrue
 	ObjectAlignmentFalse
+)
 
+const (
 	// -------------------------------------------------------------
 	// SeedType Definition
 	// -------------------------------------------------------------
@@ -314,7 +324,9 @@ const (
 	FixedNodes
 	FirstNode
 	AllLeafNodes
+)
 
+const (
 	// -------------------------------------------------------------
 	// GraphType Definition
 	// -------------------------------------------------------------
@@ -327,9 +339,9 @@ const (
 	DNNG
 	RANNG
 	RIANNG
+)
 
-	// -------------------------------------------------------------.
-
+const (
 	// -------------------------------------------------------------
 	// ErrorCode is false
 	// -------------------------------------------------------------.
