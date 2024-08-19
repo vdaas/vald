@@ -2554,7 +2554,7 @@ func Test_server_IndexProperty(t *testing.T) {
 			want: want{
 				wantRes: &payload.Info_Index_PropertyDetail{
 					Details: map[string]*payload.Info_Index_Property{
-						name: &payload.Info_Index_Property{},
+						name: {},
 					},
 				},
 			},
