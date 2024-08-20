@@ -51,9 +51,7 @@ type IndexClient interface {
 	// Represent the RPC to get the index statistics for each agents.
 	IndexStatisticsDetail(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_StatisticsDetail, error)
 	// Represent the RPC to get the index property.
-	IndexProperty(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Property, error)
-	// Represent the RPC to get the index properties for each agents.
-	IndexPropertyDetail(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_PropertyDetail, error)
+	IndexProperty(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_PropertyDetail, error)
 }
 
 type indexClient struct {
@@ -110,20 +108,9 @@ func (c *indexClient) IndexStatisticsDetail(
 
 func (c *indexClient) IndexProperty(
 	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
-) (*payload.Info_Index_Property, error) {
-	out := new(payload.Info_Index_Property)
-	err := c.cc.Invoke(ctx, "/vald.v1.Index/IndexProperty", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *indexClient) IndexPropertyDetail(
-	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
 ) (*payload.Info_Index_PropertyDetail, error) {
 	out := new(payload.Info_Index_PropertyDetail)
-	err := c.cc.Invoke(ctx, "/vald.v1.Index/IndexPropertyDetail", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/vald.v1.Index/IndexProperty", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -143,9 +130,7 @@ type IndexServer interface {
 	// Represent the RPC to get the index statistics for each agents.
 	IndexStatisticsDetail(context.Context, *payload.Empty) (*payload.Info_Index_StatisticsDetail, error)
 	// Represent the RPC to get the index property.
-	IndexProperty(context.Context, *payload.Empty) (*payload.Info_Index_Property, error)
-	// Represent the RPC to get the index properties for each agents.
-	IndexPropertyDetail(context.Context, *payload.Empty) (*payload.Info_Index_PropertyDetail, error)
+	IndexProperty(context.Context, *payload.Empty) (*payload.Info_Index_PropertyDetail, error)
 	mustEmbedUnimplementedIndexServer()
 }
 
@@ -178,14 +163,8 @@ func (UnimplementedIndexServer) IndexStatisticsDetail(
 
 func (UnimplementedIndexServer) IndexProperty(
 	context.Context, *payload.Empty,
-) (*payload.Info_Index_Property, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method IndexProperty not implemented")
-}
-
-func (UnimplementedIndexServer) IndexPropertyDetail(
-	context.Context, *payload.Empty,
 ) (*payload.Info_Index_PropertyDetail, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method IndexPropertyDetail not implemented")
+	return nil, status.Errorf(codes.Unimplemented, "method IndexProperty not implemented")
 }
 func (UnimplementedIndexServer) mustEmbedUnimplementedIndexServer() {}
 
@@ -300,26 +279,6 @@ func _Index_IndexProperty_Handler(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Index_IndexPropertyDetail_Handler(
-	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
-) (any, error) {
-	in := new(payload.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IndexServer).IndexPropertyDetail(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/vald.v1.Index/IndexPropertyDetail",
-	}
-	handler := func(ctx context.Context, req any) (any, error) {
-		return srv.(IndexServer).IndexPropertyDetail(ctx, req.(*payload.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Index_ServiceDesc is the grpc.ServiceDesc for Index service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -346,10 +305,6 @@ var Index_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "IndexProperty",
 			Handler:    _Index_IndexProperty_Handler,
-		},
-		{
-			MethodName: "IndexPropertyDetail",
-			Handler:    _Index_IndexPropertyDetail_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

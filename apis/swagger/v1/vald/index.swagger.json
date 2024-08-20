@@ -62,27 +62,6 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/IndexProperty"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "tags": ["Index"]
-      }
-    },
-    "/index/property/detail": {
-      "get": {
-        "summary": "Represent the RPC to get the index properties for each agents.",
-        "operationId": "Index_IndexPropertyDetail",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
               "$ref": "#/definitions/IndexPropertyDetail"
             }
           },

@@ -1633,8 +1633,7 @@ Represent the index manager service.
 | IndexDetail           | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Detail](#payload-v1-Info-Index-Detail)                     | Represent the RPC to get the index information for each agents. |
 | IndexStatistics       | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Statistics](#payload-v1-Info-Index-Statistics)             | Represent the RPC to get the index statistics.                  |
 | IndexStatisticsDetail | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.StatisticsDetail](#payload-v1-Info-Index-StatisticsDetail) | Represent the RPC to get the index statistics for each agents.  |
-| IndexProperty         | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Property](#payload-v1-Info-Index-Property)                 | Represent the RPC to get the index property.                    |
-| IndexPropertyDetail   | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.PropertyDetail](#payload-v1-Info-Index-PropertyDetail)     | Represent the RPC to get the index properties for each agents.  |
+| IndexProperty         | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.PropertyDetail](#payload-v1-Info-Index-PropertyDetail)     | Represent the RPC to get the index property.                    |
 
 <a name="v1_vald_insert-proto"></a>
 
