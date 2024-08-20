@@ -96,6 +96,8 @@ message Search {
     AggregationAlgorithm aggregation_algorithm = 9;
     // Search ratio for agent return result number.
     google.protobuf.FloatValue ratio = 10;
+    // Search nprobe.
+    uint32 nprobe = 11;
   }
 
   // AggregationAlgorithm is enum of each aggregation algorithms

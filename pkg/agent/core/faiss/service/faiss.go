@@ -57,7 +57,7 @@ type (
 		CreateIndex(ctx context.Context) error
 		SaveIndex(ctx context.Context) error
 		CreateAndSaveIndex(ctx context.Context) error
-		Search(k, nq uint32, xq []float32) (*payload.Search_Response, error)
+		Search(k, nprobe, nq uint32, xq []float32) (*payload.Search_Response, error)
 		Delete(uuid string) error
 		DeleteWithTime(uuid string, t int64) error
 		Exists(uuid string) (uint32, bool)
@@ -189,6 +189,7 @@ func New(cfg *config.Faiss, opts ...Option) (Faiss, error) {
 		core.WithNlist(cfg.Nlist),
 		core.WithM(cfg.M),
 		core.WithNbitsPerIdx(cfg.NbitsPerIdx),
+		core.WithMethodType(cfg.MethodType),
 		core.WithMetricType(cfg.MetricType),
 	)
 	if err != nil {
@@ -1122,12 +1123,17 @@ func (f *faiss) CreateAndSaveIndex(ctx context.Context) error {
 	return f.SaveIndex(ctx)
 }
 
-func (f *faiss) Search(k, nq uint32, xq []float32) (res *payload.Search_Response, err error) {
+func (f *faiss) Search(
+	k, nprobe, nq uint32, xq []float32,
+) (res *payload.Search_Response, err error) {
 	if f.IsIndexing() {
 		return nil, errors.ErrCreateIndexingIsInProgress
 	}
+	if nprobe == 0 {
+		nprobe = 1
+	}
 
-	sr, err := f.core.Search(int(k), int(nq), xq)
+	sr, err := f.core.Search(int(k), int(nprobe), int(nq), xq)
 	if err != nil {
 		if f.IsIndexing() {
 			return nil, errors.ErrCreateIndexingIsInProgress

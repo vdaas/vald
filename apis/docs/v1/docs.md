@@ -894,6 +894,7 @@ Represent search configuration.
 | min_num               | [uint32](#uint32)                                                      |       | Minimum number of result to be returned.     |
 | aggregation_algorithm | [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm) |       | Aggregation Algorithm                        |
 | ratio                 | [google.protobuf.FloatValue](#google-protobuf-FloatValue)              |       | Search ratio for agent return result number. |
+| nprobe                | [uint32](#uint32)                                                      |       | Search nprobe.                               |
 
 <a name="payload-v1-Search-IDRequest"></a>
 

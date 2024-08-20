@@ -113,6 +113,9 @@ pub mod search {
         /// Search ratio for agent return result number.
         #[prost(message, optional, tag="10")]
         pub ratio: ::core::option::Option<f32>,
+        /// Search nprobe.
+        #[prost(uint32, tag="11")]
+        pub nprobe: u32,
     }
     /// Represent a search response.
     #[allow(clippy::derive_partial_eq_without_eq)]

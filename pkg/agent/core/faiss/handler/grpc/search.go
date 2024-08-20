@@ -69,6 +69,7 @@ func (s *server) Search(
 	}
 	res, err = s.faiss.Search(
 		req.GetConfig().GetNum(),
+		req.GetConfig().GetNprobe(),
 		1,
 		req.GetVector())
 	if err == nil && res == nil {
