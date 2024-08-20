@@ -1,0 +1,6 @@
+ignore:
+  - "apis/docs/v1/docs.md"
+  - "apis/grpc/**/*.pb.go"
+  - "apis/swagger/**/*.swagger.json"
+  - "rust/libs/proto/**/*.v1.rs"
+  - "rust/libs/proto/**/*.v1.tonic.rs"
