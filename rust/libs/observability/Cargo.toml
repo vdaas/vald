@@ -24,8 +24,8 @@ edition = "2021"
 opentelemetry = { version = "0.23" }
 opentelemetry_sdk = { version = "0.23", features = ["rt-tokio"] }
 opentelemetry-otlp = { version = "0.16.0", features = ["http-proto", "reqwest-client", "logs"] }
-tokio = { version = "1.38.0", features = ["full"] }
-serde_json = { version="1.0.120" }
+tokio = { version = "1.39.3", features = ["full"] }
+serde_json = { version="1.0.125" }
 opentelemetry-semantic-conventions = { version = "0.16.0"}
 scopeguard = { version = "1.2.0"}
 paste = {version = "1.0.15"}
