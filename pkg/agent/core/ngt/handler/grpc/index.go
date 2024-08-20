@@ -240,3 +240,23 @@ func (s *server) IndexStatisticsDetail(
 		},
 	}, nil
 }
+
+func (s *server) IndexProperty(
+	ctx context.Context, _ *payload.Empty,
+) (res *payload.Info_Index_PropertyDetail, err error) {
+	_, span := trace.StartSpan(ctx, apiName+".IndexStatisticsDetail")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	prop, err := s.ngt.IndexProperty()
+	if err != nil {
+		return nil, err
+	}
+	return &payload.Info_Index_PropertyDetail{
+		Details: map[string]*payload.Info_Index_Property{
+			s.name: prop,
+		},
+	}, nil
+}
