@@ -33,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
+	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
@@ -2467,6 +2468,183 @@ func Test_server_IndexInfo(t *testing.T) {
 			gotRes, err := s.IndexInfo(ctx, test.args.in1)
 
 			if err := checkFunc(s, ctx, test.args, test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_server_IndexProperty(t *testing.T) {
+	type args struct {
+		in *payload.Empty
+	}
+	type fields struct {
+		srvOpts []Option
+		svcCfg  *config.NGT
+		svcOpts []service.Option
+	}
+	type want struct {
+		wantRes *payload.Info_Index_PropertyDetail
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Info_Index_PropertyDetail, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, gotRes *payload.Info_Index_PropertyDetail, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotRes, w.wantRes) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+		}
+		return nil
+	}
+
+	// common variables for test
+	const (
+		name = "vald-agent-ngt-1" // agent name
+		dim  = 3                  // vector dimension
+		id   = "uuid-1"           // id for getObject request
+	)
+	var (
+		// agent ip address
+		ip = net.LoadLocalIP()
+
+		// default NGT configuration for test
+		defaultSvcCfg = &config.NGT{
+			Dimension:    dim,
+			DistanceType: ngt.L2.String(),
+			ObjectType:   ngt.Float.String(),
+			KVSDB:        &config.KVSDB{},
+			VQueue:       &config.VQueue{},
+		}
+		defaultSrvOpts = []Option{
+			WithName(name),
+			WithIP(ip),
+		}
+		defaultSvcOpts = []service.Option{
+			service.WithEnableInMemoryMode(true),
+		}
+
+		emptyPayload = &payload.Empty{}
+	)
+	/*
+		- Equivalence Class Testing
+			- case 1.1: return empty NGT property
+		- Boundary Value Testing
+		- Decision Table Testing
+	*/
+	tests := []test{
+		{
+			name: "Equivalence Class Testing case 1.1: return empty NGT property",
+			args: args{
+				in: emptyPayload,
+			},
+			fields: fields{
+				srvOpts: defaultSrvOpts,
+				svcCfg:  defaultSvcCfg,
+				svcOpts: defaultSvcOpts,
+			},
+			want: want{
+				wantRes: &payload.Info_Index_PropertyDetail{
+					Details: map[string]*payload.Info_Index_Property{
+						name: {},
+					},
+				},
+			},
+			checkFunc: func(w want, gotRes *payload.Info_Index_PropertyDetail, err error) error {
+				if !errors.Is(err, w.err) {
+					return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+				}
+				if val, ok := gotRes.Details[name]; ok {
+					gotType := reflect.TypeOf(val)
+					wantType := reflect.TypeOf(&payload.Info_Index_Property{})
+					if gotType != wantType {
+						return errors.Errorf("got_type: \"%s\", want_type: \"%s\"", gotType, wantType)
+					}
+				} else {
+					return errors.Errorf("do not exists key: %s", name)
+				}
+				return nil
+			},
+			beforeFunc: func(t *testing.T, args args) {
+				t.Helper()
+			},
+			afterFunc: func(t *testing.T, args args) {
+				t.Helper()
+			},
+		},
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx:nil,
+		           in1:nil,
+		           },
+		           fields: fields {
+		           name:"",
+		           ip:"",
+		           ngt:nil,
+		           eg:nil,
+		           streamConcurrency:0,
+		           UnimplementedAgentServer:nil,
+		           UnimplementedValdServer:nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			eg, _ := errgroup.New(ctx)
+			ngt, err := service.New(test.fields.svcCfg, append(test.fields.svcOpts, service.WithErrGroup(eg))...)
+			if err != nil {
+				tt.Errorf("failed to init ngt service, error = %v", err)
+			}
+			s, err := New(
+				WithErrGroup(eg),
+				WithNGT(ngt),
+				WithIP(ip),
+				WithName(name),
+			)
+
+			gotRes, err := s.IndexProperty(ctx, test.args.in)
+			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

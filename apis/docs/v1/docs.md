@@ -25,6 +25,9 @@
   - [Info.Index.Count](#payload-v1-Info-Index-Count)
   - [Info.Index.Detail](#payload-v1-Info-Index-Detail)
   - [Info.Index.Detail.CountsEntry](#payload-v1-Info-Index-Detail-CountsEntry)
+  - [Info.Index.Property](#payload-v1-Info-Index-Property)
+  - [Info.Index.PropertyDetail](#payload-v1-Info-Index-PropertyDetail)
+  - [Info.Index.PropertyDetail.DetailsEntry](#payload-v1-Info-Index-PropertyDetail-DetailsEntry)
   - [Info.Index.Statistics](#payload-v1-Info-Index-Statistics)
   - [Info.Index.StatisticsDetail](#payload-v1-Info-Index-StatisticsDetail)
   - [Info.Index.StatisticsDetail.DetailsEntry](#payload-v1-Info-Index-StatisticsDetail-DetailsEntry)
@@ -319,6 +322,68 @@ Represent the index count for each Agents message.
 | ----- | ------------------------------------------------ | ----- | ----------- |
 | key   | [string](#string)                                |       |             |
 | value | [Info.Index.Count](#payload-v1-Info-Index-Count) |       |             |
+
+<a name="payload-v1-Info-Index-Property"></a>
+
+### Info.Index.Property
+
+Represents index Property
+
+| Field                              | Type              | Label | Description |
+| ---------------------------------- | ----------------- | ----- | ----------- |
+| dimension                          | [int32](#int32)   |       |             |
+| thread_pool_size                   | [int32](#int32)   |       |             |
+| object_type                        | [string](#string) |       |             |
+| distance_type                      | [string](#string) |       |             |
+| index_type                         | [string](#string) |       |             |
+| database_type                      | [string](#string) |       |             |
+| object_alignment                   | [string](#string) |       |             |
+| path_adjustment_interval           | [int32](#int32)   |       |             |
+| graph_shared_memory_size           | [int32](#int32)   |       |             |
+| tree_shared_memory_size            | [int32](#int32)   |       |             |
+| object_shared_memory_size          | [int32](#int32)   |       |             |
+| prefetch_offset                    | [int32](#int32)   |       |             |
+| prefetch_size                      | [int32](#int32)   |       |             |
+| accuracy_table                     | [string](#string) |       |             |
+| search_type                        | [string](#string) |       |             |
+| max_magnitude                      | [float](#float)   |       |             |
+| n_of_neighbors_for_insertion_order | [int32](#int32)   |       |             |
+| epsilon_for_insertion_order        | [float](#float)   |       |             |
+| refinement_object_type             | [string](#string) |       |             |
+| truncation_threshold               | [int32](#int32)   |       |             |
+| edge_size_for_creation             | [int32](#int32)   |       |             |
+| edge_size_for_search               | [int32](#int32)   |       |             |
+| edge_size_limit_for_creation       | [int32](#int32)   |       |             |
+| insertion_radius_coefficient       | [double](#double) |       |             |
+| seed_size                          | [int32](#int32)   |       |             |
+| seed_type                          | [string](#string) |       |             |
+| truncation_thread_pool_size        | [int32](#int32)   |       |             |
+| batch_size_for_creation            | [int32](#int32)   |       |             |
+| graph_type                         | [string](#string) |       |             |
+| dynamic_edge_size_base             | [int32](#int32)   |       |             |
+| dynamic_edge_size_rate             | [int32](#int32)   |       |             |
+| build_time_limit                   | [float](#float)   |       |             |
+| outgoing_edge                      | [int32](#int32)   |       |             |
+| incoming_edge                      | [int32](#int32)   |       |             |
+
+<a name="payload-v1-Info-Index-PropertyDetail"></a>
+
+### Info.Index.PropertyDetail
+
+Represents index Properties for each Agents
+
+| Field   | Type                                                                                         | Label    | Description |
+| ------- | -------------------------------------------------------------------------------------------- | -------- | ----------- |
+| details | [Info.Index.PropertyDetail.DetailsEntry](#payload-v1-Info-Index-PropertyDetail-DetailsEntry) | repeated |             |
+
+<a name="payload-v1-Info-Index-PropertyDetail-DetailsEntry"></a>
+
+### Info.Index.PropertyDetail.DetailsEntry
+
+| Field | Type                                                   | Label | Description |
+| ----- | ------------------------------------------------------ | ----- | ----------- |
+| key   | [string](#string)                                      |       |             |
+| value | [Info.Index.Property](#payload-v1-Info-Index-Property) |       |             |
 
 <a name="payload-v1-Info-Index-Statistics"></a>
 
@@ -1568,6 +1633,7 @@ Represent the index manager service.
 | IndexDetail           | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Detail](#payload-v1-Info-Index-Detail)                     | Represent the RPC to get the index information for each agents. |
 | IndexStatistics       | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Statistics](#payload-v1-Info-Index-Statistics)             | Represent the RPC to get the index statistics.                  |
 | IndexStatisticsDetail | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.StatisticsDetail](#payload-v1-Info-Index-StatisticsDetail) | Represent the RPC to get the index statistics for each agents.  |
+| IndexProperty         | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.PropertyDetail](#payload-v1-Info-Index-PropertyDetail)     | Represent the RPC to get the index property.                    |
 
 <a name="v1_vald_insert-proto"></a>
 
