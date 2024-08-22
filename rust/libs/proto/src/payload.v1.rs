@@ -956,6 +956,86 @@ pub mod info {
             #[prost(map="string, message", tag="1")]
             pub details: ::std::collections::HashMap<::prost::alloc::string::String, Statistics>,
         }
+        /// Represents index Property
+        #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+        pub struct Property {
+            #[prost(int32, tag="1")]
+            pub dimension: i32,
+            #[prost(int32, tag="2")]
+            pub thread_pool_size: i32,
+            #[prost(string, tag="3")]
+            pub object_type: ::prost::alloc::string::String,
+            #[prost(string, tag="4")]
+            pub distance_type: ::prost::alloc::string::String,
+            #[prost(string, tag="5")]
+            pub index_type: ::prost::alloc::string::String,
+            #[prost(string, tag="6")]
+            pub database_type: ::prost::alloc::string::String,
+            #[prost(string, tag="7")]
+            pub object_alignment: ::prost::alloc::string::String,
+            #[prost(int32, tag="8")]
+            pub path_adjustment_interval: i32,
+            #[prost(int32, tag="9")]
+            pub graph_shared_memory_size: i32,
+            #[prost(int32, tag="10")]
+            pub tree_shared_memory_size: i32,
+            #[prost(int32, tag="11")]
+            pub object_shared_memory_size: i32,
+            #[prost(int32, tag="12")]
+            pub prefetch_offset: i32,
+            #[prost(int32, tag="13")]
+            pub prefetch_size: i32,
+            #[prost(string, tag="14")]
+            pub accuracy_table: ::prost::alloc::string::String,
+            #[prost(string, tag="15")]
+            pub search_type: ::prost::alloc::string::String,
+            #[prost(float, tag="16")]
+            pub max_magnitude: f32,
+            #[prost(int32, tag="17")]
+            pub n_of_neighbors_for_insertion_order: i32,
+            #[prost(float, tag="18")]
+            pub epsilon_for_insertion_order: f32,
+            #[prost(string, tag="19")]
+            pub refinement_object_type: ::prost::alloc::string::String,
+            #[prost(int32, tag="20")]
+            pub truncation_threshold: i32,
+            #[prost(int32, tag="21")]
+            pub edge_size_for_creation: i32,
+            #[prost(int32, tag="22")]
+            pub edge_size_for_search: i32,
+            #[prost(int32, tag="23")]
+            pub edge_size_limit_for_creation: i32,
+            #[prost(double, tag="24")]
+            pub insertion_radius_coefficient: f64,
+            #[prost(int32, tag="25")]
+            pub seed_size: i32,
+            #[prost(string, tag="26")]
+            pub seed_type: ::prost::alloc::string::String,
+            #[prost(int32, tag="27")]
+            pub truncation_thread_pool_size: i32,
+            #[prost(int32, tag="28")]
+            pub batch_size_for_creation: i32,
+            #[prost(string, tag="29")]
+            pub graph_type: ::prost::alloc::string::String,
+            #[prost(int32, tag="30")]
+            pub dynamic_edge_size_base: i32,
+            #[prost(int32, tag="31")]
+            pub dynamic_edge_size_rate: i32,
+            #[prost(float, tag="32")]
+            pub build_time_limit: f32,
+            #[prost(int32, tag="33")]
+            pub outgoing_edge: i32,
+            #[prost(int32, tag="34")]
+            pub incoming_edge: i32,
+        }
+        /// Represents index Properties for each Agents
+        #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+        pub struct PropertyDetail {
+            #[prost(map="string, message", tag="1")]
+            pub details: ::std::collections::HashMap<::prost::alloc::string::String, Property>,
+        }
     }
     /// Represent the pod information message.
     #[allow(clippy::derive_partial_eq_without_eq)]

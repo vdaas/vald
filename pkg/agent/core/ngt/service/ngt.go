@@ -92,6 +92,7 @@ type NGT interface {
 	BrokenIndexCount() uint64
 	IndexStatistics() (*payload.Info_Index_Statistics, error)
 	IsStatisticsEnabled() bool
+	IndexProperty() (*payload.Info_Index_Property, error)
 	Close(ctx context.Context) error
 }
 
@@ -2042,6 +2043,49 @@ func (n *ngt) IndexStatistics() (stats *payload.Info_Index_Statistics, err error
 
 func (n *ngt) IsStatisticsEnabled() bool {
 	return n.enableStatistics
+}
+
+func (n *ngt) IndexProperty() (*payload.Info_Index_Property, error) {
+	p, err := n.core.GetProperty()
+	if err != nil {
+		return nil, err
+	}
+	return &payload.Info_Index_Property{
+		Dimension:                     p.Dimension,
+		ThreadPoolSize:                p.ThreadPoolSize,
+		ObjectType:                    p.ObjectType.String(),
+		DistanceType:                  p.DistanceType.String(),
+		IndexType:                     p.IndexType.String(),
+		DatabaseType:                  p.DatabaseType.String(),
+		ObjectAlignment:               p.ObjectAlignment.String(),
+		PathAdjustmentInterval:        p.PathAdjustmentInterval,
+		GraphSharedMemorySize:         p.GraphSharedMemorySize,
+		TreeSharedMemorySize:          p.TreeSharedMemorySize,
+		ObjectSharedMemorySize:        p.ObjectSharedMemorySize,
+		PrefetchOffset:                p.PrefetchOffset,
+		PrefetchSize:                  p.PrefetchSize,
+		AccuracyTable:                 p.AccuracyTable,
+		SearchType:                    p.SearchType,
+		MaxMagnitude:                  p.MaxMagnitude,
+		NOfNeighborsForInsertionOrder: p.NOfNeighborsForInsertionOrder,
+		EpsilonForInsertionOrder:      p.EpsilonForInsertionOrder,
+		RefinementObjectType:          p.RefinementObjectType.String(),
+		TruncationThreshold:           p.TruncationThreshold,
+		EdgeSizeForCreation:           p.EdgeSizeForCreation,
+		EdgeSizeForSearch:             p.EdgeSizeForSearch,
+		EdgeSizeLimitForCreation:      p.EdgeSizeLimitForCreation,
+		InsertionRadiusCoefficient:    p.InsertionRadiusCoefficient,
+		SeedSize:                      p.SeedSize,
+		SeedType:                      p.SeedType.String(),
+		TruncationThreadPoolSize:      p.TruncationThreadPoolSize,
+		BatchSizeForCreation:          p.BatchSizeForCreation,
+		GraphType:                     p.GraphType.String(),
+		DynamicEdgeSizeBase:           p.DynamicEdgeSizeBase,
+		DynamicEdgeSizeRate:           p.DynamicEdgeSizeRate,
+		BuildTimeLimit:                p.BuildTimeLimit,
+		OutgoingEdge:                  p.OutgoingEdge,
+		IncomingEdge:                  p.IncomingEdge,
+	}, nil
 }
 
 func (n *ngt) toSearchResponse(

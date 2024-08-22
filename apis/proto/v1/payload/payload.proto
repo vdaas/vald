@@ -590,6 +590,49 @@ message Info {
       // count infos for each agents
       map<string, Statistics> details = 1;
     }
+
+    // Represents index Property
+    message Property {
+      int32 dimension = 1;
+      int32 thread_pool_size = 2;
+      string object_type = 3;
+      string distance_type = 4;
+      string index_type = 5;
+      string database_type = 6;
+      string object_alignment = 7;
+      int32 path_adjustment_interval = 8;
+      int32 graph_shared_memory_size = 9;
+      int32 tree_shared_memory_size = 10;
+      int32 object_shared_memory_size = 11;
+      int32 prefetch_offset = 12;
+      int32 prefetch_size = 13;
+      string accuracy_table = 14;
+      string search_type = 15;
+      float max_magnitude = 16;
+      int32 n_of_neighbors_for_insertion_order = 17;
+      float epsilon_for_insertion_order = 18;
+      string refinement_object_type = 19;
+      int32 truncation_threshold = 20;
+      int32 edge_size_for_creation = 21;
+      int32 edge_size_for_search = 22;
+      int32 edge_size_limit_for_creation = 23;
+      double insertion_radius_coefficient = 24;
+      int32 seed_size = 25;
+      string seed_type = 26;
+      int32 truncation_thread_pool_size = 27;
+      int32 batch_size_for_creation = 28;
+      string graph_type = 29;
+      int32 dynamic_edge_size_base = 30;
+      int32 dynamic_edge_size_rate = 31;
+      float build_time_limit = 32;
+      int32 outgoing_edge = 33;
+      int32 incoming_edge = 34;
+    }
+
+    // Represents index Properties for each Agents
+    message PropertyDetail {
+      map<string, Property> details = 1;
+    }
   }
 
   // Represent the pod information message.

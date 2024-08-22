@@ -1633,6 +1633,79 @@ func (m *Info_Index_StatisticsDetail) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
+func (m *Info_Index_Property) CloneVT() *Info_Index_Property {
+	if m == nil {
+		return (*Info_Index_Property)(nil)
+	}
+	r := new(Info_Index_Property)
+	r.Dimension = m.Dimension
+	r.ThreadPoolSize = m.ThreadPoolSize
+	r.ObjectType = m.ObjectType
+	r.DistanceType = m.DistanceType
+	r.IndexType = m.IndexType
+	r.DatabaseType = m.DatabaseType
+	r.ObjectAlignment = m.ObjectAlignment
+	r.PathAdjustmentInterval = m.PathAdjustmentInterval
+	r.GraphSharedMemorySize = m.GraphSharedMemorySize
+	r.TreeSharedMemorySize = m.TreeSharedMemorySize
+	r.ObjectSharedMemorySize = m.ObjectSharedMemorySize
+	r.PrefetchOffset = m.PrefetchOffset
+	r.PrefetchSize = m.PrefetchSize
+	r.AccuracyTable = m.AccuracyTable
+	r.SearchType = m.SearchType
+	r.MaxMagnitude = m.MaxMagnitude
+	r.NOfNeighborsForInsertionOrder = m.NOfNeighborsForInsertionOrder
+	r.EpsilonForInsertionOrder = m.EpsilonForInsertionOrder
+	r.RefinementObjectType = m.RefinementObjectType
+	r.TruncationThreshold = m.TruncationThreshold
+	r.EdgeSizeForCreation = m.EdgeSizeForCreation
+	r.EdgeSizeForSearch = m.EdgeSizeForSearch
+	r.EdgeSizeLimitForCreation = m.EdgeSizeLimitForCreation
+	r.InsertionRadiusCoefficient = m.InsertionRadiusCoefficient
+	r.SeedSize = m.SeedSize
+	r.SeedType = m.SeedType
+	r.TruncationThreadPoolSize = m.TruncationThreadPoolSize
+	r.BatchSizeForCreation = m.BatchSizeForCreation
+	r.GraphType = m.GraphType
+	r.DynamicEdgeSizeBase = m.DynamicEdgeSizeBase
+	r.DynamicEdgeSizeRate = m.DynamicEdgeSizeRate
+	r.BuildTimeLimit = m.BuildTimeLimit
+	r.OutgoingEdge = m.OutgoingEdge
+	r.IncomingEdge = m.IncomingEdge
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Info_Index_Property) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Info_Index_PropertyDetail) CloneVT() *Info_Index_PropertyDetail {
+	if m == nil {
+		return (*Info_Index_PropertyDetail)(nil)
+	}
+	r := new(Info_Index_PropertyDetail)
+	if rhs := m.Details; rhs != nil {
+		tmpContainer := make(map[string]*Info_Index_Property, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Details = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Info_Index_PropertyDetail) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
 func (m *Info_Index) CloneVT() *Info_Index {
 	if m == nil {
 		return (*Info_Index)(nil)
@@ -4318,6 +4391,162 @@ func (this *Info_Index_StatisticsDetail) EqualVT(that *Info_Index_StatisticsDeta
 
 func (this *Info_Index_StatisticsDetail) EqualMessageVT(thatMsg proto.Message) bool {
 	that, ok := thatMsg.(*Info_Index_StatisticsDetail)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+
+func (this *Info_Index_Property) EqualVT(that *Info_Index_Property) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Dimension != that.Dimension {
+		return false
+	}
+	if this.ThreadPoolSize != that.ThreadPoolSize {
+		return false
+	}
+	if this.ObjectType != that.ObjectType {
+		return false
+	}
+	if this.DistanceType != that.DistanceType {
+		return false
+	}
+	if this.IndexType != that.IndexType {
+		return false
+	}
+	if this.DatabaseType != that.DatabaseType {
+		return false
+	}
+	if this.ObjectAlignment != that.ObjectAlignment {
+		return false
+	}
+	if this.PathAdjustmentInterval != that.PathAdjustmentInterval {
+		return false
+	}
+	if this.GraphSharedMemorySize != that.GraphSharedMemorySize {
+		return false
+	}
+	if this.TreeSharedMemorySize != that.TreeSharedMemorySize {
+		return false
+	}
+	if this.ObjectSharedMemorySize != that.ObjectSharedMemorySize {
+		return false
+	}
+	if this.PrefetchOffset != that.PrefetchOffset {
+		return false
+	}
+	if this.PrefetchSize != that.PrefetchSize {
+		return false
+	}
+	if this.AccuracyTable != that.AccuracyTable {
+		return false
+	}
+	if this.SearchType != that.SearchType {
+		return false
+	}
+	if this.MaxMagnitude != that.MaxMagnitude {
+		return false
+	}
+	if this.NOfNeighborsForInsertionOrder != that.NOfNeighborsForInsertionOrder {
+		return false
+	}
+	if this.EpsilonForInsertionOrder != that.EpsilonForInsertionOrder {
+		return false
+	}
+	if this.RefinementObjectType != that.RefinementObjectType {
+		return false
+	}
+	if this.TruncationThreshold != that.TruncationThreshold {
+		return false
+	}
+	if this.EdgeSizeForCreation != that.EdgeSizeForCreation {
+		return false
+	}
+	if this.EdgeSizeForSearch != that.EdgeSizeForSearch {
+		return false
+	}
+	if this.EdgeSizeLimitForCreation != that.EdgeSizeLimitForCreation {
+		return false
+	}
+	if this.InsertionRadiusCoefficient != that.InsertionRadiusCoefficient {
+		return false
+	}
+	if this.SeedSize != that.SeedSize {
+		return false
+	}
+	if this.SeedType != that.SeedType {
+		return false
+	}
+	if this.TruncationThreadPoolSize != that.TruncationThreadPoolSize {
+		return false
+	}
+	if this.BatchSizeForCreation != that.BatchSizeForCreation {
+		return false
+	}
+	if this.GraphType != that.GraphType {
+		return false
+	}
+	if this.DynamicEdgeSizeBase != that.DynamicEdgeSizeBase {
+		return false
+	}
+	if this.DynamicEdgeSizeRate != that.DynamicEdgeSizeRate {
+		return false
+	}
+	if this.BuildTimeLimit != that.BuildTimeLimit {
+		return false
+	}
+	if this.OutgoingEdge != that.OutgoingEdge {
+		return false
+	}
+	if this.IncomingEdge != that.IncomingEdge {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Info_Index_Property) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Info_Index_Property)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+
+func (this *Info_Index_PropertyDetail) EqualVT(that *Info_Index_PropertyDetail) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Details) != len(that.Details) {
+		return false
+	}
+	for i, vx := range this.Details {
+		vy, ok := that.Details[i]
+		if !ok {
+			return false
+		}
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Info_Index_Property{}
+			}
+			if q == nil {
+				q = &Info_Index_Property{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Info_Index_PropertyDetail) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Info_Index_PropertyDetail)
 	if !ok {
 		return false
 	}
@@ -8725,6 +8954,326 @@ func (m *Info_Index_StatisticsDetail) MarshalToSizedBufferVT(dAtA []byte) (int, 
 	return len(dAtA) - i, nil
 }
 
+func (m *Info_Index_Property) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Info_Index_Property) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *Info_Index_Property) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.IncomingEdge != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.IncomingEdge))
+		i--
+		dAtA[i] = 0x2
+		i--
+		dAtA[i] = 0x90
+	}
+	if m.OutgoingEdge != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.OutgoingEdge))
+		i--
+		dAtA[i] = 0x2
+		i--
+		dAtA[i] = 0x88
+	}
+	if m.BuildTimeLimit != 0 {
+		i -= 4
+		binary.LittleEndian.PutUint32(dAtA[i:], uint32(math.Float32bits(float32(m.BuildTimeLimit))))
+		i--
+		dAtA[i] = 0x2
+		i--
+		dAtA[i] = 0x85
+	}
+	if m.DynamicEdgeSizeRate != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.DynamicEdgeSizeRate))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xf8
+	}
+	if m.DynamicEdgeSizeBase != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.DynamicEdgeSizeBase))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xf0
+	}
+	if len(m.GraphType) > 0 {
+		i -= len(m.GraphType)
+		copy(dAtA[i:], m.GraphType)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.GraphType)))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xea
+	}
+	if m.BatchSizeForCreation != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.BatchSizeForCreation))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xe0
+	}
+	if m.TruncationThreadPoolSize != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.TruncationThreadPoolSize))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xd8
+	}
+	if len(m.SeedType) > 0 {
+		i -= len(m.SeedType)
+		copy(dAtA[i:], m.SeedType)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.SeedType)))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xd2
+	}
+	if m.SeedSize != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.SeedSize))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xc8
+	}
+	if m.InsertionRadiusCoefficient != 0 {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.InsertionRadiusCoefficient))))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xc1
+	}
+	if m.EdgeSizeLimitForCreation != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.EdgeSizeLimitForCreation))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xb8
+	}
+	if m.EdgeSizeForSearch != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.EdgeSizeForSearch))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xb0
+	}
+	if m.EdgeSizeForCreation != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.EdgeSizeForCreation))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xa8
+	}
+	if m.TruncationThreshold != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.TruncationThreshold))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xa0
+	}
+	if len(m.RefinementObjectType) > 0 {
+		i -= len(m.RefinementObjectType)
+		copy(dAtA[i:], m.RefinementObjectType)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.RefinementObjectType)))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x9a
+	}
+	if m.EpsilonForInsertionOrder != 0 {
+		i -= 4
+		binary.LittleEndian.PutUint32(dAtA[i:], uint32(math.Float32bits(float32(m.EpsilonForInsertionOrder))))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x95
+	}
+	if m.NOfNeighborsForInsertionOrder != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.NOfNeighborsForInsertionOrder))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x88
+	}
+	if m.MaxMagnitude != 0 {
+		i -= 4
+		binary.LittleEndian.PutUint32(dAtA[i:], uint32(math.Float32bits(float32(m.MaxMagnitude))))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x85
+	}
+	if len(m.SearchType) > 0 {
+		i -= len(m.SearchType)
+		copy(dAtA[i:], m.SearchType)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.SearchType)))
+		i--
+		dAtA[i] = 0x7a
+	}
+	if len(m.AccuracyTable) > 0 {
+		i -= len(m.AccuracyTable)
+		copy(dAtA[i:], m.AccuracyTable)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.AccuracyTable)))
+		i--
+		dAtA[i] = 0x72
+	}
+	if m.PrefetchSize != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.PrefetchSize))
+		i--
+		dAtA[i] = 0x68
+	}
+	if m.PrefetchOffset != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.PrefetchOffset))
+		i--
+		dAtA[i] = 0x60
+	}
+	if m.ObjectSharedMemorySize != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ObjectSharedMemorySize))
+		i--
+		dAtA[i] = 0x58
+	}
+	if m.TreeSharedMemorySize != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.TreeSharedMemorySize))
+		i--
+		dAtA[i] = 0x50
+	}
+	if m.GraphSharedMemorySize != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.GraphSharedMemorySize))
+		i--
+		dAtA[i] = 0x48
+	}
+	if m.PathAdjustmentInterval != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.PathAdjustmentInterval))
+		i--
+		dAtA[i] = 0x40
+	}
+	if len(m.ObjectAlignment) > 0 {
+		i -= len(m.ObjectAlignment)
+		copy(dAtA[i:], m.ObjectAlignment)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.ObjectAlignment)))
+		i--
+		dAtA[i] = 0x3a
+	}
+	if len(m.DatabaseType) > 0 {
+		i -= len(m.DatabaseType)
+		copy(dAtA[i:], m.DatabaseType)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.DatabaseType)))
+		i--
+		dAtA[i] = 0x32
+	}
+	if len(m.IndexType) > 0 {
+		i -= len(m.IndexType)
+		copy(dAtA[i:], m.IndexType)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.IndexType)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if len(m.DistanceType) > 0 {
+		i -= len(m.DistanceType)
+		copy(dAtA[i:], m.DistanceType)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.DistanceType)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.ObjectType) > 0 {
+		i -= len(m.ObjectType)
+		copy(dAtA[i:], m.ObjectType)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.ObjectType)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.ThreadPoolSize != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ThreadPoolSize))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.Dimension != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Dimension))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *Info_Index_PropertyDetail) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Info_Index_PropertyDetail) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *Info_Index_PropertyDetail) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.Details) > 0 {
+		for k := range m.Details {
+			v := m.Details[k]
+			baseI := i
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x12
+			i -= len(k)
+			copy(dAtA[i:], k)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(k)))
+			i--
+			dAtA[i] = 0xa
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *Info_Index) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -11077,6 +11626,151 @@ func (m *Info_Index_Statistics) SizeVT() (n int) {
 }
 
 func (m *Info_Index_StatisticsDetail) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Details) > 0 {
+		for k, v := range m.Details {
+			_ = k
+			_ = v
+			l = 0
+			if v != nil {
+				l = v.SizeVT()
+			}
+			l += 1 + protohelpers.SizeOfVarint(uint64(l))
+			mapEntrySize := 1 + len(k) + protohelpers.SizeOfVarint(uint64(len(k))) + l
+			n += mapEntrySize + 1 + protohelpers.SizeOfVarint(uint64(mapEntrySize))
+		}
+	}
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *Info_Index_Property) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Dimension != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.Dimension))
+	}
+	if m.ThreadPoolSize != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.ThreadPoolSize))
+	}
+	l = len(m.ObjectType)
+	if l > 0 {
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	l = len(m.DistanceType)
+	if l > 0 {
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	l = len(m.IndexType)
+	if l > 0 {
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	l = len(m.DatabaseType)
+	if l > 0 {
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	l = len(m.ObjectAlignment)
+	if l > 0 {
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	if m.PathAdjustmentInterval != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.PathAdjustmentInterval))
+	}
+	if m.GraphSharedMemorySize != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.GraphSharedMemorySize))
+	}
+	if m.TreeSharedMemorySize != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.TreeSharedMemorySize))
+	}
+	if m.ObjectSharedMemorySize != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.ObjectSharedMemorySize))
+	}
+	if m.PrefetchOffset != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.PrefetchOffset))
+	}
+	if m.PrefetchSize != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.PrefetchSize))
+	}
+	l = len(m.AccuracyTable)
+	if l > 0 {
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	l = len(m.SearchType)
+	if l > 0 {
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	if m.MaxMagnitude != 0 {
+		n += 6
+	}
+	if m.NOfNeighborsForInsertionOrder != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.NOfNeighborsForInsertionOrder))
+	}
+	if m.EpsilonForInsertionOrder != 0 {
+		n += 6
+	}
+	l = len(m.RefinementObjectType)
+	if l > 0 {
+		n += 2 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	if m.TruncationThreshold != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.TruncationThreshold))
+	}
+	if m.EdgeSizeForCreation != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.EdgeSizeForCreation))
+	}
+	if m.EdgeSizeForSearch != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.EdgeSizeForSearch))
+	}
+	if m.EdgeSizeLimitForCreation != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.EdgeSizeLimitForCreation))
+	}
+	if m.InsertionRadiusCoefficient != 0 {
+		n += 10
+	}
+	if m.SeedSize != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.SeedSize))
+	}
+	l = len(m.SeedType)
+	if l > 0 {
+		n += 2 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	if m.TruncationThreadPoolSize != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.TruncationThreadPoolSize))
+	}
+	if m.BatchSizeForCreation != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.BatchSizeForCreation))
+	}
+	l = len(m.GraphType)
+	if l > 0 {
+		n += 2 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	if m.DynamicEdgeSizeBase != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.DynamicEdgeSizeBase))
+	}
+	if m.DynamicEdgeSizeRate != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.DynamicEdgeSizeRate))
+	}
+	if m.BuildTimeLimit != 0 {
+		n += 6
+	}
+	if m.OutgoingEdge != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.OutgoingEdge))
+	}
+	if m.IncomingEdge != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.IncomingEdge))
+	}
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *Info_Index_PropertyDetail) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -19671,6 +20365,983 @@ func (m *Info_Index_StatisticsDetail) UnmarshalVT(dAtA []byte) error {
 						return io.ErrUnexpectedEOF
 					}
 					mapvalue = &Info_Index_Statistics{}
+					if err := mapvalue.UnmarshalVT(dAtA[iNdEx:postmsgIndex]); err != nil {
+						return err
+					}
+					iNdEx = postmsgIndex
+				} else {
+					iNdEx = entryPreIndex
+					skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+					if err != nil {
+						return err
+					}
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					if (iNdEx + skippy) > postIndex {
+						return io.ErrUnexpectedEOF
+					}
+					iNdEx += skippy
+				}
+			}
+			m.Details[mapkey] = mapvalue
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *Info_Index_Property) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Info_Index_Property: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Info_Index_Property: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Dimension", wireType)
+			}
+			m.Dimension = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Dimension |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ThreadPoolSize", wireType)
+			}
+			m.ThreadPoolSize = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ThreadPoolSize |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ObjectType", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ObjectType = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DistanceType", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.DistanceType = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IndexType", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.IndexType = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DatabaseType", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.DatabaseType = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ObjectAlignment", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ObjectAlignment = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 8:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PathAdjustmentInterval", wireType)
+			}
+			m.PathAdjustmentInterval = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.PathAdjustmentInterval |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 9:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field GraphSharedMemorySize", wireType)
+			}
+			m.GraphSharedMemorySize = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.GraphSharedMemorySize |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 10:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TreeSharedMemorySize", wireType)
+			}
+			m.TreeSharedMemorySize = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TreeSharedMemorySize |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 11:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ObjectSharedMemorySize", wireType)
+			}
+			m.ObjectSharedMemorySize = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ObjectSharedMemorySize |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 12:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PrefetchOffset", wireType)
+			}
+			m.PrefetchOffset = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.PrefetchOffset |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 13:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PrefetchSize", wireType)
+			}
+			m.PrefetchSize = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.PrefetchSize |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 14:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AccuracyTable", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AccuracyTable = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 15:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SearchType", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.SearchType = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 16:
+			if wireType != 5 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxMagnitude", wireType)
+			}
+			var v uint32
+			if (iNdEx + 4) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+			iNdEx += 4
+			m.MaxMagnitude = float32(math.Float32frombits(v))
+		case 17:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NOfNeighborsForInsertionOrder", wireType)
+			}
+			m.NOfNeighborsForInsertionOrder = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NOfNeighborsForInsertionOrder |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 18:
+			if wireType != 5 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EpsilonForInsertionOrder", wireType)
+			}
+			var v uint32
+			if (iNdEx + 4) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+			iNdEx += 4
+			m.EpsilonForInsertionOrder = float32(math.Float32frombits(v))
+		case 19:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RefinementObjectType", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RefinementObjectType = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 20:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TruncationThreshold", wireType)
+			}
+			m.TruncationThreshold = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TruncationThreshold |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 21:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EdgeSizeForCreation", wireType)
+			}
+			m.EdgeSizeForCreation = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.EdgeSizeForCreation |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 22:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EdgeSizeForSearch", wireType)
+			}
+			m.EdgeSizeForSearch = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.EdgeSizeForSearch |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 23:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EdgeSizeLimitForCreation", wireType)
+			}
+			m.EdgeSizeLimitForCreation = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.EdgeSizeLimitForCreation |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 24:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field InsertionRadiusCoefficient", wireType)
+			}
+			var v uint64
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+			m.InsertionRadiusCoefficient = float64(math.Float64frombits(v))
+		case 25:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SeedSize", wireType)
+			}
+			m.SeedSize = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.SeedSize |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 26:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SeedType", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.SeedType = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 27:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TruncationThreadPoolSize", wireType)
+			}
+			m.TruncationThreadPoolSize = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TruncationThreadPoolSize |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 28:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BatchSizeForCreation", wireType)
+			}
+			m.BatchSizeForCreation = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BatchSizeForCreation |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 29:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field GraphType", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.GraphType = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 30:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DynamicEdgeSizeBase", wireType)
+			}
+			m.DynamicEdgeSizeBase = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.DynamicEdgeSizeBase |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 31:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DynamicEdgeSizeRate", wireType)
+			}
+			m.DynamicEdgeSizeRate = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.DynamicEdgeSizeRate |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 32:
+			if wireType != 5 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BuildTimeLimit", wireType)
+			}
+			var v uint32
+			if (iNdEx + 4) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+			iNdEx += 4
+			m.BuildTimeLimit = float32(math.Float32frombits(v))
+		case 33:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OutgoingEdge", wireType)
+			}
+			m.OutgoingEdge = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.OutgoingEdge |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 34:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IncomingEdge", wireType)
+			}
+			m.IncomingEdge = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.IncomingEdge |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *Info_Index_PropertyDetail) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Info_Index_PropertyDetail: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Info_Index_PropertyDetail: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Details", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Details == nil {
+				m.Details = make(map[string]*Info_Index_Property)
+			}
+			var mapkey string
+			var mapvalue *Info_Index_Property
+			for iNdEx < postIndex {
+				entryPreIndex := iNdEx
+				var wire uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protohelpers.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					wire |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				fieldNum := int32(wire >> 3)
+				if fieldNum == 1 {
+					var stringLenmapkey uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protohelpers.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapkey |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapkey := int(stringLenmapkey)
+					if intStringLenmapkey < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					postStringIndexmapkey := iNdEx + intStringLenmapkey
+					if postStringIndexmapkey < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					if postStringIndexmapkey > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
+					iNdEx = postStringIndexmapkey
+				} else if fieldNum == 2 {
+					var mapmsglen int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protohelpers.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						mapmsglen |= int(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					if mapmsglen < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					postmsgIndex := iNdEx + mapmsglen
+					if postmsgIndex < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					if postmsgIndex > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapvalue = &Info_Index_Property{}
 					if err := mapvalue.UnmarshalVT(dAtA[iNdEx:postmsgIndex]); err != nil {
 						return err
 					}
