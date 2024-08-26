@@ -13,14 +13,80 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-use std::{collections::HashMap, string::String};
-
-use algorithm::Error;
 use anyhow::Result;
+use std::{collections::HashMap, error, fmt};
+
 use proto::{payload::v1::search, vald::v1::search_server};
-use prost::Message;
 use tonic::{Code, Status};
 use tonic_types::{ErrorDetails, FieldViolation, StatusExt};
+
+#[derive(Debug, Clone)]
+pub struct CreateIndexingIsInProgress {}
+#[derive(Debug, Clone)]
+pub struct FlushingIsInProgress {}
+#[derive(Debug, Clone)]
+pub struct EmptySearchResult {}
+#[derive(Debug, Clone)]
+pub struct IncompatibleDimensionSize {
+    got: usize,
+    want: usize,
+}
+
+impl fmt::Display for CreateIndexingIsInProgress {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "create indexing is in progress")
+    }
+}
+
+impl error::Error for CreateIndexingIsInProgress {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        None
+    }
+}
+
+impl fmt::Display for FlushingIsInProgress {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "flush is in progress")
+    }
+}
+
+impl error::Error for FlushingIsInProgress {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        None
+    }
+}
+
+impl fmt::Display for EmptySearchResult {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "search result is empty")
+    }
+}
+
+impl error::Error for EmptySearchResult {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        None
+    }
+}
+impl IncompatibleDimensionSize {
+    pub fn new(got: usize, want: usize) -> IncompatibleDimensionSize {
+        IncompatibleDimensionSize {
+            got: got,
+            want: want,
+        }
+    }
+}
+
+impl fmt::Display for IncompatibleDimensionSize {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "incompatible dimension size detected\trequested: {},\tconfigured: {}", self.got, self.want)
+    }
+}
+
+impl error::Error for IncompatibleDimensionSize {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        None
+    }
+}
 
 #[tonic::async_trait]
 impl search_server::Search for super::Agent {
@@ -29,54 +95,52 @@ impl search_server::Search for super::Agent {
         request: tonic::Request<search::Request>,
     ) -> Result<tonic::Response<search::Response>, Status> {
         let req = request.get_ref();
-        let config = req.config.clone().unwrap();
-        let hostname = cargo::util::hostname()?;
-        let domain = hostname.to_str().unwrap();
+        let config = req.config.unwrap();
+        let domain = cargo::util::hostname().unwrap_or("".into()).to_str().unwrap_or("");
         if req.vector.len() != self.s.get_dimension_size() {
-            let err = Error::IncompatibleDimensionSize{ got: req.vector.len(), want: self.s.get_dimension_size()};
+            let err = IncompatibleDimensionSize::new(req.vector.len(), self.s.get_dimension_size());
+            let msg = err.to_string();
             let mut err_details = ErrorDetails::new();
-            err_details.set_error_info(err.to_string(), domain, HashMap::new());
-            let serving_data = "";
-            err_details.set_request_info(config.request_id, serving_data.to_string());
-            err_details.set_bad_request(vec![FieldViolation::new("vector dimension size", err.to_string())]);
-            err_details.set_resource_info(self.resource_type.clone() + "/ngt.Search", "", "", "");
+            err_details.set_error_info(msg, domain, HashMap::new());
+            err_details.set_request_info(config.request_id, req.into());
+            err_details.set_bad_request(vec![FieldViolation::new("vector dimension size", msg)]);
+            err_details.set_resource_info(self.resource_type + "/ngt.Search", "", "", "");
             let status = Status::with_error_details(Code::InvalidArgument, "Search API Incombatible Dimension Size detedted", err_details);
             return Err(status);
         }
 
-        let result = self.s.search(req.vector.clone(), config.num, config.epsilon, config.radius);
+        let result = self.s.search(req.vector, config.num, config.epsilon, config.radius);
         match result {
             Err(err) => {
                 let metadata = HashMap::new();
-                let resource_type = self.resource_type.clone() + "/ngt.Search";
+                let resource_type = self.resource_type + "/ngt.Search";
                 let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
                 let status = match err {
-                    Error::CreateIndexingIsInProgress{} => {
+                    CreateIndexingIsInProgress => {
                         let mut err_details = ErrorDetails::new();
                         err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(config.request_id, String::from_utf8(req.encode_to_vec()).unwrap());
+                        err_details.set_request_info(config.request_id, req.into());
                         err_details.set_resource_info(resource_type, resource_name, "", "");
                         Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to creating indices is in progress", err_details)
                     }
-                    Error::FlushingIsInProgress{} => {
+                    FlushingIsInProgress => {
                         let mut err_details = ErrorDetails::new();
                         err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(config.request_id, String::from_utf8(req.encode_to_vec()).unwrap());
+                        err_details.set_request_info(config.request_id, req.into());
                         err_details.set_resource_info(resource_type, resource_name, "", "");
                         Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to flushing indices is in progress", err_details)
                     }
-                    Error::EmptySearchResult{} => {
-                        let request_id = config.request_id;
+                    EmptySearchResult => {
                         let mut err_details = ErrorDetails::new();
                         err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(&request_id, String::from_utf8(req.encode_to_vec()).unwrap());
+                        err_details.set_request_info(config.request_id, req.into());
                         err_details.set_resource_info(resource_type, resource_name, "", "");
-                        Status::with_error_details(Code::NotFound, format!("Search API requestID {}'s search result not found", &request_id), err_details)
+                        Status::with_error_details(Code::NotFound, format!("Search API requestID {}'s search result not found", config.request_id), err_details)
                     }
-                    Error::IncompatibleDimensionSize{ got: _, want: _ } => {
+                    IncompatibleDimensionSize => {
                         let mut err_details = ErrorDetails::new();
                         err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(config.request_id, String::from_utf8(req.encode_to_vec()).unwrap());
+                        err_details.set_request_info(config.request_id, req.into());
                         err_details.set_resource_info(resource_type, resource_name, "", "");
                         err_details.set_bad_request(vec![FieldViolation::new("vector dimension size", err.to_string())]);
                         Status::with_error_details(Code::InvalidArgument, "Search API Incompatible Dimension Size detected", err_details)
@@ -84,7 +148,7 @@ impl search_server::Search for super::Agent {
                     _ => {
                         let mut err_details = ErrorDetails::new();
                         err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(config.request_id, String::from_utf8(req.encode_to_vec()).unwrap());
+                        err_details.set_request_info(config.request_id, req.into());
                         err_details.set_resource_info(resource_type, resource_name, "", "");
                         Status::with_error_details(Code::Internal, "Search API failed to process search request", err_details)
                     }

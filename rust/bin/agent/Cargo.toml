@@ -29,5 +29,5 @@ prost-types = "0.13.1"
 proto = { version = "0.1.0", path = "../../libs/proto" }
 tokio = { version = "1.39.3", features = ["full"] }
 tokio-stream = { version = "0.1.15", features = ["full"] }
-tonic = "0.12.2"
-tonic-types = "0.12.2"
+tonic = "0.12.1"
+tonic-types = "0.12.1"
