@@ -21,9 +21,8 @@ pub mod search;
 pub mod update;
 pub mod upsert;
 
-#[derive(Debug)]
 pub struct Agent {
-    s: &dyn algorithm::ANN,
+    s: Box<dyn algorithm::ANN>,
     name: String,
     ip: String,
     resource_type: String,
@@ -31,9 +30,9 @@ pub struct Agent {
 }
 
 impl Agent {
-    pub fn new(s: impl algorithm::ANN, name: &str, ip: &str, resource_type: &str, api_name: &str) -> Agent {
-        Agent {
-            s: s,
+    pub fn new(s: impl algorithm::ANN + 'static, name: &str, ip: &str, resource_type: &str, api_name: &str) -> Self {
+        Self {
+            s: Box::new(s),
             name: name.to_string(),
             ip: ip.to_string(),
             resource_type: resource_type.to_string(),
