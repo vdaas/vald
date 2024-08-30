@@ -18,7 +18,13 @@ name = "ngt"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-ngt-rs = { version = "0.1.0", path = "../ngt-rs" }
+anyhow = "1.0.86"
+cxx = { version = "1.0.126", features = ["c++20"] }
+
+[build-dependencies]
+cxx-build = "1.0.126"
+miette = { version = "7.2.0", features = ["fancy"] }
+
+[dev-dependencies]
+rand = "0.8.5"

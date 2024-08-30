@@ -14,17 +14,8 @@
 # limitations under the License.
 #
 [package]
-name = "ngt-rs"
+name = "faiss"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0.81"
-cxx = { version = "1.0.117", features = ["c++20"] }
-
-[build-dependencies]
-cxx-build = "1.0.117"
-miette = { version = "7.1.0", features = ["fancy"] }
-
-[dev-dependencies]
-rand = "0.8.5"
