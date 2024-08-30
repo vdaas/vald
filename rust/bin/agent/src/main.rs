@@ -14,28 +14,31 @@
 // limitations under the License.
 //
 
+use algorithm::Error;
 use anyhow::Result;
 use proto::payload::v1::search;
 
 mod handler;
 
 #[derive(Debug)]
-struct MockService {}
+struct MockService {
+    dim: usize
+}
 
 impl algorithm::ANN for MockService {
     fn get_dimension_size(&self) -> usize {
-        42
+        self.dim
     }
 
-    fn search(&self, vector: Vec<f32>, dim: usize, epsilon: f64, radius: f64) -> Result<tonic::Response<search::Response>> {
-        Err(handler::search::IncompatibleDimensionSize::new(dim, 42))
+    fn search(&self, _vector: Vec<f32>, dim: u32, _epsilon: f32, _radius: f32) -> Result<tonic::Response<search::Response>, Error> {
+        Err(Error::IncompatibleDimensionSize{got: dim as usize, want: self.dim}.into())
     }
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "[::1]:8081".parse()?;
-    let service = MockService{};
+    let addr = "0.0.0.0:8081".parse()?;
+    let service = MockService{ dim: 42 };
     let agent = handler::Agent::new(service, "agent-ngt", "127.0.0.1", "vald/internal/core/algorithm", "vald-agent");
 
     tonic::transport::Server::builder()

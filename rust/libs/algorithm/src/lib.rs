@@ -13,10 +13,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+use std::{error, fmt};
+
 use anyhow::Result;
 use proto::payload::v1::search;
 
+#[derive(Debug)]
+pub enum Error {
+    CreateIndexingIsInProgress{},
+    FlushingIsInProgress{},
+    EmptySearchResult{},
+    IncompatibleDimensionSize{got: usize, want: usize},
+
+    Unknown{},
+}
+
+impl error::Error for Error {}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::CreateIndexingIsInProgress{} => write!(f, "create indexing is in progress"),
+            Error::FlushingIsInProgress{} => write!(f, "flush is in progress"),
+            Error::EmptySearchResult{} => write!(f, "search result is empty"),
+            Error::IncompatibleDimensionSize { got, want } => write!(f, "incompatible dimension size detected\trequested: {},\tconfigured: {}", got, want),
+            Error::Unknown {  } => write!(f, "unknown error")
+        }
+    }
+}
+
 pub trait ANN: Send + Sync {
     fn get_dimension_size(&self) -> usize;
-    fn search(&self, vector: Vec<f32>, dim: usize, epsilon: f64, radius: f64) -> Result<tonic::Response<search::Response>>;
+    fn search(&self, vector: Vec<f32>, dim: u32, epsilon: f32, radius: f32) -> Result<tonic::Response<search::Response>, Error>;
 }
