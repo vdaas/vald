@@ -16,7 +16,7 @@
 
 <!--- Please change the versions below along with your environment -->
 - Vald Version: v1.7.13
-- Go Version: v1.22.6
+- Go Version: v1.23.0
 - Rust Version: v1.80.0
 - Docker Version: v27.1.1
 - Kubernetes Version: v1.30.3
