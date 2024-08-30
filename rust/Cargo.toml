@@ -14,4 +14,15 @@
 # limitations under the License.
 #
 [workspace]
+<<<<<<< HEAD
 members = ["libs/proto", "libs/ngt", "libs/ngt-rs", "bin/agent"]
+=======
+members = [
+	"libs/observability",
+	"libs/proto",
+	"bin/agent",
+	"libs/algorithm",
+	"libs/algorithms/ngt",
+	"libs/algorithms/faiss",
+]
+>>>>>>> b17cc73a0 (modify rust package structure (#2586))

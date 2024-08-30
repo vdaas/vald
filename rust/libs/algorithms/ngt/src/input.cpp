@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 #include <vector>
-#include "ngt-rs/src/input.h"
-#include "ngt-rs/src/lib.rs.h"
+#include "ngt/src/input.h"
+#include "ngt/src/lib.rs.h"
 
 Property::Property(): p() {}
 

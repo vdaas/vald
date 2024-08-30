@@ -14,14 +14,8 @@
 # limitations under the License.
 #
 [package]
-name = "proto"
+name = "faiss"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-futures-core = "0.3.30"
-prost = "0.13.1"
-tonic = "0.12.1"
-tonic-types = "0.12.1"
