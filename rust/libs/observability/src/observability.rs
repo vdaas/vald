@@ -27,6 +27,9 @@ use crate::config::Config;
 pub const SERVICE_NAME: &str = opentelemetry_semantic_conventions::resource::SERVICE_NAME;
 
 pub trait Observability {
+    fn new(cfg: Config) -> Result<Self, anyhow::Error>
+    where
+        Self: Sized;
     fn shutdown(&mut self) -> Result<()>;
 }
 
@@ -37,7 +40,13 @@ pub struct ObservabilityImpl {
 }
 
 impl ObservabilityImpl {
-    pub fn new(cfg: Config) -> Result<ObservabilityImpl, anyhow::Error> {
+    fn config(&self) -> &Config {
+        &self.config
+    }
+}
+
+impl Observability for ObservabilityImpl {
+    fn new(cfg: Config) -> Result<Self, anyhow::Error> {
         let mut obj = ObservabilityImpl {
             config: cfg,
             meter_provider: None,
@@ -93,12 +102,6 @@ impl ObservabilityImpl {
         Ok(obj)
     }
 
-    fn config(&self) -> &Config {
-        &self.config
-    }
-}
-
-impl Observability for ObservabilityImpl {
     fn shutdown(&mut self) -> Result<()> {
         if !self.config.enabled {
             return Ok(());
@@ -121,4 +124,22 @@ impl Observability for ObservabilityImpl {
         }
         Ok(())
     }
+}
+
+#[cfg(test)]
+mod tset {
+    use crate::config::Config;
+
+    use super::Observability;
+    use crate::observability::ObservabilityImpl;
+
+    #[test]
+    fn exec_testc() {
+        let cfg = Config::new();
+        let obj: ObservabilityImpl = Observability::new(cfg.clone()).unwrap();
+
+        hoge(ObservabilityImpl::new(cfg).unwrap());
+    }
+
+    fn hoge(s: impl Observability) {}
 }

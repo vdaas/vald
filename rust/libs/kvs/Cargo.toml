@@ -1,0 +1,8 @@
+[package]
+name = "kvs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.86"
+kv = "0.24.0"
