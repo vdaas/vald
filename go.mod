@@ -354,7 +354,7 @@ require (
 	code.cloudfoundry.org/bytefmt v0.0.0-20190710193110-1eb035ffe2b6
 	github.com/akrylysov/pogreb v0.0.0-00010101000000-000000000000
 	github.com/aws/aws-sdk-go v1.55.5
-	github.com/felixge/fgprof v0.9.4
+	github.com/felixge/fgprof v0.9.5
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/go-redis/redis/v8 v8.0.0-00010101000000-000000000000
 	github.com/go-sql-driver/mysql v1.8.1
