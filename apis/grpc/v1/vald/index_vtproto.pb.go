@@ -50,6 +50,8 @@ type IndexClient interface {
 	IndexStatistics(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Statistics, error)
 	// Represent the RPC to get the index statistics for each agents.
 	IndexStatisticsDetail(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_StatisticsDetail, error)
+	// Represent the RPC to get the index property.
+	IndexProperty(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_PropertyDetail, error)
 }
 
 type indexClient struct {
@@ -104,6 +106,17 @@ func (c *indexClient) IndexStatisticsDetail(
 	return out, nil
 }
 
+func (c *indexClient) IndexProperty(
+	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
+) (*payload.Info_Index_PropertyDetail, error) {
+	out := new(payload.Info_Index_PropertyDetail)
+	err := c.cc.Invoke(ctx, "/vald.v1.Index/IndexProperty", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // IndexServer is the server API for Index service.
 // All implementations must embed UnimplementedIndexServer
 // for forward compatibility
@@ -116,6 +129,8 @@ type IndexServer interface {
 	IndexStatistics(context.Context, *payload.Empty) (*payload.Info_Index_Statistics, error)
 	// Represent the RPC to get the index statistics for each agents.
 	IndexStatisticsDetail(context.Context, *payload.Empty) (*payload.Info_Index_StatisticsDetail, error)
+	// Represent the RPC to get the index property.
+	IndexProperty(context.Context, *payload.Empty) (*payload.Info_Index_PropertyDetail, error)
 	mustEmbedUnimplementedIndexServer()
 }
 
@@ -144,6 +159,12 @@ func (UnimplementedIndexServer) IndexStatisticsDetail(
 	context.Context, *payload.Empty,
 ) (*payload.Info_Index_StatisticsDetail, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IndexStatisticsDetail not implemented")
+}
+
+func (UnimplementedIndexServer) IndexProperty(
+	context.Context, *payload.Empty,
+) (*payload.Info_Index_PropertyDetail, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IndexProperty not implemented")
 }
 func (UnimplementedIndexServer) mustEmbedUnimplementedIndexServer() {}
 
@@ -238,6 +259,26 @@ func _Index_IndexStatisticsDetail_Handler(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Index_IndexProperty_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
+	in := new(payload.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IndexServer).IndexProperty(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/vald.v1.Index/IndexProperty",
+	}
+	handler := func(ctx context.Context, req any) (any, error) {
+		return srv.(IndexServer).IndexProperty(ctx, req.(*payload.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Index_ServiceDesc is the grpc.ServiceDesc for Index service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -260,6 +301,10 @@ var Index_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "IndexStatisticsDetail",
 			Handler:    _Index_IndexStatisticsDetail_Handler,
+		},
+		{
+			MethodName: "IndexProperty",
+			Handler:    _Index_IndexProperty_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

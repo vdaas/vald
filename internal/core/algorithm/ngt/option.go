@@ -109,7 +109,7 @@ func WithDimension(size int) Option {
 
 // WithDistanceTypeByString represents the option to set the distance type for NGT.
 func WithDistanceTypeByString(dt string) Option {
-	var d distanceType
+	d := DistanceNone
 	switch strings.NewReplacer("-", "", "_", "", " ", "").Replace(strings.ToLower(dt)) {
 	case "l1":
 		d = L1
