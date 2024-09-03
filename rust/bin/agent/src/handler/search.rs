@@ -28,7 +28,6 @@ impl search_server::Search for super::Agent {
         &self,
         request: tonic::Request<search::Request>,
     ) -> Result<tonic::Response<search::Response>, Status> {
-        println!("Recieved a request from {:?}", request.remote_addr());
         let req = request.get_ref();
         let config = req.config.clone().unwrap();
         let hostname = cargo::util::hostname()?;
@@ -37,7 +36,8 @@ impl search_server::Search for super::Agent {
             let err = Error::IncompatibleDimensionSize{ got: req.vector.len(), want: self.s.get_dimension_size()};
             let mut err_details = ErrorDetails::new();
             err_details.set_error_info(err.to_string(), domain, HashMap::new());
-            err_details.set_request_info(config.request_id, String::from_utf8(req.encode_to_vec()).unwrap());
+            let serving_data = "";
+            err_details.set_request_info(config.request_id, serving_data.to_string());
             err_details.set_bad_request(vec![FieldViolation::new("vector dimension size", err.to_string())]);
             err_details.set_resource_info(self.resource_type.clone() + "/ngt.Search", "", "", "");
             let status = Status::with_error_details(Code::InvalidArgument, "Search API Incombatible Dimension Size detedted", err_details);

@@ -13,10 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+use std::{thread::sleep, time::Duration};
 
 use algorithm::Error;
 use anyhow::Result;
-use proto::payload::v1::search;
+use proto::{payload::v1::search, vald::v1::{search_client::SearchClient, search_server::SearchServer}};
+use tonic::transport::Server;
 
 mod handler;
 
@@ -37,14 +39,28 @@ impl algorithm::ANN for MockService {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "0.0.0.0:8081".parse()?;
+    let addr = "[::1]:8081".parse().unwrap();
+
     let service = MockService{ dim: 42 };
     let agent = handler::Agent::new(service, "agent-ngt", "127.0.0.1", "vald/internal/core/algorithm", "vald-agent");
 
-    tonic::transport::Server::builder()
-        .add_service(proto::core::v1::agent_server::AgentServer::new(agent))
-        .serve(addr)
-        .await?;
+    tokio::spawn(async move {
+        Server::builder()
+            .add_service(SearchServer::new(agent))
+            .serve(addr)
+            .await
+    });
+
+    sleep(Duration::from_secs(3));
+    
+    let mut client = SearchClient::connect("http://[::1]:8081").await?;
+
+    let cfg = search::Config::default();
+    let request = tonic::Request::new(search::Request { vector: vec![0.0], config: Some(cfg) });
+
+    let response = client.search(request).await?;
+
+    println!("RESPONSE={:?}", response);
 
     Ok(())
 }
