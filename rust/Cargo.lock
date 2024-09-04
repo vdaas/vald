@@ -405,10 +405,6 @@ dependencies = [
  "futures-core",
  "futures-sink",
  "futures-util",
-<<<<<<< HEAD
- "http",
- "indexmap 2.3.0",
-=======
  "http 0.2.12",
  "indexmap 2.4.0",
  "slab",
@@ -430,7 +426,6 @@ dependencies = [
  "futures-sink",
  "http 1.1.0",
  "indexmap 2.4.0",
->>>>>>> b17cc73a0 (modify rust package structure (#2586))
  "slab",
  "tokio",
  "tokio-util",
@@ -581,8 +576,6 @@ dependencies = [
 ]
 
 [[package]]
-<<<<<<< HEAD
-=======
 name = "hyper-timeout"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -626,7 +619,6 @@ dependencies = [
 ]
 
 [[package]]
->>>>>>> b17cc73a0 (modify rust package structure (#2586))
 name = "indexmap"
 version = "1.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -804,8 +796,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
 
 [[package]]
-<<<<<<< HEAD
-=======
 name = "opentelemetry"
 version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -903,7 +893,6 @@ dependencies = [
 ]
 
 [[package]]
->>>>>>> b17cc73a0 (modify rust package structure (#2586))
 name = "owo-colors"
 version = "4.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1102,8 +1091,6 @@ dependencies = [
 ]
 
 [[package]]
-<<<<<<< HEAD
-=======
 name = "reqwest"
 version = "0.11.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1140,7 +1127,6 @@ dependencies = [
 ]
 
 [[package]]
->>>>>>> b17cc73a0 (modify rust package structure (#2586))
 name = "rustc-demangle"
 version = "0.1.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1276,8 +1262,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2047c6ded9c721764247e62cd3b03c09ffc529b2ba5b10ec482ae507a4a70160"
 
 [[package]]
-<<<<<<< HEAD
-=======
 name = "sync_wrapper"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1305,7 +1289,6 @@ dependencies = [
 ]
 
 [[package]]
->>>>>>> b17cc73a0 (modify rust package structure (#2586))
 name = "termcolor"
 version = "1.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
