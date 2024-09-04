@@ -1,6 +1,6 @@
 module github.com/vdaas/vald/example/client
 
-go 1.22.6
+go 1.23.0
 
 replace (
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v1.1.0
@@ -11,9 +11,9 @@ replace (
 	golang.org/x/crypto => golang.org/x/crypto v0.26.0
 	golang.org/x/net => golang.org/x/net v0.28.0
 	golang.org/x/text => golang.org/x/text v0.17.0
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20240805194559-2c9e96a0b5d4
-	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20240805194559-2c9e96a0b5d4
-	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20240805194559-2c9e96a0b5d4
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20240814211410-ddb44dafa142
+	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20240814211410-ddb44dafa142
+	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142
 	google.golang.org/grpc => google.golang.org/grpc v1.65.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.34.2
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
