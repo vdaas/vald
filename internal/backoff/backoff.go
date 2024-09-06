@@ -121,7 +121,7 @@ func (b *backoff) Do(
 
 	dctx, cancel := context.WithDeadline(sctx, time.Now().Add(b.backoffTimeLimit))
 	defer cancel()
-	for cnt := 0; cnt < b.maxRetryCount; cnt++ {
+	for cnt := 1; cnt <= b.maxRetryCount; cnt++ {
 		select {
 		case <-dctx.Done():
 			switch dctx.Err() {
