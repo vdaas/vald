@@ -23,12 +23,11 @@
 package vald
 
 import (
-	reflect "reflect"
-
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	reflect "reflect"
 )
 
 const (
@@ -154,7 +153,6 @@ var file_v1_vald_filter_proto_goTypes = []any{
 	(*payload.Object_StreamLocation)(nil),     // 12: payload.v1.Object.StreamLocation
 	(*payload.Object_Locations)(nil),          // 13: payload.v1.Object.Locations
 }
-
 var file_v1_vald_filter_proto_depIdxs = []int32{
 	0,  // 0: vald.v1.Filter.SearchObject:input_type -> payload.v1.Search.ObjectRequest
 	1,  // 1: vald.v1.Filter.MultiSearchObject:input_type -> payload.v1.Search.MultiObjectRequest

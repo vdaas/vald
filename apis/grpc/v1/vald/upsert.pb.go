@@ -23,12 +23,11 @@
 package vald
 
 import (
-	reflect "reflect"
-
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	reflect "reflect"
 )
 
 const (
@@ -80,7 +79,6 @@ var file_v1_vald_upsert_proto_goTypes = []any{
 	(*payload.Object_StreamLocation)(nil), // 3: payload.v1.Object.StreamLocation
 	(*payload.Object_Locations)(nil),      // 4: payload.v1.Object.Locations
 }
-
 var file_v1_vald_upsert_proto_depIdxs = []int32{
 	0, // 0: vald.v1.Upsert.Upsert:input_type -> payload.v1.Upsert.Request
 	0, // 1: vald.v1.Upsert.StreamUpsert:input_type -> payload.v1.Upsert.Request

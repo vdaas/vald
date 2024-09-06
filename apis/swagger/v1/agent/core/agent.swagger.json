@@ -9,8 +9,12 @@
       "name": "Agent"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/index/create/{poolSize}": {
       "get": {
@@ -40,7 +44,9 @@
             "format": "int64"
           }
         ],
-        "tags": ["Agent"]
+        "tags": [
+          "Agent"
+        ]
       }
     },
     "/index/createandsave/{poolSize}": {
@@ -71,7 +77,9 @@
             "format": "int64"
           }
         ],
-        "tags": ["Agent"]
+        "tags": [
+          "Agent"
+        ]
       }
     },
     "/index/save": {
@@ -92,7 +100,9 @@
             }
           }
         },
-        "tags": ["Agent"]
+        "tags": [
+          "Agent"
+        ]
       }
     }
   },
