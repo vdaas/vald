@@ -121,7 +121,7 @@ func (b *backoff) Do(
 
 	dctx, cancel := context.WithDeadline(sctx, time.Now().Add(b.backoffTimeLimit))
 	defer cancel()
-	for cnt := 1; cnt <= b.maxRetryCount; cnt++ {
+	for cnt := 0; cnt < b.maxRetryCount; cnt++ {
 		select {
 		case <-dctx.Done():
 			switch dctx.Err() {
@@ -185,21 +185,19 @@ func (b *backoff) Do(
 				} else {
 					dur *= b.backoffFactor
 					jdur = b.addJitter(dur)
-					if cnt >= b.maxRetryCount {
-						select {
-						case <-dctx.Done():
-							switch dctx.Err() {
-							case context.DeadlineExceeded:
-								log.Debugf("[backoff]\tfor: "+name+",\tDeadline Exceeded\terror: %v", err.Error())
-								return nil, errors.ErrBackoffTimeout(err)
-							case context.Canceled:
-								log.Debugf("[backoff]\tfor: "+name+",\tCanceled\terror: %v", err.Error())
-								return nil, err
-							default:
-								return nil, errors.Join(dctx.Err(), err)
-							}
+					select {
+					case <-dctx.Done():
+						switch dctx.Err() {
+						case context.DeadlineExceeded:
+							log.Debugf("[backoff]\tfor: "+name+",\tDeadline Exceeded\terror: %v", err.Error())
+							return nil, errors.ErrBackoffTimeout(err)
+						case context.Canceled:
+							log.Debugf("[backoff]\tfor: "+name+",\tCanceled\terror: %v", err.Error())
+							return nil, err
 						default:
+							return nil, errors.Join(dctx.Err(), err)
 						}
+					default:
 					}
 				}
 			}
