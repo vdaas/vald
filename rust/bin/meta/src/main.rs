@@ -13,32 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-pub mod google {
-    pub mod rpc {
-        pub type Status = tonic_types::Status;
-    }
-}
 
-pub mod payload {
-    pub mod v1 {
-        include!("payload.v1.rs");
-    }
-}
+mod handler;
 
-pub mod vald {
-    pub mod v1 {
-        include!("vald.v1.tonic.rs");
-    }
-}
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let addr = "[::1]:8081".parse()?;
+    let meta = handler::Meta::default();
 
-pub mod core {
-    pub mod v1 {
-        include!("core.v1.tonic.rs");
-    }
-}
+    tonic::transport::Server::builder()
+        .add_service(proto::meta::v1::meta_server::MetaServer::new(meta))
+        .serve(addr)
+        .await?;
 
-pub mod meta {
-    pub mod v1 {
-        include!("meta.v1.tonic.rs");
-    }
+    Ok(())
 }

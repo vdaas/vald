@@ -17,8 +17,9 @@
 members = [
 	"libs/observability",
 	"libs/proto",
-	"bin/agent",
-	"libs/algorithm",
-	"libs/algorithms/ngt",
-	"libs/algorithms/faiss",
+	"bin/meta",
+	# "bin/agent",
+	# "libs/algorithm",
+	# "libs/algorithms/ngt",
+	# "libs/algorithms/faiss", "bin/meta",
 ]

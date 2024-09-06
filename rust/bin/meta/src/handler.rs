@@ -13,32 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-pub mod google {
-    pub mod rpc {
-        pub type Status = tonic_types::Status;
-    }
+mod meta;
+
+#[derive(Default, Debug)]
+pub struct Meta {
+    
 }
 
-pub mod payload {
-    pub mod v1 {
-        include!("payload.v1.rs");
-    }
-}
 
-pub mod vald {
-    pub mod v1 {
-        include!("vald.v1.tonic.rs");
-    }
-}
 
-pub mod core {
-    pub mod v1 {
-        include!("core.v1.tonic.rs");
-    }
-}
 
-pub mod meta {
-    pub mod v1 {
-        include!("meta.v1.tonic.rs");
-    }
-}

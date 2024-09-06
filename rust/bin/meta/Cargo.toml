@@ -1,0 +1,9 @@
+[package]
+name = "meta"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+proto = { version = "0.1.0", path = "../../libs/proto" }
+tokio = { version = "1.40.0", features = ["full"] }
+tonic = "0.12.2"
