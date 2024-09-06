@@ -533,12 +533,7 @@ func Test_backoff_Do(t *testing.T) {
 		func() test {
 			ctx := context.Background()
 			err := errors.New("erros is occurred")
-			cnt := 0
 			f := func(context.Context) (any, bool, error) {
-				cnt++
-				if cnt > 1 {
-					time.Sleep(10 * time.Millisecond)
-				}
 				return str, true, err
 			}
 			return test{
