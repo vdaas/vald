@@ -1242,8 +1242,8 @@ func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 	if err != nil {
 		log.Errorf("failed to flushing vector to ngt index in delete kvs. error: %v", err)
 	}
-	n.kvs = nil
-	n.vq = nil
+	// n.kvs = nil
+	// n.vq = nil
 
 	// gc
 	runtime.GC()
@@ -1265,20 +1265,20 @@ func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 		}
 	}
 
-	nkvs := kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
-
-	nvq, err := vqueue.New()
-	if err != nil {
-		log.Errorf("failed to create new vector vector queue. error: %v", err)
-	}
+	// nkvs := kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
+	//
+	// nvq, err := vqueue.New()
+	// if err != nil {
+	// 	log.Errorf("failed to create new vector vector queue. error: %v", err)
+	// }
 
 	// renew instance
 	nn, err := newNGT(n.cfg, n.opts...)
 	if err != nil {
 		return err
 	}
-	nn.kvs = nkvs
-	nn.vq = nvq
+	// nn.kvs = nkvs
+	// nn.vq = nvq
 
 	// Regenerate with flags set
 	nn.flushing.Store(true)
