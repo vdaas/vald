@@ -18,7 +18,6 @@ mod meta;
 use std::sync::Arc;
 use kv::*;
 
-// #[derive(Debug)] // TODO: Debug外す？
 pub struct Meta {
     store: Arc<Store>,
     bucket: Bucket<'static, Raw, Raw>,
