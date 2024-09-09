@@ -1249,7 +1249,7 @@ func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 	runtime.GC()
 	atomic.AddUint64(&n.nogce, 1)
 
-	if n.inMem {
+	if !n.inMem {
 		// delete file
 		err = file.DeleteDir(ctx, n.path)
 		if err != nil {
