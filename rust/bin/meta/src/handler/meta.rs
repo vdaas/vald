@@ -47,13 +47,40 @@ impl meta_server::Meta for super::Meta {
         &self,
         _request: tonic::Request<meta::KeyValue>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
-        todo!()
+        let key_value = request.into_inner();
+
+        let key = match key_value.key {
+            Some(k) => k.key,
+            None => return Err(tonic::Status::invalid_argument("Key is missing")),
+        };
+
+        let value = match key_value.value {
+            Some(v) => match v.value {
+                Some(any_value) => any_value.value,
+                None => return Err(tonic::Status::invalid_argument("Value is missing")),
+            },
+            None => return Err(tonic::Status::invalid_argument("Value is missing")),
+        };
+
+        let raw_key = Raw::from(key.as_bytes());
+        let raw_value = sled::IVec::from(value);
+
+        match self.bucket.set(&raw_key, &raw_value) {
+            Ok(_) => Ok(tonic::Response::new(Empty {})),
+            Err(e) => Err(tonic::Status::internal(format!("Failed to set value: {}", e))),
+        }
     }
     
     async fn delete(
         &self,
         _request: tonic::Request<meta::Key>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
-        todo!()
+        let key = request.into_inner().key;
+        let raw_key = Raw::from(key.as_bytes());
+
+        match self.bucket.remove(&raw_key) {
+            Ok(_) => Ok(tonic::Response::new(Empty {})),
+            Err(e) => Err(tonic::Status::internal(format!("Failed to delete key: {}", e))),
+        }
     }
 }
