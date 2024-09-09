@@ -15,6 +15,7 @@
 //
 
 use proto::{meta::v1::meta_server, payload::v1::{meta, Empty}};
+use kv::*;
 
 #[tonic::async_trait]
 impl meta_server::Meta for super::Meta {
@@ -22,7 +23,25 @@ impl meta_server::Meta for super::Meta {
         &self,
         request: tonic::Request<meta::Key>,
     ) -> std::result::Result<tonic::Response<meta::Value>, tonic::Status> {
-        todo!()
+        let key = request.into_inner().key;
+        let raw_key = Raw::from(key.as_bytes());
+
+        match self.bucket.get(&raw_key) {
+            Ok(Some(value_bytes)) => {
+                let any_value = prost_types::Any {
+                    type_url: "type.googleapis.com/your.package.MessageType".to_string(),
+                    value: value_bytes.to_vec(),
+                };
+        
+                let response = meta::Value {
+                    value: Some(any_value),
+                };
+        
+                Ok(tonic::Response::new(response))
+            },
+            Ok(None) => Err(tonic::Status::not_found("Key not found")),
+            Err(e) => Err(tonic::Status::internal(format!("Database error: {}", e))),
+        }
     }
     async fn set(
         &self,

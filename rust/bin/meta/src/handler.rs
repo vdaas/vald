@@ -15,11 +15,25 @@
 //
 mod meta;
 
-#[derive(Default, Debug)]
+use std::sync::Arc;
+use kv::*;
+
+// #[derive(Debug)] // TODO: Debug外す？
 pub struct Meta {
-    
+    store: Arc<Store>,
+    bucket: Bucket<'static, Raw, Raw>,
 }
 
+impl Meta {
+    pub fn new() -> Result<Self, kv::Error> {
+        let cfg_path = "/var/lib/meta/database"; // TODO: pathはこれでよい？
+        let cfg = Config::new(cfg_path);
+        let store = Arc::new(Store::new(cfg)?);
+        let bucket = store.bucket::<Raw, Raw>(Some("meta_bucket"))?;
+
+        Ok(Meta { store, bucket })
+    }
+}
 
 
 
