@@ -1242,8 +1242,8 @@ func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 	if err != nil {
 		log.Errorf("failed to flushing vector to ngt index in delete kvs. error: %v", err)
 	}
-	n.kvs = nil
-	n.vq = nil
+	// n.kvs = nil
+	// n.vq = nil
 
 	// gc
 	runtime.GC()
