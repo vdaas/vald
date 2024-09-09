@@ -64,6 +64,9 @@ func (s *server) CreateIndex(
 					},
 				}, info.Get())...)
 			code = codes.FailedPrecondition
+		case errors.Is(err, errors.ErrFlushingIsInProgress):
+			err = status.WrapWithAborted("CreateIndex API aborted to process create indexes request due to flushing indices is in progress", err, details...)
+			code = codes.Aborted
 		case errors.Is(err, context.Canceled):
 			err = status.WrapWithCanceled(fmt.Sprintf("CreateIndex API canceled to create indexes pool_size = %d, error: %v", c.GetPoolSize(), err), err, details...)
 			code = codes.Canceled
@@ -149,6 +152,9 @@ func (s *server) CreateAndSaveIndex(
 					},
 				}, info.Get())...)
 			code = codes.FailedPrecondition
+		case errors.Is(err, errors.ErrFlushingIsInProgress):
+			err = status.WrapWithAborted("CreateIndex API aborted to process create indexes request due to flushing indices is in progress", err, details...)
+			code = codes.Aborted
 		case errors.Is(err, context.Canceled):
 			err = status.WrapWithCanceled(fmt.Sprintf("CreateAndSaveIndex API canceled to create indexes pool_size = %d, error: %v", c.GetPoolSize(), err), err, details...)
 			code = codes.Canceled
