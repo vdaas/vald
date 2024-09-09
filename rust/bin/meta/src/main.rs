@@ -19,7 +19,7 @@ mod handler;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = "[::1]:8081".parse()?;
-    let meta = handler::Meta::default();
+    let meta = handler::Meta::new().expect("Failed to initialize Meta service");
 
     tonic::transport::Server::builder()
         .add_service(proto::meta::v1::meta_server::MetaServer::new(meta))
