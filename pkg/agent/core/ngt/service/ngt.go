@@ -908,7 +908,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				}
 				return ctx.Err()
 			case <-tick.C:
-				if n.vq.IVQLen() >= n.alen {
+				if n.vq != nil && !n.IsFlushing() && n.vq.IVQLen() >= n.alen {
 					err = n.CreateIndex(ctx, n.poolSize)
 				}
 			case <-limit.C:
