@@ -1948,14 +1948,14 @@ func (n *ngt) Len() uint64 {
 }
 
 func (n *ngt) InsertVQueueBufferLen() uint64 {
-	if n != nil && n.kvs != nil && !n.IsFlushing() {
+	if n != nil && n.vq != nil && !n.IsFlushing() {
 		return uint64(n.vq.IVQLen())
 	}
 	return 0
 }
 
 func (n *ngt) DeleteVQueueBufferLen() uint64 {
-	if n != nil && n.kvs != nil && !n.IsFlushing() {
+	if n != nil && n.vq != nil && !n.IsFlushing() {
 		return uint64(n.vq.DVQLen())
 	}
 	return 0
