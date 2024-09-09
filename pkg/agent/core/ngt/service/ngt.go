@@ -908,7 +908,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				}
 				return ctx.Err()
 			case <-tick.C:
-				if n.vq != nil && !n.IsFlushing() && n.vq.IVQLen() >= n.alen {
+				if n != nil && n.vq != nil && !n.IsFlushing() && n.vq.IVQLen() >= n.alen {
 					err = n.CreateIndex(ctx, n.poolSize)
 				}
 			case <-limit.C:
@@ -1299,8 +1299,11 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		}
 	}()
 
-	if n.isReadReplica {
+	switch {
+	case n.isReadReplica:
 		return errors.ErrWriteOperationToReadReplica
+	case n.IsFlushing():
+		return errors.ErrFlushingIsInProgress
 	}
 
 	ic := n.vq.IVQLen() + n.vq.DVQLen()
