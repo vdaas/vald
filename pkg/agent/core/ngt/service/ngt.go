@@ -1941,15 +1941,24 @@ func (n *ngt) gc() {
 }
 
 func (n *ngt) Len() uint64 {
-	return n.kvs.Len()
+	if n != nil && n.kvs != nil {
+		return n.kvs.Len()
+	}
+	return 0
 }
 
 func (n *ngt) InsertVQueueBufferLen() uint64 {
-	return uint64(n.vq.IVQLen())
+	if n != nil && n.vq != nil {
+		return uint64(n.vq.IVQLen())
+	}
+	return 0
 }
 
 func (n *ngt) DeleteVQueueBufferLen() uint64 {
-	return uint64(n.vq.DVQLen())
+	if n != nil && n.vq != nil {
+		return uint64(n.vq.DVQLen())
+	}
+	return 0
 }
 
 func (n *ngt) GetDimensionSize() int {
