@@ -928,7 +928,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				}
 				return ctx.Err()
 			case <-tick.C:
-				if n != nil && n.vq != nil && !n.IsFlushing() && n.vq.IVQLen() >= n.alen {
+				if n.vq != nil && !n.IsFlushing() && n.vq.IVQLen() >= n.alen {
 					err = n.CreateIndex(ctx, n.poolSize)
 				}
 			case <-limit.C:
@@ -1949,21 +1949,21 @@ func (n *ngt) gc() {
 }
 
 func (n *ngt) Len() uint64 {
-	if n != nil && n.kvs != nil && !n.IsFlushing() {
+	if n.kvs != nil && !n.IsFlushing() {
 		return n.kvs.Len()
 	}
 	return 0
 }
 
 func (n *ngt) InsertVQueueBufferLen() uint64 {
-	if n != nil && n.vq != nil && !n.IsFlushing() {
+	if n.vq != nil && !n.IsFlushing() {
 		return uint64(n.vq.IVQLen())
 	}
 	return 0
 }
 
 func (n *ngt) DeleteVQueueBufferLen() uint64 {
-	if n != nil && n.vq != nil && !n.IsFlushing() {
+	if n.vq != nil && !n.IsFlushing() {
 		return uint64(n.vq.DVQLen())
 	}
 	return 0
