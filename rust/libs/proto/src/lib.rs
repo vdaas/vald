@@ -16,7 +16,6 @@
 pub mod google {
     pub mod rpc {
         pub type Status = tonic_types::Status;
-//        include!("rpc.v1.rs");
     }
 }
 
