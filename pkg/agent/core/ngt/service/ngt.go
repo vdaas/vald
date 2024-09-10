@@ -260,24 +260,24 @@ func newNGT(cfg *config.NGT, opts ...Option) (n *ngt, err error) {
 	return n, nil
 }
 
-func (n *ngt) copyNGT(obj *ngt) {
+func (n *ngt) copyNGT(src *ngt) {
 	// instances
-	n.core = obj.core
-	n.kvs = obj.kvs
-	n.fmap = obj.fmap
-	n.vq = obj.vq
+	n.core = src.core
+	n.kvs = src.kvs
+	n.fmap = src.fmap
+	n.vq = src.vq
 
 	// counters
-	n.wfci = obj.wfci
-	n.nobic = obj.nobic
+	n.wfci = src.wfci
+	n.nobic = src.nobic
 	n.nopvq = atomic.Uint64{}
 
 	// paths
-	n.path = obj.path
-	n.tmpPath = obj.tmpPath
-	n.oldPath = obj.oldPath
-	n.basePath = obj.basePath
-	n.brokenPath = obj.brokenPath
+	n.path = src.path
+	n.tmpPath = src.tmpPath
+	n.oldPath = src.oldPath
+	n.basePath = src.basePath
+	n.brokenPath = src.brokenPath
 }
 
 // migrate migrates the index directory from old to new under the input path if necessary.
