@@ -42,7 +42,7 @@ pub mod ffi {
     }
 
     unsafe extern "C++" {
-        include!("ngt-rs/src/input.h");
+        include!("ngt/src/input.h");
 
         type Property;
         fn new_property() -> UniquePtr<Property>;
