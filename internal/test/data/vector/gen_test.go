@@ -47,8 +47,13 @@ func TestFloat32VectorGenerator(t *testing.T) {
 		}
 		if got != nil {
 			vectors := got(a.n, a.dim)
-			if len(vectors) != w.n && len(vectors[0]) != w.dim {
-				return errors.Errorf("got: \"%d\",\"%d\"\n\t\t\t\twant: \"%d\",\"%d\"", len(vectors), len(vectors[0]), w.n, w.dim)
+			if len(vectors) != w.n {
+				return errors.Errorf("got: \"%#v\",\n\t\t\t\twantLen: \"%#v\"", len(vectors), w.n)
+			}
+			for _, vec := range vectors {
+				if len(vec) != w.dim {
+					return errors.Errorf("got: \"%#v\",\n\t\t\t\twantDim: \"%#v\"", len(vec), w.dim)
+				}
 			}
 		}
 		return nil
@@ -140,8 +145,13 @@ func TestUint8VectorGenerator(t *testing.T) {
 		}
 		if got != nil {
 			vectors := got(a.n, a.dim)
-			if len(vectors) != w.n && len(vectors[0]) != w.dim {
-				return errors.Errorf("got: \"%d\",\"%d\"\n\t\t\t\twant: \"%d\",\"%d\"", len(vectors), len(vectors[0]), w.n, w.dim)
+			if len(vectors) != w.n {
+				return errors.Errorf("got: \"%#v\",\n\t\t\t\twantLen: \"%#v\"", len(vectors), w.n)
+			}
+			for _, vec := range vectors {
+				if len(vec) != w.dim {
+					return errors.Errorf("got: \"%#v\",\n\t\t\t\twantDim: \"%#v\"", len(vec), w.dim)
+				}
 			}
 		}
 		return nil
