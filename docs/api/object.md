@@ -67,7 +67,7 @@ Exists RPC is the method to check that a vector exists in the `vald-agent`.
 |  5   | NOT_FOUND         |
 |  13  | INTERNAL          |
 
-Please refer to [Response Status Code](./status.md) for more details.
+Please refer to [Response Status Code](../status.md) for more details.
 
 ### Troubleshooting
 
@@ -148,7 +148,7 @@ GetObject RPC is the method to get the metadata of a vector inserted into the `v
 |  5   | NOT_FOUND         |
 |  13  | INTERNAL          |
 
-Please refer to [Response Status Code](./status.md) for more details.
+Please refer to [Response Status Code](../status.md) for more details.
 
 ### Troubleshooting
 
@@ -242,7 +242,7 @@ Each Upsert request and response are independent.
 |  5   | NOT_FOUND         |
 |  13  | INTERNAL          |
 
-Please refer to [Response Status Code](./status.md) for more details.
+Please refer to [Response Status Code](../status.md) for more details.
 
 ### Troubleshooting
 
