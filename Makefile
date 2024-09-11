@@ -442,6 +442,11 @@ license:
 dockerfile:
 	$(call gen-dockerfile,$(ROOTDIR),$(MAINTAINER))
 
+.PHONY: workflow
+## generate workflows
+workflow:
+	$(call gen-workflow,$(ROOTDIR),$(MAINTAINER))
+
 .PHONY: init
 ## initialize development environment
 init: \
