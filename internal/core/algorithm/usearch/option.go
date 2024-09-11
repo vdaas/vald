@@ -55,7 +55,7 @@ func WithIndexPath(path string) Option {
 // WithQuantizationType represents the option to set the quantizationType for usearch.
 func WithQuantizationType(quantizationType string) Option {
 	return func(u *usearch) error {
-		switch quantizationType{
+		switch quantizationType {
 		case "BF16":
 			u.quantizationType = core.BF16
 		case "F16":
