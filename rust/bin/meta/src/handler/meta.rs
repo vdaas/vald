@@ -14,8 +14,11 @@
 // limitations under the License.
 //
 
-use proto::{meta::v1::meta_server, payload::v1::{meta, Empty}};
 use kv::*;
+use defer::defer;
+use opentelemetry::{trace::{Tracer, TraceContextExt}, KeyValue, Context};
+use observability::{ctx_span, tracer};
+use proto::{meta::v1::meta_server, payload::v1::{meta, Empty}};
 
 #[tonic::async_trait]
 impl meta_server::Meta for super::Meta {
@@ -23,64 +26,105 @@ impl meta_server::Meta for super::Meta {
         &self,
         request: tonic::Request<meta::Key>,
     ) -> std::result::Result<tonic::Response<meta::Value>, tonic::Status> {
+        let parent_cx = request.extensions().get::<Context>().cloned().unwrap_or_else(Context::new);
+        let ctx = ctx_span!(&parent_cx, "Meta::get");
+        defer!(ctx.span().end());
+
         let key = request.into_inner().key;
         let raw_key = Raw::from(key.as_bytes());
 
         match self.bucket.get(&raw_key) {
             Ok(Some(value_bytes)) => {
+                ctx.span().add_event("Key found", vec![KeyValue::new("key", key.clone())]);
+
                 let any_value = prost_types::Any {
                     type_url: "type.googleapis.com/your.package.MessageType".to_string(),
                     value: value_bytes.to_vec(),
                 };
-        
                 let response = meta::Value {
                     value: Some(any_value),
                 };
-        
+
                 Ok(tonic::Response::new(response))
             },
-            Ok(None) => Err(tonic::Status::not_found("Key not found")),
-            Err(e) => Err(tonic::Status::internal(format!("Database error: {}", e))),
+            Ok(None) => {
+                ctx.span().add_event("Key not found", vec![KeyValue::new("key", key)]);
+                Err(tonic::Status::not_found("Key not found"))
+            }
+            Err(e) => {
+                ctx.span().add_event("Database error", vec![KeyValue::new("error", e.to_string())]);
+                Err(tonic::Status::internal(format!("Database error: {}", e)))
+            }
         }
     }
+
     async fn set(
         &self,
         request: tonic::Request<meta::KeyValue>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
+        let parent_cx = request.extensions().get::<Context>().cloned().unwrap_or_else(Context::new);
+        let ctx = ctx_span!(&parent_cx, "Meta::set");
+        defer!(ctx.span().end());
+
         let key_value = request.into_inner();
 
         let key = match key_value.key {
             Some(k) => k.key,
-            None => return Err(tonic::Status::invalid_argument("Key is missing")),
+            None => {
+                ctx.span().add_event("Invalid argument", vec![KeyValue::new("error", "Key is missing")]);
+                return Err(tonic::Status::invalid_argument("Key is missing"));
+            }
         };
 
         let value = match key_value.value {
             Some(v) => match v.value {
                 Some(any_value) => any_value.value,
-                None => return Err(tonic::Status::invalid_argument("Value is missing")),
+                None => {
+                    ctx.span().add_event("Invalid argument", vec![KeyValue::new("error", "Value is missing")]);
+                    return Err(tonic::Status::invalid_argument("Value is missing"));
+                }
             },
-            None => return Err(tonic::Status::invalid_argument("Value is missing")),
+            None => {
+                ctx.span().add_event("Invalid argument", vec![KeyValue::new("error", "Value is missing")]);
+                return Err(tonic::Status::invalid_argument("Value is missing"));
+            }
         };
 
         let raw_key = Raw::from(key.as_bytes());
         let raw_value = sled::IVec::from(value);
 
         match self.bucket.set(&raw_key, &raw_value) {
-            Ok(_) => Ok(tonic::Response::new(Empty {})),
-            Err(e) => Err(tonic::Status::internal(format!("Failed to set value: {}", e))),
+            Ok(_) => {
+                ctx.span().add_event("Value set successfully", vec![KeyValue::new("key", key)]);
+                Ok(tonic::Response::new(Empty {}))
+            },
+            Err(e) => {
+                ctx.span().add_event("Failed to set value", vec![KeyValue::new("error", e.to_string())]);
+                Err(tonic::Status::internal(format!("Failed to set value: {}", e)))
+            }
         }
     }
-    
+
     async fn delete(
         &self,
         request: tonic::Request<meta::Key>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
+        let parent_cx = request.extensions().get::<Context>().cloned().unwrap_or_else(Context::new);
+        let ctx = ctx_span!(&parent_cx, "Meta::delete");
+        defer!(ctx.span().end());
+
         let key = request.into_inner().key;
         let raw_key = Raw::from(key.as_bytes());
 
         match self.bucket.remove(&raw_key) {
-            Ok(_) => Ok(tonic::Response::new(Empty {})),
-            Err(e) => Err(tonic::Status::internal(format!("Failed to delete key: {}", e))),
+            Ok(_) => {
+                ctx.span().add_event("Key deleted successfully", vec![KeyValue::new("key", key)]);
+                Ok(tonic::Response::new(Empty {}))
+            },
+            Err(e) => {
+                ctx.span().add_event("Failed to delete key", vec![KeyValue::new("error", e.to_string())]);
+                Err(tonic::Status::internal(format!("Failed to delete key: {}", e)))
+            }
         }
     }
 }
