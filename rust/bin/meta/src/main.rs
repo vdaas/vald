@@ -20,6 +20,7 @@ use opentelemetry::global;
 use opentelemetry::propagation::Extractor;
 use tonic::transport::Server;
 use tonic::Request;
+use observability::{config::Config, observability::{Observability, ObservabilityImpl}};
 
 struct MetadataMap<'a>(&'a tonic::metadata::MetadataMap);
 
@@ -48,11 +49,30 @@ fn intercept(mut req: Request<()>) -> Result<Request<()>, tonic::Status> {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // TODO: initialize tracer
+    // TODO: yaml is given from outside
+    // let config_yaml = r#"enabled: false
+    // endpoint: ""
+    // attributes: []
+    // tracer:
+    //     enabled: false
+    // meter:
+    //     enabled: false
+    //     export_duration:
+    //         secs: 60
+    //         nanos: 0
+    //     export_timeout_duration:
+    //         secs: 30
+    //         nanos: 0
+    // "#;
+    //
+    // decode config yaml
+    // let observability_cfg = serde_yaml::from_str(config_yaml).unwrap();
+    let observability_cfg = Config::default();
+    let mut observability = ObservabilityImpl::new(observability_cfg)?;
 
     let addr = "[::1]:8081".parse()?;
     let cfg_path = "/var/lib/meta/database"; // TODO: set the appropriate path
-    let meta = handler::Meta::new(cfg_path).expect("Failed to initialize Meta service");
+    let meta = handler::Meta::new(cfg_path)?;
 
     // the interceptor given here is implicitly executed for each request
     Server::builder()
@@ -60,6 +80,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .serve(addr)
         .await?;
 
-    // TODO: shutdown tracer
+    observability.shutdown()?;
     Ok(())
 }
