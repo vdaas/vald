@@ -38,7 +38,7 @@ docker/build: \
 	docker/build/index-save \
 	docker/build/loadtest \
 	docker/build/manager-index \
-	docker/build/operator/helm \
+	docker/build/helm-operator \
 	docker/build/readreplica-rotate
 
 .PHONY: docker/name/org
@@ -255,13 +255,13 @@ docker/build/dev-container:
 		IMAGE=$(DEV_CONTAINER_IMAGE) \
 		docker/build/image
 
-.PHONY: docker/name/operator/helm
-docker/name/operator/helm:
+.PHONY: docker/name/helm-operator
+docker/name/helm-operator:
 	@echo "$(ORG)/$(HELM_OPERATOR_IMAGE)"
 
-.PHONY: docker/build/operator/helm
+.PHONY: docker/build/helm-operator
 ## build helm-operator image
-docker/build/operator/helm:
+docker/build/helm-operator:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/operator/helm/Dockerfile" \
 		IMAGE=$(HELM_OPERATOR_IMAGE) \
 		EXTRA_ARGS="--build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION) --build-arg UPX_OPTIONS=$(UPX_OPTIONS) $(EXTRA_ARGS)" \
