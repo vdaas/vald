@@ -20,7 +20,7 @@ use opentelemetry::global;
 use opentelemetry::propagation::Extractor;
 use tonic::transport::Server;
 use tonic::Request;
-use observability::{config::Config, observability::{Observability, ObservabilityImpl}};
+use observability::{config::{Config, Tracer}, observability::{Observability, ObservabilityImpl, SERVICE_NAME}};
 
 struct MetadataMap<'a>(&'a tonic::metadata::MetadataMap);
 
@@ -67,7 +67,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     //
     // decode config yaml
     // let observability_cfg = serde_yaml::from_str(config_yaml).unwrap();
-    let observability_cfg = Config::default();
+    let observability_cfg = Config::new()
+        .enabled(true)
+        .attribute(SERVICE_NAME, "vald-lb-gateway")
+        .attribute("target_pod", "target_pod")
+        .attribute("target_node", "target_node")
+        .attribute("exported_kubernetes_namaspace", "default")
+        .attribute("kubernetes_name", "vald-lb-gateway")
+        .endpoint("127.0.0.1:4318")
+        .tracer(Tracer::new().enabled(true));
     let mut observability = ObservabilityImpl::new(observability_cfg)?;
 
     let addr = "[::1]:8081".parse()?;
