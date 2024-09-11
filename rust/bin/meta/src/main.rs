@@ -16,15 +16,50 @@
 
 mod handler;
 
+use opentelemetry::global;
+use opentelemetry::propagation::Extractor;
+use tonic::transport::Server;
+use tonic::Request;
+
+struct MetadataMap<'a>(&'a tonic::metadata::MetadataMap);
+
+impl<'a> Extractor for MetadataMap<'a> {
+    fn get(&self, key: &str) -> Option<&str> {
+        self.0.get(key).and_then(|metadata| metadata.to_str().ok())
+    }
+
+    fn keys(&self) -> Vec<&str> {
+        self.0
+            .keys()
+            .map(|key| match key {
+                tonic::metadata::KeyRef::Ascii(v) => v.as_str(),
+                tonic::metadata::KeyRef::Binary(v) => v.as_str(),
+            })
+            .collect::<Vec<_>>()    }
+}
+
+fn intercept(mut req: Request<()>) -> Result<Request<()>, tonic::Status> {
+    let parent_cx = global::get_text_map_propagator(|prop| {
+        prop.extract(&MetadataMap(req.metadata()))
+    });
+    req.extensions_mut().insert(parent_cx);
+    Ok(req)
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "[::1]:8081".parse()?;
-    let meta = handler::Meta::new().expect("Failed to initialize Meta service");
+    // TODO: initialize tracer
 
-    tonic::transport::Server::builder()
-        .add_service(proto::meta::v1::meta_server::MetaServer::new(meta))
+    let addr = "[::1]:8081".parse()?;
+    let cfg_path = "/var/lib/meta/database"; // TODO: set the appropriate path
+    let meta = handler::Meta::new(cfg_path).expect("Failed to initialize Meta service");
+
+    // the interceptor given here is implicitly executed for each request
+    Server::builder()
+        .add_service(proto::meta::v1::meta_server::MetaServer::with_interceptor(meta, intercept))
         .serve(addr)
         .await?;
 
+    // TODO: shutdown tracer
     Ok(())
 }
