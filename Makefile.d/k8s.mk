@@ -41,6 +41,7 @@ k8s/manifest/update: \
 		--set manager.index.saver.enabled=true \
 		--set manager.index.creator.enabled=true \
 		--set manager.index.corrector.enabled=true \
+		--set gateway.mirror.enabled=true \
 		--output-dir $(TEMP_DIR) \
 		charts/vald
 	mkdir -p k8s/gateway

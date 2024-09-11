@@ -141,7 +141,7 @@ In this section, we will describe how to configure it and how to customize these
 
 ### Cluster role configuration for Vald Mirror Gateway
 
-By looking at the [cluster role configuration](https://github.com/vdaas/vald/blob/main/k8s/gatewat/mirror/clusterrole.yaml), the access right of the following resources are granted to the cluster role `gateway-mirror`.
+By looking at the [cluster role configuration](https://github.com/vdaas/vald/blob/main/k8s/gateway/mirror/clusterrole.yaml), the access right of the following resources are granted to the cluster role `gateway-mirror`.
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
