@@ -24,8 +24,7 @@ pub struct Meta {
 }
 
 impl Meta {
-    pub fn new() -> Result<Self, kv::Error> {
-        let cfg_path = "/var/lib/meta/database"; // TODO: pathはこれでよい？
+    pub fn new(cfg_path: &str) -> Result<Self, kv::Error> {
         let cfg = Config::new(cfg_path);
         let store = Arc::new(Store::new(cfg)?);
         let bucket = store.bucket::<Raw, Raw>(Some("meta_bucket"))?;
