@@ -280,7 +280,7 @@ func (d Detail) String() string {
 	return "\n" + strings.Join(strs, "\n")
 }
 
-// Get returns parased Detail object.
+// Get returns parsed Detail object.
 func (i *info) Get() Detail {
 	i.prepare()
 	return i.getDetail()

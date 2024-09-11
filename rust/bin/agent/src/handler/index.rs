@@ -15,7 +15,7 @@
 //
 use proto::{
     core::v1::agent_server,
-    payload::v1::{control, info, object, Empty},
+    payload::v1::{control, info, Empty},
     vald::v1::index_server,
 };
 

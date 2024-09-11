@@ -41,6 +41,33 @@ docker/build: \
 	docker/build/operator/helm \
 	docker/build/readreplica-rotate
 
+docker/xpanes/build:
+	@xpanes -s -c "make -f $(ROOTDIR)/Makefile {}" \
+		docker/build/agent \
+		docker/build/agent-faiss \
+		docker/build/agent-ngt \
+		docker/build/agent-sidecar \
+		docker/build/benchmark-job \
+		docker/build/benchmark-operator \
+		docker/build/binfmt \
+		docker/build/buildbase \
+		docker/build/buildkit \
+		docker/build/buildkit-syft-scanner \
+		docker/build/ci-container \
+		docker/build/dev-container \
+		docker/build/discoverer-k8s \
+		docker/build/gateway-filter \
+		docker/build/gateway-lb \
+		docker/build/gateway-mirror \
+		docker/build/index-correction \
+		docker/build/index-creation \
+		docker/build/index-operator \
+		docker/build/index-save \
+		docker/build/loadtest \
+		docker/build/manager-index \
+		docker/build/operator/helm \
+		docker/build/readreplica-rotate
+
 .PHONY: docker/name/org
 docker/name/org:
 	@echo "$(ORG)"

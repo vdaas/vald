@@ -39,7 +39,6 @@ update/libs: \
 	update/rust \
 	update/telepresence \
 	update/vald \
-	update/valdcli \
 	update/yq \
 	update/zlib
 
@@ -226,11 +225,6 @@ update/hdf5:
 ## update vald it's self version
 update/vald:
 	curl -fsSL https://api.github.com/repos/$(REPO)/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/VALD_VERSION
-
-.PHONY: update/valdcli
-## update vald client library made by clojure self version
-update/valdcli:
-	curl -fsSL https://api.github.com/repos/$(REPO)-client-clj/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/VALDCLI_VERSION
 
 .PHONY: update/template
 ## update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE

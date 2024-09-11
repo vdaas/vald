@@ -64,8 +64,8 @@ func NewQueue(opts ...QueueOption) (Queue, error) {
 	return q, nil
 }
 
-// Start starts execute queueing if queue is not runnnig.
-// If queue is already reunning, it returns error.
+// Start starts execute queueing if queue is not running.
+// If queue is already running, it returns error.
 // It returns the error channel that the queueing job return.
 func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 	if q.isRunning() {
@@ -132,7 +132,7 @@ func (q *queue) Push(ctx context.Context, job JobFunc) error {
 	}
 }
 
-// Pop returns (JobFunc, nil) if the channnel, which will be used for queuing job, contains JobFunc.
+// Pop returns (JobFunc, nil) if the channel, which will be used for queuing job, contains JobFunc.
 // It returns (nil ,error) if it failed to pop from the job queue.
 func (q *queue) Pop(ctx context.Context) (JobFunc, error) {
 	tryCnt := int(q.Len()) + 1 // include the first try

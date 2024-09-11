@@ -2911,7 +2911,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 	tests := []test{
 		func() test {
 			return test{
-				name: "return nil with no mismatch atmoics",
+				name: "return nil with no mismatch atomics",
 				fields: fields{
 					scenarios: func() *atomic.Pointer[map[string]*scenario] {
 						ap := atomic.Pointer[map[string]*scenario]{}

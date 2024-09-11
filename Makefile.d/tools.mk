@@ -89,7 +89,34 @@ textlint/ci/install:
 cspell/install: $(NPM_GLOBAL_PREFIX)/bin/cspell
 
 $(NPM_GLOBAL_PREFIX)/bin/cspell:
-	npm install -g cspell@latest
+	npm install -g cspell@latest \
+		@cspell/dict-cpp \
+		@cspell/dict-docker \
+		@cspell/dict-en_us \
+		@cspell/dict-fullstack \
+		@cspell/dict-git \
+		@cspell/dict-golang \
+		@cspell/dict-k8s \
+		@cspell/dict-makefile \
+		@cspell/dict-markdown \
+		@cspell/dict-npm \
+		@cspell/dict-public-licenses \
+		@cspell/dict-rust \
+		@cspell/dict-shell
+	cspell link add @cspell/dict-cpp
+	cspell link add @cspell/dict-docker
+	cspell link add @cspell/dict-en_us
+	cspell link add @cspell/dict-fullstack
+	cspell link add @cspell/dict-git
+	cspell link add @cspell/dict-golang
+	cspell link add @cspell/dict-k8s
+	cspell link add @cspell/dict-makefile
+	cspell link add @cspell/dict-markdown
+	cspell link add @cspell/dict-npm
+	cspell link add @cspell/dict-public-licenses
+	cspell link add @cspell/dict-rust
+	cspell link add @cspell/dict-shell
+
 
 .PHONY: buf/install
 buf/install: $(BINDIR)/buf
