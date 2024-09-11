@@ -85,6 +85,7 @@ BUF_VERSION               := $(eval BUF_VERSION := $(shell cat versions/BUF_VERS
 CMAKE_VERSION             := $(eval CMAKE_VERSION := $(shell cat versions/CMAKE_VERSION))$(CMAKE_VERSION)
 DOCKER_VERSION            := $(eval DOCKER_VERSION := $(shell cat versions/DOCKER_VERSION))$(DOCKER_VERSION)
 FAISS_VERSION             := $(eval FAISS_VERSION := $(shell cat versions/FAISS_VERSION))$(FAISS_VERSION)
+USEARCH_VERSION           := $(eval USEARCH_VERSION := $(shell cat versions/USEARCH_VERSION))$(USEARCH_VERSION)
 GOLANGCILINT_VERSION      := $(eval GOLANGCILINT_VERSION := $(shell cat versions/GOLANGCILINT_VERSION))$(GOLANGCILINT_VERSION)
 GO_VERSION                := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
 HDF5_VERSION              := $(eval HDF5_VERSION := $(shell cat versions/HDF5_VERSION))$(HDF5_VERSION)
@@ -603,6 +604,11 @@ version/ngt:
 version/faiss:
 	@echo $(FAISS_VERSION)
 
+.PHONY: version/usearch
+## print usearch version
+version/usearch:
+	@echo $(USEARCH_VERSION)
+
 .PHONY: version/docker
 ## print Kubernetes version
 version/docker:
@@ -676,6 +682,20 @@ $(LIB_PATH)/libfaiss.a:
 	cd $(ROOTDIR)
 	rm -rf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz $(TEMP_DIR)/faiss-$(FAISS_VERSION)
 	ldconfig
+
+.PHONY: usearch/install
+## install usearch
+usearch/install: 
+ifeq ($(OS),linux)
+	curl -sSL https://github.com/unum-cloud/usearch/releases/download/v$(USEARCH_VERSION)/usearch_$(OS)_$(GOARCH)_$(USEARCH_VERSION).deb -o usearch_$(OS)_$(USEARCH_VERSION).deb
+	dpkg -i usearch_$(OS)_$(USEARCH_VERSION).deb
+	rm usearch_$(OS)_$(USEARCH_VERSION).deb
+else ifeq ($(OS),macos)
+	curl -sSL https://github.com/unum-cloud/usearch/releases/download/v$(USEARCH_VERSION)/usearch_macos_$(GOARCH)_$(USEARCH_VERSION).zip -o usearch_macos_$(OS)_$(USEARCH_VERSION).zip
+	unzip usearch_macos_$(OS)_$(USEARCH_VERSION).zip
+	sudo mv libusearch_c.dylib /usr/local/lib && sudo mv usearch.h /usr/local/include
+	rm -rf usearch_macos_$(OS)_$(USEARCH_VERSION).zip
+endif
 
 .PHONY: cmake/install
 ## install CMAKE
