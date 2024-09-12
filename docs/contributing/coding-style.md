@@ -1407,4 +1407,4 @@ Since each package has its purpose, we decided to apply different strategies to 
 
 For the rest of the `./pkg` packages, we decided to implement the unit test for the exported function only.
 
-Please follow the [unit test guideline](./unit-test-guideline.md) for more details on how to implement good unit test.
+Please follow the [unit test guideline](../unit-test-guideline.md) for more details on how to implement good unit test.

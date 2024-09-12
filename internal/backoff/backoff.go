@@ -186,6 +186,22 @@ func (b *backoff) Do(
 					dur *= b.backoffFactor
 					jdur = b.addJitter(dur)
 				}
+				if cnt >= b.maxRetryCount-1 {
+					select {
+					case <-dctx.Done():
+						switch dctx.Err() {
+						case context.DeadlineExceeded:
+							log.Debugf("[backoff]\tfor: "+name+",\tDeadline Exceeded\terror: %v", err.Error())
+							return nil, errors.ErrBackoffTimeout(err)
+						case context.Canceled:
+							log.Debugf("[backoff]\tfor: "+name+",\tCanceled\terror: %v", err.Error())
+							return nil, err
+						default:
+							return nil, errors.Join(dctx.Err(), err)
+						}
+					default:
+					}
+				}
 			}
 		}
 	}
