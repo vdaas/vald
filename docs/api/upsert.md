@@ -105,7 +105,7 @@ Upsert RPC is the method to update the inserted vector to a new single vector or
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-Please refer to [Response Status Code](./status.md) for more details.
+Please refer to [Response Status Code](../status.md) for more details.
 
 ### Troubleshooting
 
@@ -232,7 +232,7 @@ It’s the recommended method to upsert a large number of vectors.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-Please refer to [Response Status Code](./status.md) for more details.
+Please refer to [Response Status Code](../status.md) for more details.
 
 ### Troubleshooting
 
@@ -356,7 +356,7 @@ Please be careful that the size of the request exceeds the limit.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-Please refer to [Response Status Code](./status.md) for more details.
+Please refer to [Response Status Code](../status.md) for more details.
 
 ### Troubleshooting
 
