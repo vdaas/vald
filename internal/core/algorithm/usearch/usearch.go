@@ -18,6 +18,7 @@
 package usearch
 
 import (
+	"strconv"
 	"sync"
 
 	core "github.com/unum-cloud/usearch/golang"
@@ -202,7 +203,6 @@ func (u *usearch) Search(q []float32, k int) ([]algorithm.SearchResult, error) {
 	if len(I) == 0 || len(D) == 0 {
 		return nil, errors.ErrEmptySearchResult
 	}
-
 	result := make([]algorithm.SearchResult, min(len(I), k))
 	for i := range result {
 		result[i] = algorithm.SearchResult{ID: uint32(I[i]), Distance: D[i], Error: nil}
@@ -218,9 +218,11 @@ func (u *usearch) GetObject(key core.Key, count int) ([]float32, error) {
 	if err != nil {
 		return nil, errors.NewUsearchError("failed to usearch_get")
 	}
-	// ASK: 何か適切なerrorがある？
+
 	if vectors == nil {
-		return nil, nil
+		return nil, errors.ErrObjectNotFound(
+			errors.NewUsearchError("failed to usearch_get"), strconv.Itoa(int(key)),
+		)
 	}
 
 	return vectors, nil

@@ -18,6 +18,7 @@
 package usearch
 
 import (
+	"math"
 	"os"
 	"path/filepath"
 	"testing"
@@ -136,8 +137,8 @@ func Test_usearch_Search(t *testing.T) {
 			return nil, err
 		}
 
-		for i := range poolSize {
-			if err := u.Add(uint64(i+1), vecs[i]); err != nil {
+		for i, v := range vecs {
+			if err := u.Add(uint64(i+1), v); err != nil {
 				t.Error(err)
 				return nil, err
 			}
@@ -146,7 +147,6 @@ func Test_usearch_Search(t *testing.T) {
 		return u, nil
 	}
 	tests := []test{
-		// object type uint8
 		{
 			name: "return vector id after the same vector inserted",
 			args: args{
@@ -200,6 +200,90 @@ func Test_usearch_Search(t *testing.T) {
 			want: want{
 				want: []algorithm.SearchResult{
 					{ID: uint32(1), Distance: 1},
+				},
+			},
+		},
+		{
+			name: "return limited result after insert 10 vectors with limited size 3",
+			args: args{
+				q: []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
+				k: 3,
+			},
+			fields: fields{
+				idxPath:          idxTempDir(t),
+				quantizationType: "F32",
+				metricType:       "cosine",
+				dimension:        9,
+				connectivity:     0,
+				expansionAdd:     0,
+				expansionSearch:  0,
+				multi:            false,
+			},
+			createFunc: func(t *testing.T, fields fields) (Usearch, error) {
+				t.Helper()
+				ivs := [][]float32{ // insert 10 vec
+					{0, 1, 2, 3, 4, 5, 6, 7, 8},
+					{2, 3, 4, 5, 6, 7, 8, 9, 10},
+					{0, 1, 2, 3, 4, 5, 6, 7, 8},
+					{2, 3, 4, 5, 6, 7, 8, 9, 10},
+					{0, 1, 2, 3, 4, 5, 6, 7, 8},
+					{2, 3, 4, 5, 6, 7, 8, 9, 10},
+					{0, 1, 2, 3, 4, 5, 6, 7, 8},
+					{2, 3, 4, 5, 6, 7, 8, 9, 10},
+					{2, 3, 4, 5, 6, 7, 8, 9, 10},
+					{2, 3, 4, 5, 6, 7, 8, 9, math.MaxFloat32},
+				}
+
+				return insertCreateFunc(t, fields, ivs, 10)
+			},
+			want: want{
+				want: []algorithm.SearchResult{
+					{ID: uint32(10), Distance: 3},
+					{ID: uint32(9), Distance: 3},
+					{ID: uint32(8), Distance: 3},
+				},
+			},
+		},
+		{
+			name: "return most accurate result after insert 10 vectors with limited size 5",
+			args: args{
+				q: []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
+				k: 5,
+			},
+			fields: fields{
+				idxPath:          idxTempDir(t),
+				quantizationType: "F32",
+				metricType:       "cosine",
+				dimension:        9,
+				connectivity:     0,
+				expansionAdd:     0,
+				expansionSearch:  0,
+				multi:            false,
+			},
+			createFunc: func(t *testing.T, fields fields) (Usearch, error) {
+				t.Helper()
+				ivs := [][]float32{
+					{0, 1, 2, 3, 4, 5, 6, 7, 8},    // vec id 1
+					{2, 3, 4, 5, 6, 7, 8, 9, 10},   // vec id 2
+					{0, 1, 2, 3, 4, 5, 6, 7, 8},    // vec id 3
+					{2, 3, 4, 5, 6, 7, 8, 9, 10},   // vec id 4
+					{0, 1, 2, 3, 4, 5, 6, 7, 8},    // vec id 5
+					{2, 3, 4, 5, 6, 7, 8, 9, 10},   // vec id 6
+					{2, 3, 4, 5, 6, 7, 8, 9, 9.04}, // vec id 7
+					{2, 3, 4, 5, 6, 7, 8, 9, 9.03}, // vec id 8
+					{1, 2, 3, 4, 5, 6, 7, 8, 9.01}, // vec id 9
+					{1, 2, 3, 4, 5, 6, 7, 8, 9.02}, // vec id 10
+				}
+
+				return insertCreateFunc(t, fields, ivs, 10)
+			},
+			want: want{
+				want: []algorithm.SearchResult{
+					{ID: uint32(9), Distance: 2.384185791015625e-07},
+					{ID: uint32(10), Distance: 5.364418029785156e-07},
+					{ID: uint32(6), Distance: 3},
+					{ID: uint32(4), Distance: 3},
+					{ID: uint32(2), Distance: 3},
 				},
 			},
 		},
