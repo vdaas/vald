@@ -690,11 +690,13 @@ ifeq ($(OS),linux)
 	curl -sSL https://github.com/unum-cloud/usearch/releases/download/v$(USEARCH_VERSION)/usearch_$(OS)_$(GOARCH)_$(USEARCH_VERSION).deb -o usearch_$(OS)_$(USEARCH_VERSION).deb
 	dpkg -i usearch_$(OS)_$(USEARCH_VERSION).deb
 	rm usearch_$(OS)_$(USEARCH_VERSION).deb
+	ldconfig
 else ifeq ($(OS),macos)
 	curl -sSL https://github.com/unum-cloud/usearch/releases/download/v$(USEARCH_VERSION)/usearch_macos_$(GOARCH)_$(USEARCH_VERSION).zip -o usearch_macos_$(OS)_$(USEARCH_VERSION).zip
 	unzip usearch_macos_$(OS)_$(USEARCH_VERSION).zip
 	sudo mv libusearch_c.dylib /usr/local/lib && sudo mv usearch.h /usr/local/include
 	rm -rf usearch_macos_$(OS)_$(USEARCH_VERSION).zip
+	ldconfig
 endif
 
 .PHONY: cmake/install

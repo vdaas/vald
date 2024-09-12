@@ -664,7 +664,8 @@ func main() {
 			Preprocess: append(devContainerPreprocess,
 				append(ciContainerPreprocess,
 					ngtPreprocess,
-					faissPreprocess)...),
+					faissPreprocess,
+					usearchPreprocess)...),
 		},
 		"vald-buildbase": {
 			AppName:      "buildbase",
