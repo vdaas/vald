@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
   detect-ci-container:
-    uses: ./.github/workflows/_detect-ci-container.yml
+    uses: ./.github/workflows/_detect-ci-container.yaml
   lint-vald-chart:
     name: lint for vald chart
     runs-on: ubuntu-latest

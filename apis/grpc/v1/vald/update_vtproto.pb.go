@@ -48,6 +48,8 @@ type UpdateClient interface {
 	StreamUpdate(ctx context.Context, opts ...grpc.CallOption) (Update_StreamUpdateClient, error)
 	// A method to update multiple indexed vectors in a single request.
 	MultiUpdate(ctx context.Context, in *payload.Update_MultiRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error)
+	// A method to update timestamp an indexed vector.
+	UpdateTimestamp(ctx context.Context, in *payload.Update_TimestampRequest, opts ...grpc.CallOption) (*payload.Object_Location, error)
 }
 
 type updateClient struct {
@@ -113,6 +115,17 @@ func (c *updateClient) MultiUpdate(
 	return out, nil
 }
 
+func (c *updateClient) UpdateTimestamp(
+	ctx context.Context, in *payload.Update_TimestampRequest, opts ...grpc.CallOption,
+) (*payload.Object_Location, error) {
+	out := new(payload.Object_Location)
+	err := c.cc.Invoke(ctx, "/vald.v1.Update/UpdateTimestamp", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UpdateServer is the server API for Update service.
 // All implementations must embed UnimplementedUpdateServer
 // for forward compatibility
@@ -123,6 +136,8 @@ type UpdateServer interface {
 	StreamUpdate(Update_StreamUpdateServer) error
 	// A method to update multiple indexed vectors in a single request.
 	MultiUpdate(context.Context, *payload.Update_MultiRequest) (*payload.Object_Locations, error)
+	// A method to update timestamp an indexed vector.
+	UpdateTimestamp(context.Context, *payload.Update_TimestampRequest) (*payload.Object_Location, error)
 	mustEmbedUnimplementedUpdateServer()
 }
 
@@ -143,6 +158,12 @@ func (UnimplementedUpdateServer) MultiUpdate(
 	context.Context, *payload.Update_MultiRequest,
 ) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiUpdate not implemented")
+}
+
+func (UnimplementedUpdateServer) UpdateTimestamp(
+	context.Context, *payload.Update_TimestampRequest,
+) (*payload.Object_Location, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateTimestamp not implemented")
 }
 func (UnimplementedUpdateServer) mustEmbedUnimplementedUpdateServer() {}
 
@@ -223,6 +244,26 @@ func _Update_MultiUpdate_Handler(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Update_UpdateTimestamp_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
+	in := new(payload.Update_TimestampRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UpdateServer).UpdateTimestamp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/vald.v1.Update/UpdateTimestamp",
+	}
+	handler := func(ctx context.Context, req any) (any, error) {
+		return srv.(UpdateServer).UpdateTimestamp(ctx, req.(*payload.Update_TimestampRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Update_ServiceDesc is the grpc.ServiceDesc for Update service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -237,6 +278,10 @@ var Update_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "MultiUpdate",
 			Handler:    _Update_MultiUpdate_Handler,
+		},
+		{
+			MethodName: "UpdateTimestamp",
+			Handler:    _Update_UpdateTimestamp_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

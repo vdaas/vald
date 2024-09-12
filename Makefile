@@ -103,7 +103,6 @@ PROTOBUF_VERSION          := $(eval PROTOBUF_VERSION := $(shell cat versions/PRO
 REVIEWDOG_VERSION         := $(eval REVIEWDOG_VERSION := $(shell cat versions/REVIEWDOG_VERSION))$(REVIEWDOG_VERSION)
 RUST_VERSION              := $(eval RUST_VERSION := $(shell cat versions/RUST_VERSION))$(RUST_VERSION)
 TELEPRESENCE_VERSION      := $(eval TELEPRESENCE_VERSION := $(shell cat versions/TELEPRESENCE_VERSION))$(TELEPRESENCE_VERSION)
-VALDCLI_VERSION           := $(eval VALDCLI_VERSION := $(shell cat versions/VALDCLI_VERSION))$(VALDCLI_VERSION)
 YQ_VERSION                := $(eval YQ_VERSION := $(shell cat versions/YQ_VERSION))$(YQ_VERSION)
 ZLIB_VERSION              := $(eval ZLIB_VERSION := $(shell cat versions/ZLIB_VERSION))$(ZLIB_VERSION)
 
@@ -460,7 +459,6 @@ init: \
 tools/install: \
 	helm/install \
 	kind/install \
-	valdcli/install \
 	telepresence/install \
 	textlint/install
 
@@ -625,10 +623,6 @@ version/helm:
 version/yq:
 	@echo $(YQ_VERSION)
 
-.PHONY: version/valdcli
-version/valdcli:
-	@echo $(VALDCLI_VERSION)
-
 .PHONY: version/telepresence
 version/telepresence:
 	@echo $(TELEPRESENCE_VERSION)
@@ -742,14 +736,14 @@ files/textlint: \
 ## run cspell for document
 docs/cspell:\
 	cspell/install
-	cspell-cli $(ROOTDIR)/docs/**/*.md --show-suggestions $(CSPELL_EXTRA_OPTIONS)
+	cspell $(ROOTDIR)/docs/**/*.md --show-suggestions $(CSPELL_EXTRA_OPTIONS)
 
 .PHONY: files/cspell
 ## run cspell for document
 files/cspell: \
 	files \
 	cspell/install
-	cspell-cli $(ROOTDIR)/.gitfiles --show-suggestions $(CSPELL_EXTRA_OPTIONS)
+	cspell $(ROOTDIR)/.gitfiles --show-suggestions $(CSPELL_EXTRA_OPTIONS)
 
 .PHONY: changelog/update
 ## update changelog
@@ -771,7 +765,6 @@ changelog/next/print:
 include Makefile.d/actions.mk
 include Makefile.d/bench.mk
 include Makefile.d/build.mk
-include Makefile.d/client.mk
 include Makefile.d/dependencies.mk
 include Makefile.d/docker.mk
 include Makefile.d/e2e.mk
@@ -780,7 +773,7 @@ include Makefile.d/helm.mk
 include Makefile.d/k3d.mk
 include Makefile.d/k8s.mk
 include Makefile.d/kind.mk
+include Makefile.d/minikube.mk
 include Makefile.d/proto.mk
 include Makefile.d/test.mk
 include Makefile.d/tools.mk
-include Makefile.d/minikube.mk

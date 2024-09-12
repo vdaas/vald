@@ -47,7 +47,7 @@ spec:
         {{- if .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-        {{- if .Values.server_config.metrics.pprof.enabeld }}
+        {{- if .Values.server_config.metrics.pprof.enabled }}
         pyroscope.io/scrape: "true"
         pyroscope.io/application-name: {{ .Values.name }}
         pyroscope.io/profile-cpu-enabled: "true"

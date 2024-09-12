@@ -226,6 +226,16 @@ message Update {
     repeated ObjectRequest requests = 1;
   }
 
+  // Represent a vector meta data.
+  message TimestampRequest {
+    // The vector ID.
+    string id = 1 [(buf.validate.field).string.min_len = 1];
+    // timestamp represents when this vector inserted.
+    int64 timestamp = 2;
+    // force represents forcefully update the timestamp.
+    bool force = 3;
+  }
+
   // Represent the update configuration.
   message Config {
     // A flag to skip exist check during update operation.

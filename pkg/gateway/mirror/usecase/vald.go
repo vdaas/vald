@@ -23,9 +23,9 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability"
-	bometrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
+	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
 	cbmetrics "github.com/vdaas/vald/internal/observability/metrics/circuitbreaker"
-	mirrmetrics "github.com/vdaas/vald/internal/observability/metrics/gateway/mirror"
+	mirrormetrics "github.com/vdaas/vald/internal/observability/metrics/gateway/mirror"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -135,9 +135,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
-			bometrics.New(),
+			backoffmetrics.New(),
 			cbmetrics.New(),
-			mirrmetrics.New(m),
+			mirrormetrics.New(m),
 		)
 		if err != nil {
 			return nil, err

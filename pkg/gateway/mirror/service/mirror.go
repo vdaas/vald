@@ -64,10 +64,10 @@ func NewMirrorClient(conn *grpc.ClientConn) MirrorClient {
 }
 
 type mirr struct {
-	addrl         sync.Map[string, any]    // List of all connected addresses
+	addrs         sync.Map[string, any]    // List of all connected addresses
 	selfMirrTgts  []*payload.Mirror_Target // Targets of self mirror gateway
-	selfMirrAddrl sync.Map[string, any]    // List of self Mirror gateway addresses
-	gwAddrl       sync.Map[string, any]    // List of Vald gateway (LB gateway) addresses
+	selfMirrAddrs sync.Map[string, any]    // List of self Mirror gateway addresses
+	gwAddrs       sync.Map[string, any]    // List of Vald gateway (LB gateway) addresses
 	eg            errgroup.Group
 	registerDur   time.Duration
 	gateway       Gateway
@@ -90,7 +90,7 @@ func NewMirror(opts ...MirrorOption) (_ Mirror, err error) {
 	}
 
 	m.selfMirrTgts = make([]*payload.Mirror_Target, 0)
-	m.selfMirrAddrl.Range(func(addr string, _ any) bool {
+	m.selfMirrAddrs.Range(func(addr string, _ any) bool {
 		var (
 			host string
 			port uint16
@@ -317,15 +317,15 @@ func (m *mirr) Connect(ctx context.Context, targets ...*payload.Mirror_Target) e
 	for _, target := range targets {
 		addr := net.JoinHostPort(target.GetHost(), uint16(target.GetPort())) // addr: host:port
 		if !m.isSelfMirrorAddr(addr) && !m.isGatewayAddr(addr) {
-			_, ok := m.addrl.Load(addr)
+			_, ok := m.addrs.Load(addr)
 			if !ok || !m.IsConnected(ctx, addr) {
 				_, err := m.gateway.GRPCClient().Connect(ctx, addr)
 				if err != nil {
-					m.addrl.Delete(addr)
+					m.addrs.Delete(addr)
 					return err
 				}
 			}
-			m.addrl.Store(addr, struct{}{})
+			m.addrs.Store(addr, struct{}{})
 		}
 	}
 	return nil
@@ -345,13 +345,13 @@ func (m *mirr) Disconnect(ctx context.Context, targets ...*payload.Mirror_Target
 	for _, target := range targets {
 		addr := net.JoinHostPort(target.GetHost(), uint16(target.GetPort()))
 		if !m.isGatewayAddr(addr) {
-			_, ok := m.addrl.Load(addr)
+			_, ok := m.addrs.Load(addr)
 			if ok || m.IsConnected(ctx, addr) {
 				if err := m.gateway.GRPCClient().Disconnect(ctx, addr); err != nil &&
 					!errors.Is(err, errors.ErrGRPCClientConnNotFound(addr)) {
 					return err
 				}
-				m.addrl.Delete(addr)
+				m.addrs.Delete(addr)
 			}
 		}
 	}
@@ -366,7 +366,7 @@ func (m *mirr) IsConnected(ctx context.Context, addr string) bool {
 // MirrorTargets returns the Mirror targets, including the address of this gateway and the addresses of other Mirror gateways
 // to which this gateway is currently connected.
 func (m *mirr) MirrorTargets(ctx context.Context) (tgts []*payload.Mirror_Target, err error) {
-	tgts = make([]*payload.Mirror_Target, 0, m.addrl.Len())
+	tgts = make([]*payload.Mirror_Target, 0, m.addrs.Len())
 	m.RangeMirrorAddr(func(addr string, _ any) bool {
 		if m.IsConnected(ctx, addr) {
 			var (
@@ -391,12 +391,12 @@ func (m *mirr) MirrorTargets(ctx context.Context) (tgts []*payload.Mirror_Target
 }
 
 func (m *mirr) isSelfMirrorAddr(addr string) bool {
-	_, ok := m.selfMirrAddrl.Load(addr)
+	_, ok := m.selfMirrAddrs.Load(addr)
 	return ok
 }
 
 func (m *mirr) isGatewayAddr(addr string) bool {
-	_, ok := m.gwAddrl.Load(addr)
+	_, ok := m.gwAddrs.Load(addr)
 	return ok
 }
 
@@ -413,7 +413,7 @@ func (m *mirr) connectedOtherMirrorAddrs(ctx context.Context) (addrs []string) {
 
 // RangeMirrorAddr calls f sequentially for each key and value present in the connection map. If f returns false, range stops the iteration.
 func (m *mirr) RangeMirrorAddr(f func(addr string, _ any) bool) {
-	m.addrl.Range(func(addr string, value any) bool {
+	m.addrs.Range(func(addr string, value any) bool {
 		if !m.isGatewayAddr(addr) && !m.isSelfMirrorAddr(addr) {
 			if !f(addr, value) {
 				return false

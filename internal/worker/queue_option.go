@@ -52,7 +52,7 @@ func WithQueueErrGroup(eg errgroup.Group) QueueOption {
 }
 
 // WithQueueCheckDuration returns the option to set the qcdur for queue.
-// If dur is invalid string, it returns errror.
+// If dur is invalid string, it returns error.
 func WithQueueCheckDuration(dur string) QueueOption {
 	return func(q *queue) error {
 		if len(dur) == 0 {
