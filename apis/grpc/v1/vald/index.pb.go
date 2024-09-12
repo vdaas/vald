@@ -23,12 +23,11 @@
 package vald
 
 import (
-	reflect "reflect"
-
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	reflect "reflect"
 )
 
 const (
@@ -94,7 +93,6 @@ var file_v1_vald_index_proto_goTypes = []any{
 	(*payload.Info_Index_StatisticsDetail)(nil), // 4: payload.v1.Info.Index.StatisticsDetail
 	(*payload.Info_Index_PropertyDetail)(nil),   // 5: payload.v1.Info.Index.PropertyDetail
 }
-
 var file_v1_vald_index_proto_depIdxs = []int32{
 	0, // 0: vald.v1.Index.IndexInfo:input_type -> payload.v1.Empty
 	0, // 1: vald.v1.Index.IndexDetail:input_type -> payload.v1.Empty

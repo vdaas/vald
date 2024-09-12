@@ -9,8 +9,12 @@
       "name": "Filter"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/insert/object": {
       "post": {
@@ -41,7 +45,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/insert/object/multiple": {
@@ -73,7 +79,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/search/object": {
@@ -105,7 +113,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/search/object/multiple": {
@@ -137,7 +147,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/update/object": {
@@ -169,7 +181,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/update/object/multiple": {
@@ -201,7 +215,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/upsert/object": {
@@ -233,7 +249,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/upsert/object/multiple": {
@@ -265,7 +283,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     }
   },

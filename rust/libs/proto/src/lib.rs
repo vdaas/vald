@@ -36,3 +36,9 @@ pub mod core {
         include!("core.v1.tonic.rs");
     }
 }
+
+pub mod meta {
+    pub mod v1 {
+        include!("meta.v1.tonic.rs");
+    }
+}

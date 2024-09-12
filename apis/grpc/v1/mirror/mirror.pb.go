@@ -23,12 +23,11 @@
 package mirror
 
 import (
-	reflect "reflect"
-
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	reflect "reflect"
 )
 
 const (
@@ -65,7 +64,6 @@ var file_v1_mirror_mirror_proto_rawDesc = []byte{
 var file_v1_mirror_mirror_proto_goTypes = []any{
 	(*payload.Mirror_Targets)(nil), // 0: payload.v1.Mirror.Targets
 }
-
 var file_v1_mirror_mirror_proto_depIdxs = []int32{
 	0, // 0: mirror.v1.Mirror.Register:input_type -> payload.v1.Mirror.Targets
 	0, // 1: mirror.v1.Mirror.Register:output_type -> payload.v1.Mirror.Targets

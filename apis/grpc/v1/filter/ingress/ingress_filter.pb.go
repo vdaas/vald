@@ -23,12 +23,11 @@
 package ingress
 
 import (
-	reflect "reflect"
-
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	reflect "reflect"
 )
 
 const (
@@ -76,7 +75,6 @@ var file_v1_filter_ingress_ingress_filter_proto_goTypes = []any{
 	(*payload.Object_Blob)(nil),   // 0: payload.v1.Object.Blob
 	(*payload.Object_Vector)(nil), // 1: payload.v1.Object.Vector
 }
-
 var file_v1_filter_ingress_ingress_filter_proto_depIdxs = []int32{
 	0, // 0: filter.ingress.v1.Filter.GenVector:input_type -> payload.v1.Object.Blob
 	1, // 1: filter.ingress.v1.Filter.FilterVector:input_type -> payload.v1.Object.Vector

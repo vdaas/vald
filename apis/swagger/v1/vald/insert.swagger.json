@@ -9,8 +9,12 @@
       "name": "Insert"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/insert": {
       "post": {
@@ -41,7 +45,9 @@
             }
           }
         ],
-        "tags": ["Insert"]
+        "tags": [
+          "Insert"
+        ]
       }
     },
     "/insert/multiple": {
@@ -73,7 +79,9 @@
             }
           }
         ],
-        "tags": ["Insert"]
+        "tags": [
+          "Insert"
+        ]
       }
     }
   },

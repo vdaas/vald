@@ -1,0 +1,15 @@
+[package]
+name = "test"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+kv = "0.24.0"
+opentelemetry = "0.25.0"
+prost-types = "0.13.2"
+proto = { version = "0.1.0", path = "../../libs/proto" }
+sled = "0.34.7"
+tokio = { version = "1.40.0", features = ["full"] }
+tonic = "0.12.2"
+observability = { path = "../../libs/observability" } 
+defer = "0.2.1"

@@ -23,12 +23,11 @@
 package core
 
 import (
-	reflect "reflect"
-
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	reflect "reflect"
 )
 
 const (
@@ -80,7 +79,6 @@ var file_v1_agent_core_agent_proto_goTypes = []any{
 	(*payload.Control_CreateIndexRequest)(nil), // 0: payload.v1.Control.CreateIndexRequest
 	(*payload.Empty)(nil),                      // 1: payload.v1.Empty
 }
-
 var file_v1_agent_core_agent_proto_depIdxs = []int32{
 	0, // 0: core.v1.Agent.CreateIndex:input_type -> payload.v1.Control.CreateIndexRequest
 	1, // 1: core.v1.Agent.SaveIndex:input_type -> payload.v1.Empty

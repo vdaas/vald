@@ -19,6 +19,7 @@ syntax = "proto3";
 package payload.v1;
 
 import "buf/validate/validate.proto";
+import "google/protobuf/any.proto";
 import "google/protobuf/wrappers.proto";
 import "google/rpc/status.proto";
 
@@ -763,6 +764,21 @@ message Mirror {
   message Targets {
     // The multiple target information.
     repeated Target targets = 1;
+  }
+}
+
+message Meta {
+  message Key {
+    string key = 1;
+  }
+
+  message Value {
+    google.protobuf.Any value = 1;
+  }
+
+  message KeyValue {
+    Key key = 1;
+    Value value = 2;
   }
 }
 
