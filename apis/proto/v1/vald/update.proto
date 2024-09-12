@@ -46,4 +46,12 @@ service Update {
       body: "*"
     };
   }
+
+  // A method to update timestamp an indexed vector.
+  rpc UpdateTimestamp(payload.v1.Update.TimestampRequest) returns (payload.v1.Object.Location) {
+    option (google.api.http) = {
+      post: "/update/timestamp"
+      body: "*"
+    };
+  }
 }

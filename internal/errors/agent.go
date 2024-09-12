@@ -115,4 +115,50 @@ var (
 
 	// ErrWriteOperationToReadReplica represents an error that when a write operation is made to read replica.
 	ErrWriteOperationToReadReplica = New("write operation to read replica is not possible")
+
+	// ErrInvalidTimestamp represents a function to generate an error that the timestamp is invalid.
+	ErrInvalidTimestamp = func(ts int64) error {
+		return Errorf("invalid timestamp detected: %d", ts)
+	}
+
+	// ErrFlushingIsInProgress represents an error that the flushing is in progress, but any request has been received.
+	ErrFlushingIsInProgress = New("flush is in progress")
+
+	// ErrUUIDAlreadyExists represents a function to generate an error that the uuid already exists.
+	ErrUUIDAlreadyExists = func(uuid string) error {
+		return Errorf("uuid %s index already exists", uuid)
+	}
+
+	// ErrUUIDNotFound represents a function to generate an error that the uuid is not found.
+	ErrUUIDNotFound = func(id uint32) error {
+		if id == 0 {
+			return New("object uuid not found")
+		}
+		return Errorf("object uuid %d's metadata not found", id)
+	}
+
+	// ErrObjectIDNotFound represents a function to generate an error that the object id is not found.
+	ErrObjectIDNotFound = func(uuid string) error {
+		return Errorf("uuid %s's object id not found", uuid)
+	}
+
+	// ErrRemoveRequestedBeforeIndexing represents a function to generate an error that the object is not indexed so can not remove it.
+	ErrRemoveRequestedBeforeIndexing = func(oid uint) error {
+		return Errorf("object id %d is not indexed we cannot remove it", oid)
+	}
+
+	ErrSearchResultEmptyButNoDataStored = New("empty search result from cgo but no index data stored in agent, this error can be ignored.")
+
+	// ErrZeroTimestamp represents an error that the timestamp is zero.
+	ErrZeroTimestamp = New("zero timestamp for index detected")
+
+	// ErrNewerTimestampObjectAlreadyExists represents a function to generate an error that the object is already newer than request
+	ErrNewerTimestampObjectAlreadyExists = func(uuid string, ts int64) error {
+		return Errorf("uuid %s's object is already newer than requested timestamp %d", uuid, ts)
+	}
+
+	// ErrNothingToBeDoneForUpdate represents a function to generate an error that there is no object to update
+	ErrNothingToBeDoneForUpdate = func(uuid string) error {
+		return Errorf("nothing to be done for update uuid %s's object", uuid)
+	}
 )

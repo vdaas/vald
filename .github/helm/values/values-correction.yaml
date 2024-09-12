@@ -16,7 +16,7 @@
 
 defaults:
   logging:
-    level: info
+    level: debug
   networkPolicy:
     enabled: true
 gateway:

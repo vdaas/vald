@@ -1173,7 +1173,7 @@ func (s *server) handleInsert(
 	}
 
 	// In this case, the status code in the result object contains only OK or ALREADY_EXIST.
-	// And send Update API requst to ALREADY_EXIST cluster using the query requested by the user.
+	// And send Update API request to ALREADY_EXIST cluster using the query requested by the user.
 	log.Warnf("failed to "+vald.InsertRPCName+" API: %#v", err)
 
 	resLoc, err := s.handleInsertResult(ctx, alreadyExistsTgts, &payload.Update_Request{
@@ -1743,7 +1743,7 @@ func (s *server) handleUpdate(
 	}
 
 	// In this case, the status code in the result object contains only OK or ALREADY_EXIST or NOT_FOUND.
-	// And send Insert API requst to NOT_FOUND cluster using query requested by the user.
+	// And send Insert API request to NOT_FOUND cluster using query requested by the user.
 	log.Warnf("failed to "+vald.UpdateRPCName+" API: %#v", err)
 
 	resLoc, err := s.handleUpdateResult(ctx, notFoundTgts, &payload.Insert_Request{
@@ -2382,7 +2382,7 @@ func (s *server) doUpsert(
 	return loc, nil
 }
 
-// StreamUpsert handles bidirectional streaming for upserting objects.
+// StreamUpsert handles bidirectional streaming for upsert objects.
 // It wraps the bidirectional stream logic for the Upsert RPC method.
 // For each incoming request in the bidirectional stream, it calls the Upsert function.
 // The response is then sent back through the stream with the corresponding status or location information.
@@ -3348,7 +3348,7 @@ func (s *server) doStreamListObject(
 						err = status.WrapWithCanceled("Stream Recv returned canceld error at "+id, err)
 						attr = trace.StatusCodeCancelled(err.Error())
 					case errors.Is(err, context.DeadlineExceeded):
-						err = status.WrapWithDeadlineExceeded("Stream Recv returned deadlin exceeded error at "+id, err)
+						err = status.WrapWithDeadlineExceeded("Stream Recv returned deadline exceeded error at "+id, err)
 						attr = trace.StatusCodeDeadlineExceeded(err.Error())
 					default:
 						var (
@@ -3387,7 +3387,7 @@ func (s *server) doStreamListObject(
 						err = status.WrapWithCanceled("Stream Send returned canceld error at "+id, err)
 						attr = trace.StatusCodeCancelled(err.Error())
 					case errors.Is(err, context.DeadlineExceeded):
-						err = status.WrapWithDeadlineExceeded("Stream Send returned deadlin exceeded error at "+id, err)
+						err = status.WrapWithDeadlineExceeded("Stream Send returned deadline exceeded error at "+id, err)
 						attr = trace.StatusCodeDeadlineExceeded(err.Error())
 					default:
 						var (

@@ -24,7 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-func TestErrRedisInvalidKVVKPrefic(t *testing.T) {
+func TestErrRedisInvalidKVVKPrefix(t *testing.T) {
 	type fields struct {
 		kv string
 		vk string
@@ -56,7 +56,7 @@ func TestErrRedisInvalidKVVKPrefic(t *testing.T) {
 					vk: str,
 				},
 				want: want{
-					want: Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", str, str),
+					want: Errorf("kv index and vk prefix must be different.\t(kv: %s,\tvk: %s)", str, str),
 				},
 			}
 		}(),
@@ -67,7 +67,7 @@ func TestErrRedisInvalidKVVKPrefic(t *testing.T) {
 					kv: str,
 				},
 				want: want{
-					want: Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", str, ""),
+					want: Errorf("kv index and vk prefix must be different.\t(kv: %s,\tvk: %s)", str, ""),
 				},
 			}
 		}(),
@@ -78,7 +78,7 @@ func TestErrRedisInvalidKVVKPrefic(t *testing.T) {
 					vk: str,
 				},
 				want: want{
-					want: Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", "", str),
+					want: Errorf("kv index and vk prefix must be different.\t(kv: %s,\tvk: %s)", "", str),
 				},
 			}
 		}(),
@@ -87,7 +87,7 @@ func TestErrRedisInvalidKVVKPrefic(t *testing.T) {
 				name:   "return an ErrRedisInvalidKVVKPrefix error when kv and vk are empty",
 				fields: fields{},
 				want: want{
-					want: Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", "", ""),
+					want: Errorf("kv index and vk prefix must be different.\t(kv: %s,\tvk: %s)", "", ""),
 				},
 			}
 		}(),
@@ -167,7 +167,7 @@ func TestErrRedisNotFoundIdentity(t *testing.T) {
 	}
 }
 
-func TestErrRdisNotFound(t *testing.T) {
+func TestErrRedisNotFound(t *testing.T) {
 	type fields struct {
 		key string
 	}
@@ -304,7 +304,7 @@ func TestErrRedisGetOperationFailed(t *testing.T) {
 	tests := []test{
 		func() test {
 			return test{
-				name: "return a wraped error when key is not empty and err is not nil",
+				name: "return a wrapped error when key is not empty and err is not nil",
 				fields: fields{
 					key: key,
 					err: err,
@@ -316,7 +316,7 @@ func TestErrRedisGetOperationFailed(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "return a wraped error when key is not empty and err is nil",
+				name: "return a wrapped error when key is not empty and err is nil",
 				fields: fields{
 					key: key,
 				},
@@ -327,7 +327,7 @@ func TestErrRedisGetOperationFailed(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "return a wraped error when key is empty and err is not nil",
+				name: "return a wrapped error when key is empty and err is not nil",
 				fields: fields{
 					err: err,
 				},
@@ -338,7 +338,7 @@ func TestErrRedisGetOperationFailed(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name:   "return a wraped error when key is empty and err is nil",
+				name:   "return a wrapped error when key is empty and err is nil",
 				fields: fields{},
 				want: want{
 					want: Wrap(nil, "Failed to fetch key ()"),
@@ -396,7 +396,7 @@ func TestErrRedisSetOperationFailed(t *testing.T) {
 	tests := []test{
 		func() test {
 			return test{
-				name: "return a wraped error when key is not empty and err is not nil",
+				name: "return a wrapped error when key is not empty and err is not nil",
 				fields: fields{
 					key: key,
 					err: err,
@@ -408,7 +408,7 @@ func TestErrRedisSetOperationFailed(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "return a wraped error when key is not empty and err is nil",
+				name: "return a wrapped error when key is not empty and err is nil",
 				fields: fields{
 					key: key,
 				},
@@ -419,7 +419,7 @@ func TestErrRedisSetOperationFailed(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "return a wraped error when key is empty and err is not nil",
+				name: "return a wrapped error when key is empty and err is not nil",
 				fields: fields{
 					err: err,
 				},
@@ -430,7 +430,7 @@ func TestErrRedisSetOperationFailed(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name:   "return a wraped error when key is empty and err is nil",
+				name:   "return a wrapped error when key is empty and err is nil",
 				fields: fields{},
 				want: want{
 					want: Wrap(nil, "Failed to set key ()"),
@@ -488,7 +488,7 @@ func TestErrRedisDeleteOperationFailed(t *testing.T) {
 	tests := []test{
 		func() test {
 			return test{
-				name: "return a wraped error when key is not empty and err is not nil",
+				name: "return a wrapped error when key is not empty and err is not nil",
 				fields: fields{
 					key: key,
 					err: err,
@@ -500,7 +500,7 @@ func TestErrRedisDeleteOperationFailed(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "return a wraped error when key is not empty and err is nil",
+				name: "return a wrapped error when key is not empty and err is nil",
 				fields: fields{
 					key: key,
 				},
@@ -511,7 +511,7 @@ func TestErrRedisDeleteOperationFailed(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "return a wraped error when key is empty and err is not nil",
+				name: "return a wrapped error when key is empty and err is not nil",
 				fields: fields{
 					err: err,
 				},
@@ -522,7 +522,7 @@ func TestErrRedisDeleteOperationFailed(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name:   "return a wraped error when key is empty and err is nil",
+				name:   "return a wrapped error when key is empty and err is nil",
 				fields: fields{},
 				want: want{
 					want: Wrap(nil, "Failed to delete key ()"),

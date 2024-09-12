@@ -384,7 +384,7 @@ server_config:
       # @schema {"name": "server_config.servers.grpc.port", "type": "integer"}
       port: 8081
       # @schema {"name": "server_config.servers.grpc.servicePort", "type": "integer"}
-      serviecPort: 8081
+      servicePort: 8081
       # @schema {"name": "server_config.servers.grpc.server", "type": "object"}
       server:
         # @schema {"name": "server_config.servers.grpc.server.mode", "type": "string"}

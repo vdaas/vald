@@ -182,7 +182,7 @@ func WithConnectionLifeTimeLimit(dur string) Option {
 }
 
 // WithMaxIdleConns returns the option to set the maxIdleConns.
-// If conns is negative numner, no idle connections are retained.
+// If conns is negative number, no idle connections are retained.
 // ref: https://golang.org/src/database/sql/sql.go?s=24983:25019#L879
 func WithMaxIdleConns(conns int) Option {
 	return func(m *mySQLClient) error {
@@ -194,7 +194,7 @@ func WithMaxIdleConns(conns int) Option {
 }
 
 // WithMaxOpenConns returns the option to set the maxOpenConns.
-// If conns is negative numner, no limit on the number of open connections.
+// If conns is negative number, no limit on the number of open connections.
 // ref: https://golang.org/src/database/sql/sql.go?s=24983:25019#L923
 func WithMaxOpenConns(conns int) Option {
 	return func(m *mySQLClient) error {

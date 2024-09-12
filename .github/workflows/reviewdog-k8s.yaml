@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
   detect-ci-container:
-    uses: ./.github/workflows/_detect-ci-container.yml
+    uses: ./.github/workflows/_detect-ci-container.yaml
   kubeval-conflint:
     name: runner / kubeval-conflint
     runs-on: ubuntu-latest

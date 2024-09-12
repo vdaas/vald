@@ -1300,7 +1300,7 @@ func Test_server_StreamListObject(t *testing.T) {
 				// Call the method under test
 				err = s.StreamListObject(&payload.Object_List_Request{}, &stream)
 
-				// Check the errros are joined and its a gRPC error
+				// Check the errors are joined and its a gRPC error
 				require.ErrorContains(t, err, "foo")
 				require.ErrorContains(t, err, "bar")
 				_, ok := status.FromError(err)
