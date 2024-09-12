@@ -377,7 +377,7 @@ func TestErrorHandler(t *testing.T) {
 					}
 
 					if got, want := w.Code, http.StatusInternalServerError; got != want {
-						return errors.Errorf("reso code not equals. want: %v, got: %v", http.StatusInternalServerError, got)
+						return errors.Errorf("response code not equals. want: %v, got: %v", http.StatusInternalServerError, got)
 					}
 					return nil
 				},
@@ -666,7 +666,7 @@ func TestRequest(t *testing.T) {
 		ctx     context.Context
 		method  string
 		url     string
-		payloyd any
+		payload any
 		data    any
 	}
 	type want struct {
@@ -694,7 +694,7 @@ func TestRequest(t *testing.T) {
 					ctx:     context.Background(),
 					method:  "@",
 					url:     "/",
-					payloyd: nil,
+					payload: nil,
 					data:    nil,
 				},
 				want: want{
@@ -709,7 +709,7 @@ func TestRequest(t *testing.T) {
 					ctx:     context.Background(),
 					method:  "POST",
 					url:     "/",
-					payloyd: 1 + 3i,
+					payload: 1 + 3i,
 					data:    new(any),
 				},
 				checkFunc: func(w want, err error) error {
@@ -730,7 +730,7 @@ func TestRequest(t *testing.T) {
 					ctx:     context.Background(),
 					method:  "POST",
 					url:     "/",
-					payloyd: "1",
+					payload: "1",
 					data:    new(any),
 				},
 				want: want{
@@ -753,7 +753,7 @@ func TestRequest(t *testing.T) {
 					ctx:     context.Background(),
 					method:  "POST",
 					url:     srv.URL,
-					payloyd: "1",
+					payload: "1",
 					data:    &got,
 				},
 				want: want{
@@ -791,7 +791,7 @@ func TestRequest(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			err := Request(test.args.ctx, test.args.method, test.args.url, test.args.payloyd, test.args.data)
+			err := Request(test.args.ctx, test.args.method, test.args.url, test.args.payload, test.args.data)
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

@@ -391,7 +391,7 @@ func Test_gobCompressor_Reader(t *testing.T) {
 		src io.ReadCloser
 	}
 	type fields struct {
-		transcodr gob.Transcoder
+		transcoder gob.Transcoder
 	}
 	type want struct {
 		want io.ReadCloser
@@ -425,7 +425,7 @@ func Test_gobCompressor_Reader(t *testing.T) {
 					src: rc,
 				},
 				fields: fields{
-					transcodr: &gob.MockTranscoder{
+					transcoder: &gob.MockTranscoder{
 						NewDecoderFunc: func(r io.Reader) gob.Decoder {
 							return dec
 						},
@@ -457,7 +457,7 @@ func Test_gobCompressor_Reader(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			g := &gobCompressor{
-				transcoder: test.fields.transcodr,
+				transcoder: test.fields.transcoder,
 			}
 
 			got, err := g.Reader(test.args.src)

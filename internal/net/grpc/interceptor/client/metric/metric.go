@@ -40,7 +40,7 @@ const (
 func ClientMetricInterceptors() (grpc.UnaryClientInterceptor, grpc.StreamClientInterceptor, error) {
 	meter := metrics.GetMeter()
 
-	latencyHistgram, err := meter.Float64Histogram(
+	latencyHistogram, err := meter.Float64Histogram(
 		latencyMetricsName,
 		metrics.WithDescription("Client latency in milliseconds, by method"),
 		metrics.WithUnit(metrics.Milliseconds),
@@ -60,7 +60,7 @@ func ClientMetricInterceptors() (grpc.UnaryClientInterceptor, grpc.StreamClientI
 
 	record := func(ctx context.Context, method string, err error, latency float64) {
 		attrs := attributesFromError(method, err)
-		latencyHistgram.Record(ctx, latency, metrics.WithAttributes(attrs...))
+		latencyHistogram.Record(ctx, latency, metrics.WithAttributes(attrs...))
 		completedRPCCnt.Add(ctx, 1, metrics.WithAttributes(attrs...))
 	}
 	return func(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {

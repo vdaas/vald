@@ -96,6 +96,7 @@
   - [Update.MultiRequest](#payload-v1-Update-MultiRequest)
   - [Update.ObjectRequest](#payload-v1-Update-ObjectRequest)
   - [Update.Request](#payload-v1-Update-Request)
+  - [Update.TimestampRequest](#payload-v1-Update-TimestampRequest)
   - [Upsert](#payload-v1-Upsert)
   - [Upsert.Config](#payload-v1-Upsert-Config)
   - [Upsert.MultiObjectRequest](#payload-v1-Upsert-MultiObjectRequest)
@@ -1118,6 +1119,18 @@ Represent the update request.
 | vector | [Object.Vector](#payload-v1-Object-Vector) |       | The vector to be updated.                |
 | config | [Update.Config](#payload-v1-Update-Config) |       | The configuration of the update request. |
 
+<a name="payload-v1-Update-TimestampRequest"></a>
+
+### Update.TimestampRequest
+
+Represent a vector meta data.
+
+| Field     | Type              | Label | Description                                       |
+| --------- | ----------------- | ----- | ------------------------------------------------- |
+| id        | [string](#string) |       | The vector ID.                                    |
+| timestamp | [int64](#int64)   |       | timestamp represents when this vector inserted.   |
+| force     | [bool](#bool)     |       | force represents forcefully update the timestamp. |
+
 <a name="payload-v1-Upsert"></a>
 
 ### Upsert
@@ -1730,11 +1743,12 @@ Search service provides ways to search indexed vectors.
 
 Update service provides ways to update indexed vectors.
 
-| Method Name  | Request Type                                                       | Response Type                                                                 | Description                                                             |
-| ------------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Update       | [.payload.v1.Update.Request](#payload-v1-Update-Request)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to update an indexed vector.                                   |
-| StreamUpdate | [.payload.v1.Update.Request](#payload-v1-Update-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to update multiple indexed vectors by bidirectional streaming. |
-| MultiUpdate  | [.payload.v1.Update.MultiRequest](#payload-v1-Update-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to update multiple indexed vectors in a single request.        |
+| Method Name     | Request Type                                                               | Response Type                                                                 | Description                                                             |
+| --------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Update          | [.payload.v1.Update.Request](#payload-v1-Update-Request)                   | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to update an indexed vector.                                   |
+| StreamUpdate    | [.payload.v1.Update.Request](#payload-v1-Update-Request) stream            | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to update multiple indexed vectors by bidirectional streaming. |
+| MultiUpdate     | [.payload.v1.Update.MultiRequest](#payload-v1-Update-MultiRequest)         | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to update multiple indexed vectors in a single request.        |
+| UpdateTimestamp | [.payload.v1.Update.TimestampRequest](#payload-v1-Update-TimestampRequest) | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to update timestamp an indexed vector.                         |
 
 <a name="v1_vald_upsert-proto"></a>
 

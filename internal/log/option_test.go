@@ -148,7 +148,7 @@ func TestWithLoggerType(t *testing.T) {
 		{
 			name: "set nothing when str is invalid",
 			args: args{
-				str: "valdvaldinvalid",
+				str: "invalid",
 			},
 			want: want{
 				obj: new(T),
@@ -227,7 +227,7 @@ func TestWithLevel(t *testing.T) {
 		{
 			name: "set nothing when str is invalid",
 			args: args{
-				str: "valdvaldinvalid",
+				str: "invalid",
 			},
 			want: want{
 				obj: new(T),
@@ -312,7 +312,7 @@ func TestWithFormat(t *testing.T) {
 			return test{
 				name: "set nothing when str is invalid",
 				args: args{
-					str: "valdvaldinvalid",
+					str: "invalid",
 				},
 				want: want{
 					obj: new(T),

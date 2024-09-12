@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Search {
 }
 /// Nested message and enum types in `Search`.
@@ -192,7 +192,7 @@ pub mod search {
 }
 /// Filter related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Filter {
 }
 /// Nested message and enum types in `Filter`.
@@ -219,7 +219,7 @@ pub mod filter {
 }
 /// Insert related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Insert {
 }
 /// Nested message and enum types in `Insert`.
@@ -282,7 +282,7 @@ pub mod insert {
 }
 /// Update related messages
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Update {
 }
 /// Nested message and enum types in `Update`.
@@ -328,6 +328,20 @@ pub mod update {
         #[prost(message, repeated, tag="1")]
         pub requests: ::prost::alloc::vec::Vec<ObjectRequest>,
     }
+    /// Represent a vector meta data.
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct TimestampRequest {
+        /// The vector ID.
+        #[prost(string, tag="1")]
+        pub id: ::prost::alloc::string::String,
+        /// timestamp represents when this vector inserted.
+        #[prost(int64, tag="2")]
+        pub timestamp: i64,
+        /// force represents forcefully update the timestamp.
+        #[prost(bool, tag="3")]
+        pub force: bool,
+    }
     /// Represent the update configuration.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -349,7 +363,7 @@ pub mod update {
 }
 /// Upsert related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Upsert {
 }
 /// Nested message and enum types in `Upsert`.
@@ -416,7 +430,7 @@ pub mod upsert {
 }
 /// Remove related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Remove {
 }
 /// Nested message and enum types in `Remove`.
@@ -451,7 +465,7 @@ pub mod remove {
     }
     /// Represent the timestamp comparison.
     #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
     pub struct Timestamp {
         /// The timestamp.
         #[prost(int64, tag="1")]
@@ -512,7 +526,7 @@ pub mod remove {
     }
     /// Represent the remove configuration.
     #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
     pub struct Config {
         /// A flag to skip exist check during upsert operation.
         #[prost(bool, tag="1")]
@@ -524,19 +538,19 @@ pub mod remove {
 }
 /// Flush related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Flush {
 }
 /// Nested message and enum types in `Flush`.
 pub mod flush {
     #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
     pub struct Request {
     }
 }
 /// Common messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Object {
 }
 /// Nested message and enum types in `Object`.
@@ -742,13 +756,13 @@ pub mod object {
     }
     /// Represent the list object vector stream request and response.
     #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
     pub struct List {
     }
     /// Nested message and enum types in `List`.
     pub mod list {
         #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
         pub struct Request {
         }
         #[allow(clippy::derive_partial_eq_without_eq)]
@@ -774,14 +788,14 @@ pub mod object {
 }
 /// Control related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Control {
 }
 /// Nested message and enum types in `Control`.
 pub mod control {
     /// Represent the create index request.
     #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
     pub struct CreateIndexRequest {
         /// The pool size of the create index operation.
         #[prost(uint32, tag="1")]
@@ -790,7 +804,7 @@ pub mod control {
 }
 /// Discoverer related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Discoverer {
 }
 /// Nested message and enum types in `Discoverer`.
@@ -812,21 +826,21 @@ pub mod discoverer {
 }
 /// Info related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Info {
 }
 /// Nested message and enum types in `Info`.
 pub mod info {
     /// Represent the index information messages.
     #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
     pub struct Index {
     }
     /// Nested message and enum types in `Index`.
     pub mod index {
         /// Represent the index count message.
         #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
         pub struct Count {
             /// The stored index count.
             #[prost(uint32, tag="1")]
@@ -857,7 +871,7 @@ pub mod info {
         }
         /// Represent the UUID message.
         #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
         pub struct Uuid {
         }
         /// Nested message and enum types in `UUID`.
@@ -1136,7 +1150,7 @@ pub mod info {
     }
     /// Represent the CPU information message.
     #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
     pub struct Cpu {
         /// The CPU resource limit.
         #[prost(double, tag="1")]
@@ -1150,7 +1164,7 @@ pub mod info {
     }
     /// Represent the memory information message.
     #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
     pub struct Memory {
         /// The memory limit.
         #[prost(double, tag="1")]
@@ -1196,7 +1210,7 @@ pub mod info {
 }
 /// Mirror related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Mirror {
 }
 /// Nested message and enum types in `Mirror`.
@@ -1223,7 +1237,7 @@ pub mod mirror {
 }
 /// Represent an empty message.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Empty {
 }
 // @@protoc_insertion_point(module)

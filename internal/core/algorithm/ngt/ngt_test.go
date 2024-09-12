@@ -103,7 +103,7 @@ func TestNew(t *testing.T) {
 		beforeFunc  func(args)
 		afterFunc   func(*testing.T, NGT) error
 	}
-	defaultComprators := append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
+	defaultComparators := append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
 		return s1 == s2
 	})))
 	defaultCheckFunc := func(w want, got NGT, err error, comparators ...comparator.Option) error {
@@ -234,7 +234,7 @@ func TestNew(t *testing.T) {
 			}
 			comparators := test.comparators
 			if test.comparators == nil || len(test.comparators) == 0 {
-				comparators = defaultComprators
+				comparators = defaultComparators
 			}
 
 			got, err := New(test.args.opts...)
@@ -692,7 +692,7 @@ func Test_gen(t *testing.T) {
 		beforeFunc  func(*testing.T, args)
 		afterFunc   func(*testing.T, NGT) error
 	}
-	defaultComprators := append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
+	defaultComparators := append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
 		return s1 == s2
 	})))
 	defaultCheckFunc := func(_ context.Context, w want, got NGT, err error, comparators ...comparator.Option) error {
@@ -839,7 +839,7 @@ func Test_gen(t *testing.T) {
 			}
 			comparators := test.comparators
 			if test.comparators == nil || len(test.comparators) == 0 {
-				comparators = defaultComprators
+				comparators = defaultComparators
 			}
 
 			got, err := gen(test.args.isLoad, test.args.opts...)
@@ -1049,7 +1049,7 @@ func Test_ngt_loadOptions(t *testing.T) {
 			},
 		},
 		{
-			name: "load option failed with Ignoreable error",
+			name: "load option failed with Ignorable error",
 			args: args{
 				opts: []Option{
 					func(n *ngt) error {
@@ -1107,7 +1107,7 @@ func Test_ngt_loadOptions(t *testing.T) {
 func Test_ngt_create(t *testing.T) {
 	// This test is skipped because it requires ngt.prop to be set probably.
 	// We cannot initialize ngt.prop since it is C dependencies.
-	// This function is called by New(), and the ngt.prop is destoried in New(), so we cannot test this function individually.
+	// This function is called by New(), and the ngt.prop is destroyed in New(), so we cannot test this function individually.
 	t.SkipNow()
 }
 
@@ -1476,7 +1476,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "resturn vector id after the nearby vector inserted (uint8)",
+			name: "return vector id after the nearby vector inserted (uint8)",
 			args: args{
 				ctx:  context.Background(),
 				vec:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
@@ -1653,7 +1653,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "resturn vector id after the nearby vector inserted (float)",
+			name: "return vector id after the nearby vector inserted (float)",
 			args: args{
 				ctx:  context.Background(),
 				vec:  []float32{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.91},

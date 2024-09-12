@@ -499,6 +499,28 @@ func (c *client) MultiUpdate(
 	return res, nil
 }
 
+func (c *client) UpdateTimestamp(
+	ctx context.Context, in *payload.Update_TimestampRequest, opts ...grpc.CallOption,
+) (res *payload.Object_Location, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.UpdateTimestampRPCName), apiName+"/"+vald.UpdateTimestampRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn,
+		copts ...grpc.CallOption,
+	) (any, error) {
+		res, err = vald.NewValdClient(conn).UpdateTimestamp(ctx, in, append(copts, opts...)...)
+		return nil, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 func (c *client) Upsert(
 	ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption,
 ) (res *payload.Object_Location, err error) {
@@ -1086,6 +1108,18 @@ func (c *singleClient) Update(
 		}
 	}()
 	return c.vc.Update(ctx, in, opts...)
+}
+
+func (c *singleClient) UpdateTimestamp(
+	ctx context.Context, in *payload.Update_TimestampRequest, opts ...grpc.CallOption,
+) (res *payload.Object_Location, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.UpdateTimestampRPCName), apiName+"/"+vald.UpdateTimestampRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.UpdateTimestamp(ctx, in, opts...)
 }
 
 func (c *singleClient) StreamUpdate(
