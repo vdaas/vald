@@ -313,6 +313,7 @@ const (
 	rustVersionPath        = versionsPath + "/RUST_VERSION"
 	faissVersionPath       = versionsPath + "/FAISS_VERSION"
 	ngtVersionPath         = versionsPath + "/NGT_VERSION"
+	usearchVersionPath     = versionsPath + "/USEARCH_VERSION"
 
 	makefilePath    = "Makefile"
 	makefileDirPath = "Makefile.d/**"
@@ -646,7 +647,7 @@ func main() {
 				append(ngtBuildDeps,
 					append(faissBuildDeps,
 						devContainerDeps...)...)...)...),
-			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess),
+			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess,),
 			Entrypoints: []string{"/bin/bash"},
 		},
 		"vald-dev-container": {
