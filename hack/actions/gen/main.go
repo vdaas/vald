@@ -647,7 +647,7 @@ func main() {
 				append(ngtBuildDeps,
 					append(faissBuildDeps,
 						devContainerDeps...)...)...)...),
-			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess,),
+			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess),
 			Entrypoints: []string{"/bin/bash"},
 		},
 		"vald-dev-container": {
