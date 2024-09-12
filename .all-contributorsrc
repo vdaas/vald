@@ -194,6 +194,16 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "smorihira",
+      "name": "Shunya Morihira (森平 隼矢)",
+      "avatar_url": "https://avatars.githubusercontent.com/u/105629359?v=4",
+      "profile": "https://github.com/smorihira",
+      "contributions": [
+        "tool",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
