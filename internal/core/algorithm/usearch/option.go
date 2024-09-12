@@ -55,20 +55,17 @@ func WithIndexPath(path string) Option {
 // WithQuantizationType represents the option to set the quantizationType for usearch.
 func WithQuantizationType(quantizationType string) Option {
 	return func(u *usearch) error {
-		switch quantizationType {
-		case "BF16":
-			u.quantizationType = core.BF16
-		case "F16":
-			u.quantizationType = core.F16
-		case "F32":
-			u.quantizationType = core.F32
-		case "F64":
-			u.quantizationType = core.F64
-		case "I8":
-			u.quantizationType = core.I8
-		case "B1":
-			u.quantizationType = core.B1
-		default:
+		quantizationTypeMap := map[string]core.Quantization{
+			"BF16": core.BF16,
+			"F16":  core.F16,
+			"F32":  core.F32,
+			"F64":  core.F64,
+			"I8":   core.I8,
+			"B1":   core.B1,
+		}
+		if quantizationType, ok := quantizationTypeMap[quantizationType]; ok {
+			u.quantizationType = quantizationType
+		} else {
 			err := errors.NewUsearchError("unsupported QuantizationType")
 			return errors.NewErrCriticalOption("QuantizationType", quantizationType, err)
 		}
@@ -79,26 +76,21 @@ func WithQuantizationType(quantizationType string) Option {
 // WithMetricType represents the option to set the metricType for usearch.
 func WithMetricType(metricType string) Option {
 	return func(u *usearch) error {
-		switch strings.NewReplacer("-", "", "_", "", " ", "").Replace(strings.ToLower(metricType)) {
-		case "l2sq":
-			u.metricType = core.L2sq
-		case "ip":
-			u.metricType = core.InnerProduct
-		case "cosine":
-			u.metricType = core.Cosine
-		case "haversine":
-			u.metricType = core.Haversine
-		case "divergence":
-			u.metricType = core.Divergence
-		case "pearson":
-			u.metricType = core.Pearson
-		case "hamming":
-			u.metricType = core.Hamming
-		case "tanimoto":
-			u.metricType = core.Tanimoto
-		case "sorensen":
-			u.metricType = core.Sorensen
-		default:
+		metricTypeMap := map[string]core.Metric{
+			"l2sq":       core.L2sq,
+			"ip":         core.InnerProduct,
+			"cosine":     core.Cosine,
+			"haversine":  core.Haversine,
+			"divergence": core.Divergence,
+			"pearson":    core.Pearson,
+			"hamming":    core.Hamming,
+			"tanimoto":   core.Tanimoto,
+			"sorensen":   core.Sorensen,
+		}
+		normalizedMetricType := strings.NewReplacer("-", "", "_", "", " ", "").Replace(strings.ToLower(metricType))
+		if metricType, ok := metricTypeMap[normalizedMetricType]; ok {
+			u.metricType = metricType
+		} else {
 			err := errors.NewUsearchError("unsupported MetricType")
 			return errors.NewErrCriticalOption("MetricType", metricType, err)
 		}
