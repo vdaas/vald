@@ -1238,6 +1238,33 @@ pub mod mirror {
         pub targets: ::prost::alloc::vec::Vec<Target>,
     }
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+pub struct Meta {
+}
+/// Nested message and enum types in `Meta`.
+pub mod meta {
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct Key {
+        #[prost(string, tag="1")]
+        pub key: ::prost::alloc::string::String,
+    }
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct Value {
+        #[prost(message, optional, tag="1")]
+        pub value: ::core::option::Option<::prost_types::Any>,
+    }
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct KeyValue {
+        #[prost(message, optional, tag="1")]
+        pub key: ::core::option::Option<Key>,
+        #[prost(message, optional, tag="2")]
+        pub value: ::core::option::Option<Value>,
+    }
+}
 /// Represent an empty message.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
