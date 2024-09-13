@@ -1422,6 +1422,15 @@ k8s/gateway/gateway/lb/hpa.yaml
 k8s/gateway/gateway/lb/pdb.yaml
 k8s/gateway/gateway/lb/priorityclass.yaml
 k8s/gateway/gateway/lb/svc.yaml
+k8s/gateway/gateway/mirror/clusterrole.yaml
+k8s/gateway/gateway/mirror/clusterrolebinding.yaml
+k8s/gateway/gateway/mirror/configmap.yaml
+k8s/gateway/gateway/mirror/deployment.yaml
+k8s/gateway/gateway/mirror/hpa.yaml
+k8s/gateway/gateway/mirror/pdb.yaml
+k8s/gateway/gateway/mirror/priorityclass.yaml
+k8s/gateway/gateway/mirror/serviceaccount.yaml
+k8s/gateway/gateway/mirror/svc.yaml
 k8s/index/job/correction/configmap.yaml
 k8s/index/job/correction/cronjob.yaml
 k8s/index/job/creation/configmap.yaml
