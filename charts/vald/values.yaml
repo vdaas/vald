@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.7.12
+    tag: v1.7.13
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -94,6 +94,35 @@ defaults:
             # @schema {"name": "defaults.server_config.servers.rest.server.http.write_timeout", "type": "string"}
             # defaults.server_config.servers.rest.server.http.write_timeout -- REST server write timeout
             write_timeout: 1s
+            # @schema {"name": "defaults.server_config.servers.rest.server.http.http2", "type": "object", "anchor": "http2_server_config"}
+            http2:
+              # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.enabled", "type": "boolean"}
+              # defaults.server_config.servers.rest.server.http.http2.enabled -- HTTP2 server enabled
+              enabled: false
+              # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.handler_limit", "type": "integer"}
+              # defaults.server_config.servers.rest.server.http.http2.handler_limit -- Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit.
+              handler_limit: 0
+              # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.permit_prohibited_cipher_suites", "type": "boolean"}
+              # defaults.server_config.servers.rest.server.http.http2.permit_prohibited_cipher_suites -- if true, permits the use of cipher suites prohibited by the HTTP/2 spec.
+              permit_prohibited_cipher_suites: true
+              # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.max_upload_buffer_per_connection", "type": "integer"}
+              # defaults.server_config.servers.rest.server.http.http2.max_upload_buffer_per_connection -- The size of the initial flow control window for each connections.
+              max_upload_buffer_per_connection: 0
+              # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.max_upload_buffer_per_stream", "type": "integer"}
+              # defaults.server_config.servers.rest.server.http.http2.max_upload_buffer_per_stream -- The size of the initial flow control window for each streams.
+              max_upload_buffer_per_stream: 0
+              # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.max_concurrent_streams", "type": "integer"}
+              # defaults.server_config.servers.rest.server.http.http2.max_concurrent_streams -- The number of concurrent streams that each client may have open at a time.
+              max_concurrent_streams: 0
+              # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.max_decoder_header_table_size", "type": "integer"}
+              # defaults.server_config.servers.rest.server.http.http2.max_decoder_header_table_size -- Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used.
+              max_decoder_header_table_size: 4096
+              # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.max_encoder_header_table_size", "type": "integer"}
+              # defaults.server_config.servers.rest.server.http.http2.max_encoder_header_table_size -- An upper limit for the header compression table used for encoding request headers.
+              max_encoder_header_table_size: 4096
+              # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.max_read_frame_size", "type": "integer"}
+              # defaults.server_config.servers.rest.server.http.http2.max_read_frame_size -- The largest frame this server is willing to read.
+              max_read_frame_size: 0
           # @schema {"name": "defaults.server_config.servers.rest.server.socket_option", "type": "object", "anchor": "socket_option"}
           socket_option:
             # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.reuse_port", "type": "boolean"}
@@ -356,6 +385,26 @@ defaults:
             # @schema {"name": "defaults.server_config.healths.liveness.server.http.write_timeout", "type": "string"}
             # defaults.server_config.healths.liveness.server.http.write_timeout -- liveness server write timeout
             write_timeout: ""
+            # @schema {"name": "defaults.server_config.healths.liveness.server.http.http2", "type": "object", "alias": "http2_server_config"}
+            http2:
+              # defaults.server_config.healths.liveness.server.http.http2.enabled -- HTTP2 server enabled
+              enabled: false
+              # defaults.server_config.healths.liveness.server.http.http2.handler_limit -- Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit.
+              handler_limit: 0
+              # defaults.server_config.healths.liveness.server.http.http2.permit_prohibited_cipher_suites -- if true, permits the use of cipher suites prohibited by the HTTP/2 spec.
+              permit_prohibited_cipher_suites: true
+              # defaults.server_config.healths.liveness.server.http.http2.max_upload_buffer_per_connection -- The size of the initial flow control window for each connections.
+              max_upload_buffer_per_connection: 0
+              # defaults.server_config.healths.liveness.server.http.http2.max_upload_buffer_per_stream -- The size of the initial flow control window for each streams.
+              max_upload_buffer_per_stream: 0
+              # defaults.server_config.healths.liveness.server.http.http2.max_concurrent_streams -- The number of concurrent streams that each client may have open at a time.
+              max_concurrent_streams: 0
+              # defaults.server_config.healths.liveness.server.http.http2.max_decoder_header_table_size -- Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used.
+              max_decoder_header_table_size: 4096
+              # defaults.server_config.healths.liveness.server.http.http2.max_encoder_header_table_size -- An upper limit for the header compression table used for encoding request headers.
+              max_encoder_header_table_size: 4096
+              # defaults.server_config.healths.liveness.server.http.http2.max_read_frame_size -- The largest frame this server is willing to read.
+              max_read_frame_size: 0
           # @schema {"name": "defaults.server_config.healths.liveness.server.socket_option", "alias": "socket_option"}
           socket_option:
             # defaults.server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -455,13 +504,33 @@ defaults:
             # @schema {"name": "defaults.server_config.healths.readiness.server.http.write_timeout", "type": "string"}
             # defaults.server_config.healths.readiness.server.http.write_timeout -- readiness server write timeout
             write_timeout: ""
+            # @schema {"name": "defaults.server_config.healths.readiness.server.http.http2", "type": "object", "alias": "http2_server_config"}
+            http2:
+              # defaults.server_config.healths.readiness.server.http.http2.enabled -- HTTP2 server enabled
+              enabled: false
+              # defaults.server_config.healths.readiness.server.http.http2.handler_limit -- Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit.
+              handler_limit: 0
+              # defaults.server_config.healths.readiness.server.http.http2.permit_prohibited_cipher_suites -- if true, permits the use of cipher suites prohibited by the HTTP/2 spec.
+              permit_prohibited_cipher_suites: true
+              # defaults.server_config.healths.readiness.server.http.http2.max_upload_buffer_per_connection -- The size of the initial flow control window for each connections.
+              max_upload_buffer_per_connection: 0
+              # defaults.server_config.healths.readiness.server.http.http2.max_upload_buffer_per_stream -- The size of the initial flow control window for each streams.
+              max_upload_buffer_per_stream: 0
+              # defaults.server_config.healths.readiness.server.http.http2.max_concurrent_streams -- The number of concurrent streams that each client may have open at a time.
+              max_concurrent_streams: 0
+              # defaults.server_config.healths.readiness.server.http.http2.max_decoder_header_table_size -- Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used.
+              max_decoder_header_table_size: 4096
+              # defaults.server_config.healths.readiness.server.http.http2.max_encoder_header_table_size -- An upper limit for the header compression table used for encoding request headers.
+              max_encoder_header_table_size: 4096
+              # defaults.server_config.healths.readiness.server.http.http2.max_read_frame_size -- The largest frame this server is willing to read.
+              max_read_frame_size: 0
           # @schema {"name": "defaults.server_config.healths.readiness.server.socket_option", "alias": "socket_option"}
           socket_option:
             # defaults.server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
             reuse_port: true
             # defaults.server_config.healths.readiness.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
             reuse_addr: true
-            # defaults.server_config.healths.readiness.server.socket_option.tcp_fast_oepn -- server listen socket option for tcp_fast_open functionality
+            # defaults.server_config.healths.readiness.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: true
             # defaults.server_config.healths.readiness.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
             tcp_no_delay: true
@@ -528,6 +597,26 @@ defaults:
             # @schema {"name": "defaults.server_config.metrics.pprof.server.http.write_timeout", "type": "string"}
             # defaults.server_config.metrics.pprof.server.http.write_timeout -- pprof server write timeout
             write_timeout: 1m
+            # @schema {"name": "defaults.server_config.metrics.pprof.server.http.http2", "type": "object", "alias": "http2_server_config"}
+            http2:
+              # defaults.server_config.metrics.pprof.server.http.http2.enabled -- HTTP2 server enabled
+              enabled: false
+              # defaults.server_config.metrics.pprof.server.http.http2.handler_limit -- Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit.
+              handler_limit: 0
+              # defaults.server_config.metrics.pprof.server.http.http2.permit_prohibited_cipher_suites -- if true, permits the use of cipher suites prohibited by the HTTP/2 spec.
+              permit_prohibited_cipher_suites: true
+              # defaults.server_config.metrics.pprof.server.http.http2.max_upload_buffer_per_connection -- The size of the initial flow control window for each connections.
+              max_upload_buffer_per_connection: 0
+              # defaults.server_config.metrics.pprof.server.http.http2.max_upload_buffer_per_stream -- The size of the initial flow control window for each streams.
+              max_upload_buffer_per_stream: 0
+              # defaults.server_config.metrics.pprof.server.http.http2.max_concurrent_streams -- The number of concurrent streams that each client may have open at a time.
+              max_concurrent_streams: 0
+              # defaults.server_config.metrics.pprof.server.http.http2.max_decoder_header_table_size -- Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used.
+              max_decoder_header_table_size: 4096
+              # defaults.server_config.metrics.pprof.server.http.http2.max_encoder_header_table_size -- An upper limit for the header compression table used for encoding request headers.
+              max_encoder_header_table_size: 4096
+              # defaults.server_config.metrics.pprof.server.http.http2.max_read_frame_size -- The largest frame this server is willing to read.
+              max_read_frame_size: 0
           # @schema {"name": "defaults.server_config.metrics.pprof.server.socket_option", "alias": "socket_option"}
           socket_option:
             # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -2174,6 +2263,87 @@ agent:
     # @schema {"name": "agent.ngt.error_buffer_limit", "type": "integer", "minimum": 1}
     # agent.ngt.error_buffer_limit -- maximum number of core ngt error buffer pool size limit
     error_buffer_limit: 10
+    # @schema {"name": "agent.ngt.enable_statistics", "type": "boolean"}
+    # agent.ngt.enable_statistics -- enable index statistics loading
+    enable_statistics: false
+  # @schema {"name": "agent.faiss", "type": "object"}
+  faiss:
+    # @schema {"name": "agent.faiss.pod_name", "type": "string"}
+    # agent.faiss.pod_name -- pod name of myself
+    pod_name: _MY_POD_NAME_
+    # @schema {"name": "agent.faiss.namespace", "type": "string"}
+    # agent.faiss.namespace -- namespace of myself
+    namespace: _MY_POD_NAMESPACE_
+    # @schema {"name": "agent.faiss.index_path", "type": "string"}
+    # agent.faiss.index_path -- path to index data
+    index_path: ""
+    # @schema {"name": "agent.faiss.auto_index_duration_limit", "type": "string"}
+    # agent.faiss.auto_index_duration_limit -- limit duration of automatic indexing
+    auto_index_duration_limit: 24h
+    # @schema {"name": "agent.faiss.auto_index_check_duration", "type": "string"}
+    # agent.faiss.auto_index_check_duration -- check duration of automatic indexing
+    auto_index_check_duration: 30m
+    # @schema {"name": "agent.faiss.auto_index_length", "type": "integer"}
+    # agent.faiss.auto_index_length -- number of cache to trigger automatic indexing
+    auto_index_length: 100
+    # @schema {"name": "agent.faiss.auto_save_index_duration", "type": "string"}
+    # agent.faiss.auto_save_index_duration -- duration of automatic save index
+    auto_save_index_duration: 35m
+    # @schema {"name": "agent.faiss.initial_delay_max_duration", "type": "string"}
+    # agent.faiss.initial_delay_max_duration -- maximum duration for initial delay
+    initial_delay_max_duration: 3m
+    # @schema {"name": "agent.faiss.dimension", "type": "integer", "minimum": 1}
+    # agent.faiss.dimension -- vector dimension
+    dimension: 4096
+    # @schema {"name": "agent.faiss.method_type", "type": "string", "enum": ["ivfpq", "binaryindex"]}
+    # agent.faiss.method_type -- method type
+    # it should be `ivfpq` or `binaryindex`
+    method_type: ivfpq
+    # @schema {"name": "agent.faiss.metric_type", "type": "string", "enum": ["innerproduct", "l2"]}
+    # agent.faiss.metric_type -- metric type
+    # it should be `innerproduct` or `l2`
+    metric_type: l2
+    # @schema {"name": "agent.faiss.nlist", "type": "integer"}
+    # agent.faiss.nlist -- nlist
+    nlist: 100
+    # @schema {"name": "agent.faiss.m", "type": "integer"}
+    # agent.faiss.m -- m
+    m: 8
+    # @schema {"name": "agent.faiss.nbits_per_idx", "type": "integer"}
+    # agent.faiss.nbits_per_idx -- nbits_per_idx
+    nbits_per_idx: 8
+    # @schema {"name": "agent.faiss.enable_in_memory_mode", "type": "boolean"}
+    # agent.faiss.enable_in_memory_mode -- in-memory mode enabled
+    enable_in_memory_mode: true
+    # @schema {"name": "agent.faiss.min_load_index_timeout", "type": "string"}
+    # agent.faiss.min_load_index_timeout -- minimum duration of load index timeout
+    min_load_index_timeout: 3m
+    # @schema {"name": "agent.faiss.max_load_index_timeout", "type": "string"}
+    # agent.faiss.max_load_index_timeout -- maximum duration of load index timeout
+    max_load_index_timeout: 10m
+    # @schema {"name": "agent.faiss.load_index_timeout_factor", "type": "string"}
+    # agent.faiss.load_index_timeout_factor -- a factor of load index timeout.
+    # timeout duration will be calculated by (index count to be loaded) * (factor).
+    load_index_timeout_factor: 1ms
+    # @schema {"name": "agent.faiss.enable_proactive_gc", "type": "boolean"}
+    # agent.faiss.enable_proactive_gc -- enable proactive GC call for reducing heap memory allocation
+    enable_proactive_gc: false
+    # @schema {"name": "agent.faiss.enable_copy_on_write", "type": "boolean"}
+    # agent.faiss.enable_copy_on_write -- enable copy on write saving for more stable backup
+    enable_copy_on_write: false
+    # @schema {"name": "agent.faiss.vqueue", "type": "object"}
+    vqueue:
+      # @schema {"name": "agent.faiss.vqueue.insert_buffer_pool_size", "type": "integer"}
+      # agent.faiss.vqueue.insert_buffer_pool_size -- insert slice pool buffer size
+      insert_buffer_pool_size: 10000
+      # @schema {"name": "agent.faiss.vqueue.delete_buffer_pool_size", "type": "integer"}
+      # agent.faiss.vqueue.delete_buffer_pool_size -- delete slice pool buffer size
+      delete_buffer_pool_size: 5000
+    # @schema {"name": "agent.faiss.kvsdb", "type": "object"}
+    kvsdb:
+      # @schema {"name": "agent.faiss.kvsdb.concurrency", "type": "integer"}
+      # agent.faiss.kvsdb.concurrency -- kvsdb processing concurrency
+      concurrency: 6
   # @schema {"name": "agent.sidecar", "type": "object"}
   sidecar:
     # @schema {"name": "agent.sidecar.enabled", "type": "boolean"}
@@ -3171,15 +3341,21 @@ manager:
       # @schema {"name": "manager.index.corrector.stream_list_concurrency", "type": "integer", "minimum": 1}
       # manager.index.corrector.stream_list_concurrency -- concurrency for stream list object rpc
       stream_list_concurrency: 200
-      # @schema {"name": "manager.index.corrector.kvs_async_write_concurrency", "type": "integer", "minimum": 1}
-      # manager.index.corrector.kvs_async_write_concurrency -- concurrency for kvs async write
-      kvs_async_write_concurrency: 2048
+      # @schema {"name": "manager.index.corrector.kvs_background_sync_interval", "type": "string"}
+      # manager.index.corrector.kvs_background_sync_interval -- interval of checked id list kvs sync
+      kvs_background_sync_interval: 5s
+      # @schema {"name": "manager.index.corrector.kvs_background_compaction_interval", "type": "string"}
+      # manager.index.corrector.kvs_background_compaction_interval -- interval of checked id list kvs compaction
+      kvs_background_compaction_interval: 5s
       # @schema {"name": "manager.index.corrector.agent_namespace", "type": "string"}
       # manager.index.corrector.agent_namespace -- namespace of agent pods to manage
       agent_namespace: _MY_POD_NAMESPACE_
       # @schema {"name": "manager.index.corrector.node_name", "type": "string"}
       # manager.index.corrector.node_name -- node name
       node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.corrector.gateway", "alias": "grpc.client"}
+      # manager.index.corrector.gateway -- gRPC client for gateway (overrides defaults.grpc.client)
+      gateway: {}
       # @schema {"name": "manager.index.corrector.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "manager.index.corrector.discoverer.duration", "type": "string"}

@@ -35,7 +35,7 @@ func Test_breaker_isReady(t *testing.T) {
 		minSamples            int64
 		openTimeout           time.Duration
 		openExp               int64
-		cloedRefreshTimeout   time.Duration
+		closedRefreshTimeout  time.Duration
 		closedRefreshExp      int64
 	}
 	type want struct {
@@ -162,7 +162,7 @@ func Test_breaker_isReady(t *testing.T) {
 				minSamples:            test.fields.minSamples,
 				openTimeout:           test.fields.openTimeout,
 				openExp:               test.fields.openExp,
-				cloedRefreshTimeout:   test.fields.cloedRefreshTimeout,
+				closedRefreshTimeout:  test.fields.closedRefreshTimeout,
 				closedRefreshExp:      test.fields.closedRefreshExp,
 			}
 
@@ -186,7 +186,7 @@ func Test_breaker_success(t *testing.T) {
 		minSamples            int64
 		openTimeout           time.Duration
 		openExp               int64
-		cloedRefreshTimeout   time.Duration
+		closedRefreshTimeout  time.Duration
 		closedRefreshExp      int64
 	}
 	type want struct{}
@@ -281,7 +281,7 @@ func Test_breaker_success(t *testing.T) {
 				minSamples:            test.fields.minSamples,
 				openTimeout:           test.fields.openTimeout,
 				openExp:               test.fields.openExp,
-				cloedRefreshTimeout:   test.fields.cloedRefreshTimeout,
+				closedRefreshTimeout:  test.fields.closedRefreshTimeout,
 				closedRefreshExp:      test.fields.closedRefreshExp,
 			}
 			if test.afterFunc != nil {
@@ -308,7 +308,7 @@ func Test_breaker_fail(t *testing.T) {
 		minSamples            int64
 		openTimeout           time.Duration
 		openExp               int64
-		cloedRefreshTimeout   time.Duration
+		closedRefreshTimeout  time.Duration
 		closedRefreshExp      int64
 	}
 	type want struct{}
@@ -409,7 +409,7 @@ func Test_breaker_fail(t *testing.T) {
 						t.Errorf("state changed: %d", b.tripped)
 					}
 					if total := b.count.Total(); total == 0 {
-						t.Errorf("count reseted: %d", total)
+						t.Errorf("count resetted: %d", total)
 					}
 				},
 			}
@@ -439,7 +439,7 @@ func Test_breaker_fail(t *testing.T) {
 				minSamples:            test.fields.minSamples,
 				openTimeout:           test.fields.openTimeout,
 				openExp:               test.fields.openExp,
-				cloedRefreshTimeout:   test.fields.cloedRefreshTimeout,
+				closedRefreshTimeout:  test.fields.closedRefreshTimeout,
 				closedRefreshExp:      test.fields.closedRefreshExp,
 			}
 			if test.afterFunc != nil {
@@ -544,7 +544,6 @@ func Test_breaker_fail(t *testing.T) {
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -552,7 +551,7 @@ func Test_breaker_fail(t *testing.T) {
 // func Test_breaker_do(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
-// 		fn  func(ctx context.Context) (val interface{}, err error)
+// 		fn  func(ctx context.Context) (val any, err error)
 // 	}
 // 	type fields struct {
 // 		key                   string
@@ -565,11 +564,11 @@ func Test_breaker_fail(t *testing.T) {
 // 		minSamples            int64
 // 		openTimeout           time.Duration
 // 		openExp               int64
-// 		cloedRefreshTimeout   time.Duration
+// 		closedRefreshTimeout  time.Duration
 // 		closedRefreshExp      int64
 // 	}
 // 	type want struct {
-// 		wantVal interface{}
+// 		wantVal any
 // 		wantSt  State
 // 		err     error
 // 	}
@@ -578,11 +577,11 @@ func Test_breaker_fail(t *testing.T) {
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, interface{}, State, error) error
+// 		checkFunc  func(want, any, State, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotVal interface{}, gotSt State, err error) error {
+// 	defaultCheckFunc := func(w want, gotVal any, gotSt State, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -614,7 +613,7 @@ func Test_breaker_fail(t *testing.T) {
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
-// 		           cloedRefreshTimeout:nil,
+// 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
 // 		       },
 // 		       want: want{},
@@ -648,7 +647,7 @@ func Test_breaker_fail(t *testing.T) {
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
-// 		           cloedRefreshTimeout:nil,
+// 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
 // 		           },
 // 		           want: want{},
@@ -690,7 +689,7 @@ func Test_breaker_fail(t *testing.T) {
 // 				minSamples:            test.fields.minSamples,
 // 				openTimeout:           test.fields.openTimeout,
 // 				openExp:               test.fields.openExp,
-// 				cloedRefreshTimeout:   test.fields.cloedRefreshTimeout,
+// 				closedRefreshTimeout:  test.fields.closedRefreshTimeout,
 // 				closedRefreshExp:      test.fields.closedRefreshExp,
 // 			}
 //
@@ -698,7 +697,6 @@ func Test_breaker_fail(t *testing.T) {
 // 			if err := checkFunc(test.want, gotVal, gotSt, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -715,7 +713,7 @@ func Test_breaker_fail(t *testing.T) {
 // 		minSamples            int64
 // 		openTimeout           time.Duration
 // 		openExp               int64
-// 		cloedRefreshTimeout   time.Duration
+// 		closedRefreshTimeout  time.Duration
 // 		closedRefreshExp      int64
 // 	}
 // 	type want struct {
@@ -751,7 +749,7 @@ func Test_breaker_fail(t *testing.T) {
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
-// 		           cloedRefreshTimeout:nil,
+// 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
 // 		       },
 // 		       want: want{},
@@ -781,7 +779,7 @@ func Test_breaker_fail(t *testing.T) {
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
-// 		           cloedRefreshTimeout:nil,
+// 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
 // 		           },
 // 		           want: want{},
@@ -823,7 +821,7 @@ func Test_breaker_fail(t *testing.T) {
 // 				minSamples:            test.fields.minSamples,
 // 				openTimeout:           test.fields.openTimeout,
 // 				openExp:               test.fields.openExp,
-// 				cloedRefreshTimeout:   test.fields.cloedRefreshTimeout,
+// 				closedRefreshTimeout:  test.fields.closedRefreshTimeout,
 // 				closedRefreshExp:      test.fields.closedRefreshExp,
 // 			}
 //
@@ -831,7 +829,6 @@ func Test_breaker_fail(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -848,11 +845,10 @@ func Test_breaker_fail(t *testing.T) {
 // 		minSamples            int64
 // 		openTimeout           time.Duration
 // 		openExp               int64
-// 		cloedRefreshTimeout   time.Duration
+// 		closedRefreshTimeout  time.Duration
 // 		closedRefreshExp      int64
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		fields     fields
@@ -880,7 +876,7 @@ func Test_breaker_fail(t *testing.T) {
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
-// 		           cloedRefreshTimeout:nil,
+// 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
 // 		       },
 // 		       want: want{},
@@ -910,7 +906,7 @@ func Test_breaker_fail(t *testing.T) {
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
-// 		           cloedRefreshTimeout:nil,
+// 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
 // 		           },
 // 		           want: want{},
@@ -952,7 +948,7 @@ func Test_breaker_fail(t *testing.T) {
 // 				minSamples:            test.fields.minSamples,
 // 				openTimeout:           test.fields.openTimeout,
 // 				openExp:               test.fields.openExp,
-// 				cloedRefreshTimeout:   test.fields.cloedRefreshTimeout,
+// 				closedRefreshTimeout:  test.fields.closedRefreshTimeout,
 // 				closedRefreshExp:      test.fields.closedRefreshExp,
 // 			}
 //
@@ -976,11 +972,10 @@ func Test_breaker_fail(t *testing.T) {
 // 		minSamples            int64
 // 		openTimeout           time.Duration
 // 		openExp               int64
-// 		cloedRefreshTimeout   time.Duration
+// 		closedRefreshTimeout  time.Duration
 // 		closedRefreshExp      int64
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		fields     fields
@@ -1008,7 +1003,7 @@ func Test_breaker_fail(t *testing.T) {
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
-// 		           cloedRefreshTimeout:nil,
+// 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
 // 		       },
 // 		       want: want{},
@@ -1038,7 +1033,7 @@ func Test_breaker_fail(t *testing.T) {
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
-// 		           cloedRefreshTimeout:nil,
+// 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
 // 		           },
 // 		           want: want{},
@@ -1080,7 +1075,7 @@ func Test_breaker_fail(t *testing.T) {
 // 				minSamples:            test.fields.minSamples,
 // 				openTimeout:           test.fields.openTimeout,
 // 				openExp:               test.fields.openExp,
-// 				cloedRefreshTimeout:   test.fields.cloedRefreshTimeout,
+// 				closedRefreshTimeout:  test.fields.closedRefreshTimeout,
 // 				closedRefreshExp:      test.fields.closedRefreshExp,
 // 			}
 //
@@ -1104,7 +1099,7 @@ func Test_breaker_fail(t *testing.T) {
 // 		minSamples            int64
 // 		openTimeout           time.Duration
 // 		openExp               int64
-// 		cloedRefreshTimeout   time.Duration
+// 		closedRefreshTimeout  time.Duration
 // 		closedRefreshExp      int64
 // 	}
 // 	type want struct {
@@ -1140,7 +1135,7 @@ func Test_breaker_fail(t *testing.T) {
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
-// 		           cloedRefreshTimeout:nil,
+// 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
 // 		       },
 // 		       want: want{},
@@ -1170,7 +1165,7 @@ func Test_breaker_fail(t *testing.T) {
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
-// 		           cloedRefreshTimeout:nil,
+// 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
 // 		           },
 // 		           want: want{},
@@ -1212,7 +1207,7 @@ func Test_breaker_fail(t *testing.T) {
 // 				minSamples:            test.fields.minSamples,
 // 				openTimeout:           test.fields.openTimeout,
 // 				openExp:               test.fields.openExp,
-// 				cloedRefreshTimeout:   test.fields.cloedRefreshTimeout,
+// 				closedRefreshTimeout:  test.fields.closedRefreshTimeout,
 // 				closedRefreshExp:      test.fields.closedRefreshExp,
 // 			}
 //
@@ -1220,7 +1215,6 @@ func Test_breaker_fail(t *testing.T) {
 // 			if err := checkFunc(test.want, gotOk); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

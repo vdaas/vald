@@ -35,7 +35,7 @@ type breaker struct {
 	minSamples            int64
 	openTimeout           time.Duration
 	openExp               int64 // unix time
-	cloedRefreshTimeout   time.Duration
+	closedRefreshTimeout  time.Duration
 	closedRefreshExp      int64 // unix time
 }
 
@@ -72,7 +72,9 @@ func newBreaker(key string, opts ...BreakerOption) (*breaker, error) {
 
 // do executes the function given argument when the current breaker state is "Closed" or "Half-Open".
 // If the current breaker state is "Open", this function returns ErrCircuitBreakerOpenState.
-func (b *breaker) do(ctx context.Context, fn func(ctx context.Context) (val interface{}, err error)) (val interface{}, st State, err error) {
+func (b *breaker) do(
+	ctx context.Context, fn func(ctx context.Context) (val any, err error),
+) (val any, st State, err error) {
 	if st, err := b.isReady(); err != nil {
 		b.count.onIgnore()
 		return nil, st, err
@@ -170,7 +172,7 @@ func (b *breaker) currentState() State {
 func (b *breaker) reset() {
 	atomic.StoreInt32(&b.tripped, 0)
 	atomic.StoreInt64(&b.openExp, 0)
-	atomic.StoreInt64(&b.closedRefreshExp, time.Now().Add(b.cloedRefreshTimeout).UnixNano())
+	atomic.StoreInt64(&b.closedRefreshExp, time.Now().Add(b.closedRefreshTimeout).UnixNano())
 	b.count.reset()
 }
 

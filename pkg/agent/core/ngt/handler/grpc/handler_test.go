@@ -39,8 +39,17 @@ func TestMain(m *testing.M) {
 	goleak.VerifyTestMain(m)
 }
 
-func newIndexedNGTService(ctx context.Context, eg errgroup.Group, t request.ObjectType, dist vector.Distribution, num int, insertCfg *payload.Insert_Config,
-	ngtCfg *config.NGT, ngtOpts []service.Option, overwriteIDs []string, overwriteVectors [][]float32,
+func newIndexedNGTService(
+	ctx context.Context,
+	eg errgroup.Group,
+	t request.ObjectType,
+	dist vector.Distribution,
+	num int,
+	insertCfg *payload.Insert_Config,
+	ngtCfg *config.NGT,
+	ngtOpts []service.Option,
+	overwriteIDs []string,
+	overwriteVectors [][]float32,
 ) (service.NGT, error) {
 	ngt, err := service.New(ngtCfg, append(ngtOpts, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))...)
 	if err != nil {
@@ -167,7 +176,250 @@ func newIndexedNGTService(ctx context.Context, eg errgroup.Group, t request.Obje
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
+// 		})
+// 	}
+// }
 //
+// func Test_server_newLocations(t *testing.T) {
+// 	type args struct {
+// 		uuids []string
+// 	}
+// 	type fields struct {
+// 		name                     string
+// 		ip                       string
+// 		ngt                      service.NGT
+// 		eg                       errgroup.Group
+// 		streamConcurrency        int
+// 		UnimplementedAgentServer agent.UnimplementedAgentServer
+// 		UnimplementedValdServer  vald.UnimplementedValdServer
+// 	}
+// 	type want struct {
+// 		wantLocs *payload.Object_Locations
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Locations) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotLocs *payload.Object_Locations) error {
+// 		if !reflect.DeepEqual(gotLocs, w.wantLocs) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLocs, w.wantLocs)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           uuids:nil,
+// 		       },
+// 		       fields: fields {
+// 		           name:"",
+// 		           ip:"",
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           streamConcurrency:0,
+// 		           UnimplementedAgentServer:nil,
+// 		           UnimplementedValdServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           uuids:nil,
+// 		           },
+// 		           fields: fields {
+// 		           name:"",
+// 		           ip:"",
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           streamConcurrency:0,
+// 		           UnimplementedAgentServer:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				name:                     test.fields.name,
+// 				ip:                       test.fields.ip,
+// 				ngt:                      test.fields.ngt,
+// 				eg:                       test.fields.eg,
+// 				streamConcurrency:        test.fields.streamConcurrency,
+// 				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
+// 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+// 			}
+//
+// 			gotLocs := s.newLocations(test.args.uuids...)
+// 			if err := checkFunc(test.want, gotLocs); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_newLocation(t *testing.T) {
+// 	type args struct {
+// 		uuid string
+// 	}
+// 	type fields struct {
+// 		name                     string
+// 		ip                       string
+// 		ngt                      service.NGT
+// 		eg                       errgroup.Group
+// 		streamConcurrency        int
+// 		UnimplementedAgentServer agent.UnimplementedAgentServer
+// 		UnimplementedValdServer  vald.UnimplementedValdServer
+// 	}
+// 	type want struct {
+// 		want *payload.Object_Location
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Location) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got *payload.Object_Location) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           uuid:"",
+// 		       },
+// 		       fields: fields {
+// 		           name:"",
+// 		           ip:"",
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           streamConcurrency:0,
+// 		           UnimplementedAgentServer:nil,
+// 		           UnimplementedValdServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           uuid:"",
+// 		           },
+// 		           fields: fields {
+// 		           name:"",
+// 		           ip:"",
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           streamConcurrency:0,
+// 		           UnimplementedAgentServer:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				name:                     test.fields.name,
+// 				ip:                       test.fields.ip,
+// 				ngt:                      test.fields.ngt,
+// 				eg:                       test.fields.eg,
+// 				streamConcurrency:        test.fields.streamConcurrency,
+// 				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
+// 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+// 			}
+//
+// 			got := s.newLocation(test.args.uuid)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
 // 		})
 // 	}
 // }

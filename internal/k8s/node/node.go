@@ -73,7 +73,9 @@ func (r *reconciler) addListOpts(opt client.ListOption) {
 	r.lopts = append(r.lopts, opt)
 }
 
-func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(
+	ctx context.Context, _ reconcile.Request,
+) (res reconcile.Result, err error) {
 	ns := &corev1.NodeList{}
 
 	if r.lopts != nil {
@@ -91,10 +93,11 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 			RequeueAfter: time.Millisecond * 100,
 		}
 		if errors.IsNotFound(err) {
-			res = reconcile.Result{
+			log.Errorf("not found: %s", err)
+			return reconcile.Result{
 				Requeue:      true,
 				RequeueAfter: time.Second,
-			}
+			}, nil
 		}
 		return
 	}
@@ -149,12 +152,12 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-func (r *reconciler) NewReconciler(_ context.Context, mgr manager.Manager) reconcile.Reconciler {
+func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
 	corev1.AddToScheme(r.mgr.GetScheme())
-	if err := r.mgr.GetFieldIndexer().IndexField(context.Background(), &corev1.Node{}, "status.phase", func(obj client.Object) []string {
+	if err := r.mgr.GetFieldIndexer().IndexField(ctx, &corev1.Node{}, "status.phase", func(obj client.Object) []string {
 		node, ok := obj.(*corev1.Node)
 		if !ok || node.GetDeletionTimestamp() != nil {
 			return nil

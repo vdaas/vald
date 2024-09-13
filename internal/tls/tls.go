@@ -49,7 +49,7 @@ var (
 // NewTLSConfig returns a *tls.Config struct or error
 // This function read TLS configuration and initialize *tls.Config struct.
 // This function initialize TLS configuration, for example the CA certificate and key to start TLS server.
-// Server and CA Certificate, and private key will read from a file from the file path definied in environment variable.
+// Server and CA Certificate, and private key will read from a file from the file path defined in environment variable.
 func New(opts ...Option) (*Config, error) {
 	c, err := newCredential(opts...)
 	if err != nil {
@@ -110,14 +110,14 @@ func NewX509CertPool(path string) (pool *x509.CertPool, err error) {
 	if err != nil || c == nil {
 		return nil, err
 	}
-	if err == nil && c != nil {
-		pool, err = x509.SystemCertPool()
-		if err != nil || pool == nil {
-			pool = x509.NewCertPool()
-		}
-		if !pool.AppendCertsFromPEM(c) {
-			err = errors.ErrCertificationFailed
-		}
+
+	pool, err = x509.SystemCertPool()
+	if err != nil || pool == nil {
+		pool = x509.NewCertPool()
+	}
+
+	if !pool.AppendCertsFromPEM(c) {
+		err = errors.ErrCertificationFailed
 	}
 	return pool, err
 }

@@ -24,11 +24,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
-	"github.com/vdaas/vald/internal/db/kvs/bbolt"
+	vc "github.com/vdaas/vald/internal/client/v1/client/vald"
+	"github.com/vdaas/vald/internal/db/kvs/pogreb"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
@@ -40,19 +40,11 @@ import (
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
-type contextTimeKey string
-
-const (
-	insertMethod                          = "core.v1.Vald/Insert"
-	updateMethod                          = "core.v1.Vald/Update"
-	deleteMethod                          = "core.v1.Vald/Delete"
-	correctionStartTimeKey contextTimeKey = "correctionStartTimeKey"
-)
-
 type Corrector interface {
 	Start(ctx context.Context) error
 	StartClient(ctx context.Context) (<-chan error, error)
 	PreStop(ctx context.Context) error
+
 	// For metrics
 	NumberOfCheckedIndex() uint64
 	NumberOfCorrectedOldIndex() uint64
@@ -60,22 +52,20 @@ type Corrector interface {
 }
 
 type correct struct {
-	discoverer                discoverer.Client
-	agentAddrs                []string
-	sortedByIndexCntAddrs     []string
-	uuidsCount                uint32
-	uncommittedUUIDsCount     uint32
-	checkedID                 bbolt.Bbolt
+	eg          errgroup.Group
+	discoverer  discoverer.Client
+	gateway     vc.Client
+	checkedList pogreb.DB
+
 	checkedIndexCount         atomic.Uint64
 	correctedOldIndexCount    atomic.Uint64
 	correctedReplicationCount atomic.Uint64
 
-	indexReplica               int
-	streamListConcurrency      int
-	bboltAsyncWriteConcurrency int
+	indexReplica                 int
+	streamListConcurrency        int
+	backgroundSyncInterval       time.Duration
+	backgroundCompactionInterval time.Duration
 }
-
-const filemode = 0o600
 
 func New(opts ...Option) (_ Corrector, err error) {
 	c := new(correct)
@@ -90,61 +80,234 @@ func New(opts ...Option) (_ Corrector, err error) {
 			log.Warn(oerr)
 		}
 	}
-	if err := c.bboltInit(); err != nil {
+
+	dir := file.Join(os.TempDir(), "checked")
+	err = file.MkdirAll(dir, os.ModePerm)
+	if err != nil {
+		log.Errorf("failed to create dir %s", dir)
 		return nil, err
 	}
+	path := file.Join(dir, "checked_id.db")
+	db, err := pogreb.New(pogreb.WithPath(path),
+		pogreb.WithBackgroundCompactionInterval(c.backgroundCompactionInterval),
+		pogreb.WithBackgroundSyncInterval(c.backgroundSyncInterval))
+	if err != nil {
+		log.Errorf("failed to open checked List kvs DB %s", path)
+		return nil, err
+	}
+	c.checkedList = db
 	return c, nil
 }
 
-func (c *correct) bboltInit() error {
-	dpath := file.Join(os.TempDir(), "bbolt")
-	err := file.MkdirAll(dpath, os.ModePerm)
+func (c *correct) StartClient(ctx context.Context) (_ <-chan error, err error) {
+	ech := make(chan error, 2)
+	gch, err := c.gateway.Start(ctx)
+	if err != nil {
+		return nil, err
+	}
+	dch, err := c.discoverer.Start(ctx)
+	if err != nil {
+		return nil, err
+	}
+	c.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(ech)
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case err = <-dch:
+			case err = <-gch:
+			}
+			if err != nil {
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case ech <- err:
+				}
+			}
+		}
+	}))
+	return ech, nil
+}
+
+func (c *correct) Start(ctx context.Context) (err error) {
+	detail, err := c.gateway.IndexDetail(ctx, new(payload.Empty))
 	if err != nil {
 		return err
 	}
-
-	dbfile := file.Join(dpath, "checkedid.db")
-	c.checkedID, err = bbolt.New(dbfile, "", os.FileMode(filemode))
-	if err != nil {
-		return err
+	counts := detail.GetCounts()
+	agents := make([]string, 0, len(counts))
+	for agent := range counts {
+		agents = append(agents, agent)
 	}
-	return nil
-}
+	slices.SortFunc(agents, func(left, right string) int {
+		return cmp.Compare(counts[right].GetStored(), counts[left].GetStored())
+	})
 
-func (c *correct) StartClient(ctx context.Context) (<-chan error, error) {
-	return c.discoverer.Start(ctx)
-}
-
-func (c *correct) Start(ctx context.Context) error {
-	// set current time to context
-	ctx = embedTime(ctx)
-
-	// addrs is sorted by the memory usage of each agent(descending order)
-	// this is decending because it's supposed to be used for index manager to decide
-	// which pod to make a create index rpc(higher memory, first to commit)
-	c.agentAddrs = c.discoverer.GetAddrs(ctx)
-	if len(c.agentAddrs) <= 1 {
-		log.Warnf("target agent (%v) found, but there must be more than two agents for correction to happen", c.agentAddrs)
-		return errors.ErrAgentReplicaOne
+	for _, agent := range agents {
+		count, ok := counts[agent]
+		if ok && count != nil {
+			log.Infof("index info: addr(%s), stored(%d), uncommitted(%d), indexing=%t, saving=%t", agent, count.GetStored(), count.GetUncommitted(), count.GetIndexing(), count.GetSaving())
+		}
 	}
-	log.Debugf("target agent addrs: %v", c.agentAddrs)
+	log.Infof("sorted agents: %v,\tdiscovered agents: %v", agents, c.discoverer.GetAddrs(ctx))
 
-	if err := c.loadAgentIndexInfo(ctx); err != nil {
-		return err
-	}
+	errs := make([]error, 0, len(agents))
 
-	log.Info("starting correction with bbolt disk cache...")
-	if err := c.correct(ctx); err != nil {
-		return err
+	emptyReq := new(payload.Object_List_Request)
+
+	start := time.Now()
+
+	emptyByte := []byte("")
+
+	corrected := 1
+
+	replicas := slices.Clone(agents)
+
+	log.Infof("processing order of agents: %v", agents)
+	if err := c.discoverer.GetClient().OrderedRange(ctx, agents, func(ctx context.Context,
+		addr string,
+		conn *grpc.ClientConn,
+		copts ...grpc.CallOption,
+	) (err error) {
+		defer func() {
+			corrected++
+			if err != nil {
+				errs = append(errs, err)
+			}
+		}()
+		if len(replicas) > 0 {
+			replicas = replicas[1:]
+		}
+		var (
+			stored      uint32
+			uncommitted uint32
+			indexing    bool
+			saving      bool
+			debugMsg    string
+		)
+		count, ok := counts[addr]
+		if ok && count != nil {
+			stored = count.GetStored()
+			uncommitted = count.GetUncommitted()
+			indexing = count.GetIndexing()
+			saving = count.GetSaving()
+			debugMsg = fmt.Sprintf("agent %s (total index detail = stored: %d, uncommitted: %d, indexing=%t, saving=%t), stream concurrency: %d, processing %d/%d, replicas: size(%d) = addrs%v", addr, stored, uncommitted, indexing, saving, c.streamListConcurrency, corrected, len(agents), len(replicas), replicas)
+			if stored+uncommitted == 0 {
+				// id no indices in agent skip process
+				log.Warnf("skipping index correction process due to zero index detected for %s", debugMsg)
+				return nil
+			}
+		}
+
+		eg, egctx := errgroup.WithContext(ctx)
+		eg.SetLimit(c.streamListConcurrency)
+		ctx, cancel := context.WithCancelCause(egctx)
+		stream, err := vc.NewValdClient(conn).StreamListObject(ctx, emptyReq, copts...)
+		if err != nil || stream == nil {
+			return err
+		}
+		log.Infof("starting correction for %s", debugMsg)
+		// The number of items to be received in advance is not known in advance.
+		// This is because there is a possibility of new items being inserted during processing.
+		for {
+			select {
+			case <-ctx.Done():
+				if !errors.Is(ctx.Err(), context.Canceled) {
+					log.Errorf("context done unexpectedly: %v for %s", ctx.Err(), debugMsg)
+				}
+				if !errors.Is(context.Cause(ctx), io.EOF) {
+					log.Errorf("context canceled due to %v for %s", ctx.Err(), debugMsg)
+				}
+				err = eg.Wait()
+				if err != nil {
+					log.Errorf("correction returned error status errgroup returned error: %v for %s", ctx.Err(), debugMsg)
+				} else {
+					log.Infof("correction finished for %s", debugMsg)
+				}
+				return nil
+			default:
+				res, err := stream.Recv()
+				if err != nil {
+					if errors.Is(err, io.EOF) {
+						cancel(io.EOF)
+					} else {
+						cancel(errors.ErrStreamListObjectStreamFinishedUnexpectedly(err))
+					}
+				} else if res != nil && res.GetVector() != nil && res.GetVector().GetId() != "" && res.GetVector().GetTimestamp() < start.UnixNano() {
+					eg.Go(safety.RecoverFunc(func() (err error) {
+						vec := res.GetVector()
+						ts := vec.GetTimestamp()
+						id := vec.GetId()
+
+						_, ok, err := c.checkedList.Get(id)
+						if err != nil {
+							log.Errorf("failed to perform Get from check list but still try to finish processing without cache: %v", err)
+						}
+						if ok {
+							// already checked index
+							return nil
+						}
+						defer func() {
+							c.checkedList.Set(id, emptyByte)
+							c.checkedIndexCount.Add(1)
+						}()
+
+						// If the replicas slice is empty, it means the last agent's correction process, the data for this ID is unique in the current Vald Cluster and only exists for this Agent.
+						// The meaning of unique data is that the timestamp of this data is up-to-date and there is no over-replica problem, just a lack of replicas.
+						// Therefore, the process is only to correct the missing replicas.
+						if len(replicas) <= 0 {
+							diff := c.indexReplica - 1
+							// correct index replica shortage
+							if diff > 0 {
+								return c.correctShortage(egctx, id, addr, debugMsg, vec, make(map[string]*payload.Object_Timestamp), diff)
+							}
+							return nil
+						}
+
+						// load index replica from other agents and store it to found map
+						found, skipped, latest, latestAgent, err := c.loadReplicaInfo(egctx, addr, id, replicas, counts, ts, start)
+						if err != nil {
+							return err
+						}
+						if len(found) != 0 && ((len(replicas) > 0 && len(skipped) == 0) || (len(skipped) > 0 && len(skipped) < len(replicas))) {
+							// current object timestamp is not latest get latest object from other agent index replica
+							if ts < latest && latestAgent != addr {
+								latestObject := c.getLatestObject(egctx, id, addr, latestAgent, latest)
+								if latestObject != nil && latestObject.GetVector() != nil && latestObject.GetId() != "" && latestObject.GetTimestamp() >= latest {
+									vec = latestObject
+								}
+							}
+							c.correctTimestamp(ctx, id, vec, found)
+						} else if len(skipped) > 0 {
+							log.Debugf("timestamp correction for index id %s skipped, replica %s, skipped agents: %v", id, addr, skipped)
+						}
+						diff := c.indexReplica - (len(found) + 1)
+						if diff > 0 { // correct index replica shortage
+							return c.correctShortage(egctx, id, addr, debugMsg, vec, found, diff)
+						} else if diff < 0 { // correct index replica oversupply
+							return c.correctOversupply(egctx, id, addr, debugMsg, found, diff)
+						}
+						return nil
+					}))
+				}
+			}
+		}
+	}); err != nil {
+		// This only happens when ErrGRPCClientConnNotFound is returned.
+		// In other cases, OrderedRange continues processing, so error is used to keep track of the error status of correction.
+		errs = append(errs, err)
 	}
-	log.Info("correction finished successfully")
+	if len(errs) != 0 {
+		return errors.Join(errs...)
+	}
 
 	return nil
 }
 
 func (c *correct) PreStop(_ context.Context) error {
 	log.Info("removing persistent cache files...")
-	return c.checkedID.Close(true)
+	return c.checkedList.Close(true)
 }
 
 func (c *correct) NumberOfCheckedIndex() uint64 {
@@ -159,521 +322,319 @@ func (c *correct) NumberOfCorrectedReplication() uint64 {
 	return c.correctedReplicationCount.Load()
 }
 
-// skipcq: GO-R1005
-func (c *correct) correct(ctx context.Context) (err error) {
-	// Vector with time after this should not be processed
-	correctionStartTime, err := correctionStartTime(ctx)
-	if err != nil {
-		log.Errorf("cannot determine correction start time: %w", err)
-		return err
-	}
-
-	curTargetAgent := 0
-	jobErrs := make([]error, 0, c.streamListConcurrency)
-	if err := c.discoverer.GetClient().OrderedRange(ctx, c.sortedByIndexCntAddrs,
-		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
-			defer func() {
-				if err != nil {
-					// catch the err that happened in this scope using named return err
-					jobErrs = append(jobErrs, err)
-				}
-				curTargetAgent++
-			}()
-
-			// context and errgroup for stream.Recv and correction
-			sctx, scancel := context.WithCancel(ctx)
-			defer scancel()
-			seg, sctx := errgroup.WithContext(sctx)
-			seg.SetLimit(c.streamListConcurrency)
-
-			// errgroup for bbolt AsyncSet
-			bolteg, ctx := errgroup.WithContext(ctx)
-			bolteg.SetLimit(c.bboltAsyncWriteConcurrency)
-
-			log.Infof("starting correction for agent %s, stream concurrency: %d, bbolt concurrency: %d", addr, c.streamListConcurrency, c.bboltAsyncWriteConcurrency)
-
-			vc := vald.NewValdClient(conn)
-			stream, err := vc.StreamListObject(ctx, &payload.Object_List_Request{})
-			if err != nil {
-				return err
-			}
-
-			var mu sync.Mutex
-			// The number of items to be received in advance is not known in advance.
-			// This is because there is a possibility of new items being inserted during processing.
-			for {
-				select {
-				case <-sctx.Done():
-					if !errors.Is(sctx.Err(), context.Canceled) {
-						log.Errorf("context done unexpectedly: %v", sctx.Err())
-					}
-
-					// Finalize
-					err = seg.Wait()
-					if err != nil {
-						log.Errorf("err group returned error: %v", err)
-					}
-
-					berr := bolteg.Wait()
-					if berr != nil {
-						log.Errorf("bbolt err group returned error: %v", err)
-						err = errors.Join(err, berr)
-					} else {
-						log.Info("bbolt all batch finished")
-					}
-
-					log.Infof("correction finished for agent %s", addr)
-					return err
-
-				default:
-					seg.Go(safety.RecoverFunc(func() error {
-						mu.Lock()
-						// As long as we don't stream.Recv() from the stream, we do not consume the memory of the message.
-						// So by limiting the number of this errgroup.Go instances, we can limit the memory usage
-						// https://github.com/grpc/grpc-go/blob/33f9fa2e6e5bcf4cf8fe45133e23779ae6e43f6c/rpc_util.go#L795
-						res, err := stream.Recv()
-						mu.Unlock()
-
-						if err != nil {
-							if errors.Is(err, io.EOF) {
-								scancel()
-								return nil
-							}
-							return errors.ErrStreamListObjectStreamFinishedUnexpectedly(err)
-						}
-
-						vec := res.GetVector()
-						if vec == nil {
-							st := res.GetStatus()
-							log.Error(st.GetCode(), st.GetMessage(), st.GetDetails())
-							return errors.ErrFailedToReceiveVectorFromStream
-						}
-
-						// skip if the vector is inserted after correction start
-						if vec.GetTimestamp() > correctionStartTime.UnixNano() {
-							log.Debugf("timestamp of vector(id: %s, timestamp: %v) is newer than correction start time(%v). skipping...",
-								vec.GetId(),
-								vec.GetTimestamp(),
-								correctionStartTime.UnixNano(),
-							)
-							return nil
-						}
-
-						// check if the index is already checked
-						id := vec.GetId()
-						_, ok, err := c.checkedID.Get([]byte(id))
-						if err != nil {
-							log.Errorf("failed to perform Get from bbolt but still try to finish processing without cache: %v", err)
-						}
-						if ok {
-							// already checked index
-							return nil
-						}
-
-						if err := c.checkConsistency(
-							ctx,
-							&vectorReplica{
-								addr: addr,
-								vec:  vec,
-							},
-							curTargetAgent,
-						); err != nil {
-							return errors.ErrFailedToCheckConsistency(err)
-						}
-
-						//  now this id is checked so set it to the disk cache
-						c.checkedID.AsyncSet(bolteg, []byte(id), nil)
-						c.checkedIndexCount.Add(1)
-
-						return nil
-					}))
-				}
-			}
-		},
-	); err != nil {
-		// This only happnes when ErrGRPCClientConnNotFound is returned.
-		// In other cases, OrderedRange continues processing, so jobErrrs is used to keep track of the error status of correction.
-		return err
-	}
-
-	jobErrs = errors.RemoveDuplicates(jobErrs)
-	return errors.Join(jobErrs...)
-}
-
-type vectorReplica struct {
-	addr string
-	vec  *payload.Object_Vector
-}
-
-// Validate len(addrs) >= 2 before calling this function.
-func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorReplica, targetAgentIdx int) error {
-	// leftAgentAddrs is the agents' addr that hasn't been corrected yet.
-	leftAgentAddrs := c.sortedByIndexCntAddrs[targetAgentIdx+1:]
-
-	// Vector with time after this should not be processed
-	correctionStartTime, err := correctionStartTime(ctx)
-	if err != nil {
-		log.Errorf("cannot determine correction start time: %w", err)
-		return err
-	}
-
-	foundReplicas := make([]*vectorReplica, 0, len(c.sortedByIndexCntAddrs))
+func (c *correct) loadReplicaInfo(
+	ctx context.Context,
+	originAddr, id string,
+	replicas []string,
+	counts map[string]*payload.Info_Index_Count,
+	ts int64,
+	start time.Time,
+) (
+	found map[string]*payload.Object_Timestamp,
+	skipped []string,
+	latest int64,
+	latestAgent string,
+	err error,
+) {
 	var mu sync.Mutex
-	if err := c.discoverer.GetClient().OrderedRangeConcurrent(ctx, leftAgentAddrs, len(leftAgentAddrs),
+	latestAgent = originAddr
+	skipped = make([]string, 0, len(replicas))
+	found = make(map[string]*payload.Object_Timestamp, c.indexReplica-1)
+	tss := time.Unix(0, start.UnixNano()).Format(time.RFC3339Nano)
+	err = c.discoverer.GetClient().OrderedRangeConcurrent(ctx, replicas, len(replicas),
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-			vecMeta, err := agent.NewAgentClient(conn).GetTimestamp(ctx, &payload.Object_GetTimestampRequest{
+			if originAddr == addr {
+				return nil
+			}
+			count, ok := counts[addr] // counts is read-only we don't need to lock.
+			if ok && count != nil && count.GetStored() == 0 && count.GetUncommitted() == 0 {
+				mu.Lock()
+				skipped = append(skipped, addr)
+				mu.Unlock()
+				return nil
+			}
+
+			ots, err := vc.NewValdClient(conn).GetTimestamp(ctx, &payload.Object_TimestampRequest{
 				Id: &payload.Object_ID{
-					Id: targetReplica.vec.GetId(),
+					Id: id,
 				},
 			})
 			if err != nil {
-				if st, ok := status.FromError(err); !ok {
-					log.Errorf("gRPC call returned not a gRPC status error: %v", err)
+				if st, ok := status.FromError(err); !ok || st == nil {
+					log.Errorf("gRPC call GetTimestamp to agent: %s, id: %s returned not a gRPC status error: %v", addr, id, err)
 					return err
 				} else if st.Code() == codes.NotFound {
 					// when replica of agent > index replica, this happens
 					return nil
+				} else if st.Code() == codes.Canceled {
+					return nil
 				} else {
-					log.Errorf("failed to GetObject with unexpected error. code: %v, message: %s", st.Code(), st.Message())
+					log.Errorf("failed to GetTimestamp with unexpected error. agent: %s, id: %s, code: %v, message: %s", addr, id, st.Code(), st.Message())
 					return err
 				}
 			}
 
+			if ots == nil {
+				// not found
+				return nil
+			}
+
 			// skip if the vector is inserted after correction start
-			if vecMeta.GetTimestamp() > correctionStartTime.UnixNano() {
-				log.Debugf("timestamp of vector(id: %s, timestamp: %v) is newer than correction start time(%v). skipping...",
-					vecMeta.GetId(),
-					vecMeta.GetTimestamp(),
-					correctionStartTime.UnixNano(),
+			if ots.GetTimestamp() > start.UnixNano() {
+				log.Debugf("timestamp of vector(id: %s, timestamp: %s) is newer than correction start time(%s). skipping...",
+					ots.GetId(),
+					time.Unix(0, ots.GetTimestamp()).Format(time.RFC3339Nano),
+					tss,
 				)
 				return nil
 			}
-
 			mu.Lock()
-			foundReplicas = append(foundReplicas, &vectorReplica{
-				addr: addr,
-				// the vector itself will be fetched when it's needed
-				vec: &payload.Object_Vector{
-					Id:        vecMeta.GetId(),
-					Timestamp: vecMeta.GetTimestamp(),
-				},
-			})
+			found[addr] = ots
+			if latest < ots.GetTimestamp() {
+				latest = ots.GetTimestamp()
+				if latest > ts {
+					latestAgent = addr
+				}
+			}
 			mu.Unlock()
-
 			return nil
 		},
-	); err != nil {
-		return err
-	}
-
-	// check timestamps
-	if err := c.correctTimestamp(ctx, targetReplica, foundReplicas); err != nil {
-		return fmt.Errorf("failed to fix timestamp: %w", err)
-	}
-
-	// check replica number
-	if err := c.correctReplica(ctx, targetReplica, foundReplicas); err != nil {
-		return fmt.Errorf("failed to fix index replica: %w", err)
-	}
-
-	return nil
+	)
+	return
 }
 
-func (c *correct) correctTimestamp(ctx context.Context, targetReplica *vectorReplica, foundReplicas []*vectorReplica) error {
-	if len(foundReplicas) == 0 {
-		// no replica found. nothing to do about timestamp
-		return nil
-	}
-
-	// skipcq: CRT-D0001
-	allReplicas := append(foundReplicas, targetReplica)
-
-	// sort by timestamp
-	slices.SortFunc(allReplicas, func(i, j *vectorReplica) int {
-		// largest timestamp means the latest
-		return cmp.Compare(j.vec.GetTimestamp(), i.vec.GetTimestamp())
+func (c *correct) getLatestObject(
+	ctx context.Context, id, addr, latestAgent string, latest int64,
+) (latestObject *payload.Object_Vector) {
+	_, err := c.discoverer.GetClient().Do(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.GetObjectRPCName), latestAgent, func(ctx context.Context,
+		conn *grpc.ClientConn,
+		copts ...grpc.CallOption,
+	) (any, error) {
+		obj, err := vc.NewValdClient(conn).GetObject(ctx, &payload.Object_VectorRequest{
+			Id: &payload.Object_ID{
+				Id: id,
+			},
+		}, copts...)
+		if err != nil {
+			if st, ok := status.FromError(err); !ok || st == nil {
+				log.Errorf("gRPC call returned not a gRPC status error: %v", err)
+				return nil, err
+			} else if st.Code() == codes.NotFound {
+				return nil, nil
+			} else if st.Code() == codes.Canceled {
+				return nil, nil
+			}
+			return nil, err
+		}
+		if obj == nil {
+			// not found
+			return nil, nil
+		}
+		if obj.GetTimestamp() >= latest && obj.GetId() != "" && obj.GetVector() != nil {
+			latestObject = obj
+		}
+		return obj, nil
 	})
-
-	latest := allReplicas[0]
-	latestTS := latest.vec.GetTimestamp()
-	for _, replica := range allReplicas {
-		if replica.vec.GetTimestamp() == latestTS {
-			// no inconsistency
-			continue
-		}
-
-		// udate the vector with the new one
-		log.Infof("timestamp inconsistency detected with vector(id: %s, timestamp: %v). updating with the latest vector(id: %s, timestamp: %v)",
-			replica.vec.GetId(),
-			replica.vec.GetTimestamp(),
-			latest.vec.GetId(),
-			latest.vec.GetTimestamp(),
-		)
-		c.correctedOldIndexCount.Add(1)
-		if err := c.updateObject(ctx, replica, latest); err != nil {
-			return err
-		}
+	if err != nil {
+		log.Errorf("failed to load latest object id: %s, agent: %s, timestamp: %d, error: %v", id, addr, latest, err)
 	}
-
-	return nil
+	if latestObject != nil && latestObject.GetTimestamp() < latest {
+		latestObject.Timestamp = latest
+	}
+	return latestObject
 }
 
-// correctReplica corrects the number of replicas of the target vector.
-// skipcq: GO-R1005
-func (c *correct) correctReplica(
+func (c *correct) correctTimestamp(
 	ctx context.Context,
-	targetReplica *vectorReplica,
-	foundReplicas []*vectorReplica,
-) error {
-	// diff < 0 means there is less replica than the correct number
-	existReplica := len(foundReplicas) + 1
-	diff := existReplica - c.indexReplica
-	if diff == 0 {
-		// replica number is correct
-		return nil
-	}
-
-	// availableAddrs = c.agentAddrs - foundReplicas - targetReplica.addr
-	// here we use c.agentAddrs because we want to decide by memory usage order
-	// not the number of indexes
-	availableAddrs := make([]string, 0, len(c.agentAddrs))
-	for _, addr := range c.agentAddrs {
-		if addr == targetReplica.addr {
-			continue
-		}
-		if slices.ContainsFunc(foundReplicas, func(replica *vectorReplica) bool {
-			return replica.addr == addr
-		}) {
-			continue
-		}
-		availableAddrs = append(availableAddrs, addr)
-	}
-
-	// when there are less replicas than the correct number, add the extra replicas
-	if diff < 0 {
-		log.Infof("replica shortage of vector %s. inserting to other agents...", targetReplica.vec.GetId())
-		c.correctedReplicationCount.Add(1)
-		if len(availableAddrs) == 0 {
-			return errors.ErrNoAvailableAgentToInsert
-		}
-
-		// inserting with the reverse order of availableAddrs since the last agent has the lowest memory usage
-		for i := len(availableAddrs) - 1; i >= 0 && diff < 0; i-- {
-			addr := availableAddrs[i]
-			log.Infof("inserting replica to %s", addr)
-			if err := c.insertObject(ctx, addr, targetReplica.vec); err != nil {
-				log.Errorf("failed to insert object to agent(%s): %v", addr, err)
-				continue
-			}
-			diff++
-		}
-
-		if diff < 0 {
-			return errors.ErrFailedToCorrectReplicaNum
-		}
-
-		return nil
-	}
-
-	// when there are more replicas than the correct number, delete the extra replicas
-	log.Infof("replica oversupply of vector %s. deleting...",
-		targetReplica.vec.GetId())
-	c.correctedReplicationCount.Add(1)
-	// delete from myself
-	if err := c.deleteObject(ctx, targetReplica.addr, targetReplica.vec); err != nil {
-		log.Errorf("failed to delete object from agent(%s): %v", targetReplica.addr, err)
-	} else {
-		diff--
-	}
-
-	// delte from others if there's more to delete
-	for _, replica := range foundReplicas {
-		if diff == 0 {
-			break
-		}
-		if err := c.deleteObject(ctx, replica.addr, replica.vec); err != nil {
-			log.Errorf("failed to delete object from agent(%s): %v", replica.addr, err)
-			continue
-		}
-		diff--
-	}
-
-	if diff > 0 {
-		return errors.ErrFailedToCorrectReplicaNum
-	}
-
-	return nil
-}
-
-func (c *correct) updateObject(ctx context.Context, dest, src *vectorReplica) error {
-	// check if the src vector has content not just timestamp
-	if vec := src.vec.GetVector(); len(vec) == 0 {
-		if err := c.fillVectorField(ctx, src); err != nil {
-			return err
-		}
-	}
-
-	res, err := c.discoverer.GetClient().
-		Do(grpc.WithGRPCMethod(ctx, updateMethod), dest.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			// TODO: use UpdateTimestamp when it's implemented because here we just want to update only the timestamp but not the vector
-			return vald.NewUpdateClient(conn).Update(ctx, &payload.Update_Request{
-				Vector: src.vec,
-				// TODO: this should be deleted after Config.Timestamp deprecation
-				Config: &payload.Update_Config{
-					// TODO: Decrementing because it's gonna be incremented befor being pushed
-					// to vqueue in the agent. This is a not ideal workaround for the current vqueue implementation
-					// so we should consider refactoring vqueue.
-					Timestamp: src.vec.GetTimestamp() - 1,
-				},
-			}, copts...)
-		})
-	if err != nil {
-		return err
-	}
-
-	if v, ok := res.(*payload.Object_Location); ok {
-		log.Infof("vector successfully updated. address: %s, uuid: %v", dest.addr, v.GetUuid())
-	}
-
-	return nil
-}
-
-func (c *correct) fillVectorField(ctx context.Context, replica *vectorReplica) error {
-	res, err := c.discoverer.GetClient().
-		Do(grpc.WithGRPCMethod(ctx, "core.v1.Vald/GetObject"), replica.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return vald.NewValdClient(conn).GetObject(ctx, &payload.Object_VectorRequest{
-				Id: &payload.Object_ID{
-					Id: replica.vec.GetId(),
-				},
-			}, copts...)
-		})
-	if err != nil {
-		return err
-	}
-
-	if v, ok := res.(*payload.Object_Vector); ok {
-		vec := v.GetVector()
-		if len(vec) == 0 {
-			return err
-		}
-		replica.vec.Vector = v.GetVector()
-	}
-
-	return nil
-}
-
-func (c *correct) insertObject(ctx context.Context, addr string, vector *payload.Object_Vector) error {
-	res, err := c.discoverer.GetClient().
-		Do(grpc.WithGRPCMethod(ctx, insertMethod), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return vald.NewInsertClient(conn).Insert(ctx, &payload.Insert_Request{
-				Vector: vector,
-				// TODO: this should be deleted after Config.Timestamp deprecation
-				Config: &payload.Insert_Config{
-					Timestamp: vector.GetTimestamp(),
-				},
-			}, copts...)
-		})
-	if err != nil {
-		return err
-	}
-
-	if v, ok := res.(*payload.Object_Location); ok {
-		log.Infof("vector successfully inserted. address: %s, uuid: %v", addr, v.GetUuid())
-	}
-
-	return nil
-}
-
-func (c *correct) deleteObject(ctx context.Context, addr string, vector *payload.Object_Vector) error {
-	res, err := c.discoverer.GetClient().
-		Do(grpc.WithGRPCMethod(ctx, deleteMethod), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return vald.NewRemoveClient(conn).Remove(ctx, &payload.Remove_Request{
-				Id: &payload.Object_ID{
-					Id: vector.GetId(),
-				},
-			}, copts...)
-		})
-	if err != nil {
-		return err
-	}
-
-	if v, ok := res.(*payload.Object_Location); ok {
-		log.Infof("vector successfully deleted. address: %s, uuid: %v", addr, v.GetUuid())
-	}
-
-	return nil
-}
-
-// loadAgentIndexInfo loads the index info of each agent and sort them by the number of indexes
-// then append the result to c.sortedByIndexCntAddrs.
-// This sort is required because we want to process the agents with the least number of indexes first
-// for performance to filter out the agent as early as possible from broadcast in checkConsistency function.
-func (c *correct) loadAgentIndexInfo(ctx context.Context) (err error) {
-	var u, ucu uint32
-	var infoMap sync.Map[string, *payload.Info_Index_Count]
-	err = c.discoverer.GetClient().RangeConcurrent(ctx, len(c.discoverer.GetAddrs(ctx)),
-		func(ctx context.Context,
-			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
-		) (err error) {
-			select {
-			case <-ctx.Done():
-				return nil
-			default:
-				info, err := agent.NewAgentClient(conn).IndexInfo(ctx, new(payload.Empty), copts...)
+	id string,
+	latestObject *payload.Object_Vector,
+	found map[string]*payload.Object_Timestamp,
+) {
+	tss := time.Unix(0, latestObject.GetTimestamp()).Format(time.RFC3339Nano) // timestamp string
+	for addr, ots := range found {                                            // correct timestamp inconsistency
+		if latestObject.GetTimestamp() > ots.GetTimestamp() {
+			log.Infof("timestamp inconsistency detected with vector(id: %s, timestamp: %s). updating with the latest vector(id: %s, timestamp: %s)",
+				ots.GetId(),
+				time.Unix(0, ots.GetTimestamp()).Format(time.RFC3339Nano),
+				latestObject.GetId(),
+				tss,
+			)
+			_, err := c.discoverer.GetClient().Do(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpdateRPCServiceName+"/"+vald.UpdateRPCName), addr, func(ctx context.Context,
+				conn *grpc.ClientConn,
+				copts ...grpc.CallOption,
+			) (any, error) {
+				client := vc.NewValdClient(conn)
+				_, err := client.UpdateTimestamp(ctx, &payload.Update_TimestampRequest{
+					Id:        latestObject.GetId(),
+					Timestamp: latestObject.GetTimestamp(),
+				}, copts...)
 				if err != nil {
-					log.Warnf("an error occurred while calling IndexInfo of %s: %s", addr, err)
-					return nil
+					if st, ok := status.FromError(err); !ok || st == nil {
+						log.Errorf("gRPC call returned not a gRPC status error: %v", err)
+						return nil, err
+					} else if st.Code() == codes.Canceled ||
+						st.Code() == codes.AlreadyExists ||
+						st.Code() == codes.InvalidArgument ||
+						st.Code() == codes.NotFound {
+						return nil, nil
+					}
+					return nil, err
 				}
-				infoMap.Store(addr, info)
-				atomic.AddUint32(&u, info.GetStored())
-				atomic.AddUint32(&ucu, info.GetUncommitted())
+				log.Infof("vector successfully updated. address: %s, uuid: %s, timestamp: %s", addr, latestObject.GetId(), tss)
+				c.correctedOldIndexCount.Add(1)
+				return nil, nil
+			})
+			if err != nil {
+				log.Errorf("failed to fix timestamp to %s for id %s agent %s error: %w", tss, id, addr, err)
 			}
-			return nil
-		})
-	if err != nil {
-		return err
+		}
 	}
-	atomic.StoreUint32(&c.uuidsCount, atomic.LoadUint32(&u))
-	atomic.StoreUint32(&c.uncommittedUUIDsCount, atomic.LoadUint32(&ucu))
+}
 
-	type indexInfo struct {
-		stored int
-		addr   string
+func (c *correct) correctOversupply(
+	ctx context.Context,
+	id, selfAddr, debugMsg string,
+	found map[string]*payload.Object_Timestamp,
+	diff int,
+) (err error) {
+	addrs := c.discoverer.GetAddrs(ctx)
+	log.Infof("replica oversupply(configured: %d, stored: %d, diff: %d) of vector id: %s detected for %s. deleting from agents = %v", c.indexReplica, len(found)+1, diff, id, debugMsg, found)
+	if len(addrs) == 0 {
+		return errors.ErrNoAvailableAgentToRemove
 	}
-
-	var infos []indexInfo
-	infoMap.Range(func(addr string, info *payload.Info_Index_Count) bool {
-		log.Infof("index info: addr(%s), stored(%d), uncommitted(%d)", addr, info.GetStored(), info.GetUncommitted())
-
-		infos = append(infos, indexInfo{
-			addr:   addr,
-			stored: int(info.GetStored() + info.GetUncommitted()),
-		})
-		return true
-	})
-
-	slices.SortFunc(infos, func(i, j indexInfo) int {
-		return cmp.Compare(i.stored, j.stored)
-	})
-	for _, info := range infos {
-		c.sortedByIndexCntAddrs = append(c.sortedByIndexCntAddrs, info.addr)
+	req := &payload.Remove_Request{
+		Id: &payload.Object_ID{
+			Id: id,
+		},
 	}
-	log.Infof("processing order of agents: %v", c.sortedByIndexCntAddrs)
+	for _, daddr := range addrs {
+		if diff < 0 {
+			_, ok := found[daddr]
+			if ok || daddr == selfAddr {
+				_, err := c.discoverer.GetClient().Do(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.RemoveRPCName), daddr, func(ctx context.Context,
+					conn *grpc.ClientConn,
+					copts ...grpc.CallOption,
+				) (any, error) {
+					_, err := vc.NewValdClient(conn).Remove(ctx, req, copts...)
+					if err != nil {
+						if st, ok := status.FromError(err); !ok || st == nil {
+							log.Errorf("gRPC call returned not a gRPC status error: %v", err)
+							return nil, err
+						} else if st.Code() == codes.NotFound {
+							diff++
+							c.correctedReplicationCount.Add(1)
+							return nil, nil
+						} else if st.Code() == codes.Canceled {
+							return nil, nil
+						}
+						return nil, err
+					}
+					diff++
+					c.correctedReplicationCount.Add(1)
+					return nil, nil
+				})
+				if err != nil {
+					log.Errorf("failed to delete object from agent(%s): %w", daddr, err)
+				}
+			}
+		}
+	}
 	return nil
 }
 
-func embedTime(ctx context.Context) context.Context {
-	v := ctx.Value(correctionStartTimeKey)
-	if _, ok := v.(time.Time); ok {
-		return ctx
+func (c *correct) correctShortage(
+	ctx context.Context,
+	id, selfAddr, debugMsg string,
+	latestObject *payload.Object_Vector,
+	found map[string]*payload.Object_Timestamp,
+	diff int,
+) (err error) {
+	addrs := c.discoverer.GetAddrs(ctx)
+	log.Infof("replica shortage(configured: %d, stored: %d, diff: %d) of vector id: %s detected for %s. inserting to other agents = %v", c.indexReplica, len(found)+1, diff, id, debugMsg, addrs)
+	if len(addrs) == 0 {
+		return errors.ErrNoAvailableAgentToInsert
 	}
-	return context.WithValue(ctx, correctionStartTimeKey, time.Now())
-}
-
-func correctionStartTime(ctx context.Context) (time.Time, error) {
-	v := ctx.Value(correctionStartTimeKey)
-	if t, ok := v.(time.Time); ok {
-		return t, nil
+	req := &payload.Insert_Request{
+		Vector: latestObject,
+		// TODO: this should be deleted after Config.Timestamp deprecation
+		Config: &payload.Insert_Config{
+			Timestamp: latestObject.GetTimestamp(),
+		},
 	}
-	return time.Time{}, fmt.Errorf("timeKey is not embedded in context")
+	for _, daddr := range addrs {
+		if diff > 0 && daddr != selfAddr {
+			_, ok := found[daddr]
+			if !ok {
+				_, err := c.discoverer.GetClient().Do(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.InsertRPCName), daddr, func(ctx context.Context,
+					conn *grpc.ClientConn,
+					copts ...grpc.CallOption,
+				) (any, error) {
+					client := vc.NewValdClient(conn)
+					_, err := client.Insert(ctx, req, copts...)
+					if err != nil {
+						if st, ok := status.FromError(err); !ok || st == nil {
+							log.Errorf("gRPC call returned not a gRPC status error: %v", err)
+							return nil, err
+						} else if st.Code() == codes.AlreadyExists {
+							var obj *payload.Object_Vector
+							obj, err = client.GetObject(ctx, &payload.Object_VectorRequest{
+								Id: &payload.Object_ID{
+									Id: id,
+								},
+							}, copts...)
+							if err != nil {
+								if st, ok = status.FromError(err); !ok || st == nil {
+									log.Errorf("gRPC call returned not a gRPC status error: %v", err)
+									return nil, err
+								} else if st.Code() == codes.NotFound {
+									return nil, nil
+								} else if st.Code() == codes.Canceled {
+									return nil, nil
+								}
+								return nil, err
+							}
+							if obj != nil {
+								if obj.GetTimestamp() < latestObject.GetTimestamp() {
+									_, err = client.Update(ctx, &payload.Update_Request{
+										Vector: latestObject,
+										// TODO: this should be deleted after Config.Timestamp deprecation
+										Config: &payload.Update_Config{
+											// TODO: Decrementing because it's gonna be incremented before being pushed
+											// to vqueue in the agent. This is a not ideal workaround for the current vqueue implementation
+											// so we should consider refactoring vqueue.
+											Timestamp: latestObject.GetTimestamp() - 1,
+										},
+									}, copts...)
+									if err != nil {
+										if st, ok = status.FromError(err); !ok || st == nil {
+											log.Errorf("gRPC call returned not a gRPC status error: %v", err)
+											return nil, err
+										} else if st.Code() == codes.NotFound {
+											return nil, nil
+										} else if st.Code() == codes.Canceled {
+											return nil, nil
+										}
+										return nil, err
+									}
+								}
+								diff--
+								c.correctedReplicationCount.Add(1)
+							}
+							return nil, nil
+						} else if st.Code() == codes.Canceled {
+							return nil, nil
+						}
+						return nil, err
+					}
+					diff--
+					c.correctedReplicationCount.Add(1)
+					return nil, nil
+				})
+				if err != nil {
+					log.Errorf("failed to insert object to agent(%s): %w", daddr, err)
+				}
+			}
+		}
+	}
+	return nil
 }

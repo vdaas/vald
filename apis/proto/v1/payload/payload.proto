@@ -96,6 +96,8 @@ message Search {
     AggregationAlgorithm aggregation_algorithm = 9;
     // Search ratio for agent return result number.
     google.protobuf.FloatValue ratio = 10;
+    // Search nprobe.
+    uint32 nprobe = 11;
   }
 
   // AggregationAlgorithm is enum of each aggregation algorithms
@@ -260,6 +262,16 @@ message Update {
     repeated ObjectRequest requests = 1;
   }
 
+  // Represent a vector meta data.
+  message TimestampRequest {
+    // The vector ID.
+    string id = 1 [(buf.validate.field).string.min_len = 1];
+    // timestamp represents when this vector inserted.
+    int64 timestamp = 2;
+    // force represents forcefully update the timestamp.
+    bool force = 3;
+  }
+
   // Represent the update configuration.
   message Config {
     // A flag to skip exist check during update operation.
@@ -338,7 +350,8 @@ message Remove {
 
   // Represent the remove request based on timestamp.
   message TimestampRequest {
-    // The timestamp comparison list. If more than one is specified, the `AND` search is applied.
+    // The timestamp comparison list. If more than one is specified, the `AND`
+    // search is applied.
     repeated Timestamp timestamps = 1;
   }
 
@@ -350,11 +363,13 @@ message Remove {
       Eq = 0;
       // The timestamp is not equal to the specified value in the request.
       Ne = 1;
-      // The timestamp is greater than or equal to the specified value in the request.
+      // The timestamp is greater than or equal to the specified value in the
+      // request.
       Ge = 2;
       // The timestamp is greater than the specified value in the request.
       Gt = 3;
-      // The timestamp is less than or equal to the specified value in the request.
+      // The timestamp is less than or equal to the specified value in the
+      // request.
       Le = 4;
       // The timestamp is less than the specified value in the request.
       Lt = 5;
@@ -428,7 +443,7 @@ message Object {
   }
 
   // Represent a request to fetch vector meta data.
-  message GetTimestampRequest {
+  message TimestampRequest {
     // The vector ID to be fetched.
     ID id = 1 [(buf.validate.field).repeated.min_items = 2];
   }
@@ -559,6 +574,15 @@ message Info {
       // The saving index count.
       bool saving = 4;
     }
+    // Represent the index count for each Agents message.
+    message Detail {
+      // count infos for each agents
+      map<string, Count> counts = 1;
+      // index replica of vald cluster
+      uint32 replica = 2;
+      // live agent replica of vald cluster
+      uint32 live_agents = 3;
+    }
 
     // Represent the UUID message.
     message UUID {
@@ -570,6 +594,92 @@ message Info {
       message Uncommitted {
         string uuid = 1;
       }
+    }
+
+    // Represents index Statistics
+    message Statistics {
+      bool valid = 1;
+      int32 median_indegree = 2;
+      int32 median_outdegree = 3;
+      uint64 max_number_of_indegree = 4;
+      uint64 max_number_of_outdegree = 5;
+      uint64 min_number_of_indegree = 6;
+      uint64 min_number_of_outdegree = 7;
+      uint64 mode_indegree = 8;
+      uint64 mode_outdegree = 9;
+      uint64 nodes_skipped_for_10_edges = 10;
+      uint64 nodes_skipped_for_indegree_distance = 11;
+      uint64 number_of_edges = 12;
+      uint64 number_of_indexed_objects = 13;
+      uint64 number_of_nodes = 14;
+      uint64 number_of_nodes_without_edges = 15;
+      uint64 number_of_nodes_without_indegree = 16;
+      uint64 number_of_objects = 17;
+      uint64 number_of_removed_objects = 18;
+      uint64 size_of_object_repository = 19;
+      uint64 size_of_refinement_object_repository = 20;
+      double variance_of_indegree = 21;
+      double variance_of_outdegree = 22;
+      double mean_edge_length = 23;
+      double mean_edge_length_for_10_edges = 24;
+      double mean_indegree_distance_for_10_edges = 25;
+      double mean_number_of_edges_per_node = 26;
+      double c1_indegree = 27;
+      double c5_indegree = 28;
+      double c95_outdegree = 29;
+      double c99_outdegree = 30;
+      repeated int64 indegree_count = 31;
+      repeated uint64 outdegree_histogram = 32;
+      repeated uint64 indegree_histogram = 33;
+    }
+
+    // Represents index Statistics for each Agents
+    message StatisticsDetail {
+      // count infos for each agents
+      map<string, Statistics> details = 1;
+    }
+
+    // Represents index Property
+    message Property {
+      int32 dimension = 1;
+      int32 thread_pool_size = 2;
+      string object_type = 3;
+      string distance_type = 4;
+      string index_type = 5;
+      string database_type = 6;
+      string object_alignment = 7;
+      int32 path_adjustment_interval = 8;
+      int32 graph_shared_memory_size = 9;
+      int32 tree_shared_memory_size = 10;
+      int32 object_shared_memory_size = 11;
+      int32 prefetch_offset = 12;
+      int32 prefetch_size = 13;
+      string accuracy_table = 14;
+      string search_type = 15;
+      float max_magnitude = 16;
+      int32 n_of_neighbors_for_insertion_order = 17;
+      float epsilon_for_insertion_order = 18;
+      string refinement_object_type = 19;
+      int32 truncation_threshold = 20;
+      int32 edge_size_for_creation = 21;
+      int32 edge_size_for_search = 22;
+      int32 edge_size_limit_for_creation = 23;
+      double insertion_radius_coefficient = 24;
+      int32 seed_size = 25;
+      string seed_type = 26;
+      int32 truncation_thread_pool_size = 27;
+      int32 batch_size_for_creation = 28;
+      string graph_type = 29;
+      int32 dynamic_edge_size_base = 30;
+      int32 dynamic_edge_size_rate = 31;
+      float build_time_limit = 32;
+      int32 outgoing_edge = 33;
+      int32 incoming_edge = 34;
+    }
+
+    // Represents index Properties for each Agents
+    message PropertyDetail {
+      map<string, Property> details = 1;
     }
   }
 

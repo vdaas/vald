@@ -46,7 +46,7 @@ var (
 	transportComparator = []comparator.Option{
 		comparator.AllowUnexported(transport{}),
 		comparator.AllowUnexported(http.Transport{}),
-		comparator.IgnoreFields(http.Transport{}, "idleLRU", "altProto", "TLSNextProto"),
+		comparator.IgnoreFields(http.Transport{}, "idleLRU", "altProto", "TLSNextProto", "dialsInProgress"),
 		comparator.Exporter(func(t reflect.Type) bool {
 			if t.Name() == "ert" || t.Name() == "backoff" {
 				return true
@@ -134,12 +134,11 @@ func TestNew(t *testing.T) {
 			want: want{
 				want: &http.Client{
 					Transport: htr.NewExpBackoff(
-						htr.WithRoundTripper(func() *http.Transport {
-							t := new(http.Transport)
-							t.Proxy = http.ProxyFromEnvironment
-							_ = http2.ConfigureTransport(t)
-
-							return t
+						htr.WithRoundTripper(func() http.RoundTripper {
+							tr := new(http.Transport)
+							tr.Proxy = http.ProxyFromEnvironment
+							_ = http2.ConfigureTransport(tr)
+							return tr
 						}()),
 						htr.WithBackoff(
 							backoff.New(),
@@ -160,12 +159,11 @@ func TestNew(t *testing.T) {
 			want: want{
 				want: &http.Client{
 					Transport: htr.NewExpBackoff(
-						htr.WithRoundTripper(func() *http.Transport {
-							t := new(http.Transport)
-							t.Proxy = http.ProxyFromEnvironment
-							_ = http2.ConfigureTransport(t)
-
-							return t
+						htr.WithRoundTripper(func() http.RoundTripper {
+							tr := new(http.Transport)
+							tr.Proxy = http.ProxyFromEnvironment
+							_ = http2.ConfigureTransport(tr)
+							return tr
 						}()),
 						htr.WithBackoff(
 							backoff.New(),

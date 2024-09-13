@@ -115,7 +115,8 @@ faiss:
   load_index_timeout_factor: 1ms
   m: 8 # dimension % m == 0, train size >= 2^m(or nlist) * minPointsPerCentroid
   max_load_index_timeout: 10m
-  metric_type: "inner_product"
+  method_type: "ivfpq"
+  metric_type: "innerproduct"
   min_load_index_timeout: 3m
   nbits_per_idx: 8
   nlist: 100

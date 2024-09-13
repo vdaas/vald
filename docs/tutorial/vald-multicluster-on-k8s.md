@@ -88,7 +88,7 @@ In this section, you will deploy three Vald clusters consisting of `vald-agent-n
    git clone https://github.com/vdaas/vald.git &&　cd vald
    ```
 
-2. Deploy on the `vald-01` Namespace using [dev-vald-01.yaml](https://github.com/vdaas/vald/blob/feature/mirror-gateway-definition/charts/vald/values/multi-vald/dev-vald-01.yaml) and [values.yaml](https://github.com/vdaas/vald/blob/main/example/helm/values.yaml)
+2. Deploy on the `vald-01` Namespace using [dev-vald-01.yaml](https://github.com/vdaas/vald/blob/main/charts/vald/values/multi-vald/dev-vald-01.yaml) and [values.yaml](https://github.com/vdaas/vald/blob/main/example/helm/values.yaml)
 
    ```bash
    helm install vald-cluster-01 charts/vald \
@@ -97,7 +97,7 @@ In this section, you will deploy three Vald clusters consisting of `vald-agent-n
      -n vald-01
    ```
 
-3. Deploy on the `vald-02` Namespace using [dev-vald-02.yaml](https://github.com/vdaas/vald/blob/feature/mirror-gateway-definition/charts/vald/values/multi-vald/dev-vald-02.yaml) and [values.yaml](https://github.com/vdaas/vald/blob/main/example/helm/values.yaml)
+3. Deploy on the `vald-02` Namespace using [dev-vald-02.yaml](https://github.com/vdaas/vald/blob/main/charts/vald/values/multi-vald/dev-vald-02.yaml) and [values.yaml](https://github.com/vdaas/vald/blob/main/example/helm/values.yaml)
 
    ```bash
    helm install vald-cluster-02 charts/vald \
@@ -106,7 +106,7 @@ In this section, you will deploy three Vald clusters consisting of `vald-agent-n
      -n vald-02
    ```
 
-4. Deploy on the `vald-03` Namespace using [dev-vald-03.yaml](https://github.com/vdaas/vald/blob/feature/mirror-gateway-definition/charts/vald/values/multi-vald/dev-vald-03.yaml) and [values.yaml](https://github.com/vdaas/vald/blob/main/example/helm/values.yaml)
+4. Deploy on the `vald-03` Namespace using [dev-vald-03.yaml](https://github.com/vdaas/vald/blob/main/charts/vald/values/multi-vald/dev-vald-03.yaml) and [values.yaml](https://github.com/vdaas/vald/blob/main/example/helm/values.yaml)
 
    ```bash
    helm install vald-cluster-03 charts/vald \
@@ -194,7 +194,7 @@ It requires applying the `ValdMirrorTarget` Custom Resource to the one Namespace
 
 When applied successfully, the destination information is automatically created on other Namespaces when interconnected with each `vald-mirror-gateway`.
 
-This tutorial will deploy the [ValdMirrorTarger](https://github.com/vdaas/vald/tree/main/charts/vald/values/mirror-target.yaml) Custom Resource to the `vald-03` Namespace with the following command.
+This tutorial will deploy the [ValdMirrorTarget](https://github.com/vdaas/vald/blob/main/charts/vald/values/multi-vald/mirror-target.yaml) Custom Resource to the `vald-03` Namespace with the following command.
 
 ```bash
 kubectl apply -f ./charts/vald/values/multi-vald/mirror-target.yaml -n vald-03
@@ -255,7 +255,7 @@ If you are interested, please refer to [SDKs](https://vald.vdaas.org/docs/user-
 
 3. Run Example
 
-   We use [example/client/mirror/main.go](https://github.com/vdaas/vald/blob/feature/mirror-gateway-example/example/client/mirror/main.go) to run the example.
+   We use [example/client/mirror/main.go](https://github.com/vdaas/vald/blob/main/example/client/mirror/main.go) to run the example.
 
    This example will insert and index 400 vectors into the Vald cluster from the Fashion-MNIST dataset via [gRPC](https://grpc.io/).
    And then, after waiting for indexing, it will request to search the nearest vector 10 times to all Vald clusters. You will get the 10 nearest neighbor vectors for each search query.

@@ -193,8 +193,8 @@ func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]k8s.Jo
 	}
 	// benchmarkJobStatus is used for update benchmark job resource status
 	benchmarkJobStatus := make(map[string]v1.BenchmarkJobStatus)
-	// jobNames is used for check whether cjobs has delted job.
-	// If cjobs has the delted job, it will be remove the end of jobReconcile function.
+	// jobNames is used for check whether cjobs has deleted job.
+	// If cjobs has the deleted job, it will be remove the end of jobReconcile function.
 	jobNames := map[string]struct{}{}
 	for _, jobs := range jobList {
 		cnt := len(jobs)
@@ -237,7 +237,9 @@ func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]k8s.Jo
 
 // benchJobReconcile gets the vald benchmark job resource list and create Job for running benchmark job.
 // skipcq: GO-R1005
-func (o *operator) benchJobReconcile(ctx context.Context, benchJobList map[string]v1.ValdBenchmarkJob) {
+func (o *operator) benchJobReconcile(
+	ctx context.Context, benchJobList map[string]v1.ValdBenchmarkJob,
+) {
 	log.Debugf("[reconcile benchmark job resource] job list: %#v", benchJobList)
 	cbjl := o.getAtomicBenchJob()
 	if cbjl == nil {
@@ -315,7 +317,9 @@ func (o *operator) benchJobReconcile(ctx context.Context, benchJobList map[strin
 }
 
 // benchScenarioReconcile gets the vald benchmark scenario list and create vald benchmark job resource according to it.
-func (o *operator) benchScenarioReconcile(ctx context.Context, scenarioList map[string]v1.ValdBenchmarkScenario) {
+func (o *operator) benchScenarioReconcile(
+	ctx context.Context, scenarioList map[string]v1.ValdBenchmarkScenario,
+) {
 	log.Debugf("[reconcile benchmark scenario resource] scenario list: %#v", scenarioList)
 	cbsl := o.getAtomicScenario()
 	if cbsl == nil {
@@ -422,7 +426,9 @@ func (o *operator) deleteJob(ctx context.Context, name string) error {
 }
 
 // createBenchmarkJob creates the ValdBenchmarkJob crd for running job.
-func (o *operator) createBenchmarkJob(ctx context.Context, scenario v1.ValdBenchmarkScenario) ([]string, error) {
+func (o *operator) createBenchmarkJob(
+	ctx context.Context, scenario v1.ValdBenchmarkScenario,
+) ([]string, error) {
 	ownerRef := []k8s.OwnerReference{
 		{
 			APIVersion: scenario.APIVersion,
@@ -514,7 +520,9 @@ func (o *operator) createJob(ctx context.Context, bjr v1.ValdBenchmarkJob) error
 }
 
 // updateBenchmarkScenarioStatus updates status of ValdBenchmarkScenarioResource.
-func (o *operator) updateBenchmarkScenarioStatus(ctx context.Context, ss map[string]v1.ValdBenchmarkScenarioStatus) ([]string, error) {
+func (o *operator) updateBenchmarkScenarioStatus(
+	ctx context.Context, ss map[string]v1.ValdBenchmarkScenarioStatus,
+) ([]string, error) {
 	var sns []string
 	if cbsl := o.getAtomicScenario(); cbsl != nil {
 		for name, status := range ss {
@@ -537,7 +545,9 @@ func (o *operator) updateBenchmarkScenarioStatus(ctx context.Context, ss map[str
 }
 
 // updateBenchmarkJobStatus updates status of ValdBenchmarkJobResource.
-func (o *operator) updateBenchmarkJobStatus(ctx context.Context, js map[string]v1.BenchmarkJobStatus) ([]string, error) {
+func (o *operator) updateBenchmarkJobStatus(
+	ctx context.Context, js map[string]v1.BenchmarkJobStatus,
+) ([]string, error) {
 	var jns []string
 	if cbjl := o.getAtomicBenchJob(); cbjl != nil {
 		for name, status := range js {

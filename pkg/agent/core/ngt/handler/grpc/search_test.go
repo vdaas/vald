@@ -92,7 +92,8 @@ func Test_server_Search(t *testing.T) {
 			}
 		}
 		if gotSize := len(gotRes.GetResults()); gotSize != w.resultSize {
-			return errors.Errorf("got size: \"%#v\",\n\t\t\t\twant size: \"%#v\"", gotSize, w.resultSize)
+			res, _ := gotRes.MarshalJSON()
+			return errors.Errorf("got size: \"%#v\",\n\t\t\t\twant size: \"%#v\"\ngotResults: \"%s\"", gotSize, w.resultSize, string(res))
 		}
 		return nil
 	}
@@ -1260,7 +1261,6 @@ func Test_server_SearchByID(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1383,7 +1383,6 @@ func Test_server_SearchByID(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1513,7 +1512,6 @@ func Test_server_SearchByID(t *testing.T) {
 // 			if err := checkFunc(test.want, gotRes, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1643,7 +1641,6 @@ func Test_server_SearchByID(t *testing.T) {
 // 			if err := checkFunc(test.want, gotRes, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

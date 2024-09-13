@@ -328,7 +328,7 @@ func Test_copier_Copy(t *testing.T) {
 				bufSize: test.fields.bufSize,
 			}
 			c.pool = sync.Pool{
-				New: func() interface{} {
+				New: func() any {
 					return bytes.NewBuffer(make([]byte, int(atomic.LoadInt64(&c.bufSize))))
 				},
 			}
@@ -437,7 +437,6 @@ func Test_copier_Copy(t *testing.T) {
 // 			if err := checkFunc(test.want, gotWritten, err, dst.String()); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -548,7 +547,6 @@ func Test_copier_Copy(t *testing.T) {
 // 			if err := checkFunc(test.want, gotWritten, err, dst.String()); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -659,7 +657,6 @@ func Test_copier_Copy(t *testing.T) {
 // 			if err := checkFunc(test.want, gotWritten, err, dst.String()); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

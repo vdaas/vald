@@ -13,12 +13,7 @@
   - [Empty](#payload-v1-Empty)
   - [Filter](#payload-v1-Filter)
   - [Filter.Config](#payload-v1-Filter-Config)
-  - [Filter.DistanceRequest](#payload-v1-Filter-DistanceRequest)
-  - [Filter.DistanceResponse](#payload-v1-Filter-DistanceResponse)
-  - [Filter.Query](#payload-v1-Filter-Query)
   - [Filter.Target](#payload-v1-Filter-Target)
-  - [Filter.VectorRequest](#payload-v1-Filter-VectorRequest)
-  - [Filter.VectorResponse](#payload-v1-Filter-VectorResponse)
   - [Flush](#payload-v1-Flush)
   - [Flush.Request](#payload-v1-Flush-Request)
   - [Info](#payload-v1-Info)
@@ -28,6 +23,14 @@
   - [Info.IPs](#payload-v1-Info-IPs)
   - [Info.Index](#payload-v1-Info-Index)
   - [Info.Index.Count](#payload-v1-Info-Index-Count)
+  - [Info.Index.Detail](#payload-v1-Info-Index-Detail)
+  - [Info.Index.Detail.CountsEntry](#payload-v1-Info-Index-Detail-CountsEntry)
+  - [Info.Index.Property](#payload-v1-Info-Index-Property)
+  - [Info.Index.PropertyDetail](#payload-v1-Info-Index-PropertyDetail)
+  - [Info.Index.PropertyDetail.DetailsEntry](#payload-v1-Info-Index-PropertyDetail-DetailsEntry)
+  - [Info.Index.Statistics](#payload-v1-Info-Index-Statistics)
+  - [Info.Index.StatisticsDetail](#payload-v1-Info-Index-StatisticsDetail)
+  - [Info.Index.StatisticsDetail.DetailsEntry](#payload-v1-Info-Index-StatisticsDetail-DetailsEntry)
   - [Info.Index.UUID](#payload-v1-Info-Index-UUID)
   - [Info.Index.UUID.Committed](#payload-v1-Info-Index-UUID-Committed)
   - [Info.Index.UUID.Uncommitted](#payload-v1-Info-Index-UUID-Uncommitted)
@@ -53,7 +56,6 @@
   - [Object](#payload-v1-Object)
   - [Object.Blob](#payload-v1-Object-Blob)
   - [Object.Distance](#payload-v1-Object-Distance)
-  - [Object.GetTimestampRequest](#payload-v1-Object-GetTimestampRequest)
   - [Object.ID](#payload-v1-Object-ID)
   - [Object.IDs](#payload-v1-Object-IDs)
   - [Object.List](#payload-v1-Object-List)
@@ -67,6 +69,7 @@
   - [Object.StreamLocation](#payload-v1-Object-StreamLocation)
   - [Object.StreamVector](#payload-v1-Object-StreamVector)
   - [Object.Timestamp](#payload-v1-Object-Timestamp)
+  - [Object.TimestampRequest](#payload-v1-Object-TimestampRequest)
   - [Object.Vector](#payload-v1-Object-Vector)
   - [Object.VectorRequest](#payload-v1-Object-VectorRequest)
   - [Object.Vectors](#payload-v1-Object-Vectors)
@@ -93,6 +96,7 @@
   - [Update.MultiRequest](#payload-v1-Update-MultiRequest)
   - [Update.ObjectRequest](#payload-v1-Update-ObjectRequest)
   - [Update.Request](#payload-v1-Update-Request)
+  - [Update.TimestampRequest](#payload-v1-Update-TimestampRequest)
   - [Upsert](#payload-v1-Upsert)
   - [Upsert.Config](#payload-v1-Upsert-Config)
   - [Upsert.MultiObjectRequest](#payload-v1-Upsert-MultiObjectRequest)
@@ -112,8 +116,6 @@
   - [Filter](#filter-egress-v1-Filter)
 - [v1/filter/ingress/ingress_filter.proto](#v1_filter_ingress_ingress_filter-proto)
   - [Filter](#filter-ingress-v1-Filter)
-- [v1/manager/index/index_manager.proto](#v1_manager_index_index_manager-proto)
-  - [Index](#manager-index-v1-Index)
 - [v1/mirror/mirror.proto](#v1_mirror_mirror-proto)
   - [Mirror](#mirror-v1-Mirror)
 - [v1/rpc/errdetails/error_details.proto](#v1_rpc_errdetails_error_details-proto)
@@ -136,6 +138,8 @@
   - [Filter](#vald-v1-Filter)
 - [v1/vald/flush.proto](#v1_vald_flush-proto)
   - [Flush](#vald-v1-Flush)
+- [v1/vald/index.proto](#v1_vald_index-proto)
+  - [Index](#vald-v1-Index)
 - [v1/vald/insert.proto](#v1_vald_insert-proto)
   - [Insert](#vald-v1-Insert)
 - [v1/vald/object.proto](#v1_vald_object-proto)
@@ -208,41 +212,9 @@ Filter related messages.
 
 Represent filter configuration.
 
-| Field  | Type                                       | Label | Description                                |
-| ------ | ------------------------------------------ | ----- | ------------------------------------------ |
-| target | [Filter.Target](#payload-v1-Filter-Target) |       | Represent the filter target configuration. |
-| query  | [Filter.Query](#payload-v1-Filter-Query)   |       | The target query.                          |
-
-<a name="payload-v1-Filter-DistanceRequest"></a>
-
-### Filter.DistanceRequest
-
-Represent the ID and distance pair.
-
-| Field    | Type                                           | Label    | Description |
-| -------- | ---------------------------------------------- | -------- | ----------- |
-| distance | [Object.Distance](#payload-v1-Object-Distance) | repeated | Distance    |
-| query    | [Filter.Query](#payload-v1-Filter-Query)       |          | Query       |
-
-<a name="payload-v1-Filter-DistanceResponse"></a>
-
-### Filter.DistanceResponse
-
-Represent the ID and distance pair.
-
-| Field    | Type                                           | Label    | Description |
-| -------- | ---------------------------------------------- | -------- | ----------- |
-| distance | [Object.Distance](#payload-v1-Object-Distance) | repeated | Distance    |
-
-<a name="payload-v1-Filter-Query"></a>
-
-### Filter.Query
-
-Represent the filter query.
-
-| Field | Type              | Label | Description           |
-| ----- | ----------------- | ----- | --------------------- |
-| query | [string](#string) |       | The raw query string. |
+| Field   | Type                                       | Label    | Description                                |
+| ------- | ------------------------------------------ | -------- | ------------------------------------------ |
+| targets | [Filter.Target](#payload-v1-Filter-Target) | repeated | Represent the filter target configuration. |
 
 <a name="payload-v1-Filter-Target"></a>
 
@@ -254,27 +226,6 @@ Represent the target filter server.
 | ----- | ----------------- | ----- | -------------------- |
 | host  | [string](#string) |       | The target hostname. |
 | port  | [uint32](#uint32) |       | The target port.     |
-
-<a name="payload-v1-Filter-VectorRequest"></a>
-
-### Filter.VectorRequest
-
-Represent the ID and vector pair.
-
-| Field  | Type                                       | Label | Description |
-| ------ | ------------------------------------------ | ----- | ----------- |
-| vector | [Object.Vector](#payload-v1-Object-Vector) |       | Vector      |
-| query  | [Filter.Query](#payload-v1-Filter-Query)   |       | Query       |
-
-<a name="payload-v1-Filter-VectorResponse"></a>
-
-### Filter.VectorResponse
-
-Represent the ID and vector pair.
-
-| Field  | Type                                       | Label | Description |
-| ------ | ------------------------------------------ | ----- | ----------- |
-| vector | [Object.Vector](#payload-v1-Object-Vector) |       | Distance    |
 
 <a name="payload-v1-Flush"></a>
 
@@ -351,6 +302,150 @@ Represent the index count message.
 | uncommitted | [uint32](#uint32) |       | The uncommitted index count. |
 | indexing    | [bool](#bool)     |       | The indexing index count.    |
 | saving      | [bool](#bool)     |       | The saving index count.      |
+
+<a name="payload-v1-Info-Index-Detail"></a>
+
+### Info.Index.Detail
+
+Represent the index count for each Agents message.
+
+| Field       | Type                                                                       | Label    | Description                        |
+| ----------- | -------------------------------------------------------------------------- | -------- | ---------------------------------- |
+| counts      | [Info.Index.Detail.CountsEntry](#payload-v1-Info-Index-Detail-CountsEntry) | repeated | count infos for each agents        |
+| replica     | [uint32](#uint32)                                                          |          | index replica of vald cluster      |
+| live_agents | [uint32](#uint32)                                                          |          | live agent replica of vald cluster |
+
+<a name="payload-v1-Info-Index-Detail-CountsEntry"></a>
+
+### Info.Index.Detail.CountsEntry
+
+| Field | Type                                             | Label | Description |
+| ----- | ------------------------------------------------ | ----- | ----------- |
+| key   | [string](#string)                                |       |             |
+| value | [Info.Index.Count](#payload-v1-Info-Index-Count) |       |             |
+
+<a name="payload-v1-Info-Index-Property"></a>
+
+### Info.Index.Property
+
+Represents index Property
+
+| Field                              | Type              | Label | Description |
+| ---------------------------------- | ----------------- | ----- | ----------- |
+| dimension                          | [int32](#int32)   |       |             |
+| thread_pool_size                   | [int32](#int32)   |       |             |
+| object_type                        | [string](#string) |       |             |
+| distance_type                      | [string](#string) |       |             |
+| index_type                         | [string](#string) |       |             |
+| database_type                      | [string](#string) |       |             |
+| object_alignment                   | [string](#string) |       |             |
+| path_adjustment_interval           | [int32](#int32)   |       |             |
+| graph_shared_memory_size           | [int32](#int32)   |       |             |
+| tree_shared_memory_size            | [int32](#int32)   |       |             |
+| object_shared_memory_size          | [int32](#int32)   |       |             |
+| prefetch_offset                    | [int32](#int32)   |       |             |
+| prefetch_size                      | [int32](#int32)   |       |             |
+| accuracy_table                     | [string](#string) |       |             |
+| search_type                        | [string](#string) |       |             |
+| max_magnitude                      | [float](#float)   |       |             |
+| n_of_neighbors_for_insertion_order | [int32](#int32)   |       |             |
+| epsilon_for_insertion_order        | [float](#float)   |       |             |
+| refinement_object_type             | [string](#string) |       |             |
+| truncation_threshold               | [int32](#int32)   |       |             |
+| edge_size_for_creation             | [int32](#int32)   |       |             |
+| edge_size_for_search               | [int32](#int32)   |       |             |
+| edge_size_limit_for_creation       | [int32](#int32)   |       |             |
+| insertion_radius_coefficient       | [double](#double) |       |             |
+| seed_size                          | [int32](#int32)   |       |             |
+| seed_type                          | [string](#string) |       |             |
+| truncation_thread_pool_size        | [int32](#int32)   |       |             |
+| batch_size_for_creation            | [int32](#int32)   |       |             |
+| graph_type                         | [string](#string) |       |             |
+| dynamic_edge_size_base             | [int32](#int32)   |       |             |
+| dynamic_edge_size_rate             | [int32](#int32)   |       |             |
+| build_time_limit                   | [float](#float)   |       |             |
+| outgoing_edge                      | [int32](#int32)   |       |             |
+| incoming_edge                      | [int32](#int32)   |       |             |
+
+<a name="payload-v1-Info-Index-PropertyDetail"></a>
+
+### Info.Index.PropertyDetail
+
+Represents index Properties for each Agents
+
+| Field   | Type                                                                                         | Label    | Description |
+| ------- | -------------------------------------------------------------------------------------------- | -------- | ----------- |
+| details | [Info.Index.PropertyDetail.DetailsEntry](#payload-v1-Info-Index-PropertyDetail-DetailsEntry) | repeated |             |
+
+<a name="payload-v1-Info-Index-PropertyDetail-DetailsEntry"></a>
+
+### Info.Index.PropertyDetail.DetailsEntry
+
+| Field | Type                                                   | Label | Description |
+| ----- | ------------------------------------------------------ | ----- | ----------- |
+| key   | [string](#string)                                      |       |             |
+| value | [Info.Index.Property](#payload-v1-Info-Index-Property) |       |             |
+
+<a name="payload-v1-Info-Index-Statistics"></a>
+
+### Info.Index.Statistics
+
+Represents index Statistics
+
+| Field                                | Type              | Label    | Description |
+| ------------------------------------ | ----------------- | -------- | ----------- |
+| valid                                | [bool](#bool)     |          |             |
+| median_indegree                      | [int32](#int32)   |          |             |
+| median_outdegree                     | [int32](#int32)   |          |             |
+| max_number_of_indegree               | [uint64](#uint64) |          |             |
+| max_number_of_outdegree              | [uint64](#uint64) |          |             |
+| min_number_of_indegree               | [uint64](#uint64) |          |             |
+| min_number_of_outdegree              | [uint64](#uint64) |          |             |
+| mode_indegree                        | [uint64](#uint64) |          |             |
+| mode_outdegree                       | [uint64](#uint64) |          |             |
+| nodes_skipped_for_10_edges           | [uint64](#uint64) |          |             |
+| nodes_skipped_for_indegree_distance  | [uint64](#uint64) |          |             |
+| number_of_edges                      | [uint64](#uint64) |          |             |
+| number_of_indexed_objects            | [uint64](#uint64) |          |             |
+| number_of_nodes                      | [uint64](#uint64) |          |             |
+| number_of_nodes_without_edges        | [uint64](#uint64) |          |             |
+| number_of_nodes_without_indegree     | [uint64](#uint64) |          |             |
+| number_of_objects                    | [uint64](#uint64) |          |             |
+| number_of_removed_objects            | [uint64](#uint64) |          |             |
+| size_of_object_repository            | [uint64](#uint64) |          |             |
+| size_of_refinement_object_repository | [uint64](#uint64) |          |             |
+| variance_of_indegree                 | [double](#double) |          |             |
+| variance_of_outdegree                | [double](#double) |          |             |
+| mean_edge_length                     | [double](#double) |          |             |
+| mean_edge_length_for_10_edges        | [double](#double) |          |             |
+| mean_indegree_distance_for_10_edges  | [double](#double) |          |             |
+| mean_number_of_edges_per_node        | [double](#double) |          |             |
+| c1_indegree                          | [double](#double) |          |             |
+| c5_indegree                          | [double](#double) |          |             |
+| c95_outdegree                        | [double](#double) |          |             |
+| c99_outdegree                        | [double](#double) |          |             |
+| indegree_count                       | [int64](#int64)   | repeated |             |
+| outdegree_histogram                  | [uint64](#uint64) | repeated |             |
+| indegree_histogram                   | [uint64](#uint64) | repeated |             |
+
+<a name="payload-v1-Info-Index-StatisticsDetail"></a>
+
+### Info.Index.StatisticsDetail
+
+Represents index Statistics for each Agents
+
+| Field   | Type                                                                                             | Label    | Description                 |
+| ------- | ------------------------------------------------------------------------------------------------ | -------- | --------------------------- |
+| details | [Info.Index.StatisticsDetail.DetailsEntry](#payload-v1-Info-Index-StatisticsDetail-DetailsEntry) | repeated | count infos for each agents |
+
+<a name="payload-v1-Info-Index-StatisticsDetail-DetailsEntry"></a>
+
+### Info.Index.StatisticsDetail.DetailsEntry
+
+| Field | Type                                                       | Label | Description |
+| ----- | ---------------------------------------------------------- | ----- | ----------- |
+| key   | [string](#string)                                          |       |             |
+| value | [Info.Index.Statistics](#payload-v1-Info-Index-Statistics) |       |             |
 
 <a name="payload-v1-Info-Index-UUID"></a>
 
@@ -508,11 +603,11 @@ Insert related messages.
 
 Represent insert configurations.
 
-| Field                   | Type                                       | Label    | Description                                         |
-| ----------------------- | ------------------------------------------ | -------- | --------------------------------------------------- |
-| skip_strict_exist_check | [bool](#bool)                              |          | A flag to skip exist check during insert operation. |
-| filters                 | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configurations.                              |
-| timestamp               | [int64](#int64)                            |          | Insert timestamp.                                   |
+| Field                   | Type                                       | Label | Description                                         |
+| ----------------------- | ------------------------------------------ | ----- | --------------------------------------------------- |
+| skip_strict_exist_check | [bool](#bool)                              |       | A flag to skip exist check during insert operation. |
+| filters                 | [Filter.Config](#payload-v1-Filter-Config) |       | Filter configurations.                              |
+| timestamp               | [int64](#int64)                            |       | Insert timestamp.                                   |
 
 <a name="payload-v1-Insert-MultiObjectRequest"></a>
 
@@ -611,16 +706,6 @@ Represent the ID and distance pair.
 | -------- | ----------------- | ----- | -------------- |
 | id       | [string](#string) |       | The vector ID. |
 | distance | [float](#float)   |       | The distance.  |
-
-<a name="payload-v1-Object-GetTimestampRequest"></a>
-
-### Object.GetTimestampRequest
-
-Represent a request to fetch vector meta data.
-
-| Field | Type                               | Label | Description                  |
-| ----- | ---------------------------------- | ----- | ---------------------------- |
-| id    | [Object.ID](#payload-v1-Object-ID) |       | The vector ID to be fetched. |
 
 <a name="payload-v1-Object-ID"></a>
 
@@ -749,6 +834,16 @@ Represent a vector meta data.
 | id        | [string](#string) |       | The vector ID.                                  |
 | timestamp | [int64](#int64)   |       | timestamp represents when this vector inserted. |
 
+<a name="payload-v1-Object-TimestampRequest"></a>
+
+### Object.TimestampRequest
+
+Represent a request to fetch vector meta data.
+
+| Field | Type                               | Label | Description                  |
+| ----- | ---------------------------------- | ----- | ---------------------------- |
+| id    | [Object.ID](#payload-v1-Object-ID) |       | The vector ID to be fetched. |
+
 <a name="payload-v1-Object-Vector"></a>
 
 ### Object.Vector
@@ -767,10 +862,10 @@ Represent a vector.
 
 Represent a request to fetch raw vector.
 
-| Field   | Type                                       | Label    | Description                  |
-| ------- | ------------------------------------------ | -------- | ---------------------------- |
-| id      | [Object.ID](#payload-v1-Object-ID)         |          | The vector ID to be fetched. |
-| filters | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configurations.       |
+| Field   | Type                                       | Label | Description                  |
+| ------- | ------------------------------------------ | ----- | ---------------------------- |
+| id      | [Object.ID](#payload-v1-Object-ID)         |       | The vector ID to be fetched. |
+| filters | [Filter.Config](#payload-v1-Filter-Config) |       | Filter configurations.       |
 
 <a name="payload-v1-Object-Vectors"></a>
 
@@ -853,18 +948,19 @@ Search related messages.
 
 Represent search configuration.
 
-| Field                 | Type                                                                   | Label    | Description                                  |
-| --------------------- | ---------------------------------------------------------------------- | -------- | -------------------------------------------- |
-| request_id            | [string](#string)                                                      |          | Unique request ID.                           |
-| num                   | [uint32](#uint32)                                                      |          | Maximum number of result to be returned.     |
-| radius                | [float](#float)                                                        |          | Search radius.                               |
-| epsilon               | [float](#float)                                                        |          | Search coefficient.                          |
-| timeout               | [int64](#int64)                                                        |          | Search timeout in nanoseconds.               |
-| ingress_filters       | [Filter.Config](#payload-v1-Filter-Config)                             | repeated | Ingress filter configurations.               |
-| egress_filters        | [Filter.Config](#payload-v1-Filter-Config)                             | repeated | Egress filter configurations.                |
-| min_num               | [uint32](#uint32)                                                      |          | Minimum number of result to be returned.     |
-| aggregation_algorithm | [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm) |          | Aggregation Algorithm                        |
-| ratio                 | [google.protobuf.FloatValue](#google-protobuf-FloatValue)              |          | Search ratio for agent return result number. |
+| Field                 | Type                                                                   | Label | Description                                  |
+| --------------------- | ---------------------------------------------------------------------- | ----- | -------------------------------------------- |
+| request_id            | [string](#string)                                                      |       | Unique request ID.                           |
+| num                   | [uint32](#uint32)                                                      |       | Maximum number of result to be returned.     |
+| radius                | [float](#float)                                                        |       | Search radius.                               |
+| epsilon               | [float](#float)                                                        |       | Search coefficient.                          |
+| timeout               | [int64](#int64)                                                        |       | Search timeout in nanoseconds.               |
+| ingress_filters       | [Filter.Config](#payload-v1-Filter-Config)                             |       | Ingress filter configurations.               |
+| egress_filters        | [Filter.Config](#payload-v1-Filter-Config)                             |       | Egress filter configurations.                |
+| min_num               | [uint32](#uint32)                                                      |       | Minimum number of result to be returned.     |
+| aggregation_algorithm | [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm) |       | Aggregation Algorithm                        |
+| ratio                 | [google.protobuf.FloatValue](#google-protobuf-FloatValue)              |       | Search ratio for agent return result number. |
+| nprobe                | [uint32](#uint32)                                                      |       | Search nprobe.                               |
 
 <a name="payload-v1-Search-IDRequest"></a>
 
@@ -974,12 +1070,12 @@ Update related messages
 
 Represent the update configuration.
 
-| Field                   | Type                                       | Label    | Description                                                                                      |
-| ----------------------- | ------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------ |
-| skip_strict_exist_check | [bool](#bool)                              |          | A flag to skip exist check during update operation.                                              |
-| filters                 | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configuration.                                                                            |
-| timestamp               | [int64](#int64)                            |          | Update timestamp.                                                                                |
-| disable_balanced_update | [bool](#bool)                              |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation. |
+| Field                   | Type                                       | Label | Description                                                                                      |
+| ----------------------- | ------------------------------------------ | ----- | ------------------------------------------------------------------------------------------------ |
+| skip_strict_exist_check | [bool](#bool)                              |       | A flag to skip exist check during update operation.                                              |
+| filters                 | [Filter.Config](#payload-v1-Filter-Config) |       | Filter configuration.                                                                            |
+| timestamp               | [int64](#int64)                            |       | Update timestamp.                                                                                |
+| disable_balanced_update | [bool](#bool)                              |       | A flag to disable balanced update (split remove -&gt; insert operation) during update operation. |
 
 <a name="payload-v1-Update-MultiObjectRequest"></a>
 
@@ -1024,6 +1120,18 @@ Represent the update request.
 | vector | [Object.Vector](#payload-v1-Object-Vector) |       | The vector to be updated.                |
 | config | [Update.Config](#payload-v1-Update-Config) |       | The configuration of the update request. |
 
+<a name="payload-v1-Update-TimestampRequest"></a>
+
+### Update.TimestampRequest
+
+Represent a vector meta data.
+
+| Field     | Type              | Label | Description                                       |
+| --------- | ----------------- | ----- | ------------------------------------------------- |
+| id        | [string](#string) |       | The vector ID.                                    |
+| timestamp | [int64](#int64)   |       | timestamp represents when this vector inserted.   |
+| force     | [bool](#bool)     |       | force represents forcefully update the timestamp. |
+
 <a name="payload-v1-Upsert"></a>
 
 ### Upsert
@@ -1036,12 +1144,12 @@ Upsert related messages.
 
 Represent the upsert configuration.
 
-| Field                   | Type                                       | Label    | Description                                                                                      |
-| ----------------------- | ------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------ |
-| skip_strict_exist_check | [bool](#bool)                              |          | A flag to skip exist check during upsert operation.                                              |
-| filters                 | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configuration.                                                                            |
-| timestamp               | [int64](#int64)                            |          | Upsert timestamp.                                                                                |
-| disable_balanced_update | [bool](#bool)                              |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation. |
+| Field                   | Type                                       | Label | Description                                                                                      |
+| ----------------------- | ------------------------------------------ | ----- | ------------------------------------------------------------------------------------------------ |
+| skip_strict_exist_check | [bool](#bool)                              |       | A flag to skip exist check during upsert operation.                                              |
+| filters                 | [Filter.Config](#payload-v1-Filter-Config) |       | Filter configuration.                                                                            |
+| timestamp               | [int64](#int64)                            |       | Upsert timestamp.                                                                                |
+| disable_balanced_update | [bool](#bool)                              |       | A flag to disable balanced update (split remove -&gt; insert operation) during update operation. |
 
 <a name="payload-v1-Upsert-MultiObjectRequest"></a>
 
@@ -1127,13 +1235,11 @@ AggregationAlgorithm is enum of each aggregation algorithms
 
 Represent the agent service.
 
-| Method Name        | Request Type                                                                     | Response Type                                                | Description                                                                                        |
-| ------------------ | -------------------------------------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| CreateIndex        | [.payload.v1.Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest) | [.payload.v1.Empty](#payload-v1-Empty)                       | Represent the creating index RPC.                                                                  |
-| SaveIndex          | [.payload.v1.Empty](#payload-v1-Empty)                                           | [.payload.v1.Empty](#payload-v1-Empty)                       | Represent the saving index RPC.                                                                    |
-| CreateAndSaveIndex | [.payload.v1.Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest) | [.payload.v1.Empty](#payload-v1-Empty)                       | Represent the creating and saving index RPC.                                                       |
-| IndexInfo          | [.payload.v1.Empty](#payload-v1-Empty)                                           | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count) | Represent the RPC to get the agent index information.                                              |
-| GetTimestamp       | [.payload.v1.Object.GetTimestampRequest](#payload-v1-Object-GetTimestampRequest) | [.payload.v1.Object.Timestamp](#payload-v1-Object-Timestamp) | Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process |
+| Method Name        | Request Type                                                                     | Response Type                          | Description                                  |
+| ------------------ | -------------------------------------------------------------------------------- | -------------------------------------- | -------------------------------------------- |
+| CreateIndex        | [.payload.v1.Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest) | [.payload.v1.Empty](#payload-v1-Empty) | Represent the creating index RPC.            |
+| SaveIndex          | [.payload.v1.Empty](#payload-v1-Empty)                                           | [.payload.v1.Empty](#payload-v1-Empty) | Represent the saving index RPC.              |
+| CreateAndSaveIndex | [.payload.v1.Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest) | [.payload.v1.Empty](#payload-v1-Empty) | Represent the creating and saving index RPC. |
 
 <a name="v1_agent_sidecar_sidecar-proto"></a>
 
@@ -1180,10 +1286,10 @@ Represent the discoverer service.
 
 Represent the egress filter service.
 
-| Method Name    | Request Type                                                             | Response Type                                                              | Description                               |
-| -------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------- | ----------------------------------------- |
-| FilterDistance | [.payload.v1.Filter.DistanceRequest](#payload-v1-Filter-DistanceRequest) | [.payload.v1.Filter.DistanceResponse](#payload-v1-Filter-DistanceResponse) | Represent the RPC to filter the distance. |
-| FilterVector   | [.payload.v1.Filter.VectorRequest](#payload-v1-Filter-VectorRequest)     | [.payload.v1.Filter.VectorResponse](#payload-v1-Filter-VectorResponse)     | Represent the RPC to filter the vector.   |
+| Method Name    | Request Type                                               | Response Type                                              | Description                               |
+| -------------- | ---------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------- |
+| FilterDistance | [.payload.v1.Object.Distance](#payload-v1-Object-Distance) | [.payload.v1.Object.Distance](#payload-v1-Object-Distance) | Represent the RPC to filter the distance. |
+| FilterVector   | [.payload.v1.Object.Vector](#payload-v1-Object-Vector)     | [.payload.v1.Object.Vector](#payload-v1-Object-Vector)     | Represent the RPC to filter the vector.   |
 
 <a name="v1_filter_ingress_ingress_filter-proto"></a>
 
@@ -1201,22 +1307,6 @@ Represent the ingress filter service.
 | ------------ | ------------------------------------------------------ | ------------------------------------------------------ | ----------------------------------------- |
 | GenVector    | [.payload.v1.Object.Blob](#payload-v1-Object-Blob)     | [.payload.v1.Object.Vector](#payload-v1-Object-Vector) | Represent the RPC to generate the vector. |
 | FilterVector | [.payload.v1.Object.Vector](#payload-v1-Object-Vector) | [.payload.v1.Object.Vector](#payload-v1-Object-Vector) | Represent the RPC to filter the vector.   |
-
-<a name="v1_manager_index_index_manager-proto"></a>
-
-<p align="right"><a href="#top">Top</a></p>
-
-## v1/manager/index/index_manager.proto
-
-<a name="manager-index-v1-Index"></a>
-
-### Index
-
-Represent the index manager service.
-
-| Method Name | Request Type                           | Response Type                                                | Description                                     |
-| ----------- | -------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------- |
-| IndexInfo   | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count) | Represent the RPC to get the index information. |
 
 <a name="v1_mirror_mirror-proto"></a>
 
@@ -1538,6 +1628,26 @@ Flush service provides ways to flush all indexed vectors.
 | ----------- | ------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------- |
 | Flush       | [.payload.v1.Flush.Request](#payload-v1-Flush-Request) | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count) | A method to flush all indexed vector. |
 
+<a name="v1_vald_index-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## v1/vald/index.proto
+
+<a name="vald-v1-Index"></a>
+
+### Index
+
+Represent the index manager service.
+
+| Method Name           | Request Type                           | Response Type                                                                      | Description                                                     |
+| --------------------- | -------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| IndexInfo             | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count)                       | Represent the RPC to get the index information.                 |
+| IndexDetail           | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Detail](#payload-v1-Info-Index-Detail)                     | Represent the RPC to get the index information for each agents. |
+| IndexStatistics       | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Statistics](#payload-v1-Info-Index-Statistics)             | Represent the RPC to get the index statistics.                  |
+| IndexStatisticsDetail | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.StatisticsDetail](#payload-v1-Info-Index-StatisticsDetail) | Represent the RPC to get the index statistics for each agents.  |
+| IndexProperty         | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.PropertyDetail](#payload-v1-Info-Index-PropertyDetail)     | Represent the RPC to get the index property.                    |
+
 <a name="v1_vald_insert-proto"></a>
 
 <p align="right"><a href="#top">Top</a></p>
@@ -1568,12 +1678,13 @@ Insert service provides ways to add new vectors.
 
 Object service provides ways to fetch indexed vectors.
 
-| Method Name      | Request Type                                                                | Response Type                                                               | Description                                                 |
-| ---------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Exists           | [.payload.v1.Object.ID](#payload-v1-Object-ID)                              | [.payload.v1.Object.ID](#payload-v1-Object-ID)                              | A method to check whether a specified ID is indexed or not. |
-| GetObject        | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest)        | [.payload.v1.Object.Vector](#payload-v1-Object-Vector)                      | A method to fetch a vector.                                 |
-| StreamGetObject  | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest) stream | [.payload.v1.Object.StreamVector](#payload-v1-Object-StreamVector) stream   | A method to fetch vectors by bidirectional streaming.       |
-| StreamListObject | [.payload.v1.Object.List.Request](#payload-v1-Object-List-Request)          | [.payload.v1.Object.List.Response](#payload-v1-Object-List-Response) stream | A method to get all the vectors with server streaming       |
+| Method Name      | Request Type                                                                | Response Type                                                               | Description                                                                                        |
+| ---------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Exists           | [.payload.v1.Object.ID](#payload-v1-Object-ID)                              | [.payload.v1.Object.ID](#payload-v1-Object-ID)                              | A method to check whether a specified ID is indexed or not.                                        |
+| GetObject        | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest)        | [.payload.v1.Object.Vector](#payload-v1-Object-Vector)                      | A method to fetch a vector.                                                                        |
+| StreamGetObject  | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest) stream | [.payload.v1.Object.StreamVector](#payload-v1-Object-StreamVector) stream   | A method to fetch vectors by bidirectional streaming.                                              |
+| StreamListObject | [.payload.v1.Object.List.Request](#payload-v1-Object-List-Request)          | [.payload.v1.Object.List.Response](#payload-v1-Object-List-Response) stream | A method to get all the vectors with server streaming                                              |
+| GetTimestamp     | [.payload.v1.Object.TimestampRequest](#payload-v1-Object-TimestampRequest)  | [.payload.v1.Object.Timestamp](#payload-v1-Object-Timestamp)                | Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process |
 
 <a name="v1_vald_remove-proto"></a>
 
@@ -1633,11 +1744,12 @@ Search service provides ways to search indexed vectors.
 
 Update service provides ways to update indexed vectors.
 
-| Method Name  | Request Type                                                       | Response Type                                                                 | Description                                                             |
-| ------------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Update       | [.payload.v1.Update.Request](#payload-v1-Update-Request)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to update an indexed vector.                                   |
-| StreamUpdate | [.payload.v1.Update.Request](#payload-v1-Update-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to update multiple indexed vectors by bidirectional streaming. |
-| MultiUpdate  | [.payload.v1.Update.MultiRequest](#payload-v1-Update-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to update multiple indexed vectors in a single request.        |
+| Method Name     | Request Type                                                               | Response Type                                                                 | Description                                                             |
+| --------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Update          | [.payload.v1.Update.Request](#payload-v1-Update-Request)                   | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to update an indexed vector.                                   |
+| StreamUpdate    | [.payload.v1.Update.Request](#payload-v1-Update-Request) stream            | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to update multiple indexed vectors by bidirectional streaming. |
+| MultiUpdate     | [.payload.v1.Update.MultiRequest](#payload-v1-Update-MultiRequest)         | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to update multiple indexed vectors in a single request.        |
+| UpdateTimestamp | [.payload.v1.Update.TimestampRequest](#payload-v1-Update-TimestampRequest) | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to update timestamp an indexed vector.                         |
 
 <a name="v1_vald_upsert-proto"></a>
 

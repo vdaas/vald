@@ -85,6 +85,11 @@ type (
 		// GetVector returns vector stored in NGT index.
 		GetVector(id uint) ([]float32, error)
 
+		GetGraphStatistics(m statisticsType) (stats *GraphStatistics, err error)
+
+		// GetProperty returns NGT Index Property.
+		GetProperty() (*Property, error)
+
 		// Close Without save index.
 		CloseWithoutSaveIndex()
 
@@ -103,6 +108,7 @@ type (
 		poolSize            uint32
 		cnt                 atomic.Uint64
 		prop                C.NGTProperty
+		ces                 uint64        // NGT edge size for creation
 		epool               sync.Pool     // NGT error buffer pool
 		eps                 atomic.Uint64 // NGT error buffer pool size
 		epl                 uint64        // NGT error buffer pool size limit
@@ -115,6 +121,79 @@ type (
 	ngtError struct {
 		err       C.NGTError
 		destroyed atomic.Bool
+	}
+
+	GraphStatistics struct {
+		Valid                            bool
+		MedianIndegree                   int32
+		MedianOutdegree                  int32
+		MaxNumberOfIndegree              uint64
+		MaxNumberOfOutdegree             uint64
+		MinNumberOfIndegree              uint64
+		MinNumberOfOutdegree             uint64
+		ModeIndegree                     uint64
+		ModeOutdegree                    uint64
+		NodesSkippedFor10Edges           uint64
+		NodesSkippedForIndegreeDistance  uint64
+		NumberOfEdges                    uint64
+		NumberOfIndexedObjects           uint64
+		NumberOfNodes                    uint64
+		NumberOfNodesWithoutEdges        uint64
+		NumberOfNodesWithoutIndegree     uint64
+		NumberOfObjects                  uint64
+		NumberOfRemovedObjects           uint64
+		SizeOfObjectRepository           uint64
+		SizeOfRefinementObjectRepository uint64
+		VarianceOfIndegree               float64
+		VarianceOfOutdegree              float64
+		MeanEdgeLength                   float64
+		MeanEdgeLengthFor10Edges         float64
+		MeanIndegreeDistanceFor10Edges   float64
+		MeanNumberOfEdgesPerNode         float64
+		C1Indegree                       float64
+		C5Indegree                       float64
+		C95Outdegree                     float64
+		C99Outdegree                     float64
+		IndegreeCount                    []int64
+		OutdegreeHistogram               []uint64
+		IndegreeHistogram                []uint64
+	}
+
+	Property struct {
+		Dimension                     int32
+		ThreadPoolSize                int32
+		ObjectType                    objectType
+		DistanceType                  distanceType
+		IndexType                     indexType
+		DatabaseType                  databaseType
+		ObjectAlignment               objectAlignment
+		PathAdjustmentInterval        int32
+		GraphSharedMemorySize         int32
+		TreeSharedMemorySize          int32
+		ObjectSharedMemorySize        int32
+		PrefetchOffset                int32
+		PrefetchSize                  int32
+		AccuracyTable                 string
+		SearchType                    string
+		MaxMagnitude                  float32
+		NOfNeighborsForInsertionOrder int32
+		EpsilonForInsertionOrder      float32
+		RefinementObjectType          objectType
+		TruncationThreshold           int32
+		EdgeSizeForCreation           int32
+		EdgeSizeForSearch             int32
+		EdgeSizeLimitForCreation      int32
+		InsertionRadiusCoefficient    float64
+		SeedSize                      int32
+		SeedType                      seedType
+		TruncationThreadPoolSize      int32
+		BatchSizeForCreation          int32
+		GraphType                     graphType
+		DynamicEdgeSizeBase           int32
+		DynamicEdgeSizeRate           int32
+		BuildTimeLimit                float32
+		OutgoingEdge                  int32
+		IncomingEdge                  int32
 	}
 )
 
@@ -142,6 +221,23 @@ type objectType int
 // DistanceType is alias of distance type in NGT.
 type distanceType int
 
+type statisticsType int
+
+// IndexType is alias of index type in NGT.
+type indexType int
+
+// DatabaseType is alias of database type in NGT.
+type databaseType int
+
+// ObjectAlignment is alias of object alignment in NGT.
+type objectAlignment int
+
+// SeedType is alias of seed type in NGT.
+type seedType int
+
+// GraphType is alias of graph type in NGT.
+type graphType int
+
 const (
 	// -------------------------------------------------------------
 	// Object Type Definition
@@ -155,7 +251,9 @@ const (
 	// HalfFloat is 16bit floating point number.
 	HalfFloat
 	// -------------------------------------------------------------.
+)
 
+const (
 	// -------------------------------------------------------------
 	// Distance Type Definition
 	// -------------------------------------------------------------
@@ -187,14 +285,71 @@ const (
 	NormalizedCosine
 	// InnerProduct is inner product distance.
 	InnerProduct
+)
 
-	// -------------------------------------------------------------.
+const (
+	// -------------------------------------------------------------
+	// IndexType Definition
+	// -------------------------------------------------------------
+	IndexTypeNone indexType = iota
+	GraphAndTree
+	Graph
+)
 
+const (
+	// -------------------------------------------------------------
+	// DatabaseType Definition
+	// -------------------------------------------------------------
+	DatabaseTypeNone databaseType = iota
+	Memory
+	MemoryMappedFile
+)
+
+const (
+	// -------------------------------------------------------------
+	// ObjectAlignment Definition
+	// -------------------------------------------------------------
+	ObjectAlignmentNone objectAlignment = iota
+	ObjectAlignmentTrue
+	ObjectAlignmentFalse
+)
+
+const (
+	// -------------------------------------------------------------
+	// SeedType Definition
+	// -------------------------------------------------------------
+	// SeedTypeNone is unknown seed type.
+	SeedTypeNone seedType = iota
+	RandomNodes
+	FixedNodes
+	FirstNode
+	AllLeafNodes
+)
+
+const (
+	// -------------------------------------------------------------
+	// GraphType Definition
+	// -------------------------------------------------------------
+	GraphTypeNone graphType = iota
+	ANNG
+	KNNG
+	BKNNG
+	ONNG
+	IANNG
+	DNNG
+	RANNG
+	RIANNG
+)
+
+const (
 	// -------------------------------------------------------------
 	// ErrorCode is false
 	// -------------------------------------------------------------.
 	ErrorCode = C._Bool(false)
 	// -------------------------------------------------------------.
+
+	NormalStatistics statisticsType = iota - 1
+	AdditionalStatistics
 )
 
 func (o objectType) String() string {
@@ -237,6 +392,72 @@ func (d distanceType) String() string {
 		return "NormalizedCosine"
 	case InnerProduct:
 		return "InnerProduct"
+	}
+	return "Unknown"
+}
+
+func (i indexType) String() string {
+	switch i {
+	case GraphAndTree:
+		return "GraphAndTree"
+	case Graph:
+		return "Graph"
+	}
+	return "Unknown"
+}
+
+func (d databaseType) String() string {
+	switch d {
+	case Memory:
+		return "Memory"
+	case MemoryMappedFile:
+		return "MemoryMappedFile"
+	}
+	return "Unknown"
+}
+
+func (o objectAlignment) String() string {
+	switch o {
+	case ObjectAlignmentTrue:
+		return "true"
+	case ObjectAlignmentFalse:
+		return "false"
+	}
+	return "Unknown"
+}
+
+func (s seedType) String() string {
+	switch s {
+	case RandomNodes:
+		return "RandomNodes"
+	case FixedNodes:
+		return "FixedNodes"
+	case FirstNode:
+		return "FirstNode"
+	case AllLeafNodes:
+		return "AllLeafNodes"
+	}
+	return "Unknown"
+}
+
+func (g graphType) String() string {
+	switch g {
+	case ANNG:
+		return "ANNG"
+	case KNNG:
+		return "KNNG"
+	case BKNNG:
+		return "BKNNG"
+	case ONNG:
+		return "ONNG"
+	case IANNG:
+		return "IANNG"
+	case DNNG:
+		return "DNNG"
+	case RANNG:
+		return "RANNG"
+	case RIANNG:
+		return "RIANNG"
 	}
 	return "Unknown"
 }
@@ -304,7 +525,7 @@ func gen(isLoad bool, opts ...Option) (NGT, error) {
 
 func (n *ngt) setup() error {
 	n.epool = sync.Pool{
-		New: func() interface{} {
+		New: func() any {
 			return newNGTError()
 		},
 	}
@@ -404,7 +625,9 @@ func (n *ngt) loadObjectSpace() error {
 }
 
 // Search returns search result as []algorithm.SearchResult.
-func (n *ngt) Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) (result []algorithm.SearchResult, err error) {
+func (n *ngt) Search(
+	ctx context.Context, vec []float32, size int, epsilon, radius float32,
+) (result []algorithm.SearchResult, err error) {
 	if len(vec) != int(n.dimension) {
 		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
@@ -476,7 +699,9 @@ func (n *ngt) Search(ctx context.Context, vec []float32, size int, epsilon, radi
 }
 
 // Linear Search returns linear search result as []algorithm.SearchResult.
-func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size int) (result []algorithm.SearchResult, err error) {
+func (n *ngt) LinearSearch(
+	ctx context.Context, vec []float32, size int,
+) (result []algorithm.SearchResult, err error) {
 	if len(vec) != int(n.dimension) {
 		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
@@ -851,4 +1076,125 @@ func (n *ngt) Close() {
 		n.prop = nil
 		n.ospace = nil
 	}
+}
+
+func fromCGraphStatistics(cstats *C.NGTGraphStatistics) *GraphStatistics {
+	goStats := &GraphStatistics{
+		NumberOfObjects:                  uint64(cstats.numberOfObjects),
+		NumberOfIndexedObjects:           uint64(cstats.numberOfIndexedObjects),
+		SizeOfObjectRepository:           uint64(cstats.sizeOfObjectRepository),
+		SizeOfRefinementObjectRepository: uint64(cstats.sizeOfRefinementObjectRepository),
+		NumberOfRemovedObjects:           uint64(cstats.numberOfRemovedObjects),
+		NumberOfNodes:                    uint64(cstats.numberOfNodes),
+		NumberOfEdges:                    uint64(cstats.numberOfEdges),
+		MeanEdgeLength:                   float64(cstats.meanEdgeLength),
+		MeanNumberOfEdgesPerNode:         float64(cstats.meanNumberOfEdgesPerNode),
+		NumberOfNodesWithoutEdges:        uint64(cstats.numberOfNodesWithoutEdges),
+		MaxNumberOfOutdegree:             uint64(cstats.maxNumberOfOutdegree),
+		MinNumberOfOutdegree:             uint64(cstats.minNumberOfOutdegree),
+		NumberOfNodesWithoutIndegree:     uint64(cstats.numberOfNodesWithoutIndegree),
+		MaxNumberOfIndegree:              uint64(cstats.maxNumberOfIndegree),
+		MinNumberOfIndegree:              uint64(cstats.minNumberOfIndegree),
+		MeanEdgeLengthFor10Edges:         float64(cstats.meanEdgeLengthFor10Edges),
+		NodesSkippedFor10Edges:           uint64(cstats.nodesSkippedFor10Edges),
+		MeanIndegreeDistanceFor10Edges:   float64(cstats.meanIndegreeDistanceFor10Edges),
+		NodesSkippedForIndegreeDistance:  uint64(cstats.nodesSkippedForIndegreeDistance),
+		VarianceOfOutdegree:              float64(cstats.varianceOfOutdegree),
+		VarianceOfIndegree:               float64(cstats.varianceOfIndegree),
+		MedianOutdegree:                  int32(cstats.medianOutdegree),
+		ModeOutdegree:                    uint64(cstats.modeOutdegree),
+		C95Outdegree:                     float64(cstats.c95Outdegree),
+		C99Outdegree:                     float64(cstats.c99Outdegree),
+		MedianIndegree:                   int32(cstats.medianIndegree),
+		ModeIndegree:                     uint64(cstats.modeIndegree),
+		C5Indegree:                       float64(cstats.c5Indegree),
+		C1Indegree:                       float64(cstats.c1Indegree),
+		Valid:                            bool(cstats.valid),
+	}
+
+	// Convert indegreeCount
+	indegreeCountSize := int(cstats.indegreeCountSize)
+	goStats.IndegreeCount = make([]int64, indegreeCountSize)
+	cIndegreeCount := (*[1 << 30]C.size_t)(unsafe.Pointer(cstats.indegreeCount))[:indegreeCountSize:indegreeCountSize]
+	for i := 0; i < indegreeCountSize; i++ {
+		goStats.IndegreeCount[i] = int64(cIndegreeCount[i])
+	}
+
+	// Convert outdegreeHistogram
+	outdegreeHistogramSize := int(cstats.outdegreeHistogramSize)
+	goStats.OutdegreeHistogram = make([]uint64, outdegreeHistogramSize)
+	cOutdegreeHistogram := (*[1 << 30]C.size_t)(unsafe.Pointer(cstats.outdegreeHistogram))[:outdegreeHistogramSize:outdegreeHistogramSize]
+	for i := 0; i < outdegreeHistogramSize; i++ {
+		goStats.OutdegreeHistogram[i] = uint64(cOutdegreeHistogram[i])
+	}
+
+	// Convert indegreeHistogram
+	indegreeHistogramSize := int(cstats.indegreeHistogramSize)
+	goStats.IndegreeHistogram = make([]uint64, indegreeHistogramSize)
+	cIndegreeHistogram := (*[1 << 30]C.size_t)(unsafe.Pointer(cstats.indegreeHistogram))[:indegreeHistogramSize:indegreeHistogramSize]
+	for i := 0; i < indegreeHistogramSize; i++ {
+		goStats.IndegreeHistogram[i] = uint64(cIndegreeHistogram[i])
+	}
+
+	return goStats
+}
+
+func (n *ngt) GetGraphStatistics(m statisticsType) (stats *GraphStatistics, err error) {
+	var mode rune
+	switch m {
+	case NormalStatistics:
+		mode = '-'
+	case AdditionalStatistics:
+		mode = 'a'
+	}
+	ne := n.GetErrorBuffer()
+	cstats := C.ngt_get_graph_statistics(n.index, C.char(mode), C.size_t(n.ces), ne.err)
+	if !cstats.valid {
+		return nil, n.newGoError(ne)
+	}
+	n.PutErrorBuffer(ne)
+	defer C.ngt_free_graph_statistics(&cstats)
+	return fromCGraphStatistics(&cstats), nil
+}
+
+func (n *ngt) GetProperty() (prop *Property, err error) {
+	ne := n.GetErrorBuffer()
+	cprop := C.ngt_get_property_info(n.index, ne.err)
+	n.PutErrorBuffer(ne)
+	return &Property{
+		Dimension:                     int32(cprop.dimension),
+		ThreadPoolSize:                int32(cprop.thread_pool_size),
+		ObjectType:                    objectType(cprop.object_type),
+		DistanceType:                  distanceType(cprop.distance_type),
+		IndexType:                     indexType(cprop.index_type),
+		DatabaseType:                  databaseType(cprop.database_type),
+		ObjectAlignment:               objectAlignment(cprop.object_alignment),
+		PathAdjustmentInterval:        int32(cprop.path_adjustment_interval),
+		GraphSharedMemorySize:         int32(cprop.graph_shared_memory_size),
+		TreeSharedMemorySize:          int32(cprop.tree_shared_memory_size),
+		ObjectSharedMemorySize:        int32(cprop.object_shared_memory_size),
+		PrefetchOffset:                int32(cprop.prefetch_offset),
+		PrefetchSize:                  int32(cprop.prefetch_size),
+		AccuracyTable:                 C.GoString(cprop.accuracy_table),
+		SearchType:                    C.GoString(cprop.search_type),
+		MaxMagnitude:                  float32(cprop.max_magnitude),
+		NOfNeighborsForInsertionOrder: int32(cprop.n_of_neighbors_for_insertion_order),
+		EpsilonForInsertionOrder:      float32(cprop.n_of_neighbors_for_insertion_order),
+		RefinementObjectType:          objectType(cprop.refinement_object_type),
+		TruncationThreshold:           int32(cprop.truncation_threshold),
+		EdgeSizeForCreation:           int32(cprop.edge_size_for_creation),
+		EdgeSizeForSearch:             int32(cprop.edge_size_for_search),
+		EdgeSizeLimitForCreation:      int32(cprop.edge_size_limit_for_creation),
+		InsertionRadiusCoefficient:    float64(cprop.insertion_radius_coefficient),
+		SeedSize:                      int32(cprop.seed_size),
+		SeedType:                      seedType(cprop.seed_type),
+		TruncationThreadPoolSize:      int32(cprop.truncation_thread_pool_size),
+		BatchSizeForCreation:          int32(cprop.batch_size_for_creation),
+		GraphType:                     graphType(cprop.graph_type),
+		DynamicEdgeSizeBase:           int32(cprop.dynamic_edge_size_base),
+		DynamicEdgeSizeRate:           int32(cprop.dynamic_edge_size_rate),
+		BuildTimeLimit:                float32(cprop.build_time_limit),
+		OutgoingEdge:                  int32(cprop.outgoing_edge),
+		IncomingEdge:                  int32(cprop.incoming_edge),
+	}, nil
 }

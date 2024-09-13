@@ -96,7 +96,6 @@ package ngt
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -106,23 +105,23 @@ package ngt
 // 		ngt service.NGT
 // 	}
 // 	type want struct {
-// 		want []*metrics.View
-// 		err  error
+// 		wantMv []metrics.View
+// 		err    error
 // 	}
 // 	type test struct {
 // 		name       string
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, []*metrics.View, error) error
+// 		checkFunc  func(want, []metrics.View, error) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
 // 	}
-// 	defaultCheckFunc := func(w want, got []*metrics.View, err error) error {
+// 	defaultCheckFunc := func(w want, gotMv []metrics.View, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		if !reflect.DeepEqual(gotMv, w.wantMv) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotMv, w.wantMv)
 // 		}
 // 		return nil
 // 	}
@@ -185,11 +184,10 @@ package ngt
 // 				ngt: test.fields.ngt,
 // 			}
 //
-// 			got, err := n.View()
-// 			if err := checkFunc(test.want, got, err); err != nil {
+// 			gotMv, err := n.View()
+// 			if err := checkFunc(test.want, gotMv, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -288,7 +286,6 @@ package ngt
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

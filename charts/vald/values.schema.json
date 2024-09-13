@@ -103,6 +103,110 @@
           "type": "string",
           "description": "external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local"
         },
+        "faiss": {
+          "type": "object",
+          "properties": {
+            "auto_index_check_duration": {
+              "type": "string",
+              "description": "check duration of automatic indexing"
+            },
+            "auto_index_duration_limit": {
+              "type": "string",
+              "description": "limit duration of automatic indexing"
+            },
+            "auto_index_length": {
+              "type": "integer",
+              "description": "number of cache to trigger automatic indexing"
+            },
+            "auto_save_index_duration": {
+              "type": "string",
+              "description": "duration of automatic save index"
+            },
+            "dimension": {
+              "type": "integer",
+              "description": "vector dimension",
+              "minimum": 1
+            },
+            "enable_copy_on_write": {
+              "type": "boolean",
+              "description": "enable copy on write saving for more stable backup"
+            },
+            "enable_in_memory_mode": {
+              "type": "boolean",
+              "description": "in-memory mode enabled"
+            },
+            "enable_proactive_gc": {
+              "type": "boolean",
+              "description": "enable proactive GC call for reducing heap memory allocation"
+            },
+            "index_path": {
+              "type": "string",
+              "description": "path to index data"
+            },
+            "initial_delay_max_duration": {
+              "type": "string",
+              "description": "maximum duration for initial delay"
+            },
+            "kvsdb": {
+              "type": "object",
+              "properties": {
+                "concurrency": {
+                  "type": "integer",
+                  "description": "kvsdb processing concurrency"
+                }
+              }
+            },
+            "load_index_timeout_factor": {
+              "type": "string",
+              "description": "a factor of load index timeout. timeout duration will be calculated by (index count to be loaded) * (factor)."
+            },
+            "m": { "type": "integer", "description": "m" },
+            "max_load_index_timeout": {
+              "type": "string",
+              "description": "maximum duration of load index timeout"
+            },
+            "method_type": {
+              "type": "string",
+              "description": "method type it should be `ivfpq` or `binaryindex`",
+              "enum": ["ivfpq", "binaryindex"]
+            },
+            "metric_type": {
+              "type": "string",
+              "description": "metric type it should be `innerproduct` or `l2`",
+              "enum": ["innerproduct", "l2"]
+            },
+            "min_load_index_timeout": {
+              "type": "string",
+              "description": "minimum duration of load index timeout"
+            },
+            "namespace": {
+              "type": "string",
+              "description": "namespace of myself"
+            },
+            "nbits_per_idx": {
+              "type": "integer",
+              "description": "nbits_per_idx"
+            },
+            "nlist": { "type": "integer", "description": "nlist" },
+            "pod_name": {
+              "type": "string",
+              "description": "pod name of myself"
+            },
+            "vqueue": {
+              "type": "object",
+              "properties": {
+                "delete_buffer_pool_size": {
+                  "type": "integer",
+                  "description": "delete slice pool buffer size"
+                },
+                "insert_buffer_pool_size": {
+                  "type": "integer",
+                  "description": "insert slice pool buffer size"
+                }
+              }
+            }
+          }
+        },
         "hpa": {
           "type": "object",
           "properties": {
@@ -276,6 +380,10 @@
             "enable_proactive_gc": {
               "type": "boolean",
               "description": "enable proactive GC call for reducing heap memory allocation"
+            },
+            "enable_statistics": {
+              "type": "boolean",
+              "description": "enable index statistics loading"
             },
             "error_buffer_limit": {
               "type": "integer",
@@ -684,6 +792,47 @@
                               "type": "string",
                               "description": "REST server handler timeout"
                             },
+                            "http2": {
+                              "type": "object",
+                              "properties": {
+                                "enabled": {
+                                  "type": "boolean",
+                                  "description": "HTTP2 server enabled"
+                                },
+                                "handler_limit": {
+                                  "type": "integer",
+                                  "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                },
+                                "max_concurrent_streams": {
+                                  "type": "integer",
+                                  "description": "The number of concurrent streams that each client may have open at a time."
+                                },
+                                "max_decoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                },
+                                "max_encoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "An upper limit for the header compression table used for encoding request headers."
+                                },
+                                "max_read_frame_size": {
+                                  "type": "integer",
+                                  "description": "The largest frame this server is willing to read."
+                                },
+                                "max_upload_buffer_per_connection": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each connections."
+                                },
+                                "max_upload_buffer_per_stream": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each streams."
+                                },
+                                "permit_prohibited_cipher_suites": {
+                                  "type": "boolean",
+                                  "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                }
+                              }
+                            },
                             "idle_timeout": {
                               "type": "string",
                               "description": "REST server idle timeout"
@@ -853,6 +1002,47 @@
                             "handler_timeout": {
                               "type": "string",
                               "description": "REST server handler timeout"
+                            },
+                            "http2": {
+                              "type": "object",
+                              "properties": {
+                                "enabled": {
+                                  "type": "boolean",
+                                  "description": "HTTP2 server enabled"
+                                },
+                                "handler_limit": {
+                                  "type": "integer",
+                                  "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                },
+                                "max_concurrent_streams": {
+                                  "type": "integer",
+                                  "description": "The number of concurrent streams that each client may have open at a time."
+                                },
+                                "max_decoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                },
+                                "max_encoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "An upper limit for the header compression table used for encoding request headers."
+                                },
+                                "max_read_frame_size": {
+                                  "type": "integer",
+                                  "description": "The largest frame this server is willing to read."
+                                },
+                                "max_upload_buffer_per_connection": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each connections."
+                                },
+                                "max_upload_buffer_per_stream": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each streams."
+                                },
+                                "permit_prohibited_cipher_suites": {
+                                  "type": "boolean",
+                                  "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                }
+                              }
                             },
                             "idle_timeout": {
                               "type": "string",
@@ -1043,6 +1233,47 @@
                             "handler_timeout": {
                               "type": "string",
                               "description": "REST server handler timeout"
+                            },
+                            "http2": {
+                              "type": "object",
+                              "properties": {
+                                "enabled": {
+                                  "type": "boolean",
+                                  "description": "HTTP2 server enabled"
+                                },
+                                "handler_limit": {
+                                  "type": "integer",
+                                  "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                },
+                                "max_concurrent_streams": {
+                                  "type": "integer",
+                                  "description": "The number of concurrent streams that each client may have open at a time."
+                                },
+                                "max_decoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                },
+                                "max_encoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "An upper limit for the header compression table used for encoding request headers."
+                                },
+                                "max_read_frame_size": {
+                                  "type": "integer",
+                                  "description": "The largest frame this server is willing to read."
+                                },
+                                "max_upload_buffer_per_connection": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each connections."
+                                },
+                                "max_upload_buffer_per_stream": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each streams."
+                                },
+                                "permit_prohibited_cipher_suites": {
+                                  "type": "boolean",
+                                  "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                }
+                              }
                             },
                             "idle_timeout": {
                               "type": "string",
@@ -1377,6 +1608,47 @@
                             "handler_timeout": {
                               "type": "string",
                               "description": "REST server handler timeout"
+                            },
+                            "http2": {
+                              "type": "object",
+                              "properties": {
+                                "enabled": {
+                                  "type": "boolean",
+                                  "description": "HTTP2 server enabled"
+                                },
+                                "handler_limit": {
+                                  "type": "integer",
+                                  "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                },
+                                "max_concurrent_streams": {
+                                  "type": "integer",
+                                  "description": "The number of concurrent streams that each client may have open at a time."
+                                },
+                                "max_decoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                },
+                                "max_encoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "An upper limit for the header compression table used for encoding request headers."
+                                },
+                                "max_read_frame_size": {
+                                  "type": "integer",
+                                  "description": "The largest frame this server is willing to read."
+                                },
+                                "max_upload_buffer_per_connection": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each connections."
+                                },
+                                "max_upload_buffer_per_stream": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each streams."
+                                },
+                                "permit_prohibited_cipher_suites": {
+                                  "type": "boolean",
+                                  "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                }
+                              }
                             },
                             "idle_timeout": {
                               "type": "string",
@@ -2195,6 +2467,47 @@
                                   "type": "string",
                                   "description": "REST server handler timeout"
                                 },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
+                                },
                                 "idle_timeout": {
                                   "type": "string",
                                   "description": "REST server idle timeout"
@@ -2364,6 +2677,47 @@
                                 "handler_timeout": {
                                   "type": "string",
                                   "description": "REST server handler timeout"
+                                },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
                                 },
                                 "idle_timeout": {
                                   "type": "string",
@@ -2554,6 +2908,47 @@
                                 "handler_timeout": {
                                   "type": "string",
                                   "description": "REST server handler timeout"
+                                },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
                                 },
                                 "idle_timeout": {
                                   "type": "string",
@@ -2888,6 +3283,47 @@
                                 "handler_timeout": {
                                   "type": "string",
                                   "description": "REST server handler timeout"
+                                },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
                                 },
                                 "idle_timeout": {
                                   "type": "string",
@@ -3633,6 +4069,47 @@
                               "type": "string",
                               "description": "REST server handler timeout"
                             },
+                            "http2": {
+                              "type": "object",
+                              "properties": {
+                                "enabled": {
+                                  "type": "boolean",
+                                  "description": "HTTP2 server enabled"
+                                },
+                                "handler_limit": {
+                                  "type": "integer",
+                                  "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                },
+                                "max_concurrent_streams": {
+                                  "type": "integer",
+                                  "description": "The number of concurrent streams that each client may have open at a time."
+                                },
+                                "max_decoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                },
+                                "max_encoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "An upper limit for the header compression table used for encoding request headers."
+                                },
+                                "max_read_frame_size": {
+                                  "type": "integer",
+                                  "description": "The largest frame this server is willing to read."
+                                },
+                                "max_upload_buffer_per_connection": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each connections."
+                                },
+                                "max_upload_buffer_per_stream": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each streams."
+                                },
+                                "permit_prohibited_cipher_suites": {
+                                  "type": "boolean",
+                                  "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                }
+                              }
+                            },
                             "idle_timeout": {
                               "type": "string",
                               "description": "REST server idle timeout"
@@ -3802,6 +4279,47 @@
                             "handler_timeout": {
                               "type": "string",
                               "description": "REST server handler timeout"
+                            },
+                            "http2": {
+                              "type": "object",
+                              "properties": {
+                                "enabled": {
+                                  "type": "boolean",
+                                  "description": "HTTP2 server enabled"
+                                },
+                                "handler_limit": {
+                                  "type": "integer",
+                                  "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                },
+                                "max_concurrent_streams": {
+                                  "type": "integer",
+                                  "description": "The number of concurrent streams that each client may have open at a time."
+                                },
+                                "max_decoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                },
+                                "max_encoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "An upper limit for the header compression table used for encoding request headers."
+                                },
+                                "max_read_frame_size": {
+                                  "type": "integer",
+                                  "description": "The largest frame this server is willing to read."
+                                },
+                                "max_upload_buffer_per_connection": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each connections."
+                                },
+                                "max_upload_buffer_per_stream": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each streams."
+                                },
+                                "permit_prohibited_cipher_suites": {
+                                  "type": "boolean",
+                                  "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                }
+                              }
                             },
                             "idle_timeout": {
                               "type": "string",
@@ -3992,6 +4510,47 @@
                             "handler_timeout": {
                               "type": "string",
                               "description": "REST server handler timeout"
+                            },
+                            "http2": {
+                              "type": "object",
+                              "properties": {
+                                "enabled": {
+                                  "type": "boolean",
+                                  "description": "HTTP2 server enabled"
+                                },
+                                "handler_limit": {
+                                  "type": "integer",
+                                  "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                },
+                                "max_concurrent_streams": {
+                                  "type": "integer",
+                                  "description": "The number of concurrent streams that each client may have open at a time."
+                                },
+                                "max_decoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                },
+                                "max_encoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "An upper limit for the header compression table used for encoding request headers."
+                                },
+                                "max_read_frame_size": {
+                                  "type": "integer",
+                                  "description": "The largest frame this server is willing to read."
+                                },
+                                "max_upload_buffer_per_connection": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each connections."
+                                },
+                                "max_upload_buffer_per_stream": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each streams."
+                                },
+                                "permit_prohibited_cipher_suites": {
+                                  "type": "boolean",
+                                  "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                }
+                              }
                             },
                             "idle_timeout": {
                               "type": "string",
@@ -4326,6 +4885,47 @@
                             "handler_timeout": {
                               "type": "string",
                               "description": "REST server handler timeout"
+                            },
+                            "http2": {
+                              "type": "object",
+                              "properties": {
+                                "enabled": {
+                                  "type": "boolean",
+                                  "description": "HTTP2 server enabled"
+                                },
+                                "handler_limit": {
+                                  "type": "integer",
+                                  "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                },
+                                "max_concurrent_streams": {
+                                  "type": "integer",
+                                  "description": "The number of concurrent streams that each client may have open at a time."
+                                },
+                                "max_decoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                },
+                                "max_encoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "An upper limit for the header compression table used for encoding request headers."
+                                },
+                                "max_read_frame_size": {
+                                  "type": "integer",
+                                  "description": "The largest frame this server is willing to read."
+                                },
+                                "max_upload_buffer_per_connection": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each connections."
+                                },
+                                "max_upload_buffer_per_stream": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each streams."
+                                },
+                                "permit_prohibited_cipher_suites": {
+                                  "type": "boolean",
+                                  "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                }
+                              }
                             },
                             "idle_timeout": {
                               "type": "string",
@@ -5055,6 +5655,47 @@
                               "type": "string",
                               "description": "REST server handler timeout"
                             },
+                            "http2": {
+                              "type": "object",
+                              "properties": {
+                                "enabled": {
+                                  "type": "boolean",
+                                  "description": "HTTP2 server enabled"
+                                },
+                                "handler_limit": {
+                                  "type": "integer",
+                                  "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                },
+                                "max_concurrent_streams": {
+                                  "type": "integer",
+                                  "description": "The number of concurrent streams that each client may have open at a time."
+                                },
+                                "max_decoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                },
+                                "max_encoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "An upper limit for the header compression table used for encoding request headers."
+                                },
+                                "max_read_frame_size": {
+                                  "type": "integer",
+                                  "description": "The largest frame this server is willing to read."
+                                },
+                                "max_upload_buffer_per_connection": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each connections."
+                                },
+                                "max_upload_buffer_per_stream": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each streams."
+                                },
+                                "permit_prohibited_cipher_suites": {
+                                  "type": "boolean",
+                                  "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                }
+                              }
+                            },
                             "idle_timeout": {
                               "type": "string",
                               "description": "REST server idle timeout"
@@ -5224,6 +5865,47 @@
                             "handler_timeout": {
                               "type": "string",
                               "description": "REST server handler timeout"
+                            },
+                            "http2": {
+                              "type": "object",
+                              "properties": {
+                                "enabled": {
+                                  "type": "boolean",
+                                  "description": "HTTP2 server enabled"
+                                },
+                                "handler_limit": {
+                                  "type": "integer",
+                                  "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                },
+                                "max_concurrent_streams": {
+                                  "type": "integer",
+                                  "description": "The number of concurrent streams that each client may have open at a time."
+                                },
+                                "max_decoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                },
+                                "max_encoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "An upper limit for the header compression table used for encoding request headers."
+                                },
+                                "max_read_frame_size": {
+                                  "type": "integer",
+                                  "description": "The largest frame this server is willing to read."
+                                },
+                                "max_upload_buffer_per_connection": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each connections."
+                                },
+                                "max_upload_buffer_per_stream": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each streams."
+                                },
+                                "permit_prohibited_cipher_suites": {
+                                  "type": "boolean",
+                                  "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                }
+                              }
                             },
                             "idle_timeout": {
                               "type": "string",
@@ -5414,6 +6096,47 @@
                             "handler_timeout": {
                               "type": "string",
                               "description": "REST server handler timeout"
+                            },
+                            "http2": {
+                              "type": "object",
+                              "properties": {
+                                "enabled": {
+                                  "type": "boolean",
+                                  "description": "HTTP2 server enabled"
+                                },
+                                "handler_limit": {
+                                  "type": "integer",
+                                  "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                },
+                                "max_concurrent_streams": {
+                                  "type": "integer",
+                                  "description": "The number of concurrent streams that each client may have open at a time."
+                                },
+                                "max_decoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                },
+                                "max_encoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "An upper limit for the header compression table used for encoding request headers."
+                                },
+                                "max_read_frame_size": {
+                                  "type": "integer",
+                                  "description": "The largest frame this server is willing to read."
+                                },
+                                "max_upload_buffer_per_connection": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each connections."
+                                },
+                                "max_upload_buffer_per_stream": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each streams."
+                                },
+                                "permit_prohibited_cipher_suites": {
+                                  "type": "boolean",
+                                  "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                }
+                              }
                             },
                             "idle_timeout": {
                               "type": "string",
@@ -5748,6 +6471,47 @@
                             "handler_timeout": {
                               "type": "string",
                               "description": "REST server handler timeout"
+                            },
+                            "http2": {
+                              "type": "object",
+                              "properties": {
+                                "enabled": {
+                                  "type": "boolean",
+                                  "description": "HTTP2 server enabled"
+                                },
+                                "handler_limit": {
+                                  "type": "integer",
+                                  "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                },
+                                "max_concurrent_streams": {
+                                  "type": "integer",
+                                  "description": "The number of concurrent streams that each client may have open at a time."
+                                },
+                                "max_decoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                },
+                                "max_encoder_header_table_size": {
+                                  "type": "integer",
+                                  "description": "An upper limit for the header compression table used for encoding request headers."
+                                },
+                                "max_read_frame_size": {
+                                  "type": "integer",
+                                  "description": "The largest frame this server is willing to read."
+                                },
+                                "max_upload_buffer_per_connection": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each connections."
+                                },
+                                "max_upload_buffer_per_stream": {
+                                  "type": "integer",
+                                  "description": "The size of the initial flow control window for each streams."
+                                },
+                                "permit_prohibited_cipher_suites": {
+                                  "type": "boolean",
+                                  "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                }
+                              }
                             },
                             "idle_timeout": {
                               "type": "string",
@@ -7360,6 +8124,47 @@
                                   "type": "string",
                                   "description": "REST server handler timeout"
                                 },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
+                                },
                                 "idle_timeout": {
                                   "type": "string",
                                   "description": "REST server idle timeout"
@@ -7529,6 +8334,47 @@
                                 "handler_timeout": {
                                   "type": "string",
                                   "description": "REST server handler timeout"
+                                },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
                                 },
                                 "idle_timeout": {
                                   "type": "string",
@@ -7719,6 +8565,47 @@
                                 "handler_timeout": {
                                   "type": "string",
                                   "description": "REST server handler timeout"
+                                },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
                                 },
                                 "idle_timeout": {
                                   "type": "string",
@@ -8053,6 +8940,47 @@
                                 "handler_timeout": {
                                   "type": "string",
                                   "description": "REST server handler timeout"
+                                },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
                                 },
                                 "idle_timeout": {
                                   "type": "string",
@@ -9630,6 +10558,47 @@
                                   "type": "string",
                                   "description": "REST server handler timeout"
                                 },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
+                                },
                                 "idle_timeout": {
                                   "type": "string",
                                   "description": "REST server idle timeout"
@@ -9799,6 +10768,47 @@
                                 "handler_timeout": {
                                   "type": "string",
                                   "description": "REST server handler timeout"
+                                },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
                                 },
                                 "idle_timeout": {
                                   "type": "string",
@@ -9989,6 +10999,47 @@
                                 "handler_timeout": {
                                   "type": "string",
                                   "description": "REST server handler timeout"
+                                },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
                                 },
                                 "idle_timeout": {
                                   "type": "string",
@@ -10323,6 +11374,47 @@
                                 "handler_timeout": {
                                   "type": "string",
                                   "description": "REST server handler timeout"
+                                },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
                                 },
                                 "idle_timeout": {
                                   "type": "string",
@@ -11414,6 +12506,47 @@
                                   "type": "string",
                                   "description": "REST server handler timeout"
                                 },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
+                                },
                                 "idle_timeout": {
                                   "type": "string",
                                   "description": "REST server idle timeout"
@@ -11583,6 +12716,47 @@
                                 "handler_timeout": {
                                   "type": "string",
                                   "description": "REST server handler timeout"
+                                },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
                                 },
                                 "idle_timeout": {
                                   "type": "string",
@@ -11773,6 +12947,47 @@
                                 "handler_timeout": {
                                   "type": "string",
                                   "description": "REST server handler timeout"
+                                },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
                                 },
                                 "idle_timeout": {
                                   "type": "string",
@@ -12107,6 +13322,47 @@
                                 "handler_timeout": {
                                   "type": "string",
                                   "description": "REST server handler timeout"
+                                },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
                                 },
                                 "idle_timeout": {
                                   "type": "string",
@@ -13013,6 +14269,320 @@
                   "description": "environment variables",
                   "items": { "type": "object" }
                 },
+                "gateway": {
+                  "type": "object",
+                  "properties": {
+                    "addrs": {
+                      "type": "array",
+                      "description": "gRPC client addresses",
+                      "items": { "type": "string" }
+                    },
+                    "backoff": {
+                      "type": "object",
+                      "properties": {
+                        "backoff_factor": {
+                          "type": "number",
+                          "description": "gRPC client backoff factor"
+                        },
+                        "backoff_time_limit": {
+                          "type": "string",
+                          "description": "gRPC client backoff time limit"
+                        },
+                        "enable_error_log": {
+                          "type": "boolean",
+                          "description": "gRPC client backoff log enabled"
+                        },
+                        "initial_duration": {
+                          "type": "string",
+                          "description": "gRPC client backoff initial duration"
+                        },
+                        "jitter_limit": {
+                          "type": "string",
+                          "description": "gRPC client backoff jitter limit"
+                        },
+                        "maximum_duration": {
+                          "type": "string",
+                          "description": "gRPC client backoff maximum duration"
+                        },
+                        "retry_count": {
+                          "type": "integer",
+                          "description": "gRPC client backoff retry count"
+                        }
+                      }
+                    },
+                    "call_option": { "type": "object" },
+                    "circuit_breaker": {
+                      "type": "object",
+                      "properties": {
+                        "closed_error_rate": {
+                          "type": "number",
+                          "description": "gRPC client circuitbreaker closed error rate"
+                        },
+                        "closed_refresh_timeout": {
+                          "type": "string",
+                          "description": "gRPC client circuitbreaker closed refresh timeout"
+                        },
+                        "half_open_error_rate": {
+                          "type": "number",
+                          "description": "gRPC client circuitbreaker half-open error rate"
+                        },
+                        "min_samples": {
+                          "type": "integer",
+                          "description": "gRPC client circuitbreaker minimum sampling count"
+                        },
+                        "open_timeout": {
+                          "type": "string",
+                          "description": "gRPC client circuitbreaker open timeout"
+                        }
+                      }
+                    },
+                    "connection_pool": {
+                      "type": "object",
+                      "properties": {
+                        "enable_dns_resolver": {
+                          "type": "boolean",
+                          "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
+                        },
+                        "enable_rebalance": {
+                          "type": "boolean",
+                          "description": "enables gRPC client connection pool rebalance"
+                        },
+                        "old_conn_close_duration": {
+                          "type": "string",
+                          "description": "makes delay before gRPC client connection closing during connection pool rebalance"
+                        },
+                        "rebalance_duration": {
+                          "type": "string",
+                          "description": "gRPC client connection pool rebalance duration"
+                        },
+                        "size": {
+                          "type": "integer",
+                          "description": "gRPC client connection pool size"
+                        }
+                      }
+                    },
+                    "dial_option": {
+                      "type": "object",
+                      "properties": {
+                        "backoff_base_delay": {
+                          "type": "string",
+                          "description": "gRPC client dial option base backoff delay"
+                        },
+                        "backoff_jitter": {
+                          "type": "number",
+                          "description": "gRPC client dial option base backoff delay"
+                        },
+                        "backoff_max_delay": {
+                          "type": "string",
+                          "description": "gRPC client dial option max backoff delay"
+                        },
+                        "backoff_multiplier": {
+                          "type": "number",
+                          "description": "gRPC client dial option base backoff delay"
+                        },
+                        "enable_backoff": {
+                          "type": "boolean",
+                          "description": "gRPC client dial option backoff enabled"
+                        },
+                        "initial_connection_window_size": {
+                          "type": "integer",
+                          "description": "gRPC client dial option initial connection window size"
+                        },
+                        "initial_window_size": {
+                          "type": "integer",
+                          "description": "gRPC client dial option initial window size"
+                        },
+                        "insecure": {
+                          "type": "boolean",
+                          "description": "gRPC client dial option insecure enabled"
+                        },
+                        "interceptors": {
+                          "type": "array",
+                          "description": "gRPC client interceptors",
+                          "items": {
+                            "type": "string",
+                            "enum": ["TraceInterceptor"]
+                          }
+                        },
+                        "keepalive": {
+                          "type": "object",
+                          "properties": {
+                            "permit_without_stream": {
+                              "type": "boolean",
+                              "description": "gRPC client keep alive permit without stream"
+                            },
+                            "time": {
+                              "type": "string",
+                              "description": "gRPC client keep alive time"
+                            },
+                            "timeout": {
+                              "type": "string",
+                              "description": "gRPC client keep alive timeout"
+                            }
+                          }
+                        },
+                        "max_msg_size": {
+                          "type": "integer",
+                          "description": "gRPC client dial option max message size"
+                        },
+                        "min_connection_timeout": {
+                          "type": "string",
+                          "description": "gRPC client dial option minimum connection timeout"
+                        },
+                        "net": {
+                          "type": "object",
+                          "properties": {
+                            "dialer": {
+                              "type": "object",
+                              "properties": {
+                                "dual_stack_enabled": {
+                                  "type": "boolean",
+                                  "description": "gRPC client TCP dialer dual stack enabled"
+                                },
+                                "keepalive": {
+                                  "type": "string",
+                                  "description": "gRPC client TCP dialer keep alive"
+                                },
+                                "timeout": {
+                                  "type": "string",
+                                  "description": "gRPC client TCP dialer timeout"
+                                }
+                              }
+                            },
+                            "dns": {
+                              "type": "object",
+                              "properties": {
+                                "cache_enabled": {
+                                  "type": "boolean",
+                                  "description": "gRPC client TCP DNS cache enabled"
+                                },
+                                "cache_expiration": {
+                                  "type": "string",
+                                  "description": "gRPC client TCP DNS cache expiration"
+                                },
+                                "refresh_duration": {
+                                  "type": "string",
+                                  "description": "gRPC client TCP DNS cache refresh duration"
+                                }
+                              }
+                            },
+                            "socket_option": {
+                              "type": "object",
+                              "properties": {
+                                "ip_recover_destination_addr": {
+                                  "type": "boolean",
+                                  "description": "server listen socket option for ip_recover_destination_addr functionality"
+                                },
+                                "ip_transparent": {
+                                  "type": "boolean",
+                                  "description": "server listen socket option for ip_transparent functionality"
+                                },
+                                "reuse_addr": {
+                                  "type": "boolean",
+                                  "description": "server listen socket option for reuse_addr functionality"
+                                },
+                                "reuse_port": {
+                                  "type": "boolean",
+                                  "description": "server listen socket option for reuse_port functionality"
+                                },
+                                "tcp_cork": {
+                                  "type": "boolean",
+                                  "description": "server listen socket option for tcp_cork functionality"
+                                },
+                                "tcp_defer_accept": {
+                                  "type": "boolean",
+                                  "description": "server listen socket option for tcp_defer_accept functionality"
+                                },
+                                "tcp_fast_open": {
+                                  "type": "boolean",
+                                  "description": "server listen socket option for tcp_fast_open functionality"
+                                },
+                                "tcp_no_delay": {
+                                  "type": "boolean",
+                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                },
+                                "tcp_quick_ack": {
+                                  "type": "boolean",
+                                  "description": "server listen socket option for tcp_quick_ack functionality"
+                                }
+                              }
+                            },
+                            "tls": {
+                              "type": "object",
+                              "properties": {
+                                "ca": {
+                                  "type": "string",
+                                  "description": "TLS ca path"
+                                },
+                                "cert": {
+                                  "type": "string",
+                                  "description": "TLS cert path"
+                                },
+                                "enabled": {
+                                  "type": "boolean",
+                                  "description": "TLS enabled"
+                                },
+                                "insecure_skip_verify": {
+                                  "type": "boolean",
+                                  "description": "enable/disable skip SSL certificate verification"
+                                },
+                                "key": {
+                                  "type": "string",
+                                  "description": "TLS key path"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "read_buffer_size": {
+                          "type": "integer",
+                          "description": "gRPC client dial option read buffer size"
+                        },
+                        "timeout": {
+                          "type": "string",
+                          "description": "gRPC client dial option timeout"
+                        },
+                        "write_buffer_size": {
+                          "type": "integer",
+                          "description": "gRPC client dial option write buffer size"
+                        }
+                      }
+                    },
+                    "health_check_duration": {
+                      "type": "string",
+                      "description": "gRPC client health check duration"
+                    },
+                    "max_recv_msg_size": { "type": "integer" },
+                    "max_retry_rpc_buffer_size": { "type": "integer" },
+                    "max_send_msg_size": { "type": "integer" },
+                    "tls": {
+                      "type": "object",
+                      "properties": {
+                        "ca": {
+                          "type": "string",
+                          "description": "TLS ca path"
+                        },
+                        "cert": {
+                          "type": "string",
+                          "description": "TLS cert path"
+                        },
+                        "enabled": {
+                          "type": "boolean",
+                          "description": "TLS enabled"
+                        },
+                        "insecure_skip_verify": {
+                          "type": "boolean",
+                          "description": "enable/disable skip SSL certificate verification"
+                        },
+                        "key": {
+                          "type": "string",
+                          "description": "TLS key path"
+                        }
+                      }
+                    },
+                    "wait_for_ready": { "type": "boolean" }
+                  }
+                },
                 "image": {
                   "type": "object",
                   "properties": {
@@ -13036,10 +14606,13 @@
                   "description": "init containers",
                   "items": { "type": "object" }
                 },
-                "kvs_async_write_concurrency": {
-                  "type": "integer",
-                  "description": "concurrency for kvs async write",
-                  "minimum": 1
+                "kvs_background_compaction_interval": {
+                  "type": "string",
+                  "description": "interval of checked id list kvs compaction"
+                },
+                "kvs_background_sync_interval": {
+                  "type": "string",
+                  "description": "interval of checked id list kvs sync"
                 },
                 "name": {
                   "type": "string",
@@ -13242,6 +14815,47 @@
                                       "type": "string",
                                       "description": "REST server handler timeout"
                                     },
+                                    "http2": {
+                                      "type": "object",
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean",
+                                          "description": "HTTP2 server enabled"
+                                        },
+                                        "handler_limit": {
+                                          "type": "integer",
+                                          "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                        },
+                                        "max_concurrent_streams": {
+                                          "type": "integer",
+                                          "description": "The number of concurrent streams that each client may have open at a time."
+                                        },
+                                        "max_decoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                        },
+                                        "max_encoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "An upper limit for the header compression table used for encoding request headers."
+                                        },
+                                        "max_read_frame_size": {
+                                          "type": "integer",
+                                          "description": "The largest frame this server is willing to read."
+                                        },
+                                        "max_upload_buffer_per_connection": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each connections."
+                                        },
+                                        "max_upload_buffer_per_stream": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each streams."
+                                        },
+                                        "permit_prohibited_cipher_suites": {
+                                          "type": "boolean",
+                                          "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                        }
+                                      }
+                                    },
                                     "idle_timeout": {
                                       "type": "string",
                                       "description": "REST server idle timeout"
@@ -13411,6 +15025,47 @@
                                     "handler_timeout": {
                                       "type": "string",
                                       "description": "REST server handler timeout"
+                                    },
+                                    "http2": {
+                                      "type": "object",
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean",
+                                          "description": "HTTP2 server enabled"
+                                        },
+                                        "handler_limit": {
+                                          "type": "integer",
+                                          "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                        },
+                                        "max_concurrent_streams": {
+                                          "type": "integer",
+                                          "description": "The number of concurrent streams that each client may have open at a time."
+                                        },
+                                        "max_decoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                        },
+                                        "max_encoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "An upper limit for the header compression table used for encoding request headers."
+                                        },
+                                        "max_read_frame_size": {
+                                          "type": "integer",
+                                          "description": "The largest frame this server is willing to read."
+                                        },
+                                        "max_upload_buffer_per_connection": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each connections."
+                                        },
+                                        "max_upload_buffer_per_stream": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each streams."
+                                        },
+                                        "permit_prohibited_cipher_suites": {
+                                          "type": "boolean",
+                                          "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                        }
+                                      }
                                     },
                                     "idle_timeout": {
                                       "type": "string",
@@ -13601,6 +15256,47 @@
                                     "handler_timeout": {
                                       "type": "string",
                                       "description": "REST server handler timeout"
+                                    },
+                                    "http2": {
+                                      "type": "object",
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean",
+                                          "description": "HTTP2 server enabled"
+                                        },
+                                        "handler_limit": {
+                                          "type": "integer",
+                                          "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                        },
+                                        "max_concurrent_streams": {
+                                          "type": "integer",
+                                          "description": "The number of concurrent streams that each client may have open at a time."
+                                        },
+                                        "max_decoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                        },
+                                        "max_encoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "An upper limit for the header compression table used for encoding request headers."
+                                        },
+                                        "max_read_frame_size": {
+                                          "type": "integer",
+                                          "description": "The largest frame this server is willing to read."
+                                        },
+                                        "max_upload_buffer_per_connection": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each connections."
+                                        },
+                                        "max_upload_buffer_per_stream": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each streams."
+                                        },
+                                        "permit_prohibited_cipher_suites": {
+                                          "type": "boolean",
+                                          "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                        }
+                                      }
                                     },
                                     "idle_timeout": {
                                       "type": "string",
@@ -13935,6 +15631,47 @@
                                     "handler_timeout": {
                                       "type": "string",
                                       "description": "REST server handler timeout"
+                                    },
+                                    "http2": {
+                                      "type": "object",
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean",
+                                          "description": "HTTP2 server enabled"
+                                        },
+                                        "handler_limit": {
+                                          "type": "integer",
+                                          "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                        },
+                                        "max_concurrent_streams": {
+                                          "type": "integer",
+                                          "description": "The number of concurrent streams that each client may have open at a time."
+                                        },
+                                        "max_decoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                        },
+                                        "max_encoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "An upper limit for the header compression table used for encoding request headers."
+                                        },
+                                        "max_read_frame_size": {
+                                          "type": "integer",
+                                          "description": "The largest frame this server is willing to read."
+                                        },
+                                        "max_upload_buffer_per_connection": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each connections."
+                                        },
+                                        "max_upload_buffer_per_stream": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each streams."
+                                        },
+                                        "permit_prohibited_cipher_suites": {
+                                          "type": "boolean",
+                                          "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                        }
+                                      }
                                     },
                                     "idle_timeout": {
                                       "type": "string",
@@ -14976,6 +16713,47 @@
                                       "type": "string",
                                       "description": "REST server handler timeout"
                                     },
+                                    "http2": {
+                                      "type": "object",
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean",
+                                          "description": "HTTP2 server enabled"
+                                        },
+                                        "handler_limit": {
+                                          "type": "integer",
+                                          "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                        },
+                                        "max_concurrent_streams": {
+                                          "type": "integer",
+                                          "description": "The number of concurrent streams that each client may have open at a time."
+                                        },
+                                        "max_decoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                        },
+                                        "max_encoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "An upper limit for the header compression table used for encoding request headers."
+                                        },
+                                        "max_read_frame_size": {
+                                          "type": "integer",
+                                          "description": "The largest frame this server is willing to read."
+                                        },
+                                        "max_upload_buffer_per_connection": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each connections."
+                                        },
+                                        "max_upload_buffer_per_stream": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each streams."
+                                        },
+                                        "permit_prohibited_cipher_suites": {
+                                          "type": "boolean",
+                                          "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                        }
+                                      }
+                                    },
                                     "idle_timeout": {
                                       "type": "string",
                                       "description": "REST server idle timeout"
@@ -15145,6 +16923,47 @@
                                     "handler_timeout": {
                                       "type": "string",
                                       "description": "REST server handler timeout"
+                                    },
+                                    "http2": {
+                                      "type": "object",
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean",
+                                          "description": "HTTP2 server enabled"
+                                        },
+                                        "handler_limit": {
+                                          "type": "integer",
+                                          "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                        },
+                                        "max_concurrent_streams": {
+                                          "type": "integer",
+                                          "description": "The number of concurrent streams that each client may have open at a time."
+                                        },
+                                        "max_decoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                        },
+                                        "max_encoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "An upper limit for the header compression table used for encoding request headers."
+                                        },
+                                        "max_read_frame_size": {
+                                          "type": "integer",
+                                          "description": "The largest frame this server is willing to read."
+                                        },
+                                        "max_upload_buffer_per_connection": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each connections."
+                                        },
+                                        "max_upload_buffer_per_stream": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each streams."
+                                        },
+                                        "permit_prohibited_cipher_suites": {
+                                          "type": "boolean",
+                                          "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                        }
+                                      }
                                     },
                                     "idle_timeout": {
                                       "type": "string",
@@ -15335,6 +17154,47 @@
                                     "handler_timeout": {
                                       "type": "string",
                                       "description": "REST server handler timeout"
+                                    },
+                                    "http2": {
+                                      "type": "object",
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean",
+                                          "description": "HTTP2 server enabled"
+                                        },
+                                        "handler_limit": {
+                                          "type": "integer",
+                                          "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                        },
+                                        "max_concurrent_streams": {
+                                          "type": "integer",
+                                          "description": "The number of concurrent streams that each client may have open at a time."
+                                        },
+                                        "max_decoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                        },
+                                        "max_encoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "An upper limit for the header compression table used for encoding request headers."
+                                        },
+                                        "max_read_frame_size": {
+                                          "type": "integer",
+                                          "description": "The largest frame this server is willing to read."
+                                        },
+                                        "max_upload_buffer_per_connection": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each connections."
+                                        },
+                                        "max_upload_buffer_per_stream": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each streams."
+                                        },
+                                        "permit_prohibited_cipher_suites": {
+                                          "type": "boolean",
+                                          "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                        }
+                                      }
                                     },
                                     "idle_timeout": {
                                       "type": "string",
@@ -15669,6 +17529,47 @@
                                     "handler_timeout": {
                                       "type": "string",
                                       "description": "REST server handler timeout"
+                                    },
+                                    "http2": {
+                                      "type": "object",
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean",
+                                          "description": "HTTP2 server enabled"
+                                        },
+                                        "handler_limit": {
+                                          "type": "integer",
+                                          "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                        },
+                                        "max_concurrent_streams": {
+                                          "type": "integer",
+                                          "description": "The number of concurrent streams that each client may have open at a time."
+                                        },
+                                        "max_decoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                        },
+                                        "max_encoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "An upper limit for the header compression table used for encoding request headers."
+                                        },
+                                        "max_read_frame_size": {
+                                          "type": "integer",
+                                          "description": "The largest frame this server is willing to read."
+                                        },
+                                        "max_upload_buffer_per_connection": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each connections."
+                                        },
+                                        "max_upload_buffer_per_stream": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each streams."
+                                        },
+                                        "permit_prohibited_cipher_suites": {
+                                          "type": "boolean",
+                                          "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                        }
+                                      }
                                     },
                                     "idle_timeout": {
                                       "type": "string",
@@ -17077,6 +18978,47 @@
                                       "type": "string",
                                       "description": "REST server handler timeout"
                                     },
+                                    "http2": {
+                                      "type": "object",
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean",
+                                          "description": "HTTP2 server enabled"
+                                        },
+                                        "handler_limit": {
+                                          "type": "integer",
+                                          "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                        },
+                                        "max_concurrent_streams": {
+                                          "type": "integer",
+                                          "description": "The number of concurrent streams that each client may have open at a time."
+                                        },
+                                        "max_decoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                        },
+                                        "max_encoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "An upper limit for the header compression table used for encoding request headers."
+                                        },
+                                        "max_read_frame_size": {
+                                          "type": "integer",
+                                          "description": "The largest frame this server is willing to read."
+                                        },
+                                        "max_upload_buffer_per_connection": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each connections."
+                                        },
+                                        "max_upload_buffer_per_stream": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each streams."
+                                        },
+                                        "permit_prohibited_cipher_suites": {
+                                          "type": "boolean",
+                                          "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                        }
+                                      }
+                                    },
                                     "idle_timeout": {
                                       "type": "string",
                                       "description": "REST server idle timeout"
@@ -17246,6 +19188,47 @@
                                     "handler_timeout": {
                                       "type": "string",
                                       "description": "REST server handler timeout"
+                                    },
+                                    "http2": {
+                                      "type": "object",
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean",
+                                          "description": "HTTP2 server enabled"
+                                        },
+                                        "handler_limit": {
+                                          "type": "integer",
+                                          "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                        },
+                                        "max_concurrent_streams": {
+                                          "type": "integer",
+                                          "description": "The number of concurrent streams that each client may have open at a time."
+                                        },
+                                        "max_decoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                        },
+                                        "max_encoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "An upper limit for the header compression table used for encoding request headers."
+                                        },
+                                        "max_read_frame_size": {
+                                          "type": "integer",
+                                          "description": "The largest frame this server is willing to read."
+                                        },
+                                        "max_upload_buffer_per_connection": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each connections."
+                                        },
+                                        "max_upload_buffer_per_stream": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each streams."
+                                        },
+                                        "permit_prohibited_cipher_suites": {
+                                          "type": "boolean",
+                                          "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                        }
+                                      }
                                     },
                                     "idle_timeout": {
                                       "type": "string",
@@ -17436,6 +19419,47 @@
                                     "handler_timeout": {
                                       "type": "string",
                                       "description": "REST server handler timeout"
+                                    },
+                                    "http2": {
+                                      "type": "object",
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean",
+                                          "description": "HTTP2 server enabled"
+                                        },
+                                        "handler_limit": {
+                                          "type": "integer",
+                                          "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                        },
+                                        "max_concurrent_streams": {
+                                          "type": "integer",
+                                          "description": "The number of concurrent streams that each client may have open at a time."
+                                        },
+                                        "max_decoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                        },
+                                        "max_encoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "An upper limit for the header compression table used for encoding request headers."
+                                        },
+                                        "max_read_frame_size": {
+                                          "type": "integer",
+                                          "description": "The largest frame this server is willing to read."
+                                        },
+                                        "max_upload_buffer_per_connection": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each connections."
+                                        },
+                                        "max_upload_buffer_per_stream": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each streams."
+                                        },
+                                        "permit_prohibited_cipher_suites": {
+                                          "type": "boolean",
+                                          "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                        }
+                                      }
                                     },
                                     "idle_timeout": {
                                       "type": "string",
@@ -17770,6 +19794,47 @@
                                     "handler_timeout": {
                                       "type": "string",
                                       "description": "REST server handler timeout"
+                                    },
+                                    "http2": {
+                                      "type": "object",
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean",
+                                          "description": "HTTP2 server enabled"
+                                        },
+                                        "handler_limit": {
+                                          "type": "integer",
+                                          "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                        },
+                                        "max_concurrent_streams": {
+                                          "type": "integer",
+                                          "description": "The number of concurrent streams that each client may have open at a time."
+                                        },
+                                        "max_decoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                        },
+                                        "max_encoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "An upper limit for the header compression table used for encoding request headers."
+                                        },
+                                        "max_read_frame_size": {
+                                          "type": "integer",
+                                          "description": "The largest frame this server is willing to read."
+                                        },
+                                        "max_upload_buffer_per_connection": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each connections."
+                                        },
+                                        "max_upload_buffer_per_stream": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each streams."
+                                        },
+                                        "permit_prohibited_cipher_suites": {
+                                          "type": "boolean",
+                                          "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                        }
+                                      }
                                     },
                                     "idle_timeout": {
                                       "type": "string",
@@ -18228,6 +20293,47 @@
                                           "type": "string",
                                           "description": "REST server handler timeout"
                                         },
+                                        "http2": {
+                                          "type": "object",
+                                          "properties": {
+                                            "enabled": {
+                                              "type": "boolean",
+                                              "description": "HTTP2 server enabled"
+                                            },
+                                            "handler_limit": {
+                                              "type": "integer",
+                                              "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                            },
+                                            "max_concurrent_streams": {
+                                              "type": "integer",
+                                              "description": "The number of concurrent streams that each client may have open at a time."
+                                            },
+                                            "max_decoder_header_table_size": {
+                                              "type": "integer",
+                                              "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                            },
+                                            "max_encoder_header_table_size": {
+                                              "type": "integer",
+                                              "description": "An upper limit for the header compression table used for encoding request headers."
+                                            },
+                                            "max_read_frame_size": {
+                                              "type": "integer",
+                                              "description": "The largest frame this server is willing to read."
+                                            },
+                                            "max_upload_buffer_per_connection": {
+                                              "type": "integer",
+                                              "description": "The size of the initial flow control window for each connections."
+                                            },
+                                            "max_upload_buffer_per_stream": {
+                                              "type": "integer",
+                                              "description": "The size of the initial flow control window for each streams."
+                                            },
+                                            "permit_prohibited_cipher_suites": {
+                                              "type": "boolean",
+                                              "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                            }
+                                          }
+                                        },
                                         "idle_timeout": {
                                           "type": "string",
                                           "description": "REST server idle timeout"
@@ -18397,6 +20503,47 @@
                                         "handler_timeout": {
                                           "type": "string",
                                           "description": "REST server handler timeout"
+                                        },
+                                        "http2": {
+                                          "type": "object",
+                                          "properties": {
+                                            "enabled": {
+                                              "type": "boolean",
+                                              "description": "HTTP2 server enabled"
+                                            },
+                                            "handler_limit": {
+                                              "type": "integer",
+                                              "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                            },
+                                            "max_concurrent_streams": {
+                                              "type": "integer",
+                                              "description": "The number of concurrent streams that each client may have open at a time."
+                                            },
+                                            "max_decoder_header_table_size": {
+                                              "type": "integer",
+                                              "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                            },
+                                            "max_encoder_header_table_size": {
+                                              "type": "integer",
+                                              "description": "An upper limit for the header compression table used for encoding request headers."
+                                            },
+                                            "max_read_frame_size": {
+                                              "type": "integer",
+                                              "description": "The largest frame this server is willing to read."
+                                            },
+                                            "max_upload_buffer_per_connection": {
+                                              "type": "integer",
+                                              "description": "The size of the initial flow control window for each connections."
+                                            },
+                                            "max_upload_buffer_per_stream": {
+                                              "type": "integer",
+                                              "description": "The size of the initial flow control window for each streams."
+                                            },
+                                            "permit_prohibited_cipher_suites": {
+                                              "type": "boolean",
+                                              "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                            }
+                                          }
                                         },
                                         "idle_timeout": {
                                           "type": "string",
@@ -18587,6 +20734,47 @@
                                         "handler_timeout": {
                                           "type": "string",
                                           "description": "REST server handler timeout"
+                                        },
+                                        "http2": {
+                                          "type": "object",
+                                          "properties": {
+                                            "enabled": {
+                                              "type": "boolean",
+                                              "description": "HTTP2 server enabled"
+                                            },
+                                            "handler_limit": {
+                                              "type": "integer",
+                                              "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                            },
+                                            "max_concurrent_streams": {
+                                              "type": "integer",
+                                              "description": "The number of concurrent streams that each client may have open at a time."
+                                            },
+                                            "max_decoder_header_table_size": {
+                                              "type": "integer",
+                                              "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                            },
+                                            "max_encoder_header_table_size": {
+                                              "type": "integer",
+                                              "description": "An upper limit for the header compression table used for encoding request headers."
+                                            },
+                                            "max_read_frame_size": {
+                                              "type": "integer",
+                                              "description": "The largest frame this server is willing to read."
+                                            },
+                                            "max_upload_buffer_per_connection": {
+                                              "type": "integer",
+                                              "description": "The size of the initial flow control window for each connections."
+                                            },
+                                            "max_upload_buffer_per_stream": {
+                                              "type": "integer",
+                                              "description": "The size of the initial flow control window for each streams."
+                                            },
+                                            "permit_prohibited_cipher_suites": {
+                                              "type": "boolean",
+                                              "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                            }
+                                          }
                                         },
                                         "idle_timeout": {
                                           "type": "string",
@@ -18921,6 +21109,47 @@
                                         "handler_timeout": {
                                           "type": "string",
                                           "description": "REST server handler timeout"
+                                        },
+                                        "http2": {
+                                          "type": "object",
+                                          "properties": {
+                                            "enabled": {
+                                              "type": "boolean",
+                                              "description": "HTTP2 server enabled"
+                                            },
+                                            "handler_limit": {
+                                              "type": "integer",
+                                              "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                            },
+                                            "max_concurrent_streams": {
+                                              "type": "integer",
+                                              "description": "The number of concurrent streams that each client may have open at a time."
+                                            },
+                                            "max_decoder_header_table_size": {
+                                              "type": "integer",
+                                              "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                            },
+                                            "max_encoder_header_table_size": {
+                                              "type": "integer",
+                                              "description": "An upper limit for the header compression table used for encoding request headers."
+                                            },
+                                            "max_read_frame_size": {
+                                              "type": "integer",
+                                              "description": "The largest frame this server is willing to read."
+                                            },
+                                            "max_upload_buffer_per_connection": {
+                                              "type": "integer",
+                                              "description": "The size of the initial flow control window for each connections."
+                                            },
+                                            "max_upload_buffer_per_stream": {
+                                              "type": "integer",
+                                              "description": "The size of the initial flow control window for each streams."
+                                            },
+                                            "permit_prohibited_cipher_suites": {
+                                              "type": "boolean",
+                                              "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                            }
+                                          }
                                         },
                                         "idle_timeout": {
                                           "type": "string",
@@ -19995,6 +22224,47 @@
                                       "type": "string",
                                       "description": "REST server handler timeout"
                                     },
+                                    "http2": {
+                                      "type": "object",
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean",
+                                          "description": "HTTP2 server enabled"
+                                        },
+                                        "handler_limit": {
+                                          "type": "integer",
+                                          "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                        },
+                                        "max_concurrent_streams": {
+                                          "type": "integer",
+                                          "description": "The number of concurrent streams that each client may have open at a time."
+                                        },
+                                        "max_decoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                        },
+                                        "max_encoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "An upper limit for the header compression table used for encoding request headers."
+                                        },
+                                        "max_read_frame_size": {
+                                          "type": "integer",
+                                          "description": "The largest frame this server is willing to read."
+                                        },
+                                        "max_upload_buffer_per_connection": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each connections."
+                                        },
+                                        "max_upload_buffer_per_stream": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each streams."
+                                        },
+                                        "permit_prohibited_cipher_suites": {
+                                          "type": "boolean",
+                                          "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                        }
+                                      }
+                                    },
                                     "idle_timeout": {
                                       "type": "string",
                                       "description": "REST server idle timeout"
@@ -20164,6 +22434,47 @@
                                     "handler_timeout": {
                                       "type": "string",
                                       "description": "REST server handler timeout"
+                                    },
+                                    "http2": {
+                                      "type": "object",
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean",
+                                          "description": "HTTP2 server enabled"
+                                        },
+                                        "handler_limit": {
+                                          "type": "integer",
+                                          "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                        },
+                                        "max_concurrent_streams": {
+                                          "type": "integer",
+                                          "description": "The number of concurrent streams that each client may have open at a time."
+                                        },
+                                        "max_decoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                        },
+                                        "max_encoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "An upper limit for the header compression table used for encoding request headers."
+                                        },
+                                        "max_read_frame_size": {
+                                          "type": "integer",
+                                          "description": "The largest frame this server is willing to read."
+                                        },
+                                        "max_upload_buffer_per_connection": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each connections."
+                                        },
+                                        "max_upload_buffer_per_stream": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each streams."
+                                        },
+                                        "permit_prohibited_cipher_suites": {
+                                          "type": "boolean",
+                                          "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                        }
+                                      }
                                     },
                                     "idle_timeout": {
                                       "type": "string",
@@ -20354,6 +22665,47 @@
                                     "handler_timeout": {
                                       "type": "string",
                                       "description": "REST server handler timeout"
+                                    },
+                                    "http2": {
+                                      "type": "object",
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean",
+                                          "description": "HTTP2 server enabled"
+                                        },
+                                        "handler_limit": {
+                                          "type": "integer",
+                                          "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                        },
+                                        "max_concurrent_streams": {
+                                          "type": "integer",
+                                          "description": "The number of concurrent streams that each client may have open at a time."
+                                        },
+                                        "max_decoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                        },
+                                        "max_encoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "An upper limit for the header compression table used for encoding request headers."
+                                        },
+                                        "max_read_frame_size": {
+                                          "type": "integer",
+                                          "description": "The largest frame this server is willing to read."
+                                        },
+                                        "max_upload_buffer_per_connection": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each connections."
+                                        },
+                                        "max_upload_buffer_per_stream": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each streams."
+                                        },
+                                        "permit_prohibited_cipher_suites": {
+                                          "type": "boolean",
+                                          "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                        }
+                                      }
                                     },
                                     "idle_timeout": {
                                       "type": "string",
@@ -20689,6 +23041,47 @@
                                       "type": "string",
                                       "description": "REST server handler timeout"
                                     },
+                                    "http2": {
+                                      "type": "object",
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean",
+                                          "description": "HTTP2 server enabled"
+                                        },
+                                        "handler_limit": {
+                                          "type": "integer",
+                                          "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                        },
+                                        "max_concurrent_streams": {
+                                          "type": "integer",
+                                          "description": "The number of concurrent streams that each client may have open at a time."
+                                        },
+                                        "max_decoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                        },
+                                        "max_encoder_header_table_size": {
+                                          "type": "integer",
+                                          "description": "An upper limit for the header compression table used for encoding request headers."
+                                        },
+                                        "max_read_frame_size": {
+                                          "type": "integer",
+                                          "description": "The largest frame this server is willing to read."
+                                        },
+                                        "max_upload_buffer_per_connection": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each connections."
+                                        },
+                                        "max_upload_buffer_per_stream": {
+                                          "type": "integer",
+                                          "description": "The size of the initial flow control window for each streams."
+                                        },
+                                        "permit_prohibited_cipher_suites": {
+                                          "type": "boolean",
+                                          "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                        }
+                                      }
+                                    },
                                     "idle_timeout": {
                                       "type": "string",
                                       "description": "REST server idle timeout"
@@ -20926,6 +23319,47 @@
                                   "type": "string",
                                   "description": "REST server handler timeout"
                                 },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
+                                },
                                 "idle_timeout": {
                                   "type": "string",
                                   "description": "REST server idle timeout"
@@ -21095,6 +23529,47 @@
                                 "handler_timeout": {
                                   "type": "string",
                                   "description": "REST server handler timeout"
+                                },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
                                 },
                                 "idle_timeout": {
                                   "type": "string",
@@ -21285,6 +23760,47 @@
                                 "handler_timeout": {
                                   "type": "string",
                                   "description": "REST server handler timeout"
+                                },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
                                 },
                                 "idle_timeout": {
                                   "type": "string",
@@ -21619,6 +24135,47 @@
                                 "handler_timeout": {
                                   "type": "string",
                                   "description": "REST server handler timeout"
+                                },
+                                "http2": {
+                                  "type": "object",
+                                  "properties": {
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "HTTP2 server enabled"
+                                    },
+                                    "handler_limit": {
+                                      "type": "integer",
+                                      "description": "Limits the number of http.Handler ServeHTTP goroutines which may run at a time over all connections. Negative or zero no limit."
+                                    },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "The number of concurrent streams that each client may have open at a time."
+                                    },
+                                    "max_decoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used."
+                                    },
+                                    "max_encoder_header_table_size": {
+                                      "type": "integer",
+                                      "description": "An upper limit for the header compression table used for encoding request headers."
+                                    },
+                                    "max_read_frame_size": {
+                                      "type": "integer",
+                                      "description": "The largest frame this server is willing to read."
+                                    },
+                                    "max_upload_buffer_per_connection": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each connections."
+                                    },
+                                    "max_upload_buffer_per_stream": {
+                                      "type": "integer",
+                                      "description": "The size of the initial flow control window for each streams."
+                                    },
+                                    "permit_prohibited_cipher_suites": {
+                                      "type": "boolean",
+                                      "description": "if true, permits the use of cipher suites prohibited by the HTTP/2 spec."
+                                    }
+                                  }
                                 },
                                 "idle_timeout": {
                                   "type": "string",

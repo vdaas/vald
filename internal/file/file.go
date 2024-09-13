@@ -259,19 +259,27 @@ func CopyFileWithPerm(ctx context.Context, src, dst string, perm fs.FileMode) (n
 	return n, nil
 }
 
-func WriteFile(ctx context.Context, target string, r io.Reader, perm fs.FileMode) (n int64, err error) {
+func WriteFile(
+	ctx context.Context, target string, r io.Reader, perm fs.FileMode,
+) (n int64, err error) {
 	return writeFileWithContext(ctx, target, r, os.O_CREATE|os.O_WRONLY|os.O_SYNC, perm)
 }
 
-func OverWriteFile(ctx context.Context, target string, r io.Reader, perm fs.FileMode) (n int64, err error) {
+func OverWriteFile(
+	ctx context.Context, target string, r io.Reader, perm fs.FileMode,
+) (n int64, err error) {
 	return writeFileWithContext(ctx, target, r, os.O_CREATE|os.O_TRUNC|os.O_WRONLY|os.O_SYNC, perm)
 }
 
-func AppendFile(ctx context.Context, target string, r io.Reader, perm fs.FileMode) (n int64, err error) {
+func AppendFile(
+	ctx context.Context, target string, r io.Reader, perm fs.FileMode,
+) (n int64, err error) {
 	return writeFileWithContext(ctx, target, r, os.O_CREATE|os.O_APPEND|os.O_RDWR|os.O_SYNC, perm)
 }
 
-func writeFileWithContext(ctx context.Context, target string, r io.Reader, flg int, perm fs.FileMode) (n int64, err error) {
+func writeFileWithContext(
+	ctx context.Context, target string, r io.Reader, flg int, perm fs.FileMode,
+) (n int64, err error) {
 	if len(target) == 0 || r == nil {
 		return 0, nil
 	}
@@ -479,7 +487,7 @@ func ListInDir(path string) ([]string, error) {
 	return files, nil
 }
 
-// DeleteDir recursively deletes each file or directory based on the path specified as an argument
+// DeleteDir recursively deletes each file or directory based on the path specified as an argument.
 func DeleteDir(ctx context.Context, path string) (err error) {
 	exists, _, err := ExistsWithDetail(path)
 	if err != nil {

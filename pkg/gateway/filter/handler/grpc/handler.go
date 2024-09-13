@@ -75,7 +75,9 @@ func New(opts ...Option) vald.ServerWithFilter {
 	return s
 }
 
-func (s *server) SearchObject(ctx context.Context, req *payload.Search_ObjectRequest) (res *payload.Search_Response, err error) {
+func (s *server) SearchObject(
+	ctx context.Context, req *payload.Search_ObjectRequest,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.SearchObjectRPCName), apiName+"/"+vald.SearchObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -208,7 +210,9 @@ func (s *server) SearchObject(ctx context.Context, req *payload.Search_ObjectReq
 	})
 }
 
-func (s *server) MultiSearchObject(ctx context.Context, reqs *payload.Search_MultiObjectRequest) (res *payload.Search_Responses, errs error) {
+func (s *server) MultiSearchObject(
+	ctx context.Context, reqs *payload.Search_MultiObjectRequest,
+) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiSearchObjectRPCName), apiName+"/"+vald.MultiSearchObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -326,7 +330,9 @@ func (s *server) StreamSearchObject(stream vald.Filter_StreamSearchObjectServer)
 		})
 }
 
-func (s *server) LinearSearchObject(ctx context.Context, req *payload.Search_ObjectRequest) (*payload.Search_Response, error) {
+func (s *server) LinearSearchObject(
+	ctx context.Context, req *payload.Search_ObjectRequest,
+) (*payload.Search_Response, error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.LinearSearchObjectRPCName), apiName+"/"+vald.LinearSearchObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -457,7 +463,9 @@ func (s *server) LinearSearchObject(ctx context.Context, req *payload.Search_Obj
 	})
 }
 
-func (s *server) MultiLinearSearchObject(ctx context.Context, reqs *payload.Search_MultiObjectRequest) (res *payload.Search_Responses, errs error) {
+func (s *server) MultiLinearSearchObject(
+	ctx context.Context, reqs *payload.Search_MultiObjectRequest,
+) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiLinearSearchObjectRPCName), apiName+"/"+vald.MultiLinearSearchObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -582,7 +590,9 @@ func (s *server) StreamLinearSearchObject(stream vald.Filter_StreamSearchObjectS
 	return err
 }
 
-func (s *server) InsertObject(ctx context.Context, req *payload.Insert_ObjectRequest) (*payload.Object_Location, error) {
+func (s *server) InsertObject(
+	ctx context.Context, req *payload.Insert_ObjectRequest,
+) (*payload.Object_Location, error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.InsertObjectRPCName), apiName+"/"+vald.InsertObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -771,7 +781,9 @@ func (s *server) StreamInsertObject(stream vald.Filter_StreamInsertObjectServer)
 	return nil
 }
 
-func (s *server) MultiInsertObject(ctx context.Context, reqs *payload.Insert_MultiObjectRequest) (locs *payload.Object_Locations, errs error) {
+func (s *server) MultiInsertObject(
+	ctx context.Context, reqs *payload.Insert_MultiObjectRequest,
+) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiInsertObjectRPCName), apiName+"/"+vald.MultiInsertObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -835,7 +847,9 @@ func (s *server) MultiInsertObject(ctx context.Context, reqs *payload.Insert_Mul
 	return locs, errs
 }
 
-func (s *server) UpdateObject(ctx context.Context, req *payload.Update_ObjectRequest) (*payload.Object_Location, error) {
+func (s *server) UpdateObject(
+	ctx context.Context, req *payload.Update_ObjectRequest,
+) (*payload.Object_Location, error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.UpdateObjectRPCName), apiName+"/"+vald.UpdateObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -1024,7 +1038,9 @@ func (s *server) StreamUpdateObject(stream vald.Filter_StreamUpdateObjectServer)
 	return nil
 }
 
-func (s *server) MultiUpdateObject(ctx context.Context, reqs *payload.Update_MultiObjectRequest) (locs *payload.Object_Locations, errs error) {
+func (s *server) MultiUpdateObject(
+	ctx context.Context, reqs *payload.Update_MultiObjectRequest,
+) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiUpdateObjectRPCName), apiName+"/"+vald.MultiUpdateObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -1088,7 +1104,9 @@ func (s *server) MultiUpdateObject(ctx context.Context, reqs *payload.Update_Mul
 	return locs, errs
 }
 
-func (s *server) UpsertObject(ctx context.Context, req *payload.Upsert_ObjectRequest) (*payload.Object_Location, error) {
+func (s *server) UpsertObject(
+	ctx context.Context, req *payload.Upsert_ObjectRequest,
+) (*payload.Object_Location, error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.UpsertObjectRPCName), apiName+"/"+vald.UpsertObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -1285,7 +1303,9 @@ func (s *server) StreamUpsertObject(stream vald.Filter_StreamUpsertObjectServer)
 	return err
 }
 
-func (s *server) MultiUpsertObject(ctx context.Context, reqs *payload.Upsert_MultiObjectRequest) (locs *payload.Object_Locations, errs error) {
+func (s *server) MultiUpsertObject(
+	ctx context.Context, reqs *payload.Upsert_MultiObjectRequest,
+) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiUpsertObjectRPCName), apiName+"/"+vald.MultiUpsertObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -1358,7 +1378,9 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (*payload.
 	return s.gateway.Exists(ctx, meta, s.copts...)
 }
 
-func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
+func (s *server) Search(
+	ctx context.Context, req *payload.Search_Request,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.SearchRPCName), apiName+"/"+vald.SearchRPCName)
 	defer func() {
 		if span != nil {
@@ -1508,7 +1530,9 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 	return res, nil
 }
 
-func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (res *payload.Search_Response, err error) {
+func (s *server) SearchByID(
+	ctx context.Context, req *payload.Search_IDRequest,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.SearchByIDRPCName), apiName+"/"+vald.SearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -1719,7 +1743,9 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 	return nil
 }
 
-func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequest) (res *payload.Search_Responses, errs error) {
+func (s *server) MultiSearch(
+	ctx context.Context, reqs *payload.Search_MultiRequest,
+) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiSearchRPCName), apiName+"/"+vald.MultiSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -1789,7 +1815,9 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 	return res, errs
 }
 
-func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, errs error) {
+func (s *server) MultiSearchByID(
+	ctx context.Context, reqs *payload.Search_MultiIDRequest,
+) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiSearchByIDRPCName), apiName+"/"+vald.MultiSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -1859,7 +1887,9 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 	return res, errs
 }
 
-func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
+func (s *server) LinearSearch(
+	ctx context.Context, req *payload.Search_Request,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -2005,7 +2035,9 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 	return res, nil
 }
 
-func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDRequest) (res *payload.Search_Response, err error) {
+func (s *server) LinearSearchByID(
+	ctx context.Context, req *payload.Search_IDRequest,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -2154,7 +2186,9 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 	return nil
 }
 
-func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByIDServer) (err error) {
+func (s *server) StreamLinearSearchByID(
+	stream vald.Search_StreamLinearSearchByIDServer,
+) (err error) {
 	ctx, span := trace.StartSpan(
 		grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.StreamLinearSearchByIDRPCName),
 		apiName+"/"+vald.StreamLinearSearchByIDRPCName,
@@ -2215,7 +2249,9 @@ func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByI
 	return nil
 }
 
-func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_MultiRequest) (res *payload.Search_Responses, errs error) {
+func (s *server) MultiLinearSearch(
+	ctx context.Context, reqs *payload.Search_MultiRequest,
+) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiLinearSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -2277,7 +2313,9 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 	return res, errs
 }
 
-func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, errs error) {
+func (s *server) MultiLinearSearchByID(
+	ctx context.Context, reqs *payload.Search_MultiIDRequest,
+) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiLinearSearchByIDRPCName), apiName+"/"+vald.MultiLinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -2339,7 +2377,9 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 	return res, errs
 }
 
-func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *payload.Object_Location, err error) {
+func (s *server) Insert(
+	ctx context.Context, req *payload.Insert_Request,
+) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.InsertRPCName), apiName+"/"+vald.InsertRPCName)
 	defer func() {
 		if span != nil {
@@ -2542,7 +2582,9 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 	return nil
 }
 
-func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequest) (locs *payload.Object_Locations, errs error) {
+func (s *server) MultiInsert(
+	ctx context.Context, reqs *payload.Insert_MultiRequest,
+) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiInsertRPCName), apiName+"/"+vald.MultiInsertRPCName)
 	defer func() {
 		if span != nil {
@@ -2612,7 +2654,9 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 	return locs, errs
 }
 
-func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *payload.Object_Location, err error) {
+func (s *server) Update(
+	ctx context.Context, req *payload.Update_Request,
+) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.UpdateRPCName), apiName+"/"+vald.UpdateRPCName)
 	defer func() {
 		if span != nil {
@@ -2794,7 +2838,9 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 	return nil
 }
 
-func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequest) (locs *payload.Object_Locations, errs error) {
+func (s *server) MultiUpdate(
+	ctx context.Context, reqs *payload.Update_MultiRequest,
+) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiUpdateRPCName), apiName+"/"+vald.MultiUpdateRPCName)
 	defer func() {
 		if span != nil {
@@ -2864,7 +2910,9 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 	return locs, errs
 }
 
-func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *payload.Object_Location, err error) {
+func (s *server) Upsert(
+	ctx context.Context, req *payload.Upsert_Request,
+) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.UpsertRPCName), apiName+"/"+vald.UpsertRPCName)
 	defer func() {
 		if span != nil {
@@ -3054,7 +3102,9 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 	return nil
 }
 
-func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequest) (locs *payload.Object_Locations, errs error) {
+func (s *server) MultiUpsert(
+	ctx context.Context, reqs *payload.Upsert_MultiRequest,
+) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiUpsertRPCName), apiName+"/"+vald.MultiUpsertRPCName)
 	defer func() {
 		if span != nil {
@@ -3117,7 +3167,9 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 	return locs, errs
 }
 
-func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *payload.Object_Location, err error) {
+func (s *server) Remove(
+	ctx context.Context, req *payload.Remove_Request,
+) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.RemoveRPCName), apiName+"/"+vald.RemoveRPCName)
 	defer func() {
 		if span != nil {
@@ -3217,7 +3269,9 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 	return nil
 }
 
-func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequest) (locs *payload.Object_Locations, errs error) {
+func (s *server) MultiRemove(
+	ctx context.Context, reqs *payload.Remove_MultiRequest,
+) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.MultiRemoveRPCName), apiName+"/"+vald.MultiRemoveRPCName)
 	defer func() {
 		if span != nil {
@@ -3280,7 +3334,9 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	return locs, errs
 }
 
-func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (loc *payload.Info_Index_Count, err error) {
+func (s *server) Flush(
+	ctx context.Context, req *payload.Flush_Request,
+) (loc *payload.Info_Index_Count, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.FlushRPCName), apiName+"/"+vald.FlushRPCName)
 	defer func() {
 		if span != nil {
@@ -3290,7 +3346,9 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (loc *pa
 	return s.gateway.Flush(ctx, req, s.copts...)
 }
 
-func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (*payload.Object_Locations, error) {
+func (s *server) RemoveByTimestamp(
+	ctx context.Context, req *payload.Remove_TimestampRequest,
+) (*payload.Object_Locations, error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
 	defer func() {
 		if span != nil {
@@ -3333,7 +3391,9 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 	return locs, nil
 }
 
-func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorRequest) (vec *payload.Object_Vector, err error) {
+func (s *server) GetObject(
+	ctx context.Context, req *payload.Object_VectorRequest,
+) (vec *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.GetObjectRPCName), apiName+"/"+vald.GetObjectRPCName)
 	defer func() {
 		if span != nil {

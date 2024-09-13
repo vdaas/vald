@@ -174,7 +174,7 @@ func (c *client) SaveIndex(t *testing.T, ctx context.Context) error {
 }
 
 func (c *client) IndexInfo(t *testing.T, ctx context.Context) (*payload.Info_Index_Count, error) {
-	client, err := c.getAgentClient(ctx)
+	client, err := c.getClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -228,20 +228,4 @@ func (c *client) recall(results []string, neighbors []int) (recall float64) {
 	}
 
 	return recall / float64(len(neighbors))
-}
-
-type JobExecutor interface {
-	CreateAndWait(t *testing.T, ctx context.Context, jobName string) error
-}
-
-type cronJobExecute struct {
-	cronJob string
-}
-
-var _ JobExecutor = (*cronJobExecute)(nil)
-
-func NewCronJobExecutor(cronJob string) JobExecutor {
-	return &cronJobExecute{
-		cronJob: cronJob,
-	}
 }

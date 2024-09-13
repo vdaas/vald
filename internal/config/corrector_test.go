@@ -17,15 +17,17 @@ package config
 //
 // func TestCorrector_Bind(t *testing.T) {
 // 	type fields struct {
-// 		AgentPort                int
-// 		AgentName                string
-// 		AgentNamespace           string
-// 		AgentDNS                 string
-// 		NodeName                 string
-// 		StreamListConcurrency    int
-// 		KvsAsyncWriteConcurrency int
-// 		IndexReplica             int
-// 		Discoverer               *DiscovererClient
+// 		AgentPort                       int
+// 		AgentName                       string
+// 		AgentNamespace                  string
+// 		AgentDNS                        string
+// 		NodeName                        string
+// 		StreamListConcurrency           int
+// 		KVSBackgroundSyncInterval       string
+// 		KVSBackgroundCompactionInterval string
+// 		IndexReplica                    int
+// 		Discoverer                      *DiscovererClient
+// 		Gateway                         *GRPCClient
 // 	}
 // 	type want struct {
 // 		want *Corrector
@@ -56,9 +58,11 @@ package config
 // 		           AgentDNS:"",
 // 		           NodeName:"",
 // 		           StreamListConcurrency:0,
-// 		           KvsAsyncWriteConcurrency:0,
+// 		           KVSBackgroundSyncInterval:"",
+// 		           KVSBackgroundCompactionInterval:"",
 // 		           IndexReplica:0,
 // 		           Discoverer:DiscovererClient{},
+// 		           Gateway:GRPCClient{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -83,9 +87,11 @@ package config
 // 		           AgentDNS:"",
 // 		           NodeName:"",
 // 		           StreamListConcurrency:0,
-// 		           KvsAsyncWriteConcurrency:0,
+// 		           KVSBackgroundSyncInterval:"",
+// 		           KVSBackgroundCompactionInterval:"",
 // 		           IndexReplica:0,
 // 		           Discoverer:DiscovererClient{},
+// 		           Gateway:GRPCClient{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -116,22 +122,23 @@ package config
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &Corrector{
-// 				AgentPort:                test.fields.AgentPort,
-// 				AgentName:                test.fields.AgentName,
-// 				AgentNamespace:           test.fields.AgentNamespace,
-// 				AgentDNS:                 test.fields.AgentDNS,
-// 				NodeName:                 test.fields.NodeName,
-// 				StreamListConcurrency:    test.fields.StreamListConcurrency,
-// 				KvsAsyncWriteConcurrency: test.fields.KvsAsyncWriteConcurrency,
-// 				IndexReplica:             test.fields.IndexReplica,
-// 				Discoverer:               test.fields.Discoverer,
+// 				AgentPort:                       test.fields.AgentPort,
+// 				AgentName:                       test.fields.AgentName,
+// 				AgentNamespace:                  test.fields.AgentNamespace,
+// 				AgentDNS:                        test.fields.AgentDNS,
+// 				NodeName:                        test.fields.NodeName,
+// 				StreamListConcurrency:           test.fields.StreamListConcurrency,
+// 				KVSBackgroundSyncInterval:       test.fields.KVSBackgroundSyncInterval,
+// 				KVSBackgroundCompactionInterval: test.fields.KVSBackgroundCompactionInterval,
+// 				IndexReplica:                    test.fields.IndexReplica,
+// 				Discoverer:                      test.fields.Discoverer,
+// 				Gateway:                         test.fields.Gateway,
 // 			}
 //
 // 			got := c.Bind()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

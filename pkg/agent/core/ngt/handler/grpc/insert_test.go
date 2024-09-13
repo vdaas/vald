@@ -734,7 +734,7 @@ func Test_server_Insert(t *testing.T) {
 				want: want{
 					err: func() error {
 						err := errors.ErrUUIDNotFound(0)
-						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", req.GetVector().GetId()), err,
+						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API invalid id: \"%s\" or vector: %v was given", req.GetVector().GetId(), req.GetVector().GetVector()), err,
 							&errdetails.RequestInfo{
 								RequestId:   req.GetVector().GetId(),
 								ServingData: errdetails.Serialize(req),
@@ -786,7 +786,7 @@ func Test_server_Insert(t *testing.T) {
 				want: want{
 					err: func() error {
 						err := errors.ErrUUIDNotFound(0)
-						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", req.GetVector().GetId()), err,
+						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API invalid id: \"%s\" or vector: %v was given", req.GetVector().GetId(), req.GetVector().GetVector()), err,
 							&errdetails.RequestInfo{
 								RequestId:   req.GetVector().GetId(),
 								ServingData: errdetails.Serialize(req),
@@ -838,7 +838,7 @@ func Test_server_Insert(t *testing.T) {
 				want: want{
 					err: func() error {
 						err := errors.ErrUUIDNotFound(0)
-						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", req.GetVector().GetId()), err,
+						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API invalid id: \"%s\" or vector: %v was given", req.GetVector().GetId(), req.GetVector().GetVector()), err,
 							&errdetails.RequestInfo{
 								RequestId:   req.GetVector().GetId(),
 								ServingData: errdetails.Serialize(req),
@@ -2654,7 +2654,7 @@ func Test_server_StreamInsert(t *testing.T) {
 					ContextFunc: func() context.Context {
 						return ctx
 					},
-					RecvMsgFunc: func(i interface{}) error {
+					RecvMsgFunc: func(i any) error {
 						if recvIdx >= len(insertReqs) {
 							return io.EOF
 						}
@@ -2668,7 +2668,7 @@ func Test_server_StreamInsert(t *testing.T) {
 
 						return nil
 					},
-					SendMsgFunc: func(i interface{}) error {
+					SendMsgFunc: func(i any) error {
 						rpcResp = append(rpcResp, i.(*payload.Object_StreamLocation))
 						return nil
 					},

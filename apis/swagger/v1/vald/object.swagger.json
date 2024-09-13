@@ -71,6 +71,35 @@
         "tags": ["Object"]
       }
     },
+    "/object/meta/{id.id}": {
+      "get": {
+        "summary": "Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process",
+        "operationId": "Object_GetTimestamp",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectTimestamp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": ["Object"]
+      }
+    },
     "/object/{id.id}": {
       "get": {
         "summary": "A method to fetch a vector.",
@@ -233,6 +262,21 @@
         }
       },
       "description": "Represent the target filter server."
+    },
+    "v1ObjectTimestamp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The vector ID."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "timestamp represents when this vector inserted."
+        }
+      },
+      "description": "Represent a vector meta data."
     }
   }
 }

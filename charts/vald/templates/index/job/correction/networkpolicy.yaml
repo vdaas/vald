@@ -15,6 +15,7 @@
 #
 
 {{- $agent      := .Values.agent -}}
+{{- $lb := .Values.gateway.lb -}}
 {{- $discoverer := .Values.discoverer -}}
 {{- $corrector  := .Values.manager.index.corrector -}}
 {{- if and .Values.defaults.networkPolicy.enabled $corrector.enabled }}
@@ -51,6 +52,12 @@ spec:
         podSelector:
           matchLabels:
             app: {{ $discoverer.name }}
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: {{ .Release.Namespace }}
+        podSelector:
+          matchLabels:
+            app: {{ $lb.name }}
       - namespaceSelector:
           matchLabels:
             kubernetes.io/metadata.name: kube-system

@@ -62,7 +62,11 @@ type operator struct {
 }
 
 // New returns Indexer object if no error occurs.
-func New(namespace, agentName, rotatorName, targetReadReplicaIDKey string, rotatorJob *k8s.Job, opts ...Option) (o Operator, err error) {
+func New(
+	namespace, agentName, rotatorName, targetReadReplicaIDKey string,
+	rotatorJob *k8s.Job,
+	opts ...Option,
+) (o Operator, err error) {
 	operator := new(operator)
 	operator.namespace = namespace
 	operator.targetReadReplicaIDAnnotationsKey = targetReadReplicaIDKey
@@ -168,7 +172,9 @@ func (o *operator) podOnReconcile(ctx context.Context, pod *k8s.Pod) (k8s.Result
 
 // reconcileRotatorJob starts rotation job when the condition meets.
 // This function is work in progress.
-func (o *operator) reconcileRotatorJob(ctx context.Context, pod *k8s.Pod) (requeue bool, err error) {
+func (o *operator) reconcileRotatorJob(
+	ctx context.Context, pod *k8s.Pod,
+) (requeue bool, err error) {
 	podIdx, ok := pod.Labels[k8s.PodIndexLabel]
 	if !ok {
 		log.Info("no index label found. the agent is not StatefulSet? skipping...")
@@ -236,7 +242,9 @@ func needsRotation(agentAnnotations, readReplicaAnnotations map[string]string) (
 	return true, nil
 }
 
-func (o *operator) createRotationJobOrRequeue(ctx context.Context, podIdx string) (rq bool, err error) {
+func (o *operator) createRotationJobOrRequeue(
+	ctx context.Context, podIdx string,
+) (rq bool, err error) {
 	// get all the rotation jobs and make sure the job is not running
 	res, err := o.ensureJobConcurrency(ctx, podIdx)
 	if err != nil {
@@ -275,7 +283,9 @@ func (o *operator) createRotationJobOrRequeue(ctx context.Context, podIdx string
 
 // ensureJobConcurrency controls the job concurrency. It cannot handle concurrent calls but it is fine because
 // the MaxConcurrentReconciles defaults to 1 and we do not change it.
-func (o *operator) ensureJobConcurrency(ctx context.Context, podIdx string) (jobReconcileResult, error) {
+func (o *operator) ensureJobConcurrency(
+	ctx context.Context, podIdx string,
+) (jobReconcileResult, error) {
 	// get all the rotation jobs and make sure the job is not running
 	var jobList k8s.JobList
 	selector, err := o.client.LabelSelector("app", k8s.SelectionOpEquals, []string{o.rotatorName})
@@ -299,11 +309,11 @@ func (o *operator) ensureJobConcurrency(ctx context.Context, podIdx string) (job
 	}
 
 	for _, job := range jobList.Items {
-		annotaions := job.Spec.Template.Annotations
-		if annotaions == nil {
+		annotations := job.Spec.Template.Annotations
+		if annotations == nil {
 			continue
 		}
-		id, ok := annotaions[o.targetReadReplicaIDAnnotationsKey]
+		id, ok := annotations[o.targetReadReplicaIDAnnotationsKey]
 		if !ok {
 			continue
 		}

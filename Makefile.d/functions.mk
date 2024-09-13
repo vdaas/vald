@@ -42,7 +42,7 @@ define profile-web
 endef
 
 define go-lint
-	golangci-lint run --config .golangci.yml --fix
+	golangci-lint run --config .golangci.yaml --fix
 endef
 
 define go-vet
@@ -60,9 +60,9 @@ define go-build
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=$(CGO_ENABLED) \
-	CGO_CXXFLAGS="-g -Ofast -march=native" \
-	CGO_FFLAGS="-g -Ofast -march=native" \
-	CGO_LDFLAGS="-g -Ofast -march=native" \
+	CGO_CXXFLAGS="$3" \
+	CGO_FFLAGS="$3" \
+	CGO_LDFLAGS="$3" \
 	GO111MODULE=on \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
@@ -106,6 +106,7 @@ define run-e2e-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -117,12 +118,21 @@ define run-e2e-crud-test
 	    -port=$(E2E_BIND_PORT) \
 	    -dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
 	    -insert-num=$(E2E_INSERT_COUNT) \
+	    -correction-insert-num=$(E2E_INSERT_COUNT) \
+	    -insert-num=$(E2E_INSERT_COUNT) \
 	    -search-num=$(E2E_SEARCH_COUNT) \
 	    -search-by-id-num=$(E2E_SEARCH_BY_ID_COUNT) \
 	    -get-object-num=$(E2E_GET_OBJECT_COUNT) \
 	    -update-num=$(E2E_UPDATE_COUNT) \
 	    -upsert-num=$(E2E_UPSERT_COUNT) \
 	    -remove-num=$(E2E_REMOVE_COUNT) \
+	    -insert-from=$(E2E_INSERT_FROM) \
+	    -update-from=$(E2E_UPDATE_FROM) \
+	    -upsert-from=$(E2E_UPSERT_FROM) \
+	    -remove-from=$(E2E_REMOVE_FROM) \
+	    -search-from=$(E2E_SEARCH_FROM) \
+	    -search-by-id-from=$(E2E_SEARCH_BY_ID_FROM) \
+	    -get-object-from=$(E2E_GET_OBJECT_FROM) \
 	    -wait-after-insert=$(E2E_WAIT_FOR_CREATE_INDEX_DURATION) \
 	    -portforward=$(E2E_PORTFORWARD_ENABLED) \
 	    -portforward-pod-name=$(E2E_TARGET_POD_NAME) \
@@ -135,6 +145,7 @@ define run-e2e-crud-faiss-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -160,6 +171,7 @@ define run-e2e-multi-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -189,6 +201,7 @@ define run-e2e-max-dim-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -210,6 +223,7 @@ define run-e2e-sidecar-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -295,6 +309,40 @@ define gen-license
 	rm -rf $$BIN_PATH
 endef
 
+define gen-dockerfile
+	BIN_PATH="$(TEMP_DIR)/vald-dockerfile-gen"; \
+	rm -rf $$BIN_PATH; \
+	MAINTAINER=$2 \
+	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	go build -modcacherw \
+		-mod=readonly \
+		-a \
+		-tags "osusergo netgo static_build" \
+		-trimpath \
+		-o $$BIN_PATH $(ROOTDIR)/hack/docker/gen/main.go; \
+	$$BIN_PATH $1; \
+	rm -rf $$BIN_PATH
+endef
+
+define gen-workflow
+	BIN_PATH="$(TEMP_DIR)/vald-actions-gen"; \
+	rm -rf $$BIN_PATH; \
+	MAINTAINER=$2 \
+	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	go build -modcacherw \
+		-mod=readonly \
+		-a \
+		-tags "osusergo netgo static_build" \
+		-trimpath \
+		-o $$BIN_PATH $(ROOTDIR)/hack/actions/gen/main.go; \
+	$$BIN_PATH $1; \
+	rm -rf $$BIN_PATH
+endef
+
 define gen-vald-helm-schema
 	BIN_PATH="$(TEMP_DIR)/vald-helm-schema-gen"; \
 	rm -rf $$BIN_PATH; \
@@ -333,14 +381,12 @@ define gen-vald-crd
 endef
 
 define update-github-actions
-	@for ACTION_NAME in $1; do \
+	@set -e; for ACTION_NAME in $1; do \
 		if [ -n "$$ACTION_NAME" ] && [ "$$ACTION_NAME" != "security-and-quality" ]; then \
 			FILE_NAME=`echo $$ACTION_NAME | tr '/' '_' | tr '-' '_' | tr '[:lower:]' '[:upper:]'`; \
 			if [ -n "$$FILE_NAME" ]; then \
 				if [ "$$ACTION_NAME" = "aquasecurity/trivy-action" ] || [ "$$ACTION_NAME" = "machine-learning-apps/actions-chatops" ]; then \
 					VERSION="master"; \
-				elif [ "$$ACTION_NAME" = "softprops/action-gh-release" ]; then \
-					VERSION="1.0.0"; \
 				else \
 					REPO_NAME=`echo $$ACTION_NAME | cut -d'/' -f1-2`; \
 					VERSION=`curl -fsSL https://api.github.com/repos/$$REPO_NAME/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`;\

@@ -103,7 +103,7 @@ func TestNew(t *testing.T) {
 		beforeFunc  func(args)
 		afterFunc   func(*testing.T, NGT) error
 	}
-	defaultComprators := append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
+	defaultComparators := append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
 		return s1 == s2
 	})))
 	defaultCheckFunc := func(w want, got NGT, err error, comparators ...comparator.Option) error {
@@ -138,6 +138,7 @@ func TestNew(t *testing.T) {
 						epsilon:             DefaultEpsilon,
 						poolSize:            DefaultPoolSize,
 						bulkInsertChunkSize: 100,
+						ces:                 10,
 						objectType:          Float,
 						mu:                  &sync.RWMutex{},
 						cmu:                 &sync.RWMutex{},
@@ -161,6 +162,7 @@ func TestNew(t *testing.T) {
 				want: want{
 					want: &ngt{
 						idxPath:             idxPath,
+						ces:                 10,
 						radius:              DefaultRadius,
 						epsilon:             DefaultEpsilon,
 						poolSize:            DefaultPoolSize,
@@ -187,6 +189,7 @@ func TestNew(t *testing.T) {
 				want: want{
 					want: &ngt{
 						idxPath:             idxPath,
+						ces:                 10,
 						radius:              DefaultRadius,
 						epsilon:             DefaultEpsilon,
 						poolSize:            100,
@@ -231,7 +234,7 @@ func TestNew(t *testing.T) {
 			}
 			comparators := test.comparators
 			if test.comparators == nil || len(test.comparators) == 0 {
-				comparators = defaultComprators
+				comparators = defaultComparators
 			}
 
 			got, err := New(test.args.opts...)
@@ -317,6 +320,7 @@ func TestLoad(t *testing.T) {
 				want: want{
 					want: &ngt{
 						idxPath:             idxPath,
+						ces:                 10,
 						radius:              DefaultRadius,
 						epsilon:             DefaultEpsilon,
 						poolSize:            DefaultPoolSize,
@@ -384,6 +388,7 @@ func TestLoad(t *testing.T) {
 				want: want{
 					want: &ngt{
 						idxPath:             idxPath,
+						ces:                 10,
 						radius:              DefaultRadius,
 						epsilon:             DefaultEpsilon,
 						poolSize:            DefaultPoolSize,
@@ -451,6 +456,7 @@ func TestLoad(t *testing.T) {
 				want: want{
 					want: &ngt{
 						idxPath:             idxPath,
+						ces:                 10,
 						radius:              DefaultRadius,
 						epsilon:             DefaultEpsilon,
 						poolSize:            DefaultPoolSize,
@@ -518,6 +524,7 @@ func TestLoad(t *testing.T) {
 				want: want{
 					want: &ngt{
 						idxPath:             idxPath,
+						ces:                 10,
 						radius:              DefaultRadius,
 						epsilon:             DefaultEpsilon,
 						poolSize:            DefaultPoolSize,
@@ -685,7 +692,7 @@ func Test_gen(t *testing.T) {
 		beforeFunc  func(*testing.T, args)
 		afterFunc   func(*testing.T, NGT) error
 	}
-	defaultComprators := append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
+	defaultComparators := append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
 		return s1 == s2
 	})))
 	defaultCheckFunc := func(_ context.Context, w want, got NGT, err error, comparators ...comparator.Option) error {
@@ -715,6 +722,7 @@ func Test_gen(t *testing.T) {
 			want: want{
 				want: &ngt{
 					idxPath:             "/tmp/ngt-",
+					ces:                 10,
 					radius:              DefaultRadius,
 					epsilon:             DefaultEpsilon,
 					poolSize:            DefaultPoolSize,
@@ -762,6 +770,7 @@ func Test_gen(t *testing.T) {
 				},
 				want: want{
 					want: &ngt{
+						ces:                 10,
 						idxPath:             idxPath,
 						radius:              DefaultRadius,
 						epsilon:             DefaultEpsilon,
@@ -830,7 +839,7 @@ func Test_gen(t *testing.T) {
 			}
 			comparators := test.comparators
 			if test.comparators == nil || len(test.comparators) == 0 {
-				comparators = defaultComprators
+				comparators = defaultComparators
 			}
 
 			got, err := gen(test.args.isLoad, test.args.opts...)
@@ -1040,7 +1049,7 @@ func Test_ngt_loadOptions(t *testing.T) {
 			},
 		},
 		{
-			name: "load option failed with Ignoreable error",
+			name: "load option failed with Ignorable error",
 			args: args{
 				opts: []Option{
 					func(n *ngt) error {
@@ -1098,7 +1107,7 @@ func Test_ngt_loadOptions(t *testing.T) {
 func Test_ngt_create(t *testing.T) {
 	// This test is skipped because it requires ngt.prop to be set probably.
 	// We cannot initialize ngt.prop since it is C dependencies.
-	// This function is called by New(), and the ngt.prop is destoried in New(), so we cannot test this function individually.
+	// This function is called by New(), and the ngt.prop is destroyed in New(), so we cannot test this function individually.
 	t.SkipNow()
 }
 
@@ -1467,7 +1476,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "resturn vector id after the nearby vector inserted (uint8)",
+			name: "return vector id after the nearby vector inserted (uint8)",
 			args: args{
 				ctx:  context.Background(),
 				vec:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
@@ -1644,7 +1653,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "resturn vector id after the nearby vector inserted (float)",
+			name: "return vector id after the nearby vector inserted (float)",
 			args: args{
 				ctx:  context.Background(),
 				vec:  []float32{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.91},
@@ -4751,6 +4760,124 @@ func Test_ngt_Close(t *testing.T) {
 
 			n.Close()
 			if err := checkFunc(test.want); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_ngt_Property(t *testing.T) {
+	type fields struct {
+		dimension    int
+		objectType   objectType
+		distanceType distanceType
+	}
+	type want struct {
+		want *Property
+		err  error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		createFunc func(t *testing.T, fields fields) (NGT, error)
+		checkFunc  func(want, *Property, error) error
+		beforeFunc func()
+		afterFunc  func(*testing.T, NGT) error
+	}
+	defaultCheckFunc := func(w want, prop *Property, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+
+		return nil
+	}
+	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
+		t.Helper()
+
+		return New(
+			WithObjectType(fields.objectType),
+			WithDimension(fields.dimension),
+			WithDistanceType(fields.distanceType),
+		)
+	}
+	tests := []test{
+		{
+			name: "get ngt property",
+			fields: fields{
+				dimension:    9,
+				objectType:   Float,
+				distanceType: L2,
+			},
+			want: want{
+				want: &Property{
+					Dimension:    9,
+					ObjectType:   Float,
+					DistanceType: L2,
+					IndexType:    GraphAndTree,
+					DatabaseType: Memory,
+					GraphType:    ANNG,
+				},
+				err: nil,
+			},
+			checkFunc: func(w want, p *Property, err error) error {
+				if err := defaultCheckFunc(w, p, err); err != nil {
+					return err
+				}
+				if p.Dimension != w.want.Dimension {
+					return errors.Errorf("got_dimension: \"%d\", want_dimension: \"%d\"", p.Dimension, w.want.Dimension)
+				}
+				if p.ObjectType != w.want.ObjectType {
+					return errors.Errorf("got_object_type: \"%v\", want_object_type: \"%v\"", p.ObjectType, w.want.ObjectType)
+				}
+				if p.DistanceType != w.want.DistanceType {
+					return errors.Errorf("got_distance_type: \"%v\", want_distance_type: \"%v\"", p.DistanceType, w.want.DistanceType)
+				}
+				if p.IndexType != w.want.IndexType {
+					return errors.Errorf("got_index_type: \"%v\", want_index_type: \"%v\"", p.IndexType, w.want.IndexType)
+				}
+				if p.DatabaseType != w.want.DatabaseType {
+					return errors.Errorf("got_database_type: \"%v\", want_database_type: \"%v\"", p.DatabaseType, w.want.DatabaseType)
+				}
+				if p.GraphType != w.want.GraphType {
+					return errors.Errorf("got_graph_type: \"%v\", want_graph_type: \"%v\"", p.GraphType, w.want.GraphType)
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc()
+			}
+			if test.afterFunc == nil {
+				test.afterFunc = defaultAfterFunc
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			if test.createFunc == nil {
+				test.createFunc = defaultCreateFunc
+			}
+
+			n, err := test.createFunc(tt, test.fields)
+			if err != nil {
+				tt.Fatal(err)
+			}
+			defer func() {
+				if err := test.afterFunc(tt, n); err != nil {
+					tt.Error(err)
+				}
+			}()
+
+			prop, err := n.GetProperty()
+			if err := checkFunc(test.want, prop, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

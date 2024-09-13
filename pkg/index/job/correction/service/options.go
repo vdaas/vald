@@ -15,17 +15,29 @@ package service
 
 import (
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
+	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/timeutil"
 )
 
 // Option represents the functional option for index corrector.
 type Option func(*correct) error
 
 var defaultOpts = []Option{
-	//nolint:gomnd
-	WithStreamListConcurrency(200),
-	//nolint:gomnd
-	WithKvsAsyncWriteConcurrency(2048),
+	WithStreamListConcurrency(200), //nolint:gomnd
+	WithErrGroup(errgroup.Get()),
+	WithKVSSyncInterval("5s"),
+}
+
+// WithErrGroup returns Option that set errgroup.
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(c *correct) error {
+		if eg != nil {
+			c.eg = eg
+		}
+		return nil
+	}
 }
 
 // WithIndexReplica returns Option that sets index replica.
@@ -50,6 +62,17 @@ func WithDiscoverer(client discoverer.Client) Option {
 	}
 }
 
+// WithGateway returns Option that sets discoverer client.
+func WithGateway(client vald.Client) Option {
+	return func(c *correct) error {
+		if client == nil {
+			return errors.NewErrCriticalOption("gateway", client)
+		}
+		c.gateway = client
+		return nil
+	}
+}
+
 // WithStreamListConcurrency returns Option that sets concurrency for StreamList field value.
 func WithStreamListConcurrency(num int) Option {
 	return func(c *correct) error {
@@ -61,13 +84,32 @@ func WithStreamListConcurrency(num int) Option {
 	}
 }
 
-// WithKvsAsyncWriteConcurrency returns Option that sets concurrency for kvs async write.
-func WithKvsAsyncWriteConcurrency(num int) Option {
+// WithKVSSyncInterval returns Option that sets interval for background file sync.
+func WithKVSSyncInterval(dur string) Option {
 	return func(c *correct) error {
-		if num <= 0 {
-			return errors.NewErrInvalidOption("kvsAsyncWriteConcurrency", num)
+		if dur == "" {
+			return nil
 		}
-		c.bboltAsyncWriteConcurrency = num
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return err
+		}
+		c.backgroundSyncInterval = d
+		return nil
+	}
+}
+
+// WithKVSCompactionInterval returns Option that sets interval for background file compaction.
+func WithKVSCompactionInterval(dur string) Option {
+	return func(c *correct) error {
+		if dur == "" {
+			return nil
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return err
+		}
+		c.backgroundCompactionInterval = d
 		return nil
 	}
 }

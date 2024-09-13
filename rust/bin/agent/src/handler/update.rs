@@ -45,4 +45,12 @@ impl update_server::Update for super::Agent {
     ) -> std::result::Result<tonic::Response<object::Locations>, tonic::Status> {
         todo!()
     }
+
+    #[doc = " A method to update timestamp indexed vectors in a single request.\n"]
+    async fn update_timestamp(
+        &self,
+        request: tonic::Request<update::TimestampRequest>,
+    ) -> std::result::Result<tonic::Response<object::Location>, tonic::Status> {
+        todo!()
+    }
 }

@@ -26,13 +26,15 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/strings"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 // Insert inserts a vector to the NGT.
-func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *payload.Object_Location, err error) {
+func (s *server) Insert(
+	ctx context.Context, req *payload.Insert_Request,
+) (res *payload.Object_Location, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.InsertRPCName)
 	defer func() {
 		if span != nil {
@@ -97,7 +99,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 			log.Warn(err)
 			attrs = trace.StatusCodeAlreadyExists(err.Error())
 		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) {
-			err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", vec.GetId()), err,
+			err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API invalid id: \"%s\" or vector: %v was given", vec.GetId(), vec.GetVector()), err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetVector().GetId(),
 					ServingData: errdetails.Serialize(req),
@@ -190,7 +192,9 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 	return nil
 }
 
-func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequest) (res *payload.Object_Locations, err error) {
+func (s *server) MultiInsert(
+	ctx context.Context, reqs *payload.Insert_MultiRequest,
+) (res *payload.Object_Locations, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiInsertRPCName)
 	defer func() {
 		if span != nil {

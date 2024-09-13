@@ -46,9 +46,17 @@ golines/install: $(GOBIN)/golines
 $(GOBIN)/golines:
 	$(call go-install, github.com/segmentio/golines)
 
+.PHONY: crlfmt/install
+crlfmt/install: $(GOBIN)/crlfmt
+
+$(GOBIN)/crlfmt:
+	$(call go-install, github.com/cockroachdb/crlfmt)
+
 .PHONY: prettier/install
-prettier/install: $(BINDIR)/prettier
-$(BINDIR)/prettier:
+prettier/install: $(NPM_GLOBAL_PREFIX)/bin/prettier
+$(NPM_GLOBAL_PREFIX)/bin/prettier:
+	npm config -g set registry http://registry.npmjs.org/
+	npm cache clean --force
 	type prettier || npm install -g prettier
 
 .PHONY: reviewdog/install
@@ -81,7 +89,34 @@ textlint/ci/install:
 cspell/install: $(NPM_GLOBAL_PREFIX)/bin/cspell
 
 $(NPM_GLOBAL_PREFIX)/bin/cspell:
-	npm install -g git+https://github.com/streetsidesoftware/cspell-cli
+	npm install -g cspell@latest \
+		@cspell/dict-cpp \
+		@cspell/dict-docker \
+		@cspell/dict-en_us \
+		@cspell/dict-fullstack \
+		@cspell/dict-git \
+		@cspell/dict-golang \
+		@cspell/dict-k8s \
+		@cspell/dict-makefile \
+		@cspell/dict-markdown \
+		@cspell/dict-npm \
+		@cspell/dict-public-licenses \
+		@cspell/dict-rust \
+		@cspell/dict-shell
+	cspell link add @cspell/dict-cpp
+	cspell link add @cspell/dict-docker
+	cspell link add @cspell/dict-en_us
+	cspell link add @cspell/dict-fullstack
+	cspell link add @cspell/dict-git
+	cspell link add @cspell/dict-golang
+	cspell link add @cspell/dict-k8s
+	cspell link add @cspell/dict-makefile
+	cspell link add @cspell/dict-markdown
+	cspell link add @cspell/dict-npm
+	cspell link add @cspell/dict-public-licenses
+	cspell link add @cspell/dict-rust
+	cspell link add @cspell/dict-shell
+
 
 .PHONY: buf/install
 buf/install: $(BINDIR)/buf
@@ -151,16 +186,72 @@ go/install: $(GOROOT)/bin/go
 
 $(GOROOT)/bin/go:
 	TAR_NAME=go$(GO_VERSION).$(OS)-$(subst x86_64,amd64,$(subst aarch64,arm64,$(ARCH))).tar.gz \
-	&& curl -fsSLO "https://go.dev/dl/$${TAR_NAME}" \
-	&& tar zxf "$${TAR_NAME}" \
-	&& rm -rf "$${TAR_NAME}" \
-	&& mv go $(GOROOT) \
-	&& $(GOROOT)/bin/go version \
-	&& mkdir -p "$(GOPATH)/src" "$(GOPATH)/bin" "$(GOPATH)/pkg"
+	&& curl -fsSL "https://go.dev/dl/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& mkdir -p $(TEMP_DIR)/go \
+	&& tar -xzvf "$(TEMP_DIR)/$${TAR_NAME}" -C $(TEMP_DIR)/go --strip-components 1 \
+	&& rm -rf "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& mv $(TEMP_DIR)/go $(GOROOT) \
+	&& $(GOROOT)/bin/go version
 
 .PHONY: rust/install
 rust/install: $(CARGO_HOME)/bin/cargo
 
 $(CARGO_HOME)/bin/cargo:
 	curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} sh -s -- --default-toolchain $(RUST_VERSION) -y
+	rustup toolchain install $(RUST_VERSION)
+	rustup default $(RUST_VERSION)
 	source "${CARGO_HOME}/env"
+
+.PHONY: zlib/install
+zlib/install: $(LIB_PATH)/libz.a
+
+$(LIB_PATH)/libz.a: $(LIB_PATH)
+	curl -fsSL https://github.com/madler/zlib/releases/download/v$(ZLIB_VERSION)/zlib-$(ZLIB_VERSION).tar.gz -o $(TEMP_DIR)/zlib-$(ZLIB_VERSION).tar.gz \
+	&& mkdir -p $(TEMP_DIR)/zlib \
+	&& tar -xzvf $(TEMP_DIR)/zlib-$(ZLIB_VERSION).tar.gz -C $(TEMP_DIR)/zlib --strip-components 1 \
+	&& cd $(TEMP_DIR)/zlib \
+	&& mkdir -p build \
+	&& cd build \
+	&& cmake  -DCMAKE_BUILD_TYPE=Release \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DBUILD_STATIC_EXECS=ON \
+		-DBUILD_TESTING=OFF \
+		-DCMAKE_C_FLAGS="-fPIC" \
+		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-DZLIB_BUILD_SHARED=OFF \
+		-DZLIB_BUILD_STATIC=ON \
+		-DZLIB_USE_STATIC_LIBS=ON \
+		-DZLIB_COMPAT=ON \
+		.. \
+	&& make -j$(CORES) \
+	&& make install \
+	&& cd $(ROOTDIR) \
+	&& rm -rf $(TEMP_DIR)/zlib-$(ZLIB_VERSION).tar.gz $(TEMP_DIR)/zlib $(LIB_PATH)/libz.s*
+
+.PHONY: hdf5/install
+hdf5/install: $(LIB_PATH)/libhdf5.a
+
+$(LIB_PATH)/libhdf5.a: $(LIB_PATH) \
+	zlib/install
+	mkdir -p $(TEMP_DIR)/hdf5 \
+	&& curl -fsSL https://github.com/HDFGroup/hdf5/releases/download/$(HDF5_VERSION)/hdf5.tar.gz -o $(TEMP_DIR)/hdf5.tar.gz \
+	&& tar -xzvf $(TEMP_DIR)/hdf5.tar.gz -C $(TEMP_DIR)/hdf5 --strip-components 2 \
+	&& mkdir -p $(TEMP_DIR)/hdf5/build \
+	&& cd $(TEMP_DIR)/hdf5/build \
+	&& cmake -DCMAKE_BUILD_TYPE=Release \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DBUILD_STATIC_EXECS=ON \
+		-DBUILD_TESTING=OFF \
+		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-DH5_ZLIB_INCLUDE_DIR=$(USR_LOCAL)/include \
+		-DH5_ZLIB_LIBRARY=$(LIB_PATH)/libz.a \
+		-DHDF5_BUILD_CPP_LIB=OFF \
+		-DHDF5_BUILD_HL_LIB=ON \
+		-DHDF5_BUILD_STATIC_EXECS=ON \
+		-DHDF5_BUILD_TOOLS=OFF \
+		-DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+		.. \
+	&& make -j$(CORES) \
+	&& make install \
+	&& cd $(ROOTDIR) \
+	&& rm -rf $(TEMP_DIR)/hdf5.tar.gz $(TEMP_DIR)/HDF5_VERSION

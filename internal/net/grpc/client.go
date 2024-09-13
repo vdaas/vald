@@ -80,10 +80,10 @@ type Client interface {
 	Do(ctx context.Context, addr string,
 		f func(ctx context.Context,
 			conn *ClientConn,
-			copts ...CallOption) (interface{}, error)) (interface{}, error)
+			copts ...CallOption) (any, error)) (any, error)
 	RoundRobin(ctx context.Context, f func(ctx context.Context,
 		conn *ClientConn,
-		copts ...CallOption) (interface{}, error)) (interface{}, error)
+		copts ...CallOption) (any, error)) (any, error)
 	GetDialOption() []DialOption
 	GetCallOption() []CallOption
 	GetBackoff() backoff.Backoff
@@ -342,7 +342,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 
 					var p pool.Conn
 					if enabled && g.bo != nil {
-						_, err = g.bo.Do(clctx, func(ictx context.Context) (r interface{}, ret bool, err error) {
+						_, err = g.bo.Do(clctx, func(ictx context.Context) (r any, ret bool, err error) {
 							p, err = g.Connect(ictx, addr)
 							return nil, err != nil, err
 						})
@@ -399,7 +399,8 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 	return ech, nil
 }
 
-func (g *gRPCClient) Range(ctx context.Context,
+func (g *gRPCClient) Range(
+	ctx context.Context,
 	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error,
 ) (err error) {
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.Range")
@@ -423,7 +424,7 @@ func (g *gRPCClient) Range(ctx context.Context,
 			return false
 		default:
 			_, err := g.connectWithBackoff(ssctx, p, addr, true, func(ictx context.Context, conn *ClientConn, copts ...CallOption,
-			) (interface{}, error) {
+			) (any, error) {
 				return nil, f(ictx, addr, conn, copts...)
 			})
 			if err != nil {
@@ -455,8 +456,10 @@ func (g *gRPCClient) Range(ctx context.Context,
 	return nil
 }
 
-func (g *gRPCClient) RangeConcurrent(ctx context.Context,
-	concurrency int, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error,
+func (g *gRPCClient) RangeConcurrent(
+	ctx context.Context,
+	concurrency int,
+	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error,
 ) (err error) {
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.RangeConcurrent")
 	defer func() {
@@ -491,7 +494,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 			default:
 				_, err = g.connectWithBackoff(ssctx, p, addr, true, func(ictx context.Context,
 					conn *ClientConn, copts ...CallOption,
-				) (interface{}, error) {
+				) (any, error) {
 					err := f(ictx, addr, conn, copts...)
 					return nil, err
 				})
@@ -534,8 +537,10 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 	return nil
 }
 
-func (g *gRPCClient) OrderedRange(ctx context.Context,
-	orders []string, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error,
+func (g *gRPCClient) OrderedRange(
+	ctx context.Context,
+	orders []string,
+	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error,
 ) (err error) {
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.OrderedRange")
 	defer func() {
@@ -571,7 +576,7 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 			}()
 			_, ierr := g.connectWithBackoff(ssctx, p, addr, true, func(ictx context.Context,
 				conn *ClientConn, copts ...CallOption,
-			) (interface{}, error) {
+			) (any, error) {
 				return nil, f(ictx, addr, conn, copts...)
 			})
 			if ierr != nil {
@@ -598,8 +603,11 @@ func (g *gRPCClient) OrderedRange(ctx context.Context,
 	return nil
 }
 
-func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
-	orders []string, concurrency int, f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error,
+func (g *gRPCClient) OrderedRangeConcurrent(
+	ctx context.Context,
+	orders []string,
+	concurrency int,
+	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error,
 ) (err error) {
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.OrderedRangeConcurrent")
 	defer func() {
@@ -640,7 +648,7 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 			default:
 				_, err = g.connectWithBackoff(ssctx, p, addr, true, func(ictx context.Context,
 					conn *ClientConn, copts ...CallOption,
-				) (interface{}, error) {
+				) (any, error) {
 					return nil, f(ictx, addr, conn, copts...)
 				})
 				if err != nil {
@@ -669,9 +677,11 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 	return nil
 }
 
-func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
-	conn *ClientConn, copts ...CallOption) (interface{}, error),
-) (data interface{}, err error) {
+func (g *gRPCClient) RoundRobin(
+	ctx context.Context,
+	f func(ctx context.Context,
+		conn *ClientConn, copts ...CallOption) (any, error),
+) (data any, err error) {
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.RoundRobin")
 	defer func() {
 		if span != nil {
@@ -687,7 +697,7 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 		sctx = backoff.WithBackoffName(sctx, boName)
 	}
 
-	do := func() (data interface{}, err error) {
+	do := func() (data any, err error) {
 		cerr := g.rangeConns(func(addr string, p pool.Conn) bool {
 			select {
 			case <-ctx.Done():
@@ -707,7 +717,7 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 						ctx = backoff.WithBackoffName(ctx, boName)
 					}
 					if g.cb != nil && len(boName) > 0 {
-						data, err = g.cb.Do(ctx, boName, func(ictx context.Context) (interface{}, error) {
+						data, err = g.cb.Do(ctx, boName, func(ictx context.Context) (any, error) {
 							return g.connectWithBackoff(ictx, p, addr, false, f)
 						})
 						if err != nil {
@@ -748,7 +758,7 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 	}
 
 	if g.bo != nil {
-		return g.bo.Do(sctx, func(ictx context.Context) (r interface{}, ret bool, err error) {
+		return g.bo.Do(sctx, func(ictx context.Context) (r any, ret bool, err error) {
 			r, err = do()
 			if err != nil {
 				if errors.Is(err, context.Canceled) ||
@@ -781,10 +791,12 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 	return do()
 }
 
-func (g *gRPCClient) Do(ctx context.Context, addr string,
+func (g *gRPCClient) Do(
+	ctx context.Context,
+	addr string,
 	f func(ctx context.Context,
-		conn *ClientConn, copts ...CallOption) (interface{}, error),
-) (data interface{}, err error) {
+		conn *ClientConn, copts ...CallOption) (any, error),
+) (data any, err error) {
 	sctx, span := trace.StartSpan(ctx, apiName+"/Client.Do/"+addr)
 	defer func() {
 		if span != nil {
@@ -815,10 +827,14 @@ func (g *gRPCClient) Do(ctx context.Context, addr string,
 	return data, err
 }
 
-func (g *gRPCClient) connectWithBackoff(ctx context.Context, p pool.Conn, addr string, enableBackoff bool,
+func (g *gRPCClient) connectWithBackoff(
+	ctx context.Context,
+	p pool.Conn,
+	addr string,
+	enableBackoff bool,
 	f func(ctx context.Context,
-		conn *ClientConn, copts ...CallOption) (interface{}, error),
-) (data interface{}, err error) {
+		conn *ClientConn, copts ...CallOption) (any, error),
+) (data any, err error) {
 	if p == nil {
 		g.crl.Store(addr, true)
 		err = errors.ErrGRPCClientConnNotFound(addr)
@@ -837,7 +853,7 @@ func (g *gRPCClient) connectWithBackoff(ctx context.Context, p pool.Conn, addr s
 		if boName = FromGRPCMethod(sctx); boName != "" {
 			sctx = backoff.WithBackoffName(sctx, boName)
 		}
-		do := func(ctx context.Context) (r interface{}, ret bool, err error) {
+		do := func(ctx context.Context) (r any, ret bool, err error) {
 			err = p.Do(ctx, func(conn *ClientConn) (err error) {
 				if conn == nil {
 					return errors.ErrGRPCClientConnNotFound(addr)
@@ -873,9 +889,9 @@ func (g *gRPCClient) connectWithBackoff(ctx context.Context, p pool.Conn, addr s
 			}
 			return r, false, nil
 		}
-		data, err = g.bo.Do(sctx, func(ictx context.Context) (r interface{}, ret bool, err error) {
+		data, err = g.bo.Do(sctx, func(ictx context.Context) (r any, ret bool, err error) {
 			if g.cb != nil && len(boName) > 0 {
-				r, err = g.cb.Do(ictx, boName, func(ictx context.Context) (interface{}, error) {
+				r, err = g.cb.Do(ictx, boName, func(ictx context.Context) (any, error) {
 					r, ret, err = do(ictx)
 					if err != nil && !ret {
 						return r, errors.NewErrCircuitBreakerIgnorable(err)
@@ -930,7 +946,9 @@ func (g *gRPCClient) GetBackoff() backoff.Backoff {
 	return g.bo
 }
 
-func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOption) (conn pool.Conn, err error) {
+func (g *gRPCClient) Connect(
+	ctx context.Context, addr string, dopts ...DialOption,
+) (conn pool.Conn, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.Connect/"+addr)
 	defer func() {
 		if span != nil {

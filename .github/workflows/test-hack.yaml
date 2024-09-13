@@ -1,0 +1,76 @@
+#
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Run hack tests"
+on:
+  push:
+    branches:
+      - main
+      - "release/v*.*"
+      - "!release/v*.*.*"
+    paths:
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/test-hack.yaml"
+      - "hack/gorules/**"
+      - "hack/helm/**"
+      - "hack/license/**"
+      - "hack/tools/**"
+  pull_request:
+    paths:
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/test-hack.yaml"
+      - "hack/gorules/**"
+      - "hack/helm/**"
+      - "hack/license/**"
+      - "hack/tools/**"
+env:
+  # NOTE: This variable is used to make gorules run properly.
+  GOPATH: ${{ github.workspace }}
+  PROJECT_ROOT_DIR: src/github.com/vdaas/vald
+jobs:
+  dump-contexts-to-log:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/dump-context
+  detect-ci-container:
+    uses: ./.github/workflows/_detect-ci-container.yaml
+  test-hack:
+    name: Run tests for hack packages
+    runs-on: ubuntu-latest
+    needs: [detect-ci-container]
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+    defaults:
+      run:
+        working-directory: ${{ env.GOPATH }}/${{ env.PROJECT_ROOT_DIR }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ${{ env.PROJECT_ROOT_DIR }}
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - name: Install Proto dependencies
+        run: |
+          make proto/deps
+      - name: Run tests for hack packages / gotestfmt
+        run: |
+          TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/hack/gotestfmt
+      - name: Print tparse result
+        run: |
+          tparse -notests -smallscreen -sort cover -format markdown -file ${GITHUB_WORKSPACE}/test-hack-gotestfmt-result.json

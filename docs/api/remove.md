@@ -101,7 +101,7 @@ Remove RPC is the method to remove a single vector.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-Please refer to [Response Status Code](./status.md) for more details.
+Please refer to [Response Status Code](../status.md) for more details.
 
 ### Troubleshooting
 
@@ -160,10 +160,10 @@ RemoveByTimestamp RPC is the method to remove vectors based on timestamp.
 
   - Remove.Timestamp
 
-    |   field   | type                      | label | required | description                                       |
-    | :-------: | :------------------------ | :---- | :------: | :------------------------------------------------ |
-    | timestamp | int64                     |       |    \*    | The timestamp.                                    |
-    | operator  | Remove.Timestamp.Operator |       |          | The conditionl operator. (default value is `Eq`). |
+    |   field   | type                      | label | required | description                                        |
+    | :-------: | :------------------------ | :---- | :------: | :------------------------------------------------- |
+    | timestamp | int64                     |       |    \*    | The timestamp.                                     |
+    | operator  | Remove.Timestamp.Operator |       |          | The conditional operator. (default value is `Eq`). |
 
   - Remove.Timestamp.Operator
 
@@ -222,7 +222,7 @@ RemoveByTimestamp RPC is the method to remove vectors based on timestamp.
 |  5   | NOT_FOUND         |
 |  13  | INTERNAL          |
 
-Please refer to [Response Status Code](./status.md) for more details.
+Please refer to [Response Status Code](../status.md) for more details.
 
 ### Troubleshooting
 
@@ -344,7 +344,7 @@ It's the recommended method to remove a large number of vectors.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-Please refer to [Response Status Code](./status.md) for more details.
+Please refer to [Response Status Code](../status.md) for more details.
 
 ### Troubleshooting
 
@@ -465,7 +465,7 @@ Please be careful that the size of the request exceeds the limit.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-Please refer to [Response Status Code](./status.md) for more details.
+Please refer to [Response Status Code](../status.md) for more details.
 
 ### Troubleshooting
 

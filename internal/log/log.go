@@ -95,62 +95,62 @@ func Bold(str string) string {
 	return "\033[1m" + str + "\033[22m"
 }
 
-func Debug(vals ...interface{}) {
+func Debug(vals ...any) {
 	l.Debug(vals...)
 }
 
-func Debugf(format string, vals ...interface{}) {
+func Debugf(format string, vals ...any) {
 	l.Debugf(format, vals...)
 }
 
-func Debugd(msg string, details ...interface{}) {
+func Debugd(msg string, details ...any) {
 	l.Debugd(msg, details...)
 }
 
-func Info(vals ...interface{}) {
+func Info(vals ...any) {
 	l.Info(vals...)
 }
 
-func Infof(format string, vals ...interface{}) {
+func Infof(format string, vals ...any) {
 	l.Infof(format, vals...)
 }
 
-func Infod(msg string, details ...interface{}) {
+func Infod(msg string, details ...any) {
 	l.Infod(msg, details...)
 }
 
-func Warn(vals ...interface{}) {
+func Warn(vals ...any) {
 	l.Warn(vals...)
 }
 
-func Warnf(format string, vals ...interface{}) {
+func Warnf(format string, vals ...any) {
 	l.Warnf(format, vals...)
 }
 
-func Warnd(msg string, details ...interface{}) {
+func Warnd(msg string, details ...any) {
 	l.Warnd(msg, details...)
 }
 
-func Error(vals ...interface{}) {
+func Error(vals ...any) {
 	l.Error(vals...)
 }
 
-func Errorf(format string, vals ...interface{}) {
+func Errorf(format string, vals ...any) {
 	l.Errorf(format, vals...)
 }
 
-func Errord(msg string, details ...interface{}) {
+func Errord(msg string, details ...any) {
 	l.Errord(msg, details...)
 }
 
-func Fatal(vals ...interface{}) {
+func Fatal(vals ...any) {
 	l.Fatal(vals...)
 }
 
-func Fatalf(format string, vals ...interface{}) {
+func Fatalf(format string, vals ...any) {
 	l.Fatalf(format, vals...)
 }
 
-func Fatald(msg string, details ...interface{}) {
+func Fatald(msg string, details ...any) {
 	l.Fatald(msg, details...)
 }

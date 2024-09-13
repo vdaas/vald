@@ -40,13 +40,16 @@ func (gm *gatewayMock) FromForwardedContext(ctx context.Context) string {
 	return gm.FromForwardedContextFunc(ctx)
 }
 
-func (gm *gatewayMock) BroadCast(ctx context.Context,
+func (gm *gatewayMock) BroadCast(
+	ctx context.Context,
 	f func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) error,
 ) error {
 	return gm.BroadCastFunc(ctx, f)
 }
 
-func (gm *gatewayMock) DoMulti(ctx context.Context, targets []string,
+func (gm *gatewayMock) DoMulti(
+	ctx context.Context,
+	targets []string,
 	f func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) error,
 ) error {
 	return gm.DoMultiFunc(ctx, targets, f)

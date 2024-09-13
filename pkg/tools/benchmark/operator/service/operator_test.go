@@ -16,7 +16,6 @@ package service
 import (
 	"context"
 	"reflect"
-	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -25,6 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/internal/test/mock"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -2911,7 +2911,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 	tests := []test{
 		func() test {
 			return test{
-				name: "return nil with no mismatch atmoics",
+				name: "return nil with no mismatch atomics",
 				fields: fields{
 					scenarios: func() *atomic.Pointer[map[string]*scenario] {
 						ap := atomic.Pointer[map[string]*scenario]{}
@@ -3120,6 +3120,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
+//
 // func TestNew(t *testing.T) {
 // 	type args struct {
 // 		opts []Option
@@ -3147,30 +3148,22 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 	}
 // 	tests := []test{
 // 		// TODO test cases
-// 		// {
-// 		// 	name: "test_case_1",
-// 		// 	args: args{
-// 		// 		opts: nil,
-// 		// 	},
-// 		// 	want: want{
-// 		// 		want: func() Operator {
-// 		// 			o := &operator{
-// 		// 				jobNamespace:       "default",
-// 		// 				jobImageRepository:           "vdaas/vald-benchmark-job",
-// 		// 				jobImagePullPolicy: "Always",
-// 		// 				rcd:                10 * time.Second,
-// 		// 			}
-// 		// 			return o
-// 		// 		}(),
-// 		// 	},
-// 		// 	checkFunc: defaultCheckFunc,
-// 		// 	beforeFunc: func(t *testing.T, args args) {
-// 		// 		t.Helper()
-// 		// 	},
-// 		// 	afterFunc: func(t *testing.T, args args) {
-// 		// 		t.Helper()
-// 		// 	},
-// 		// },
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           opts:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
 //
 // 		// TODO test cases
 // 		/*
@@ -3216,282 +3209,17 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		})
 // 	}
 // }
-
 //
-// func Test_operator_PreStart(t *testing.T) {
-// 	type args struct {
-// 		ctx context.Context
-// 	}
-// 	type fields struct {
-// 		jobNamespace       string
-// 		jobImage           string
-// 		jobImagePullPolicy string
-// 		scenarios          atomic.Pointer[map[string]*scenario]
-// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               atomic.Pointer[map[string]string]
-// 		rcd                time.Duration
-// 		eg                 errgroup.Group
-// 		ctrl               k8s.Controller
-// 	}
-// 	type want struct {
-// 		err error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		       },
-// 		       fields: fields {
-// 		           jobNamespace:"",
-// 		           jobImageRepository:"",
-// 		           jobImagePullPolicy:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
-// 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           },
-// 		           fields: fields {
-// 		           jobNamespace:"",
-// 		           jobImageRepository:"",
-// 		           jobImagePullPolicy:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
-// 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			o := &operator{
-// 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImageRepository:           test.fields.jobImage,
-// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
-// 				scenarios:          test.fields.scenarios,
-// 				benchjobs:          test.fields.benchjobs,
-// 				jobs:               test.fields.jobs,
-// 				rcd:                test.fields.rcd,
-// 				eg:                 test.fields.eg,
-// 				ctrl:               test.fields.ctrl,
-// 			}
-//
-// 			err := o.PreStart(test.args.ctx)
-// 			if err := checkFunc(test.want, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-//
-// 		})
-// 	}
-// }
-//
-// func Test_operator_Start(t *testing.T) {
-// 	type args struct {
-// 		ctx context.Context
-// 	}
-// 	type fields struct {
-// 		jobNamespace       string
-// 		jobImage           string
-// 		jobImagePullPolicy string
-// 		scenarios          atomic.Pointer[map[string]*scenario]
-// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               atomic.Pointer[map[string]string]
-// 		rcd                time.Duration
-// 		eg                 errgroup.Group
-// 		ctrl               k8s.Controller
-// 	}
-// 	type want struct {
-// 		want <-chan error
-// 		err  error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, <-chan error, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		       },
-// 		       fields: fields {
-// 		           jobNamespace:"",
-// 		           jobImageRepository:"",
-// 		           jobImagePullPolicy:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
-// 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           },
-// 		           fields: fields {
-// 		           jobNamespace:"",
-// 		           jobImageRepository:"",
-// 		           jobImagePullPolicy:"",
-// 		           scenarios:nil,
-// 		           benchjobs:nil,
-// 		           jobs:nil,
-// 		           rcd:nil,
-// 		           eg:nil,
-// 		           ctrl:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			o := &operator{
-// 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImageRepository:           test.fields.jobImage,
-// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
-// 				scenarios:          test.fields.scenarios,
-// 				benchjobs:          test.fields.benchjobs,
-// 				jobs:               test.fields.jobs,
-// 				rcd:                test.fields.rcd,
-// 				eg:                 test.fields.eg,
-// 				ctrl:               test.fields.ctrl,
-// 			}
-//
-// 			got, err := o.Start(test.args.ctx)
-// 			if err := checkFunc(test.want, got, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-//
-// 		})
-// 	}
-// }
-
 // func Test_operator_initCtrl(t *testing.T) {
 // 	type fields struct {
 // 		jobNamespace       string
-// 		jobImage           string
+// 		jobImageRepository string
+// 		jobImageTag        string
 // 		jobImagePullPolicy string
-// 		scenarios          atomic.Pointer[map[string]*scenario]
-// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               atomic.Pointer[map[string]string]
+// 		configMapName      string
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
 // 		eg                 errgroup.Group
 // 		ctrl               k8s.Controller
@@ -3513,32 +3241,34 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		}
 // 		return nil
 // 	}
-//
 // 	tests := []test{
-// 		// {
-// 		// 	name: "test_case_1",
-// 		// 	fields: fields{
-// 		// 		jobNamespace:       "default",
-// 		// 		jobImageRepository:           "vdaas/vald-benchmark-job",
-// 		// 		jobImagePullPolicy: "Always",
-// 		// 		// scenarios:nil,
-// 		// 		// benchjobs:nil,
-// 		// 		// jobs:nil,
-// 		// 		// rcd:nil,
-// 		// 		eg:   nil,
-// 		// 		ctrl: nil,
-// 		// 	},
-// 		// 	want: want{
-// 		// 		err: errors.New("hoge"),
-// 		// 	},
-// 		// 	checkFunc: defaultCheckFunc,
-// 		// 	beforeFunc: func(t *testing.T) {
-// 		// 		t.Helper()
-// 		// 	},
-// 		// 	afterFunc: func(t *testing.T) {
-// 		// 		t.Helper()
-// 		// 	},
-// 		// },
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           rcd:nil,
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
 //
 // 		// TODO test cases
 // 		/*
@@ -3548,7 +3278,9 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           fields: fields {
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
+// 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
 // 		           jobs:nil,
@@ -3586,8 +3318,10 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 			}
 // 			o := &operator{
 // 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImageRepository:           test.fields.jobImage,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
 // 				scenarios:          test.fields.scenarios,
 // 				benchjobs:          test.fields.benchjobs,
 // 				jobs:               test.fields.jobs,
@@ -3603,7 +3337,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		})
 // 	}
 // }
-
+//
 // func Test_operator_deleteBenchmarkJob(t *testing.T) {
 // 	type args struct {
 // 		ctx        context.Context
@@ -3612,11 +3346,13 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 	}
 // 	type fields struct {
 // 		jobNamespace       string
-// 		jobImage           string
+// 		jobImageRepository string
+// 		jobImageTag        string
 // 		jobImagePullPolicy string
-// 		scenarios          atomic.Pointer[map[string]*scenario]
-// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               atomic.Pointer[map[string]string]
+// 		configMapName      string
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
 // 		eg                 errgroup.Group
 // 		ctrl               k8s.Controller
@@ -3652,7 +3388,9 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		       fields: fields {
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
+// 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
 // 		           jobs:nil,
@@ -3684,7 +3422,9 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           fields: fields {
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
+// 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
 // 		           jobs:nil,
@@ -3722,8 +3462,10 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 			}
 // 			o := &operator{
 // 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImageRepository:           test.fields.jobImage,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
 // 				scenarios:          test.fields.scenarios,
 // 				benchjobs:          test.fields.benchjobs,
 // 				jobs:               test.fields.jobs,
@@ -3742,17 +3484,18 @@ func Test_operator_checkAtomics(t *testing.T) {
 //
 // func Test_operator_deleteJob(t *testing.T) {
 // 	type args struct {
-// 		ctx        context.Context
-// 		name       string
-// 		generation int64
+// 		ctx  context.Context
+// 		name string
 // 	}
 // 	type fields struct {
 // 		jobNamespace       string
-// 		jobImage           string
+// 		jobImageRepository string
+// 		jobImageTag        string
 // 		jobImagePullPolicy string
-// 		scenarios          atomic.Pointer[map[string]*scenario]
-// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               atomic.Pointer[map[string]string]
+// 		configMapName      string
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
 // 		eg                 errgroup.Group
 // 		ctrl               k8s.Controller
@@ -3783,12 +3526,13 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		       args: args {
 // 		           ctx:nil,
 // 		           name:"",
-// 		           generation:0,
 // 		       },
 // 		       fields: fields {
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
+// 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
 // 		           jobs:nil,
@@ -3815,12 +3559,13 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           args: args {
 // 		           ctx:nil,
 // 		           name:"",
-// 		           generation:0,
 // 		           },
 // 		           fields: fields {
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
+// 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
 // 		           jobs:nil,
@@ -3858,8 +3603,10 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 			}
 // 			o := &operator{
 // 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImageRepository:           test.fields.jobImage,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
 // 				scenarios:          test.fields.scenarios,
 // 				benchjobs:          test.fields.benchjobs,
 // 				jobs:               test.fields.jobs,
@@ -3868,7 +3615,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 				ctrl:               test.fields.ctrl,
 // 			}
 //
-// 			err := o.deleteJob(test.args.ctx, test.args.name, test.args.generation)
+// 			err := o.deleteJob(test.args.ctx, test.args.name)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -3883,11 +3630,13 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 	}
 // 	type fields struct {
 // 		jobNamespace       string
-// 		jobImage           string
+// 		jobImageRepository string
+// 		jobImageTag        string
 // 		jobImagePullPolicy string
-// 		scenarios          atomic.Pointer[map[string]*scenario]
-// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               atomic.Pointer[map[string]string]
+// 		configMapName      string
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
 // 		eg                 errgroup.Group
 // 		ctrl               k8s.Controller
@@ -3926,7 +3675,9 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		       fields: fields {
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
+// 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
 // 		           jobs:nil,
@@ -3957,7 +3708,9 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           fields: fields {
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
+// 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
 // 		           jobs:nil,
@@ -3995,8 +3748,10 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 			}
 // 			o := &operator{
 // 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImageRepository:           test.fields.jobImage,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
 // 				scenarios:          test.fields.scenarios,
 // 				benchjobs:          test.fields.benchjobs,
 // 				jobs:               test.fields.jobs,
@@ -4020,11 +3775,13 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 	}
 // 	type fields struct {
 // 		jobNamespace       string
-// 		jobImage           string
+// 		jobImageRepository string
+// 		jobImageTag        string
 // 		jobImagePullPolicy string
-// 		scenarios          atomic.Pointer[map[string]*scenario]
-// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               atomic.Pointer[map[string]string]
+// 		configMapName      string
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
 // 		eg                 errgroup.Group
 // 		ctrl               k8s.Controller
@@ -4059,7 +3816,9 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		       fields: fields {
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
+// 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
 // 		           jobs:nil,
@@ -4090,7 +3849,9 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           fields: fields {
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
+// 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
 // 		           jobs:nil,
@@ -4128,8 +3889,10 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 			}
 // 			o := &operator{
 // 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImageRepository:           test.fields.jobImage,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
 // 				scenarios:          test.fields.scenarios,
 // 				benchjobs:          test.fields.benchjobs,
 // 				jobs:               test.fields.jobs,
@@ -4153,11 +3916,13 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 	}
 // 	type fields struct {
 // 		jobNamespace       string
-// 		jobImage           string
+// 		jobImageRepository string
+// 		jobImageTag        string
 // 		jobImagePullPolicy string
-// 		scenarios          atomic.Pointer[map[string]*scenario]
-// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               atomic.Pointer[map[string]string]
+// 		configMapName      string
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
 // 		eg                 errgroup.Group
 // 		ctrl               k8s.Controller
@@ -4196,7 +3961,9 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		       fields: fields {
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
+// 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
 // 		           jobs:nil,
@@ -4227,7 +3994,9 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           fields: fields {
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
+// 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
 // 		           jobs:nil,
@@ -4265,8 +4034,10 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 			}
 // 			o := &operator{
 // 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImageRepository:           test.fields.jobImage,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
 // 				scenarios:          test.fields.scenarios,
 // 				benchjobs:          test.fields.benchjobs,
 // 				jobs:               test.fields.jobs,
@@ -4290,11 +4061,13 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 	}
 // 	type fields struct {
 // 		jobNamespace       string
-// 		jobImage           string
+// 		jobImageRepository string
+// 		jobImageTag        string
 // 		jobImagePullPolicy string
-// 		scenarios          atomic.Pointer[map[string]*scenario]
-// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               atomic.Pointer[map[string]string]
+// 		configMapName      string
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
 // 		eg                 errgroup.Group
 // 		ctrl               k8s.Controller
@@ -4333,7 +4106,9 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		       fields: fields {
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
+// 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
 // 		           jobs:nil,
@@ -4364,7 +4139,9 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           fields: fields {
 // 		           jobNamespace:"",
 // 		           jobImageRepository:"",
+// 		           jobImageTag:"",
 // 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
 // 		           jobs:nil,
@@ -4402,8 +4179,10 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 			}
 // 			o := &operator{
 // 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImageRepository:           test.fields.jobImage,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
 // 				scenarios:          test.fields.scenarios,
 // 				benchjobs:          test.fields.benchjobs,
 // 				jobs:               test.fields.jobs,
@@ -4427,11 +4206,13 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 	}
 // 	type fields struct {
 // 		jobNamespace       string
-// 		jobImage           string
+// 		jobImageRepository string
+// 		jobImageTag        string
 // 		jobImagePullPolicy string
-// 		scenarios          atomic.Pointer[map[string]*scenario]
-// 		benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-// 		jobs               atomic.Pointer[map[string]string]
+// 		configMapName      string
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
 // 		rcd                time.Duration
 // 		eg                 errgroup.Group
 // 		ctrl               k8s.Controller
@@ -4455,34 +4236,71 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		return nil
 // 	}
 // 	tests := []test{
-// 		// func() test {
-// 		// 	return test{
-// 		// 		name: "test_case_2",
-// 		// 		args: args{
-// 		// 			ctx:  nil,
-// 		// 			jobs: nil,
-// 		// 		},
-// 		// 		fields: fields{
-// 		// 			jobNamespace:       "",
-// 		// 			jobImageRepository:           "",
-// 		// 			jobImagePullPolicy: "",
-// 		// 			scenarios:          nil,
-// 		// 			benchjobs:          nil,
-// 		// 			jobs:               nil,
-// 		// 			rcd:                nil,
-// 		// 			eg:                 nil,
-// 		// 			ctrl:               nil,
-// 		// 		},
-// 		// 		want:      want{},
-// 		// 		checkFunc: defaultCheckFunc,
-// 		// 		beforeFunc: func(t *testing.T, args args) {
-// 		// 			t.Helper()
-// 		// 		},
-// 		// 		afterFunc: func(t *testing.T, args args) {
-// 		// 			t.Helper()
-// 		// 		},
-// 		// 	}
-// 		// }(),
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           jobs:nil,
+// 		       },
+// 		       fields: fields {
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           rcd:nil,
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           jobs:nil,
+// 		           },
+// 		           fields: fields {
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           rcd:nil,
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
 // 	}
 //
 // 	for _, tc := range tests {
@@ -4502,8 +4320,10 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 			}
 // 			o := &operator{
 // 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImageRepository:           test.fields.jobImage,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
 // 				scenarios:          test.fields.scenarios,
 // 				benchjobs:          test.fields.benchjobs,
 // 				jobs:               test.fields.jobs,
@@ -4514,6 +4334,542 @@ func Test_operator_checkAtomics(t *testing.T) {
 //
 // 			err := o.checkJobsStatus(test.args.ctx, test.args.jobs)
 // 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_GetScenarioStatus(t *testing.T) {
+// 	type fields struct {
+// 		jobNamespace       string
+// 		jobImageRepository string
+// 		jobImageTag        string
+// 		jobImagePullPolicy string
+// 		configMapName      string
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
+// 		rcd                time.Duration
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 	}
+// 	type want struct {
+// 		want map[v1.ValdBenchmarkScenarioStatus]int64
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, map[v1.ValdBenchmarkScenarioStatus]int64) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got map[v1.ValdBenchmarkScenarioStatus]int64) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           rcd:nil,
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           rcd:nil,
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				jobNamespace:       test.fields.jobNamespace,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
+// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
+// 				rcd:                test.fields.rcd,
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 			}
+//
+// 			got := o.GetScenarioStatus()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_GetBenchmarkJobStatus(t *testing.T) {
+// 	type fields struct {
+// 		jobNamespace       string
+// 		jobImageRepository string
+// 		jobImageTag        string
+// 		jobImagePullPolicy string
+// 		configMapName      string
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
+// 		rcd                time.Duration
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 	}
+// 	type want struct {
+// 		want map[v1.BenchmarkJobStatus]int64
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, map[v1.BenchmarkJobStatus]int64) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got map[v1.BenchmarkJobStatus]int64) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           rcd:nil,
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           rcd:nil,
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				jobNamespace:       test.fields.jobNamespace,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
+// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
+// 				rcd:                test.fields.rcd,
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 			}
+//
+// 			got := o.GetBenchmarkJobStatus()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_PreStart(t *testing.T) {
+// 	type args struct {
+// 		in0 context.Context
+// 	}
+// 	type fields struct {
+// 		jobNamespace       string
+// 		jobImageRepository string
+// 		jobImageTag        string
+// 		jobImagePullPolicy string
+// 		configMapName      string
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
+// 		rcd                time.Duration
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           in0:nil,
+// 		       },
+// 		       fields: fields {
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           rcd:nil,
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           in0:nil,
+// 		           },
+// 		           fields: fields {
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           rcd:nil,
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				jobNamespace:       test.fields.jobNamespace,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
+// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
+// 				rcd:                test.fields.rcd,
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 			}
+//
+// 			err := o.PreStart(test.args.in0)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_Start(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 	}
+// 	type fields struct {
+// 		jobNamespace       string
+// 		jobImageRepository string
+// 		jobImageTag        string
+// 		jobImagePullPolicy string
+// 		configMapName      string
+// 		scenarios          *atomic.Pointer[map[string]*scenario]
+// 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+// 		jobs               *atomic.Pointer[map[string]string]
+// 		rcd                time.Duration
+// 		eg                 errgroup.Group
+// 		ctrl               k8s.Controller
+// 	}
+// 	type want struct {
+// 		want <-chan error
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, <-chan error, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		       },
+// 		       fields: fields {
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           rcd:nil,
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           },
+// 		           fields: fields {
+// 		           jobNamespace:"",
+// 		           jobImageRepository:"",
+// 		           jobImageTag:"",
+// 		           jobImagePullPolicy:"",
+// 		           configMapName:"",
+// 		           scenarios:nil,
+// 		           benchjobs:nil,
+// 		           jobs:nil,
+// 		           rcd:nil,
+// 		           eg:nil,
+// 		           ctrl:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				jobNamespace:       test.fields.jobNamespace,
+// 				jobImageRepository: test.fields.jobImageRepository,
+// 				jobImageTag:        test.fields.jobImageTag,
+// 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+// 				configMapName:      test.fields.configMapName,
+// 				scenarios:          test.fields.scenarios,
+// 				benchjobs:          test.fields.benchjobs,
+// 				jobs:               test.fields.jobs,
+// 				rcd:                test.fields.rcd,
+// 				eg:                 test.fields.eg,
+// 				ctrl:               test.fields.ctrl,
+// 			}
+//
+// 			got, err := o.Start(test.args.ctx)
+// 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})

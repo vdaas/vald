@@ -63,11 +63,11 @@ var (
 
 	// ErrGRPCUnexpectedStatusError represents an error that the gRPC status code is undefined.
 	ErrGRPCUnexpectedStatusError = func(code string, err error) error {
-		return Wrapf(err, "unexcepted error detected: code %s", code)
+		return Wrapf(err, "unexpected error detected: code %s", code)
 	}
 
 	// ErrInvalidProtoMessageType represents an error that the gRPC protocol buffers message type is invalid.
-	ErrInvalidProtoMessageType = func(v interface{}) error {
+	ErrInvalidProtoMessageType = func(v any) error {
 		return Errorf("failed to marshal/unmarshal proto message, message type is %T (missing vtprotobuf/protobuf helpers)", v)
 	}
 

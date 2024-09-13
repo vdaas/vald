@@ -103,7 +103,6 @@ package benchmark
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -118,8 +117,7 @@ package benchmark
 // 		dataset    assets.Dataset
 // 		strategies []Strategy
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args

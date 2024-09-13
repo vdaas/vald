@@ -29,7 +29,9 @@ import (
 	"github.com/vdaas/vald/internal/sync"
 )
 
-func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *payload.Object_ID, err error) {
+func (s *server) Exists(
+	ctx context.Context, uid *payload.Object_ID,
+) (res *payload.Object_ID, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.ExistsRPCName)
 	defer func() {
 		if span != nil {
@@ -77,7 +79,9 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 	return uid, nil
 }
 
-func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest) (res *payload.Object_Vector, err error) {
+func (s *server) GetObject(
+	ctx context.Context, id *payload.Object_VectorRequest,
+) (res *payload.Object_Vector, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.GetObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -179,7 +183,9 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 	return nil
 }
 
-func (s *server) StreamListObject(_ *payload.Object_List_Request, stream vald.Object_StreamListObjectServer) (err error) {
+func (s *server) StreamListObject(
+	_ *payload.Object_List_Request, stream vald.Object_StreamListObjectServer,
+) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamListObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -255,7 +261,9 @@ func (s *server) StreamListObject(_ *payload.Object_List_Request, stream vald.Ob
 // GetTimestamp returns meta information of the object specified by uuid.
 // This rpc is only served in AgentServer and not served in LB. Only for internal use mainly for index correction to reduce
 // network bandwidth(because vector itself is not required for index correction logic) while processing.
-func (s *server) GetTimestamp(ctx context.Context, id *payload.Object_GetTimestampRequest) (res *payload.Object_Timestamp, err error) {
+func (s *server) GetTimestamp(
+	ctx context.Context, id *payload.Object_TimestampRequest,
+) (res *payload.Object_Timestamp, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.GetTimestampRPCName)
 	defer func() {
 		if span != nil {

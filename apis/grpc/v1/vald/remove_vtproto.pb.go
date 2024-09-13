@@ -60,7 +60,9 @@ func NewRemoveClient(cc grpc.ClientConnInterface) RemoveClient {
 	return &removeClient{cc}
 }
 
-func (c *removeClient) Remove(ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
+func (c *removeClient) Remove(
+	ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption,
+) (*payload.Object_Location, error) {
 	out := new(payload.Object_Location)
 	err := c.cc.Invoke(ctx, "/vald.v1.Remove/Remove", in, out, opts...)
 	if err != nil {
@@ -69,7 +71,9 @@ func (c *removeClient) Remove(ctx context.Context, in *payload.Remove_Request, o
 	return out, nil
 }
 
-func (c *removeClient) RemoveByTimestamp(ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
+func (c *removeClient) RemoveByTimestamp(
+	ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption,
+) (*payload.Object_Locations, error) {
 	out := new(payload.Object_Locations)
 	err := c.cc.Invoke(ctx, "/vald.v1.Remove/RemoveByTimestamp", in, out, opts...)
 	if err != nil {
@@ -78,7 +82,9 @@ func (c *removeClient) RemoveByTimestamp(ctx context.Context, in *payload.Remove
 	return out, nil
 }
 
-func (c *removeClient) StreamRemove(ctx context.Context, opts ...grpc.CallOption) (Remove_StreamRemoveClient, error) {
+func (c *removeClient) StreamRemove(
+	ctx context.Context, opts ...grpc.CallOption,
+) (Remove_StreamRemoveClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Remove_ServiceDesc.Streams[0], "/vald.v1.Remove/StreamRemove", opts...)
 	if err != nil {
 		return nil, err
@@ -109,7 +115,9 @@ func (x *removeStreamRemoveClient) Recv() (*payload.Object_StreamLocation, error
 	return m, nil
 }
 
-func (c *removeClient) MultiRemove(ctx context.Context, in *payload.Remove_MultiRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
+func (c *removeClient) MultiRemove(
+	ctx context.Context, in *payload.Remove_MultiRequest, opts ...grpc.CallOption,
+) (*payload.Object_Locations, error) {
 	out := new(payload.Object_Locations)
 	err := c.cc.Invoke(ctx, "/vald.v1.Remove/MultiRemove", in, out, opts...)
 	if err != nil {
@@ -134,19 +142,27 @@ type RemoveServer interface {
 }
 
 // UnimplementedRemoveServer must be embedded to have forward compatible implementations.
-type UnimplementedRemoveServer struct {
-}
+type UnimplementedRemoveServer struct{}
 
-func (UnimplementedRemoveServer) Remove(context.Context, *payload.Remove_Request) (*payload.Object_Location, error) {
+func (UnimplementedRemoveServer) Remove(
+	context.Context, *payload.Remove_Request,
+) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Remove not implemented")
 }
-func (UnimplementedRemoveServer) RemoveByTimestamp(context.Context, *payload.Remove_TimestampRequest) (*payload.Object_Locations, error) {
+
+func (UnimplementedRemoveServer) RemoveByTimestamp(
+	context.Context, *payload.Remove_TimestampRequest,
+) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveByTimestamp not implemented")
 }
+
 func (UnimplementedRemoveServer) StreamRemove(Remove_StreamRemoveServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamRemove not implemented")
 }
-func (UnimplementedRemoveServer) MultiRemove(context.Context, *payload.Remove_MultiRequest) (*payload.Object_Locations, error) {
+
+func (UnimplementedRemoveServer) MultiRemove(
+	context.Context, *payload.Remove_MultiRequest,
+) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiRemove not implemented")
 }
 func (UnimplementedRemoveServer) mustEmbedUnimplementedRemoveServer() {}
@@ -162,7 +178,9 @@ func RegisterRemoveServer(s grpc.ServiceRegistrar, srv RemoveServer) {
 	s.RegisterService(&Remove_ServiceDesc, srv)
 }
 
-func _Remove_Remove_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Remove_Remove_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(payload.Remove_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -174,13 +192,15 @@ func _Remove_Remove_Handler(srv interface{}, ctx context.Context, dec func(inter
 		Server:     srv,
 		FullMethod: "/vald.v1.Remove/Remove",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(RemoveServer).Remove(ctx, req.(*payload.Remove_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Remove_RemoveByTimestamp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Remove_RemoveByTimestamp_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(payload.Remove_TimestampRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -192,13 +212,13 @@ func _Remove_RemoveByTimestamp_Handler(srv interface{}, ctx context.Context, dec
 		Server:     srv,
 		FullMethod: "/vald.v1.Remove/RemoveByTimestamp",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(RemoveServer).RemoveByTimestamp(ctx, req.(*payload.Remove_TimestampRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Remove_StreamRemove_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Remove_StreamRemove_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(RemoveServer).StreamRemove(&removeStreamRemoveServer{stream})
 }
 
@@ -224,7 +244,9 @@ func (x *removeStreamRemoveServer) Recv() (*payload.Remove_Request, error) {
 	return m, nil
 }
 
-func _Remove_MultiRemove_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Remove_MultiRemove_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(payload.Remove_MultiRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -236,7 +258,7 @@ func _Remove_MultiRemove_Handler(srv interface{}, ctx context.Context, dec func(
 		Server:     srv,
 		FullMethod: "/vald.v1.Remove/MultiRemove",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(RemoveServer).MultiRemove(ctx, req.(*payload.Remove_MultiRequest))
 	}
 	return interceptor(ctx, in, info, handler)

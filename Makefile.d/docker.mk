@@ -16,16 +16,57 @@
 .PHONY: docker/build
 ## build all docker images
 docker/build: \
-	docker/build/agent-ngt \
+	docker/build/agent \
 	docker/build/agent-faiss \
+	docker/build/agent-ngt \
 	docker/build/agent-sidecar \
-	docker/build/discoverer-k8s \
-	docker/build/gateway-lb \
-	docker/build/gateway-filter \
-	docker/build/manager-index \
 	docker/build/benchmark-job \
 	docker/build/benchmark-operator \
-	docker/build/operator/helm
+	docker/build/binfmt \
+	docker/build/buildbase \
+	docker/build/buildkit \
+	docker/build/buildkit-syft-scanner \
+	docker/build/ci-container \
+	docker/build/dev-container \
+	docker/build/discoverer-k8s \
+	docker/build/gateway-filter \
+	docker/build/gateway-lb \
+	docker/build/gateway-mirror \
+	docker/build/index-correction \
+	docker/build/index-creation \
+	docker/build/index-operator \
+	docker/build/index-save \
+	docker/build/loadtest \
+	docker/build/manager-index \
+	docker/build/helm-operator \
+	docker/build/readreplica-rotate
+
+docker/xpanes/build:
+	@xpanes -s -c "make -f $(ROOTDIR)/Makefile {}" \
+		docker/build/agent \
+		docker/build/agent-faiss \
+		docker/build/agent-ngt \
+		docker/build/agent-sidecar \
+		docker/build/benchmark-job \
+		docker/build/benchmark-operator \
+		docker/build/binfmt \
+		docker/build/buildbase \
+		docker/build/buildkit \
+		docker/build/buildkit-syft-scanner \
+		docker/build/ci-container \
+		docker/build/dev-container \
+		docker/build/discoverer-k8s \
+		docker/build/gateway-filter \
+		docker/build/gateway-lb \
+		docker/build/gateway-mirror \
+		docker/build/index-correction \
+		docker/build/index-creation \
+		docker/build/index-operator \
+		docker/build/index-save \
+		docker/build/loadtest \
+		docker/build/manager-index \
+		docker/build/operator/helm \
+		docker/build/readreplica-rotate
 
 .PHONY: docker/name/org
 docker/name/org:
@@ -46,14 +87,15 @@ ifeq ($(REMOTE),true)
 	@echo "starting remote build for $(IMAGE):$(TAG)"
 	DOCKER_BUILDKIT=1 $(DOCKER) buildx build \
 		$(DOCKER_OPTS) \
+		--cache-to type=gha,scope=$(TAG)-buildcache,mode=max \
 		--cache-to type=registry,ref=$(GHCRORG)/$(IMAGE):$(TAG)-buildcache,mode=max \
+		--cache-from type=gha,scope=$(TAG)-buildcache \
 		--cache-from type=registry,ref=$(GHCRORG)/$(IMAGE):$(TAG)-buildcache \
 		--build-arg BUILDKIT_INLINE_CACHE=$(BUILDKIT_INLINE_CACHE) \
 		--build-arg GO_VERSION=$(GO_VERSION) \
-		--build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-		--build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+		--build-arg RUST_VERSION=$(RUST_VERSION) \
 		--build-arg MAINTAINER=$(MAINTAINER) \
-		--sbom=true \
+		--attest type=sbom,generator=$(DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE) \
 		--provenance=mode=max \
 		-t $(CRORG)/$(IMAGE):$(TAG) \
 		-t $(GHCRORG)/$(IMAGE):$(TAG) \
@@ -66,8 +108,7 @@ else
 		$(DOCKER_OPTS) \
 		--build-arg BUILDKIT_INLINE_CACHE=$(BUILDKIT_INLINE_CACHE) \
 		--build-arg GO_VERSION=$(GO_VERSION) \
-		--build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-		--build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+		--build-arg RUST_VERSION=$(RUST_VERSION) \
 		--build-arg MAINTAINER=$(MAINTAINER) \
 		$(EXTRA_ARGS) \
 		-t $(CRORG)/$(IMAGE):$(TAG) \
@@ -116,8 +157,6 @@ docker/name/agent:
 docker/build/agent:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/agent/Dockerfile" \
 		IMAGE=$(AGENT_IMAGE) \
-		DISTROLESS_IMAGE=gcr.io/distroless/cc-debian12 \
-		EXTRA_ARGS="--build-arg RUST_VERSION=$(RUST_VERSION)" \
 		docker/build/image
 
 .PHONY: docker/name/discoverer-k8s
@@ -175,6 +214,51 @@ docker/build/manager-index:
 		IMAGE=$(MANAGER_INDEX_IMAGE) \
 		docker/build/image
 
+.PHONY: docker/name/buildbase
+docker/name/buildbase:
+	@echo "$(ORG)/$(BUILDBASE_IMAGE)"
+
+.PHONY: docker/build/buildbase
+## build buildbase image
+docker/build/buildbase:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/buildbase/Dockerfile" \
+		IMAGE=$(BUILDBASE_IMAGE) \
+		docker/build/image
+
+.PHONY: docker/name/buildkit
+docker/name/buildkit:
+	@echo "$(ORG)/$(BUILDKIT_IMAGE)"
+
+.PHONY: docker/build/buildkit
+## build buildkit image
+docker/build/buildkit:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/buildkit/Dockerfile" \
+		IMAGE=$(BUILDKIT_IMAGE) \
+		docker/build/image
+
+.PHONY: docker/name/binfmt
+docker/name/binfmt:
+	@echo "$(ORG)/$(BINFMT_IMAGE)"
+
+.PHONY: docker/build/binfmt
+## build binfmt image
+docker/build/binfmt:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/binfmt/Dockerfile" \
+		IMAGE=$(BINFMT_IMAGE) \
+		docker/build/image
+
+PHONY: docker/name/buildkit-syft-scanner
+docker/name/buildkit-syft-scanner:
+	@echo "$(ORG)/$(BUILDKIT_SYFT_SCANNER_IMAGE)"
+
+.PHONY: docker/build/buildkit-syft-scanner
+## build buildkit-syft-scanner image
+docker/build/buildkit-syft-scanner:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/buildkit/syft/scanner/Dockerfile" \
+		IMAGE=$(BUILDKIT_SYFT_SCANNER_IMAGE) \
+		DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE="docker/buildkit-syft-scanner:edge" \
+		docker/build/image
+
 .PHONY: docker/name/ci-container
 docker/name/ci-container:
 	@echo "$(ORG)/$(CI_CONTAINER_IMAGE)"
@@ -198,13 +282,13 @@ docker/build/dev-container:
 		IMAGE=$(DEV_CONTAINER_IMAGE) \
 		docker/build/image
 
-.PHONY: docker/name/operator/helm
-docker/name/operator/helm:
+.PHONY: docker/name/helm-operator
+docker/name/helm-operator:
 	@echo "$(ORG)/$(HELM_OPERATOR_IMAGE)"
 
-.PHONY: docker/build/operator/helm
+.PHONY: docker/build/helm-operator
 ## build helm-operator image
-docker/build/operator/helm:
+docker/build/helm-operator:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/operator/helm/Dockerfile" \
 		IMAGE=$(HELM_OPERATOR_IMAGE) \
 		EXTRA_ARGS="--build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION) --build-arg UPX_OPTIONS=$(UPX_OPTIONS) $(EXTRA_ARGS)" \
@@ -218,6 +302,7 @@ docker/name/loadtest:
 ## build loadtest image
 docker/build/loadtest:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/cli/loadtest/Dockerfile" \
+		DOCKER_OPTS="--build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
 		IMAGE=$(LOADTEST_IMAGE) \
 		docker/build/image
 

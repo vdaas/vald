@@ -109,7 +109,7 @@ func WithDimension(size int) Option {
 
 // WithDistanceTypeByString represents the option to set the distance type for NGT.
 func WithDistanceTypeByString(dt string) Option {
-	var d distanceType
+	d := DistanceNone
 	switch strings.NewReplacer("-", "", "_", "", " ", "").Replace(strings.ToLower(dt)) {
 	case "l1":
 		d = L1
@@ -269,6 +269,9 @@ func WithObjectType(t objectType) Option {
 // WithCreationEdgeSize represents the option to set the creation edge size for NGT.
 func WithCreationEdgeSize(size int) Option {
 	return func(n *ngt) error {
+		if size > 0 {
+			n.ces = uint64(size)
+		}
 		ne := n.GetErrorBuffer()
 		if C.ngt_set_property_edge_size_for_creation(n.prop, C.int16_t(size), ne.err) == ErrorCode {
 			err := errors.ErrFailedToSetCreationEdgeSize(n.newGoError(ne))

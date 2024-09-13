@@ -36,7 +36,7 @@ const (
 func MetricInterceptors() (grpc.UnaryServerInterceptor, grpc.StreamServerInterceptor, error) {
 	meter := metrics.GetMeter()
 
-	latencyHistgram, err := meter.Float64Histogram(
+	latencyHistogram, err := meter.Float64Histogram(
 		latencyMetricsName,
 		metrics.WithDescription("Server latency in milliseconds, by method"),
 		metrics.WithUnit(metrics.Milliseconds),
@@ -56,16 +56,16 @@ func MetricInterceptors() (grpc.UnaryServerInterceptor, grpc.StreamServerInterce
 
 	record := func(ctx context.Context, method string, err error, latency float64) {
 		attrs := attributesFromError(method, err)
-		latencyHistgram.Record(ctx, latency, metrics.WithAttributes(attrs...))
+		latencyHistogram.Record(ctx, latency, metrics.WithAttributes(attrs...))
 		completedRPCCnt.Add(ctx, 1, metrics.WithAttributes(attrs...))
 	}
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
 			now := time.Now()
 			resp, err = handler(ctx, req)
 			elapsedTime := time.Since(now)
 			record(ctx, info.FullMethod, err, float64(elapsedTime)/float64(time.Millisecond))
 			return resp, err
-		}, func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) (err error) {
+		}, func(srv any, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) (err error) {
 			now := time.Now()
 			err = handler(srv, ss)
 			elapsedTime := time.Since(now)

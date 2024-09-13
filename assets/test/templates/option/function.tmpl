@@ -3,7 +3,7 @@
 
 func {{ .TestName }}(t *testing.T) {
     // Change interface type to the type of object you are testing
-    type T = interface{}
+    type T = any
     {{- if .TestParameters }}
     type args struct {
         {{- range .TestParameters }}

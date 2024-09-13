@@ -54,7 +54,9 @@ func NewMirrorClient(cc grpc.ClientConnInterface) MirrorClient {
 	return &mirrorClient{cc}
 }
 
-func (c *mirrorClient) Register(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (*payload.Mirror_Targets, error) {
+func (c *mirrorClient) Register(
+	ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption,
+) (*payload.Mirror_Targets, error) {
 	out := new(payload.Mirror_Targets)
 	err := c.cc.Invoke(ctx, "/mirror.v1.Mirror/Register", in, out, opts...)
 	if err != nil {
@@ -73,10 +75,11 @@ type MirrorServer interface {
 }
 
 // UnimplementedMirrorServer must be embedded to have forward compatible implementations.
-type UnimplementedMirrorServer struct {
-}
+type UnimplementedMirrorServer struct{}
 
-func (UnimplementedMirrorServer) Register(context.Context, *payload.Mirror_Targets) (*payload.Mirror_Targets, error) {
+func (UnimplementedMirrorServer) Register(
+	context.Context, *payload.Mirror_Targets,
+) (*payload.Mirror_Targets, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
 func (UnimplementedMirrorServer) mustEmbedUnimplementedMirrorServer() {}
@@ -92,7 +95,9 @@ func RegisterMirrorServer(s grpc.ServiceRegistrar, srv MirrorServer) {
 	s.RegisterService(&Mirror_ServiceDesc, srv)
 }
 
-func _Mirror_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Mirror_Register_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(payload.Mirror_Targets)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -104,7 +109,7 @@ func _Mirror_Register_Handler(srv interface{}, ctx context.Context, dec func(int
 		Server:     srv,
 		FullMethod: "/mirror.v1.Mirror/Register",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(MirrorServer).Register(ctx, req.(*payload.Mirror_Targets))
 	}
 	return interceptor(ctx, in, info, handler)

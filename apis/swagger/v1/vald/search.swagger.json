@@ -482,6 +482,11 @@
           "type": "number",
           "format": "float",
           "description": "Search ratio for agent return result number."
+        },
+        "nprobe": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Search nprobe."
         }
       },
       "description": "Represent search configuration."

@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - args:
-            - -config.file=/etc/promtail/promtail.yml
+            - -config.file=/etc/promtail/promtail.yaml
           env:
             - name: HOSTNAME
               valueFrom:
@@ -120,7 +120,7 @@ kind: ConfigMap
 metadata:
   name: promtail
 data:
-  promtail.yml: |
+  promtail.yaml: |
     clients:
       - external_labels:
             cluster: vald

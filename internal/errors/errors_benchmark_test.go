@@ -51,9 +51,7 @@ func TestMain(m *testing.M) {
 	bigData = nil
 }
 
-func benchmark(b *testing.B, data map[string]error,
-	join func(err1, err2 error) error,
-) {
+func benchmark(b *testing.B, data map[string]error, join func(err1, err2 error) error) {
 	b.Helper()
 	b.SetParallelism(parallelism)
 	b.ReportAllocs()

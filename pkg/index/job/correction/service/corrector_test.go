@@ -13,459 +13,6 @@
 // limitations under the License.
 package service
 
-import (
-	"context"
-	"testing"
-
-	tmock "github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
-	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/test/mock"
-)
-
-type mockDiscovererClient struct {
-	client mock.ClientInternal
-}
-
-func (*mockDiscovererClient) Start(context.Context) (<-chan error, error) {
-	return nil, nil
-}
-
-func (*mockDiscovererClient) GetAddrs(context.Context) []string {
-	return nil
-}
-
-func (m *mockDiscovererClient) GetClient() grpc.Client {
-	return &m.client
-}
-
-func (m *mockDiscovererClient) GetReadClient() grpc.Client {
-	return &m.client
-}
-
-func Test_correct_correctTimestamp(t *testing.T) {
-	t.Parallel()
-
-	// This mock just returns nil and record args inside
-	m := mockDiscovererClient{}
-	m.client.On("Do", tmock.Anything, tmock.Anything, tmock.Anything).Return(nil, nil)
-	c := &correct{
-		discoverer: &m,
-	}
-
-	type args struct {
-		target *vectorReplica
-		found  []*vectorReplica
-	}
-
-	type want struct {
-		addrs []string
-		err   error
-	}
-
-	type test struct {
-		name string
-		args args
-		want want
-	}
-
-	tests := []test{
-		{
-			name: "nothing happens when no replica is found",
-			args: args{
-				target: &vectorReplica{
-					addr: "target",
-					vec: &payload.Object_Vector{
-						Id:        "target",
-						Timestamp: 100,
-					},
-				},
-				found: []*vectorReplica{},
-			},
-			want: want{
-				addrs: nil,
-				err:   nil,
-			},
-		},
-		{
-			name: "updates one found vec when found vecs are older than target",
-			args: args{
-				target: &vectorReplica{
-					addr: "target",
-					vec: &payload.Object_Vector{
-						Id:        "target",
-						Timestamp: 100,
-					},
-				},
-				found: []*vectorReplica{
-					{
-						addr: "found",
-						vec: &payload.Object_Vector{
-							Id:        "found",
-							Timestamp: 99,
-						},
-					},
-				},
-			},
-			want: want{
-				addrs: []string{"found"},
-				err:   nil,
-			},
-		},
-		{
-			name: "updates multiple found vecs when found vecs are older than target",
-			args: args{
-				target: &vectorReplica{
-					addr: "target",
-					vec: &payload.Object_Vector{
-						Id:        "target",
-						Timestamp: 100,
-					},
-				},
-				found: []*vectorReplica{
-					{
-						addr: "found1",
-						vec: &payload.Object_Vector{
-							Id:        "found",
-							Timestamp: 99,
-						},
-					},
-					{
-						addr: "found2",
-						vec: &payload.Object_Vector{
-							Id:        "found",
-							Timestamp: 98,
-						},
-					},
-				},
-			},
-			want: want{
-				addrs: []string{"found1", "found2"},
-				err:   nil,
-			},
-		},
-		{
-			name: "updates target vec when found vecs are newer than target",
-			args: args{
-				target: &vectorReplica{
-					addr: "target",
-					vec: &payload.Object_Vector{
-						Id:        "target",
-						Timestamp: 0,
-					},
-				},
-				found: []*vectorReplica{
-					{
-						addr: "found1",
-						vec: &payload.Object_Vector{
-							Id:        "found",
-							Timestamp: 99,
-						},
-					},
-				},
-			},
-			want: want{
-				addrs: []string{"target"},
-				err:   nil,
-			},
-		},
-		{
-			name: "updates target vec and one of found vecs with the latest found vec",
-			args: args{
-				target: &vectorReplica{
-					addr: "target",
-					vec: &payload.Object_Vector{
-						Id:        "target",
-						Timestamp: 0,
-					},
-				},
-				found: []*vectorReplica{
-					{
-						addr: "found1",
-						vec: &payload.Object_Vector{
-							Id:        "found",
-							Timestamp: 99,
-						},
-					},
-					{
-						addr: "latest",
-						vec: &payload.Object_Vector{
-							Id:        "found",
-							Timestamp: 100,
-						},
-					},
-				},
-			},
-			want: want{
-				addrs: []string{"target", "found1"},
-				err:   nil,
-			},
-		},
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			err := c.correctTimestamp(context.Background(), test.args.target, test.args.found)
-			require.Equal(tt, test.want.err, err)
-
-			for _, addr := range test.want.addrs {
-				// check if the agents which need to be corrected are called
-				// checking calling parameter, like timestamp, is impossible because its inside of the function arg
-				m.client.AssertCalled(tt, "Do", tmock.Anything, addr, tmock.Anything)
-			}
-		})
-	}
-}
-
-func Test_correct_correctReplica(t *testing.T) {
-	t.Parallel()
-
-	// This mock just returns nil and record args inside
-	m := mockDiscovererClient{}
-	m.client.On("Do", tmock.Anything, tmock.Anything, tmock.Anything).Return(nil, nil)
-
-	type args struct {
-		indexReplica   int
-		target         *vectorReplica
-		found          []*vectorReplica
-		availableAddrs []string
-	}
-
-	type addrMethod struct {
-		addr   string
-		method string
-	}
-
-	type want struct {
-		addrMethods []addrMethod
-		err         error
-	}
-
-	type test struct {
-		name string
-		args args
-		want want
-	}
-
-	tests := []test{
-		{
-			name: "nothing happens when replica number sutisfies",
-			args: args{
-				indexReplica: 2,
-				target: &vectorReplica{
-					addr: "target",
-					vec: &payload.Object_Vector{
-						Id: "target",
-					},
-				},
-				found: []*vectorReplica{
-					{
-						addr: "found",
-						vec: &payload.Object_Vector{
-							Id: "found",
-						},
-					},
-				},
-				availableAddrs: []string{},
-			},
-			want: want{
-				addrMethods: nil,
-				err:         nil,
-			},
-		},
-		{
-			name: "insert replica when replica number is not enough",
-			args: args{
-				indexReplica: 2,
-				target: &vectorReplica{
-					addr: "target",
-					vec: &payload.Object_Vector{
-						Id: "target",
-					},
-				},
-				found:          []*vectorReplica{},
-				availableAddrs: []string{"available"},
-			},
-			want: want{
-				addrMethods: []addrMethod{
-					{
-						addr:   "available",
-						method: insertMethod,
-					},
-				},
-				err: nil,
-			},
-		},
-		{
-			name: "insert replica to the agent with most memory available",
-			args: args{
-				indexReplica: 2,
-				target: &vectorReplica{
-					addr: "target",
-					vec: &payload.Object_Vector{
-						Id: "target",
-					},
-				},
-				found: []*vectorReplica{},
-				// this is supposed to be sorted by memory usage with descending order
-				availableAddrs: []string{"most memory used", "second memory used"},
-			},
-			want: want{
-				addrMethods: []addrMethod{
-					{
-						addr:   "second memory used",
-						method: insertMethod,
-					},
-				},
-				err: nil,
-			},
-		},
-		{
-			name: "delete replica from myself when replica number is too much by one",
-			args: args{
-				indexReplica: 2,
-				target: &vectorReplica{
-					addr: "target",
-					vec: &payload.Object_Vector{
-						Id: "target",
-					},
-				},
-				found: []*vectorReplica{
-					{
-						addr: "found1",
-					},
-					{
-						addr: "found2",
-					},
-				},
-				availableAddrs: []string{},
-			},
-			want: want{
-				addrMethods: []addrMethod{
-					{
-						addr:   "target",
-						method: deleteMethod,
-					},
-				},
-				err: nil,
-			},
-		},
-		{
-			name: "delete replica from myself and most memory used agent when replica number is too much by more than one",
-			args: args{
-				indexReplica: 2,
-				target: &vectorReplica{
-					addr: "target",
-					vec: &payload.Object_Vector{
-						Id: "target",
-					},
-				},
-				found: []*vectorReplica{
-					{
-						addr: "found1",
-					},
-					{
-						addr: "found2",
-					},
-					{
-						addr: "found3",
-					},
-				},
-				availableAddrs: []string{},
-			},
-			want: want{
-				addrMethods: []addrMethod{
-					{
-						addr:   "target",
-						method: deleteMethod,
-					},
-					{
-						addr:   "found1",
-						method: deleteMethod,
-					},
-				},
-				err: nil,
-			},
-		},
-		{
-			name: "return ErrNoAvailableAgentToInsert when availableAddrs is empty when insertion required",
-			args: args{
-				indexReplica: 2,
-				target: &vectorReplica{
-					addr: "target",
-					vec: &payload.Object_Vector{
-						Id: "target",
-					},
-				},
-				found:          []*vectorReplica{},
-				availableAddrs: []string{},
-			},
-			want: want{
-				addrMethods: nil,
-				err:         errors.ErrNoAvailableAgentToInsert,
-			},
-		},
-		{
-			name: "return ErrFailedToCorrectReplicaNum when there is not enough number of availableAddrs",
-			args: args{
-				indexReplica: 3,
-				target: &vectorReplica{
-					addr: "target",
-					vec: &payload.Object_Vector{
-						Id: "target",
-					},
-				},
-				found:          []*vectorReplica{},
-				availableAddrs: []string{"available"},
-			},
-			want: want{
-				addrMethods: nil,
-				err:         errors.ErrFailedToCorrectReplicaNum,
-			},
-		},
-	}
-
-	for _, tc := range tests {
-		test := tc
-		c := &correct{
-			discoverer:   &m,
-			indexReplica: test.args.indexReplica,
-		}
-
-		// agentAddrs = availableAddrs + target.addr + found.addr
-		// skipcq: CRT-D0001
-		c.agentAddrs = append(test.args.availableAddrs, test.args.target.addr)
-		for _, found := range test.args.found {
-			c.agentAddrs = append(c.agentAddrs, found.addr)
-		}
-
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			err := c.correctReplica(context.Background(), test.args.target, test.args.found)
-			if test.want.err != nil {
-				require.ErrorIs(t, test.want.err, err)
-			}
-
-			for _, am := range test.want.addrMethods {
-				// check if the agents which need to be corrected are called with the required method
-				// checking calling parameter, like timestamp, is impossible because its inside of the function arg
-				m.client.AssertCalled(tt, "Do", tmock.MatchedBy(func(ctx context.Context) bool {
-					method := ctx.Value(grpc.GRPCMethodContextKey)
-					val, ok := method.(string)
-					if !ok {
-						return false
-					}
-					return val == am.method
-				}), am.addr, tmock.Anything)
-			}
-		})
-	}
-}
-
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {
@@ -553,7 +100,6 @@ func Test_correct_correctReplica(t *testing.T) {
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -563,18 +109,17 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		discoverer                 discoverer.Client
-// 		agentAddrs                 []string
-// 		sortedByIndexCntAddrs      []string
-// 		uuidsCount                 uint32
-// 		uncommittedUUIDsCount      uint32
-// 		checkedID                  bbolt.Bbolt
-// 		checkedIndexCount          atomic.Uint64
-// 		correctedOldIndexCount     atomic.Uint64
-// 		correctedReplicationCount  atomic.Uint64
-// 		indexReplica               int
-// 		streamListConcurrency      int
-// 		bboltAsyncWriteConcurrency int
+// 		eg                           errgroup.Group
+// 		discoverer                   discoverer.Client
+// 		gateway                      vc.Client
+// 		checkedList                  pogreb.DB
+// 		checkedIndexCount            atomic.Uint64
+// 		correctedOldIndexCount       atomic.Uint64
+// 		correctedReplicationCount    atomic.Uint64
+// 		indexReplica                 int
+// 		streamListConcurrency        int
+// 		backgroundSyncInterval       time.Duration
+// 		backgroundCompactionInterval time.Duration
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -607,18 +152,17 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
+// 		           eg:nil,
 // 		           discoverer:nil,
-// 		           agentAddrs:nil,
-// 		           sortedByIndexCntAddrs:nil,
-// 		           uuidsCount:0,
-// 		           uncommittedUUIDsCount:0,
-// 		           checkedID:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
 // 		           checkedIndexCount:nil,
 // 		           correctedOldIndexCount:nil,
 // 		           correctedReplicationCount:nil,
 // 		           indexReplica:0,
 // 		           streamListConcurrency:0,
-// 		           bboltAsyncWriteConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -640,18 +184,17 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
+// 		           eg:nil,
 // 		           discoverer:nil,
-// 		           agentAddrs:nil,
-// 		           sortedByIndexCntAddrs:nil,
-// 		           uuidsCount:0,
-// 		           uncommittedUUIDsCount:0,
-// 		           checkedID:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
 // 		           checkedIndexCount:nil,
 // 		           correctedOldIndexCount:nil,
 // 		           correctedReplicationCount:nil,
 // 		           indexReplica:0,
 // 		           streamListConcurrency:0,
-// 		           bboltAsyncWriteConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -682,25 +225,23 @@ func Test_correct_correctReplica(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &correct{
-// 				discoverer:                 test.fields.discoverer,
-// 				agentAddrs:                 test.fields.agentAddrs,
-// 				sortedByIndexCntAddrs:      test.fields.sortedByIndexCntAddrs,
-// 				uuidsCount:                 test.fields.uuidsCount,
-// 				uncommittedUUIDsCount:      test.fields.uncommittedUUIDsCount,
-// 				checkedID:                  test.fields.checkedID,
-// 				checkedIndexCount:          test.fields.checkedIndexCount,
-// 				correctedOldIndexCount:     test.fields.correctedOldIndexCount,
-// 				correctedReplicationCount:  test.fields.correctedReplicationCount,
-// 				indexReplica:               test.fields.indexReplica,
-// 				streamListConcurrency:      test.fields.streamListConcurrency,
-// 				bboltAsyncWriteConcurrency: test.fields.bboltAsyncWriteConcurrency,
+// 				eg:                           test.fields.eg,
+// 				discoverer:                   test.fields.discoverer,
+// 				gateway:                      test.fields.gateway,
+// 				checkedList:                  test.fields.checkedList,
+// 				checkedIndexCount:            test.fields.checkedIndexCount,
+// 				correctedOldIndexCount:       test.fields.correctedOldIndexCount,
+// 				correctedReplicationCount:    test.fields.correctedReplicationCount,
+// 				indexReplica:                 test.fields.indexReplica,
+// 				streamListConcurrency:        test.fields.streamListConcurrency,
+// 				backgroundSyncInterval:       test.fields.backgroundSyncInterval,
+// 				backgroundCompactionInterval: test.fields.backgroundCompactionInterval,
 // 			}
 //
 // 			got, err := c.StartClient(test.args.ctx)
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -710,18 +251,17 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		discoverer                 discoverer.Client
-// 		agentAddrs                 []string
-// 		sortedByIndexCntAddrs      []string
-// 		uuidsCount                 uint32
-// 		uncommittedUUIDsCount      uint32
-// 		checkedID                  bbolt.Bbolt
-// 		checkedIndexCount          atomic.Uint64
-// 		correctedOldIndexCount     atomic.Uint64
-// 		correctedReplicationCount  atomic.Uint64
-// 		indexReplica               int
-// 		streamListConcurrency      int
-// 		bboltAsyncWriteConcurrency int
+// 		eg                           errgroup.Group
+// 		discoverer                   discoverer.Client
+// 		gateway                      vc.Client
+// 		checkedList                  pogreb.DB
+// 		checkedIndexCount            atomic.Uint64
+// 		correctedOldIndexCount       atomic.Uint64
+// 		correctedReplicationCount    atomic.Uint64
+// 		indexReplica                 int
+// 		streamListConcurrency        int
+// 		backgroundSyncInterval       time.Duration
+// 		backgroundCompactionInterval time.Duration
 // 	}
 // 	type want struct {
 // 		err error
@@ -750,18 +290,17 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
+// 		           eg:nil,
 // 		           discoverer:nil,
-// 		           agentAddrs:nil,
-// 		           sortedByIndexCntAddrs:nil,
-// 		           uuidsCount:0,
-// 		           uncommittedUUIDsCount:0,
-// 		           checkedID:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
 // 		           checkedIndexCount:nil,
 // 		           correctedOldIndexCount:nil,
 // 		           correctedReplicationCount:nil,
 // 		           indexReplica:0,
 // 		           streamListConcurrency:0,
-// 		           bboltAsyncWriteConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -783,18 +322,17 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
+// 		           eg:nil,
 // 		           discoverer:nil,
-// 		           agentAddrs:nil,
-// 		           sortedByIndexCntAddrs:nil,
-// 		           uuidsCount:0,
-// 		           uncommittedUUIDsCount:0,
-// 		           checkedID:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
 // 		           checkedIndexCount:nil,
 // 		           correctedOldIndexCount:nil,
 // 		           correctedReplicationCount:nil,
 // 		           indexReplica:0,
 // 		           streamListConcurrency:0,
-// 		           bboltAsyncWriteConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -825,25 +363,23 @@ func Test_correct_correctReplica(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &correct{
-// 				discoverer:                 test.fields.discoverer,
-// 				agentAddrs:                 test.fields.agentAddrs,
-// 				sortedByIndexCntAddrs:      test.fields.sortedByIndexCntAddrs,
-// 				uuidsCount:                 test.fields.uuidsCount,
-// 				uncommittedUUIDsCount:      test.fields.uncommittedUUIDsCount,
-// 				checkedID:                  test.fields.checkedID,
-// 				checkedIndexCount:          test.fields.checkedIndexCount,
-// 				correctedOldIndexCount:     test.fields.correctedOldIndexCount,
-// 				correctedReplicationCount:  test.fields.correctedReplicationCount,
-// 				indexReplica:               test.fields.indexReplica,
-// 				streamListConcurrency:      test.fields.streamListConcurrency,
-// 				bboltAsyncWriteConcurrency: test.fields.bboltAsyncWriteConcurrency,
+// 				eg:                           test.fields.eg,
+// 				discoverer:                   test.fields.discoverer,
+// 				gateway:                      test.fields.gateway,
+// 				checkedList:                  test.fields.checkedList,
+// 				checkedIndexCount:            test.fields.checkedIndexCount,
+// 				correctedOldIndexCount:       test.fields.correctedOldIndexCount,
+// 				correctedReplicationCount:    test.fields.correctedReplicationCount,
+// 				indexReplica:                 test.fields.indexReplica,
+// 				streamListConcurrency:        test.fields.streamListConcurrency,
+// 				backgroundSyncInterval:       test.fields.backgroundSyncInterval,
+// 				backgroundCompactionInterval: test.fields.backgroundCompactionInterval,
 // 			}
 //
 // 			err := c.Start(test.args.ctx)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -853,18 +389,17 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		in0 context.Context
 // 	}
 // 	type fields struct {
-// 		discoverer                 discoverer.Client
-// 		agentAddrs                 []string
-// 		sortedByIndexCntAddrs      []string
-// 		uuidsCount                 uint32
-// 		uncommittedUUIDsCount      uint32
-// 		checkedID                  bbolt.Bbolt
-// 		checkedIndexCount          atomic.Uint64
-// 		correctedOldIndexCount     atomic.Uint64
-// 		correctedReplicationCount  atomic.Uint64
-// 		indexReplica               int
-// 		streamListConcurrency      int
-// 		bboltAsyncWriteConcurrency int
+// 		eg                           errgroup.Group
+// 		discoverer                   discoverer.Client
+// 		gateway                      vc.Client
+// 		checkedList                  pogreb.DB
+// 		checkedIndexCount            atomic.Uint64
+// 		correctedOldIndexCount       atomic.Uint64
+// 		correctedReplicationCount    atomic.Uint64
+// 		indexReplica                 int
+// 		streamListConcurrency        int
+// 		backgroundSyncInterval       time.Duration
+// 		backgroundCompactionInterval time.Duration
 // 	}
 // 	type want struct {
 // 		err error
@@ -893,18 +428,17 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		           in0:nil,
 // 		       },
 // 		       fields: fields {
+// 		           eg:nil,
 // 		           discoverer:nil,
-// 		           agentAddrs:nil,
-// 		           sortedByIndexCntAddrs:nil,
-// 		           uuidsCount:0,
-// 		           uncommittedUUIDsCount:0,
-// 		           checkedID:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
 // 		           checkedIndexCount:nil,
 // 		           correctedOldIndexCount:nil,
 // 		           correctedReplicationCount:nil,
 // 		           indexReplica:0,
 // 		           streamListConcurrency:0,
-// 		           bboltAsyncWriteConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -926,18 +460,17 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		           in0:nil,
 // 		           },
 // 		           fields: fields {
+// 		           eg:nil,
 // 		           discoverer:nil,
-// 		           agentAddrs:nil,
-// 		           sortedByIndexCntAddrs:nil,
-// 		           uuidsCount:0,
-// 		           uncommittedUUIDsCount:0,
-// 		           checkedID:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
 // 		           checkedIndexCount:nil,
 // 		           correctedOldIndexCount:nil,
 // 		           correctedReplicationCount:nil,
 // 		           indexReplica:0,
 // 		           streamListConcurrency:0,
-// 		           bboltAsyncWriteConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -968,43 +501,40 @@ func Test_correct_correctReplica(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &correct{
-// 				discoverer:                 test.fields.discoverer,
-// 				agentAddrs:                 test.fields.agentAddrs,
-// 				sortedByIndexCntAddrs:      test.fields.sortedByIndexCntAddrs,
-// 				uuidsCount:                 test.fields.uuidsCount,
-// 				uncommittedUUIDsCount:      test.fields.uncommittedUUIDsCount,
-// 				checkedID:                  test.fields.checkedID,
-// 				checkedIndexCount:          test.fields.checkedIndexCount,
-// 				correctedOldIndexCount:     test.fields.correctedOldIndexCount,
-// 				correctedReplicationCount:  test.fields.correctedReplicationCount,
-// 				indexReplica:               test.fields.indexReplica,
-// 				streamListConcurrency:      test.fields.streamListConcurrency,
-// 				bboltAsyncWriteConcurrency: test.fields.bboltAsyncWriteConcurrency,
+// 				eg:                           test.fields.eg,
+// 				discoverer:                   test.fields.discoverer,
+// 				gateway:                      test.fields.gateway,
+// 				checkedList:                  test.fields.checkedList,
+// 				checkedIndexCount:            test.fields.checkedIndexCount,
+// 				correctedOldIndexCount:       test.fields.correctedOldIndexCount,
+// 				correctedReplicationCount:    test.fields.correctedReplicationCount,
+// 				indexReplica:                 test.fields.indexReplica,
+// 				streamListConcurrency:        test.fields.streamListConcurrency,
+// 				backgroundSyncInterval:       test.fields.backgroundSyncInterval,
+// 				backgroundCompactionInterval: test.fields.backgroundCompactionInterval,
 // 			}
 //
 // 			err := c.PreStop(test.args.in0)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
 //
 // func Test_correct_NumberOfCheckedIndex(t *testing.T) {
 // 	type fields struct {
-// 		discoverer                 discoverer.Client
-// 		agentAddrs                 []string
-// 		sortedByIndexCntAddrs      []string
-// 		uuidsCount                 uint32
-// 		uncommittedUUIDsCount      uint32
-// 		checkedID                  bbolt.Bbolt
-// 		checkedIndexCount          atomic.Uint64
-// 		correctedOldIndexCount     atomic.Uint64
-// 		correctedReplicationCount  atomic.Uint64
-// 		indexReplica               int
-// 		streamListConcurrency      int
-// 		bboltAsyncWriteConcurrency int
+// 		eg                           errgroup.Group
+// 		discoverer                   discoverer.Client
+// 		gateway                      vc.Client
+// 		checkedList                  pogreb.DB
+// 		checkedIndexCount            atomic.Uint64
+// 		correctedOldIndexCount       atomic.Uint64
+// 		correctedReplicationCount    atomic.Uint64
+// 		indexReplica                 int
+// 		streamListConcurrency        int
+// 		backgroundSyncInterval       time.Duration
+// 		backgroundCompactionInterval time.Duration
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -1029,18 +559,17 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           eg:nil,
 // 		           discoverer:nil,
-// 		           agentAddrs:nil,
-// 		           sortedByIndexCntAddrs:nil,
-// 		           uuidsCount:0,
-// 		           uncommittedUUIDsCount:0,
-// 		           checkedID:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
 // 		           checkedIndexCount:nil,
 // 		           correctedOldIndexCount:nil,
 // 		           correctedReplicationCount:nil,
 // 		           indexReplica:0,
 // 		           streamListConcurrency:0,
-// 		           bboltAsyncWriteConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1059,18 +588,17 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           eg:nil,
 // 		           discoverer:nil,
-// 		           agentAddrs:nil,
-// 		           sortedByIndexCntAddrs:nil,
-// 		           uuidsCount:0,
-// 		           uncommittedUUIDsCount:0,
-// 		           checkedID:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
 // 		           checkedIndexCount:nil,
 // 		           correctedOldIndexCount:nil,
 // 		           correctedReplicationCount:nil,
 // 		           indexReplica:0,
 // 		           streamListConcurrency:0,
-// 		           bboltAsyncWriteConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1101,43 +629,40 @@ func Test_correct_correctReplica(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &correct{
-// 				discoverer:                 test.fields.discoverer,
-// 				agentAddrs:                 test.fields.agentAddrs,
-// 				sortedByIndexCntAddrs:      test.fields.sortedByIndexCntAddrs,
-// 				uuidsCount:                 test.fields.uuidsCount,
-// 				uncommittedUUIDsCount:      test.fields.uncommittedUUIDsCount,
-// 				checkedID:                  test.fields.checkedID,
-// 				checkedIndexCount:          test.fields.checkedIndexCount,
-// 				correctedOldIndexCount:     test.fields.correctedOldIndexCount,
-// 				correctedReplicationCount:  test.fields.correctedReplicationCount,
-// 				indexReplica:               test.fields.indexReplica,
-// 				streamListConcurrency:      test.fields.streamListConcurrency,
-// 				bboltAsyncWriteConcurrency: test.fields.bboltAsyncWriteConcurrency,
+// 				eg:                           test.fields.eg,
+// 				discoverer:                   test.fields.discoverer,
+// 				gateway:                      test.fields.gateway,
+// 				checkedList:                  test.fields.checkedList,
+// 				checkedIndexCount:            test.fields.checkedIndexCount,
+// 				correctedOldIndexCount:       test.fields.correctedOldIndexCount,
+// 				correctedReplicationCount:    test.fields.correctedReplicationCount,
+// 				indexReplica:                 test.fields.indexReplica,
+// 				streamListConcurrency:        test.fields.streamListConcurrency,
+// 				backgroundSyncInterval:       test.fields.backgroundSyncInterval,
+// 				backgroundCompactionInterval: test.fields.backgroundCompactionInterval,
 // 			}
 //
 // 			got := c.NumberOfCheckedIndex()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
 //
 // func Test_correct_NumberOfCorrectedOldIndex(t *testing.T) {
 // 	type fields struct {
-// 		discoverer                 discoverer.Client
-// 		agentAddrs                 []string
-// 		sortedByIndexCntAddrs      []string
-// 		uuidsCount                 uint32
-// 		uncommittedUUIDsCount      uint32
-// 		checkedID                  bbolt.Bbolt
-// 		checkedIndexCount          atomic.Uint64
-// 		correctedOldIndexCount     atomic.Uint64
-// 		correctedReplicationCount  atomic.Uint64
-// 		indexReplica               int
-// 		streamListConcurrency      int
-// 		bboltAsyncWriteConcurrency int
+// 		eg                           errgroup.Group
+// 		discoverer                   discoverer.Client
+// 		gateway                      vc.Client
+// 		checkedList                  pogreb.DB
+// 		checkedIndexCount            atomic.Uint64
+// 		correctedOldIndexCount       atomic.Uint64
+// 		correctedReplicationCount    atomic.Uint64
+// 		indexReplica                 int
+// 		streamListConcurrency        int
+// 		backgroundSyncInterval       time.Duration
+// 		backgroundCompactionInterval time.Duration
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -1162,18 +687,17 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           eg:nil,
 // 		           discoverer:nil,
-// 		           agentAddrs:nil,
-// 		           sortedByIndexCntAddrs:nil,
-// 		           uuidsCount:0,
-// 		           uncommittedUUIDsCount:0,
-// 		           checkedID:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
 // 		           checkedIndexCount:nil,
 // 		           correctedOldIndexCount:nil,
 // 		           correctedReplicationCount:nil,
 // 		           indexReplica:0,
 // 		           streamListConcurrency:0,
-// 		           bboltAsyncWriteConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1192,18 +716,17 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           eg:nil,
 // 		           discoverer:nil,
-// 		           agentAddrs:nil,
-// 		           sortedByIndexCntAddrs:nil,
-// 		           uuidsCount:0,
-// 		           uncommittedUUIDsCount:0,
-// 		           checkedID:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
 // 		           checkedIndexCount:nil,
 // 		           correctedOldIndexCount:nil,
 // 		           correctedReplicationCount:nil,
 // 		           indexReplica:0,
 // 		           streamListConcurrency:0,
-// 		           bboltAsyncWriteConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1234,43 +757,40 @@ func Test_correct_correctReplica(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &correct{
-// 				discoverer:                 test.fields.discoverer,
-// 				agentAddrs:                 test.fields.agentAddrs,
-// 				sortedByIndexCntAddrs:      test.fields.sortedByIndexCntAddrs,
-// 				uuidsCount:                 test.fields.uuidsCount,
-// 				uncommittedUUIDsCount:      test.fields.uncommittedUUIDsCount,
-// 				checkedID:                  test.fields.checkedID,
-// 				checkedIndexCount:          test.fields.checkedIndexCount,
-// 				correctedOldIndexCount:     test.fields.correctedOldIndexCount,
-// 				correctedReplicationCount:  test.fields.correctedReplicationCount,
-// 				indexReplica:               test.fields.indexReplica,
-// 				streamListConcurrency:      test.fields.streamListConcurrency,
-// 				bboltAsyncWriteConcurrency: test.fields.bboltAsyncWriteConcurrency,
+// 				eg:                           test.fields.eg,
+// 				discoverer:                   test.fields.discoverer,
+// 				gateway:                      test.fields.gateway,
+// 				checkedList:                  test.fields.checkedList,
+// 				checkedIndexCount:            test.fields.checkedIndexCount,
+// 				correctedOldIndexCount:       test.fields.correctedOldIndexCount,
+// 				correctedReplicationCount:    test.fields.correctedReplicationCount,
+// 				indexReplica:                 test.fields.indexReplica,
+// 				streamListConcurrency:        test.fields.streamListConcurrency,
+// 				backgroundSyncInterval:       test.fields.backgroundSyncInterval,
+// 				backgroundCompactionInterval: test.fields.backgroundCompactionInterval,
 // 			}
 //
 // 			got := c.NumberOfCorrectedOldIndex()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
 //
 // func Test_correct_NumberOfCorrectedReplication(t *testing.T) {
 // 	type fields struct {
-// 		discoverer                 discoverer.Client
-// 		agentAddrs                 []string
-// 		sortedByIndexCntAddrs      []string
-// 		uuidsCount                 uint32
-// 		uncommittedUUIDsCount      uint32
-// 		checkedID                  bbolt.Bbolt
-// 		checkedIndexCount          atomic.Uint64
-// 		correctedOldIndexCount     atomic.Uint64
-// 		correctedReplicationCount  atomic.Uint64
-// 		indexReplica               int
-// 		streamListConcurrency      int
-// 		bboltAsyncWriteConcurrency int
+// 		eg                           errgroup.Group
+// 		discoverer                   discoverer.Client
+// 		gateway                      vc.Client
+// 		checkedList                  pogreb.DB
+// 		checkedIndexCount            atomic.Uint64
+// 		correctedOldIndexCount       atomic.Uint64
+// 		correctedReplicationCount    atomic.Uint64
+// 		indexReplica                 int
+// 		streamListConcurrency        int
+// 		backgroundSyncInterval       time.Duration
+// 		backgroundCompactionInterval time.Duration
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -1295,18 +815,17 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           eg:nil,
 // 		           discoverer:nil,
-// 		           agentAddrs:nil,
-// 		           sortedByIndexCntAddrs:nil,
-// 		           uuidsCount:0,
-// 		           uncommittedUUIDsCount:0,
-// 		           checkedID:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
 // 		           checkedIndexCount:nil,
 // 		           correctedOldIndexCount:nil,
 // 		           correctedReplicationCount:nil,
 // 		           indexReplica:0,
 // 		           streamListConcurrency:0,
-// 		           bboltAsyncWriteConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1325,18 +844,17 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           eg:nil,
 // 		           discoverer:nil,
-// 		           agentAddrs:nil,
-// 		           sortedByIndexCntAddrs:nil,
-// 		           uuidsCount:0,
-// 		           uncommittedUUIDsCount:0,
-// 		           checkedID:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
 // 		           checkedIndexCount:nil,
 // 		           correctedOldIndexCount:nil,
 // 		           correctedReplicationCount:nil,
 // 		           indexReplica:0,
 // 		           streamListConcurrency:0,
-// 		           bboltAsyncWriteConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1367,25 +885,804 @@ func Test_correct_correctReplica(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &correct{
-// 				discoverer:                 test.fields.discoverer,
-// 				agentAddrs:                 test.fields.agentAddrs,
-// 				sortedByIndexCntAddrs:      test.fields.sortedByIndexCntAddrs,
-// 				uuidsCount:                 test.fields.uuidsCount,
-// 				uncommittedUUIDsCount:      test.fields.uncommittedUUIDsCount,
-// 				checkedID:                  test.fields.checkedID,
-// 				checkedIndexCount:          test.fields.checkedIndexCount,
-// 				correctedOldIndexCount:     test.fields.correctedOldIndexCount,
-// 				correctedReplicationCount:  test.fields.correctedReplicationCount,
-// 				indexReplica:               test.fields.indexReplica,
-// 				streamListConcurrency:      test.fields.streamListConcurrency,
-// 				bboltAsyncWriteConcurrency: test.fields.bboltAsyncWriteConcurrency,
+// 				eg:                           test.fields.eg,
+// 				discoverer:                   test.fields.discoverer,
+// 				gateway:                      test.fields.gateway,
+// 				checkedList:                  test.fields.checkedList,
+// 				checkedIndexCount:            test.fields.checkedIndexCount,
+// 				correctedOldIndexCount:       test.fields.correctedOldIndexCount,
+// 				correctedReplicationCount:    test.fields.correctedReplicationCount,
+// 				indexReplica:                 test.fields.indexReplica,
+// 				streamListConcurrency:        test.fields.streamListConcurrency,
+// 				backgroundSyncInterval:       test.fields.backgroundSyncInterval,
+// 				backgroundCompactionInterval: test.fields.backgroundCompactionInterval,
 // 			}
 //
 // 			got := c.NumberOfCorrectedReplication()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
+// 		})
+// 	}
+// }
 //
+// func Test_correct_loadReplicaInfo(t *testing.T) {
+// 	type args struct {
+// 		ctx        context.Context
+// 		originAddr string
+// 		id         string
+// 		replicas   []string
+// 		counts     map[string]*payload.Info_Index_Count
+// 		ts         int64
+// 		start      time.Time
+// 	}
+// 	type fields struct {
+// 		eg                           errgroup.Group
+// 		discoverer                   discoverer.Client
+// 		gateway                      vc.Client
+// 		checkedList                  pogreb.DB
+// 		checkedIndexCount            atomic.Uint64
+// 		correctedOldIndexCount       atomic.Uint64
+// 		correctedReplicationCount    atomic.Uint64
+// 		indexReplica                 int
+// 		streamListConcurrency        int
+// 		backgroundSyncInterval       time.Duration
+// 		backgroundCompactionInterval time.Duration
+// 	}
+// 	type want struct {
+// 		wantFound       map[string]*payload.Object_Timestamp
+// 		wantSkipped     []string
+// 		wantLatest      int64
+// 		wantLatestAgent string
+// 		err             error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, map[string]*payload.Object_Timestamp, []string, int64, string, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotFound map[string]*payload.Object_Timestamp, gotSkipped []string, gotLatest int64, gotLatestAgent string, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotFound, w.wantFound) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotFound, w.wantFound)
+// 		}
+// 		if !reflect.DeepEqual(gotSkipped, w.wantSkipped) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotSkipped, w.wantSkipped)
+// 		}
+// 		if !reflect.DeepEqual(gotLatest, w.wantLatest) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLatest, w.wantLatest)
+// 		}
+// 		if !reflect.DeepEqual(gotLatestAgent, w.wantLatestAgent) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLatestAgent, w.wantLatestAgent)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           originAddr:"",
+// 		           id:"",
+// 		           replicas:nil,
+// 		           counts:nil,
+// 		           ts:0,
+// 		           start:time.Time{},
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           discoverer:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           originAddr:"",
+// 		           id:"",
+// 		           replicas:nil,
+// 		           counts:nil,
+// 		           ts:0,
+// 		           start:time.Time{},
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           discoverer:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			c := &correct{
+// 				eg:                           test.fields.eg,
+// 				discoverer:                   test.fields.discoverer,
+// 				gateway:                      test.fields.gateway,
+// 				checkedList:                  test.fields.checkedList,
+// 				checkedIndexCount:            test.fields.checkedIndexCount,
+// 				correctedOldIndexCount:       test.fields.correctedOldIndexCount,
+// 				correctedReplicationCount:    test.fields.correctedReplicationCount,
+// 				indexReplica:                 test.fields.indexReplica,
+// 				streamListConcurrency:        test.fields.streamListConcurrency,
+// 				backgroundSyncInterval:       test.fields.backgroundSyncInterval,
+// 				backgroundCompactionInterval: test.fields.backgroundCompactionInterval,
+// 			}
+//
+// 			gotFound, gotSkipped, gotLatest, gotLatestAgent, err := c.loadReplicaInfo(
+// 				test.args.ctx,
+// 				test.args.originAddr,
+// 				test.args.id,
+// 				test.args.replicas,
+// 				test.args.counts,
+// 				test.args.ts,
+// 				test.args.start,
+// 			)
+// 			if err := checkFunc(test.want, gotFound, gotSkipped, gotLatest, gotLatestAgent, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_correct_getLatestObject(t *testing.T) {
+// 	type args struct {
+// 		ctx         context.Context
+// 		id          string
+// 		addr        string
+// 		latestAgent string
+// 		latest      int64
+// 	}
+// 	type fields struct {
+// 		eg                           errgroup.Group
+// 		discoverer                   discoverer.Client
+// 		gateway                      vc.Client
+// 		checkedList                  pogreb.DB
+// 		checkedIndexCount            atomic.Uint64
+// 		correctedOldIndexCount       atomic.Uint64
+// 		correctedReplicationCount    atomic.Uint64
+// 		indexReplica                 int
+// 		streamListConcurrency        int
+// 		backgroundSyncInterval       time.Duration
+// 		backgroundCompactionInterval time.Duration
+// 	}
+// 	type want struct {
+// 		wantLatestObject *payload.Object_Vector
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Vector) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotLatestObject *payload.Object_Vector) error {
+// 		if !reflect.DeepEqual(gotLatestObject, w.wantLatestObject) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLatestObject, w.wantLatestObject)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           id:"",
+// 		           addr:"",
+// 		           latestAgent:"",
+// 		           latest:0,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           discoverer:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           id:"",
+// 		           addr:"",
+// 		           latestAgent:"",
+// 		           latest:0,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           discoverer:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			c := &correct{
+// 				eg:                           test.fields.eg,
+// 				discoverer:                   test.fields.discoverer,
+// 				gateway:                      test.fields.gateway,
+// 				checkedList:                  test.fields.checkedList,
+// 				checkedIndexCount:            test.fields.checkedIndexCount,
+// 				correctedOldIndexCount:       test.fields.correctedOldIndexCount,
+// 				correctedReplicationCount:    test.fields.correctedReplicationCount,
+// 				indexReplica:                 test.fields.indexReplica,
+// 				streamListConcurrency:        test.fields.streamListConcurrency,
+// 				backgroundSyncInterval:       test.fields.backgroundSyncInterval,
+// 				backgroundCompactionInterval: test.fields.backgroundCompactionInterval,
+// 			}
+//
+// 			gotLatestObject := c.getLatestObject(test.args.ctx, test.args.id, test.args.addr, test.args.latestAgent, test.args.latest)
+// 			if err := checkFunc(test.want, gotLatestObject); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_correct_correctTimestamp(t *testing.T) {
+// 	type args struct {
+// 		ctx          context.Context
+// 		id           string
+// 		latestObject *payload.Object_Vector
+// 		found        map[string]*payload.Object_Timestamp
+// 	}
+// 	type fields struct {
+// 		eg                           errgroup.Group
+// 		discoverer                   discoverer.Client
+// 		gateway                      vc.Client
+// 		checkedList                  pogreb.DB
+// 		checkedIndexCount            atomic.Uint64
+// 		correctedOldIndexCount       atomic.Uint64
+// 		correctedReplicationCount    atomic.Uint64
+// 		indexReplica                 int
+// 		streamListConcurrency        int
+// 		backgroundSyncInterval       time.Duration
+// 		backgroundCompactionInterval time.Duration
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           id:"",
+// 		           latestObject:nil,
+// 		           found:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           discoverer:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           id:"",
+// 		           latestObject:nil,
+// 		           found:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           discoverer:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			c := &correct{
+// 				eg:                           test.fields.eg,
+// 				discoverer:                   test.fields.discoverer,
+// 				gateway:                      test.fields.gateway,
+// 				checkedList:                  test.fields.checkedList,
+// 				checkedIndexCount:            test.fields.checkedIndexCount,
+// 				correctedOldIndexCount:       test.fields.correctedOldIndexCount,
+// 				correctedReplicationCount:    test.fields.correctedReplicationCount,
+// 				indexReplica:                 test.fields.indexReplica,
+// 				streamListConcurrency:        test.fields.streamListConcurrency,
+// 				backgroundSyncInterval:       test.fields.backgroundSyncInterval,
+// 				backgroundCompactionInterval: test.fields.backgroundCompactionInterval,
+// 			}
+//
+// 			c.correctTimestamp(test.args.ctx, test.args.id, test.args.latestObject, test.args.found)
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_correct_correctOversupply(t *testing.T) {
+// 	type args struct {
+// 		ctx      context.Context
+// 		id       string
+// 		selfAddr string
+// 		debugMsg string
+// 		found    map[string]*payload.Object_Timestamp
+// 		diff     int
+// 	}
+// 	type fields struct {
+// 		eg                           errgroup.Group
+// 		discoverer                   discoverer.Client
+// 		gateway                      vc.Client
+// 		checkedList                  pogreb.DB
+// 		checkedIndexCount            atomic.Uint64
+// 		correctedOldIndexCount       atomic.Uint64
+// 		correctedReplicationCount    atomic.Uint64
+// 		indexReplica                 int
+// 		streamListConcurrency        int
+// 		backgroundSyncInterval       time.Duration
+// 		backgroundCompactionInterval time.Duration
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           id:"",
+// 		           selfAddr:"",
+// 		           debugMsg:"",
+// 		           found:nil,
+// 		           diff:0,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           discoverer:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           id:"",
+// 		           selfAddr:"",
+// 		           debugMsg:"",
+// 		           found:nil,
+// 		           diff:0,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           discoverer:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			c := &correct{
+// 				eg:                           test.fields.eg,
+// 				discoverer:                   test.fields.discoverer,
+// 				gateway:                      test.fields.gateway,
+// 				checkedList:                  test.fields.checkedList,
+// 				checkedIndexCount:            test.fields.checkedIndexCount,
+// 				correctedOldIndexCount:       test.fields.correctedOldIndexCount,
+// 				correctedReplicationCount:    test.fields.correctedReplicationCount,
+// 				indexReplica:                 test.fields.indexReplica,
+// 				streamListConcurrency:        test.fields.streamListConcurrency,
+// 				backgroundSyncInterval:       test.fields.backgroundSyncInterval,
+// 				backgroundCompactionInterval: test.fields.backgroundCompactionInterval,
+// 			}
+//
+// 			err := c.correctOversupply(test.args.ctx, test.args.id, test.args.selfAddr, test.args.debugMsg, test.args.found, test.args.diff)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_correct_correctShortage(t *testing.T) {
+// 	type args struct {
+// 		ctx          context.Context
+// 		id           string
+// 		selfAddr     string
+// 		debugMsg     string
+// 		latestObject *payload.Object_Vector
+// 		found        map[string]*payload.Object_Timestamp
+// 		diff         int
+// 	}
+// 	type fields struct {
+// 		eg                           errgroup.Group
+// 		discoverer                   discoverer.Client
+// 		gateway                      vc.Client
+// 		checkedList                  pogreb.DB
+// 		checkedIndexCount            atomic.Uint64
+// 		correctedOldIndexCount       atomic.Uint64
+// 		correctedReplicationCount    atomic.Uint64
+// 		indexReplica                 int
+// 		streamListConcurrency        int
+// 		backgroundSyncInterval       time.Duration
+// 		backgroundCompactionInterval time.Duration
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           id:"",
+// 		           selfAddr:"",
+// 		           debugMsg:"",
+// 		           latestObject:nil,
+// 		           found:nil,
+// 		           diff:0,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           discoverer:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           id:"",
+// 		           selfAddr:"",
+// 		           debugMsg:"",
+// 		           latestObject:nil,
+// 		           found:nil,
+// 		           diff:0,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           discoverer:nil,
+// 		           gateway:nil,
+// 		           checkedList:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           backgroundSyncInterval:nil,
+// 		           backgroundCompactionInterval:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			c := &correct{
+// 				eg:                           test.fields.eg,
+// 				discoverer:                   test.fields.discoverer,
+// 				gateway:                      test.fields.gateway,
+// 				checkedList:                  test.fields.checkedList,
+// 				checkedIndexCount:            test.fields.checkedIndexCount,
+// 				correctedOldIndexCount:       test.fields.correctedOldIndexCount,
+// 				correctedReplicationCount:    test.fields.correctedReplicationCount,
+// 				indexReplica:                 test.fields.indexReplica,
+// 				streamListConcurrency:        test.fields.streamListConcurrency,
+// 				backgroundSyncInterval:       test.fields.backgroundSyncInterval,
+// 				backgroundCompactionInterval: test.fields.backgroundCompactionInterval,
+// 			}
+//
+// 			err := c.correctShortage(test.args.ctx, test.args.id, test.args.selfAddr, test.args.debugMsg, test.args.latestObject, test.args.found, test.args.diff)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
 // 		})
 // 	}
 // }

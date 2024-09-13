@@ -101,7 +101,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/RemoveTimestampRequest"
+              "$ref": "#/definitions/v1RemoveTimestampRequest"
             }
           }
         ],
@@ -146,25 +146,11 @@
       },
       "description": "Represent the stream response of the vector location."
     },
-    "RemoveTimestampRequest": {
-      "type": "object",
-      "properties": {
-        "timestamps": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1RemoveTimestamp"
-          },
-          "description": "The timestamp comparison list. If more than one is specified, the `AND` search is applied."
-        }
-      },
-      "description": "Represent the remove request based on timestamp."
-    },
     "TimestampOperator": {
       "type": "string",
       "enum": ["Eq", "Ne", "Ge", "Gt", "Le", "Lt"],
       "default": "Eq",
-      "description": "Operator is enum of each conditional operator.\n\n - Eq: The timestamp is equal to the specified value in the request.\n - Ne: The timestamp is not equal to the specified value in the request.\n - Ge: The timestamp is greater than or equal to the specified value in the request.\n - Gt: The timestamp is greater than the specified value in the request.\n - Le: The timestamp is less than or equal to the specified value in the request.\n - Lt: The timestamp is less than the specified value in the request."
+      "description": "Operator is enum of each conditional operator.\n\n - Eq: The timestamp is equal to the specified value in the request.\n - Ne: The timestamp is not equal to the specified value in the request.\n - Ge: The timestamp is greater than or equal to the specified value in the\nrequest.\n - Gt: The timestamp is greater than the specified value in the request.\n - Le: The timestamp is less than or equal to the specified value in the\nrequest.\n - Lt: The timestamp is less than the specified value in the request."
     },
     "protobufAny": {
       "type": "object",
@@ -278,6 +264,20 @@
         }
       },
       "description": "Represent the timestamp comparison."
+    },
+    "v1RemoveTimestampRequest": {
+      "type": "object",
+      "properties": {
+        "timestamps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RemoveTimestamp"
+          },
+          "description": "The timestamp comparison list. If more than one is specified, the `AND`\nsearch is applied."
+        }
+      },
+      "description": "Represent the remove request based on timestamp."
     }
   }
 }

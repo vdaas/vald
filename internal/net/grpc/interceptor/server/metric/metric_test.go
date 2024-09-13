@@ -198,7 +198,6 @@ func Test_attributesFromError(t *testing.T) {
 // 			if err := checkFunc(test.want, got, got1, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

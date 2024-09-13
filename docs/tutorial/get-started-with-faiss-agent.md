@@ -1,6 +1,6 @@
 # Get Started
 
-This tutorial is for those who have already completed [Get Started](https://github.com/vdaas/vald/blob/main/docs/tutorial/get-started.md).
+This tutorial is for those who have already completed [Get Started](../tutorial/get-started.md).
 Please refer to Prepare the Kubernetes Cluster and others there.
 
 ## Deploy Vald on Kubernetes Cluster
@@ -60,7 +60,8 @@ In this tutorial, you will deploy the basic configuration of Vald that is consis
        load_index_timeout_factor: 1ms
        m: 8  # dimension % m == 0, train size >= 2^m(or nlist) * minPointsPerCentroid
        max_load_index_timeout: 10m
-       metric_type: "inner_product"
+       method_type: "ivfpq"
+       metric_type: "innerproduct"
        min_load_index_timeout: 3m
        nbits_per_idx: 8
        nlist: 100

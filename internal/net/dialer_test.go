@@ -1163,7 +1163,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 						// check the connection made on the same port
 						_, p, _ := net.SplitHostPort(gotConn.RemoteAddr().String())
 						if p != strconv.Itoa(int(port)) {
-							return errors.Errorf("unexcepted port number, except: %d, got: %s", port, p)
+							return errors.Errorf("unexpected port number, except: %d, got: %s", port, p)
 						}
 
 						// read the output from the server and check if it is equals to the count
@@ -1985,7 +1985,6 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 // 			if err := checkFunc(test.want, gotIps, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

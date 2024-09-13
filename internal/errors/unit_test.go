@@ -13,9 +13,7 @@
 // limitations under the License.
 package errors
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestErrParseUnitFailed(t *testing.T) {
 	type args struct {

@@ -476,14 +476,14 @@ func Test_lz4Compressor_DecompressVector(t *testing.T) {
 			},
 		},
 		{
-			name: "returns (nil, error) when decompresse fails",
+			name: "returns (nil, error) when decompress fails",
 			args: args{
 				bs: []byte("vdaas/vald"),
 			},
 			fields: fields{
 				gobc: &MockCompressor{
 					DecompressVectorFunc: func(bytes []byte) (vector []float32, err error) {
-						return nil, errors.New("decompresse err")
+						return nil, errors.New("decompress err")
 					},
 				},
 				compressionLevel: 0,
@@ -497,7 +497,7 @@ func Test_lz4Compressor_DecompressVector(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.New("decompresse err"),
+				err:  errors.New("decompress err"),
 			},
 		},
 	}
@@ -653,7 +653,7 @@ func Test_lz4Compressor_Writer(t *testing.T) {
 				w   = new(lz4.MockWriter)
 			)
 			return test{
-				name: "returns (io.WriteCloser, nil) when no erro occurs",
+				name: "returns (io.WriteCloser, nil) when no error occurs",
 				args: args{
 					dst: dst,
 				},

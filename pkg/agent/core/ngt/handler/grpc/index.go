@@ -27,7 +27,9 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 )
 
-func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndexRequest) (res *payload.Empty, err error) {
+func (s *server) CreateIndex(
+	ctx context.Context, c *payload.Control_CreateIndexRequest,
+) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".CreateIndex")
 	defer func() {
 		if span != nil {
@@ -39,7 +41,7 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 	if err != nil {
 		var (
 			code    codes.Code
-			details = []interface{}{
+			details = []any{
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(c),
 				},
@@ -62,6 +64,9 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 					},
 				}, info.Get())...)
 			code = codes.FailedPrecondition
+		case errors.Is(err, errors.ErrFlushingIsInProgress):
+			err = status.WrapWithAborted("CreateIndex API aborted to process create indexes request due to flushing indices is in progress", err, details...)
+			code = codes.Aborted
 		case errors.Is(err, context.Canceled):
 			err = status.WrapWithCanceled(fmt.Sprintf("CreateIndex API canceled to create indexes pool_size = %d, error: %v", c.GetPoolSize(), err), err, details...)
 			code = codes.Canceled
@@ -110,7 +115,9 @@ func (s *server) SaveIndex(ctx context.Context, _ *payload.Empty) (res *payload.
 	return res, nil
 }
 
-func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_CreateIndexRequest) (res *payload.Empty, err error) {
+func (s *server) CreateAndSaveIndex(
+	ctx context.Context, c *payload.Control_CreateIndexRequest,
+) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".CreateAndSaveIndex")
 	defer func() {
 		if span != nil {
@@ -122,7 +129,7 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 	if err != nil {
 		var (
 			code    codes.Code
-			details = []interface{}{
+			details = []any{
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(c),
 				},
@@ -145,6 +152,9 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 					},
 				}, info.Get())...)
 			code = codes.FailedPrecondition
+		case errors.Is(err, errors.ErrFlushingIsInProgress):
+			err = status.WrapWithAborted("CreateAndSaveIndex API aborted to process create indexes request due to flushing indices is in progress", err, details...)
+			code = codes.Aborted
 		case errors.Is(err, context.Canceled):
 			err = status.WrapWithCanceled(fmt.Sprintf("CreateAndSaveIndex API canceled to create indexes pool_size = %d, error: %v", c.GetPoolSize(), err), err, details...)
 			code = codes.Canceled
@@ -165,7 +175,9 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 	return res, nil
 }
 
-func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.Info_Index_Count, err error) {
+func (s *server) IndexInfo(
+	ctx context.Context, _ *payload.Empty,
+) (res *payload.Info_Index_Count, err error) {
 	_, span := trace.StartSpan(ctx, apiName+".IndexInfo")
 	defer func() {
 		if span != nil {
@@ -177,5 +189,80 @@ func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.
 		Uncommitted: uint32(s.ngt.InsertVQueueBufferLen() + s.ngt.DeleteVQueueBufferLen()),
 		Indexing:    s.ngt.IsIndexing(),
 		Saving:      s.ngt.IsSaving(),
+	}, nil
+}
+
+func (s *server) IndexDetail(
+	ctx context.Context, _ *payload.Empty,
+) (res *payload.Info_Index_Detail, err error) {
+	_, span := trace.StartSpan(ctx, apiName+".IndexDetail")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	res = &payload.Info_Index_Detail{
+		Counts:     make(map[string]*payload.Info_Index_Count),
+		Replica:    1,
+		LiveAgents: 1,
+	}
+	res.Counts[s.name] = &payload.Info_Index_Count{
+		Stored:      uint32(s.ngt.Len()),
+		Uncommitted: uint32(s.ngt.InsertVQueueBufferLen() + s.ngt.DeleteVQueueBufferLen()),
+		Indexing:    s.ngt.IsIndexing(),
+		Saving:      s.ngt.IsSaving(),
+	}
+	return res, nil
+}
+
+func (s *server) IndexStatistics(
+	ctx context.Context, _ *payload.Empty,
+) (res *payload.Info_Index_Statistics, err error) {
+	_, span := trace.StartSpan(ctx, apiName+".IndexStatistics")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return s.ngt.IndexStatistics()
+}
+
+func (s *server) IndexStatisticsDetail(
+	ctx context.Context, _ *payload.Empty,
+) (res *payload.Info_Index_StatisticsDetail, err error) {
+	_, span := trace.StartSpan(ctx, apiName+".IndexStatisticsDetail")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	stats, err := s.ngt.IndexStatistics()
+	if err != nil {
+		return nil, err
+	}
+	return &payload.Info_Index_StatisticsDetail{
+		Details: map[string]*payload.Info_Index_Statistics{
+			s.name: stats,
+		},
+	}, nil
+}
+
+func (s *server) IndexProperty(
+	ctx context.Context, _ *payload.Empty,
+) (res *payload.Info_Index_PropertyDetail, err error) {
+	_, span := trace.StartSpan(ctx, apiName+".IndexStatisticsDetail")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	prop, err := s.ngt.IndexProperty()
+	if err != nil {
+		return nil, err
+	}
+	return &payload.Info_Index_PropertyDetail{
+		Details: map[string]*payload.Info_Index_Property{
+			s.name: prop,
+		},
 	}, nil
 }

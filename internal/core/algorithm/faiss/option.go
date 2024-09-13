@@ -17,6 +17,10 @@
 // Package faiss provides implementation of Go API for https://github.com/facebookresearch/faiss
 package faiss
 
+/*
+#cgo LDFLAGS: -lfaiss
+#include <Capi.h>
+*/
 import "C"
 
 import (
@@ -34,6 +38,7 @@ var defaultOptions = []Option{
 	WithNlist(100),
 	WithM(8),
 	WithNbitsPerIdx(8),
+	WithMethodType("ivfpq"),
 	WithMetricType("l2"),
 }
 
@@ -82,6 +87,27 @@ func WithNbitsPerIdx(nbitsPerIdx int) Option {
 		}
 
 		f.nbitsPerIdx = (C.int)(nbitsPerIdx)
+		return nil
+	}
+}
+
+// WithMethodType represents the option to set the method type for faiss.
+func WithMethodType(methodType string) Option {
+	return func(f *faiss) error {
+		if len(methodType) == 0 {
+			return errors.NewErrIgnoredOption("methodType")
+		}
+
+		switch strings.NewReplacer("-", "", "_", "", " ", "").Replace(strings.ToLower(methodType)) {
+		case "ivfpq":
+			f.methodType = IVFPQ
+		case "binaryindex":
+			f.methodType = BinaryIndex
+		default:
+			err := errors.NewFaissError("unsupported MethodType")
+			return errors.NewErrCriticalOption("methodType", methodType, err)
+		}
+
 		return nil
 	}
 }

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Search {
 }
 /// Nested message and enum types in `Search`.
@@ -113,6 +113,9 @@ pub mod search {
         /// Search ratio for agent return result number.
         #[prost(message, optional, tag="10")]
         pub ratio: ::core::option::Option<f32>,
+        /// Search nprobe.
+        #[prost(uint32, tag="11")]
+        pub nprobe: u32,
     }
     /// Represent a search response.
     #[allow(clippy::derive_partial_eq_without_eq)]
@@ -192,7 +195,7 @@ pub mod search {
 }
 /// Filter related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Filter {
 }
 /// Nested message and enum types in `Filter`.
@@ -268,7 +271,7 @@ pub mod filter {
 }
 /// Insert related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Insert {
 }
 /// Nested message and enum types in `Insert`.
@@ -331,7 +334,7 @@ pub mod insert {
 }
 /// Update related messages
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Update {
 }
 /// Nested message and enum types in `Update`.
@@ -377,6 +380,20 @@ pub mod update {
         #[prost(message, repeated, tag="1")]
         pub requests: ::prost::alloc::vec::Vec<ObjectRequest>,
     }
+    /// Represent a vector meta data.
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct TimestampRequest {
+        /// The vector ID.
+        #[prost(string, tag="1")]
+        pub id: ::prost::alloc::string::String,
+        /// timestamp represents when this vector inserted.
+        #[prost(int64, tag="2")]
+        pub timestamp: i64,
+        /// force represents forcefully update the timestamp.
+        #[prost(bool, tag="3")]
+        pub force: bool,
+    }
     /// Represent the update configuration.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -398,7 +415,7 @@ pub mod update {
 }
 /// Upsert related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Upsert {
 }
 /// Nested message and enum types in `Upsert`.
@@ -465,7 +482,7 @@ pub mod upsert {
 }
 /// Remove related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Remove {
 }
 /// Nested message and enum types in `Remove`.
@@ -493,13 +510,14 @@ pub mod remove {
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct TimestampRequest {
-        /// The timestamp comparison list. If more than one is specified, the `AND` search is applied.
+        /// The timestamp comparison list. If more than one is specified, the `AND`
+        /// search is applied.
         #[prost(message, repeated, tag="1")]
         pub timestamps: ::prost::alloc::vec::Vec<Timestamp>,
     }
     /// Represent the timestamp comparison.
     #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
     pub struct Timestamp {
         /// The timestamp.
         #[prost(int64, tag="1")]
@@ -518,11 +536,13 @@ pub mod remove {
             Eq = 0,
             /// The timestamp is not equal to the specified value in the request.
             Ne = 1,
-            /// The timestamp is greater than or equal to the specified value in the request.
+            /// The timestamp is greater than or equal to the specified value in the
+            /// request.
             Ge = 2,
             /// The timestamp is greater than the specified value in the request.
             Gt = 3,
-            /// The timestamp is less than or equal to the specified value in the request.
+            /// The timestamp is less than or equal to the specified value in the
+            /// request.
             Le = 4,
             /// The timestamp is less than the specified value in the request.
             Lt = 5,
@@ -558,7 +578,7 @@ pub mod remove {
     }
     /// Represent the remove configuration.
     #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
     pub struct Config {
         /// A flag to skip exist check during upsert operation.
         #[prost(bool, tag="1")]
@@ -570,19 +590,19 @@ pub mod remove {
 }
 /// Flush related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Flush {
 }
 /// Nested message and enum types in `Flush`.
 pub mod flush {
     #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
     pub struct Request {
     }
 }
 /// Common messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Object {
 }
 /// Nested message and enum types in `Object`.
@@ -660,7 +680,7 @@ pub mod object {
     /// Represent a request to fetch vector meta data.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-    pub struct GetTimestampRequest {
+    pub struct TimestampRequest {
         /// The vector ID to be fetched.
         #[prost(message, optional, tag="1")]
         pub id: ::core::option::Option<Id>,
@@ -788,13 +808,13 @@ pub mod object {
     }
     /// Represent the list object vector stream request and response.
     #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
     pub struct List {
     }
     /// Nested message and enum types in `List`.
     pub mod list {
         #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
         pub struct Request {
         }
         #[allow(clippy::derive_partial_eq_without_eq)]
@@ -820,14 +840,14 @@ pub mod object {
 }
 /// Control related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Control {
 }
 /// Nested message and enum types in `Control`.
 pub mod control {
     /// Represent the create index request.
     #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
     pub struct CreateIndexRequest {
         /// The pool size of the create index operation.
         #[prost(uint32, tag="1")]
@@ -836,7 +856,7 @@ pub mod control {
 }
 /// Discoverer related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Discoverer {
 }
 /// Nested message and enum types in `Discoverer`.
@@ -858,21 +878,21 @@ pub mod discoverer {
 }
 /// Info related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Info {
 }
 /// Nested message and enum types in `Info`.
 pub mod info {
     /// Represent the index information messages.
     #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
     pub struct Index {
     }
     /// Nested message and enum types in `Index`.
     pub mod index {
         /// Represent the index count message.
         #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
         pub struct Count {
             /// The stored index count.
             #[prost(uint32, tag="1")]
@@ -887,9 +907,23 @@ pub mod info {
             #[prost(bool, tag="4")]
             pub saving: bool,
         }
-        /// Represent the UUID message.
+        /// Represent the index count for each Agents message.
         #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
+        pub struct Detail {
+            /// count infos for each agents
+            #[prost(map="string, message", tag="1")]
+            pub counts: ::std::collections::HashMap<::prost::alloc::string::String, Count>,
+            /// index replica of vald cluster
+            #[prost(uint32, tag="2")]
+            pub replica: u32,
+            /// live agent replica of vald cluster
+            #[prost(uint32, tag="3")]
+            pub live_agents: u32,
+        }
+        /// Represent the UUID message.
+        #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
         pub struct Uuid {
         }
         /// Nested message and enum types in `UUID`.
@@ -908,6 +942,165 @@ pub mod info {
                 #[prost(string, tag="1")]
                 pub uuid: ::prost::alloc::string::String,
             }
+        }
+        /// Represents index Statistics
+        #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+        pub struct Statistics {
+            #[prost(bool, tag="1")]
+            pub valid: bool,
+            #[prost(int32, tag="2")]
+            pub median_indegree: i32,
+            #[prost(int32, tag="3")]
+            pub median_outdegree: i32,
+            #[prost(uint64, tag="4")]
+            pub max_number_of_indegree: u64,
+            #[prost(uint64, tag="5")]
+            pub max_number_of_outdegree: u64,
+            #[prost(uint64, tag="6")]
+            pub min_number_of_indegree: u64,
+            #[prost(uint64, tag="7")]
+            pub min_number_of_outdegree: u64,
+            #[prost(uint64, tag="8")]
+            pub mode_indegree: u64,
+            #[prost(uint64, tag="9")]
+            pub mode_outdegree: u64,
+            #[prost(uint64, tag="10")]
+            pub nodes_skipped_for_10_edges: u64,
+            #[prost(uint64, tag="11")]
+            pub nodes_skipped_for_indegree_distance: u64,
+            #[prost(uint64, tag="12")]
+            pub number_of_edges: u64,
+            #[prost(uint64, tag="13")]
+            pub number_of_indexed_objects: u64,
+            #[prost(uint64, tag="14")]
+            pub number_of_nodes: u64,
+            #[prost(uint64, tag="15")]
+            pub number_of_nodes_without_edges: u64,
+            #[prost(uint64, tag="16")]
+            pub number_of_nodes_without_indegree: u64,
+            #[prost(uint64, tag="17")]
+            pub number_of_objects: u64,
+            #[prost(uint64, tag="18")]
+            pub number_of_removed_objects: u64,
+            #[prost(uint64, tag="19")]
+            pub size_of_object_repository: u64,
+            #[prost(uint64, tag="20")]
+            pub size_of_refinement_object_repository: u64,
+            #[prost(double, tag="21")]
+            pub variance_of_indegree: f64,
+            #[prost(double, tag="22")]
+            pub variance_of_outdegree: f64,
+            #[prost(double, tag="23")]
+            pub mean_edge_length: f64,
+            #[prost(double, tag="24")]
+            pub mean_edge_length_for_10_edges: f64,
+            #[prost(double, tag="25")]
+            pub mean_indegree_distance_for_10_edges: f64,
+            #[prost(double, tag="26")]
+            pub mean_number_of_edges_per_node: f64,
+            #[prost(double, tag="27")]
+            pub c1_indegree: f64,
+            #[prost(double, tag="28")]
+            pub c5_indegree: f64,
+            #[prost(double, tag="29")]
+            pub c95_outdegree: f64,
+            #[prost(double, tag="30")]
+            pub c99_outdegree: f64,
+            #[prost(int64, repeated, tag="31")]
+            pub indegree_count: ::prost::alloc::vec::Vec<i64>,
+            #[prost(uint64, repeated, tag="32")]
+            pub outdegree_histogram: ::prost::alloc::vec::Vec<u64>,
+            #[prost(uint64, repeated, tag="33")]
+            pub indegree_histogram: ::prost::alloc::vec::Vec<u64>,
+        }
+        /// Represents index Statistics for each Agents
+        #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+        pub struct StatisticsDetail {
+            /// count infos for each agents
+            #[prost(map="string, message", tag="1")]
+            pub details: ::std::collections::HashMap<::prost::alloc::string::String, Statistics>,
+        }
+        /// Represents index Property
+        #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+        pub struct Property {
+            #[prost(int32, tag="1")]
+            pub dimension: i32,
+            #[prost(int32, tag="2")]
+            pub thread_pool_size: i32,
+            #[prost(string, tag="3")]
+            pub object_type: ::prost::alloc::string::String,
+            #[prost(string, tag="4")]
+            pub distance_type: ::prost::alloc::string::String,
+            #[prost(string, tag="5")]
+            pub index_type: ::prost::alloc::string::String,
+            #[prost(string, tag="6")]
+            pub database_type: ::prost::alloc::string::String,
+            #[prost(string, tag="7")]
+            pub object_alignment: ::prost::alloc::string::String,
+            #[prost(int32, tag="8")]
+            pub path_adjustment_interval: i32,
+            #[prost(int32, tag="9")]
+            pub graph_shared_memory_size: i32,
+            #[prost(int32, tag="10")]
+            pub tree_shared_memory_size: i32,
+            #[prost(int32, tag="11")]
+            pub object_shared_memory_size: i32,
+            #[prost(int32, tag="12")]
+            pub prefetch_offset: i32,
+            #[prost(int32, tag="13")]
+            pub prefetch_size: i32,
+            #[prost(string, tag="14")]
+            pub accuracy_table: ::prost::alloc::string::String,
+            #[prost(string, tag="15")]
+            pub search_type: ::prost::alloc::string::String,
+            #[prost(float, tag="16")]
+            pub max_magnitude: f32,
+            #[prost(int32, tag="17")]
+            pub n_of_neighbors_for_insertion_order: i32,
+            #[prost(float, tag="18")]
+            pub epsilon_for_insertion_order: f32,
+            #[prost(string, tag="19")]
+            pub refinement_object_type: ::prost::alloc::string::String,
+            #[prost(int32, tag="20")]
+            pub truncation_threshold: i32,
+            #[prost(int32, tag="21")]
+            pub edge_size_for_creation: i32,
+            #[prost(int32, tag="22")]
+            pub edge_size_for_search: i32,
+            #[prost(int32, tag="23")]
+            pub edge_size_limit_for_creation: i32,
+            #[prost(double, tag="24")]
+            pub insertion_radius_coefficient: f64,
+            #[prost(int32, tag="25")]
+            pub seed_size: i32,
+            #[prost(string, tag="26")]
+            pub seed_type: ::prost::alloc::string::String,
+            #[prost(int32, tag="27")]
+            pub truncation_thread_pool_size: i32,
+            #[prost(int32, tag="28")]
+            pub batch_size_for_creation: i32,
+            #[prost(string, tag="29")]
+            pub graph_type: ::prost::alloc::string::String,
+            #[prost(int32, tag="30")]
+            pub dynamic_edge_size_base: i32,
+            #[prost(int32, tag="31")]
+            pub dynamic_edge_size_rate: i32,
+            #[prost(float, tag="32")]
+            pub build_time_limit: f32,
+            #[prost(int32, tag="33")]
+            pub outgoing_edge: i32,
+            #[prost(int32, tag="34")]
+            pub incoming_edge: i32,
+        }
+        /// Represents index Properties for each Agents
+        #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+        pub struct PropertyDetail {
+            #[prost(map="string, message", tag="1")]
+            pub details: ::std::collections::HashMap<::prost::alloc::string::String, Property>,
         }
     }
     /// Represent the pod information message.
@@ -1009,7 +1202,7 @@ pub mod info {
     }
     /// Represent the CPU information message.
     #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
     pub struct Cpu {
         /// The CPU resource limit.
         #[prost(double, tag="1")]
@@ -1023,7 +1216,7 @@ pub mod info {
     }
     /// Represent the memory information message.
     #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
     pub struct Memory {
         /// The memory limit.
         #[prost(double, tag="1")]
@@ -1069,7 +1262,7 @@ pub mod info {
 }
 /// Mirror related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Mirror {
 }
 /// Nested message and enum types in `Mirror`.
@@ -1096,7 +1289,7 @@ pub mod mirror {
 }
 /// Represent an empty message.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Empty {
 }
 // @@protoc_insertion_point(module)

@@ -18,9 +18,12 @@
 ## update vald libraries including tools
 update/libs: \
 	update/chaos-mesh \
+	update/cmake \
+	update/docker \
 	update/faiss \
 	update/go \
 	update/golangci-lint \
+	update/hdf5 \
 	update/helm \
 	update/helm-docs \
 	update/helm-operator \
@@ -33,12 +36,11 @@ update/libs: \
 	update/prometheus-stack \
 	update/protobuf \
 	update/reviewdog \
+	update/rust \
 	update/telepresence \
 	update/vald \
-	update/valdcli \
 	update/yq \
-	update/zlib \
-	update/hdf5
+	update/zlib
 
 .PHONY: go/download
 ## download Go package dependencies
@@ -47,14 +49,15 @@ go/download:
 
 .PHONY: go/deps
 ## install Go package dependencies
-go/deps:
+go/deps: \
+	update/go
 	sed -i "3s/go [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?/go $(GO_VERSION)/g" $(ROOTDIR)/hack/go.mod.default
 	if $(GO_CLEAN_DEPS); then \
         	rm -rf $(ROOTDIR)/vendor \
         		/go/pkg \
         		$(GOCACHE) \
         		$(ROOTDIR)/go.sum \
-        		$(ROOTDIR)/go.mod ; \
+        		$(ROOTDIR)/go.mod 2>/dev/null; \
         	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod ; \
         	GOPRIVATE=$(GOPRIVATE) go mod tidy ; \
         	go clean -cache -modcache -testcache -i -r ; \
@@ -62,7 +65,7 @@ go/deps:
         		/go/pkg \
         		$(GOCACHE) \
         		$(ROOTDIR)/go.sum \
-        		$(ROOTDIR)/go.mod ; \
+        		$(ROOTDIR)/go.mod 2>/dev/null; \
         	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod ; \
 	fi
 	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod
@@ -76,7 +79,7 @@ go/example/deps:
 		$(GOCACHE) \
 	        $(ROOTDIR)/example/client/vendor \
 	        $(ROOTDIR)/example/client/go.mod \
-	        $(ROOTDIR)/example/client/go.sum
+        	$(ROOTDIR)/example/client/go.sum 2>/dev/null; \
 	sed -i "3s/go [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?/go $(GO_VERSION)/g" $(ROOTDIR)/example/client/go.mod.default
 	cp $(ROOTDIR)/example/client/go.mod.default $(ROOTDIR)/example/client/go.mod
 	cd $(ROOTDIR)/example/client && GOPRIVATE=$(GOPRIVATE) go mod tidy && cd -
@@ -85,7 +88,9 @@ go/example/deps:
 ## install Rust package dependencies
 rust/deps: \
 	rust/install
-	sed -i "17s/channel = \"[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?\"/channel = \"$(RUST_VERSION)\"/g" $(ROOTDIR)/rust/rust-toolchain.toml
+	sed -i "17s/channel = \"[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?.*\"/channel = \"$(RUST_VERSION)\"/g" $(ROOTDIR)/rust/rust-toolchain.toml
+	rustup toolchain install $(RUST_VERSION)
+	rustup default $(RUST_VERSION)
 	cd $(ROOTDIR)/rust && $(CARGO_HOME)/bin/cargo update && cd -
 
 .PHONY: update/chaos-mesh
@@ -118,7 +123,13 @@ update/golangci-lint:
 .PHONY: update/rust
 ## update rust version
 update/rust:
-	curl -fsSL https://releases.rs | grep -Po 'Stable: \K[\d.]+\s' | head -n 1 > $(ROOTDIR)/versions/RUST_VERSION
+	curl -fsSL https://releases.rs | grep -Po 'Stable: \K[\d.]+' | head -n 1 > $(ROOTDIR)/versions/RUST_VERSION
+	cp -f $(ROOTDIR)/versions/RUST_VERSION $(ROOTDIR)/rust/rust-toolchain
+
+.PHONY: update/docker
+## update docker version
+update/docker:
+	curl -fsSL https://api.github.com/repos/moby/moby/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/DOCKER_VERSION
 
 .PHONY: update/helm
 ## update helm version
@@ -180,6 +191,11 @@ update/ngt:
 update/faiss:
 	curl -fsSL https://api.github.com/repos/facebookresearch/faiss/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/FAISS_VERSION
 
+.PHONY: update/cmake
+## update CMAKE version
+update/cmake:
+	curl -fsSL https://api.github.com/repos/Kitware/CMAKE/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/CMAKE_VERSION
+
 .PHONY: update/reviewdog
 ## update reviewdog version
 update/reviewdog:
@@ -208,32 +224,49 @@ update/hdf5:
 .PHONY: update/vald
 ## update vald it's self version
 update/vald:
-	curl -fsSL https://api.github.com/repos/vdaas/vald/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/VALD_VERSION
-
-.PHONY: update/valdcli
-## update vald client library made by clojure self version
-update/valdcli:
-	curl -fsSL https://api.github.com/repos/vdaas/vald-client-clj/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/VALDCLI_VERSION
+	curl -fsSL https://api.github.com/repos/$(REPO)/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/VALD_VERSION
 
 .PHONY: update/template
 ## update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE
 update/template:
+	$(eval VALD_VERSION     := $(shell $(MAKE) -s version/vald))
 	$(eval GO_VERSION      := $(shell $(MAKE) -s version/go))
-	$(eval NGT_VERSION     := $(shell $(MAKE) -s version/ngt))
-	$(eval KUBECTL_VERSION := $(shell $(MAKE) -s version/k8s))
 	$(eval RUST_VERSION    := $(shell $(MAKE) -s version/rust))
-	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
-	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
-	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(GO_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+	$(eval DOCKER_VERSION := $(shell $(MAKE) -s version/docker))
+	$(eval KUBECTL_VERSION := $(shell $(MAKE) -s version/k8s))
+	$(eval HELM_VERSION := $(shell $(MAKE) -s version/helm))
+	$(eval NGT_VERSION     := $(shell $(MAKE) -s version/ngt))
+	$(eval FAISS_VERSION     := $(shell $(MAKE) -s version/faiss))
 
-	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(NGT_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
-	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(NGT_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
-	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(NGT_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+	sed -i -e "s/^- Vald Version: .*$$/- Vald Version: $(VALD_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Vald Version: .*$$/- Vald Version: $(VALD_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Vald Version: .*$$/- Vald Version: $(VALD_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+
+	sed -i -e "s/^- Go Version: .*$$/- Go Version: v$(GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Go Version: .*$$/- Go Version: v$(GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Go Version: .*$$/- Go Version: v$(GO_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+
+	sed -i -e "s/^- Rust Version: .*$$/- Rust Version: v$(RUST_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Rust Version: .*$$/- Rust Version: v$(RUST_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Rust Version: .*$$/- Rust Version: v$(RUST_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+
+	sed -i -e "s/^- Docker Version: .*$$/- Docker Version: $(DOCKER_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Docker Version: .*$$/- Docker Version: $(DOCKER_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Docker Version: .*$$/- Docker Version: $(DOCKER_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
 
 	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(KUBECTL_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
 	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(KUBECTL_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
 	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(KUBECTL_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
 
-	sed -i -e "s/^- Rust Version: .*$$/- Rust Version: $(RUST_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
-	sed -i -e "s/^- Rust Version: .*$$/- Rust Version: $(RUST_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
-	sed -i -e "s/^- Rust Version: .*$$/- Rust Version: $(RUST_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+	sed -i -e "s/^- Helm Version: .*$$/- Helm Version: $(HELM_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Helm Version: .*$$/- Helm Version: $(HELM_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Helm Version: .*$$/- Helm Version: $(HELM_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+
+	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: v$(NGT_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: v$(NGT_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: v$(NGT_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+
+	sed -i -e "s/^- Faiss Version: .*$$/- Faiss Version: v$(FAISS_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Faiss Version: .*$$/- Faiss Version: v$(FAISS_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Faiss Version: .*$$/- Faiss Version: v$(FAISS_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+

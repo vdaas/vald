@@ -18,7 +18,7 @@ defaults:
   logging:
     level: debug
   image:
-    tag: latest
+    tag: nightly
   time_zone: Asia/Tokyo
   server_config:
     metrics:

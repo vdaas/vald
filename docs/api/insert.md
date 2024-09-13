@@ -100,7 +100,7 @@ Inset RPC is the method to add a new single vector.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-Please refer to [Response Status Code](./status.md) for more details.
+Please refer to [Response Status Code](../status.md) for more details.
 
 ### Troubleshooting
 
@@ -226,7 +226,7 @@ It's the recommended method to insert a large number of vectors.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-Please refer to [Response Status Code](./status.md) for more details.
+Please refer to [Response Status Code](../status.md) for more details.
 
 ### Troubleshooting
 
@@ -349,7 +349,7 @@ Please be careful that the size of the request exceeds the limit.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-Please refer to [Response Status Code](./status.md) for more details.
+Please refer to [Response Status Code](../status.md) for more details.
 
 ### Troubleshooting
 

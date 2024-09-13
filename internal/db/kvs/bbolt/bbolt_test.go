@@ -317,7 +317,6 @@ func Test_bbolt_AsyncSet(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -432,7 +431,6 @@ func Test_bbolt_AsyncSet(t *testing.T) {
 // 			if err := checkFunc(test.want, gotVal, gotOk, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -539,7 +537,6 @@ func Test_bbolt_AsyncSet(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

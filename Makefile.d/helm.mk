@@ -28,9 +28,10 @@ helm-docs/install: $(BINDIR)/helm-docs
 
 $(BINDIR)/helm-docs:
 	mkdir -p $(BINDIR)
-	cd $(TEMP_DIR) \
-	    && curl -fsSLO https://github.com/norwoodj/helm-docs/releases/download/v$(HELM_DOCS_VERSION)/helm-docs_$(HELM_DOCS_VERSION)_$(UNAME)_$(ARCH).tar.gz \
-	    && tar xzvf helm-docs_$(HELM_DOCS_VERSION)_$(UNAME)_$(ARCH).tar.gz \
+	TAR_NAME=helm-docs_$(HELM_DOCS_VERSION)_$(UNAME)_$(ARCH).tar.gz \
+	    && cd $(TEMP_DIR) \
+	    && curl -fsSL "https://github.com/norwoodj/helm-docs/releases/download/v$(HELM_DOCS_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}"\
+	    && tar xzvf "$(TEMP_DIR)/$${TAR_NAME}" \
 	    && mv helm-docs $(BINDIR)/helm-docs
 
 .PHONY: helm/package/vald

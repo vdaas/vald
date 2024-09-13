@@ -16,16 +16,14 @@
 
 package dbr
 
-import (
-	dbr "github.com/gocraft/dbr/v2"
-)
+import dbr "github.com/gocraft/dbr/v2"
 
 // Tx represents the interface to handle transaction.
 type Tx interface {
 	Commit() error
 	Rollback() error
 	RollbackUnlessCommitted()
-	InsertBySql(query string, value ...interface{}) InsertStmt
+	InsertBySql(query string, value ...any) InsertStmt
 	InsertInto(table string) InsertStmt
 	Select(column ...string) SelectStmt
 	DeleteFrom(table string) DeleteStmt
@@ -45,13 +43,13 @@ func (t *tx) Rollback() error {
 	return t.Tx.Rollback()
 }
 
-// RollbackUnlessCommitted rollsback the transaction unless it has already been committed or rolled back.
+// RollbackUnlessCommitted rollbacks the transaction unless it has already been committed or rolled back.
 func (t *tx) RollbackUnlessCommitted() {
 	t.Tx.RollbackUnlessCommitted()
 }
 
 // InsertBySql creates an InsertStmt from raw query.
-func (t *tx) InsertBySql(query string, value ...interface{}) InsertStmt {
+func (t *tx) InsertBySql(query string, value ...any) InsertStmt {
 	return &insertStmt{
 		t.Tx.InsertBySql(query, value...),
 	}

@@ -77,7 +77,7 @@ func init() {
 	flag.IntVar(&port, "port", 8081, "gRPC port")
 
 	flag.IntVar(&insertNum, "insert-num", 10000, "number of id-vector pairs used for insert")
-	flag.IntVar(&correctionInsertNum, "correction-insert-num", 3000, "number of id-vector pairs used for insert")
+	flag.IntVar(&correctionInsertNum, "correction-insert-num", 10000, "number of id-vector pairs used for insert")
 	flag.IntVar(&searchNum, "search-num", 10000, "number of id-vector pairs used for search")
 	flag.IntVar(&searchByIDNum, "search-by-id-num", 100, "number of id-vector pairs used for search-by-id")
 	flag.IntVar(&getObjectNum, "get-object-num", 100, "number of id-vector pairs used for get-object")
@@ -415,7 +415,7 @@ func TestE2EStandardCRUD(t *testing.T) {
 
 	err = op.Flush(t, ctx)
 	if err != nil {
-		// TODO: Remove code check afeter Flush API is available for agent-faiss and mirror-gateway
+		// TODO: Remove code check after Flush API is available for agent-faiss and mirror-gateway
 		st, _, _ := status.ParseError(err, codes.Unknown, "")
 		if st.Code() != codes.Unimplemented {
 			t.Fatalf("an error occurred: %s", err)
@@ -865,7 +865,7 @@ func TestE2EReadReplica(t *testing.T) {
 	t.Log("waiting for read replica rotator jobs to complete...")
 	if err := kubectl.WaitResources(ctx, t, "job", "app=vald-readreplica-rotate", "complete", "60s"); err != nil {
 		t.Log("wait failed. printing yaml of vald-readreplica-rotate")
-		kubectl.KubectlCmd(ctx, t, "get", "pod", "-l", "app=vald-readreplica-rotate", "-oyaml")
+		kubectl.KubectlCmd(ctx, t, "get", "pod", "-l", "app=vald-readreplica-rotate", "-o", "yaml")
 		t.Log("wait failed. printing log of vald-index-operator")
 		kubectl.DebugLog(ctx, t, "app=vald-index-operator")
 		t.Log("wait failed. printing log of vald-readreplica-rotate")

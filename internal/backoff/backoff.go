@@ -55,7 +55,7 @@ type backoff struct {
 
 // Backoff represents an interface to handle backoff operation.
 type Backoff interface {
-	Do(context.Context, func(ctx context.Context) (interface{}, bool, error)) (interface{}, error)
+	Do(context.Context, func(ctx context.Context) (any, bool, error)) (any, error)
 	Close()
 }
 
@@ -77,7 +77,9 @@ func New(opts ...Option) Backoff {
 }
 
 // Do tries to backoff using the input function and returns the response and error.
-func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val interface{}, retryable bool, err error)) (res interface{}, err error) {
+func (b *backoff) Do(
+	ctx context.Context, f func(ctx context.Context) (val any, retryable bool, err error),
+) (res any, err error) {
 	if f == nil {
 		return
 	}
@@ -133,7 +135,7 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 				return nil, errors.Join(err, dctx.Err())
 			}
 		default:
-			res, ret, err = func() (val interface{}, retryable bool, err error) {
+			res, ret, err = func() (val any, retryable bool, err error) {
 				ssctx, span := trace.StartSpan(dctx, traceTag+"/"+strconv.Itoa(cnt+1))
 				defer func() {
 					if span != nil {
@@ -184,10 +186,40 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 					dur *= b.backoffFactor
 					jdur = b.addJitter(dur)
 				}
+				if cnt >= b.maxRetryCount-1 {
+					select {
+					case <-dctx.Done():
+						switch dctx.Err() {
+						case context.DeadlineExceeded:
+							log.Debugf("[backoff]\tfor: "+name+",\tDeadline Exceeded\terror: %v", err.Error())
+							return nil, errors.ErrBackoffTimeout(err)
+						case context.Canceled:
+							log.Debugf("[backoff]\tfor: "+name+",\tCanceled\terror: %v", err.Error())
+							return nil, err
+						default:
+							return nil, errors.Join(dctx.Err(), err)
+						}
+					default:
+					}
+				}
 			}
 		}
 	}
-	return res, err
+	select {
+	case <-dctx.Done():
+		switch dctx.Err() {
+		case context.DeadlineExceeded:
+			log.Debugf("[backoff]\tfor: "+name+",\tDeadline Exceeded\terror: %v", err.Error())
+			return nil, errors.ErrBackoffTimeout(err)
+		case context.Canceled:
+			log.Debugf("[backoff]\tfor: "+name+",\tCanceled\terror: %v", err.Error())
+			return nil, err
+		default:
+			return nil, errors.Join(dctx.Err(), err)
+		}
+	default:
+		return res, err
+	}
 }
 
 func (b *backoff) addJitter(dur float64) float64 {

@@ -60,7 +60,7 @@ func TestDefaultOptions(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set succuess",
+			name: "set success",
 			want: want{
 				want: &cache[any]{
 					gache: gache.New[any](),
@@ -122,7 +122,7 @@ func TestWithGache(t *testing.T) {
 		func() test {
 			ga := gache.New[any]()
 			return test{
-				name: "set succuess when g is not nil",
+				name: "set success when g is not nil",
 				args: args{
 					g: ga,
 				},
@@ -135,7 +135,7 @@ func TestWithGache(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "set succuess when g is nil",
+				name: "set success when g is nil",
 				want: want{
 					want: new(T),
 				},
@@ -195,7 +195,7 @@ func TestWithExpiredHook(t *testing.T) {
 		func() test {
 			fn := func(context.Context, string) {}
 			return test{
-				name: "set succuess when f is not nil",
+				name: "set success when f is not nil",
 				args: args{
 					f: fn,
 				},
@@ -214,7 +214,7 @@ func TestWithExpiredHook(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "set succuess when fn is nil",
+				name: "set success when fn is nil",
 				want: want{
 					want: new(T),
 				},
@@ -272,7 +272,7 @@ func TestWithExpireDuration(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set succuess when dur is 0",
+			name: "set success when dur is 0",
 			args: args{
 				dur: 0,
 			},
@@ -281,7 +281,7 @@ func TestWithExpireDuration(t *testing.T) {
 			},
 		},
 		{
-			name: "set succuess when dur is not 0",
+			name: "set success when dur is not 0",
 			args: args{
 				dur: 10,
 			},
@@ -343,7 +343,7 @@ func TestWithExpireCheckDuration(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "set succuess when dur is 0",
+			name: "set success when dur is 0",
 			args: args{
 				dur: 0,
 			},
@@ -352,7 +352,7 @@ func TestWithExpireCheckDuration(t *testing.T) {
 			},
 		},
 		{
-			name: "set succuess when dur is not 0",
+			name: "set success when dur is not 0",
 			args: args{
 				dur: 10,
 			},
@@ -462,7 +462,6 @@ func TestWithExpireCheckDuration(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

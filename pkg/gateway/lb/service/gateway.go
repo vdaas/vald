@@ -24,6 +24,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
+	vc "github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -67,7 +68,9 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 	return g.client.Start(ctx)
 }
 
-func (g *gateway) BroadCast(ctx context.Context, kind BroadCastKind,
+func (g *gateway) BroadCast(
+	ctx context.Context,
+	kind BroadCastKind,
 	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
 ) (err error) {
 	fctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.BroadCast")
@@ -92,7 +95,7 @@ func (g *gateway) BroadCast(ctx context.Context, kind BroadCastKind,
 		case <-ictx.Done():
 			return nil
 		default:
-			err = f(ictx, addr, vald.NewValdClient(conn), copts...)
+			err = f(ictx, addr, vc.NewValdClient(conn), copts...)
 			if err != nil {
 				return err
 			}
@@ -101,7 +104,9 @@ func (g *gateway) BroadCast(ctx context.Context, kind BroadCastKind,
 	})
 }
 
-func (g *gateway) DoMulti(ctx context.Context, num int,
+func (g *gateway) DoMulti(
+	ctx context.Context,
+	num int,
 	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
 ) (err error) {
 	sctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.DoMulti")
@@ -125,7 +130,7 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 		copts ...grpc.CallOption,
 	) (err error) {
 		if atomic.LoadUint32(&cur) < limit {
-			err = f(ictx, addr, vald.NewValdClient(conn), copts...)
+			err = f(ictx, addr, vc.NewValdClient(conn), copts...)
 			if err != nil {
 				return err
 			}
@@ -143,7 +148,7 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 			if atomic.LoadUint32(&cur) < limit {
 				_, ok := visited.Load(addr)
 				if !ok {
-					err = f(ictx, addr, vald.NewValdClient(conn), copts...)
+					err = f(ictx, addr, vc.NewValdClient(conn), copts...)
 					if err != nil {
 						return err
 					}
