@@ -30,6 +30,10 @@ pub mod search {
         #[prost(message, optional, tag="2")]
         pub config: ::core::option::Option<Config>,
     }
+impl ::prost::Name for Request {
+const NAME: &'static str = "Request";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Search.Request".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Search.Request".into() }}
     /// Represent the multiple search request.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -38,6 +42,10 @@ pub mod search {
         #[prost(message, repeated, tag="1")]
         pub requests: ::prost::alloc::vec::Vec<Request>,
     }
+impl ::prost::Name for MultiRequest {
+const NAME: &'static str = "MultiRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Search.MultiRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Search.MultiRequest".into() }}
     /// Represent a search by ID request.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -49,6 +57,10 @@ pub mod search {
         #[prost(message, optional, tag="2")]
         pub config: ::core::option::Option<Config>,
     }
+impl ::prost::Name for IdRequest {
+const NAME: &'static str = "IDRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Search.IDRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Search.IDRequest".into() }}
     /// Represent the multiple search by ID request.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -57,6 +69,10 @@ pub mod search {
         #[prost(message, repeated, tag="1")]
         pub requests: ::prost::alloc::vec::Vec<IdRequest>,
     }
+impl ::prost::Name for MultiIdRequest {
+const NAME: &'static str = "MultiIDRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Search.MultiIDRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Search.MultiIDRequest".into() }}
     /// Represent a search by binary object request.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -71,6 +87,10 @@ pub mod search {
         #[prost(message, optional, tag="3")]
         pub vectorizer: ::core::option::Option<super::filter::Target>,
     }
+impl ::prost::Name for ObjectRequest {
+const NAME: &'static str = "ObjectRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Search.ObjectRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Search.ObjectRequest".into() }}
     /// Represent the multiple search by binary object request.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -79,6 +99,10 @@ pub mod search {
         #[prost(message, repeated, tag="1")]
         pub requests: ::prost::alloc::vec::Vec<ObjectRequest>,
     }
+impl ::prost::Name for MultiObjectRequest {
+const NAME: &'static str = "MultiObjectRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Search.MultiObjectRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Search.MultiObjectRequest".into() }}
     /// Represent search configuration.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -117,6 +141,10 @@ pub mod search {
         #[prost(uint32, tag="11")]
         pub nprobe: u32,
     }
+impl ::prost::Name for Config {
+const NAME: &'static str = "Config";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Search.Config".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Search.Config".into() }}
     /// Represent a search response.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -128,6 +156,10 @@ pub mod search {
         #[prost(message, repeated, tag="2")]
         pub results: ::prost::alloc::vec::Vec<super::object::Distance>,
     }
+impl ::prost::Name for Response {
+const NAME: &'static str = "Response";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Search.Response".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Search.Response".into() }}
     /// Represent multiple search responses.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -136,6 +168,10 @@ pub mod search {
         #[prost(message, repeated, tag="1")]
         pub responses: ::prost::alloc::vec::Vec<Response>,
     }
+impl ::prost::Name for Responses {
+const NAME: &'static str = "Responses";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Search.Responses".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Search.Responses".into() }}
     /// Represent stream search response.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -156,6 +192,10 @@ pub mod search {
             Status(super::super::super::super::google::rpc::Status),
         }
     }
+impl ::prost::Name for StreamResponse {
+const NAME: &'static str = "StreamResponse";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Search.StreamResponse".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Search.StreamResponse".into() }}
     /// AggregationAlgorithm is enum of each aggregation algorithms
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
@@ -193,6 +233,10 @@ pub mod search {
         }
     }
 }
+impl ::prost::Name for Search {
+const NAME: &'static str = "Search";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Search".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Search".into() }}
 /// Filter related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
@@ -211,6 +255,10 @@ pub mod filter {
         #[prost(uint32, tag="2")]
         pub port: u32,
     }
+impl ::prost::Name for Target {
+const NAME: &'static str = "Target";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Filter.Target".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Filter.Target".into() }}
     /// Represent filter configuration.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -219,7 +267,15 @@ pub mod filter {
         #[prost(message, repeated, tag="1")]
         pub targets: ::prost::alloc::vec::Vec<Target>,
     }
+impl ::prost::Name for Config {
+const NAME: &'static str = "Config";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Filter.Config".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Filter.Config".into() }}
 }
+impl ::prost::Name for Filter {
+const NAME: &'static str = "Filter";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Filter".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Filter".into() }}
 /// Insert related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
@@ -238,6 +294,10 @@ pub mod insert {
         #[prost(message, optional, tag="2")]
         pub config: ::core::option::Option<Config>,
     }
+impl ::prost::Name for Request {
+const NAME: &'static str = "Request";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Insert.Request".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Insert.Request".into() }}
     /// Represent the multiple insert request.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -246,6 +306,10 @@ pub mod insert {
         #[prost(message, repeated, tag="1")]
         pub requests: ::prost::alloc::vec::Vec<Request>,
     }
+impl ::prost::Name for MultiRequest {
+const NAME: &'static str = "MultiRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Insert.MultiRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Insert.MultiRequest".into() }}
     /// Represent the insert by binary object request.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -260,6 +324,10 @@ pub mod insert {
         #[prost(message, optional, tag="3")]
         pub vectorizer: ::core::option::Option<super::filter::Target>,
     }
+impl ::prost::Name for ObjectRequest {
+const NAME: &'static str = "ObjectRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Insert.ObjectRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Insert.ObjectRequest".into() }}
     /// Represent the multiple insert by binary object request.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -268,6 +336,10 @@ pub mod insert {
         #[prost(message, repeated, tag="1")]
         pub requests: ::prost::alloc::vec::Vec<ObjectRequest>,
     }
+impl ::prost::Name for MultiObjectRequest {
+const NAME: &'static str = "MultiObjectRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Insert.MultiObjectRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Insert.MultiObjectRequest".into() }}
     /// Represent insert configurations.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -282,7 +354,15 @@ pub mod insert {
         #[prost(int64, tag="3")]
         pub timestamp: i64,
     }
+impl ::prost::Name for Config {
+const NAME: &'static str = "Config";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Insert.Config".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Insert.Config".into() }}
 }
+impl ::prost::Name for Insert {
+const NAME: &'static str = "Insert";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Insert".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Insert".into() }}
 /// Update related messages
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
@@ -301,6 +381,10 @@ pub mod update {
         #[prost(message, optional, tag="2")]
         pub config: ::core::option::Option<Config>,
     }
+impl ::prost::Name for Request {
+const NAME: &'static str = "Request";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Update.Request".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Update.Request".into() }}
     /// Represent the multiple update request.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -309,6 +393,10 @@ pub mod update {
         #[prost(message, repeated, tag="1")]
         pub requests: ::prost::alloc::vec::Vec<Request>,
     }
+impl ::prost::Name for MultiRequest {
+const NAME: &'static str = "MultiRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Update.MultiRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Update.MultiRequest".into() }}
     /// Represent the update binary object request.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -323,6 +411,10 @@ pub mod update {
         #[prost(message, optional, tag="3")]
         pub vectorizer: ::core::option::Option<super::filter::Target>,
     }
+impl ::prost::Name for ObjectRequest {
+const NAME: &'static str = "ObjectRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Update.ObjectRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Update.ObjectRequest".into() }}
     /// Represent the multiple update binary object request.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -331,6 +423,10 @@ pub mod update {
         #[prost(message, repeated, tag="1")]
         pub requests: ::prost::alloc::vec::Vec<ObjectRequest>,
     }
+impl ::prost::Name for MultiObjectRequest {
+const NAME: &'static str = "MultiObjectRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Update.MultiObjectRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Update.MultiObjectRequest".into() }}
     /// Represent a vector meta data.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -345,6 +441,10 @@ pub mod update {
         #[prost(bool, tag="3")]
         pub force: bool,
     }
+impl ::prost::Name for TimestampRequest {
+const NAME: &'static str = "TimestampRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Update.TimestampRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Update.TimestampRequest".into() }}
     /// Represent the update configuration.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -363,7 +463,15 @@ pub mod update {
         #[prost(bool, tag="4")]
         pub disable_balanced_update: bool,
     }
+impl ::prost::Name for Config {
+const NAME: &'static str = "Config";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Update.Config".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Update.Config".into() }}
 }
+impl ::prost::Name for Update {
+const NAME: &'static str = "Update";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Update".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Update".into() }}
 /// Upsert related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
@@ -382,6 +490,10 @@ pub mod upsert {
         #[prost(message, optional, tag="2")]
         pub config: ::core::option::Option<Config>,
     }
+impl ::prost::Name for Request {
+const NAME: &'static str = "Request";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Upsert.Request".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Upsert.Request".into() }}
     /// Represent mthe ultiple upsert request.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -390,6 +502,10 @@ pub mod upsert {
         #[prost(message, repeated, tag="1")]
         pub requests: ::prost::alloc::vec::Vec<Request>,
     }
+impl ::prost::Name for MultiRequest {
+const NAME: &'static str = "MultiRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Upsert.MultiRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Upsert.MultiRequest".into() }}
     /// Represent the upsert binary object request.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -404,6 +520,10 @@ pub mod upsert {
         #[prost(message, optional, tag="3")]
         pub vectorizer: ::core::option::Option<super::filter::Target>,
     }
+impl ::prost::Name for ObjectRequest {
+const NAME: &'static str = "ObjectRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Upsert.ObjectRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Upsert.ObjectRequest".into() }}
     /// Represent the multiple upsert binary object request.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -412,6 +532,10 @@ pub mod upsert {
         #[prost(message, repeated, tag="1")]
         pub requests: ::prost::alloc::vec::Vec<ObjectRequest>,
     }
+impl ::prost::Name for MultiObjectRequest {
+const NAME: &'static str = "MultiObjectRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Upsert.MultiObjectRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Upsert.MultiObjectRequest".into() }}
     /// Represent the upsert configuration.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -430,7 +554,15 @@ pub mod upsert {
         #[prost(bool, tag="4")]
         pub disable_balanced_update: bool,
     }
+impl ::prost::Name for Config {
+const NAME: &'static str = "Config";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Upsert.Config".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Upsert.Config".into() }}
 }
+impl ::prost::Name for Upsert {
+const NAME: &'static str = "Upsert";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Upsert".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Upsert".into() }}
 /// Remove related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
@@ -449,6 +581,10 @@ pub mod remove {
         #[prost(message, optional, tag="2")]
         pub config: ::core::option::Option<Config>,
     }
+impl ::prost::Name for Request {
+const NAME: &'static str = "Request";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Remove.Request".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Remove.Request".into() }}
     /// Represent the multiple remove request.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -457,6 +593,10 @@ pub mod remove {
         #[prost(message, repeated, tag="1")]
         pub requests: ::prost::alloc::vec::Vec<Request>,
     }
+impl ::prost::Name for MultiRequest {
+const NAME: &'static str = "MultiRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Remove.MultiRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Remove.MultiRequest".into() }}
     /// Represent the remove request based on timestamp.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -466,6 +606,10 @@ pub mod remove {
         #[prost(message, repeated, tag="1")]
         pub timestamps: ::prost::alloc::vec::Vec<Timestamp>,
     }
+impl ::prost::Name for TimestampRequest {
+const NAME: &'static str = "TimestampRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Remove.TimestampRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Remove.TimestampRequest".into() }}
     /// Represent the timestamp comparison.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
@@ -527,6 +671,10 @@ pub mod remove {
             }
         }
     }
+impl ::prost::Name for Timestamp {
+const NAME: &'static str = "Timestamp";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Remove.Timestamp".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Remove.Timestamp".into() }}
     /// Represent the remove configuration.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
@@ -538,7 +686,15 @@ pub mod remove {
         #[prost(int64, tag="3")]
         pub timestamp: i64,
     }
+impl ::prost::Name for Config {
+const NAME: &'static str = "Config";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Remove.Config".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Remove.Config".into() }}
 }
+impl ::prost::Name for Remove {
+const NAME: &'static str = "Remove";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Remove".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Remove".into() }}
 /// Flush related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
@@ -550,7 +706,15 @@ pub mod flush {
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
     pub struct Request {
     }
+impl ::prost::Name for Request {
+const NAME: &'static str = "Request";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Flush.Request".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Flush.Request".into() }}
 }
+impl ::prost::Name for Flush {
+const NAME: &'static str = "Flush";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Flush".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Flush".into() }}
 /// Common messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
@@ -569,6 +733,10 @@ pub mod object {
         #[prost(message, optional, tag="2")]
         pub filters: ::core::option::Option<super::filter::Config>,
     }
+impl ::prost::Name for VectorRequest {
+const NAME: &'static str = "VectorRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.VectorRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.VectorRequest".into() }}
     /// Represent the ID and distance pair.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -580,6 +748,10 @@ pub mod object {
         #[prost(float, tag="2")]
         pub distance: f32,
     }
+impl ::prost::Name for Distance {
+const NAME: &'static str = "Distance";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.Distance".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.Distance".into() }}
     /// Represent stream response of distances.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -600,6 +772,10 @@ pub mod object {
             Status(super::super::super::super::google::rpc::Status),
         }
     }
+impl ::prost::Name for StreamDistance {
+const NAME: &'static str = "StreamDistance";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.StreamDistance".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.StreamDistance".into() }}
     /// Represent the vector ID.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -607,6 +783,10 @@ pub mod object {
         #[prost(string, tag="1")]
         pub id: ::prost::alloc::string::String,
     }
+impl ::prost::Name for Id {
+const NAME: &'static str = "ID";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.ID".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.ID".into() }}
     /// Represent multiple vector IDs.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -614,6 +794,10 @@ pub mod object {
         #[prost(string, repeated, tag="1")]
         pub ids: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
     }
+impl ::prost::Name for IDs {
+const NAME: &'static str = "IDs";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.IDs".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.IDs".into() }}
     /// Represent a vector.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -628,6 +812,10 @@ pub mod object {
         #[prost(int64, tag="3")]
         pub timestamp: i64,
     }
+impl ::prost::Name for Vector {
+const NAME: &'static str = "Vector";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.Vector".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.Vector".into() }}
     /// Represent a request to fetch vector meta data.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -636,6 +824,10 @@ pub mod object {
         #[prost(message, optional, tag="1")]
         pub id: ::core::option::Option<Id>,
     }
+impl ::prost::Name for TimestampRequest {
+const NAME: &'static str = "TimestampRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.TimestampRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.TimestampRequest".into() }}
     /// Represent a vector meta data.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -647,6 +839,10 @@ pub mod object {
         #[prost(int64, tag="2")]
         pub timestamp: i64,
     }
+impl ::prost::Name for Timestamp {
+const NAME: &'static str = "Timestamp";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.Timestamp".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.Timestamp".into() }}
     /// Represent multiple vectors.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -654,6 +850,10 @@ pub mod object {
         #[prost(message, repeated, tag="1")]
         pub vectors: ::prost::alloc::vec::Vec<Vector>,
     }
+impl ::prost::Name for Vectors {
+const NAME: &'static str = "Vectors";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.Vectors".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.Vectors".into() }}
     /// Represent stream response of the vector.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -674,6 +874,10 @@ pub mod object {
             Status(super::super::super::super::google::rpc::Status),
         }
     }
+impl ::prost::Name for StreamVector {
+const NAME: &'static str = "StreamVector";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.StreamVector".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.StreamVector".into() }}
     /// Represent reshape vector.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -685,6 +889,10 @@ pub mod object {
         #[prost(int32, repeated, tag="2")]
         pub shape: ::prost::alloc::vec::Vec<i32>,
     }
+impl ::prost::Name for ReshapeVector {
+const NAME: &'static str = "ReshapeVector";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.ReshapeVector".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.ReshapeVector".into() }}
     /// Represent the binary object.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -696,6 +904,10 @@ pub mod object {
         #[prost(bytes="vec", tag="2")]
         pub object: ::prost::alloc::vec::Vec<u8>,
     }
+impl ::prost::Name for Blob {
+const NAME: &'static str = "Blob";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.Blob".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.Blob".into() }}
     /// Represent stream response of binary objects.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -716,6 +928,10 @@ pub mod object {
             Status(super::super::super::super::google::rpc::Status),
         }
     }
+impl ::prost::Name for StreamBlob {
+const NAME: &'static str = "StreamBlob";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.StreamBlob".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.StreamBlob".into() }}
     /// Represent the vector location.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -730,6 +946,10 @@ pub mod object {
         #[prost(string, repeated, tag="3")]
         pub ips: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
     }
+impl ::prost::Name for Location {
+const NAME: &'static str = "Location";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.Location".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.Location".into() }}
     /// Represent the stream response of the vector location.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -750,6 +970,10 @@ pub mod object {
             Status(super::super::super::super::google::rpc::Status),
         }
     }
+impl ::prost::Name for StreamLocation {
+const NAME: &'static str = "StreamLocation";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.StreamLocation".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.StreamLocation".into() }}
     /// Represent multiple vector locations.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -757,6 +981,10 @@ pub mod object {
         #[prost(message, repeated, tag="1")]
         pub locations: ::prost::alloc::vec::Vec<Location>,
     }
+impl ::prost::Name for Locations {
+const NAME: &'static str = "Locations";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.Locations".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.Locations".into() }}
     /// Represent the list object vector stream request and response.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
@@ -768,6 +996,10 @@ pub mod object {
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
         pub struct Request {
         }
+impl ::prost::Name for Request {
+const NAME: &'static str = "Request";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.List.Request".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.List.Request".into() }}
         #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
         pub struct Response {
@@ -787,8 +1019,20 @@ pub mod object {
                 Status(super::super::super::super::super::google::rpc::Status),
             }
         }
+impl ::prost::Name for Response {
+const NAME: &'static str = "Response";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.List.Response".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.List.Response".into() }}
     }
+impl ::prost::Name for List {
+const NAME: &'static str = "List";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object.List".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object.List".into() }}
 }
+impl ::prost::Name for Object {
+const NAME: &'static str = "Object";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Object".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Object".into() }}
 /// Control related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
@@ -804,7 +1048,15 @@ pub mod control {
         #[prost(uint32, tag="1")]
         pub pool_size: u32,
     }
+impl ::prost::Name for CreateIndexRequest {
+const NAME: &'static str = "CreateIndexRequest";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Control.CreateIndexRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Control.CreateIndexRequest".into() }}
 }
+impl ::prost::Name for Control {
+const NAME: &'static str = "Control";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Control".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Control".into() }}
 /// Discoverer related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
@@ -826,7 +1078,15 @@ pub mod discoverer {
         #[prost(string, tag="3")]
         pub node: ::prost::alloc::string::String,
     }
+impl ::prost::Name for Request {
+const NAME: &'static str = "Request";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Discoverer.Request".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Discoverer.Request".into() }}
 }
+impl ::prost::Name for Discoverer {
+const NAME: &'static str = "Discoverer";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Discoverer".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Discoverer".into() }}
 /// Info related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
@@ -858,6 +1118,10 @@ pub mod info {
             #[prost(bool, tag="4")]
             pub saving: bool,
         }
+impl ::prost::Name for Count {
+const NAME: &'static str = "Count";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Index.Count".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Index.Count".into() }}
         /// Represent the index count for each Agents message.
         #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -872,6 +1136,10 @@ pub mod info {
             #[prost(uint32, tag="3")]
             pub live_agents: u32,
         }
+impl ::prost::Name for Detail {
+const NAME: &'static str = "Detail";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Index.Detail".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Index.Detail".into() }}
         /// Represent the UUID message.
         #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
@@ -886,6 +1154,10 @@ pub mod info {
                 #[prost(string, tag="1")]
                 pub uuid: ::prost::alloc::string::String,
             }
+impl ::prost::Name for Committed {
+const NAME: &'static str = "Committed";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Index.UUID.Committed".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Index.UUID.Committed".into() }}
             /// The uncommitted UUID.
             #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -893,7 +1165,15 @@ pub mod info {
                 #[prost(string, tag="1")]
                 pub uuid: ::prost::alloc::string::String,
             }
+impl ::prost::Name for Uncommitted {
+const NAME: &'static str = "Uncommitted";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Index.UUID.Uncommitted".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Index.UUID.Uncommitted".into() }}
         }
+impl ::prost::Name for Uuid {
+const NAME: &'static str = "UUID";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Index.UUID".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Index.UUID".into() }}
         /// Represents index Statistics
         #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -965,6 +1245,10 @@ pub mod info {
             #[prost(uint64, repeated, tag="33")]
             pub indegree_histogram: ::prost::alloc::vec::Vec<u64>,
         }
+impl ::prost::Name for Statistics {
+const NAME: &'static str = "Statistics";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Index.Statistics".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Index.Statistics".into() }}
         /// Represents index Statistics for each Agents
         #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -973,6 +1257,10 @@ pub mod info {
             #[prost(map="string, message", tag="1")]
             pub details: ::std::collections::HashMap<::prost::alloc::string::String, Statistics>,
         }
+impl ::prost::Name for StatisticsDetail {
+const NAME: &'static str = "StatisticsDetail";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Index.StatisticsDetail".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Index.StatisticsDetail".into() }}
         /// Represents index Property
         #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1046,6 +1334,10 @@ pub mod info {
             #[prost(int32, tag="34")]
             pub incoming_edge: i32,
         }
+impl ::prost::Name for Property {
+const NAME: &'static str = "Property";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Index.Property".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Index.Property".into() }}
         /// Represents index Properties for each Agents
         #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1053,7 +1345,15 @@ pub mod info {
             #[prost(map="string, message", tag="1")]
             pub details: ::std::collections::HashMap<::prost::alloc::string::String, Property>,
         }
+impl ::prost::Name for PropertyDetail {
+const NAME: &'static str = "PropertyDetail";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Index.PropertyDetail".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Index.PropertyDetail".into() }}
     }
+impl ::prost::Name for Index {
+const NAME: &'static str = "Index";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Index".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Index".into() }}
     /// Represent the pod information message.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1080,6 +1380,10 @@ pub mod info {
         #[prost(message, optional, tag="7")]
         pub node: ::core::option::Option<Node>,
     }
+impl ::prost::Name for Pod {
+const NAME: &'static str = "Pod";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Pod".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Pod".into() }}
     /// Represent the node information message.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1103,6 +1407,10 @@ pub mod info {
         #[prost(message, optional, tag="6")]
         pub pods: ::core::option::Option<Pods>,
     }
+impl ::prost::Name for Node {
+const NAME: &'static str = "Node";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Node".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Node".into() }}
     /// Represent the service information message.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1126,6 +1434,10 @@ pub mod info {
         #[prost(message, optional, tag="6")]
         pub annotations: ::core::option::Option<Annotations>,
     }
+impl ::prost::Name for Service {
+const NAME: &'static str = "Service";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Service".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Service".into() }}
     /// Represets the service port information message.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1137,6 +1449,10 @@ pub mod info {
         #[prost(int32, tag="2")]
         pub port: i32,
     }
+impl ::prost::Name for ServicePort {
+const NAME: &'static str = "ServicePort";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.ServicePort".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.ServicePort".into() }}
     /// Represent the kubernetes labels.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1144,6 +1460,10 @@ pub mod info {
         #[prost(map="string, string", tag="1")]
         pub labels: ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
     }
+impl ::prost::Name for Labels {
+const NAME: &'static str = "Labels";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Labels".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Labels".into() }}
     /// Represent the kubernetes annotations.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1151,6 +1471,10 @@ pub mod info {
         #[prost(map="string, string", tag="1")]
         pub annotations: ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
     }
+impl ::prost::Name for Annotations {
+const NAME: &'static str = "Annotations";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Annotations".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Annotations".into() }}
     /// Represent the CPU information message.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
@@ -1165,6 +1489,10 @@ pub mod info {
         #[prost(double, tag="3")]
         pub usage: f64,
     }
+impl ::prost::Name for Cpu {
+const NAME: &'static str = "CPU";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.CPU".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.CPU".into() }}
     /// Represent the memory information message.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
@@ -1179,6 +1507,10 @@ pub mod info {
         #[prost(double, tag="3")]
         pub usage: f64,
     }
+impl ::prost::Name for Memory {
+const NAME: &'static str = "Memory";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Memory".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Memory".into() }}
     /// Represent the multiple pod information message.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1187,6 +1519,10 @@ pub mod info {
         #[prost(message, repeated, tag="1")]
         pub pods: ::prost::alloc::vec::Vec<Pod>,
     }
+impl ::prost::Name for Pods {
+const NAME: &'static str = "Pods";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Pods".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Pods".into() }}
     /// Represent the multiple node information message.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1195,6 +1531,10 @@ pub mod info {
         #[prost(message, repeated, tag="1")]
         pub nodes: ::prost::alloc::vec::Vec<Node>,
     }
+impl ::prost::Name for Nodes {
+const NAME: &'static str = "Nodes";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Nodes".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Nodes".into() }}
     /// Represent the multiple service information message.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1203,6 +1543,10 @@ pub mod info {
         #[prost(message, repeated, tag="1")]
         pub services: ::prost::alloc::vec::Vec<Service>,
     }
+impl ::prost::Name for Services {
+const NAME: &'static str = "Services";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Services".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Services".into() }}
     /// Represent the multiple IP message.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1210,7 +1554,15 @@ pub mod info {
         #[prost(string, repeated, tag="1")]
         pub ip: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
     }
+impl ::prost::Name for IPs {
+const NAME: &'static str = "IPs";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.IPs".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.IPs".into() }}
 }
+impl ::prost::Name for Info {
+const NAME: &'static str = "Info";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info".into() }}
 /// Mirror related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
@@ -1229,6 +1581,10 @@ pub mod mirror {
         #[prost(uint32, tag="2")]
         pub port: u32,
     }
+impl ::prost::Name for Target {
+const NAME: &'static str = "Target";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Mirror.Target".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Mirror.Target".into() }}
     /// Represent the multiple Target message.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1237,10 +1593,22 @@ pub mod mirror {
         #[prost(message, repeated, tag="1")]
         pub targets: ::prost::alloc::vec::Vec<Target>,
     }
+impl ::prost::Name for Targets {
+const NAME: &'static str = "Targets";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Mirror.Targets".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Mirror.Targets".into() }}
 }
+impl ::prost::Name for Mirror {
+const NAME: &'static str = "Mirror";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Mirror".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Mirror".into() }}
 /// Represent an empty message.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Empty {
 }
+impl ::prost::Name for Empty {
+const NAME: &'static str = "Empty";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Empty".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Empty".into() }}
 // @@protoc_insertion_point(module)
