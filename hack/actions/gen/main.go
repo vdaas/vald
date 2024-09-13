@@ -313,6 +313,7 @@ const (
 	rustVersionPath        = versionsPath + "/RUST_VERSION"
 	faissVersionPath       = versionsPath + "/FAISS_VERSION"
 	ngtVersionPath         = versionsPath + "/NGT_VERSION"
+	usearchVersionPath     = versionsPath + "/USEARCH_VERSION"
 
 	makefilePath    = "Makefile"
 	makefileDirPath = "Makefile.d/**"
