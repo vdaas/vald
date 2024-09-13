@@ -246,8 +246,9 @@ const (
 
 	agentInernalPackage = "pkg/agent/internal"
 
-	ngtPreprocess   = "make ngt/install"
-	faissPreprocess = "make faiss/install"
+	ngtPreprocess     = "make ngt/install"
+	faissPreprocess   = "make faiss/install"
+	usearchPreprocess = "make usearch/install"
 
 	helmOperatorRootdir   = "/opt/helm"
 	helmOperatorWatchFile = helmOperatorRootdir + "/watches.yaml"
@@ -649,7 +650,7 @@ func main() {
 				append(ngtBuildDeps,
 					append(faissBuildDeps,
 						devContainerDeps...)...)...)...),
-			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess),
+			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess, usearchPreprocess),
 			Entrypoints: []string{"/bin/bash"},
 		},
 		"vald-dev-container": {
@@ -667,7 +668,8 @@ func main() {
 			Preprocess: append(devContainerPreprocess,
 				append(ciContainerPreprocess,
 					ngtPreprocess,
-					faissPreprocess)...),
+					faissPreprocess,
+					usearchPreprocess)...),
 		},
 		"vald-buildbase": {
 			AppName:      "buildbase",

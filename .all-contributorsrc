@@ -204,6 +204,16 @@
         "tool",
         "code"
       ]
+    },
+    {
+      "login": "iammytoo",
+      "name": "miyamoto",
+      "avatar_url": "https://avatars.githubusercontent.com/u/64457274?v=4",
+      "profile": "https://github.com/iammytoo",
+      "contributions": [
+        "code",
+        "research"
+      ]
     }
   ],
   "contributorsPerLine": 7,

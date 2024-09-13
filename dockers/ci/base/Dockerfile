@@ -121,6 +121,7 @@ RUN --mount=type=bind,target=.,rw \
     && make telepresence/install \
     && make ngt/install \
     && make faiss/install \
+    && make usearch/install \
     && rm -rf ${GOPATH}/src/github.com/${ORG}/${REPO}/*
 # skipcq: DOK-DL3002
 USER root:root
