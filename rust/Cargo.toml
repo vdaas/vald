@@ -18,7 +18,7 @@ members = [
 	"libs/observability",
 	"libs/proto",
 	"bin/meta",
-	"bin/test",
+	"bin/test_client",
 	# "bin/agent",
 	# "libs/algorithm",
 	# "libs/algorithms/ngt",
