@@ -16,11 +16,14 @@
 
 mod handler;
 
+use observability::{
+    config::{Config, Tracer},
+    observability::{Observability, ObservabilityImpl, SERVICE_NAME},
+};
 use opentelemetry::global;
 use opentelemetry::propagation::Extractor;
 use tonic::transport::Server;
 use tonic::Request;
-use observability::{config::{Config, Tracer}, observability::{Observability, ObservabilityImpl, SERVICE_NAME}};
 
 struct MetadataMap<'a>(&'a tonic::metadata::MetadataMap);
 
@@ -36,13 +39,13 @@ impl<'a> Extractor for MetadataMap<'a> {
                 tonic::metadata::KeyRef::Ascii(v) => v.as_str(),
                 tonic::metadata::KeyRef::Binary(v) => v.as_str(),
             })
-            .collect::<Vec<_>>()    }
+            .collect::<Vec<_>>()
+    }
 }
 
 fn intercept(mut req: Request<()>) -> Result<Request<()>, tonic::Status> {
-    let parent_cx = global::get_text_map_propagator(|prop| {
-        prop.extract(&MetadataMap(req.metadata()))
-    });
+    let parent_cx =
+        global::get_text_map_propagator(|prop| prop.extract(&MetadataMap(req.metadata())));
     req.extensions_mut().insert(parent_cx);
     Ok(req)
 }
@@ -82,8 +85,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cfg_path = "/var/lib/meta/database"; // TODO: set the appropriate path
     let meta = handler::Meta::new(cfg_path)?;
 
-    tonic::transport::Server::builder()
-        .add_service(proto::meta::v1::meta_server::MetaServer::with_interceptor(meta, intercept))
+    // the interceptor given here is implicitly executed for each request
+    Server::builder()
+        .add_service(proto::meta::v1::meta_server::MetaServer::with_interceptor(
+            meta, intercept,
+        ))
         .serve(addr)
         .await?;
 
