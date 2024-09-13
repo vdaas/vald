@@ -1602,6 +1602,49 @@ impl ::prost::Name for Mirror {
 const NAME: &'static str = "Mirror";
 const PACKAGE: &'static str = "payload.v1";
 fn full_name() -> ::prost::alloc::string::String { "payload.v1.Mirror".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Mirror".into() }}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+pub struct Meta {
+}
+/// Nested message and enum types in `Meta`.
+pub mod meta {
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct Key {
+        #[prost(string, tag="1")]
+        pub key: ::prost::alloc::string::String,
+    }
+impl ::prost::Name for Key {
+const NAME: &'static str = "Key";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Meta.Key".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Meta.Key".into() }}
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct Value {
+        #[prost(message, optional, tag="1")]
+        pub value: ::core::option::Option<::prost_types::Any>,
+    }
+impl ::prost::Name for Value {
+const NAME: &'static str = "Value";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Meta.Value".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Meta.Value".into() }}
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct KeyValue {
+        #[prost(message, optional, tag="1")]
+        pub key: ::core::option::Option<Key>,
+        #[prost(message, optional, tag="2")]
+        pub value: ::core::option::Option<Value>,
+    }
+impl ::prost::Name for KeyValue {
+const NAME: &'static str = "KeyValue";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Meta.KeyValue".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Meta.KeyValue".into() }}
+}
+impl ::prost::Name for Meta {
+const NAME: &'static str = "Meta";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Meta".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Meta".into() }}
 /// Represent an empty message.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]

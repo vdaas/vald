@@ -2605,6 +2605,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "meta"
+version = "0.1.0"
+dependencies = [
+ "proto",
+ "tokio",
+ "tonic 0.12.2",
+]
+
+[[package]]
 name = "miette"
 version = "7.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
