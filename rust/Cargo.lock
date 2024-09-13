@@ -780,7 +780,7 @@ dependencies = [
  "defer",
  "kv",
  "observability",
- "opentelemetry 0.25.0",
+ "opentelemetry",
  "prost-types",
  "proto",
  "sled",
@@ -838,7 +838,7 @@ name = "observability"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "opentelemetry 0.23.0",
+ "opentelemetry",
  "opentelemetry-otlp",
  "opentelemetry-semantic-conventions",
  "opentelemetry_sdk",
@@ -870,20 +870,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "opentelemetry"
-version = "0.25.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "803801d3d3b71cd026851a53f974ea03df3d179cb758b260136a6c9e22e196af"
-dependencies = [
- "futures-core",
- "futures-sink",
- "js-sys",
- "once_cell",
- "pin-project-lite",
- "thiserror",
-]
-
-[[package]]
 name = "opentelemetry-http"
 version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -892,7 +878,7 @@ dependencies = [
  "async-trait",
  "bytes",
  "http 0.2.12",
- "opentelemetry 0.23.0",
+ "opentelemetry",
  "reqwest",
 ]
 
@@ -905,7 +891,7 @@ dependencies = [
  "async-trait",
  "futures-core",
  "http 0.2.12",
- "opentelemetry 0.23.0",
+ "opentelemetry",
  "opentelemetry-http",
  "opentelemetry-proto",
  "opentelemetry_sdk",
@@ -922,7 +908,7 @@ version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "984806e6cf27f2b49282e2a05e288f30594f3dbc74eb7a6e99422bc48ed78162"
 dependencies = [
- "opentelemetry 0.23.0",
+ "opentelemetry",
  "opentelemetry_sdk",
  "prost 0.12.6",
  "tonic 0.11.0",
@@ -947,7 +933,7 @@ dependencies = [
  "glob",
  "lazy_static",
  "once_cell",
- "opentelemetry 0.23.0",
+ "opentelemetry",
  "ordered-float",
  "percent-encoding",
  "rand",
@@ -1401,6 +1387,21 @@ checksum = "a75fb188eb626b924683e3b95e3a48e63551fcfb51949de2f06a9d91dbee93c9"
 dependencies = [
  "core-foundation-sys",
  "libc",
+]
+
+[[package]]
+name = "test_client"
+version = "0.1.0"
+dependencies = [
+ "defer",
+ "kv",
+ "observability",
+ "opentelemetry",
+ "prost-types",
+ "proto",
+ "sled",
+ "tokio",
+ "tonic 0.12.2",
 ]
 
 [[package]]

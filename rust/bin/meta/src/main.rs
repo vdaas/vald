@@ -74,7 +74,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .attribute("target_node", "target_node")
         .attribute("exported_kubernetes_namaspace", "default")
         .attribute("kubernetes_name", "vald-lb-gateway")
-        .endpoint("http://127.0.0.1:4318")
+        .endpoint("http://127.0.0.1:4317")
         .tracer(Tracer::new().enabled(true));
     let mut observability = ObservabilityImpl::new(observability_cfg)?;
 
