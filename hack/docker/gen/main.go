@@ -86,8 +86,9 @@ COPY {{$files}}
 {{- end}}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
-RUN {{RunMounts .RunMounts}}\
-    echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
+RUN {{RunMounts .RunMounts}} \
+    set -ex \
+    && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
     && apt-get clean \
     && apt-get update -y \
@@ -223,6 +224,9 @@ const (
 	organization          = "vdaas"
 	repository            = "vald"
 	defaultBinaryDir      = "/usr/bin"
+	usrLocal              = "/usr/local"
+	usrLocalBinaryDir     = usrLocal + "/bin"
+	usrLocalLibDir        = usrLocal + "/lib"
 	defaultBuilderImage   = "ghcr.io/vdaas/vald/vald-buildbase"
 	defaultBuilderTag     = "nightly"
 	defaultLanguage       = "en_US.UTF-8"
@@ -230,7 +234,8 @@ const (
 	defaultRuntimeImage   = "gcr.io/distroless/static"
 	defaultRuntimeTag     = "nonroot"
 	defaultRuntimeUser    = "nonroot:nonroot"
-	defaultBuildUser      = "root:root"
+	rootUser              = "root"
+	defaultBuildUser      = rootUser + ":" + rootUser
 	defaultBuildStageName = "builder"
 	maintainerKey         = "MAINTAINER"
 	minimumArgumentLength = 2
@@ -275,28 +280,28 @@ var (
 
 	defaultEnvironments = map[string]string{
 		"DEBIAN_FRONTEND": "noninteractive",
-		"HOME":            "/root",
-		"USER":            "root",
+		"HOME":            "/" + rootUser,
+		"USER":            rootUser,
 		"INITRD":          "No",
 		"LANG":            defaultLanguage,
 		"LANGUAGE":        defaultLanguage,
 		"LC_ALL":          defaultLanguage,
 		"ORG":             organization,
 		"TZ":              "Etc/UTC",
-		"PATH":            "${PATH}:/usr/local/bin",
+		"PATH":            "${PATH}:" + usrLocalBinaryDir,
 		"REPO":            repository,
 	}
 	goDefaultEnvironments = map[string]string{
 		"GOROOT":      "/opt/go",
 		"GOPATH":      "/go",
 		"GO111MODULE": "on",
-		"PATH":        "${PATH}:${GOROOT}/bin:${GOPATH}/bin:/usr/local/bin",
+		"PATH":        "${PATH}:${GOROOT}/bin:${GOPATH}/bin:" + usrLocalBinaryDir,
 	}
 	rustDefaultEnvironments = map[string]string{
-		"RUST_HOME":   "/usr/loacl/lib/rust",
+		"RUST_HOME":   usrLocalLibDir + "/rust",
 		"RUSTUP_HOME": "${RUST_HOME}/rustup",
 		"CARGO_HOME":  "${RUST_HOME}/cargo",
-		"PATH":        "${PATH}:${RUSTUP_HOME}/bin:${CARGO_HOME}/bin:/usr/local/bin",
+		"PATH":        "${PATH}:${RUSTUP_HOME}/bin:${CARGO_HOME}/bin:" + usrLocalBinaryDir,
 	}
 	clangDefaultEnvironments = map[string]string{
 		"CC":  "gcc",
@@ -322,13 +327,13 @@ var (
 	defaultMounts = []string{
 		"--mount=type=bind,target=.,rw",
 		"--mount=type=tmpfs,target=/tmp",
-		"--mount=type=cache,target=/var/lib/apt,sharing=locked",
-		"--mount=type=cache,target=/var/cache/apt,sharing=locked",
+		"--mount=type=cache,target=/var/lib/apt,sharing=locked,id=${APP_NAME}",
+		"--mount=type=cache,target=/var/cache/apt,sharing=locked,id=${APP_NAME}",
 	}
-
 	goDefaultMounts = []string{
 		"--mount=type=cache,target=\"${GOPATH}/pkg\",id=\"go-build-${TARGETARCH}\"",
 		"--mount=type=cache,target=\"${HOME}/.cache/go-build\",id=\"go-build-${TARGETARCH}\"",
+		"--mount=type=tmpfs,target=\"${GOPATH}/src\"",
 	}
 
 	clangBuildDeps = []string{
@@ -373,7 +378,6 @@ var (
 		"make kubelinter/install",
 		"make reviewdog/install",
 		"make tparse/install",
-		"make valdcli/install",
 		"make yq/install",
 		"make minikube/install",
 		"make stern/install",
@@ -598,7 +602,7 @@ func main() {
 				"OPERATOR_SDK_VERSION": "latest",
 			},
 			ExtraCopies: []string{
-				"--from=operator /usr/local/bin/${APP_NAME} {{$.BinDir}}/${APP_NAME}",
+				"--from=operator " + usrLocalBinaryDir + "/${APP_NAME} {{$.BinDir}}/${APP_NAME}",
 			},
 			ExtraImages: []string{
 				"quay.io/operator-framework/helm-operator:${OPERATOR_SDK_VERSION} AS operator",
@@ -629,7 +633,7 @@ func main() {
 			},
 			Entrypoints: []string{"{{$.BinDir}}/{{.AppName}}", "run", "--watches-file=" + helmOperatorWatchFile},
 		},
-		"vald-cli-loadtest": {
+		"vald-loadtest": {
 			AppName:       "loadtest",
 			PackageDir:    "tools/cli/loadtest",
 			ExtraPackages: append(clangBuildDeps, "libhdf5-dev", "libaec-dev"),
@@ -792,9 +796,9 @@ func main() {
 				data.RootDir = "${HOME}"
 				data.Environments["ROOTDIR"] = os.Args[1]
 			}
-			if strings.Contains(data.BuildUser, "root") {
-				data.Environments["HOME"] = "/root"
-				data.Environments["USER"] = "root"
+			if strings.Contains(data.BuildUser, rootUser) {
+				data.Environments["HOME"] = "/" + rootUser
+				data.Environments["USER"] = rootUser
 			} else {
 				user := data.BuildUser
 				if strings.Contains(user, ":") {

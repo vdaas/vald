@@ -503,7 +503,7 @@ func Test_sess_Session(t *testing.T) {
 			},
 		},
 		{
-			name: "set EnableParamValdiation success",
+			name: "set EnableParamValidation success",
 			fields: fields{
 				enableParamValidation: true,
 			},
@@ -532,7 +532,7 @@ func Test_sess_Session(t *testing.T) {
 			},
 		},
 		{
-			name: "set Enable100Conitnue success",
+			name: "set Enable100Continue success",
 			fields: fields{
 				enable100Continue: true,
 			},

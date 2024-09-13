@@ -44,7 +44,7 @@ func WithGatewayAddrs(addrs ...string) MirrorOption {
 			return errors.NewErrCriticalOption("lbAddrs", addrs)
 		}
 		for _, addr := range addrs {
-			m.gwAddrl.Store(addr, struct{}{})
+			m.gwAddrs.Store(addr, struct{}{})
 		}
 		return nil
 	}
@@ -57,7 +57,7 @@ func WithSelfMirrorAddrs(addrs ...string) MirrorOption {
 			return errors.NewErrCriticalOption("selfMirrorAddrs", addrs)
 		}
 		for _, addr := range addrs {
-			m.selfMirrAddrl.Store(addr, struct{}{})
+			m.selfMirrAddrs.Store(addr, struct{}{})
 		}
 		return nil
 	}

@@ -128,7 +128,7 @@ You have to create unit tests for error patterns as the same as success patterns
 
 #### Advanced
 
-##### Robust boudary test
+##### Robust boundary test
 
 The previous section is about the basic test cases.
 The (robust) boundary test should be applied to cover more test coverage.

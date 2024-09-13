@@ -24,7 +24,7 @@ type Logging struct {
 	Format string `json:"format" yaml:"format"`
 }
 
-// Bind returns Logging object whose every value is field value or envirionment value.
+// Bind returns Logging object whose every value is field value or environment value.
 func (l *Logging) Bind() *Logging {
 	l.Logger = GetActualValue(l.Logger)
 	l.Level = GetActualValue(l.Level)

@@ -63,7 +63,7 @@ var (
 
 	// ErrGRPCUnexpectedStatusError represents an error that the gRPC status code is undefined.
 	ErrGRPCUnexpectedStatusError = func(code string, err error) error {
-		return Wrapf(err, "unexcepted error detected: code %s", code)
+		return Wrapf(err, "unexpected error detected: code %s", code)
 	}
 
 	// ErrInvalidProtoMessageType represents an error that the gRPC protocol buffers message type is invalid.

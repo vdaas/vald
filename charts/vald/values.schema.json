@@ -160,12 +160,21 @@
               "type": "string",
               "description": "a factor of load index timeout. timeout duration will be calculated by (index count to be loaded) * (factor)."
             },
-            "m": { "type": "integer" },
+            "m": { "type": "integer", "description": "m" },
             "max_load_index_timeout": {
               "type": "string",
               "description": "maximum duration of load index timeout"
             },
-            "metric_type": { "type": "string", "enum": ["innerproduct", "l2"] },
+            "method_type": {
+              "type": "string",
+              "description": "method type it should be `ivfpq` or `binaryindex`",
+              "enum": ["ivfpq", "binaryindex"]
+            },
+            "metric_type": {
+              "type": "string",
+              "description": "metric type it should be `innerproduct` or `l2`",
+              "enum": ["innerproduct", "l2"]
+            },
             "min_load_index_timeout": {
               "type": "string",
               "description": "minimum duration of load index timeout"
@@ -174,8 +183,11 @@
               "type": "string",
               "description": "namespace of myself"
             },
-            "nbits_per_idx": { "type": "integer" },
-            "nlist": { "type": "integer" },
+            "nbits_per_idx": {
+              "type": "integer",
+              "description": "nbits_per_idx"
+            },
+            "nlist": { "type": "integer", "description": "nlist" },
             "pod_name": {
               "type": "string",
               "description": "pod name of myself"

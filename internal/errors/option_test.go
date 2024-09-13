@@ -50,7 +50,7 @@ func TestNewErrInvalidOption(t *testing.T) {
 			name := "WithPort"
 			val := 9000
 			return test{
-				name: "return ErrInvalidOpton when name and val have a value and errs is empty.",
+				name: "return ErrInvalidOption when name and val have a value and errs is empty.",
 				args: args{
 					name: name,
 					val:  val,
@@ -70,7 +70,7 @@ func TestNewErrInvalidOption(t *testing.T) {
 			}
 			e := errs[0]
 			return test{
-				name: "return ErrInvalidOpton when all of parameter has value.",
+				name: "return ErrInvalidOption when all of parameter has value.",
 				args: args{
 					name: name,
 					val:  val,
@@ -93,7 +93,7 @@ func TestNewErrInvalidOption(t *testing.T) {
 			}
 			e := errs[1]
 			return test{
-				name: "return ErrInvalidOpton when all of parameter has value and errs has nil as value.",
+				name: "return ErrInvalidOption when all of parameter has value and errs has nil as value.",
 				args: args{
 					name: name,
 					val:  val,
@@ -115,7 +115,7 @@ func TestNewErrInvalidOption(t *testing.T) {
 			}
 			e := Wrap(errs[1], errs[0].Error())
 			return test{
-				name: "return ErrInvalidOpton when name is nil and val and errs have values.",
+				name: "return ErrInvalidOption when name is nil and val and errs have values.",
 				args: args{
 					val:  val,
 					errs: errs,
@@ -136,7 +136,7 @@ func TestNewErrInvalidOption(t *testing.T) {
 			}
 			e := Wrap(errs[1], errs[0].Error())
 			return test{
-				name: "return ErrInvalidOpton when val is nil and name and errs have values.",
+				name: "return ErrInvalidOption when val is nil and name and errs have values.",
 				args: args{
 					name: name,
 					errs: errs,

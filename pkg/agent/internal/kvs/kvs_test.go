@@ -229,7 +229,7 @@ func Test_bidi_Get(t *testing.T) {
 			)
 
 			return test{
-				name: "return the value when there is a value for the key and l of fields is maximun value of uint64",
+				name: "return the value when there is a value for the key and l of fields is maximum value of uint64",
 				args: args{
 					key: key,
 				},
@@ -496,7 +496,7 @@ func Test_bidi_GetInverse(t *testing.T) {
 			)
 
 			return test{
-				name: "return key and timestamp and true when there is a key for the value and l of fields is maximun value of uint64",
+				name: "return key and timestamp and true when there is a key for the value and l of fields is maximum value of uint64",
 				args: args{
 					val: val,
 				},
@@ -770,7 +770,7 @@ func Test_bidi_Set(t *testing.T) {
 			)
 
 			return test{
-				name: "set success when the key is not empty string and val is not 0 and l of fields is maximun value of uint64",
+				name: "set success when the key is not empty string and val is not 0 and l of fields is maximum value of uint64",
 				args: args{
 					key: key,
 					val: val,
@@ -806,7 +806,7 @@ func Test_bidi_Set(t *testing.T) {
 			)
 
 			return test{
-				name: "set success when the key is already set and the same key is set twie",
+				name: "set success when the key is already set and the same key is set twice",
 				args: args{
 					key: key,
 					val: val,
@@ -1071,7 +1071,7 @@ func Test_bidi_Delete(t *testing.T) {
 			)
 
 			return test{
-				name: "return val and true when the delete successes and l of fields is maximun value of uint64",
+				name: "return val and true when the delete successes and l of fields is maximum value of uint64",
 				args: args{
 					key: key,
 				},
@@ -1353,7 +1353,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 			)
 
 			return test{
-				name: "return key and true when the delete successes and l of fields is maximun value of uint64",
+				name: "return key and true when the delete successes and l of fields is maximum value of uint64",
 				args: args{
 					val: val,
 				},
@@ -1644,7 +1644,7 @@ func Test_bidi_Range(t *testing.T) {
 			var mu sync.Mutex
 
 			return test{
-				name: "rage get successes when l of fields is maximun value of uint64",
+				name: "rage get successes when l of fields is maximum value of uint64",
 				args: args{
 					f: func(s string, u uint32, t int64) bool {
 						mu.Lock()
@@ -1743,7 +1743,7 @@ func Test_bidi_Len(t *testing.T) {
 			},
 		},
 		{
-			name: "return maximun value when l of field is maximun value of uint64",
+			name: "return maximum value when l of field is maximum value of uint64",
 			fields: fields{
 				l: math.MaxUint64,
 			},
@@ -1793,10 +1793,10 @@ func Test_bidi_Len(t *testing.T) {
 //
 // func Test_bidi_Close(t *testing.T) {
 // 	type fields struct {
-// 		concurrency int
-// 		l           uint64
 // 		ou          [slen]*sync.Map[uint32, valueStructOu]
 // 		uo          [slen]*sync.Map[string, ValueStructUo]
+// 		concurrency int
+// 		l           uint64
 // 	}
 // 	type want struct {
 // 		err error
@@ -1821,10 +1821,10 @@ func Test_bidi_Len(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           concurrency:0,
-// 		           l:0,
 // 		           ou:nil,
 // 		           uo:nil,
+// 		           concurrency:0,
+// 		           l:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1843,10 +1843,10 @@ func Test_bidi_Len(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           concurrency:0,
-// 		           l:0,
 // 		           ou:nil,
 // 		           uo:nil,
+// 		           concurrency:0,
+// 		           l:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1877,10 +1877,10 @@ func Test_bidi_Len(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			b := &bidi{
-// 				concurrency: test.fields.concurrency,
-// 				l:           test.fields.l,
 // 				ou:          test.fields.ou,
 // 				uo:          test.fields.uo,
+// 				concurrency: test.fields.concurrency,
+// 				l:           test.fields.l,
 // 			}
 //
 // 			err := b.Close()

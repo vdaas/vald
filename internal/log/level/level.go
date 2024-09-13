@@ -56,20 +56,44 @@ func (l Level) String() string {
 }
 
 func Atol(str string) Level {
-	str = strings.ToUpper(str)
-	for i := len(str); i > 0; i-- {
-		switch str[:i] {
-		case DEBUG.String(), "DEB", "DEBG", "DB", "DBG", "D":
-			return DEBUG
-		case INFO.String(), "IFO", "INF", "IF", "IN", "I":
-			return INFO
-		case WARN.String(), "WARNING", "WAR", "WRN", "WN", "W":
-			return WARN
-		case ERROR.String(), "ERROR", "ERRO", "ER", "ERR", "E":
-			return ERROR
-		case FATAL.String(), "FATA", "FAT", "FT", "FL", "F":
-			return FATAL
-		}
+	l, ok := map[string]Level{
+		DEBUG.String():       DEBUG,
+		DEBUG.String() + "S": DEBUG,
+		"D":                  DEBUG,
+		"DB":                 DEBUG,
+		"DBG":                DEBUG,
+		"DEB":                DEBUG,
+		"DEBG":               DEBUG,
+		INFO.String():        INFO,
+		INFO.String() + "S":  INFO,
+		"I":                  INFO,
+		"IF":                 INFO,
+		"IFO":                INFO,
+		"IN":                 INFO,
+		"INF":                INFO,
+		WARN.String():        WARN,
+		WARN.String() + "S":  WARN,
+		"W":                  WARN,
+		"WAR":                WARN,
+		"WARNING":            WARN,
+		"WN":                 WARN,
+		"WRN":                WARN,
+		ERROR.String():       ERROR,
+		ERROR.String() + "S": ERROR,
+		"E":                  ERROR,
+		"ER":                 ERROR,
+		"ERR":                ERROR,
+		"ERRO":               ERROR,
+		FATAL.String():       FATAL,
+		FATAL.String() + "S": FATAL,
+		"F":                  FATAL,
+		"FAT":                FATAL,
+		"FATA":               FATAL,
+		"FL":                 FATAL,
+		"FT":                 FATAL,
+	}[strings.ToUpper(str)]
+	if ok {
+		return l
 	}
 	return Unknown
 }

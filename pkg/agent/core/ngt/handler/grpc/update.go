@@ -372,3 +372,100 @@ func (s *server) MultiUpdate(
 	}
 	return s.newLocations(uuids...), nil
 }
+
+func (s *server) UpdateTimestamp(
+	ctx context.Context, req *payload.Update_TimestampRequest,
+) (res *payload.Object_Location, err error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpdateRPCServiceName+"/"+vald.UpdateTimestampRPCName), apiName+"/"+vald.UpdateTimestampRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	uuid := req.GetId()
+	reqInfo := &errdetails.RequestInfo{
+		RequestId:   uuid,
+		ServingData: errdetails.Serialize(req),
+	}
+	resInfo := &errdetails.ResourceInfo{
+		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateTimestampRPCName + "." + vald.GetObjectRPCName,
+		ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+	}
+	if len(uuid) == 0 {
+		err = errors.ErrInvalidUUID(uuid)
+		err = status.WrapWithInvalidArgument(vald.UpdateTimestampRPCName+" API invalid uuid", err, reqInfo, resInfo,
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "invalid id",
+						Description: err.Error(),
+					},
+				},
+			})
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	ts := req.GetTimestamp()
+	if !req.GetForce() && ts < 0 {
+		err = errors.ErrInvalidTimestamp(ts)
+		err = status.WrapWithInvalidArgument(vald.UpdateTimestampRPCName+" API invalid vector argument", err, reqInfo, resInfo,
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "timestamp",
+						Description: err.Error(),
+					},
+				},
+			}, info.Get())
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	err = s.ngt.UpdateTimestamp(uuid, ts, req.GetForce())
+	if err != nil {
+		var attrs []attribute.KeyValue
+		if errors.Is(err, errors.ErrFlushingIsInProgress) {
+			err = status.WrapWithAborted(vald.UpdateTimestampRPCName+" API aborted to process update request due to flushing indices is in progress", err, reqInfo, resInfo)
+			log.Warn(err)
+			attrs = trace.StatusCodeAborted(err.Error())
+		} else if errors.Is(err, errors.ErrObjectNotFound(nil, uuid)) {
+			err = status.WrapWithNotFound(fmt.Sprintf(vald.UpdateTimestampRPCName+" API uuid %s's data not found", uuid), err, reqInfo, resInfo)
+			log.Warn(err)
+			attrs = trace.StatusCodeNotFound(err.Error())
+		} else if errors.Is(err, errors.ErrZeroTimestamp) || errors.Is(err, errors.ErrUUIDNotFound(0)) {
+			err = status.WrapWithInvalidArgument(fmt.Sprintf(vald.UpdateTimestampRPCName+" API invalid argument for uuid \"%s\" detected", uuid), err, reqInfo, resInfo,
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       "uuid, timestamp",
+							Description: err.Error(),
+						},
+					},
+				})
+			log.Warn(err)
+			attrs = trace.StatusCodeInvalidArgument(err.Error())
+		} else if errors.Is(err, errors.ErrNewerTimestampObjectAlreadyExists(uuid, ts)) {
+			err = status.WrapWithAlreadyExists(fmt.Sprintf(vald.UpdateTimestampRPCName+" API uuid %s's newer timestamp already exists", uuid), err, reqInfo, resInfo)
+			log.Warn(err)
+			attrs = trace.StatusCodeAlreadyExists(err.Error())
+		} else {
+			err = status.WrapWithInternal(vald.UpdateTimestampRPCName+" API failed", err, reqInfo, resInfo, info.Get())
+			log.Error(err)
+			attrs = trace.StatusCodeInternal(err.Error())
+		}
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(attrs...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	return s.newLocation(uuid), nil
+}
