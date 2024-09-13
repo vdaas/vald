@@ -124,6 +124,8 @@ pub mod filter_client {
                 .insert(GrpcMethod::new("vald.v1.Filter", "SearchObject"));
             self.inner.unary(req, path, codec).await
         }
+        /** A method to search multiple objects.
+*/
         pub async fn multi_search_object(
             &mut self,
             request: impl tonic::IntoRequest<
@@ -475,6 +477,8 @@ pub mod filter_server {
             tonic::Response<super::super::super::payload::v1::search::Response>,
             tonic::Status,
         >;
+        /** A method to search multiple objects.
+*/
         async fn multi_search_object(
             &self,
             request: tonic::Request<
@@ -4042,6 +4046,8 @@ pub mod search_client {
             req.extensions_mut().insert(GrpcMethod::new("vald.v1.Search", "Search"));
             self.inner.unary(req, path, codec).await
         }
+        /** A method to search indexed vectors by ID.
+*/
         pub async fn search_by_id(
             &mut self,
             request: impl tonic::IntoRequest<
@@ -4392,6 +4398,8 @@ pub mod search_server {
             tonic::Response<super::super::super::payload::v1::search::Response>,
             tonic::Status,
         >;
+        /** A method to search indexed vectors by ID.
+*/
         async fn search_by_id(
             &self,
             request: tonic::Request<super::super::super::payload::v1::search::IdRequest>,

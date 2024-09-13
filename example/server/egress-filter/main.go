@@ -38,9 +38,9 @@ var (
 func init() {
 	// init initializes the command-line flags with default values for the filter setup.
 	/**
-	Port option specifies grpc server port of your egress filter. Default value is `8083`.
-	Dimension option specifies dimension size of vectors. Default value is  `784`.
-	**/
+	  Port option specifies grpc server port of your egress filter. Default value is `8083`.
+	  Dimension option specifies dimension size of vectors. Default value is  `784`.
+	  **/
 	flag.UintVar(&egressServerPort, "port", 8083, "server port")
 	flag.UintVar(&dimension, "dimension", 784, "dimension size of vectors")
 	flag.Parse()
@@ -59,7 +59,9 @@ type myEgressServer struct {
 	egress.UnimplementedFilterServer
 }
 
-func (s *myEgressServer) FilterDistance(ctx context.Context, in *payload.Filter_DistanceRequest) (*payload.Filter_DistanceResponse, error) {
+func (s *myEgressServer) FilterDistance(
+	ctx context.Context, in *payload.Filter_DistanceRequest,
+) (*payload.Filter_DistanceResponse, error) {
 	glg.Log("filtering vector %#v", in)
 	qCategory, ok := getSplitValue(in.GetQuery().GetQuery(), "=", 1)
 	if !ok {
@@ -89,7 +91,9 @@ func (s *myEgressServer) FilterDistance(ctx context.Context, in *payload.Filter_
 	}, nil
 }
 
-func (s *myEgressServer) FilterVector(ctx context.Context, in *payload.Filter_VectorRequest) (*payload.Filter_VectorResponse, error) {
+func (s *myEgressServer) FilterVector(
+	ctx context.Context, in *payload.Filter_VectorRequest,
+) (*payload.Filter_VectorResponse, error) {
 	// Write your own logic
 	glg.Logf("filtering the vector %#v", in)
 	return &payload.Filter_VectorResponse{

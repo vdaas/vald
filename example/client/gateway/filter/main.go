@@ -50,14 +50,14 @@ var (
 func init() {
 	// init initializes the command-line flags with default values for the filter client setup.
 	/**
-	Addr option specifies grpc server address of filter gateway. Default value is `127.0.0.1:8081`.
-	Ingresshost option specifies grpc server host of your ingress filter. Default value is `127.0.0.1`.
-	Ingressport option specifies grpc server port of your ingress filter. Default value is `8082`.
-	Egresshost option specifies grpc server host of your egress filter. Default value is `127.0.0.1`.
-	Egressport option specifies grpc server port of your egress filter. Default value is `8083`.
-	Wait option specifies indexing wait time (in seconds). Default value is  `240`.
-	Dimension option specifies dimension size of vectors. Default value is  `784`.
-	**/
+	  Addr option specifies grpc server address of filter gateway. Default value is `127.0.0.1:8081`.
+	  Ingresshost option specifies grpc server host of your ingress filter. Default value is `127.0.0.1`.
+	  Ingressport option specifies grpc server port of your ingress filter. Default value is `8082`.
+	  Egresshost option specifies grpc server host of your egress filter. Default value is `127.0.0.1`.
+	  Egressport option specifies grpc server port of your egress filter. Default value is `8083`.
+	  Wait option specifies indexing wait time (in seconds). Default value is  `240`.
+	  Dimension option specifies dimension size of vectors. Default value is  `784`.
+	  **/
 	flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "gRPC server address of filter gateway")
 	flag.StringVar(&ingressServerHost, "ingresshost", "127.0.0.1", "ingress server host")
 	flag.UintVar(&ingressServerPort, "ingressport", 8082, "ingress server port")

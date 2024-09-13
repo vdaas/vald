@@ -41,10 +41,10 @@ var (
 
 func init() {
 	/**
-	Ingresshost option specifies grpc server host of your egress filter. Default value is `127.0.0.1`.
-	Ingressport option specifies grpc server port of your egress filter. Default value is `8083`.
-	Dimension option specifies dimension size of vectors. Default value is  `784`.
-	**/
+	  Ingresshost option specifies grpc server host of your egress filter. Default value is `127.0.0.1`.
+	  Ingressport option specifies grpc server port of your egress filter. Default value is `8083`.
+	  Dimension option specifies dimension size of vectors. Default value is  `784`.
+	  **/
 	flag.StringVar(&egressServerHost, "host", "127.0.0.1", "ingress server host")
 	flag.UintVar(&egressServerPort, "port", 8083, "ingress server port")
 	flag.UintVar(&dimension, "dimension", 784, "dimension size of vectors")

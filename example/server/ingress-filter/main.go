@@ -35,9 +35,9 @@ var (
 
 func init() {
 	/**
-	Port option specifies grpc server port of your ingress filter. Default value is `8082`.
-	Dimension option specifies dimension size of vectors. Default value is  `784`.
-	**/
+	  Port option specifies grpc server port of your ingress filter. Default value is `8082`.
+	  Dimension option specifies dimension size of vectors. Default value is  `784`.
+	  **/
 	flag.UintVar(&ingressServerPort, "port", 8082, "server port")
 	flag.UintVar(&dimension, "dimension", 784, "dimension size of vectors")
 	flag.Parse()
@@ -47,7 +47,9 @@ type myIngressServer struct {
 	ingress.UnimplementedFilterServer
 }
 
-func (s *myIngressServer) GenVector(ctx context.Context, in *payload.Object_Blob) (*payload.Object_Vector, error) {
+func (s *myIngressServer) GenVector(
+	ctx context.Context, in *payload.Object_Blob,
+) (*payload.Object_Vector, error) {
 	// Write your own logic
 	glg.Logf("generating vector %#v", in)
 	vec, err := vector.GenF32Vec(vector.Gaussian, 1, int(dimension))
@@ -60,7 +62,9 @@ func (s *myIngressServer) GenVector(ctx context.Context, in *payload.Object_Blob
 	}, nil
 }
 
-func (s *myIngressServer) FilterVector(ctx context.Context, in *payload.Object_Vector) (*payload.Object_Vector, error) {
+func (s *myIngressServer) FilterVector(
+	ctx context.Context, in *payload.Object_Vector,
+) (*payload.Object_Vector, error) {
 	// Write your own logic
 	glg.Logf("filtering vector %#v", in)
 	return in, nil
