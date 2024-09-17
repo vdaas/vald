@@ -5,16 +5,16 @@ go 1.23.1
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.115.1
 	cloud.google.com/go/bigquery => cloud.google.com/go/bigquery v1.62.0
-	cloud.google.com/go/compute => cloud.google.com/go/compute v1.28.0
+	cloud.google.com/go/compute => cloud.google.com/go/compute v1.28.1
 	cloud.google.com/go/datastore => cloud.google.com/go/datastore v1.19.0
 	cloud.google.com/go/firestore => cloud.google.com/go/firestore v1.17.0
-	cloud.google.com/go/iam => cloud.google.com/go/iam v1.2.0
-	cloud.google.com/go/kms => cloud.google.com/go/kms v1.19.0
-	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.21.0
+	cloud.google.com/go/iam => cloud.google.com/go/iam v1.2.1
+	cloud.google.com/go/kms => cloud.google.com/go/kms v1.19.1
+	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.21.1
 	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub v1.43.0
-	cloud.google.com/go/secretmanager => cloud.google.com/go/secretmanager v1.14.0
+	cloud.google.com/go/secretmanager => cloud.google.com/go/secretmanager v1.14.1
 	cloud.google.com/go/storage => cloud.google.com/go/storage v1.43.0
-	cloud.google.com/go/trace => cloud.google.com/go/trace v1.11.0
+	cloud.google.com/go/trace => cloud.google.com/go/trace v1.11.1
 	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt v0.10.0
 	contrib.go.opencensus.io/exporter/aws => contrib.go.opencensus.io/exporter/aws v0.0.0-20230502192102-15967c811cec
 	contrib.go.opencensus.io/exporter/prometheus => contrib.go.opencensus.io/exporter/prometheus v0.4.2
@@ -47,10 +47,10 @@ replace (
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.55.5
 	github.com/aws/aws-sdk-go-v2 => github.com/aws/aws-sdk-go-v2 v1.30.5
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream => github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.4
-	github.com/aws/aws-sdk-go-v2/config => github.com/aws/aws-sdk-go-v2/config v1.27.33
+	github.com/aws/aws-sdk-go-v2/config => github.com/aws/aws-sdk-go-v2/config v1.27.34
 	github.com/aws/aws-sdk-go-v2/credentials => github.com/aws/aws-sdk-go-v2/credentials v1.17.32
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds => github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.13
-	github.com/aws/aws-sdk-go-v2/feature/s3/manager => github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.18
+	github.com/aws/aws-sdk-go-v2/feature/s3/manager => github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.19
 	github.com/aws/aws-sdk-go-v2/internal/configsources => github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.17
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 => github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.17
 	github.com/aws/aws-sdk-go-v2/internal/ini => github.com/aws/aws-sdk-go-v2/internal/ini v1.8.1
@@ -82,7 +82,7 @@ replace (
 	github.com/cncf/xds/go => github.com/cncf/xds/go v0.0.0-20240905190251-b4127c9b8d78
 	github.com/cockroachdb/apd => github.com/cockroachdb/apd v1.1.0
 	github.com/coreos/go-systemd/v22 => github.com/coreos/go-systemd/v22 v22.5.0
-	github.com/cpuguy83/go-md2man/v2 => github.com/cpuguy83/go-md2man/v2 v2.0.4
+	github.com/cpuguy83/go-md2man/v2 => github.com/cpuguy83/go-md2man/v2 v2.0.5
 	github.com/creack/pty => github.com/creack/pty v1.1.23
 	github.com/davecgh/go-spew => github.com/davecgh/go-spew v1.1.1
 	github.com/denisenkom/go-mssqldb => github.com/denisenkom/go-mssqldb v0.12.3
@@ -170,7 +170,7 @@ replace (
 	github.com/hashicorp/go-uuid => github.com/hashicorp/go-uuid v1.0.3
 	github.com/hashicorp/go-version => github.com/hashicorp/go-version v1.7.0
 	github.com/iancoleman/strcase => github.com/iancoleman/strcase v0.3.0
-	github.com/ianlancetaylor/demangle => github.com/ianlancetaylor/demangle v0.0.0-20240805132620-81f5be970eca
+	github.com/ianlancetaylor/demangle => github.com/ianlancetaylor/demangle v0.0.0-20240912202439-0a2b6291aafd
 	github.com/inconshreveable/mousetrap => github.com/inconshreveable/mousetrap v1.1.0
 	github.com/jackc/chunkreader/v2 => github.com/jackc/chunkreader/v2 v2.0.1
 	github.com/jackc/pgconn => github.com/jackc/pgconn v1.14.3
@@ -196,7 +196,7 @@ replace (
 	github.com/klauspost/cpuid/v2 => github.com/klauspost/cpuid/v2 v2.2.8
 	github.com/kpango/fastime => github.com/kpango/fastime v1.1.9
 	github.com/kpango/fuid => github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
-	github.com/kpango/gache/v2 => github.com/kpango/gache/v2 v2.0.10
+	github.com/kpango/gache/v2 => github.com/kpango/gache/v2 v2.0.11
 	github.com/kpango/glg => github.com/kpango/glg v1.6.15
 	github.com/kr/fs => github.com/kr/fs v0.1.0
 	github.com/kr/pretty => github.com/kr/pretty v0.3.1
@@ -237,7 +237,7 @@ replace (
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.6
 	github.com/pmezard/go-difflib => github.com/pmezard/go-difflib v1.0.0
 	github.com/prashantv/gostub => github.com/prashantv/gostub v1.1.0
-	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.20.3
+	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.20.4
 	github.com/prometheus/client_model => github.com/prometheus/client_model v0.6.1
 	github.com/prometheus/common => github.com/prometheus/common v0.59.1
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.15.1
