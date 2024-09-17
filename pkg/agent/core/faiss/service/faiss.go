@@ -42,6 +42,7 @@ import (
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/agent/internal/kvs"
+	"github.com/vdaas/vald/pkg/agent/internal/memstore"
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 	"github.com/vdaas/vald/pkg/agent/internal/vqueue"
 )
@@ -49,23 +50,25 @@ import (
 type (
 	Faiss interface {
 		Start(ctx context.Context) <-chan error
-		Train(nb int, xb []float32) error
-		Insert(uuid string, xb []float32) error
-		InsertWithTime(uuid string, vec []float32, t int64) error
-		Update(uuid string, vec []float32) error
-		UpdateWithTime(uuid string, vec []float32, t int64) error
-		CreateIndex(ctx context.Context) error
-		SaveIndex(ctx context.Context) error
-		CreateAndSaveIndex(ctx context.Context) error
-		Search(k, nq uint32, xq []float32) (*payload.Search_Response, error)
-		Delete(uuid string) error
-		DeleteWithTime(uuid string, t int64) error
+		Search(k, nprobe, nq uint32, xq []float32) (*payload.Search_Response, error)
+		Insert(uuid string, vec []float32) (err error)
+		InsertWithTime(uuid string, vec []float32, t int64) (err error)
+		Update(uuid string, vec []float32) (err error)
+		UpdateWithTime(uuid string, vec []float32, t int64) (err error)
+		UpdateTimestamp(uuid string, ts int64, force bool) (err error)
+		Delete(uuid string) (err error)
+		DeleteWithTime(uuid string, t int64) (err error)
 		Exists(uuid string) (uint32, bool)
+		CreateIndex(ctx context.Context) (err error)
+		SaveIndex(ctx context.Context) (err error)
+		CreateAndSaveIndex(ctx context.Context) (err error)
+		Train(nb int, vec []float32) (err error)
 		IsIndexing() bool
 		IsSaving() bool
+		Len() uint64
 		NumberOfCreateIndexExecution() uint64
 		NumberOfProactiveGCExecution() uint64
-		Len() uint64
+		UUIDs(context.Context) (uuids []string)
 		InsertVQueueBufferLen() uint64
 		DeleteVQueueBufferLen() uint64
 		GetDimensionSize() int
@@ -189,6 +192,7 @@ func New(cfg *config.Faiss, opts ...Option) (Faiss, error) {
 		core.WithNlist(cfg.Nlist),
 		core.WithM(cfg.M),
 		core.WithNbitsPerIdx(cfg.NbitsPerIdx),
+		core.WithMethodType(cfg.MethodType),
 		core.WithMetricType(cfg.MetricType),
 	)
 	if err != nil {
@@ -721,6 +725,10 @@ func (f *faiss) update(uuid string, vec []float32, t int64) (err error) {
 	return f.insert(uuid, vec, t, false)
 }
 
+func (f *faiss) UpdateTimestamp(uuid string, ts int64, force bool) (err error) {
+	return memstore.UpdateTimestamp(f.kvs, f.vq, uuid, ts, force, nil)
+}
+
 func (f *faiss) readyForUpdate(uuid string, vec []float32) (err error) {
 	if len(uuid) == 0 {
 		return errors.ErrUUIDNotFound(0)
@@ -915,7 +923,7 @@ func (f *faiss) saveIndex(ctx context.Context) error {
 	// no cleanup invalid index
 
 	eg, ectx := errgroup.New(ctx)
-	// we want to ensure the acutal kvs size between kvsdb and metadata,
+	// we want to ensure the actual kvs size between kvsdb and metadata,
 	// so we create this counter to count the actual kvs size instead of using kvs.Len()
 	var (
 		kvsLen uint64
@@ -931,10 +939,14 @@ func (f *faiss) saveIndex(ctx context.Context) error {
 	f.smu.Lock()
 	defer f.smu.Unlock()
 
-	eg.Go(safety.RecoverFunc(func() (err error) {
-		if f.kvs.Len() > 0 && path != "" {
+	if f.kvs.Len() > 0 && path != "" {
+		eg.Go(safety.RecoverFunc(func() (err error) {
 			m := make(map[string]uint32, f.Len())
 			mt := make(map[string]int64, f.Len())
+			defer func() {
+				m = nil
+				mt = nil
+			}()
 			var mu sync.Mutex
 
 			f.kvs.Range(ectx, func(key string, id uint32, ts int64) bool {
@@ -1007,10 +1019,10 @@ func (f *faiss) saveIndex(ctx context.Context) error {
 			}
 
 			mt = make(map[string]int64)
-		}
 
-		return nil
-	}))
+			return nil
+		}))
+	}
 
 	eg.Go(safety.RecoverFunc(func() (err error) {
 		f.fmu.Lock()
@@ -1031,7 +1043,7 @@ func (f *faiss) saveIndex(ctx context.Context) error {
 				if fi != nil {
 					derr := fi.Close()
 					if derr != nil {
-						err = errors.Wrap(err, derr.Error())
+						err = errors.Join(err, derr)
 					}
 				}
 			}()
@@ -1043,7 +1055,6 @@ func (f *faiss) saveIndex(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
-
 			err = fi.Sync()
 			if err != nil {
 				return err
@@ -1122,12 +1133,17 @@ func (f *faiss) CreateAndSaveIndex(ctx context.Context) error {
 	return f.SaveIndex(ctx)
 }
 
-func (f *faiss) Search(k, nq uint32, xq []float32) (res *payload.Search_Response, err error) {
+func (f *faiss) Search(
+	k, nprobe, nq uint32, xq []float32,
+) (res *payload.Search_Response, err error) {
 	if f.IsIndexing() {
 		return nil, errors.ErrCreateIndexingIsInProgress
 	}
+	if nprobe == 0 {
+		nprobe = 1
+	}
 
-	sr, err := f.core.Search(int(k), int(nq), xq)
+	sr, err := f.core.Search(int(k), int(nprobe), int(nq), xq)
 	if err != nil {
 		if f.IsIndexing() {
 			return nil, errors.ErrCreateIndexingIsInProgress
@@ -1161,7 +1177,8 @@ func (f *faiss) delete(uuid string, t int64, validation bool) error {
 
 	if validation {
 		_, _, ok := f.kvs.Get(uuid)
-		if !ok && !f.vq.IVExists(uuid) {
+		_, ivqok := f.vq.IVExists(uuid)
+		if !ok && !ivqok {
 			return errors.ErrObjectIDNotFound(uuid)
 		}
 	}
@@ -1169,27 +1186,12 @@ func (f *faiss) delete(uuid string, t int64, validation bool) error {
 	return f.vq.PushDelete(uuid, t)
 }
 
-func (f *faiss) Exists(uuid string) (uint32, bool) {
-	var (
-		oid uint32
-		ok  bool
-	)
+func (f *faiss) Exists(uuid string) (oid uint32, ok bool) {
+	return memstore.Exists(f.kvs, f.vq, uuid)
+}
 
-	ok = f.vq.IVExists(uuid)
-	if !ok {
-		oid, _, ok = f.kvs.Get(uuid)
-		if !ok {
-			log.Debugf("Exists\tuuid: %s's data not found in kvsdb and insert vqueue\terror: %v", uuid, errors.ErrObjectIDNotFound(uuid))
-			return 0, false
-		}
-		if f.vq.DVExists(uuid) {
-			log.Debugf("Exists\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon\terror: %v",
-				uuid, errors.ErrObjectIDNotFound(uuid))
-			return 0, false
-		}
-	}
-
-	return oid, ok
+func (f *faiss) GetObject(uuid string) (vec []float32, timestamp int64, err error) {
+	return memstore.GetObject(f.kvs, f.vq, uuid, nil)
 }
 
 func (f *faiss) IsIndexing() bool {
@@ -1200,6 +1202,10 @@ func (f *faiss) IsIndexing() bool {
 func (f *faiss) IsSaving() bool {
 	s, ok := f.saving.Load().(bool)
 	return s && ok
+}
+
+func (f *faiss) UUIDs(ctx context.Context) (uuids []string) {
+	return memstore.UUIDs(ctx, f.kvs, f.vq)
 }
 
 func (f *faiss) NumberOfCreateIndexExecution() uint64 {
@@ -1237,8 +1243,20 @@ func (f *faiss) GetTrainSize() int {
 	return f.trainSize
 }
 
-func (f *faiss) Close(ctx context.Context) error {
-	err := f.kvs.Close()
+func (f *faiss) Close(ctx context.Context) (err error) {
+	defer f.core.Close()
+	defer func() {
+		kerr := f.kvs.Close()
+		if kerr != nil &&
+			!errors.Is(err, context.Canceled) &&
+			!errors.Is(err, context.DeadlineExceeded) {
+			if err != nil {
+				err = errors.Join(kerr, err)
+			} else {
+				err = kerr
+			}
+		}
+	}()
 	if len(f.path) != 0 {
 		cerr := f.CreateIndex(ctx)
 		if cerr != nil &&
@@ -1246,28 +1264,33 @@ func (f *faiss) Close(ctx context.Context) error {
 			!errors.Is(err, context.Canceled) &&
 			!errors.Is(err, context.DeadlineExceeded) {
 			if err != nil {
-				err = errors.Wrap(cerr, err.Error())
+				err = errors.Join(cerr, err)
 			} else {
 				err = cerr
 			}
 		}
-
 		serr := f.SaveIndex(ctx)
 		if serr != nil &&
 			!errors.Is(err, errors.ErrUncommittedIndexNotFound) &&
 			!errors.Is(err, context.Canceled) &&
 			!errors.Is(err, context.DeadlineExceeded) {
 			if err != nil {
-				err = errors.Wrap(serr, err.Error())
+				err = errors.Join(serr, err)
 			} else {
 				err = serr
 			}
 		}
 	}
+	return err
+}
 
-	f.core.Close()
-
-	return nil
+// ListObjectFunc applies the input function on each index stored in the kvs and vqueue.
+// Use this function for performing something on each object with caring about the memory usage.
+// If the vector exists in the vqueue, this vector is not indexed so the oid(object ID) is processed as 0.
+func (f *faiss) ListObjectFunc(
+	ctx context.Context, fn func(uuid string, oid uint32, ts int64) bool,
+) {
+	memstore.ListObjectFunc(ctx, f.kvs, f.vq, fn)
 }
 
 func (f *faiss) toSearchResponse(

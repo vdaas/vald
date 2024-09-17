@@ -530,7 +530,7 @@ defaults:
             reuse_port: true
             # defaults.server_config.healths.readiness.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
             reuse_addr: true
-            # defaults.server_config.healths.readiness.server.socket_option.tcp_fast_oepn -- server listen socket option for tcp_fast_open functionality
+            # defaults.server_config.healths.readiness.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: true
             # defaults.server_config.healths.readiness.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
             tcp_no_delay: true
@@ -2295,18 +2295,22 @@ agent:
     # @schema {"name": "agent.faiss.dimension", "type": "integer", "minimum": 1}
     # agent.faiss.dimension -- vector dimension
     dimension: 4096
+    # @schema {"name": "agent.faiss.method_type", "type": "string", "enum": ["ivfpq", "binaryindex"]}
+    # agent.faiss.method_type -- method type
+    # it should be `ivfpq` or `binaryindex`
+    method_type: ivfpq
     # @schema {"name": "agent.faiss.metric_type", "type": "string", "enum": ["innerproduct", "l2"]}
-    # agent.faiss.metric_type-- metric type
+    # agent.faiss.metric_type -- metric type
     # it should be `innerproduct` or `l2`
     metric_type: l2
     # @schema {"name": "agent.faiss.nlist", "type": "integer"}
-    # agent.faiss.nlist-- nlist
+    # agent.faiss.nlist -- nlist
     nlist: 100
     # @schema {"name": "agent.faiss.m", "type": "integer"}
-    # agent.faiss.m-- m
+    # agent.faiss.m -- m
     m: 8
     # @schema {"name": "agent.faiss.nbits_per_idx", "type": "integer"}
-    # agent.faiss.nbits_per_idx-- nbits_per_idx
+    # agent.faiss.nbits_per_idx -- nbits_per_idx
     nbits_per_idx: 8
     # @schema {"name": "agent.faiss.enable_in_memory_mode", "type": "boolean"}
     # agent.faiss.enable_in_memory_mode -- in-memory mode enabled

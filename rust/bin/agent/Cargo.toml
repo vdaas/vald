@@ -22,8 +22,12 @@ edition = "2021"
 
 [dependencies]
 algorithm = { version = "0.1.0", path = "../../libs/algorithm" }
-prost = "0.13.1"
+anyhow = "1.0.88"
+cargo = "0.81.0"
+prost = "0.13.2"
+prost-types = "0.13.2"
 proto = { version = "0.1.0", path = "../../libs/proto" }
-tokio = { version = "1.39.3", features = ["full"] }
-tokio-stream = { version = "0.1.15", features = ["full"] }
-tonic = "0.12.1"
+tokio = { version = "1.40.0", features = ["full"] }
+tokio-stream = { version = "0.1.16", features = ["full"] }
+tonic = "0.12.2"
+tonic-types = "0.12.2"

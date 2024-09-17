@@ -18,35 +18,6 @@
 package errors
 
 var (
-
-	// ErrFlushingIsInProgress represents an error that the flushing is in progress, but any request has been received.
-	ErrFlushingIsInProgress = New("flush is in progress")
-
-	// ErrUUIDAlreadyExists represents a function to generate an error that the uuid already exists.
-	ErrUUIDAlreadyExists = func(uuid string) error {
-		return Errorf("ngt uuid %s index already exists", uuid)
-	}
-
-	// ErrUUIDNotFound represents a function to generate an error that the uuid is not found.
-	ErrUUIDNotFound = func(id uint32) error {
-		if id == 0 {
-			return New("ngt object uuid not found")
-		}
-		return Errorf("ngt object uuid %d's metadata not found", id)
-	}
-
-	// ErrObjectIDNotFound represents a function to generate an error that the object id is not found.
-	ErrObjectIDNotFound = func(uuid string) error {
-		return Errorf("ngt uuid %s's object id not found", uuid)
-	}
-
-	// ErrRemoveRequestedBeforeIndexing represents a function to generate an error that the object is not indexed so can not remove it.
-	ErrRemoveRequestedBeforeIndexing = func(oid uint) error {
-		return Errorf("object id %d is not indexed we cannot remove it", oid)
-	}
-
-	ErrSearchResultEmptyButNoDataStored = New("empty search result from cgo but no index data stored in ngt, this error can be ignored.")
-
 	ErrNGTIndexStatisticsDisabled = New("ngt get statistics is disabled")
 
 	ErrNGTIndexStatisticsNotReady = New("ngt get statistics is not ready")

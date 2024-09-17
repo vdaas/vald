@@ -14,14 +14,29 @@
 // limitations under the License.
 //
 mod common;
-mod index;
-mod insert;
-mod remove;
-mod search;
-mod update;
-mod upsert;
+pub mod index;
+pub mod insert;
+pub mod remove;
+pub mod search;
+pub mod update;
+pub mod upsert;
 
-#[derive(Default, Debug)]
 pub struct Agent {
-    
+    s: Box<dyn algorithm::ANN>,
+    name: String,
+    ip: String,
+    resource_type: String,
+    api_name: String,
+}
+
+impl Agent {
+    pub fn new(s: impl algorithm::ANN + 'static, name: &str, ip: &str, resource_type: &str, api_name: &str) -> Self {
+        Self {
+            s: Box::new(s),
+            name: name.to_string(),
+            ip: ip.to_string(),
+            resource_type: resource_type.to_string(),
+            api_name: api_name.to_string(),
+        }
+    }
 }

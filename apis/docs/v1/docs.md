@@ -50,6 +50,10 @@
   - [Insert.MultiRequest](#payload-v1-Insert-MultiRequest)
   - [Insert.ObjectRequest](#payload-v1-Insert-ObjectRequest)
   - [Insert.Request](#payload-v1-Insert-Request)
+  - [Meta](#payload-v1-Meta)
+  - [Meta.Key](#payload-v1-Meta-Key)
+  - [Meta.KeyValue](#payload-v1-Meta-KeyValue)
+  - [Meta.Value](#payload-v1-Meta-Value)
   - [Mirror](#payload-v1-Mirror)
   - [Mirror.Target](#payload-v1-Mirror-Target)
   - [Mirror.Targets](#payload-v1-Mirror-Targets)
@@ -96,6 +100,7 @@
   - [Update.MultiRequest](#payload-v1-Update-MultiRequest)
   - [Update.ObjectRequest](#payload-v1-Update-ObjectRequest)
   - [Update.Request](#payload-v1-Update-Request)
+  - [Update.TimestampRequest](#payload-v1-Update-TimestampRequest)
   - [Upsert](#payload-v1-Upsert)
   - [Upsert.Config](#payload-v1-Upsert-Config)
   - [Upsert.MultiObjectRequest](#payload-v1-Upsert-MultiObjectRequest)
@@ -115,6 +120,8 @@
   - [Filter](#filter-egress-v1-Filter)
 - [v1/filter/ingress/ingress_filter.proto](#v1_filter_ingress_ingress_filter-proto)
   - [Filter](#filter-ingress-v1-Filter)
+- [v1/meta/meta.proto](#v1_meta_meta-proto)
+  - [Meta](#meta-v1-Meta)
 - [v1/mirror/mirror.proto](#v1_mirror_mirror-proto)
   - [Mirror](#mirror-v1-Mirror)
 - [v1/rpc/errdetails/error_details.proto](#v1_rpc_errdetails_error_details-proto)
@@ -651,6 +658,35 @@ Represent the insert request.
 | vector | [Object.Vector](#payload-v1-Object-Vector) |       | The vector to be inserted.               |
 | config | [Insert.Config](#payload-v1-Insert-Config) |       | The configuration of the insert request. |
 
+<a name="payload-v1-Meta"></a>
+
+### Meta
+
+<a name="payload-v1-Meta-Key"></a>
+
+### Meta.Key
+
+| Field | Type              | Label | Description |
+| ----- | ----------------- | ----- | ----------- |
+| key   | [string](#string) |       |             |
+
+<a name="payload-v1-Meta-KeyValue"></a>
+
+### Meta.KeyValue
+
+| Field | Type                                 | Label | Description |
+| ----- | ------------------------------------ | ----- | ----------- |
+| key   | [Meta.Key](#payload-v1-Meta-Key)     |       |             |
+| value | [Meta.Value](#payload-v1-Meta-Value) |       |             |
+
+<a name="payload-v1-Meta-Value"></a>
+
+### Meta.Value
+
+| Field | Type                                        | Label | Description |
+| ----- | ------------------------------------------- | ----- | ----------- |
+| value | [google.protobuf.Any](#google-protobuf-Any) |       |             |
+
 <a name="payload-v1-Mirror"></a>
 
 ### Mirror
@@ -959,6 +995,7 @@ Represent search configuration.
 | min_num               | [uint32](#uint32)                                                      |       | Minimum number of result to be returned.     |
 | aggregation_algorithm | [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm) |       | Aggregation Algorithm                        |
 | ratio                 | [google.protobuf.FloatValue](#google-protobuf-FloatValue)              |       | Search ratio for agent return result number. |
+| nprobe                | [uint32](#uint32)                                                      |       | Search nprobe.                               |
 
 <a name="payload-v1-Search-IDRequest"></a>
 
@@ -1117,6 +1154,18 @@ Represent the update request.
 | ------ | ------------------------------------------ | ----- | ---------------------------------------- |
 | vector | [Object.Vector](#payload-v1-Object-Vector) |       | The vector to be updated.                |
 | config | [Update.Config](#payload-v1-Update-Config) |       | The configuration of the update request. |
+
+<a name="payload-v1-Update-TimestampRequest"></a>
+
+### Update.TimestampRequest
+
+Represent a vector meta data.
+
+| Field     | Type              | Label | Description                                       |
+| --------- | ----------------- | ----- | ------------------------------------------------- |
+| id        | [string](#string) |       | The vector ID.                                    |
+| timestamp | [int64](#int64)   |       | timestamp represents when this vector inserted.   |
+| force     | [bool](#bool)     |       | force represents forcefully update the timestamp. |
 
 <a name="payload-v1-Upsert"></a>
 
@@ -1293,6 +1342,22 @@ Represent the ingress filter service.
 | ------------ | ------------------------------------------------------ | ------------------------------------------------------ | ----------------------------------------- |
 | GenVector    | [.payload.v1.Object.Blob](#payload-v1-Object-Blob)     | [.payload.v1.Object.Vector](#payload-v1-Object-Vector) | Represent the RPC to generate the vector. |
 | FilterVector | [.payload.v1.Object.Vector](#payload-v1-Object-Vector) | [.payload.v1.Object.Vector](#payload-v1-Object-Vector) | Represent the RPC to filter the vector.   |
+
+<a name="v1_meta_meta-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## v1/meta/meta.proto
+
+<a name="meta-v1-Meta"></a>
+
+### Meta
+
+| Method Name | Request Type                                           | Response Type                                    | Description |
+| ----------- | ------------------------------------------------------ | ------------------------------------------------ | ----------- |
+| Get         | [.payload.v1.Meta.Key](#payload-v1-Meta-Key)           | [.payload.v1.Meta.Value](#payload-v1-Meta-Value) |             |
+| Set         | [.payload.v1.Meta.KeyValue](#payload-v1-Meta-KeyValue) | [.payload.v1.Empty](#payload-v1-Empty)           |             |
+| Delete      | [.payload.v1.Meta.Key](#payload-v1-Meta-Key)           | [.payload.v1.Empty](#payload-v1-Empty)           |             |
 
 <a name="v1_mirror_mirror-proto"></a>
 
@@ -1730,11 +1795,12 @@ Search service provides ways to search indexed vectors.
 
 Update service provides ways to update indexed vectors.
 
-| Method Name  | Request Type                                                       | Response Type                                                                 | Description                                                             |
-| ------------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Update       | [.payload.v1.Update.Request](#payload-v1-Update-Request)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to update an indexed vector.                                   |
-| StreamUpdate | [.payload.v1.Update.Request](#payload-v1-Update-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to update multiple indexed vectors by bidirectional streaming. |
-| MultiUpdate  | [.payload.v1.Update.MultiRequest](#payload-v1-Update-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to update multiple indexed vectors in a single request.        |
+| Method Name     | Request Type                                                               | Response Type                                                                 | Description                                                             |
+| --------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Update          | [.payload.v1.Update.Request](#payload-v1-Update-Request)                   | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to update an indexed vector.                                   |
+| StreamUpdate    | [.payload.v1.Update.Request](#payload-v1-Update-Request) stream            | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to update multiple indexed vectors by bidirectional streaming. |
+| MultiUpdate     | [.payload.v1.Update.MultiRequest](#payload-v1-Update-MultiRequest)         | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to update multiple indexed vectors in a single request.        |
+| UpdateTimestamp | [.payload.v1.Update.TimestampRequest](#payload-v1-Update-TimestampRequest) | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to update timestamp an indexed vector.                         |
 
 <a name="v1_vald_upsert-proto"></a>
 

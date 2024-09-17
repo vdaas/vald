@@ -60,7 +60,7 @@ func WithBucket(bucket string) Option {
 	}
 }
 
-// WithMaxChunkSize retunrs the option to set the maxChunkSize.
+// WithMaxChunkSize returns the option to set the maxChunkSize.
 func WithMaxChunkSize(size int64) Option {
 	return func(r *reader) {
 		r.maxChunkSize = size

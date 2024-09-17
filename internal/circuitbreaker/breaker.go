@@ -35,7 +35,7 @@ type breaker struct {
 	minSamples            int64
 	openTimeout           time.Duration
 	openExp               int64 // unix time
-	cloedRefreshTimeout   time.Duration
+	closedRefreshTimeout  time.Duration
 	closedRefreshExp      int64 // unix time
 }
 
@@ -172,7 +172,7 @@ func (b *breaker) currentState() State {
 func (b *breaker) reset() {
 	atomic.StoreInt32(&b.tripped, 0)
 	atomic.StoreInt64(&b.openExp, 0)
-	atomic.StoreInt64(&b.closedRefreshExp, time.Now().Add(b.cloedRefreshTimeout).UnixNano())
+	atomic.StoreInt64(&b.closedRefreshExp, time.Now().Add(b.closedRefreshTimeout).UnixNano())
 	b.count.reset()
 }
 

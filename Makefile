@@ -85,6 +85,7 @@ BUF_VERSION               := $(eval BUF_VERSION := $(shell cat versions/BUF_VERS
 CMAKE_VERSION             := $(eval CMAKE_VERSION := $(shell cat versions/CMAKE_VERSION))$(CMAKE_VERSION)
 DOCKER_VERSION            := $(eval DOCKER_VERSION := $(shell cat versions/DOCKER_VERSION))$(DOCKER_VERSION)
 FAISS_VERSION             := $(eval FAISS_VERSION := $(shell cat versions/FAISS_VERSION))$(FAISS_VERSION)
+USEARCH_VERSION           := $(eval USEARCH_VERSION := $(shell cat versions/USEARCH_VERSION))$(USEARCH_VERSION)
 GOLANGCILINT_VERSION      := $(eval GOLANGCILINT_VERSION := $(shell cat versions/GOLANGCILINT_VERSION))$(GOLANGCILINT_VERSION)
 GO_VERSION                := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
 HDF5_VERSION              := $(eval HDF5_VERSION := $(shell cat versions/HDF5_VERSION))$(HDF5_VERSION)
@@ -103,7 +104,6 @@ PROTOBUF_VERSION          := $(eval PROTOBUF_VERSION := $(shell cat versions/PRO
 REVIEWDOG_VERSION         := $(eval REVIEWDOG_VERSION := $(shell cat versions/REVIEWDOG_VERSION))$(REVIEWDOG_VERSION)
 RUST_VERSION              := $(eval RUST_VERSION := $(shell cat versions/RUST_VERSION))$(RUST_VERSION)
 TELEPRESENCE_VERSION      := $(eval TELEPRESENCE_VERSION := $(shell cat versions/TELEPRESENCE_VERSION))$(TELEPRESENCE_VERSION)
-VALDCLI_VERSION           := $(eval VALDCLI_VERSION := $(shell cat versions/VALDCLI_VERSION))$(VALDCLI_VERSION)
 YQ_VERSION                := $(eval YQ_VERSION := $(shell cat versions/YQ_VERSION))$(YQ_VERSION)
 ZLIB_VERSION              := $(eval ZLIB_VERSION := $(shell cat versions/ZLIB_VERSION))$(ZLIB_VERSION)
 
@@ -460,7 +460,6 @@ init: \
 tools/install: \
 	helm/install \
 	kind/install \
-	valdcli/install \
 	telepresence/install \
 	textlint/install
 
@@ -603,6 +602,11 @@ version/ngt:
 version/faiss:
 	@echo $(FAISS_VERSION)
 
+.PHONY: version/usearch
+## print usearch version
+version/usearch:
+	@echo $(USEARCH_VERSION)
+
 .PHONY: version/docker
 ## print Kubernetes version
 version/docker:
@@ -624,10 +628,6 @@ version/helm:
 .PHONY: version/yq
 version/yq:
 	@echo $(YQ_VERSION)
-
-.PHONY: version/valdcli
-version/valdcli:
-	@echo $(VALDCLI_VERSION)
 
 .PHONY: version/telepresence
 version/telepresence:
@@ -676,6 +676,22 @@ $(LIB_PATH)/libfaiss.a:
 	cd $(ROOTDIR)
 	rm -rf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz $(TEMP_DIR)/faiss-$(FAISS_VERSION)
 	ldconfig
+
+.PHONY: usearch/install
+## install usearch
+usearch/install: 
+ifeq ($(OS),linux)
+	curl -sSL https://github.com/unum-cloud/usearch/releases/download/v$(USEARCH_VERSION)/usearch_$(OS)_$(GOARCH)_$(USEARCH_VERSION).deb -o usearch_$(OS)_$(USEARCH_VERSION).deb
+	dpkg -i usearch_$(OS)_$(USEARCH_VERSION).deb
+	rm usearch_$(OS)_$(USEARCH_VERSION).deb
+	ldconfig
+else ifeq ($(OS),macos)
+	curl -sSL https://github.com/unum-cloud/usearch/releases/download/v$(USEARCH_VERSION)/usearch_macos_$(GOARCH)_$(USEARCH_VERSION).zip -o usearch_macos_$(OS)_$(USEARCH_VERSION).zip
+	unzip usearch_macos_$(OS)_$(USEARCH_VERSION).zip
+	sudo mv libusearch_c.dylib /usr/local/lib && sudo mv usearch.h /usr/local/include
+	rm -rf usearch_macos_$(OS)_$(USEARCH_VERSION).zip
+	ldconfig
+endif
 
 .PHONY: cmake/install
 ## install CMAKE
@@ -742,14 +758,14 @@ files/textlint: \
 ## run cspell for document
 docs/cspell:\
 	cspell/install
-	cspell-cli $(ROOTDIR)/docs/**/*.md --show-suggestions $(CSPELL_EXTRA_OPTIONS)
+	cspell $(ROOTDIR)/docs/**/*.md --show-suggestions $(CSPELL_EXTRA_OPTIONS)
 
 .PHONY: files/cspell
 ## run cspell for document
 files/cspell: \
 	files \
 	cspell/install
-	cspell-cli $(ROOTDIR)/.gitfiles --show-suggestions $(CSPELL_EXTRA_OPTIONS)
+	cspell $(ROOTDIR)/.gitfiles --show-suggestions $(CSPELL_EXTRA_OPTIONS)
 
 .PHONY: changelog/update
 ## update changelog
@@ -771,7 +787,6 @@ changelog/next/print:
 include Makefile.d/actions.mk
 include Makefile.d/bench.mk
 include Makefile.d/build.mk
-include Makefile.d/client.mk
 include Makefile.d/dependencies.mk
 include Makefile.d/docker.mk
 include Makefile.d/e2e.mk
@@ -780,7 +795,7 @@ include Makefile.d/helm.mk
 include Makefile.d/k3d.mk
 include Makefile.d/k8s.mk
 include Makefile.d/kind.mk
+include Makefile.d/minikube.mk
 include Makefile.d/proto.mk
 include Makefile.d/test.mk
 include Makefile.d/tools.mk
-include Makefile.d/minikube.mk

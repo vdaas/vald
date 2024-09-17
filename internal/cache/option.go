@@ -55,7 +55,7 @@ func WithType[V any](mo string) Option[V] {
 	}
 }
 
-// WithExpireDuration returns Option after set expireDur when dur is cprrect param.
+// WithExpireDuration returns Option after set expireDur when dur is correct param.
 func WithExpireDuration[V any](dur string) Option[V] {
 	return func(c *cache[V]) {
 		if len(dur) == 0 {
@@ -69,7 +69,7 @@ func WithExpireDuration[V any](dur string) Option[V] {
 	}
 }
 
-// WithExpireCheckDuration returns Option after set expireCheckDur when dur is cprrect param.
+// WithExpireCheckDuration returns Option after set expireCheckDur when dur is correct param.
 func WithExpireCheckDuration[V any](dur string) Option[V] {
 	return func(c *cache[V]) {
 		if len(dur) == 0 {
