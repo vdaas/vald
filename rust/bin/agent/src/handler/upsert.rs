@@ -22,7 +22,7 @@ use proto::{
 impl upsert_server::Upsert for super::Agent {
     async fn upsert(
         &self,
-        request: tonic::Request<upsert::Request>,
+        _request: tonic::Request<upsert::Request>,
     ) -> std::result::Result<tonic::Response<object::Location>, tonic::Status> {
         todo!()
     }
@@ -33,7 +33,7 @@ impl upsert_server::Upsert for super::Agent {
     #[doc = " A method to insert/update multiple vectors by bidirectional streaming.\n"]
     async fn stream_upsert(
         &self,
-        request: tonic::Request<tonic::Streaming<upsert::Request>>,
+        _request: tonic::Request<tonic::Streaming<upsert::Request>>,
     ) -> std::result::Result<tonic::Response<Self::StreamUpsertStream>, tonic::Status> {
         todo!()
     }
@@ -41,7 +41,7 @@ impl upsert_server::Upsert for super::Agent {
     #[doc = " A method to insert/update multiple vectors in a single request.\n"]
     async fn multi_upsert(
         &self,
-        request: tonic::Request<upsert::MultiRequest>,
+        _request: tonic::Request<upsert::MultiRequest>,
     ) -> std::result::Result<tonic::Response<object::Locations>, tonic::Status> {
         todo!()
     }
