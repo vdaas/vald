@@ -44,6 +44,8 @@ plugins:
       - json_names_for_fields=true
   - plugin: buf.build/community/neoeinstein-prost
     out: rust/libs/proto/src
+    opt:
+      - enable_type_names
   - plugin: buf.build/community/neoeinstein-tonic
     out: rust/libs/proto/src
     opt:
