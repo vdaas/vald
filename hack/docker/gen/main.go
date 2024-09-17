@@ -351,6 +351,9 @@ var (
 	faissBuildDeps = []string{
 		"gfortran",
 	}
+	rustBuildDeps = []string{
+		"pkg-config",
+	}
 	devContainerDeps = []string{
 		"gawk",
 		"gnupg2",
@@ -532,7 +535,8 @@ func main() {
 			RuntimeImage:  "gcr.io/distroless/cc-debian12",
 			ExtraPackages: append(clangBuildDeps,
 				append(ngtBuildDeps,
-					faissBuildDeps...)...),
+					append(faissBuildDeps,
+						rustBuildDeps...)...)...),
 			Preprocess: []string{
 				ngtPreprocess,
 				faissPreprocess,
@@ -649,7 +653,8 @@ func main() {
 			ExtraPackages: append([]string{"npm"}, append(clangBuildDeps,
 				append(ngtBuildDeps,
 					append(faissBuildDeps,
-						devContainerDeps...)...)...)...),
+						append(rustBuildDeps,
+							devContainerDeps...)...)...)...)...),
 			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess, usearchPreprocess),
 			Entrypoints: []string{"/bin/bash"},
 		},
@@ -664,7 +669,8 @@ func main() {
 			ExtraPackages: append(clangBuildDeps,
 				append(ngtBuildDeps,
 					append(faissBuildDeps,
-						devContainerDeps...)...)...),
+						append(rustBuildDeps,
+							devContainerDeps...)...)...)...),
 			Preprocess: append(devContainerPreprocess,
 				append(ciContainerPreprocess,
 					ngtPreprocess,

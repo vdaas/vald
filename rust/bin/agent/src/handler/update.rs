@@ -22,7 +22,7 @@ use proto::{
 impl update_server::Update for super::Agent {
     async fn update(
         &self,
-        request: tonic::Request<update::Request>,
+        _request: tonic::Request<update::Request>,
     ) -> std::result::Result<tonic::Response<object::Location>, tonic::Status> {
         todo!()
     }
@@ -33,7 +33,7 @@ impl update_server::Update for super::Agent {
     #[doc = " A method to update multiple indexed vectors by bidirectional streaming.\n"]
     async fn stream_update(
         &self,
-        request: tonic::Request<tonic::Streaming<update::Request>>,
+        _request: tonic::Request<tonic::Streaming<update::Request>>,
     ) -> std::result::Result<tonic::Response<Self::StreamUpdateStream>, tonic::Status> {
         todo!()
     }
@@ -41,7 +41,7 @@ impl update_server::Update for super::Agent {
     #[doc = " A method to update multiple indexed vectors in a single request.\n"]
     async fn multi_update(
         &self,
-        request: tonic::Request<update::MultiRequest>,
+        _request: tonic::Request<update::MultiRequest>,
     ) -> std::result::Result<tonic::Response<object::Locations>, tonic::Status> {
         todo!()
     }
