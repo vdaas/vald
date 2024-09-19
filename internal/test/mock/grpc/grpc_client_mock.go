@@ -30,10 +30,11 @@ type GRPCClientMock struct {
 			addr string,
 			conn *grpc.ClientConn,
 			copts ...grpc.CallOption) error) error
-	ConnectFunc        func(ctx context.Context, addr string, dopts ...grpc.DialOption) (pool.Conn, error)
-	DisconnectFunc     func(ctx context.Context, addr string) error
-	IsConnectedFunc    func(ctx context.Context, addr string) bool
-	ConnectedAddrsFunc func() []string
+	ConnectFunc                  func(ctx context.Context, addr string, dopts ...grpc.DialOption) (pool.Conn, error)
+	DisconnectFunc               func(ctx context.Context, addr string) error
+	IsConnectedFunc              func(ctx context.Context, addr string) bool
+	ConnectedAddrsFunc           func() []string
+	SetDisableResolveDNSAddrFunc func(addr string, disabled bool)
 }
 
 // OrderedRangeConcurrent calls the OrderedRangeConcurrentFunc object.
@@ -69,4 +70,9 @@ func (gc *GRPCClientMock) Disconnect(ctx context.Context, addr string) error {
 // IsConnected calls the IsConnectedFunc object.
 func (gc *GRPCClientMock) IsConnected(ctx context.Context, addr string) bool {
 	return gc.IsConnectedFunc(ctx, addr)
+}
+
+// SetDisableResolveDNSAddr calls the SetDisableResolveDNSAddr object.
+func (gc *GRPCClientMock) SetDisableResolveDNSAddr(addr string, disabled bool) {
+	gc.SetDisableResolveDNSAddrFunc(addr, disabled)
 }
