@@ -16,6 +16,7 @@ package service
 import (
 	"context"
 	"reflect"
+	"strings"
 
 	"github.com/vdaas/vald/internal/client/v1/client/mirror"
 	"github.com/vdaas/vald/internal/errors"
@@ -143,11 +144,21 @@ func (g *gateway) Do(
 	if target == "" {
 		return nil, errors.ErrTargetNotFound
 	}
-	return g.client.GRPCClient().Do(g.ForwardedContext(ctx, g.podName), target,
+	fctx := g.ForwardedContext(ctx, g.podName)
+	res, err = g.client.GRPCClient().Do(fctx, target,
 		func(ictx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
 			return f(ictx, target, NewMirrorClient(conn), copts...)
 		},
 	)
+	if err != nil {
+		return g.client.GRPCClient().RoundRobin(fctx, func(ictx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
+			if strings.EqualFold(conn.Target(), target) {
+				return nil, errors.ErrTargetNotFound
+			}
+			return f(ictx, conn.Target(), NewMirrorClient(conn), copts...)
+		})
+	}
+	return res, nil
 }
 
 // DoMulti performs a gRPC operation on multiple targets using the provided function.

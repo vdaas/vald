@@ -319,6 +319,7 @@ func (m *mirr) Connect(ctx context.Context, targets ...*payload.Mirror_Target) e
 		if !m.isSelfMirrorAddr(addr) && !m.isGatewayAddr(addr) {
 			_, ok := m.addrs.Load(addr)
 			if !ok || !m.IsConnected(ctx, addr) {
+				m.gateway.GRPCClient().SetDisableResolveDNSAddr(addr, true)
 				_, err := m.gateway.GRPCClient().Connect(ctx, addr)
 				if err != nil {
 					m.addrs.Delete(addr)
