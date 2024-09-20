@@ -37,6 +37,9 @@ type Faiss struct {
 	// ref: https://github.com/facebookresearch/faiss/wiki/FAQ#can-i-ignore-warning-clustering-xxx-points-to-yyy-centroids
 	NbitsPerIdx int `info:"nbits_per_idx" json:"nbits_per_idx,omitempty" yaml:"nbits_per_idx"`
 
+	// MethodType represents the method type
+	MethodType string `info:"method_type" json:"method_type,omitempty" yaml:"method_type"`
+
 	// MetricType represents the metric type
 	MetricType string `info:"metric_type" json:"metric_type,omitempty" yaml:"metric_type"`
 

@@ -42,6 +42,10 @@ pub struct ErrorInfo {
     #[prost(map="string, string", tag="3")]
     pub metadata: ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
+impl ::prost::Name for ErrorInfo {
+const NAME: &'static str = "ErrorInfo";
+const PACKAGE: &'static str = "rpc.v1";
+fn full_name() -> ::prost::alloc::string::String { "rpc.v1.ErrorInfo".into() }fn type_url() -> ::prost::alloc::string::String { "/rpc.v1.ErrorInfo".into() }}
 /// Describes when the clients can retry a failed request. Clients could ignore
 /// the recommendation here or retry when this information is missing from error
 /// responses.
@@ -56,12 +60,16 @@ pub struct ErrorInfo {
 /// number of retries have been reached or a maximum retry delay cap has been
 /// reached.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct RetryInfo {
     /// Clients should wait at least this long between retrying the same request.
     #[prost(message, optional, tag="1")]
     pub retry_delay: ::core::option::Option<::prost_types::Duration>,
 }
+impl ::prost::Name for RetryInfo {
+const NAME: &'static str = "RetryInfo";
+const PACKAGE: &'static str = "rpc.v1";
+fn full_name() -> ::prost::alloc::string::String { "rpc.v1.RetryInfo".into() }fn type_url() -> ::prost::alloc::string::String { "/rpc.v1.RetryInfo".into() }}
 /// Describes additional debugging info.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -73,6 +81,10 @@ pub struct DebugInfo {
     #[prost(string, tag="2")]
     pub detail: ::prost::alloc::string::String,
 }
+impl ::prost::Name for DebugInfo {
+const NAME: &'static str = "DebugInfo";
+const PACKAGE: &'static str = "rpc.v1";
+fn full_name() -> ::prost::alloc::string::String { "rpc.v1.DebugInfo".into() }fn type_url() -> ::prost::alloc::string::String { "/rpc.v1.DebugInfo".into() }}
 /// Describes how a quota check failed.
 ///
 /// For example if a daily limit was exceeded for the calling project,
@@ -113,7 +125,15 @@ pub mod quota_failure {
         #[prost(string, tag="2")]
         pub description: ::prost::alloc::string::String,
     }
+impl ::prost::Name for Violation {
+const NAME: &'static str = "Violation";
+const PACKAGE: &'static str = "rpc.v1";
+fn full_name() -> ::prost::alloc::string::String { "rpc.v1.QuotaFailure.Violation".into() }fn type_url() -> ::prost::alloc::string::String { "/rpc.v1.QuotaFailure.Violation".into() }}
 }
+impl ::prost::Name for QuotaFailure {
+const NAME: &'static str = "QuotaFailure";
+const PACKAGE: &'static str = "rpc.v1";
+fn full_name() -> ::prost::alloc::string::String { "rpc.v1.QuotaFailure".into() }fn type_url() -> ::prost::alloc::string::String { "/rpc.v1.QuotaFailure".into() }}
 /// Describes what preconditions have failed.
 ///
 /// For example, if an RPC failed because it required the Terms of Service to be
@@ -149,7 +169,15 @@ pub mod precondition_failure {
         #[prost(string, tag="3")]
         pub description: ::prost::alloc::string::String,
     }
+impl ::prost::Name for Violation {
+const NAME: &'static str = "Violation";
+const PACKAGE: &'static str = "rpc.v1";
+fn full_name() -> ::prost::alloc::string::String { "rpc.v1.PreconditionFailure.Violation".into() }fn type_url() -> ::prost::alloc::string::String { "/rpc.v1.PreconditionFailure.Violation".into() }}
 }
+impl ::prost::Name for PreconditionFailure {
+const NAME: &'static str = "PreconditionFailure";
+const PACKAGE: &'static str = "rpc.v1";
+fn full_name() -> ::prost::alloc::string::String { "rpc.v1.PreconditionFailure".into() }fn type_url() -> ::prost::alloc::string::String { "/rpc.v1.PreconditionFailure".into() }}
 /// Describes violations in a client request. This error type focuses on the
 /// syntactic aspects of the request.
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -208,7 +236,15 @@ pub mod bad_request {
         #[prost(string, tag="2")]
         pub description: ::prost::alloc::string::String,
     }
+impl ::prost::Name for FieldViolation {
+const NAME: &'static str = "FieldViolation";
+const PACKAGE: &'static str = "rpc.v1";
+fn full_name() -> ::prost::alloc::string::String { "rpc.v1.BadRequest.FieldViolation".into() }fn type_url() -> ::prost::alloc::string::String { "/rpc.v1.BadRequest.FieldViolation".into() }}
 }
+impl ::prost::Name for BadRequest {
+const NAME: &'static str = "BadRequest";
+const PACKAGE: &'static str = "rpc.v1";
+fn full_name() -> ::prost::alloc::string::String { "rpc.v1.BadRequest".into() }fn type_url() -> ::prost::alloc::string::String { "/rpc.v1.BadRequest".into() }}
 /// Contains metadata about the request that clients can attach when filing a bug
 /// or providing other forms of feedback.
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -223,6 +259,10 @@ pub struct RequestInfo {
     #[prost(string, tag="2")]
     pub serving_data: ::prost::alloc::string::String,
 }
+impl ::prost::Name for RequestInfo {
+const NAME: &'static str = "RequestInfo";
+const PACKAGE: &'static str = "rpc.v1";
+fn full_name() -> ::prost::alloc::string::String { "rpc.v1.RequestInfo".into() }fn type_url() -> ::prost::alloc::string::String { "/rpc.v1.RequestInfo".into() }}
 /// Describes the resource that is being accessed.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -249,6 +289,10 @@ pub struct ResourceInfo {
     #[prost(string, tag="4")]
     pub description: ::prost::alloc::string::String,
 }
+impl ::prost::Name for ResourceInfo {
+const NAME: &'static str = "ResourceInfo";
+const PACKAGE: &'static str = "rpc.v1";
+fn full_name() -> ::prost::alloc::string::String { "rpc.v1.ResourceInfo".into() }fn type_url() -> ::prost::alloc::string::String { "/rpc.v1.ResourceInfo".into() }}
 /// Provides links to documentation or for performing an out of band action.
 ///
 /// For example, if a quota check failed with an error indicating the calling
@@ -274,7 +318,15 @@ pub mod help {
         #[prost(string, tag="2")]
         pub url: ::prost::alloc::string::String,
     }
+impl ::prost::Name for Link {
+const NAME: &'static str = "Link";
+const PACKAGE: &'static str = "rpc.v1";
+fn full_name() -> ::prost::alloc::string::String { "rpc.v1.Help.Link".into() }fn type_url() -> ::prost::alloc::string::String { "/rpc.v1.Help.Link".into() }}
 }
+impl ::prost::Name for Help {
+const NAME: &'static str = "Help";
+const PACKAGE: &'static str = "rpc.v1";
+fn full_name() -> ::prost::alloc::string::String { "rpc.v1.Help".into() }fn type_url() -> ::prost::alloc::string::String { "/rpc.v1.Help".into() }}
 /// Provides a localized error message that is safe to return to the user
 /// which can be attached to an RPC error.
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -289,4 +341,8 @@ pub struct LocalizedMessage {
     #[prost(string, tag="2")]
     pub message: ::prost::alloc::string::String,
 }
+impl ::prost::Name for LocalizedMessage {
+const NAME: &'static str = "LocalizedMessage";
+const PACKAGE: &'static str = "rpc.v1";
+fn full_name() -> ::prost::alloc::string::String { "rpc.v1.LocalizedMessage".into() }fn type_url() -> ::prost::alloc::string::String { "/rpc.v1.LocalizedMessage".into() }}
 // @@protoc_insertion_point(module)

@@ -75,6 +75,38 @@
         ],
         "tags": ["Update"]
       }
+    },
+    "/update/timestamp": {
+      "post": {
+        "summary": "A method to update timestamp an indexed vector.",
+        "operationId": "Update_UpdateTimestamp",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectLocation"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent a vector meta data.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateTimestampRequest"
+            }
+          }
+        ],
+        "tags": ["Update"]
+      }
     }
   },
   "definitions": {
@@ -262,6 +294,25 @@
         }
       },
       "description": "Represent the update request."
+    },
+    "v1UpdateTimestampRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The vector ID."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "timestamp represents when this vector inserted."
+        },
+        "force": {
+          "type": "boolean",
+          "description": "force represents forcefully update the timestamp."
+        }
+      },
+      "description": "Represent a vector meta data."
     }
   }
 }

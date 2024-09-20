@@ -22,6 +22,7 @@ package config
 // 		Nlist                   int
 // 		M                       int
 // 		NbitsPerIdx             int
+// 		MethodType              string
 // 		MetricType              string
 // 		EnableInMemoryMode      bool
 // 		AutoIndexCheckDuration  string
@@ -65,6 +66,7 @@ package config
 // 		           Nlist:0,
 // 		           M:0,
 // 		           NbitsPerIdx:0,
+// 		           MethodType:"",
 // 		           MetricType:"",
 // 		           EnableInMemoryMode:false,
 // 		           AutoIndexCheckDuration:"",
@@ -102,6 +104,7 @@ package config
 // 		           Nlist:0,
 // 		           M:0,
 // 		           NbitsPerIdx:0,
+// 		           MethodType:"",
 // 		           MetricType:"",
 // 		           EnableInMemoryMode:false,
 // 		           AutoIndexCheckDuration:"",
@@ -151,6 +154,7 @@ package config
 // 				Nlist:                   test.fields.Nlist,
 // 				M:                       test.fields.M,
 // 				NbitsPerIdx:             test.fields.NbitsPerIdx,
+// 				MethodType:              test.fields.MethodType,
 // 				MetricType:              test.fields.MetricType,
 // 				EnableInMemoryMode:      test.fields.EnableInMemoryMode,
 // 				AutoIndexCheckDuration:  test.fields.AutoIndexCheckDuration,

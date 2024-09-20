@@ -51,10 +51,10 @@ type ValueStructUo struct {
 }
 
 type bidi struct {
-	concurrency int
-	l           uint64
 	ou          [slen]*sync.Map[uint32, valueStructOu]
 	uo          [slen]*sync.Map[string, ValueStructUo]
+	concurrency int
+	l           uint64
 }
 
 const (
@@ -64,6 +64,8 @@ const (
 	// mask is slen-1 Hex value.
 	mask = 0x1FF
 	// mask = 0xFFF.
+
+	maxHashKeyLength = slen / 2
 )
 
 // New returns the bidi that satisfies the BidiMap interface.
@@ -186,8 +188,8 @@ func (b *bidi) Close() error {
 }
 
 func getShardID(key string) (id uint64) {
-	if len(key) > 128 {
-		return xxh3.HashString(key[:128]) & mask
+	if len(key) > maxHashKeyLength {
+		return xxh3.HashString(key[:maxHashKeyLength]) & mask
 	}
 	return xxh3.HashString(key) & mask
 }

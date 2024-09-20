@@ -37,6 +37,7 @@ jobs:
       - uses: actions/labeler@v5
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          configuration-path: ".github/labeler.yaml"
       - name: Add labels
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`

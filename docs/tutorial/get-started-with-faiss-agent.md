@@ -60,6 +60,7 @@ In this tutorial, you will deploy the basic configuration of Vald that is consis
        load_index_timeout_factor: 1ms
        m: 8  # dimension % m == 0, train size >= 2^m(or nlist) * minPointsPerCentroid
        max_load_index_timeout: 10m
+       method_type: "ivfpq"
        metric_type: "innerproduct"
        min_load_index_timeout: 3m
        nbits_per_idx: 8

@@ -15,7 +15,7 @@
 //
 use proto::{
     core::v1::agent_server,
-    payload::v1::{control, info, object, Empty},
+    payload::v1::{control, info, Empty},
     vald::v1::index_server,
 };
 
@@ -23,14 +23,14 @@ use proto::{
 impl agent_server::Agent for super::Agent {
     async fn create_index(
         &self,
-        request: tonic::Request<control::CreateIndexRequest>,
+        _request: tonic::Request<control::CreateIndexRequest>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
         todo!()
     }
 
     async fn save_index(
         &self,
-        request: tonic::Request<Empty>,
+        _request: tonic::Request<Empty>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
         todo!()
     }
@@ -38,7 +38,7 @@ impl agent_server::Agent for super::Agent {
     #[doc = " Represent the creating and saving index RPC.\n"]
     async fn create_and_save_index(
         &self,
-        request: tonic::Request<control::CreateIndexRequest>,
+        _request: tonic::Request<control::CreateIndexRequest>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
         todo!()
     }
@@ -49,7 +49,7 @@ impl index_server::Index for super::Agent {
     #[doc = " Represent the RPC to get the agent index information.\n"]
     async fn index_info(
         &self,
-        request: tonic::Request<Empty>,
+        _request: tonic::Request<Empty>,
     ) -> std::result::Result<tonic::Response<info::index::Count>, tonic::Status> {
         todo!()
     }
@@ -57,14 +57,14 @@ impl index_server::Index for super::Agent {
     #[doc = " Represent the RPC to get the agent index detailed information.\n"]
     async fn index_detail(
         &self,
-        request: tonic::Request<Empty>,
+        _request: tonic::Request<Empty>,
     ) -> std::result::Result<tonic::Response<info::index::Detail>, tonic::Status> {
         todo!()
     }
     #[doc = " Represent the RPC to get the agent index statistics.\n"]
     async fn index_statistics(
         &self,
-        request: tonic::Request<Empty>,
+        _request: tonic::Request<Empty>,
     ) -> std::result::Result<tonic::Response<info::index::Statistics>, tonic::Status> {
         todo!()
     }
@@ -72,7 +72,7 @@ impl index_server::Index for super::Agent {
     #[doc = " Represent the RPC to get the agent index detailed statistics.\n"]
     async fn index_statistics_detail(
         &self,
-        request: tonic::Request<Empty>,
+        _request: tonic::Request<Empty>,
     ) -> std::result::Result<tonic::Response<info::index::StatisticsDetail>, tonic::Status> {
         todo!()
     }
@@ -80,7 +80,7 @@ impl index_server::Index for super::Agent {
     #[doc = " Represent the RPC to get the index property.\n"]
     async fn index_property(
         &self,
-        request: tonic::Request<Empty>,
+        _request: tonic::Request<Empty>,
     ) -> std::result::Result<tonic::Response<info::index::PropertyDetail>, tonic::Status> {
         todo!()
     }
