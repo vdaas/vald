@@ -166,13 +166,13 @@ spec:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
-      - path: "/vald.v1.Object.Exists/"
+      - path: "/vald.v1.Object/Exists/"
         backend:
           service:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
-      - path: "/vald.v1.Object.GetTimestamp/"
+      - path: "/vald.v1.Object/GetTimestamp/"
         backend:
           service:
             name: {{ $lb.name }}
@@ -216,31 +216,31 @@ spec:
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
       - path: "/vald.v1.Insert/"
-	    backend:
+        backend:
           service:
             name: {{ $mirror.name }}
             {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
         pathType: {{ $mirror.ingress.pathType }}
       - path: "/vald.v1.Update/"
-	    backend:
+        backend:
           service:
             name: {{ $mirror.name }}
             {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
         pathType: {{ $mirror.ingress.pathType }}
       - path: "/vald.v1.Upsert/"
-	    backend:
+        backend:
           service:
             name: {{ $mirror.name }}
             {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
         pathType: {{ $mirror.ingress.pathType }}
       - path: "/vald.v1.Remove/"
-	    backend:
+        backend:
           service:
             name: {{ $mirror.name }}
             {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
         pathType: {{ $mirror.ingress.pathType }}
       - path: "/mirror.v1.Mirror/"
-	    backend:
+        backend:
           service:
             name: {{ $mirror.name }}
             {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
