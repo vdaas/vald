@@ -33,7 +33,6 @@ const (
 
 // Gateway represents an interface for interacting with gRPC clients.
 type Gateway interface {
-	ForwardedContext(ctx context.Context, podName string) context.Context
 	FromForwardedContext(ctx context.Context) string
 	BroadCast(ctx context.Context,
 		f func(ctx context.Context, target string, vc MirrorClient, copts ...grpc.CallOption) error) error
@@ -74,9 +73,9 @@ func (g *gateway) GRPCClient() grpc.Client {
 	return g.client.GRPCClient()
 }
 
-// ForwardedContext takes a context and a podName, returning a new context
+// forwardedContext takes a context and a podName, returning a new context
 // with additional information related to forwarding.
-func (*gateway) ForwardedContext(ctx context.Context, podName string) context.Context {
+func (*gateway) forwardedContext(ctx context.Context, podName string) context.Context {
 	return grpc.NewOutgoingContext(ctx, grpc.MD{
 		forwardedContextKey: []string{
 			podName,
@@ -114,7 +113,7 @@ func (g *gateway) BroadCast(
 			span.End()
 		}
 	}()
-	return g.client.GRPCClient().RangeConcurrent(g.ForwardedContext(ctx, g.podName), -1, func(ictx context.Context,
+	return g.client.GRPCClient().RangeConcurrent(g.forwardedContext(ctx, g.podName), -1, func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
 		select {
@@ -144,7 +143,7 @@ func (g *gateway) Do(
 	if target == "" {
 		return nil, errors.ErrTargetNotFound
 	}
-	fctx := g.ForwardedContext(ctx, g.podName)
+	fctx := g.forwardedContext(ctx, g.podName)
 	res, err = g.client.GRPCClient().Do(fctx, target,
 		func(ictx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
 			return f(ictx, target, NewMirrorClient(conn), copts...)
@@ -179,7 +178,7 @@ func (g *gateway) DoMulti(
 	if len(targets) == 0 {
 		return errors.ErrTargetNotFound
 	}
-	return g.client.GRPCClient().OrderedRangeConcurrent(g.ForwardedContext(ctx, g.podName), targets, -1,
+	return g.client.GRPCClient().OrderedRangeConcurrent(g.forwardedContext(ctx, g.podName), targets, -1,
 		func(ictx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 			select {
 			case <-ictx.Done():
