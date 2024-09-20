@@ -62,122 +62,234 @@ spec:
   - host: {{ $gateway.ingress.host }}
     http:
       paths:
-      {{- if and $mirrorIngEnabled  $filterIngEnabled $lb.enabled }}
-      - path: "/vald.v1.Search"
+      {{- if and $mirrorIngEnabled $filterIngEnabled $lb.enabled }}
+      - path: "/vald.v1.Search/"
         backend:
           service:
             name: {{ $filter.name }}
             {{- include "vald.ingressPort" (dict "Values" $filter.ingress) | nindent 12 }}
         pathType: {{ $filter.ingress.pathType }}
-      - path: "/vald.v1.Insert"
+      - path: "/vald.v1.Insert/"
         backend:
           service:
             name: {{ $filter.name }}
             {{- include "vald.ingressPort" (dict "Values" $filter.ingress) | nindent 12 }}
         pathType: {{ $filter.ingress.pathType }}
-      - path: "/vald.v1.Update"
+      - path: "/vald.v1.Update/"
         backend:
           service:
             name: {{ $filter.name }}
             {{- include "vald.ingressPort" (dict "Values" $filter.ingress) | nindent 12 }}
         pathType: {{ $filter.ingress.pathType }}
-      - path: "/vald.v1.Upsert"
+      - path: "/vald.v1.Upsert/"
         backend:
           service:
             name: {{ $filter.name }}
             {{- include "vald.ingressPort" (dict "Values" $filter.ingress) | nindent 12 }}
         pathType: {{ $filter.ingress.pathType }}
-      - path: "/vald.v1.Index"
+      - path: "/vald.v1.Remove/"
+        backend:
+          service:
+            name: {{ $filter.name }}
+            {{- include "vald.ingressPort" (dict "Values" $filter.ingress) | nindent 12 }}
+        pathType: {{ $filter.ingress.pathType }}
+      - path: "/vald.v1.Index/"
         backend:
           service:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
-      - path: "/vald.v1.Object.Exists"
+      - path: "/vald.v1.Object/Exists/"
         backend:
           service:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
-      - path: "/vald.v1.Object.GetTimestamp"
+      - path: "/vald.v1.Object/GetTimestamp/"
         backend:
           service:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
-      - path: "/vald.v1.Object"
+      - path: "/vald.v1.Flush/"
+        backend:
+          service:
+            name: {{ $lb.name }}
+            {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
+        pathType: {{ $lb.ingress.pathType }}
+      - path: "/vald.v1.Object/"
         backend:
           service:
             name: {{ $filter.name }}
-            {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
+            {{- include "vald.ingressPort" (dict "Values" $filter.ingress) | nindent 12 }}
         pathType: {{ $filter.ingress.pathType }}
-      - backend:
+      - path: "/mirror.v1.Mirror/"
+        backend:
           service:
             name: {{ $mirror.name }}
             {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
         pathType: {{ $mirror.ingress.pathType }}
       {{- else if and $filterIngEnabled $lb.enabled }}
-      - path: "/vald.v1.Index"
+      - path: "/vald.v1.Search/"
+        backend:
+          service:
+            name: {{ $filter.name }}
+            {{- include "vald.ingressPort" (dict "Values" $filter.ingress) | nindent 12 }}
+        pathType: {{ $filter.ingress.pathType }}
+      - path: "/vald.v1.Insert/"
+        backend:
+          service:
+            name: {{ $filter.name }}
+            {{- include "vald.ingressPort" (dict "Values" $filter.ingress) | nindent 12 }}
+        pathType: {{ $filter.ingress.pathType }}
+      - path: "/vald.v1.Update/"
+        backend:
+          service:
+            name: {{ $filter.name }}
+            {{- include "vald.ingressPort" (dict "Values" $filter.ingress) | nindent 12 }}
+        pathType: {{ $filter.ingress.pathType }}
+      - path: "/vald.v1.Upsert/"
+        backend:
+          service:
+            name: {{ $filter.name }}
+            {{- include "vald.ingressPort" (dict "Values" $filter.ingress) | nindent 12 }}
+        pathType: {{ $filter.ingress.pathType }}
+      - path: "/vald.v1.Remove/"
+        backend:
+          service:
+            name: {{ $filter.name }}
+            {{- include "vald.ingressPort" (dict "Values" $filter.ingress) | nindent 12 }}
+        pathType: {{ $filter.ingress.pathType }}
+      - path: "/vald.v1.Index/"
         backend:
           service:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
-      - path: "/vald.v1.Object.Exists"
+      - path: "/vald.v1.Object.Exists/"
         backend:
           service:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
-      - path: "/vald.v1.Object.GetTimestamp"
+      - path: "/vald.v1.Object.GetTimestamp/"
         backend:
           service:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
-      - backend:
+      - path: "/vald.v1.Flush/"
+        backend:
+          service:
+            name: {{ $lb.name }}
+            {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
+        pathType: {{ $lb.ingress.pathType }}
+      - path: "/vald.v1.Object/"
+        backend:
           service:
             name: {{ $filter.name }}
             {{- include "vald.ingressPort" (dict "Values" $filter.ingress) | nindent 12 }}
         pathType: {{ $filter.ingress.pathType }}
       {{- else if and $mirrorIngEnabled $lb.enabled }}
-      - path: "/vald.v1.Search"
+      - path: "/vald.v1.Search/"
         backend:
           service:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
-      - path: "/vald.v1.Index"
+      - path: "/vald.v1.Index/"
         backend:
           service:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
-      - path: "/vald.v1.Object.Exists"
+      - path: "/vald.v1.Object/"
         backend:
           service:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
-      - path: "/vald.v1.Object.GetTimestamp"
+      - path: "/vald.v1.Flush/"
         backend:
           service:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
-      - path: "/vald.v1.Object"
-        backend:
+      - path: "/vald.v1.Insert/"
+	    backend:
           service:
-            name: {{ $lb.name }}
-            {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
-        pathType: {{ $lb.ingress.pathType }}
-      - backend:
+            name: {{ $mirror.name }}
+            {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
+        pathType: {{ $mirror.ingress.pathType }}
+      - path: "/vald.v1.Update/"
+	    backend:
+          service:
+            name: {{ $mirror.name }}
+            {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
+        pathType: {{ $mirror.ingress.pathType }}
+      - path: "/vald.v1.Upsert/"
+	    backend:
+          service:
+            name: {{ $mirror.name }}
+            {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
+        pathType: {{ $mirror.ingress.pathType }}
+      - path: "/vald.v1.Remove/"
+	    backend:
+          service:
+            name: {{ $mirror.name }}
+            {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
+        pathType: {{ $mirror.ingress.pathType }}
+      - path: "/mirror.v1.Mirror/"
+	    backend:
           service:
             name: {{ $mirror.name }}
             {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
         pathType: {{ $mirror.ingress.pathType }}
       {{- else if $lbIngEnabled }}
-      - backend:
+      - path: "/vald.v1.Search/"
+        backend:
+          service:
+            name: {{ $lb.name }}
+            {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
+        pathType: {{ $lb.ingress.pathType }}
+      - path: "/vald.v1.Index/"
+        backend:
+          service:
+            name: {{ $lb.name }}
+            {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
+        pathType: {{ $lb.ingress.pathType }}
+      - path: "/vald.v1.Object/"
+        backend:
+          service:
+            name: {{ $lb.name }}
+            {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
+        pathType: {{ $lb.ingress.pathType }}
+      - path: "/vald.v1.Flush/"
+        backend:
+          service:
+            name: {{ $lb.name }}
+            {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
+        pathType: {{ $lb.ingress.pathType }}
+      - path: "/vald.v1.Insert/"
+        backend:
+          service:
+            name: {{ $lb.name }}
+            {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
+        pathType: {{ $lb.ingress.pathType }}
+      - path: "/vald.v1.Update/"
+        backend:
+          service:
+            name: {{ $lb.name }}
+            {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
+        pathType: {{ $lb.ingress.pathType }}
+      - path: "/vald.v1.Upsert/"
+        backend:
+          service:
+            name: {{ $lb.name }}
+            {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
+        pathType: {{ $lb.ingress.pathType }}
+      - path: "/vald.v1.Remove/"
+        backend:
           service:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
