@@ -76,7 +76,7 @@ spec:
             {{- include "vald.ingressPort" (dict "Values" $filter.ingress) | nindent 12 }}
         pathType: {{ $filter.ingress.pathType }}
       # NOTE: Change backend service to mirror after UpdateTimestamp is implemented in mirror.
-      - path: "/vald.v1.Update/UpdateTimestamp/"
+      - path: "/vald.v1.Update/UpdateTimestamp"
         backend:
           service:
             name: {{ $lb.name }}
@@ -100,13 +100,13 @@ spec:
             name: {{ $mirror.name }}
             {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
         pathType: {{ $mirror.ingress.pathType }}
-      - path: "/vald.v1.Object/Exists/"
+      - path: "/vald.v1.Object/Exists"
         backend:
           service:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
-      - path: "/vald.v1.Object/GetTimestamp/"
+      - path: "/vald.v1.Object/GetTimestamp"
         backend:
           service:
             name: {{ $lb.name }}
@@ -180,13 +180,13 @@ spec:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
-      - path: "/vald.v1.Object/Exists/"
+      - path: "/vald.v1.Object/Exists"
         backend:
           service:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
-      - path: "/vald.v1.Object/GetTimestamp/"
+      - path: "/vald.v1.Object/GetTimestamp"
         backend:
           service:
             name: {{ $lb.name }}
@@ -224,7 +224,7 @@ spec:
             {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
         pathType: {{ $mirror.ingress.pathType }}
       # NOTE: Change backend service to mirror after UpdateTimestamp is implemented in mirror.
-      - path: "/vald.v1.Update/UpdateTimestamp/"
+      - path: "/vald.v1.Update/UpdateTimestamp"
         backend:
           service:
             name: {{ $lb.name }}
@@ -281,7 +281,7 @@ spec:
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
       {{- end }}
-      - path: "/grpc.reflection.v1.ServerReflection/"
+      - path: "/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo"
         {{- if $filterIngEnabled }}
         backend:
           service:
@@ -295,7 +295,7 @@ spec:
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
         {{- end }}
-      - path: "/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo/"
+      - path: "/grpc.reflection.v1.ServerReflection/"
         {{- if $filterIngEnabled }}
         backend:
           service:
