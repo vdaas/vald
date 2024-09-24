@@ -22,7 +22,6 @@
 {{- $lb                      := .Values.gateway.lb -}}
 {{- $lbIngEnabled            := and $lb.enabled $lb.ingress.enabled -}}
 {{- $lbReflectionEnabled     := and $lbIngEnabled (default $reflectionEnabled $lb.server_config.servers.grpc.enable_reflection) -}}
-{{- $lbReflectionEnabled     := and $lb.enabled  -}}
 {{- $gateway                 := "" -}}
 {{- $gatewayName             := "" -}}
 {{- if or $filterIngEnabled $mirrorIngEnabled $lbIngEnabled }}
