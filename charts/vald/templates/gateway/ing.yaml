@@ -76,7 +76,7 @@ spec:
             {{- include "vald.ingressPort" (dict "Values" $filter.ingress) | nindent 12 }}
         pathType: {{ $filter.ingress.pathType }}
       # NOTE: Change backend service to mirror after UpdateTimestamp is implemented in mirror.
-      - path: "/vald.v1.Update/UpdateTimestamp"
+      - path: "/vald.v1.Update/UpdateTimestamp/"
         backend:
           service:
             name: {{ $lb.name }}
@@ -224,7 +224,7 @@ spec:
             {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
         pathType: {{ $mirror.ingress.pathType }}
       # NOTE: Change backend service to mirror after UpdateTimestamp is implemented in mirror.
-      - path: "/vald.v1.Update/UpdateTimestamp"
+      - path: "/vald.v1.Update/UpdateTimestamp/"
         backend:
           service:
             name: {{ $lb.name }}
