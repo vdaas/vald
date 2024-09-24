@@ -87,6 +87,7 @@ func Test_mirr_Connect(t *testing.T) {
 								ConnectFunc: func(_ context.Context, _ string, _ ...grpc.DialOption) (conn pool.Conn, err error) {
 									return conn, err
 								},
+								SetDisableResolveDNSAddrFunc: func(addr string, disabled bool) {},
 							}
 						},
 					},
@@ -118,6 +119,7 @@ func Test_mirr_Connect(t *testing.T) {
 								ConnectFunc: func(_ context.Context, _ string, _ ...grpc.DialOption) (pool.Conn, error) {
 									return nil, errors.New("missing port in address")
 								},
+								SetDisableResolveDNSAddrFunc: func(addr string, disabled bool) {},
 							}
 						},
 					},
@@ -221,6 +223,7 @@ func Test_mirr_Disconnect(t *testing.T) {
 								DisconnectFunc: func(_ context.Context, _ string) error {
 									return nil
 								},
+								SetDisableResolveDNSAddrFunc: func(addr string, disabled bool) {},
 							}
 						},
 					},
@@ -252,6 +255,7 @@ func Test_mirr_Disconnect(t *testing.T) {
 								DisconnectFunc: func(_ context.Context, _ string) error {
 									return errors.New("missing port in address")
 								},
+								SetDisableResolveDNSAddrFunc: func(addr string, disabled bool) {},
 							}
 						},
 					},
@@ -373,6 +377,7 @@ func Test_mirr_MirrorTargets(t *testing.T) {
 								IsConnectedFunc: func(_ context.Context, addr string) bool {
 									return connected[addr]
 								},
+								SetDisableResolveDNSAddrFunc: func(addr string, disabled bool) {},
 							}
 						},
 					},
@@ -498,6 +503,7 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 								IsConnectedFunc: func(_ context.Context, addr string) bool {
 									return connected[addr]
 								},
+								SetDisableResolveDNSAddrFunc: func(addr string, disabled bool) {},
 							}
 						},
 					},
