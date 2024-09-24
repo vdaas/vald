@@ -16,12 +16,12 @@
 {{- $reflectionEnabled       := .Values.defaults.server_config.servers.grpc.server.grpc.enable_reflection -}}
 {{- $filter                  := .Values.gateway.filter -}}
 {{- $filterIngEnabled        := and $filter.enabled $filter.ingress.enabled -}}
-{{- $filterReflectionEnabled := and $filter.enabled (default $reflectionEnabled $filter.server_config.servers.grpc.enable_reflection) -}}
+{{- $filterReflectionEnabled := and $filterIngEnabled (default $reflectionEnabled $filter.server_config.servers.grpc.enable_reflection) -}}
 {{- $mirror                  := .Values.gateway.mirror -}}
 {{- $mirrorIngEnabled        := and $mirror.enabled $mirror.ingress.enabled -}}
 {{- $lb                      := .Values.gateway.lb -}}
 {{- $lbIngEnabled            := and $lb.enabled $lb.ingress.enabled -}}
-{{- $lbReflectionEnabled     := and $lb.enabled (default $reflectionEnabled $lb.server_config.servers.grpc.enable_reflection) -}}
+{{- $lbReflectionEnabled     := and $lbIngEnabled (default $reflectionEnabled $lb.server_config.servers.grpc.enable_reflection) -}}
 {{- $lbReflectionEnabled     := and $lb.enabled  -}}
 {{- $gateway                 := "" -}}
 {{- $gatewayName             := "" -}}
