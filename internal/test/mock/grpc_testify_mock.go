@@ -213,3 +213,5 @@ func (c *ClientInternal) Close(ctx context.Context) error {
 	args := c.Called(ctx)
 	return args.Error(0)
 }
+
+func (c *ClientInternal) SetDisableResolveDNSAddr(addr string, distributed bool) {}
