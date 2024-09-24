@@ -13,14 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- $filter            := .Values.gateway.filter -}}
-{{- $filterIngEnabled  := and $filter.enabled $filter.ingress.enabled -}}
-{{- $mirror            := .Values.gateway.mirror -}}
-{{- $mirrorIngEnabled  := and $mirror.enabled $mirror.ingress.enabled -}}
-{{- $lb                := .Values.gateway.lb -}}
-{{- $lbIngEnabled      := and $lb.enabled $lb.ingress.enabled -}}
-{{- $gateway           := "" -}}
-{{- $gatewayName       := "" -}}
+{{- $reflectionEnabled       := .Values.defaults.server_config.servers.grpc.server.grpc.enable_reflection -}}
+{{- $filter                  := .Values.gateway.filter -}}
+{{- $filterIngEnabled        := and $filter.enabled $filter.ingress.enabled -}}
+{{- $filterReflectionEnabled := and $filter.enabled (default $reflectionEnabled $filter.server_config.servers.grpc.enable_reflection) -}}
+{{- $mirror                  := .Values.gateway.mirror -}}
+{{- $mirrorIngEnabled        := and $mirror.enabled $mirror.ingress.enabled -}}
+{{- $lb                      := .Values.gateway.lb -}}
+{{- $lbIngEnabled            := and $lb.enabled $lb.ingress.enabled -}}
+{{- $lbReflectionEnabled     := and $lb.enabled (default $reflectionEnabled $lb.server_config.servers.grpc.enable_reflection) -}}
+{{- $lbReflectionEnabled     := and $lb.enabled  -}}
+{{- $gateway                 := "" -}}
+{{- $gatewayName             := "" -}}
 {{- if or $filterIngEnabled $mirrorIngEnabled $lbIngEnabled }}
 {{- if $filterIngEnabled }}
 {{- $gateway = $filter -}}
@@ -131,7 +135,7 @@ spec:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
-      - path: "/mirror.v1.Mirror/"
+      - path: "/mirror.v1.Mirror/Register"
         backend:
           service:
             name: {{ $mirror.name }}
@@ -267,7 +271,7 @@ spec:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
-      - path: "/mirror.v1.Mirror/"
+      - path: "/mirror.v1.Mirror/Register"
         backend:
           service:
             name: {{ $mirror.name }}
@@ -281,8 +285,9 @@ spec:
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
       {{- end }}
+      {{- if or $filterReflectionEnabled $lbReflectionEnabled }}
       - path: "/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo"
-        {{- if $filterIngEnabled }}
+        {{- if $filterReflectionEnabled }}
         backend:
           service:
             name: {{ $filter.name }}
@@ -296,7 +301,7 @@ spec:
         pathType: {{ $lb.ingress.pathType }}
         {{- end }}
       - path: "/grpc.reflection.v1.ServerReflection/ServerReflectionInfo"
-        {{- if $filterIngEnabled }}
+        {{- if $filterReflectionEnabled }}
         backend:
           service:
             name: {{ $filter.name }}
@@ -309,4 +314,5 @@ spec:
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
         {{- end }}
+      {{- end }}
 {{- end }}
