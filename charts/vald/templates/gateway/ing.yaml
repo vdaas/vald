@@ -295,7 +295,7 @@ spec:
             {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $lb.ingress.pathType }}
         {{- end }}
-      - path: "/grpc.reflection.v1.ServerReflection/"
+      - path: "/grpc.reflection.v1.ServerReflection/ServerReflectionInfo"
         {{- if $filterIngEnabled }}
         backend:
           service:
