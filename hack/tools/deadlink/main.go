@@ -15,6 +15,7 @@ import (
 
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/http/client"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
@@ -42,6 +43,7 @@ var (
 		"https://github.com",
 		"https://twitter.com/vdaas_vald",
 		"https://vdaas-vald.medium.com",
+		"https://join.slack.com/t/vald-community",
 	}
 
 	reProp   = regexp.MustCompile(PREFIX_PROP + BASE_REGEXP)
@@ -104,10 +106,13 @@ func isBlackList(url string, bList []string) bool {
 func exec(url string, cli *http.Client) int {
 	resp, err := cli.Get(url)
 	if err != nil {
-		log.Error(err)
+		log.Errorf(err.Error())
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
 		return -1
 	}
-	defer resp.Body.Close()
+	resp.Body.Close()
 	return resp.StatusCode
 }
 
@@ -131,19 +136,48 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	cli, err := client.New(
-		client.WithIdleConnTimeout("2s"),
-		// client.WithResponseHeaderTimeout("2s"),
+	der, err := net.NewDialer(
+		net.WithEnableDNSCache(),
+		net.WithEnableDialerDualStack(),
+		net.WithDNSCacheExpiration("1h"),
 	)
 	if err != nil {
 		log.Fatal(err.Error())
 		return
 	}
+
+	cli, err := client.New(
+		// enable http2
+		client.WithForceAttemptHTTP2(true),
+		client.WithEnableKeepalives(false),
+		// stream max connection
+		client.WithMaxConnsPerHost(len(paths)*30),
+		client.WithMaxIdleConnsPerHost(len(paths)*30),
+		client.WithMaxIdleConns(len(paths)*30),
+		client.WithDialContext(der.GetDialer()),
+	)
+	if err != nil {
+		log.Fatal(err.Error())
+		return
+	}
+
 	eg, _ := errgroup.New(ctx)
-	// eg.SetLimit(egLimit)
 	countAll := 0
 	successAll := 0
+	failAll := 0
 	mu := sync.Mutex{}
+
+	type result struct {
+		url      string
+		count    int
+		success  int
+		fail     int
+		errLinks map[string]int
+	}
+	// result for each file path
+	var res = map[string]result{}
+	// map of external link to avoid DOS
+	var exLinks = map[string]int{}
 	for _, path := range paths {
 		b, err := file.ReadFile(path)
 		if err != nil {
@@ -152,11 +186,16 @@ func main() {
 		str := *(*string)(unsafe.Pointer(&b))
 		// get origin url
 		url = strings.TrimPrefix(reProp.FindString(str), PREFIX_PROP)
-
-		count := 0
-		success := 0
-
-		// get links and convert to correct URL
+		// init counter
+		r := result{
+			url:      url,
+			count:    0,
+			success:  0,
+			fail:     0,
+			errLinks: map[string]int{},
+		}
+		// Get links and convert to correct URL
+		// Key is raw link written in file, value is correct link expression.
 		urls := []map[string]string{}
 		u := reSrc.FindAllString(str, -1)
 		for _, elem := range u {
@@ -164,7 +203,7 @@ func main() {
 			url := convertToURL(e)
 			if !isBlackList(url, ignoreLinks) {
 				urls = append(urls, map[string]string{e: url})
-				count++
+				r.count++
 			}
 		}
 		u = reHref.FindAllString(str, -1)
@@ -173,7 +212,7 @@ func main() {
 			url := convertToURL(e)
 			if !isBlackList(url, ignoreLinks) {
 				urls = append(urls, map[string]string{e: url})
-				count++
+				r.count++
 			}
 		}
 		u = reSrcSet.FindAllString(str, -1)
@@ -182,26 +221,35 @@ func main() {
 			url := convertToURL(e)
 			if !isBlackList(url, ignoreLinks) {
 				urls = append(urls, map[string]string{e: url})
-				count++
+				r.count++
 			}
 		}
-		errUrls := map[string]int{}
-		fmt.Printf("%s (url: %s)\n", path, url)
+		fmt.Printf("checking...%s (url: %s)\n", path, url)
 		for _, url := range urls {
 			eg.Go(func() error {
 				for k, v := range url {
 					mu.Lock()
-					if _, ok := errUrls[k]; ok {
+					if _, ok := r.errLinks[k]; ok {
+						r.fail++
 						continue
 					}
+					var code int
+					if strings.Contains(v, BASE_URL) {
+						code = exec(v, cli)
+					} else if c, ok := exLinks[v]; ok {
+						code = c
+					} else {
+						code = exec(v, cli)
+						exLinks[v] = code
+					}
 					mu.Unlock()
-					code := exec(v, cli)
 					if code == 200 {
-						success++
+						r.success++
 					} else {
 						log.Warnf("[%d] %s", code, v)
 						mu.Lock()
-						errUrls[k] = code
+						r.errLinks[k] = code
+						r.fail++
 						mu.Unlock()
 					}
 				}
@@ -212,16 +260,25 @@ func main() {
 		if err != nil {
 			log.Error(err.Error())
 		}
-		if len(errUrls) > 0 {
-			fmt.Printf("error links:\n")
-			for ref, code := range errUrls {
-				fmt.Printf("%s => %d\n", ref, code)
-			}
-		}
-		countAll += count
-		successAll += success
-		fmt.Printf("[result] all: %d, ok: %d, fail: %d\n\n", count, success, count-success)
+		countAll += r.count
+		successAll += r.success
+		failAll += r.fail
+		res[path] = r
 	}
-	fmt.Printf("\n[summary] all: %d, OK: %d, NG: %d", countAll, successAll, countAll-successAll)
+
+	for k, v := range res {
+		fmt.Printf("[%s]\n%s\n", k, v.url)
+		for link, code := range v.errLinks {
+			fmt.Printf("%s => %d\n", link, code)
+		}
+		fmt.Printf("count: %d, ok: %d, fail: %d\n\n", v.count, v.success, v.fail)
+	}
+	for k, v := range exLinks {
+		fmt.Printf("%s => %d\n", k, v)
+	}
+	fmt.Printf("\n[summary] all: %d, OK: %d, NG: %d\n", countAll, successAll, failAll)
+	if failAll > 0 {
+		os.Exit(1)
+	}
 	return
 }
