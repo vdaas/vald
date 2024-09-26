@@ -49,6 +49,10 @@ MIRROR_GATEWAY_IMAGE            = $(NAME)-mirror-gateway
 READREPLICA_ROTATE_IMAGE        = $(NAME)-readreplica-rotate
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
+DEADLINK_CHECK_PATH            ?= ""
+DEADLINK_IGNORE_PATH           ?= ""
+DEADLINK_CHECK_FORMAT           = html
+
 DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE = $(GHCRORG)/$(BUILDKIT_SYFT_SCANNER_IMAGE):nightly
 
 VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
@@ -447,6 +451,11 @@ dockerfile:
 workflow:
 	$(call gen-workflow,$(ROOTDIR),$(MAINTAINER))
 
+.PHONY: deadlink-checker
+## generate deadlink-checker
+deadlink-checker:
+	$(call gen-deadlink-checker,$(ROOTDIR),$(MAINTAINER),$(DEADLINK_CHECK_PATH),$(DEADLINK_IGNORE_PATH),$(DEADLINK_CHECK_FORMAT))
+
 .PHONY: init
 ## initialize development environment
 init: \
@@ -679,7 +688,7 @@ $(LIB_PATH)/libfaiss.a:
 
 .PHONY: usearch/install
 ## install usearch
-usearch/install: 
+usearch/install:
 ifeq ($(OS),linux)
 	curl -sSL https://github.com/unum-cloud/usearch/releases/download/v$(USEARCH_VERSION)/usearch_$(OS)_$(GOARCH)_$(USEARCH_VERSION).deb -o usearch_$(OS)_$(USEARCH_VERSION).deb
 	dpkg -i usearch_$(OS)_$(USEARCH_VERSION).deb

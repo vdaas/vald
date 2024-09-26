@@ -418,3 +418,20 @@ define update-github-actions
 	done
 endef
 
+define gen-deadlink-checker
+	BIN_PATH="$(TEMP_DIR)/vald-deadlink-checker-gen"; \
+	rm -rf $$BIN_PATH; \
+	MAINTAINER=$2 \
+	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	go build -modcacherw \
+		-mod=readonly \
+		-a \
+		-tags "osusergo netgo static_build" \
+		-trimpath \
+		-o $$BIN_PATH $(ROOTDIR)/hack/tools/deadlink/main.go; \
+        $$BIN_PATH -path $3 -ignore-path $4 -format $5 $1; \
+	rm -rf $$BIN_PATH
+endef
+
