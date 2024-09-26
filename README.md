@@ -264,9 +264,7 @@ make init
 ## Contributors
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-
-[![All Contributors](https://img.shields.io/badge/all_contributors-20-orange.svg?style=flat-square)](#contributors)
-
+[![All Contributors](https://img.shields.io/badge/all_contributors-21-orange.svg?style=flat-square)](#contributors)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
@@ -301,6 +299,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://hrichik.xyz"><img src="https://avatars.githubusercontent.com/u/57860916?v=4?s=100" width="100px;" alt="Hrichik Mazumder"/><br /><sub><b>Hrichik Mazumder</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=hrichiksite" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/smorihira"><img src="https://avatars.githubusercontent.com/u/105629359?v=4?s=100" width="100px;" alt="Shunya Morihira (森平 隼矢)"/><br /><sub><b>Shunya Morihira (森平 隼矢)</b></sub></a><br /><a href="#tool-smorihira" title="Tools">🔧</a> <a href="https://github.com/vdaas/vald/commits?author=smorihira" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/iammytoo"><img src="https://avatars.githubusercontent.com/u/64457274?v=4?s=100" width="100px;" alt="miyamoto"/><br /><sub><b>miyamoto</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=iammytoo" title="Code">💻</a> <a href="#research-iammytoo" title="Research">🔬</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://www.highpon.com/"><img src="https://avatars.githubusercontent.com/u/54130718?v=4?s=100" width="100px;" alt="s-shiraki"/><br /><sub><b>s-shiraki</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=highpon" title="Tests">⚠️</a></td>
     </tr>
   </tbody>
 </table>
