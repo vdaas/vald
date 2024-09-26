@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
@@ -32,10 +33,9 @@ const (
 )
 
 var (
-	format     = flag.String("format", "html", "file format(html)")
-	path       = flag.String("path", "./", "directory or file path")
-	ignorePath = flag.String("ignore-path", "", "ignore path to check")
-
+	format      = flag.String("format", "html", "file format(html)")
+	path        = flag.String("path", "./", "directory or file path")
+	ignorePath  = flag.String("ignore-path", "", "ignore path to check")
 	ignoreLinks = []string{
 		"javascript:void(0)",
 		"mailto:vald@vdaas.org",
@@ -49,8 +49,6 @@ var (
 	reSrc    = regexp.MustCompile(PREFIX_SRC + BASE_REGEXP)
 	reSrcSet = regexp.MustCompile(PREFIX_SRCSET + BASE_REGEXP)
 	reHref   = regexp.MustCompile(PREFIX_HREF + BASE_REGEXP)
-
-	url = ""
 )
 
 func getFiles(dir string) []string {
@@ -72,7 +70,7 @@ func getFiles(dir string) []string {
 	return filePaths
 }
 
-func convertToURL(s string) string {
+func convertToURL(s, url string) string {
 	b := bytes.NewBuffer(make([]byte, 0, 100))
 	if strings.HasPrefix(s, "#") {
 		b.WriteString(url)
@@ -112,7 +110,10 @@ func exec(url string, cli *http.Client) int {
 		return -1
 	}
 	resp.Body.Close()
-	return resp.StatusCode
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return resp.StatusCode
+	}
+	return 200
 }
 
 func main() {
@@ -161,6 +162,7 @@ func main() {
 	}
 
 	eg, _ := errgroup.New(ctx)
+
 	countAll := 0
 	successAll := 0
 	failAll := 0
@@ -185,10 +187,10 @@ func main() {
 		// str := *(*string)(unsafe.Pointer(&b))
 		str := string(b)
 		// get origin url
-		url = strings.TrimPrefix(reProp.FindString(str), PREFIX_PROP)
+		originURL := strings.TrimPrefix(reProp.FindString(str), PREFIX_PROP)
 		// init counter
 		r := result{
-			url:      url,
+			url:      originURL,
 			count:    0,
 			success:  0,
 			fail:     0,
@@ -200,38 +202,42 @@ func main() {
 		u := reSrc.FindAllString(str, -1)
 		for _, elem := range u {
 			e := strings.TrimPrefix(elem, PREFIX_SRC)
-			url := convertToURL(e)
-			if !isBlackList(url, ignoreLinks) {
-				urls = append(urls, map[string]string{e: url})
+			targetUrl := convertToURL(e, originURL)
+			if !isBlackList(targetUrl, ignoreLinks) {
+				urls = append(urls, map[string]string{e: targetUrl})
 				r.count++
 			}
 		}
 		u = reHref.FindAllString(str, -1)
 		for _, elem := range u {
 			e := strings.TrimPrefix(elem, PREFIX_HREF)
-			url := convertToURL(e)
-			if !isBlackList(url, ignoreLinks) {
-				urls = append(urls, map[string]string{e: url})
+			targetUrl := convertToURL(e, originURL)
+			if !isBlackList(targetUrl, ignoreLinks) {
+				urls = append(urls, map[string]string{e: targetUrl})
 				r.count++
 			}
 		}
 		u = reSrcSet.FindAllString(str, -1)
 		for _, elem := range u {
 			e := strings.TrimPrefix(elem, PREFIX_SRCSET)
-			url := convertToURL(e)
-			if !isBlackList(url, ignoreLinks) {
-				urls = append(urls, map[string]string{e: url})
+			targetUrl := convertToURL(e, originURL)
+			if !isBlackList(targetUrl, ignoreLinks) {
+				urls = append(urls, map[string]string{e: targetUrl})
 				r.count++
 			}
 		}
-		fmt.Printf("checking...%s (url: %s)\n", path, url)
+		fmt.Printf("checking...%s (url: %s)\n", path, originURL)
+		var (
+			success int32 = 0
+			fail    int32 = 0
+		)
 		for _, url := range urls {
 			eg.Go(func() error {
 				for k, v := range url {
 					mu.Lock()
+					defer mu.Unlock()
 					if _, ok := r.errLinks[k]; ok {
-						r.fail++
-						mu.Unlock()
+						atomic.AddInt32(&fail, 1)
 						continue
 					}
 					var code int
@@ -243,15 +249,12 @@ func main() {
 						code = exec(v, cli)
 						exLinks[v] = code
 					}
-					mu.Unlock()
 					if code == 200 {
-						r.success++
+						atomic.AddInt32(&success, 1)
 					} else {
 						log.Warnf("[%d] %s", code, v)
-						mu.Lock()
 						r.errLinks[k] = code
-						r.fail++
-						mu.Unlock()
+						atomic.AddInt32(&fail, 1)
 					}
 				}
 				return nil
@@ -261,6 +264,9 @@ func main() {
 		if err != nil {
 			log.Error(err.Error())
 		}
+		r.success = int(atomic.LoadInt32(&success))
+		r.fail = int(atomic.LoadInt32(&fail))
+
 		countAll += r.count
 		successAll += r.success
 		failAll += r.fail
@@ -275,7 +281,7 @@ func main() {
 		fmt.Printf("count: %d, ok: %d, fail: %d\n\n", v.count, v.success, v.fail)
 	}
 	fmt.Printf("\n[summary] all: %d, OK: %d, NG: %d\n", countAll, successAll, failAll)
-	if failAll > 0 {
+	if countAll != successAll {
 		os.Exit(1)
 	}
 	return
