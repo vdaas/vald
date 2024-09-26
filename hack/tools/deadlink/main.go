@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"unsafe"
 
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
@@ -175,15 +174,16 @@ func main() {
 		errLinks map[string]int
 	}
 	// result for each file path
-	var res = map[string]result{}
+	res := map[string]result{}
 	// map of external link to avoid DOS
-	var exLinks = map[string]int{}
+	exLinks := map[string]int{}
 	for _, path := range paths {
 		b, err := file.ReadFile(path)
 		if err != nil {
 			log.Fatal(err)
 		}
-		str := *(*string)(unsafe.Pointer(&b))
+		// str := *(*string)(unsafe.Pointer(&b))
+		str := string(b)
 		// get origin url
 		url = strings.TrimPrefix(reProp.FindString(str), PREFIX_PROP)
 		// init counter
@@ -231,6 +231,7 @@ func main() {
 					mu.Lock()
 					if _, ok := r.errLinks[k]; ok {
 						r.fail++
+						mu.Unlock()
 						continue
 					}
 					var code int
@@ -272,9 +273,6 @@ func main() {
 			fmt.Printf("%s => %d\n", link, code)
 		}
 		fmt.Printf("count: %d, ok: %d, fail: %d\n\n", v.count, v.success, v.fail)
-	}
-	for k, v := range exLinks {
-		fmt.Printf("%s => %d\n", k, v)
 	}
 	fmt.Printf("\n[summary] all: %d, OK: %d, NG: %d\n", countAll, successAll, failAll)
 	if failAll > 0 {
