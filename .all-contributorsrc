@@ -214,6 +214,15 @@
         "code",
         "research"
       ]
+    },
+    {
+      "login": "highpon",
+      "name": "s-shiraki",
+      "avatar_url": "https://avatars.githubusercontent.com/u/54130718?v=4",
+      "profile": "https://www.highpon.com/",
+      "contributions": [
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7,
