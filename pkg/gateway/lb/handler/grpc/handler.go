@@ -1748,7 +1748,7 @@ func (s *server) Update(
 		}
 	}
 	var now int64
-	if req.GetConfig().GetTimestamp() >= 0 {
+	if req.GetConfig().GetTimestamp() > 0 {
 		now = req.GetConfig().GetTimestamp()
 	} else {
 		now = time.Now().UnixNano()

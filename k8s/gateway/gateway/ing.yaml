@@ -38,7 +38,22 @@ spec:
     - host: lb.gateway.vald.vdaas.org
       http:
         paths:
-          - backend:
+          - path: "/"
+            backend:
+              service:
+                name: vald-lb-gateway
+                port:
+                  name: grpc
+            pathType: ImplementationSpecific
+          - path: "/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo"
+            backend:
+              service:
+                name: vald-lb-gateway
+                port:
+                  name: grpc
+            pathType: ImplementationSpecific
+          - path: "/grpc.reflection.v1.ServerReflection/ServerReflectionInfo"
+            backend:
               service:
                 name: vald-lb-gateway
                 port:

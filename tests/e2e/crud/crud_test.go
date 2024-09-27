@@ -445,7 +445,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			t.Helper()
 
 			if status != int32(codes.NotFound) {
-				return errors.Errorf("the returned status is not NotFound on Update #1: %s", err)
+				return errors.Errorf("the returned status is not NotFound on Update #1: %s,\tcode: %s", msg, codes.ToString(status))
 			}
 
 			t.Logf("received a NotFound error on #1: %s", msg)
@@ -480,7 +480,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			t.Helper()
 
 			if status != int32(codes.NotFound) {
-				return errors.Errorf("the returned status is not NotFound on Update #2: %s", err)
+				return errors.Errorf("the returned status is not NotFound on Update #2: %s,\tcode: %s", msg, codes.ToString(status))
 			}
 
 			t.Logf("received a NotFound error on #2: %s", msg)
@@ -519,6 +519,8 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		t.Fatalf("an error occurred on #3: %s", err)
 	}
 
+	sleep(t, waitAfterInsertDuration)
+
 	// #4 run Update with SkipStrictExistCheck=false & a different vector, and check that it succeeds
 	err = op.UpdateWithParameters(
 		t,
@@ -535,6 +537,8 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		t.Fatalf("an error occurred on #4: %s", err)
 	}
 
+	sleep(t, waitAfterInsertDuration)
+
 	// #5 run Update with SkipStrictExistCheck=false & same vector as 4 and check that AlreadyExists returns
 	err = op.UpdateWithParameters(
 		t,
@@ -548,7 +552,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			t.Helper()
 
 			if status != int32(codes.AlreadyExists) {
-				return errors.Errorf("the returned status is not NotFound on Update #5: %s", err)
+				return errors.Errorf("the returned status is not AlreadyExists on Update #5: %s,\tcode: %s", msg, codes.ToString(status))
 			}
 
 			t.Logf("received an AlreadyExists error on #5: %s", msg)
@@ -569,7 +573,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		},
 	)
 	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
+		t.Fatalf("an error occurred on #5: %s", err)
 	}
 
 	// #6 run Update with the same vector as SkipStrictExistCheck=true & 4 and check that it succeeds
@@ -615,7 +619,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			t.Helper()
 
 			if status != int32(codes.NotFound) {
-				return errors.Errorf("the returned status is not NotFound on Remove #8: %s", err)
+				return errors.Errorf("the returned status is not NotFound on Remove #8: %s,\tcode: %s", msg, codes.ToString(status))
 			}
 
 			t.Logf("received a NotFound error on #8: %s", msg)
@@ -651,7 +655,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			t.Helper()
 
 			if status != int32(codes.NotFound) {
-				return errors.Errorf("the returned status is not NotFound on Remove #9: %s", err)
+				return errors.Errorf("the returned status is not NotFound on Remove #9: %s,\tcode: %s", msg, codes.ToString(status))
 			}
 
 			t.Logf("received a NotFound error on #9: %s", msg)
@@ -702,7 +706,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			t.Helper()
 
 			if status != int32(codes.AlreadyExists) {
-				return errors.Errorf("the returned status is not AlreadyExists on Upsert #11: %s", err)
+				return errors.Errorf("the returned status is not AlreadyExists on Upsert #11: %s,\tcode: %s", msg, codes.ToString(status))
 			}
 
 			t.Logf("received an AlreadyExists error on #11: %s", msg)

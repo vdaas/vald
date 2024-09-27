@@ -3,7 +3,7 @@
 ### Description
 
 <!-- Describe your changes in detail -->
-<!-- It would be better to describe the details especially What changed and Why you changed -->
+<!-- It would be better to describe the details, especially What changed and Why you changed -->
 
 ### Related Issue
 
@@ -18,9 +18,9 @@
 - Vald Version: v1.7.13
 - Go Version: v1.23.1
 - Rust Version: v1.81.0
-- Docker Version: v27.2.1
-- Kubernetes Version: v1.31.0
-- Helm Version: v3.16.0
+- Docker Version: v27.3.1
+- Kubernetes Version: v1.31.1
+- Helm Version: v3.16.1
 - NGT Version: v2.2.4
 - Faiss Version: v1.8.0
 
@@ -34,4 +34,4 @@
 
 ### Special notes for your reviewer
 
-<!-- Please tell us anything you would like to share to reviewers related this PR -->
+<!-- Please tell us anything you would like to share with reviewers related to this PR. Your thoughts and feedback are highly valued -->

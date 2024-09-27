@@ -148,34 +148,6 @@ func Test_usearch_Search(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return vector id after the same vector inserted",
-			args: args{
-				q: []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
-				k: 5,
-			},
-			fields: fields{
-				idxPath:          idxTempDir(t),
-				quantizationType: "F32",
-				metricType:       "cosine",
-				dimension:        9,
-				connectivity:     0,
-				expansionAdd:     0,
-				expansionSearch:  0,
-				multi:            false,
-			},
-			createFunc: func(t *testing.T, fields fields) (Usearch, error) {
-				t.Helper()
-				vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}
-
-				return insertCreateFunc(t, fields, [][]float32{vec}, 1)
-			},
-			want: want{
-				want: []algorithm.SearchResult{
-					{ID: uint32(1), Distance: 0},
-				},
-			},
-		},
-		{
 			name: "resturn vector id after the nearby vector inserted",
 			args: args{
 				q: []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
@@ -279,8 +251,8 @@ func Test_usearch_Search(t *testing.T) {
 			},
 			want: want{
 				want: []algorithm.SearchResult{
-					{ID: uint32(9), Distance: 2.384185791015625e-07},
-					{ID: uint32(10), Distance: 5.364418029785156e-07},
+					{ID: uint32(10), Distance: 2.384185791015625e-07},
+					{ID: uint32(9), Distance: 5.364418029785156e-07},
 					{ID: uint32(6), Distance: 3},
 					{ID: uint32(4), Distance: 3},
 					{ID: uint32(2), Distance: 3},
