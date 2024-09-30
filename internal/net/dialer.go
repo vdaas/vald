@@ -246,7 +246,22 @@ func (d *dialer) cachedDialer(ctx context.Context, network, addr string) (conn C
 		if err != nil {
 			return nil, err
 		}
-		port = strconv.FormatUint(uint64(nport), 10)
+		if nport != 0 {
+			port = strconv.FormatUint(uint64(nport), 10)
+		} else {
+			const (
+				defaultTCPPort = "80"
+				defaultUDPPort = "53"
+			)
+			switch network {
+			case TCP.String(), TCP4.String(), TCP6.String():
+				port = defaultTCPPort
+			case UDP.String(), UDP4.String(), UDP6.String():
+				port = defaultUDPPort
+			default:
+				log.Warnf("Unknown network type: %s. Port will be empty.", network)
+			}
+		}
 		d.addrs.Store(addr, &addrInfo{
 			host: host,
 			port: port,

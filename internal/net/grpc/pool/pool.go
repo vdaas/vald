@@ -127,7 +127,7 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 		p.addr = net.JoinHostPort(p.host, p.port)
 	}
 
-	conn, err := grpc.DialContext(ctx, p.addr, p.dopts...)
+	conn, err := grpc.NewClient(p.addr, p.dopts...)
 	if err != nil {
 		log.Warnf("grpc.New initial Dial check to %s returned error: %v", p.addr, err)
 		if conn != nil {
@@ -143,7 +143,7 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 		}
 		p.port = port
 		p.addr = net.JoinHostPort(p.host, p.port)
-		conn, err = grpc.DialContext(ctx, p.addr, p.dopts...)
+		conn, err = grpc.NewClient(p.addr, p.dopts...)
 		if err != nil {
 			if conn != nil {
 				cerr := conn.Close()
@@ -469,7 +469,7 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 	do := func() (conn *ClientConn, err error) {
 		ctx, cancel := context.WithTimeout(ctx, p.dialTimeout)
 		defer cancel()
-		conn, err = grpc.DialContext(ctx, addr, append(p.dopts, grpc.WithBlock())...)
+		conn, err = grpc.NewClient(addr, p.dopts...)
 		if err != nil {
 			if conn != nil {
 				cerr := conn.Close()
@@ -697,10 +697,7 @@ func (p *pool) scanGRPCPort(ctx context.Context) (port uint16, err error) {
 			return 0, ctx.Err()
 		default:
 			// try gRPC dialing to target port
-			conn, err = grpc.DialContext(ctx,
-				net.JoinHostPort(p.host, port),
-				append(p.dopts, grpc.WithBlock())...)
-
+			conn, err = grpc.NewClient(net.JoinHostPort(p.host, port), p.dopts...)
 			if err == nil && isHealthy(ctx, conn) && conn.Close() == nil {
 				// if no error and healthy the port is ready for gRPC
 				return port, nil

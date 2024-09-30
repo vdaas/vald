@@ -53,6 +53,7 @@ spec:
           initContainers:
             - name: wait-for-agent
               image: busybox:stable
+              imagePullPolicy: Always
               command:
                 - /bin/sh
                 - -e
@@ -64,6 +65,7 @@ spec:
                   done
             - name: wait-for-discoverer
               image: busybox:stable
+              imagePullPolicy: Always
               command:
                 - /bin/sh
                 - -e

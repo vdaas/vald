@@ -333,7 +333,7 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
         ```go
         ctx := context.Background()
 
-        conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+        conn, err := grpc.NewClient(grpcServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
         if err != nil {
             glg.Fatal(err)
         }
