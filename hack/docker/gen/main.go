@@ -246,8 +246,9 @@ const (
 
 	agentInernalPackage = "pkg/agent/internal"
 
-	ngtPreprocess   = "make ngt/install"
-	faissPreprocess = "make faiss/install"
+	ngtPreprocess     = "make ngt/install"
+	faissPreprocess   = "make faiss/install"
+	usearchPreprocess = "make usearch/install"
 
 	helmOperatorRootdir   = "/opt/helm"
 	helmOperatorWatchFile = helmOperatorRootdir + "/watches.yaml"
@@ -349,6 +350,9 @@ var (
 	}
 	faissBuildDeps = []string{
 		"gfortran",
+	}
+	rustBuildDeps = []string{
+		"pkg-config",
 	}
 	devContainerDeps = []string{
 		"gawk",
@@ -531,7 +535,8 @@ func main() {
 			RuntimeImage:  "gcr.io/distroless/cc-debian12",
 			ExtraPackages: append(clangBuildDeps,
 				append(ngtBuildDeps,
-					faissBuildDeps...)...),
+					append(faissBuildDeps,
+						rustBuildDeps...)...)...),
 			Preprocess: []string{
 				ngtPreprocess,
 				faissPreprocess,
@@ -648,8 +653,9 @@ func main() {
 			ExtraPackages: append([]string{"npm"}, append(clangBuildDeps,
 				append(ngtBuildDeps,
 					append(faissBuildDeps,
-						devContainerDeps...)...)...)...),
-			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess),
+						append(rustBuildDeps,
+							devContainerDeps...)...)...)...)...),
+			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess, usearchPreprocess),
 			Entrypoints: []string{"/bin/bash"},
 		},
 		"vald-dev-container": {
@@ -663,11 +669,13 @@ func main() {
 			ExtraPackages: append(clangBuildDeps,
 				append(ngtBuildDeps,
 					append(faissBuildDeps,
-						devContainerDeps...)...)...),
+						append(rustBuildDeps,
+							devContainerDeps...)...)...)...),
 			Preprocess: append(devContainerPreprocess,
 				append(ciContainerPreprocess,
 					ngtPreprocess,
-					faissPreprocess)...),
+					faissPreprocess,
+					usearchPreprocess)...),
 		},
 		"vald-buildbase": {
 			AppName:      "buildbase",

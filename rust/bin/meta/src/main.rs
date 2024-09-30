@@ -13,30 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-mod common;
-pub mod index;
-pub mod insert;
-pub mod remove;
-pub mod search;
-pub mod update;
-pub mod upsert;
 
-pub struct Agent {
-    s: Box<dyn algorithm::ANN>,
-    name: String,
-    ip: String,
-    resource_type: String,
-    api_name: String,
-}
+mod handler;
 
-impl Agent {
-    pub fn new(s: impl algorithm::ANN + 'static, name: &str, ip: &str, resource_type: &str, api_name: &str) -> Self {
-        Self {
-            s: Box::new(s),
-            name: name.to_string(),
-            ip: ip.to_string(),
-            resource_type: resource_type.to_string(),
-            api_name: api_name.to_string(),
-        }
-    }
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let addr = "[::1]:8081".parse()?;
+    let meta = handler::Meta::default();
+
+    tonic::transport::Server::builder()
+        .add_service(proto::meta::v1::meta_server::MetaServer::new(meta))
+        .serve(addr)
+        .await?;
+
+    Ok(())
 }

@@ -55,6 +55,10 @@
   - [Insert.MultiRequest](#payload-v1-Insert-MultiRequest)
   - [Insert.ObjectRequest](#payload-v1-Insert-ObjectRequest)
   - [Insert.Request](#payload-v1-Insert-Request)
+  - [Meta](#payload-v1-Meta)
+  - [Meta.Key](#payload-v1-Meta-Key)
+  - [Meta.KeyValue](#payload-v1-Meta-KeyValue)
+  - [Meta.Value](#payload-v1-Meta-Value)
   - [Mirror](#payload-v1-Mirror)
   - [Mirror.Target](#payload-v1-Mirror-Target)
   - [Mirror.Targets](#payload-v1-Mirror-Targets)
@@ -121,6 +125,8 @@
   - [Filter](#filter-egress-v1-Filter)
 - [v1/filter/ingress/ingress_filter.proto](#v1_filter_ingress_ingress_filter-proto)
   - [Filter](#filter-ingress-v1-Filter)
+- [v1/meta/meta.proto](#v1_meta_meta-proto)
+  - [Meta](#meta-v1-Meta)
 - [v1/mirror/mirror.proto](#v1_mirror_mirror-proto)
   - [Mirror](#mirror-v1-Mirror)
 - [v1/rpc/errdetails/error_details.proto](#v1_rpc_errdetails_error_details-proto)
@@ -709,6 +715,35 @@ Represent the insert request.
 | ------ | ------------------------------------------ | ----- | ---------------------------------------- |
 | vector | [Object.Vector](#payload-v1-Object-Vector) |       | The vector to be inserted.               |
 | config | [Insert.Config](#payload-v1-Insert-Config) |       | The configuration of the insert request. |
+
+<a name="payload-v1-Meta"></a>
+
+### Meta
+
+<a name="payload-v1-Meta-Key"></a>
+
+### Meta.Key
+
+| Field | Type              | Label | Description |
+| ----- | ----------------- | ----- | ----------- |
+| key   | [string](#string) |       |             |
+
+<a name="payload-v1-Meta-KeyValue"></a>
+
+### Meta.KeyValue
+
+| Field | Type                                 | Label | Description |
+| ----- | ------------------------------------ | ----- | ----------- |
+| key   | [Meta.Key](#payload-v1-Meta-Key)     |       |             |
+| value | [Meta.Value](#payload-v1-Meta-Value) |       |             |
+
+<a name="payload-v1-Meta-Value"></a>
+
+### Meta.Value
+
+| Field | Type                                        | Label | Description |
+| ----- | ------------------------------------------- | ----- | ----------- |
+| value | [google.protobuf.Any](#google-protobuf-Any) |       |             |
 
 <a name="payload-v1-Mirror"></a>
 
@@ -1365,6 +1400,22 @@ Represent the ingress filter service.
 | ------------ | ------------------------------------------------------ | ------------------------------------------------------ | ----------------------------------------- |
 | GenVector    | [.payload.v1.Object.Blob](#payload-v1-Object-Blob)     | [.payload.v1.Object.Vector](#payload-v1-Object-Vector) | Represent the RPC to generate the vector. |
 | FilterVector | [.payload.v1.Object.Vector](#payload-v1-Object-Vector) | [.payload.v1.Object.Vector](#payload-v1-Object-Vector) | Represent the RPC to filter the vector.   |
+
+<a name="v1_meta_meta-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## v1/meta/meta.proto
+
+<a name="meta-v1-Meta"></a>
+
+### Meta
+
+| Method Name | Request Type                                           | Response Type                                    | Description |
+| ----------- | ------------------------------------------------------ | ------------------------------------------------ | ----------- |
+| Get         | [.payload.v1.Meta.Key](#payload-v1-Meta-Key)           | [.payload.v1.Meta.Value](#payload-v1-Meta-Value) |             |
+| Set         | [.payload.v1.Meta.KeyValue](#payload-v1-Meta-KeyValue) | [.payload.v1.Empty](#payload-v1-Empty)           |             |
+| Delete      | [.payload.v1.Meta.Key](#payload-v1-Meta-Key)           | [.payload.v1.Empty](#payload-v1-Empty)           |             |
 
 <a name="v1_mirror_mirror-proto"></a>
 

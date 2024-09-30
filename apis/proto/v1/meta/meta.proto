@@ -1,0 +1,45 @@
+//
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// You may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+syntax = "proto3";
+
+package meta.v1;
+
+import "google/api/annotations.proto";
+import "v1/payload/payload.proto";
+
+option go_package = "github.com/vdaas/vald/apis/grpc/v1/meta";
+option java_multiple_files = true;
+option java_outer_classname = "ValdMeta";
+option java_package = "org.vdaas.vald.api.v1.meta";
+option objc_class_prefix = "Meta";
+
+service Meta {
+  rpc Get(payload.v1.Meta.Key) returns (payload.v1.Meta.Value) {
+    option (google.api.http) = {get: "/meta/{key}"};
+  }
+
+  rpc Set(payload.v1.Meta.KeyValue) returns (payload.v1.Empty) {
+    option (google.api.http) = {
+      post: "/meta"
+      body: "*"
+    };
+  }
+
+  rpc Delete(payload.v1.Meta.Key) returns (payload.v1.Empty) {
+    option (google.api.http) = {delete: "/meta/{key}"};
+  }
+}

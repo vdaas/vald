@@ -204,6 +204,25 @@
         "tool",
         "code"
       ]
+    },
+    {
+      "login": "iammytoo",
+      "name": "miyamoto",
+      "avatar_url": "https://avatars.githubusercontent.com/u/64457274?v=4",
+      "profile": "https://github.com/iammytoo",
+      "contributions": [
+        "code",
+        "research"
+      ]
+    },
+    {
+      "login": "highpon",
+      "name": "s-shiraki",
+      "avatar_url": "https://avatars.githubusercontent.com/u/54130718?v=4",
+      "profile": "https://www.highpon.com/",
+      "contributions": [
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7,
