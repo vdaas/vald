@@ -157,7 +157,9 @@ func IsLocal(host string) bool {
 func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool, err error) {
 	host, port, err = SplitHostPort(addr)
 	if err != nil {
-		log.Warnf("failed to parse addr %s\terror: %v", addr, err)
+		if !errors.Is(err, errors.Errorf("address %s: missing port in address", addr)) {
+			log.Warnf("failed to parse addr %s\terror: %v", addr, err)
+		}
 		host = addr
 	}
 
