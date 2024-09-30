@@ -131,8 +131,8 @@ func (c *client) Target(ctx context.Context, targets ...string) (egress.FilterCl
 }
 
 func (c *client) FilterDistance(
-	ctx context.Context, in *payload.Object_Distance, opts ...grpc.CallOption,
-) (res *payload.Object_Distance, err error) {
+	ctx context.Context, in *payload.Filter_DistanceRequest, opts ...grpc.CallOption,
+) (res *payload.Filter_DistanceResponse, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.FilterDistance")
 	defer func() {
 		if span != nil {
@@ -144,7 +144,7 @@ func (c *client) FilterDistance(
 		copts ...grpc.CallOption,
 	) (any, error) {
 		res, err = egress.NewFilterClient(conn).FilterDistance(ctx, in, append(copts, opts...)...)
-		return nil, err
+		return res, err
 	})
 	if err != nil {
 		return nil, err
@@ -153,8 +153,8 @@ func (c *client) FilterDistance(
 }
 
 func (s *specificAddrClient) FilterDistance(
-	ctx context.Context, in *payload.Object_Distance, opts ...grpc.CallOption,
-) (res *payload.Object_Distance, err error) {
+	ctx context.Context, in *payload.Filter_DistanceRequest, opts ...grpc.CallOption,
+) (res *payload.Filter_DistanceResponse, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.FilterDistance/"+s.addr)
 	defer func() {
 		if span != nil {
@@ -166,11 +166,7 @@ func (s *specificAddrClient) FilterDistance(
 		copts ...grpc.CallOption,
 	) (any, error) {
 		res, err = egress.NewFilterClient(conn).FilterDistance(ctx, in, append(copts, opts...)...)
-		if err != nil {
-			return nil, err
-		}
-		in = res
-		return in, nil
+		return res, err
 	})
 	if err != nil {
 		return nil, err
@@ -179,8 +175,8 @@ func (s *specificAddrClient) FilterDistance(
 }
 
 func (m *multipleAddrsClient) FilterDistance(
-	ctx context.Context, in *payload.Object_Distance, opts ...grpc.CallOption,
-) (res *payload.Object_Distance, err error) {
+	ctx context.Context, in *payload.Filter_DistanceRequest, opts ...grpc.CallOption,
+) (res *payload.Filter_DistanceResponse, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.FilterDistance/["+strings.Join(m.addrs, ",")+"]")
 	defer func() {
 		if span != nil {
@@ -195,8 +191,8 @@ func (m *multipleAddrsClient) FilterDistance(
 		if err != nil {
 			return err
 		}
-		in = res
-		return nil
+		in.Distance = res.Distance
+		return err
 	})
 	if err != nil {
 		return nil, err
@@ -205,8 +201,8 @@ func (m *multipleAddrsClient) FilterDistance(
 }
 
 func (c *client) FilterVector(
-	ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption,
-) (res *payload.Object_Vector, err error) {
+	ctx context.Context, in *payload.Filter_VectorRequest, opts ...grpc.CallOption,
+) (res *payload.Filter_VectorResponse, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.FilterVector")
 	defer func() {
 		if span != nil {
@@ -218,7 +214,7 @@ func (c *client) FilterVector(
 		copts ...grpc.CallOption,
 	) (any, error) {
 		res, err = egress.NewFilterClient(conn).FilterVector(ctx, in, append(copts, opts...)...)
-		return nil, err
+		return res, err
 	})
 	if err != nil {
 		return nil, err
@@ -227,8 +223,8 @@ func (c *client) FilterVector(
 }
 
 func (s *specificAddrClient) FilterVector(
-	ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption,
-) (res *payload.Object_Vector, err error) {
+	ctx context.Context, in *payload.Filter_VectorRequest, opts ...grpc.CallOption,
+) (res *payload.Filter_VectorResponse, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.FilterVector/"+s.addr)
 	defer func() {
 		if span != nil {
@@ -240,11 +236,7 @@ func (s *specificAddrClient) FilterVector(
 		copts ...grpc.CallOption,
 	) (any, error) {
 		res, err = egress.NewFilterClient(conn).FilterVector(ctx, in, append(copts, opts...)...)
-		if err != nil {
-			return nil, err
-		}
-		in = res
-		return in, nil
+		return res, err
 	})
 	if err != nil {
 		return nil, err
@@ -253,8 +245,8 @@ func (s *specificAddrClient) FilterVector(
 }
 
 func (m *multipleAddrsClient) FilterVector(
-	ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption,
-) (res *payload.Object_Vector, err error) {
+	ctx context.Context, in *payload.Filter_VectorRequest, opts ...grpc.CallOption,
+) (res *payload.Filter_VectorResponse, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.FilterVector/["+strings.Join(m.addrs, ",")+"]")
 	defer func() {
 		if span != nil {
@@ -269,8 +261,8 @@ func (m *multipleAddrsClient) FilterVector(
 		if err != nil {
 			return err
 		}
-		in = res
-		return nil
+		res.Vector = in.Vector
+		return err
 	})
 	if err != nil {
 		return nil, err
