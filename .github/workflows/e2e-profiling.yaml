@@ -59,12 +59,14 @@ jobs:
           values: .github/helm/values/values-profile.yaml
           wait_for_selector: app=vald-lb-gateway
       - name: Deploy profefe
+        shell: bash
         run: |
           make k8s/metrics/profefe/deploy
           kubectl patch cronjob kprofefe -p '{"spec": {"schedule": "*/1 * * * *"}}'
           kubectl wait --for=condition=ready pod -l app=profefe --timeout=300s
       - name: Run E2E CRUD
         continue-on-error: true
+        shell: bash
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
           make E2E_BIND_PORT=8081 \
@@ -83,6 +85,7 @@ jobs:
         env:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
       - name: Get profiles
+        shell: bash
         run: |
           mkdir -p profiles
           kubectl port-forward deployment/profefe 10100:10100 &
@@ -151,6 +154,7 @@ jobs:
           path: graphs/*
       - name: Upload to vald-ci-images repository
         if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-profiling'
+        shell: bash
         run: |
           CLONE_DIR=$(mktemp -d)
           git clone --depth 1 https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/vdaas-ci/vald-ci-images.git $CLONE_DIR
@@ -166,6 +170,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
       - name: Comment
         if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-profiling'
+        shell: bash
         run: |
           base="https://raw.githubusercontent.com/vdaas-ci/vald-ci-images/main/${GITHUB_SHA::6}"
           body="<table><tr><th>type</th>"

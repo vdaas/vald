@@ -125,9 +125,7 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 	if dim > algorithm.MaximumVectorDimensionSize {
 		t.Fatalf("Invalid argument: dimension should be equal or under than " + strconv.Itoa(algorithm.MaximumVectorDimensionSize) + ". set dim was " + strconv.Itoa(dim))
 	}
-	ctx := context.Background()
-	conn, err := grpc.DialContext(
-		ctx,
+	conn, err := grpc.NewClient(
 		net.JoinHostPort(host, uint16(port)),
 		grpc.WithInsecure(),
 		grpc.WithKeepaliveParams(
@@ -155,6 +153,7 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 			SkipStrictExistCheck: false,
 		},
 	}
+	ctx := context.Background()
 	_, err = cli.Insert(ctx, req)
 	if err != nil {
 		st, _ := status.FromError(err)
