@@ -699,6 +699,7 @@ initContainers
 {{- if .type }}
 - name: {{ .name }}
   image: {{ .image }}
+  imagePullPolicy: {{ .imagePullPolicy }}
   {{- if eq .type "wait-for" }}
   command:
     - /bin/sh

@@ -1075,11 +1075,13 @@ gateway:
         name: wait-for-discoverer
         target: discoverer
         image: busybox:stable
+        imagePullPolicy: Always
         sleepDuration: 2
       - type: wait-for
         name: wait-for-agent
         target: agent
         image: busybox:stable
+        imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "gateway.lb.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
     # gateway.lb.env -- environment variables
@@ -1357,6 +1359,7 @@ gateway:
         name: wait-for-gateway-lb
         target: gateway-lb
         image: busybox:stable
+        imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "gateway.filter.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
     # gateway.filter.env -- environment variables
@@ -1644,6 +1647,7 @@ gateway:
         name: wait-for-gateway-lb
         target: gateway-lb
         image: busybox:stable
+        imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "gateway.mirror.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
     # gateway.mirror.env -- environment variables
@@ -3133,11 +3137,13 @@ manager:
         name: wait-for-agent
         target: agent
         image: busybox:stable
+        imagePullPolicy: Always
         sleepDuration: 2
       - type: wait-for
         name: wait-for-discoverer
         target: discoverer
         image: busybox:stable
+        imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "manager.index.env", "alias": "env"}
     # manager.index.env -- environment variables
@@ -3293,11 +3299,13 @@ manager:
           name: wait-for-agent
           target: agent
           image: busybox:stable
+          imagePullPolicy: Always
           sleepDuration: 2
         - type: wait-for
           name: wait-for-discoverer
           target: discoverer
           image: busybox:stable
+          imagePullPolicy: Always
           sleepDuration: 2
       # @schema {"name": "manager.index.corrector.env", "alias": "env"}
       # manager.index.corrector.env -- environment variables
@@ -3427,11 +3435,13 @@ manager:
           name: wait-for-agent
           target: agent
           image: busybox:stable
+          imagePullPolicy: Always
           sleepDuration: 2
         - type: wait-for
           name: wait-for-discoverer
           target: discoverer
           image: busybox:stable
+          imagePullPolicy: Always
           sleepDuration: 2
       # @schema {"name": "manager.index.creator.env", "alias": "env"}
       # manager.index.creator.env -- environment variables
@@ -3558,11 +3568,13 @@ manager:
           name: wait-for-agent
           target: agent
           image: busybox:stable
+          imagePullPolicy: Always
           sleepDuration: 2
         - type: wait-for
           name: wait-for-discoverer
           target: discoverer
           image: busybox:stable
+          imagePullPolicy: Always
           sleepDuration: 2
       # @schema {"name": "manager.index.saver.env", "alias": "env"}
       # manager.index.saver.env -- environment variables

@@ -73,7 +73,7 @@
 .github/workflows/chatops-help.yaml
 .github/workflows/chatops.yaml
 .github/workflows/check-conflict.yaml
-.github/workflows/codeql-analysis.yaml
+.github/workflows/codeql-analysis.yml
 .github/workflows/coverage.yaml
 .github/workflows/detect-internal-config-changes.yaml
 .github/workflows/dockers-agent-faiss-image.yaml
@@ -167,6 +167,8 @@ apis/grpc/v1/filter/egress/egress_filter.pb.go
 apis/grpc/v1/filter/egress/egress_filter_vtproto.pb.go
 apis/grpc/v1/filter/ingress/ingress_filter.pb.go
 apis/grpc/v1/filter/ingress/ingress_filter_vtproto.pb.go
+apis/grpc/v1/meta/meta.pb.go
+apis/grpc/v1/meta/meta_vtproto.pb.go
 apis/grpc/v1/mirror/mirror.go
 apis/grpc/v1/mirror/mirror.pb.go
 apis/grpc/v1/mirror/mirror_vtproto.pb.go
@@ -203,6 +205,7 @@ apis/proto/v1/agent/sidecar/sidecar.proto
 apis/proto/v1/discoverer/discoverer.proto
 apis/proto/v1/filter/egress/egress_filter.proto
 apis/proto/v1/filter/ingress/ingress_filter.proto
+apis/proto/v1/meta/meta.proto
 apis/proto/v1/mirror/mirror.proto
 apis/proto/v1/payload/payload.proto
 apis/proto/v1/rpc/errdetails/error_details.proto
@@ -220,6 +223,7 @@ apis/swagger/v1/agent/sidecar/sidecar.swagger.json
 apis/swagger/v1/discoverer/discoverer.swagger.json
 apis/swagger/v1/filter/egress/egress_filter.swagger.json
 apis/swagger/v1/filter/ingress/ingress_filter.swagger.json
+apis/swagger/v1/meta/meta.swagger.json
 apis/swagger/v1/mirror/mirror.swagger.json
 apis/swagger/v1/payload/payload.swagger.json
 apis/swagger/v1/rpc/errdetails/error_details.swagger.json
@@ -882,6 +886,9 @@ internal/core/algorithm/ngt/ngt_bench_test.go
 internal/core/algorithm/ngt/ngt_test.go
 internal/core/algorithm/ngt/option.go
 internal/core/algorithm/ngt/option_test.go
+internal/core/algorithm/usearch/option.go
+internal/core/algorithm/usearch/usearch.go
+internal/core/algorithm/usearch/usearch_test.go
 internal/db/kvs/bbolt/bbolt.go
 internal/db/kvs/bbolt/bbolt_test.go
 internal/db/kvs/bbolt/option.go
@@ -1024,6 +1031,7 @@ internal/errors/storage.go
 internal/errors/tls.go
 internal/errors/unit.go
 internal/errors/unit_test.go
+internal/errors/usearch.go
 internal/errors/vald.go
 internal/errors/vald_test.go
 internal/errors/vqueue.go
@@ -1911,6 +1919,10 @@ rust/bin/agent/src/handler/search.rs
 rust/bin/agent/src/handler/update.rs
 rust/bin/agent/src/handler/upsert.rs
 rust/bin/agent/src/main.rs
+rust/bin/meta/Cargo.toml
+rust/bin/meta/src/handler.rs
+rust/bin/meta/src/handler/meta.rs
+rust/bin/meta/src/main.rs
 rust/libs/algorithm/Cargo.toml
 rust/libs/algorithm/src/lib.rs
 rust/libs/algorithms/faiss/Cargo.toml
@@ -1931,6 +1943,7 @@ rust/libs/proto/src/discoverer.v1.tonic.rs
 rust/libs/proto/src/filter.egress.v1.tonic.rs
 rust/libs/proto/src/filter.ingress.v1.tonic.rs
 rust/libs/proto/src/lib.rs
+rust/libs/proto/src/meta.v1.tonic.rs
 rust/libs/proto/src/mirror.v1.tonic.rs
 rust/libs/proto/src/payload.v1.rs
 rust/libs/proto/src/rpc.v1.rs
@@ -1986,6 +1999,7 @@ versions/PROTOBUF_VERSION
 versions/REVIEWDOG_VERSION
 versions/RUST_VERSION
 versions/TELEPRESENCE_VERSION
+versions/USEARCH_VERSION
 versions/VALD_VERSION
 versions/YQ_VERSION
 versions/ZLIB_VERSION

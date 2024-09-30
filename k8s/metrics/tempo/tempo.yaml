@@ -73,7 +73,7 @@ spec:
             - name: JAEGER_AGENT_PORT
               value: ""
           image: grafana/tempo:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           name: tempo
           ports:
             - containerPort: 3100
@@ -91,7 +91,7 @@ spec:
             - name: JAEGER_AGENT_PORT
               value: ""
           image: grafana/tempo-query:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           name: tempo-query
           ports:
             - containerPort: 16686

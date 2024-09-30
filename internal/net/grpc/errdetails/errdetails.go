@@ -54,29 +54,109 @@ const (
 	ValdResourceOwner          = "vdaas.org vald team <vald@vdaas.org>"
 	ValdGRPCResourceTypePrefix = "github.com/vdaas/vald/apis/grpc/v1"
 
-	typePrefix = "type.googleapis.com/google.rpc."
+	typePrefix   = "type.googleapis.com/google.rpc."
+	typePrefixV1 = "type.googleapis.com/rpc.v1."
 )
 
 var (
-	debugInfoMessageName                    = new(DebugInfo).ProtoReflect().Descriptor().FullName().Name()
-	errorInfoMessageName                    = new(ErrorInfo).ProtoReflect().Descriptor().FullName().Name()
-	badRequestMessageName                   = new(BadRequest).ProtoReflect().Descriptor().FullName().Name()
-	badRequestFieldViolationMessageName     = new(BadRequestFieldViolation).ProtoReflect().Descriptor().FullName().Name()
-	localizedMessageMessageName             = new(LocalizedMessage).ProtoReflect().Descriptor().FullName().Name()
-	preconditionFailureMessageName          = new(PreconditionFailure).ProtoReflect().Descriptor().FullName().Name()
-	preconditionFailureViolationMessageName = new(PreconditionFailureViolation).ProtoReflect().Descriptor().FullName().Name()
-	helpMessageName                         = new(Help).ProtoReflect().Descriptor().FullName().Name()
-	helpLinkMessageName                     = new(HelpLink).ProtoReflect().Descriptor().FullName().Name()
-	quotaFailureMessageName                 = new(QuotaFailure).ProtoReflect().Descriptor().FullName().Name()
-	quotaFailureViolationMessageName        = new(QuotaFailureViolation).ProtoReflect().Descriptor().FullName().Name()
-	requestInfoMessageName                  = new(RequestInfo).ProtoReflect().Descriptor().FullName().Name()
-	resourceInfoMessageName                 = new(ResourceInfo).ProtoReflect().Descriptor().FullName().Name()
-	retryInfoMessageName                    = new(RetryInfo).ProtoReflect().Descriptor().FullName().Name()
+	DebugInfoMessageName                    = string(new(DebugInfo).ProtoReflect().Descriptor().FullName().Name())
+	ErrorInfoMessageName                    = string(new(ErrorInfo).ProtoReflect().Descriptor().FullName().Name())
+	BadRequestMessageName                   = string(new(BadRequest).ProtoReflect().Descriptor().FullName().Name())
+	BadRequestFieldViolationMessageName     = string(new(BadRequestFieldViolation).ProtoReflect().Descriptor().FullName().Name())
+	LocalizedMessageMessageName             = string(new(LocalizedMessage).ProtoReflect().Descriptor().FullName().Name())
+	PreconditionFailureMessageName          = string(new(PreconditionFailure).ProtoReflect().Descriptor().FullName().Name())
+	PreconditionFailureViolationMessageName = string(new(PreconditionFailureViolation).ProtoReflect().Descriptor().FullName().Name())
+	HelpMessageName                         = string(new(Help).ProtoReflect().Descriptor().FullName().Name())
+	HelpLinkMessageName                     = string(new(HelpLink).ProtoReflect().Descriptor().FullName().Name())
+	QuotaFailureMessageName                 = string(new(QuotaFailure).ProtoReflect().Descriptor().FullName().Name())
+	QuotaFailureViolationMessageName        = string(new(QuotaFailureViolation).ProtoReflect().Descriptor().FullName().Name())
+	RequestInfoMessageName                  = string(new(RequestInfo).ProtoReflect().Descriptor().FullName().Name())
+	ResourceInfoMessageName                 = string(new(ResourceInfo).ProtoReflect().Descriptor().FullName().Name())
+	RetryInfoMessageName                    = string(new(RetryInfo).ProtoReflect().Descriptor().FullName().Name())
 )
 
 type Detail struct {
 	TypeURL string        `json:"type_url,omitempty" yaml:"type_url"`
 	Message proto.Message `json:"message,omitempty"  yaml:"message"`
+}
+
+func (d *Detail) MarshalJSON() (body []byte, err error) {
+	if d == nil {
+		return nil, nil
+	}
+	switch strings.TrimPrefix(strings.TrimPrefix(d.TypeURL, typePrefix), typePrefixV1) {
+	case DebugInfoMessageName:
+		m, ok := d.Message.(*DebugInfo)
+		if ok {
+			return json.Marshal(m)
+		}
+	case ErrorInfoMessageName:
+		m, ok := d.Message.(*ErrorInfo)
+		if ok {
+			return json.Marshal(m)
+		}
+	case BadRequestFieldViolationMessageName:
+		m, ok := d.Message.(*BadRequestFieldViolation)
+		if ok {
+			return json.Marshal(m)
+		}
+	case BadRequestMessageName:
+		m, ok := d.Message.(*BadRequest)
+		if ok {
+			return json.Marshal(m)
+		}
+	case LocalizedMessageMessageName:
+		m, ok := d.Message.(*LocalizedMessage)
+		if ok {
+			return json.Marshal(m)
+		}
+	case PreconditionFailureViolationMessageName:
+		m, ok := d.Message.(*PreconditionFailureViolation)
+		if ok {
+			return json.Marshal(m)
+		}
+	case PreconditionFailureMessageName:
+		m, ok := d.Message.(*PreconditionFailure)
+		if ok {
+			return json.Marshal(m)
+		}
+	case HelpLinkMessageName:
+		m, ok := d.Message.(*HelpLink)
+		if ok {
+			return json.Marshal(m)
+		}
+	case HelpMessageName:
+		m, ok := d.Message.(*Help)
+		if ok {
+			return json.Marshal(m)
+		}
+	case QuotaFailureViolationMessageName:
+		m, ok := d.Message.(*QuotaFailureViolation)
+		if ok {
+			return json.Marshal(m)
+		}
+	case QuotaFailureMessageName:
+		m, ok := d.Message.(*QuotaFailure)
+		if ok {
+			return json.Marshal(m)
+		}
+	case RequestInfoMessageName:
+		m, ok := d.Message.(*RequestInfo)
+		if ok {
+			return json.Marshal(m)
+		}
+	case ResourceInfoMessageName:
+		m, ok := d.Message.(*ResourceInfo)
+		if ok {
+			return json.Marshal(m)
+		}
+	case RetryInfoMessageName:
+		m, ok := d.Message.(*RetryInfo)
+		if ok {
+			return json.Marshal(m)
+		}
+	}
+	return json.Marshal(d)
 }
 
 func decodeDetails(objs ...any) (details []Detail) {
@@ -234,86 +314,86 @@ func AnyToErrorDetail(a *types.Any) proto.Message {
 		return nil
 	}
 	var err error
-	switch proto.Name(strings.TrimPrefix(a.GetTypeUrl(), typePrefix)) {
-	case debugInfoMessageName:
+	switch strings.TrimPrefix(strings.TrimPrefix(a.GetTypeUrl(), typePrefix), typePrefixV1) {
+	case DebugInfoMessageName:
 		var m DebugInfo
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case errorInfoMessageName:
+	case ErrorInfoMessageName:
 		var m ErrorInfo
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case badRequestFieldViolationMessageName:
+	case BadRequestFieldViolationMessageName:
 		var m BadRequestFieldViolation
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case badRequestMessageName:
+	case BadRequestMessageName:
 		var m BadRequest
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case localizedMessageMessageName:
+	case LocalizedMessageMessageName:
 		var m LocalizedMessage
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case preconditionFailureViolationMessageName:
+	case PreconditionFailureViolationMessageName:
 		var m PreconditionFailureViolation
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case preconditionFailureMessageName:
+	case PreconditionFailureMessageName:
 		var m PreconditionFailure
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case helpLinkMessageName:
+	case HelpLinkMessageName:
 		var m HelpLink
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case helpMessageName:
+	case HelpMessageName:
 		var m Help
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case quotaFailureViolationMessageName:
+	case QuotaFailureViolationMessageName:
 		var m QuotaFailureViolation
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case quotaFailureMessageName:
+	case QuotaFailureMessageName:
 		var m QuotaFailure
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case requestInfoMessageName:
+	case RequestInfoMessageName:
 		var m RequestInfo
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case resourceInfoMessageName:
+	case ResourceInfoMessageName:
 		var m ResourceInfo
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case retryInfoMessageName:
+	case RetryInfoMessageName:
 		var m RetryInfo
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {

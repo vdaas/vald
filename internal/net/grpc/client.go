@@ -167,7 +167,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 	ech := make(chan error, len(addrs))
 	for _, addr := range addrs {
 		if addr != "" {
-			_, err := g.Connect(ctx, addr, grpc.WithBlock())
+			_, err := g.Connect(ctx, addr)
 			if err != nil {
 				if !errors.Is(err, context.Canceled) &&
 					!errors.Is(err, context.DeadlineExceeded) &&
