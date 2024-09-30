@@ -55,6 +55,7 @@ spec:
       initContainers:
         - name: wait-for-gateway-lb
           image: busybox:stable
+          imagePullPolicy: Always
           command:
             - /bin/sh
             - -e

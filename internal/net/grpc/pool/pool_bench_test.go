@@ -129,7 +129,7 @@ func Benchmark_ConnPool(b *testing.B) {
 func Benchmark_StaticDial(b *testing.B) {
 	defer ListenAndServe(b, DefaultServerAddr)()
 
-	conn, err := grpc.DialContext(context.Background(), DefaultServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(DefaultServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		b.Error(err)
 	}
@@ -186,7 +186,7 @@ func BenchmarkParallel_ConnPool(b *testing.B) {
 func BenchmarkParallel_StaticDial(b *testing.B) {
 	defer ListenAndServe(b, DefaultServerAddr)()
 
-	conn, err := grpc.DialContext(context.Background(), DefaultServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(DefaultServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		b.Error(err)
 	}

@@ -674,7 +674,7 @@ $(LIB_PATH)/libfaiss.a:
 		-DBUILD_STATIC_EXECS=ON \
 		-DBUILD_TESTING=OFF \
 		-DFAISS_ENABLE_PYTHON=OFF \
-	        -DFAISS_ENABLE_GPU=OFF \
+		-DFAISS_ENABLE_GPU=OFF \
 		-DBLA_VENDOR=OpenBLAS \
 		-DCMAKE_C_FLAGS="$(LDFLAGS)" \
 		-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_LDFLAGS)" \
@@ -688,19 +688,32 @@ $(LIB_PATH)/libfaiss.a:
 
 .PHONY: usearch/install
 ## install usearch
-usearch/install:
-ifeq ($(OS),linux)
-	curl -sSL https://github.com/unum-cloud/usearch/releases/download/v$(USEARCH_VERSION)/usearch_$(OS)_$(GOARCH)_$(USEARCH_VERSION).deb -o usearch_$(OS)_$(USEARCH_VERSION).deb
-	dpkg -i usearch_$(OS)_$(USEARCH_VERSION).deb
-	rm usearch_$(OS)_$(USEARCH_VERSION).deb
+usearch/install: $(USR_LOCAL)/include/usearch.h
+$(USR_LOCAL)/include/usearch.h:
+	git clone --depth 1 --recursive --branch v$(USEARCH_VERSION) https://github.com/unum-cloud/usearch $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
+	cd $(TEMP_DIR)/usearch-$(USEARCH_VERSION) && \
+	cmake -DCMAKE_BUILD_TYPE=Release \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DBUILD_TESTING=OFF \
+		-DUSEARCH_BUILD_LIB_C=ON \
+		-DUSEARCH_USE_FP16LIB=ON \
+		-DUSEARCH_USE_OPENMP=ON \
+		-DUSEARCH_USE_SIMSIMD=ON \
+		-DUSEARCH_USE_JEMALLOC=ON \
+		-DCMAKE_C_FLAGS="$(CFLAGS)" \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
+		-B $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
+	cmake --build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build -j$(CORES)
+	cmake --install $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build --prefix=$(USR_LOCAL)
+	cd $(ROOTDIR)
+	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build/libusearch_static_c.a $(LIB_PATH)/libusearch_c.a
+	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build/libusearch_static_c.a $(LIB_PATH)/libusearch_static_c.a
+	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build/libusearch_c.so $(LIB_PATH)/libusearch_c.so
+	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/c/usearch.h $(USR_LOCAL)/include/usearch.h
+	rm -rf $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
 	ldconfig
-else ifeq ($(OS),macos)
-	curl -sSL https://github.com/unum-cloud/usearch/releases/download/v$(USEARCH_VERSION)/usearch_macos_$(GOARCH)_$(USEARCH_VERSION).zip -o usearch_macos_$(OS)_$(USEARCH_VERSION).zip
-	unzip usearch_macos_$(OS)_$(USEARCH_VERSION).zip
-	sudo mv libusearch_c.dylib /usr/local/lib && sudo mv usearch.h /usr/local/include
-	rm -rf usearch_macos_$(OS)_$(USEARCH_VERSION).zip
-	ldconfig
-endif
 
 .PHONY: cmake/install
 ## install CMAKE
@@ -719,7 +732,6 @@ cmake/install:
 	cd $(ROOTDIR)
 	rm -rf $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
 	ldconfig
-	# -DCMAKE_USE_OPENSSL=OFF
 
 .PHONY: lint
 ## run lints
