@@ -414,7 +414,7 @@ func appendM[K comparable](maps ...map[K]string) map[K]string {
 	for _, m := range maps[1:] {
 		for k, v := range m {
 			ev, ok := result[k]
-			if ok {
+			if ok && !strings.Contains(v, ev) {
 				v += ":" + ev
 			}
 			result[k] = v
@@ -674,8 +674,7 @@ func main() {
 			Preprocess: append(devContainerPreprocess,
 				append(ciContainerPreprocess,
 					ngtPreprocess,
-					faissPreprocess,
-					usearchPreprocess)...),
+					faissPreprocess)...),
 		},
 		"vald-buildbase": {
 			AppName:      "buildbase",
