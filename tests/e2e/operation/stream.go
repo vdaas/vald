@@ -93,7 +93,7 @@ func (c *client) SearchWithParameters(
 ) (rerr error) {
 	t.Log("search operation started")
 
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -293,7 +293,7 @@ func (c *client) SearchByIDWithParameters(
 ) (rerr error) {
 	t.Log("searchByID operation started")
 
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -413,7 +413,7 @@ func (c *client) LinearSearchWithParameters(
 ) (rerr error) {
 	t.Log("linearsearch operation started")
 
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -531,7 +531,7 @@ func (c *client) LinearSearchByIDWithParameters(
 ) (rerr error) {
 	t.Log("linearsearchByID operation started")
 
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -637,7 +637,7 @@ func (c *client) InsertWithParameters(
 ) (rerr error) {
 	t.Log("insert operation started")
 
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -740,7 +740,7 @@ func (c *client) UpdateWithParameters(
 ) (rerr error) {
 	t.Log("update operation started")
 
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -776,13 +776,13 @@ func (c *client) UpdateWithParameters(
 
 			loc := res.GetLocation()
 			if loc == nil {
-				status := res.GetStatus()
-				if status != nil {
-					if e := svalidator(t, status.GetCode(), status.GetMessage()); e != nil {
+				st := res.GetStatus()
+				if st != nil {
+					if e := svalidator(t, st.GetCode(), st.GetMessage()); e != nil {
 						t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s",
-							status.GetCode(),
-							status.GetMessage(),
-							errdetails.Serialize(status.GetDetails()))
+							st.GetCode(),
+							st.GetMessage(),
+							errdetails.Serialize(st.GetDetails()))
 						rerr = errors.Join(rerr, e)
 					}
 					continue
@@ -844,7 +844,7 @@ func (c *client) UpsertWithParameters(
 ) (rerr error) {
 	t.Log("upsert operation started")
 
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -946,7 +946,7 @@ func (c *client) RemoveWithParameters(
 ) (rerr error) {
 	t.Log("remove operation started")
 
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -1029,7 +1029,7 @@ func (c *client) RemoveWithParameters(
 func (c *client) Flush(t *testing.T, ctx context.Context) error {
 	t.Log("flush operation started")
 
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -1047,7 +1047,7 @@ func (c *client) Flush(t *testing.T, ctx context.Context) error {
 func (c *client) RemoveByTimestamp(t *testing.T, ctx context.Context, timestamp int64) error {
 	t.Log("removeByTimestamp operation started")
 
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -1074,7 +1074,7 @@ func (c *client) RemoveByTimestamp(t *testing.T, ctx context.Context, timestamp 
 func (c *client) Exists(t *testing.T, ctx context.Context, id string) error {
 	t.Log("exists operation started")
 
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -1096,7 +1096,7 @@ func (c *client) Exists(t *testing.T, ctx context.Context, id string) error {
 func (c *client) GetObject(t *testing.T, ctx context.Context, ds Dataset) (rerr error) {
 	t.Log("getObject operation started")
 
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -1186,7 +1186,7 @@ func (c *client) GetObject(t *testing.T, ctx context.Context, ds Dataset) (rerr 
 func (c *client) StreamListObject(t *testing.T, ctx context.Context, ds Dataset) error {
 	t.Log("StreamListObject operation started")
 
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}

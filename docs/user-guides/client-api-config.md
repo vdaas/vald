@@ -46,7 +46,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	target := "localhost:8080"
-	conn, err := grpc.DialContext(ctx, target)
+	conn, err := grpc.NewClient(target)
 	if err != nil {
 		panic(err)
 	}
@@ -173,7 +173,7 @@ func example() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	target := "localhost:8080"
-	conn, err := grpc.DialContext(ctx, target)
+	conn, err := grpc.NewClient(target)
 	if err != nil {
 		panic(err)
 	}
@@ -308,7 +308,7 @@ func example() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	target := "localhost:8080"
-	conn, err := grpc.DialContext(ctx, target)
+	conn, err := grpc.NewClient(target)
 	if err != nil {
 		panic(err)
 	}
@@ -501,7 +501,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	target := "localhost:8080"
-	conn, err := grpc.DialContext(ctx, target)
+	conn, err := grpc.NewClient(target)
 	if err != nil {
 		panic(err)
 	}
@@ -702,7 +702,7 @@ func example() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	target := "localhost:8080"
-	conn, err := grpc.DialContext(ctx, target)
+	conn, err := grpc.NewClient(target)
 	if err != nil {
 		panic(err)
 	}

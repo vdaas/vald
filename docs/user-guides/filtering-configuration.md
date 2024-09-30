@@ -155,7 +155,7 @@ func main() {
 
 	// connect to the Vald cluster
 	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
+	conn, err := grpc.NewClient(grpcServerAddr, grpc.WithInsecure())
 	if err != nil {
 		log.Error(err)
 		return
