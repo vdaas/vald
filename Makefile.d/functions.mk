@@ -431,7 +431,7 @@ define gen-deadlink-checker
 		-tags "osusergo netgo static_build" \
 		-trimpath \
 		-o $$BIN_PATH $(ROOTDIR)/hack/tools/deadlink/main.go; \
-        $$BIN_PATH -path $3 -ignore-path $4 -format $5 $1; \
+	$$BIN_PATH -path $3 -ignore-path $4 -format $5 $1; \
 	rm -rf $$BIN_PATH
 endef
 

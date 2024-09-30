@@ -235,19 +235,22 @@ func main() {
 			eg.Go(func() error {
 				for k, v := range url {
 					mu.Lock()
-					defer mu.Unlock()
 					if _, ok := r.errLinks[k]; ok {
 						atomic.AddInt32(&fail, 1)
+						mu.Unlock()
 						continue
 					}
 					var code int
 					if strings.Contains(v, BASE_URL) {
 						code = exec(v, cli)
-					} else if c, ok := exLinks[v]; ok {
-						code = c
 					} else {
-						code = exec(v, cli)
-						exLinks[v] = code
+						if c, ok := exLinks[v]; ok {
+							code = c
+						} else {
+							code = exec(v, cli)
+							exLinks[v] = code
+						}
+						mu.Unlock()
 					}
 					if code == 200 {
 						atomic.AddInt32(&success, 1)
