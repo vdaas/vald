@@ -55,7 +55,7 @@ func main() {
 	glg.Println("start gRPC Client.")
 
 	addr := net.JoinHostPort(ingressServerHost, strconv.Itoa(int(ingressServerPort)))
-	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		glg.Error("Connection failed.")
 		return
