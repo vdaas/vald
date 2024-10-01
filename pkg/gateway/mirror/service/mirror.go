@@ -196,7 +196,7 @@ func (m *mirr) registers(
 			switch {
 			case errors.Is(err, context.Canceled):
 				err = status.WrapWithCanceled(
-					mirror.RegisterRPCName+" API canceld", err,
+					mirror.RegisterRPCName+" API canceled", err,
 				)
 				attrs = trace.StatusCodeCancelled(err.Error())
 			case errors.Is(err, context.DeadlineExceeded):
