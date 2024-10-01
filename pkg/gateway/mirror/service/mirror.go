@@ -26,7 +26,6 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
-	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/sync"
@@ -178,12 +177,6 @@ func (m *mirr) registers(
 		}
 	}()
 
-	reqInfo := &errdetails.RequestInfo{
-		ServingData: errdetails.Serialize(tgts),
-	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + mirror.RegisterRPCName,
-	}
 	resTgts := make([]*payload.Mirror_Target, 0, len(tgts.GetTargets()))
 	exists := make(map[string]bool)
 	var result sync.Map[string, error] // map[target host: error]
@@ -203,37 +196,36 @@ func (m *mirr) registers(
 			switch {
 			case errors.Is(err, context.Canceled):
 				err = status.WrapWithCanceled(
-					mirror.RegisterRPCName+" API canceld", err, reqInfo, resInfo,
+					mirror.RegisterRPCName+" API canceld", err,
 				)
 				attrs = trace.StatusCodeCancelled(err.Error())
 			case errors.Is(err, context.DeadlineExceeded):
 				err = status.WrapWithCanceled(
-					mirror.RegisterRPCName+" API deadline exceeded", err, reqInfo, resInfo,
+					mirror.RegisterRPCName+" API deadline exceeded", err,
 				)
 				attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 			case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
 				err = status.WrapWithInternal(
-					mirror.RegisterRPCName+" API connection not found", err, reqInfo, resInfo,
+					mirror.RegisterRPCName+" API connection not found", err,
 				)
 				attrs = trace.StatusCodeInternal(err.Error())
 			case errors.Is(err, errors.ErrTargetNotFound):
 				err = status.WrapWithInvalidArgument(
-					mirror.RegisterRPCName+" API target not found", err, reqInfo, resInfo,
+					mirror.RegisterRPCName+" API target not found", err,
 				)
 				attrs = trace.StatusCodeInvalidArgument(err.Error())
 			default:
-				var (
-					st  *status.Status
-					msg string
-				)
-				st, msg, err = status.ParseError(err, codes.Internal,
-					"failed to parse "+mirror.RegisterRPCName+" gRPC error response", reqInfo, resInfo,
-				)
-				attrs = trace.FromGRPCStatus(st.Code(), msg)
+				st, ok := status.FromError(err)
+				if !ok || st == nil || st.Message() == "" {
+					// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Code() and st.Message(), although it is unlikely to match this condition.
+					log.Errorf("gRPC call returned not a gRPC status error: %v", err)
+					st = status.New(codes.Internal, "failed to parse "+mirror.RegisterRPCName+" gRPC error response")
+				}
+				attrs = trace.FromGRPCStatus(st.Code(), st.Message())
 
 				// When the ingress resource is deleted, the controller's default backend results(Unimplemented error) are returned so that the connection should be disconnected.
 				// If it is a different namespace on the same cluster, the connection is automatically disconnected because the net.grpc health check fails.
-				if st != nil && st.Code() == codes.Unimplemented {
+				if st.Code() == codes.Unimplemented {
 					host, port, err := net.SplitHostPort(target)
 					if err != nil {
 						log.Warn(err)
@@ -247,7 +239,7 @@ func (m *mirr) registers(
 					}
 				}
 			}
-			log.Error("failed to send Register API to %s\t: %v", target, err)
+			log.Errorf("failed to send Register API to %s\t: %v", target, err)
 			if span != nil {
 				span.RecordError(err)
 				span.SetAttributes(attrs...)
@@ -278,7 +270,7 @@ func (m *mirr) registers(
 	if err != nil {
 		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
 			err = status.WrapWithInternal(
-				mirror.RegisterRPCName+" API connection not found", err, reqInfo, resInfo,
+				mirror.RegisterRPCName+" API connection not found", err,
 			)
 			log.Warn(err)
 			if span != nil {
@@ -288,11 +280,11 @@ func (m *mirr) registers(
 			}
 			return nil, err
 		}
+		log.Error(err)
 
 		st, msg, err := status.ParseError(err, codes.Internal,
-			"failed to parse "+mirror.RegisterRPCName+" gRPC error response", reqInfo, resInfo,
+			"failed to parse "+mirror.RegisterRPCName+" gRPC error response",
 		)
-		log.Warn(err)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
