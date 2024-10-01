@@ -20,8 +20,8 @@ package status
 import (
 	"cmp"
 	"context"
-	"os"
 	"slices"
+	"strconv"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/internal/net/grpc/types"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 	spb "google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc/status"
@@ -137,7 +138,7 @@ func ParseError(
 	st, ok = FromError(err)
 	if !ok || st == nil {
 		if defaultCode == 0 {
-			defaultCode = codes.Internal
+			defaultCode = codes.Unknown
 		}
 		if len(defaultMsg) == 0 {
 			defaultMsg = "failed to parse gRPC status from error"
@@ -156,6 +157,18 @@ func ParseError(
 			msg = defaultMsg
 		}
 		return st, msg, err
+	}
+
+	switch st.Code() {
+	case codes.Aborted,
+		codes.Canceled,
+		codes.DeadlineExceeded,
+		codes.AlreadyExists,
+		codes.NotFound,
+		codes.OK,
+		codes.Unimplemented:
+		return st, st.Message(), st.Err()
+	default:
 	}
 
 	sst := withDetails(st, err, details...)
@@ -239,23 +252,23 @@ func FromError(err error) (st *Status, ok bool) {
 	}
 }
 
-func withDetails(st *Status, err error, details ...any) *Status {
-	if st != nil {
-		details = append(st.Details(), details...)
+var hostname = func() (h string) {
+	var err error
+	h, err = os.Hostname()
+	if err != nil {
+		log.Warnf("failed to fetch hostname: %s,\terror: %v", h, err)
+		h = "unknown-host"
 	}
-	dmap := make(map[string][]proto.Message, len(details)+1)
+	return h
+}()
+
+func toProtoMessage(err error, details ...any) (dmap map[string][]proto.Message) {
+	dmap = make(map[string][]proto.Message, len(details)+1)
 	if err != nil {
 		typeName := errdetails.ErrorInfoMessageName
 		dmap[typeName] = []proto.Message{&errdetails.ErrorInfo{
 			Reason: err.Error(),
-			Domain: func() (hostname string) {
-				var err error
-				hostname, err = os.Hostname()
-				if err != nil {
-					log.Warn("failed to fetch hostname:", err)
-				}
-				return hostname
-			}(),
+			Domain: hostname,
 		}}
 	}
 	for _, detail := range details {
@@ -423,6 +436,30 @@ func withDetails(st *Status, err error, details ...any) *Status {
 			}
 		}
 	}
+	return dmap
+}
+
+func withDetails(st *Status, err error, details ...any) *Status {
+	if st != nil {
+		if len(st.Details()) == 0 {
+			ds := make([]proto.MessageV1, 0, len(details))
+			for _, msgs := range toProtoMessage(err, details) {
+				for _, msg := range msgs {
+					ds = append(ds, proto.ToMessageV1(msg))
+				}
+			}
+			sst, err := st.WithDetails(ds...)
+			if err != nil {
+				return st
+			}
+			return sst
+
+		}
+		details = append(st.Details(), details...)
+	}
+
+	dmap := toProtoMessage(err, details)
+
 	msgs := make([]proto.MessageV1, 0, len(dmap))
 	visited := make(map[string]bool, len(dmap))
 	for typeName, ds := range dmap {
@@ -431,15 +468,18 @@ func withDetails(st *Status, err error, details ...any) *Status {
 			m := new(errdetails.DebugInfo)
 			for _, msg := range ds {
 				d, ok := msg.(*errdetails.DebugInfo)
-				if ok && d != nil && !visited[d.String()] {
-					visited[d.String()] = true
-					if m.GetDetail() == "" {
-						m.Detail = d.GetDetail()
-					} else if m.GetDetail() != d.GetDetail() && !strings.Contains(m.GetDetail(), d.GetDetail()) {
-						m.Detail += "\t" + d.GetDetail()
-					}
-					if len(m.GetStackEntries()) < len(d.GetStackEntries()) {
-						m.StackEntries = d.GetStackEntries()
+				if ok && d != nil {
+					key := errdetails.DebugInfoMessageName + d.GetDetail() + strings.Join(d.GetStackEntries(), ",")
+					if !visited[key] {
+						visited[key] = true
+						if m.GetDetail() == "" {
+							m.Detail = d.GetDetail()
+						} else if m.GetDetail() != d.GetDetail() && !strings.Contains(m.GetDetail(), d.GetDetail()) {
+							m.Detail += "\t" + d.GetDetail()
+						}
+						if len(m.GetStackEntries()) < len(d.GetStackEntries()) {
+							m.StackEntries = d.GetStackEntries()
+						}
 					}
 				}
 			}
@@ -449,24 +489,27 @@ func withDetails(st *Status, err error, details ...any) *Status {
 			m := new(errdetails.ErrorInfo)
 			for _, msg := range ds {
 				e, ok := msg.(*errdetails.ErrorInfo)
-				if ok && e != nil && !visited[e.String()] && !visited[e.GetReason()] {
-					visited[e.String()] = true
+				if ok && e != nil && !visited[e.GetReason()] {
 					visited[e.GetReason()] = true
-					if m.GetDomain() == "" {
-						m.Domain = e.GetDomain()
-					} else if m.GetDomain() != e.GetDomain() && !strings.Contains(m.GetDomain(), e.GetDomain()) {
-						m.Domain += "\t" + e.GetDomain()
-					}
-					if m.GetReason() == "" {
-						m.Reason += e.GetReason()
-					} else if m.GetReason() != e.GetReason() && !strings.Contains(m.GetReason(), e.GetReason()) {
-						m.Reason += "\t" + e.GetReason()
-					}
-					if e.GetMetadata() != nil {
-						if m.GetMetadata() == nil {
-							m.Metadata = e.GetMetadata()
-						} else {
-							m.Metadata = appendM(m.GetMetadata(), e.GetMetadata())
+					key := errdetails.ErrorInfoMessageName + e.GetDomain() + e.GetReason()
+					if !visited[key] {
+						visited[key] = true
+						if m.GetDomain() == "" {
+							m.Domain = e.GetDomain()
+						} else if m.GetDomain() != e.GetDomain() && !strings.Contains(m.GetDomain(), e.GetDomain()) {
+							m.Domain += "\t" + e.GetDomain()
+						}
+						if m.GetReason() == "" {
+							m.Reason += e.GetReason()
+						} else if m.GetReason() != e.GetReason() && !strings.Contains(m.GetReason(), e.GetReason()) {
+							m.Reason += "\t" + e.GetReason()
+						}
+						if e.GetMetadata() != nil {
+							if m.GetMetadata() == nil {
+								m.Metadata = e.GetMetadata()
+							} else {
+								m.Metadata = appendM(m.GetMetadata(), e.GetMetadata())
+							}
 						}
 					}
 				}
@@ -498,17 +541,20 @@ func withDetails(st *Status, err error, details ...any) *Status {
 			m := new(errdetails.BadRequestFieldViolation)
 			for _, msg := range ds {
 				b, ok := msg.(*errdetails.BadRequestFieldViolation)
-				if ok && b != nil && !visited[b.String()] {
-					visited[b.String()] = true
-					if m.GetField() == "" {
-						m.Field = b.GetField()
-					} else if m.GetField() != b.GetField() && !strings.Contains(m.GetField(), b.GetField()) {
-						m.Field += "\t" + b.GetField()
-					}
-					if m.GetDescription() == "" {
-						m.Description = b.GetDescription()
-					} else if m.GetDescription() != b.GetDescription() && !strings.Contains(m.GetDescription(), b.GetDescription()) {
-						m.Description += "\t" + b.GetDescription()
+				if ok && b != nil {
+					key := errdetails.BadRequestFieldViolationMessageName + b.GetField() + b.GetDescription()
+					if !visited[key] {
+						visited[key] = true
+						if m.GetField() == "" {
+							m.Field = b.GetField()
+						} else if m.GetField() != b.GetField() && !strings.Contains(m.GetField(), b.GetField()) {
+							m.Field += "\t" + b.GetField()
+						}
+						if m.GetDescription() == "" {
+							m.Description = b.GetDescription()
+						} else if m.GetDescription() != b.GetDescription() && !strings.Contains(m.GetDescription(), b.GetDescription()) {
+							m.Description += "\t" + b.GetDescription()
+						}
 					}
 				}
 			}
@@ -517,17 +563,20 @@ func withDetails(st *Status, err error, details ...any) *Status {
 			m := new(errdetails.LocalizedMessage)
 			for _, msg := range ds {
 				l, ok := msg.(*errdetails.LocalizedMessage)
-				if ok && l != nil && !visited[l.String()] {
-					visited[l.String()] = true
-					if m.GetLocale() == "" {
-						m.Locale = l.GetLocale()
-					} else if m.GetLocale() != l.GetLocale() && !strings.Contains(m.GetLocale(), l.GetLocale()) {
-						m.Locale += "\t" + l.GetLocale()
-					}
-					if m.GetMessage() == "" {
-						m.Message = l.GetMessage()
-					} else if m.GetMessage() != l.GetMessage() && !strings.Contains(m.GetMessage(), l.GetMessage()) {
-						m.Message += "\t" + l.GetMessage()
+				if ok && l != nil {
+					key := errdetails.LocalizedMessageMessageName + l.GetLocale() + l.GetMessage()
+					if !visited[key] {
+						visited[key] = true
+						if m.GetLocale() == "" {
+							m.Locale = l.GetLocale()
+						} else if m.GetLocale() != l.GetLocale() && !strings.Contains(m.GetLocale(), l.GetLocale()) {
+							m.Locale += "\t" + l.GetLocale()
+						}
+						if m.GetMessage() == "" {
+							m.Message = l.GetMessage()
+						} else if m.GetMessage() != l.GetMessage() && !strings.Contains(m.GetMessage(), l.GetMessage()) {
+							m.Message += "\t" + l.GetMessage()
+						}
 					}
 				}
 			}
@@ -556,22 +605,25 @@ func withDetails(st *Status, err error, details ...any) *Status {
 			m := new(errdetails.PreconditionFailureViolation)
 			for _, msg := range ds {
 				p, ok := msg.(*errdetails.PreconditionFailureViolation)
-				if ok && p != nil && !visited[p.String()] {
-					visited[p.String()] = true
-					if m.GetType() == "" {
-						m.Type = p.GetType()
-					} else if m.GetType() != p.GetType() && !strings.Contains(m.GetType(), p.GetType()) {
-						m.Type += "\t" + p.GetType()
-					}
-					if m.GetSubject() == "" {
-						m.Subject = p.GetSubject()
-					} else if m.GetSubject() != p.GetSubject() && !strings.Contains(m.GetSubject(), p.GetSubject()) {
-						m.Subject += "\t" + p.GetSubject()
-					}
-					if m.GetDescription() == "" {
-						m.Description = p.GetDescription()
-					} else if m.GetDescription() != p.GetDescription() && !strings.Contains(m.GetDescription(), p.GetDescription()) {
-						m.Description += "\t" + p.GetDescription()
+				if ok && p != nil {
+					key := errdetails.PreconditionFailureViolationMessageName + p.GetType() + p.GetSubject() + p.GetDescription()
+					if !visited[key] {
+						visited[key] = true
+						if m.GetType() == "" {
+							m.Type = p.GetType()
+						} else if m.GetType() != p.GetType() && !strings.Contains(m.GetType(), p.GetType()) {
+							m.Type += "\t" + p.GetType()
+						}
+						if m.GetSubject() == "" {
+							m.Subject = p.GetSubject()
+						} else if m.GetSubject() != p.GetSubject() && !strings.Contains(m.GetSubject(), p.GetSubject()) {
+							m.Subject += "\t" + p.GetSubject()
+						}
+						if m.GetDescription() == "" {
+							m.Description = p.GetDescription()
+						} else if m.GetDescription() != p.GetDescription() && !strings.Contains(m.GetDescription(), p.GetDescription()) {
+							m.Description += "\t" + p.GetDescription()
+						}
 					}
 				}
 			}
@@ -600,17 +652,20 @@ func withDetails(st *Status, err error, details ...any) *Status {
 			m := new(errdetails.HelpLink)
 			for _, msg := range ds {
 				h, ok := msg.(*errdetails.HelpLink)
-				if ok && h != nil && !visited[h.String()] {
-					visited[h.String()] = true
-					if m.GetUrl() == "" {
-						m.Url = h.GetUrl()
-					} else if m.GetUrl() != h.GetUrl() && !strings.Contains(m.GetUrl(), h.GetUrl()) {
-						m.Url += "\t" + h.GetUrl()
-					}
-					if m.GetDescription() == "" {
-						m.Description = h.GetDescription()
-					} else if m.GetDescription() != h.GetDescription() && !strings.Contains(m.GetDescription(), h.GetDescription()) {
-						m.Description += "\t" + h.GetDescription()
+				if ok && h != nil {
+					key := errdetails.HelpLinkMessageName + h.GetUrl() + h.GetDescription()
+					if !visited[key] {
+						visited[key] = true
+						if m.GetUrl() == "" {
+							m.Url = h.GetUrl()
+						} else if m.GetUrl() != h.GetUrl() && !strings.Contains(m.GetUrl(), h.GetUrl()) {
+							m.Url += "\t" + h.GetUrl()
+						}
+						if m.GetDescription() == "" {
+							m.Description = h.GetDescription()
+						} else if m.GetDescription() != h.GetDescription() && !strings.Contains(m.GetDescription(), h.GetDescription()) {
+							m.Description += "\t" + h.GetDescription()
+						}
 					}
 				}
 			}
@@ -639,17 +694,20 @@ func withDetails(st *Status, err error, details ...any) *Status {
 			m := new(errdetails.QuotaFailureViolation)
 			for _, msg := range ds {
 				q, ok := msg.(*errdetails.QuotaFailureViolation)
-				if ok && q != nil && !visited[q.String()] {
-					visited[q.String()] = true
-					if m.GetSubject() == "" {
-						m.Subject = q.GetSubject()
-					} else if m.GetSubject() != q.GetSubject() && !strings.Contains(m.GetSubject(), q.GetSubject()) {
-						m.Subject += "\t" + q.GetSubject()
-					}
-					if m.GetDescription() == "" {
-						m.Description = q.GetDescription()
-					} else if m.GetDescription() != q.GetDescription() && !strings.Contains(m.GetDescription(), q.GetDescription()) {
-						m.Description += "\t" + q.GetDescription()
+				if ok && q != nil {
+					key := errdetails.QuotaFailureViolationMessageName + q.GetSubject() + q.GetDescription()
+					if !visited[key] {
+						visited[key] = true
+						if m.GetSubject() == "" {
+							m.Subject = q.GetSubject()
+						} else if m.GetSubject() != q.GetSubject() && !strings.Contains(m.GetSubject(), q.GetSubject()) {
+							m.Subject += "\t" + q.GetSubject()
+						}
+						if m.GetDescription() == "" {
+							m.Description = q.GetDescription()
+						} else if m.GetDescription() != q.GetDescription() && !strings.Contains(m.GetDescription(), q.GetDescription()) {
+							m.Description += "\t" + q.GetDescription()
+						}
 					}
 				}
 			}
@@ -658,17 +716,20 @@ func withDetails(st *Status, err error, details ...any) *Status {
 			m := new(errdetails.RequestInfo)
 			for _, msg := range ds {
 				r, ok := msg.(*errdetails.RequestInfo)
-				if ok && r != nil && !visited[r.String()] {
-					visited[r.String()] = true
-					if m.GetRequestId() == "" {
-						m.RequestId = r.GetRequestId()
-					} else if m.GetRequestId() != r.GetRequestId() && !strings.Contains(m.GetRequestId(), r.GetRequestId()) {
-						m.RequestId += "\t" + r.GetRequestId()
-					}
-					if m.GetServingData() == "" {
-						m.ServingData = r.GetServingData()
-					} else if m.GetServingData() != r.GetServingData() && !strings.Contains(m.GetServingData(), r.GetServingData()) {
-						m.ServingData += "\t" + r.GetServingData()
+				if ok && r != nil {
+					key := errdetails.RequestInfoMessageName + r.GetRequestId() + r.GetServingData()
+					if !visited[key] {
+						visited[key] = true
+						if m.GetRequestId() == "" {
+							m.RequestId = r.GetRequestId()
+						} else if m.GetRequestId() != r.GetRequestId() && !strings.Contains(m.GetRequestId(), r.GetRequestId()) {
+							m.RequestId += "\t" + r.GetRequestId()
+						}
+						if m.GetServingData() == "" {
+							m.ServingData = r.GetServingData()
+						} else if m.GetServingData() != r.GetServingData() && !strings.Contains(m.GetServingData(), r.GetServingData()) {
+							m.ServingData += "\t" + r.GetServingData()
+						}
 					}
 				}
 			}
@@ -677,22 +738,25 @@ func withDetails(st *Status, err error, details ...any) *Status {
 			m := new(errdetails.ResourceInfo)
 			for _, msg := range ds {
 				r, ok := msg.(*errdetails.ResourceInfo)
-				if ok && r != nil && !visited[r.String()] {
-					visited[r.String()] = true
-					if m.GetResourceType() == "" {
-						m.ResourceType = r.GetResourceType()
-					} else if m.GetResourceType() != r.GetResourceType() && len(m.GetResourceType()) < len(r.GetResourceType()) {
-						m.ResourceType += r.GetResourceType()
-					}
-					if m.GetResourceName() == "" {
-						m.ResourceName = r.GetResourceName()
-					} else if m.GetResourceName() != r.GetResourceName() && !strings.Contains(m.GetResourceName(), r.GetResourceName()) {
-						m.ResourceName += "\t" + r.GetResourceName()
-					}
-					if m.GetDescription() == "" {
-						m.Description = r.GetDescription()
-					} else if m.GetDescription() != r.GetDescription() && !strings.Contains(m.GetDescription(), r.GetDescription()) {
-						m.Description += "\t" + r.GetDescription()
+				if ok && r != nil {
+					key := errdetails.ResourceInfoMessageName + r.GetResourceType() + r.GetResourceName() + r.GetDescription()
+					if !visited[key] {
+						visited[key] = true
+						if m.GetResourceType() == "" {
+							m.ResourceType = r.GetResourceType()
+						} else if m.GetResourceType() != r.GetResourceType() && len(m.GetResourceType()) < len(r.GetResourceType()) {
+							m.ResourceType += r.GetResourceType()
+						}
+						if m.GetResourceName() == "" {
+							m.ResourceName = r.GetResourceName()
+						} else if m.GetResourceName() != r.GetResourceName() && !strings.Contains(m.GetResourceName(), r.GetResourceName()) {
+							m.ResourceName += "\t" + r.GetResourceName()
+						}
+						if m.GetDescription() == "" {
+							m.Description = r.GetDescription()
+						} else if m.GetDescription() != r.GetDescription() && !strings.Contains(m.GetDescription(), r.GetDescription()) {
+							m.Description += "\t" + r.GetDescription()
+						}
 					}
 				}
 			}
@@ -701,10 +765,13 @@ func withDetails(st *Status, err error, details ...any) *Status {
 			m := new(errdetails.RetryInfo)
 			for _, msg := range ds {
 				r, ok := msg.(*errdetails.RetryInfo)
-				if ok && r != nil && !visited[r.String()] {
-					visited[r.String()] = true
-					if m.GetRetryDelay() == nil || r.GetRetryDelay().Seconds < m.GetRetryDelay().Seconds {
-						m.RetryDelay = r.GetRetryDelay()
+				if ok && r != nil {
+					key := errdetails.RetryInfoMessageName + strconv.FormatInt(r.GetRetryDelay().GetSeconds(), 10) + strconv.FormatInt(int64(r.GetRetryDelay().GetNanos()), 10)
+					if !visited[key] {
+						visited[key] = true
+						if m.GetRetryDelay() == nil || r.GetRetryDelay().GetSeconds() < m.GetRetryDelay().GetSeconds() {
+							m.RetryDelay = r.GetRetryDelay()
+						}
 					}
 				}
 			}
