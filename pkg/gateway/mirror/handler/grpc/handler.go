@@ -117,14 +117,18 @@ func (s *server) Register(
 			)
 			attrs = trace.StatusCodeInvalidArgument(err.Error())
 		default:
-			var (
-				st  *status.Status
-				msg string
+			err = status.WrapWithInternal(
+				mirror.RegisterRPCName+" API failed to connect mirror gateway targets", err, reqInfo, resInfo,
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       "mirror gateway targets",
+							Description: err.Error(),
+						},
+					},
+				},
 			)
-			st, msg, err = status.ParseError(err, codes.Internal,
-				"failed to parse "+mirror.RegisterRPCName+" gRPC error response", reqInfo, resInfo,
-			)
-			attrs = trace.FromGRPCStatus(st.Code(), msg)
+			attrs = trace.StatusCodeInternal(err.Error())
 		}
 		log.Warn(err)
 		if span != nil {
@@ -138,7 +142,7 @@ func (s *server) Register(
 	// Get own address and the addresses of other mirror gateways to which this gateway is currently connected.
 	tgts, err := s.mirror.MirrorTargets(ctx)
 	if err != nil {
-		err = status.WrapWithInternal(mirror.RegisterRPCName+" API failed to get connected vald gateway targets", err,
+		err = status.WrapWithInternal(mirror.RegisterRPCName+" API failed to get connected mirror gateway targets", err,
 			&errdetails.BadRequest{
 				FieldViolations: []*errdetails.BadRequestFieldViolation{
 					{
