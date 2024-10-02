@@ -1784,6 +1784,283 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // }
 //
+// func Test_ngt_copyNGT(t *testing.T) {
+// 	type args struct {
+// 		src *ngt
+// 	}
+// 	type fields struct {
+// 		core                    core.NGT
+// 		eg                      errgroup.Group
+// 		kvs                     kvs.BidiMap
+// 		fmap                    map[string]int64
+// 		vq                      vqueue.Queue
+// 		indexing                atomic.Value
+// 		flushing                atomic.Bool
+// 		saving                  atomic.Value
+// 		lastNocie               uint64
+// 		nocie                   uint64
+// 		nogce                   uint64
+// 		wfci                    uint64
+// 		nobic                   uint64
+// 		nopvq                   atomic.Uint64
+// 		cfg                     *config.NGT
+// 		opts                    []Option
+// 		inMem                   bool
+// 		dim                     int
+// 		alen                    int
+// 		lim                     time.Duration
+// 		dur                     time.Duration
+// 		sdur                    time.Duration
+// 		minLit                  time.Duration
+// 		maxLit                  time.Duration
+// 		litFactor               time.Duration
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
+// 		podName                 string
+// 		podNamespace            string
+// 		path                    string
+// 		tmpPath                 atomic.Value
+// 		oldPath                 string
+// 		basePath                string
+// 		brokenPath              string
+// 		poolSize                uint32
+// 		radius                  float32
+// 		epsilon                 float32
+// 		idelay                  time.Duration
+// 		dcd                     bool
+// 		kvsdbConcurrency        int
+// 		historyLimit            int
+// 		isReadReplica           bool
+// 		enableExportIndexInfo   bool
+// 		exportIndexInfoDuration time.Duration
+// 		patcher                 client.Patcher
+// 		enableStatistics        bool
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           src:ngt{},
+// 		       },
+// 		       fields: fields {
+// 		           core:nil,
+// 		           eg:nil,
+// 		           kvs:nil,
+// 		           fmap:nil,
+// 		           vq:nil,
+// 		           indexing:nil,
+// 		           flushing:nil,
+// 		           saving:nil,
+// 		           lastNocie:0,
+// 		           nocie:0,
+// 		           nogce:0,
+// 		           wfci:0,
+// 		           nobic:0,
+// 		           nopvq:nil,
+// 		           cfg:nil,
+// 		           opts:nil,
+// 		           inMem:false,
+// 		           dim:0,
+// 		           alen:0,
+// 		           lim:nil,
+// 		           dur:nil,
+// 		           sdur:nil,
+// 		           minLit:nil,
+// 		           maxLit:nil,
+// 		           litFactor:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
+// 		           podName:"",
+// 		           podNamespace:"",
+// 		           path:"",
+// 		           tmpPath:nil,
+// 		           oldPath:"",
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           poolSize:0,
+// 		           radius:0,
+// 		           epsilon:0,
+// 		           idelay:nil,
+// 		           dcd:false,
+// 		           kvsdbConcurrency:0,
+// 		           historyLimit:0,
+// 		           isReadReplica:false,
+// 		           enableExportIndexInfo:false,
+// 		           exportIndexInfoDuration:nil,
+// 		           patcher:nil,
+// 		           enableStatistics:false,
+// 		           statisticsCache:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           src:ngt{},
+// 		           },
+// 		           fields: fields {
+// 		           core:nil,
+// 		           eg:nil,
+// 		           kvs:nil,
+// 		           fmap:nil,
+// 		           vq:nil,
+// 		           indexing:nil,
+// 		           flushing:nil,
+// 		           saving:nil,
+// 		           lastNocie:0,
+// 		           nocie:0,
+// 		           nogce:0,
+// 		           wfci:0,
+// 		           nobic:0,
+// 		           nopvq:nil,
+// 		           cfg:nil,
+// 		           opts:nil,
+// 		           inMem:false,
+// 		           dim:0,
+// 		           alen:0,
+// 		           lim:nil,
+// 		           dur:nil,
+// 		           sdur:nil,
+// 		           minLit:nil,
+// 		           maxLit:nil,
+// 		           litFactor:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
+// 		           podName:"",
+// 		           podNamespace:"",
+// 		           path:"",
+// 		           tmpPath:nil,
+// 		           oldPath:"",
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           poolSize:0,
+// 		           radius:0,
+// 		           epsilon:0,
+// 		           idelay:nil,
+// 		           dcd:false,
+// 		           kvsdbConcurrency:0,
+// 		           historyLimit:0,
+// 		           isReadReplica:false,
+// 		           enableExportIndexInfo:false,
+// 		           exportIndexInfoDuration:nil,
+// 		           patcher:nil,
+// 		           enableStatistics:false,
+// 		           statisticsCache:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			n := &ngt{
+// 				core:                    test.fields.core,
+// 				eg:                      test.fields.eg,
+// 				kvs:                     test.fields.kvs,
+// 				fmap:                    test.fields.fmap,
+// 				vq:                      test.fields.vq,
+// 				indexing:                test.fields.indexing,
+// 				flushing:                test.fields.flushing,
+// 				saving:                  test.fields.saving,
+// 				lastNocie:               test.fields.lastNocie,
+// 				nocie:                   test.fields.nocie,
+// 				nogce:                   test.fields.nogce,
+// 				wfci:                    test.fields.wfci,
+// 				nobic:                   test.fields.nobic,
+// 				nopvq:                   test.fields.nopvq,
+// 				cfg:                     test.fields.cfg,
+// 				opts:                    test.fields.opts,
+// 				inMem:                   test.fields.inMem,
+// 				dim:                     test.fields.dim,
+// 				alen:                    test.fields.alen,
+// 				lim:                     test.fields.lim,
+// 				dur:                     test.fields.dur,
+// 				sdur:                    test.fields.sdur,
+// 				minLit:                  test.fields.minLit,
+// 				maxLit:                  test.fields.maxLit,
+// 				litFactor:               test.fields.litFactor,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
+// 				podName:                 test.fields.podName,
+// 				podNamespace:            test.fields.podNamespace,
+// 				path:                    test.fields.path,
+// 				tmpPath:                 test.fields.tmpPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				poolSize:                test.fields.poolSize,
+// 				radius:                  test.fields.radius,
+// 				epsilon:                 test.fields.epsilon,
+// 				idelay:                  test.fields.idelay,
+// 				dcd:                     test.fields.dcd,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
+// 				historyLimit:            test.fields.historyLimit,
+// 				isReadReplica:           test.fields.isReadReplica,
+// 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				patcher:                 test.fields.patcher,
+// 				enableStatistics:        test.fields.enableStatistics,
+// 				statisticsCache:         test.fields.statisticsCache,
+// 			}
+//
+// 			n.copyNGT(test.args.src)
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
 // func Test_migrate(t *testing.T) {
 // 	type args struct {
 // 		ctx  context.Context
@@ -10757,6 +11034,278 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 //
 // 			err := n.RegenerateIndexes(test.args.ctx)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_ngt_loadStatistics(t *testing.T) {
+// 	type fields struct {
+// 		core                    core.NGT
+// 		eg                      errgroup.Group
+// 		kvs                     kvs.BidiMap
+// 		fmap                    map[string]int64
+// 		vq                      vqueue.Queue
+// 		indexing                atomic.Value
+// 		flushing                atomic.Bool
+// 		saving                  atomic.Value
+// 		lastNocie               uint64
+// 		nocie                   uint64
+// 		nogce                   uint64
+// 		wfci                    uint64
+// 		nobic                   uint64
+// 		nopvq                   atomic.Uint64
+// 		cfg                     *config.NGT
+// 		opts                    []Option
+// 		inMem                   bool
+// 		dim                     int
+// 		alen                    int
+// 		lim                     time.Duration
+// 		dur                     time.Duration
+// 		sdur                    time.Duration
+// 		minLit                  time.Duration
+// 		maxLit                  time.Duration
+// 		litFactor               time.Duration
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
+// 		podName                 string
+// 		podNamespace            string
+// 		path                    string
+// 		tmpPath                 atomic.Value
+// 		oldPath                 string
+// 		basePath                string
+// 		brokenPath              string
+// 		poolSize                uint32
+// 		radius                  float32
+// 		epsilon                 float32
+// 		idelay                  time.Duration
+// 		dcd                     bool
+// 		kvsdbConcurrency        int
+// 		historyLimit            int
+// 		isReadReplica           bool
+// 		enableExportIndexInfo   bool
+// 		exportIndexInfoDuration time.Duration
+// 		patcher                 client.Patcher
+// 		enableStatistics        bool
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           core:nil,
+// 		           eg:nil,
+// 		           kvs:nil,
+// 		           fmap:nil,
+// 		           vq:nil,
+// 		           indexing:nil,
+// 		           flushing:nil,
+// 		           saving:nil,
+// 		           lastNocie:0,
+// 		           nocie:0,
+// 		           nogce:0,
+// 		           wfci:0,
+// 		           nobic:0,
+// 		           nopvq:nil,
+// 		           cfg:nil,
+// 		           opts:nil,
+// 		           inMem:false,
+// 		           dim:0,
+// 		           alen:0,
+// 		           lim:nil,
+// 		           dur:nil,
+// 		           sdur:nil,
+// 		           minLit:nil,
+// 		           maxLit:nil,
+// 		           litFactor:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
+// 		           podName:"",
+// 		           podNamespace:"",
+// 		           path:"",
+// 		           tmpPath:nil,
+// 		           oldPath:"",
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           poolSize:0,
+// 		           radius:0,
+// 		           epsilon:0,
+// 		           idelay:nil,
+// 		           dcd:false,
+// 		           kvsdbConcurrency:0,
+// 		           historyLimit:0,
+// 		           isReadReplica:false,
+// 		           enableExportIndexInfo:false,
+// 		           exportIndexInfoDuration:nil,
+// 		           patcher:nil,
+// 		           enableStatistics:false,
+// 		           statisticsCache:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           core:nil,
+// 		           eg:nil,
+// 		           kvs:nil,
+// 		           fmap:nil,
+// 		           vq:nil,
+// 		           indexing:nil,
+// 		           flushing:nil,
+// 		           saving:nil,
+// 		           lastNocie:0,
+// 		           nocie:0,
+// 		           nogce:0,
+// 		           wfci:0,
+// 		           nobic:0,
+// 		           nopvq:nil,
+// 		           cfg:nil,
+// 		           opts:nil,
+// 		           inMem:false,
+// 		           dim:0,
+// 		           alen:0,
+// 		           lim:nil,
+// 		           dur:nil,
+// 		           sdur:nil,
+// 		           minLit:nil,
+// 		           maxLit:nil,
+// 		           litFactor:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
+// 		           podName:"",
+// 		           podNamespace:"",
+// 		           path:"",
+// 		           tmpPath:nil,
+// 		           oldPath:"",
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           poolSize:0,
+// 		           radius:0,
+// 		           epsilon:0,
+// 		           idelay:nil,
+// 		           dcd:false,
+// 		           kvsdbConcurrency:0,
+// 		           historyLimit:0,
+// 		           isReadReplica:false,
+// 		           enableExportIndexInfo:false,
+// 		           exportIndexInfoDuration:nil,
+// 		           patcher:nil,
+// 		           enableStatistics:false,
+// 		           statisticsCache:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			n := &ngt{
+// 				core:                    test.fields.core,
+// 				eg:                      test.fields.eg,
+// 				kvs:                     test.fields.kvs,
+// 				fmap:                    test.fields.fmap,
+// 				vq:                      test.fields.vq,
+// 				indexing:                test.fields.indexing,
+// 				flushing:                test.fields.flushing,
+// 				saving:                  test.fields.saving,
+// 				lastNocie:               test.fields.lastNocie,
+// 				nocie:                   test.fields.nocie,
+// 				nogce:                   test.fields.nogce,
+// 				wfci:                    test.fields.wfci,
+// 				nobic:                   test.fields.nobic,
+// 				nopvq:                   test.fields.nopvq,
+// 				cfg:                     test.fields.cfg,
+// 				opts:                    test.fields.opts,
+// 				inMem:                   test.fields.inMem,
+// 				dim:                     test.fields.dim,
+// 				alen:                    test.fields.alen,
+// 				lim:                     test.fields.lim,
+// 				dur:                     test.fields.dur,
+// 				sdur:                    test.fields.sdur,
+// 				minLit:                  test.fields.minLit,
+// 				maxLit:                  test.fields.maxLit,
+// 				litFactor:               test.fields.litFactor,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
+// 				podName:                 test.fields.podName,
+// 				podNamespace:            test.fields.podNamespace,
+// 				path:                    test.fields.path,
+// 				tmpPath:                 test.fields.tmpPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				poolSize:                test.fields.poolSize,
+// 				radius:                  test.fields.radius,
+// 				epsilon:                 test.fields.epsilon,
+// 				idelay:                  test.fields.idelay,
+// 				dcd:                     test.fields.dcd,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
+// 				historyLimit:            test.fields.historyLimit,
+// 				isReadReplica:           test.fields.isReadReplica,
+// 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				patcher:                 test.fields.patcher,
+// 				enableStatistics:        test.fields.enableStatistics,
+// 				statisticsCache:         test.fields.statisticsCache,
+// 			}
+//
+// 			err := n.loadStatistics()
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
