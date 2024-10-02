@@ -390,8 +390,8 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 			}()
 			res, err := s.Search(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil || st.Message() == "" {
+				st, _ := status.FromError(err)
+				if st == nil || st.Message() == "" {
 					// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Proto(), although it is unlikely to match this condition.
 					log.Errorf("gRPC call returned not a gRPC status error: %v", err)
 					st = status.New(codes.Unknown, "failed to parse "+vald.SearchRPCName+" gRPC error response")
@@ -445,8 +445,8 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 			}()
 			res, err := s.SearchByID(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil || st.Message() == "" {
+				st, _ := status.FromError(err)
+				if st == nil || st.Message() == "" {
 					// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Proto(), although it is unlikely to match this condition.
 					log.Errorf("gRPC call returned not a gRPC status error: %v", err)
 					st = status.New(codes.Unknown, "failed to parse "+vald.SearchByIDRPCName+" gRPC error response")
@@ -770,8 +770,8 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 			}()
 			res, err := s.LinearSearch(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil || st.Message() == "" {
+				st, _ := status.FromError(err)
+				if st == nil || st.Message() == "" {
 					// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Proto(), although it is unlikely to match this condition.
 					log.Errorf("gRPC call returned not a gRPC status error: %v", err)
 					st = status.New(codes.Unknown, "failed to parse "+vald.LinearSearchRPCName+" gRPC error response")
@@ -830,8 +830,8 @@ func (s *server) StreamLinearSearchByID(
 			}()
 			res, err := s.LinearSearchByID(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil || st.Message() == "" {
+				st, _ := status.FromError(err)
+				if st == nil || st.Message() == "" {
 					// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Proto(), although it is unlikely to match this condition.
 					log.Errorf("gRPC call returned not a gRPC status error: %v", err)
 					st = status.New(codes.Unknown, "failed to parse "+vald.LinearSearchByIDRPCName+" gRPC error response")
@@ -1073,8 +1073,8 @@ func (s *server) handleInsert(
 			return vc.Insert(ctx, req, copts...)
 		})
 		if err != nil {
-			st, ok := status.FromError(err)
-			if !ok || st == nil || st.Message() == "" {
+			st, _ := status.FromError(err)
+			if st == nil || st.Message() == "" {
 				// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Code(), although it is unlikely to match this condition.
 				log.Errorf("gRPC call returned not a gRPC status error: %v", err)
 				st = status.New(codes.Unknown, "failed to parse "+vald.InsertRPCName+" gRPC error response")
@@ -1230,8 +1230,8 @@ func (s *server) handleInsertResult(
 			return vc.Update(ctx, req, copts...)
 		})
 		if err != nil {
-			st, ok := status.FromError(err)
-			if !ok || st == nil || st.Message() == "" {
+			st, _ := status.FromError(err)
+			if st == nil || st.Message() == "" {
 				// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Code(), although it is unlikely to match this condition.
 				log.Errorf("gRPC call returned not a gRPC status error: %v", err)
 				st = status.New(codes.Unknown, "failed to parse "+vald.UpdateRPCName+" gRPC error response")
@@ -1427,8 +1427,8 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 			}()
 			res, err := s.Insert(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil || st.Message() == "" {
+				st, _ := status.FromError(err)
+				if st == nil || st.Message() == "" {
 					// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Proto(), although it is unlikely to match this condition.
 					log.Errorf("gRPC call returned not a gRPC status error: %v", err)
 					st = status.New(codes.Unknown, "failed to parse "+vald.InsertRPCName+" gRPC error response")
@@ -1775,8 +1775,8 @@ func (s *server) handleUpdateResult(
 			return vc.Insert(ctx, req, copts...)
 		})
 		if err != nil {
-			st, ok := status.FromError(err)
-			if !ok || st == nil || st.Message() == "" {
+			st, _ := status.FromError(err)
+			if st == nil || st.Message() == "" {
 				// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Code(), although it is unlikely to match this condition.
 				log.Errorf("gRPC call returned not a gRPC status error: %v", err)
 				st = status.New(codes.Unknown, "failed to parse "+vald.InsertRPCName+" gRPC error response")
@@ -1986,8 +1986,8 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 			}()
 			res, err := s.Update(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil || st.Message() == "" {
+				st, _ := status.FromError(err)
+				if st == nil || st.Message() == "" {
 					// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Proto(), although it is unlikely to match this condition.
 					log.Errorf("gRPC call returned not a gRPC status error: %v", err)
 					st = status.New(codes.Unknown, "failed to parse "+vald.UpdateRPCName+" gRPC error response")
@@ -2163,8 +2163,8 @@ func (s *server) handleUpsert(
 			return vc.Upsert(ctx, req, copts...)
 		})
 		if err != nil {
-			st, ok := status.FromError(err)
-			if !ok || st == nil || st.Message() == "" {
+			st, _ := status.FromError(err)
+			if st == nil || st.Message() == "" {
 				// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Code(), although it is unlikely to match this condition.
 				log.Errorf("gRPC call returned not a gRPC status error: %v", err)
 				st = status.New(codes.Unknown, "failed to parse "+vald.UpsertRPCName+" gRPC error response")
@@ -2358,8 +2358,8 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 			}()
 			res, err := s.Upsert(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil || st.Message() == "" {
+				st, _ := status.FromError(err)
+				if st == nil || st.Message() == "" {
 					// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Proto(), although it is unlikely to match this condition.
 					log.Errorf("gRPC call returned not a gRPC status error: %v", err)
 					st = status.New(codes.Unknown, "failed to parse "+vald.UpsertRPCName+" gRPC error response")
@@ -2727,8 +2727,8 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 			}()
 			res, err := s.Remove(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil || st.Message() == "" {
+				st, _ := status.FromError(err)
+				if st == nil || st.Message() == "" {
 					// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Proto(), although it is unlikely to match this condition.
 					log.Errorf("gRPC call returned not a gRPC status error: %v", err)
 					st = status.New(codes.Unknown, "failed to parse "+vald.RemoveRPCName+" gRPC error response")
@@ -2857,8 +2857,8 @@ func (s *server) RemoveByTimestamp(
 			return locs, errors.Join(derr, err)
 		})
 		if err != nil {
-			st, ok := status.FromError(err)
-			if !ok || st == nil || st.Message() == "" {
+			st, _ := status.FromError(err)
+			if st == nil || st.Message() == "" {
 				// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Code(), although it is unlikely to match this condition.
 				log.Errorf("gRPC call returned not a gRPC status error: %v", err)
 				st = status.New(codes.Unknown, "failed to parse "+vald.InsertRPCName+" gRPC error response")
@@ -2907,8 +2907,8 @@ func (s *server) handleRemoveByTimestamp(
 			return vc.RemoveByTimestamp(ctx, req, copts...)
 		})
 		if err != nil {
-			st, ok := status.FromError(err)
-			if !ok || st == nil || st.Message() == "" {
+			st, _ := status.FromError(err)
+			if st == nil || st.Message() == "" {
 				// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Code(), although it is unlikely to match this condition.
 				log.Errorf("gRPC call returned not a gRPC status error: %v", err)
 				st = status.New(codes.Unknown, "failed to parse "+vald.RemoveByTimestampRPCName+" gRPC error response")
@@ -3164,8 +3164,8 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 			}()
 			res, err := s.GetObject(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil || st.Message() == "" {
+				st, _ := status.FromError(err)
+				if st == nil || st.Message() == "" {
 					// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Proto(), although it is unlikely to match this condition.
 					log.Errorf("gRPC call returned not a gRPC status error: %v", err)
 					st = status.New(codes.Internal, "failed to parse "+vald.GetObjectRPCName+" gRPC error response")

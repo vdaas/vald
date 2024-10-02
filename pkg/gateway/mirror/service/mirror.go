@@ -215,8 +215,8 @@ func (m *mirr) registers(
 				)
 				attrs = trace.StatusCodeInvalidArgument(err.Error())
 			default:
-				st, ok := status.FromError(err)
-				if !ok || st == nil || st.Message() == "" {
+				st, _ := status.FromError(err)
+				if st == nil || st.Message() == "" {
 					// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Code() and st.Message(), although it is unlikely to match this condition.
 					log.Errorf("gRPC call returned not a gRPC status error: %v", err)
 					st = status.New(codes.Unknown, "failed to parse "+mirror.RegisterRPCName+" gRPC error response")
