@@ -216,13 +216,15 @@ $(LIB_PATH)/libz.a: $(LIB_PATH)
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_STATIC_EXECS=ON \
 		-DBUILD_TESTING=OFF \
-		-DCMAKE_C_FLAGS="-fPIC" \
-		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
 		-DZLIB_BUILD_SHARED=OFF \
 		-DZLIB_BUILD_STATIC=ON \
-		-DZLIB_USE_STATIC_LIBS=ON \
 		-DZLIB_COMPAT=ON \
-		.. \
+		-DZLIB_USE_STATIC_LIBS=ON \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+		-DCMAKE_C_FLAGS="$(CFLAGS)" \
+		-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
+		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-B $(TEMP_DIR)/zlib/build $(TEMP_DIR)/zlib \
 	&& make -j$(CORES) \
 	&& make install \
 	&& cd $(ROOTDIR) \
@@ -234,24 +236,27 @@ hdf5/install: $(LIB_PATH)/libhdf5.a
 $(LIB_PATH)/libhdf5.a: $(LIB_PATH) \
 	zlib/install
 	mkdir -p $(TEMP_DIR)/hdf5 \
-	&& curl -fsSL https://github.com/HDFGroup/hdf5/releases/download/$(HDF5_VERSION)/hdf5.tar.gz -o $(TEMP_DIR)/hdf5.tar.gz \
-	&& tar -xzvf $(TEMP_DIR)/hdf5.tar.gz -C $(TEMP_DIR)/hdf5 --strip-components 2 \
+	&& curl -fsSL https://github.com/HDFGroup/hdf5/archive/refs/tags/$(HDF5_VERSION).tar.gz -o $(TEMP_DIR)/hdf5.tar.gz \
+	&& tar -xzvf $(TEMP_DIR)/hdf5.tar.gz -C $(TEMP_DIR)/hdf5 --strip-components 1 \
 	&& mkdir -p $(TEMP_DIR)/hdf5/build \
 	&& cd $(TEMP_DIR)/hdf5/build \
 	&& cmake -DCMAKE_BUILD_TYPE=Release \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_STATIC_EXECS=ON \
 		-DBUILD_TESTING=OFF \
-		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
-		-DH5_ZLIB_INCLUDE_DIR=$(USR_LOCAL)/include \
-		-DH5_ZLIB_LIBRARY=$(LIB_PATH)/libz.a \
 		-DHDF5_BUILD_CPP_LIB=OFF \
 		-DHDF5_BUILD_HL_LIB=ON \
 		-DHDF5_BUILD_STATIC_EXECS=ON \
 		-DHDF5_BUILD_TOOLS=OFF \
 		-DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
-		.. \
+		-DH5_ZLIB_INCLUDE_DIR=$(USR_LOCAL)/include \
+		-DH5_ZLIB_LIBRARY=$(LIB_PATH)/libz.a \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+		-DCMAKE_C_FLAGS="$(CFLAGS)" \
+		-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
+		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-B $(TEMP_DIR)/hdf5/build $(TEMP_DIR)/hdf5 \
 	&& make -j$(CORES) \
 	&& make install \
 	&& cd $(ROOTDIR) \
-	&& rm -rf $(TEMP_DIR)/hdf5.tar.gz $(TEMP_DIR)/HDF5_VERSION
+	&& rm -rf $(TEMP_DIR)/hdf5.tar.gz $(TEMP_DIR)/hdf5
