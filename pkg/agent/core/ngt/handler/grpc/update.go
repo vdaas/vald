@@ -191,10 +191,10 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 			}()
 			res, err := s.Update(ctx, req)
 			if err != nil {
-				st, _ = status.FromError(err)
+				st, _ := status.FromError(err)
 				if st != nil && sspan != nil {
 					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Massage())...)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				return &payload.Object_StreamLocation{
@@ -210,10 +210,10 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 			}, nil
 		})
 	if err != nil {
-		st, _ = status.FromError(err)
+		st, _ := status.FromError(err)
 		if st != nil && sspan != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Massage())...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return err

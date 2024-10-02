@@ -344,10 +344,10 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 			}()
 			res, err := s.LinearSearch(ctx, req)
 			if err != nil {
-				st, _ = status.FromError(err)
+				st, _ := status.FromError(err)
 				if st != nil && sspan != nil {
 					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Massage())...)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				return &payload.Search_StreamResponse{
@@ -363,10 +363,10 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 			}, nil
 		})
 	if err != nil {
-		st, _ = status.FromError(err)
+		st, _ := status.FromError(err)
 		if st != nil && sspan != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Massage())...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return err
@@ -393,10 +393,10 @@ func (s *server) StreamLinearSearchByID(
 			}()
 			res, err := s.LinearSearchByID(ctx, req)
 			if err != nil {
-				st, _ = status.FromError(err)
+				st, _ := status.FromError(err)
 				if st != nil && sspan != nil {
 					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Massage())...)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				return &payload.Search_StreamResponse{
@@ -412,10 +412,10 @@ func (s *server) StreamLinearSearchByID(
 			}, nil
 		})
 	if err != nil {
-		st, _ = status.FromError(err)
+		st, _ := status.FromError(err)
 		if st != nil && sspan != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Massage())...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return err
@@ -453,10 +453,10 @@ func (s *server) MultiLinearSearch(
 			}()
 			r, err := s.LinearSearch(ctx, query)
 			if err != nil {
-				st, _ = status.FromError(err)
+				st, _ := status.FromError(err)
 				if st != nil && sspan != nil {
 					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Massage())...)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				mu.Lock()
@@ -474,10 +474,10 @@ func (s *server) MultiLinearSearch(
 	}
 	wg.Wait()
 	if errs != nil {
-		st, _ = status.FromError(err)
+		st, _ := status.FromError(err)
 		if st != nil && sspan != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Massage())...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
@@ -515,10 +515,10 @@ func (s *server) MultiLinearSearchByID(
 			defer wg.Done()
 			r, err := s.LinearSearchByID(ctx, query)
 			if err != nil {
-				st, _ = status.FromError(err)
+				st, _ := status.FromError(err)
 				if st != nil && sspan != nil {
 					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Massage())...)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				mu.Lock()
@@ -536,10 +536,10 @@ func (s *server) MultiLinearSearchByID(
 	}
 	wg.Wait()
 	if errs != nil {
-		st, _ = status.FromError(err)
+		st, _ := status.FromError(err)
 		if st != nil && sspan != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Massage())...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
