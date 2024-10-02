@@ -368,7 +368,7 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 		})
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && sspan != nil {
+		if st != nil && span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
@@ -415,7 +415,7 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 		})
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && sspan != nil {
+		if st != nil && span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
@@ -477,7 +477,7 @@ func (s *server) MultiSearch(
 	wg.Wait()
 	if errs != nil {
 		st, _ := status.FromError(err)
-		if st != nil && sspan != nil {
+		if st != nil && span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
@@ -539,7 +539,7 @@ func (s *server) MultiSearchByID(
 	wg.Wait()
 	if errs != nil {
 		st, _ := status.FromError(err)
-		if st != nil && sspan != nil {
+		if st != nil && span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())

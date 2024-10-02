@@ -364,7 +364,7 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 		})
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && sspan != nil {
+		if st != nil && span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
@@ -413,7 +413,7 @@ func (s *server) StreamLinearSearchByID(
 		})
 	if err != nil {
 		st, _ := status.FromError(err)
-		if st != nil && sspan != nil {
+		if st != nil && span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
@@ -475,7 +475,7 @@ func (s *server) MultiLinearSearch(
 	wg.Wait()
 	if errs != nil {
 		st, _ := status.FromError(err)
-		if st != nil && sspan != nil {
+		if st != nil && span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
@@ -537,7 +537,7 @@ func (s *server) MultiLinearSearchByID(
 	wg.Wait()
 	if errs != nil {
 		st, _ := status.FromError(err)
-		if st != nil && sspan != nil {
+		if st != nil && span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
