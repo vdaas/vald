@@ -162,10 +162,10 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 			}()
 			res, err := s.Insert(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Insert gRPC error response")
-				if sspan != nil {
+				st, _ = status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Massage())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				return &payload.Object_StreamLocation{
@@ -181,10 +181,10 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 			}, nil
 		})
 	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamInsert gRPC error response")
-		if span != nil {
+		st, _ = status.FromError(err)
+		if st != nil && span != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Massage())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return err
