@@ -630,6 +630,7 @@ go.mod
 go.sum
 hack/CHANGELOG.template.md
 hack/actions/gen/main.go
+hack/actions/gen/main_test.go
 hack/benchmark/assets/checksum/fashion-mnist-784-euclidean.md5
 hack/benchmark/assets/checksum/gist-960-euclidean.md5
 hack/benchmark/assets/checksum/glove-100-angular.md5
@@ -717,6 +718,8 @@ hack/helm/schema/gen/main.go
 hack/helm/schema/gen/main_test.go
 hack/license/gen/main.go
 hack/license/gen/main_test.go
+hack/tools/deadlink/index.html
+hack/tools/deadlink/main.go
 hack/tools/kvsdb/main.go
 hack/tools/metrics/main.go
 hack/tools/metrics/main_test.go
@@ -887,6 +890,7 @@ internal/core/algorithm/ngt/ngt_test.go
 internal/core/algorithm/ngt/option.go
 internal/core/algorithm/ngt/option_test.go
 internal/core/algorithm/usearch/option.go
+internal/core/algorithm/usearch/option_test.go
 internal/core/algorithm/usearch/usearch.go
 internal/core/algorithm/usearch/usearch_test.go
 internal/db/kvs/bbolt/bbolt.go
@@ -1032,6 +1036,7 @@ internal/errors/tls.go
 internal/errors/unit.go
 internal/errors/unit_test.go
 internal/errors/usearch.go
+internal/errors/usearch_test.go
 internal/errors/vald.go
 internal/errors/vald_test.go
 internal/errors/vqueue.go
@@ -1161,6 +1166,7 @@ internal/net/grpc/client_test.go
 internal/net/grpc/codec.go
 internal/net/grpc/codec_test.go
 internal/net/grpc/codes/codes.go
+internal/net/grpc/codes/codes_test.go
 internal/net/grpc/context.go
 internal/net/grpc/context_test.go
 internal/net/grpc/credentials/credentials.go
@@ -1288,6 +1294,8 @@ internal/observability/trace/status_test.go
 internal/observability/trace/trace.go
 internal/observability/trace/trace_option.go
 internal/observability/trace/trace_test.go
+internal/os/hostname.go
+internal/os/hostname_test.go
 internal/params/option.go
 internal/params/option_test.go
 internal/params/params.go
@@ -1702,7 +1710,6 @@ pkg/gateway/filter/router/router.go
 pkg/gateway/filter/router/router_test.go
 pkg/gateway/filter/usecase/vald.go
 pkg/gateway/filter/usecase/vald_test.go
-pkg/gateway/internal/location/location_test.go
 pkg/gateway/lb/README.md
 pkg/gateway/lb/config/config.go
 pkg/gateway/lb/config/config_test.go

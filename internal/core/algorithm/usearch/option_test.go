@@ -11,30 +11,26 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package service
+package usearch
 
 // NOT IMPLEMENTED BELOW
 //
-// func TestNewGateway(t *testing.T) {
+// func TestWithIndexPath(t *testing.T) {
 // 	type args struct {
-// 		opts []Option
+// 		path string
 // 	}
 // 	type want struct {
-// 		want Gateway
-// 		err  error
+// 		want Option
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		want       want
-// 		checkFunc  func(want, Gateway, error) error
+// 		checkFunc  func(want, Option) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got Gateway, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
+// 	defaultCheckFunc := func(w want, got Option) error {
 // 		if !reflect.DeepEqual(got, w.want) {
 // 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
@@ -46,7 +42,7 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           opts:nil,
+// 		           path:"",
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -65,7 +61,7 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           opts:nil,
+// 		           path:"",
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -96,103 +92,7 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got, err := NewGateway(test.args.opts...)
-// 			if err := checkFunc(test.want, got, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_gateway_GRPCClient(t *testing.T) {
-// 	type fields struct {
-// 		client  mirror.Client
-// 		eg      errgroup.Group
-// 		podName string
-// 	}
-// 	type want struct {
-// 		want grpc.Client
-// 	}
-// 	type test struct {
-// 		name       string
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, grpc.Client) error
-// 		beforeFunc func(*testing.T)
-// 		afterFunc  func(*testing.T)
-// 	}
-// 	defaultCheckFunc := func(w want, got grpc.Client) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       fields: fields {
-// 		           client:nil,
-// 		           eg:nil,
-// 		           podName:"",
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           fields: fields {
-// 		           client:nil,
-// 		           eg:nil,
-// 		           podName:"",
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			g := &gateway{
-// 				client:  test.fields.client,
-// 				eg:      test.fields.eg,
-// 				podName: test.fields.podName,
-// 			}
-//
-// 			got := g.GRPCClient()
+// 			got := WithIndexPath(test.args.path)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -200,29 +100,22 @@ package service
 // 	}
 // }
 //
-// func Test_gateway_forwardedContext(t *testing.T) {
+// func TestWithQuantizationType(t *testing.T) {
 // 	type args struct {
-// 		ctx     context.Context
-// 		podName string
-// 	}
-// 	type fields struct {
-// 		client  mirror.Client
-// 		eg      errgroup.Group
-// 		podName string
+// 		quantizationType string
 // 	}
 // 	type want struct {
-// 		want context.Context
+// 		want Option
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
-// 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, context.Context) error
+// 		checkFunc  func(want, Option) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got context.Context) error {
+// 	defaultCheckFunc := func(w want, got Option) error {
 // 		if !reflect.DeepEqual(got, w.want) {
 // 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
@@ -234,13 +127,7 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
-// 		           podName:"",
-// 		       },
-// 		       fields: fields {
-// 		           client:nil,
-// 		           eg:nil,
-// 		           podName:"",
+// 		           quantizationType:"",
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -259,13 +146,7 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
-// 		           podName:"",
-// 		           },
-// 		           fields: fields {
-// 		           client:nil,
-// 		           eg:nil,
-// 		           podName:"",
+// 		           quantizationType:"",
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -295,13 +176,8 @@ package service
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 			g := &gateway{
-// 				client:  test.fields.client,
-// 				eg:      test.fields.eg,
-// 				podName: test.fields.podName,
-// 			}
 //
-// 			got := g.forwardedContext(test.args.ctx, test.args.podName)
+// 			got := WithQuantizationType(test.args.quantizationType)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -309,28 +185,22 @@ package service
 // 	}
 // }
 //
-// func Test_gateway_FromForwardedContext(t *testing.T) {
+// func TestWithMetricType(t *testing.T) {
 // 	type args struct {
-// 		ctx context.Context
-// 	}
-// 	type fields struct {
-// 		client  mirror.Client
-// 		eg      errgroup.Group
-// 		podName string
+// 		metricType string
 // 	}
 // 	type want struct {
-// 		want string
+// 		want Option
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
-// 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, string) error
+// 		checkFunc  func(want, Option) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got string) error {
+// 	defaultCheckFunc := func(w want, got Option) error {
 // 		if !reflect.DeepEqual(got, w.want) {
 // 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
@@ -342,12 +212,7 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
-// 		       },
-// 		       fields: fields {
-// 		           client:nil,
-// 		           eg:nil,
-// 		           podName:"",
+// 		           metricType:"",
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -366,12 +231,7 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
-// 		           },
-// 		           fields: fields {
-// 		           client:nil,
-// 		           eg:nil,
-// 		           podName:"",
+// 		           metricType:"",
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -401,13 +261,8 @@ package service
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 			g := &gateway{
-// 				client:  test.fields.client,
-// 				eg:      test.fields.eg,
-// 				podName: test.fields.podName,
-// 			}
 //
-// 			got := g.FromForwardedContext(test.args.ctx)
+// 			got := WithMetricType(test.args.metricType)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -415,31 +270,24 @@ package service
 // 	}
 // }
 //
-// func Test_gateway_BroadCast(t *testing.T) {
+// func TestWithDimension(t *testing.T) {
 // 	type args struct {
-// 		ctx context.Context
-// 		f   func(ctx context.Context, target string, vc MirrorClient, copts ...grpc.CallOption) error
-// 	}
-// 	type fields struct {
-// 		client  mirror.Client
-// 		eg      errgroup.Group
-// 		podName string
+// 		dim int
 // 	}
 // 	type want struct {
-// 		err error
+// 		want Option
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
-// 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, error) error
+// 		checkFunc  func(want, Option) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	defaultCheckFunc := func(w want, got Option) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
 // 		return nil
 // 	}
@@ -449,13 +297,7 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
-// 		           f:nil,
-// 		       },
-// 		       fields: fields {
-// 		           client:nil,
-// 		           eg:nil,
-// 		           podName:"",
+// 		           dim:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -474,13 +316,7 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
-// 		           f:nil,
-// 		           },
-// 		           fields: fields {
-// 		           client:nil,
-// 		           eg:nil,
-// 		           podName:"",
+// 		           dim:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -510,50 +346,33 @@ package service
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 			g := &gateway{
-// 				client:  test.fields.client,
-// 				eg:      test.fields.eg,
-// 				podName: test.fields.podName,
-// 			}
 //
-// 			err := g.BroadCast(test.args.ctx, test.args.f)
-// 			if err := checkFunc(test.want, err); err != nil {
+// 			got := WithDimension(test.args.dim)
+// 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})
 // 	}
 // }
 //
-// func Test_gateway_Do(t *testing.T) {
+// func TestWithConnectivity(t *testing.T) {
 // 	type args struct {
-// 		ctx    context.Context
-// 		target string
-// 		f      func(ctx context.Context, addr string, vc MirrorClient, copts ...grpc.CallOption) (any, error)
-// 	}
-// 	type fields struct {
-// 		client  mirror.Client
-// 		eg      errgroup.Group
-// 		podName string
+// 		connectivity int
 // 	}
 // 	type want struct {
-// 		wantRes any
-// 		err     error
+// 		want Option
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
-// 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, any, error) error
+// 		checkFunc  func(want, Option) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotRes any, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+// 	defaultCheckFunc := func(w want, got Option) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
 // 		return nil
 // 	}
@@ -563,14 +382,7 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
-// 		           target:"",
-// 		           f:nil,
-// 		       },
-// 		       fields: fields {
-// 		           client:nil,
-// 		           eg:nil,
-// 		           podName:"",
+// 		           connectivity:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -589,14 +401,7 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
-// 		           target:"",
-// 		           f:nil,
-// 		           },
-// 		           fields: fields {
-// 		           client:nil,
-// 		           eg:nil,
-// 		           podName:"",
+// 		           connectivity:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -626,46 +431,33 @@ package service
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 			g := &gateway{
-// 				client:  test.fields.client,
-// 				eg:      test.fields.eg,
-// 				podName: test.fields.podName,
-// 			}
 //
-// 			gotRes, err := g.Do(test.args.ctx, test.args.target, test.args.f)
-// 			if err := checkFunc(test.want, gotRes, err); err != nil {
+// 			got := WithConnectivity(test.args.connectivity)
+// 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})
 // 	}
 // }
 //
-// func Test_gateway_DoMulti(t *testing.T) {
+// func TestWithExpansionAdd(t *testing.T) {
 // 	type args struct {
-// 		ctx     context.Context
-// 		targets []string
-// 		f       func(ctx context.Context, target string, vc MirrorClient, copts ...grpc.CallOption) error
-// 	}
-// 	type fields struct {
-// 		client  mirror.Client
-// 		eg      errgroup.Group
-// 		podName string
+// 		expansionAdd int
 // 	}
 // 	type want struct {
-// 		err error
+// 		want Option
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
-// 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, error) error
+// 		checkFunc  func(want, Option) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	defaultCheckFunc := func(w want, got Option) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
 // 		return nil
 // 	}
@@ -675,14 +467,7 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
-// 		           targets:nil,
-// 		           f:nil,
-// 		       },
-// 		       fields: fields {
-// 		           client:nil,
-// 		           eg:nil,
-// 		           podName:"",
+// 		           expansionAdd:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -701,14 +486,7 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
-// 		           targets:nil,
-// 		           f:nil,
-// 		           },
-// 		           fields: fields {
-// 		           client:nil,
-// 		           eg:nil,
-// 		           podName:"",
+// 		           expansionAdd:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -738,14 +516,179 @@ package service
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 			g := &gateway{
-// 				client:  test.fields.client,
-// 				eg:      test.fields.eg,
-// 				podName: test.fields.podName,
+//
+// 			got := WithExpansionAdd(test.args.expansionAdd)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestWithExpansionSearch(t *testing.T) {
+// 	type args struct {
+// 		expansionSearch int
+// 	}
+// 	type want struct {
+// 		want Option
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, Option) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got Option) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           expansionSearch:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           expansionSearch:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			err := g.DoMulti(test.args.ctx, test.args.targets, test.args.f)
-// 			if err := checkFunc(test.want, err); err != nil {
+// 			got := WithExpansionSearch(test.args.expansionSearch)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestWithMulti(t *testing.T) {
+// 	type args struct {
+// 		multi bool
+// 	}
+// 	type want struct {
+// 		want Option
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, Option) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got Option) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           multi:false,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           multi:false,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := WithMulti(test.args.multi)
+// 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})
