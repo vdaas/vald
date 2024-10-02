@@ -1448,10 +1448,13 @@ func (s *server) Search(
 	}
 	res, err = s.gateway.Search(ctx, req, s.copts...)
 	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.SearchRPCName+" gRPC error response")
+		st, ok := status.FromError(err)
+		if !ok || st == nil {
+			st = status.New(codes.Internal, "failed to convert "+vald.SearchRPCName+" gRPC error response")
+		}
 		if span != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
@@ -1531,10 +1534,13 @@ func (s *server) SearchByID(
 	}()
 	res, err = s.gateway.SearchByID(ctx, req, s.copts...)
 	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.SearchByIDRPCName+" gRPC error response")
+		st, ok := status.FromError(err)
+		if !ok || st == nil {
+			st = status.New(codes.Internal, "failed to convert "+vald.SearchByIDRPCName+" gRPC error response")
+		}
 		if span != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
@@ -2196,11 +2202,13 @@ func (s *server) StreamLinearSearchByID(
 			}, nil
 		})
 	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal,
-			"failed to parse "+vald.StreamLinearSearchRPCName+" gRPC error response")
+		st, ok := status.FromError(err)
+		if !ok || st == nil {
+			st = status.New(codes.Internal, "failed to convert "+vald.StreamLinearSearchRPCName+" gRPC error response")
+		}
 		if span != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Error(err)
@@ -3056,10 +3064,13 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 			}, nil
 		})
 	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamUpsertRPCName+" gRPC error response")
+		st, ok := status.FromError(err)
+		if !ok || st == nil {
+			st = status.New(codes.Internal, "failed to parse "+vald.StreamUpsertRPCName+" gRPC error response")
+		}
 		if span != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Error(err)
@@ -3223,10 +3234,13 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 			}, nil
 		})
 	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamRemoveRPCName+" gRPC error response")
+		st, ok := status.FromError(err)
+		if !ok || st == nil {
+			st = status.New(codes.Internal, "failed to parse "+vald.StreamRemoveRPCName+" gRPC error response")
+		}
 		if span != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Error(err)
