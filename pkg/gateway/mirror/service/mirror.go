@@ -219,7 +219,7 @@ func (m *mirr) registers(
 				if !ok || st == nil || st.Message() == "" {
 					// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Code() and st.Message(), although it is unlikely to match this condition.
 					log.Errorf("gRPC call returned not a gRPC status error: %v", err)
-					st = status.New(codes.Internal, "failed to parse "+mirror.RegisterRPCName+" gRPC error response")
+					st = status.New(codes.Unknown, "failed to parse "+mirror.RegisterRPCName+" gRPC error response")
 				}
 				attrs = trace.FromGRPCStatus(st.Code(), st.Message())
 
