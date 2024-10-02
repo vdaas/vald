@@ -411,12 +411,7 @@ func DebugInfoFromInfoDetail(v *info.Detail) (debug *DebugInfo) {
 	if v.StackTrace != nil {
 		debug.StackEntries = make([]string, 0, len(v.StackTrace))
 		for i, stack := range v.StackTrace {
-			debug.StackEntries = append(debug.GetStackEntries(), strings.Join([]string{
-				"id:",
-				strconv.Itoa(i),
-				"stack_trace:",
-				stack.String(),
-			}, " "))
+			debug.StackEntries = append(debug.GetStackEntries(), "id: "+strconv.Itoa(i)+" stack_trace: "+stack.ShortString())
 		}
 		v.StackTrace = nil
 	}

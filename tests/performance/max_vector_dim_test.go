@@ -68,17 +68,15 @@ func init_ngt_service(dim int) (service.NGT, error) {
 }
 
 func parse(raw string) (key string, value int) {
-	text := strings.ReplaceAll(raw[:len(raw)-2], " ", "")
-	keyValue := strings.Split(text, ":")
-	val := 0
-	if keyValue[1] != "" {
-		val, err := strconv.Atoi(keyValue[1])
+	k, v, ok := strings.Cut(strings.ReplaceAll(raw[:len(raw)-2], " ", ""), ":")
+	if ok {
+		val, err := strconv.Atoi(v)
 		if err != nil {
-			panic(err)
+			return k, 0
 		}
-		return keyValue[0], val
+		return k, val
 	}
-	return keyValue[0], val
+	return k, 0
 }
 
 func TestMain(m *testing.M) {
