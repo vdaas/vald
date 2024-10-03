@@ -314,12 +314,12 @@ func (s *server) RemoveByTimestamp(
 		return true
 	})
 	if errs != nil {
-		st, _ := status.FromError(err)
-		log.Error(err)
+		st, _ := status.FromError(errs)
+		log.Error(errs)
 		if st != nil && span != nil {
-			span.RecordError(err)
+			span.RecordError(errs)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
+			span.SetStatus(trace.StatusError, errs.Error())
 		}
 		return nil, err
 	}

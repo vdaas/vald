@@ -476,11 +476,11 @@ func (s *server) MultiSearch(
 	}
 	wg.Wait()
 	if errs != nil {
-		st, _ := status.FromError(err)
+		st, _ := status.FromError(errs)
 		if st != nil && span != nil {
-			span.RecordError(err)
+			span.RecordError(errs)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
+			span.SetStatus(trace.StatusError, errs.Error())
 		}
 		return nil, err
 	}
@@ -538,11 +538,11 @@ func (s *server) MultiSearchByID(
 	}
 	wg.Wait()
 	if errs != nil {
-		st, _ := status.FromError(err)
+		st, _ := status.FromError(errs)
 		if st != nil && span != nil {
-			span.RecordError(err)
+			span.RecordError(errs)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
+			span.SetStatus(trace.StatusError, errs.Error())
 		}
 		return nil, err
 	}
