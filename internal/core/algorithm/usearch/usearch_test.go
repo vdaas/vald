@@ -349,3 +349,1331 @@ func Test_usearch_Search(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW
+//
+// func TestNew(t *testing.T) {
+// 	type args struct {
+// 		opts []Option
+// 	}
+// 	type want struct {
+// 		want Usearch
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, Usearch, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got Usearch, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           opts:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           opts:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got, err := New(test.args.opts...)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestLoad(t *testing.T) {
+// 	type args struct {
+// 		opts []Option
+// 	}
+// 	type want struct {
+// 		want Usearch
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, Usearch, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got Usearch, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           opts:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           opts:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got, err := Load(test.args.opts...)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_gen(t *testing.T) {
+// 	type args struct {
+// 		isLoad bool
+// 		opts   []Option
+// 	}
+// 	type want struct {
+// 		want Usearch
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, Usearch, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got Usearch, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           isLoad:false,
+// 		           opts:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           isLoad:false,
+// 		           opts:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got, err := gen(test.args.isLoad, test.args.opts...)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_usearch_SaveIndex(t *testing.T) {
+// 	type fields struct {
+// 		index            *core.Index
+// 		quantizationType core.Quantization
+// 		metricType       core.Metric
+// 		dimension        uint
+// 		connectivity     uint
+// 		expansionAdd     uint
+// 		expansionSearch  uint
+// 		multi            bool
+// 		idxPath          string
+// 		mu               *sync.RWMutex
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           index:nil,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
+// 		           dimension:0,
+// 		           connectivity:0,
+// 		           expansionAdd:0,
+// 		           expansionSearch:0,
+// 		           multi:false,
+// 		           idxPath:"",
+// 		           mu:sync.RWMutex{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           index:nil,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
+// 		           dimension:0,
+// 		           connectivity:0,
+// 		           expansionAdd:0,
+// 		           expansionSearch:0,
+// 		           multi:false,
+// 		           idxPath:"",
+// 		           mu:sync.RWMutex{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			u := &usearch{
+// 				index:            test.fields.index,
+// 				quantizationType: test.fields.quantizationType,
+// 				metricType:       test.fields.metricType,
+// 				dimension:        test.fields.dimension,
+// 				connectivity:     test.fields.connectivity,
+// 				expansionAdd:     test.fields.expansionAdd,
+// 				expansionSearch:  test.fields.expansionSearch,
+// 				multi:            test.fields.multi,
+// 				idxPath:          test.fields.idxPath,
+// 				mu:               test.fields.mu,
+// 			}
+//
+// 			err := u.SaveIndex()
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_usearch_SaveIndexWithPath(t *testing.T) {
+// 	type args struct {
+// 		idxPath string
+// 	}
+// 	type fields struct {
+// 		index            *core.Index
+// 		quantizationType core.Quantization
+// 		metricType       core.Metric
+// 		dimension        uint
+// 		connectivity     uint
+// 		expansionAdd     uint
+// 		expansionSearch  uint
+// 		multi            bool
+// 		idxPath          string
+// 		mu               *sync.RWMutex
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           idxPath:"",
+// 		       },
+// 		       fields: fields {
+// 		           index:nil,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
+// 		           dimension:0,
+// 		           connectivity:0,
+// 		           expansionAdd:0,
+// 		           expansionSearch:0,
+// 		           multi:false,
+// 		           idxPath:"",
+// 		           mu:sync.RWMutex{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           idxPath:"",
+// 		           },
+// 		           fields: fields {
+// 		           index:nil,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
+// 		           dimension:0,
+// 		           connectivity:0,
+// 		           expansionAdd:0,
+// 		           expansionSearch:0,
+// 		           multi:false,
+// 		           idxPath:"",
+// 		           mu:sync.RWMutex{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			u := &usearch{
+// 				index:            test.fields.index,
+// 				quantizationType: test.fields.quantizationType,
+// 				metricType:       test.fields.metricType,
+// 				dimension:        test.fields.dimension,
+// 				connectivity:     test.fields.connectivity,
+// 				expansionAdd:     test.fields.expansionAdd,
+// 				expansionSearch:  test.fields.expansionSearch,
+// 				multi:            test.fields.multi,
+// 				idxPath:          test.fields.idxPath,
+// 				mu:               test.fields.mu,
+// 			}
+//
+// 			err := u.SaveIndexWithPath(test.args.idxPath)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_usearch_GetIndicesSize(t *testing.T) {
+// 	type fields struct {
+// 		index            *core.Index
+// 		quantizationType core.Quantization
+// 		metricType       core.Metric
+// 		dimension        uint
+// 		connectivity     uint
+// 		expansionAdd     uint
+// 		expansionSearch  uint
+// 		multi            bool
+// 		idxPath          string
+// 		mu               *sync.RWMutex
+// 	}
+// 	type want struct {
+// 		wantIndicesSize int
+// 		err             error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, int, error) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, gotIndicesSize int, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotIndicesSize, w.wantIndicesSize) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIndicesSize, w.wantIndicesSize)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           index:nil,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
+// 		           dimension:0,
+// 		           connectivity:0,
+// 		           expansionAdd:0,
+// 		           expansionSearch:0,
+// 		           multi:false,
+// 		           idxPath:"",
+// 		           mu:sync.RWMutex{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           index:nil,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
+// 		           dimension:0,
+// 		           connectivity:0,
+// 		           expansionAdd:0,
+// 		           expansionSearch:0,
+// 		           multi:false,
+// 		           idxPath:"",
+// 		           mu:sync.RWMutex{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			u := &usearch{
+// 				index:            test.fields.index,
+// 				quantizationType: test.fields.quantizationType,
+// 				metricType:       test.fields.metricType,
+// 				dimension:        test.fields.dimension,
+// 				connectivity:     test.fields.connectivity,
+// 				expansionAdd:     test.fields.expansionAdd,
+// 				expansionSearch:  test.fields.expansionSearch,
+// 				multi:            test.fields.multi,
+// 				idxPath:          test.fields.idxPath,
+// 				mu:               test.fields.mu,
+// 			}
+//
+// 			gotIndicesSize, err := u.GetIndicesSize()
+// 			if err := checkFunc(test.want, gotIndicesSize, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_usearch_Add(t *testing.T) {
+// 	type args struct {
+// 		key core.Key
+// 		vec []float32
+// 	}
+// 	type fields struct {
+// 		index            *core.Index
+// 		quantizationType core.Quantization
+// 		metricType       core.Metric
+// 		dimension        uint
+// 		connectivity     uint
+// 		expansionAdd     uint
+// 		expansionSearch  uint
+// 		multi            bool
+// 		idxPath          string
+// 		mu               *sync.RWMutex
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           key:nil,
+// 		           vec:nil,
+// 		       },
+// 		       fields: fields {
+// 		           index:nil,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
+// 		           dimension:0,
+// 		           connectivity:0,
+// 		           expansionAdd:0,
+// 		           expansionSearch:0,
+// 		           multi:false,
+// 		           idxPath:"",
+// 		           mu:sync.RWMutex{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           key:nil,
+// 		           vec:nil,
+// 		           },
+// 		           fields: fields {
+// 		           index:nil,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
+// 		           dimension:0,
+// 		           connectivity:0,
+// 		           expansionAdd:0,
+// 		           expansionSearch:0,
+// 		           multi:false,
+// 		           idxPath:"",
+// 		           mu:sync.RWMutex{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			u := &usearch{
+// 				index:            test.fields.index,
+// 				quantizationType: test.fields.quantizationType,
+// 				metricType:       test.fields.metricType,
+// 				dimension:        test.fields.dimension,
+// 				connectivity:     test.fields.connectivity,
+// 				expansionAdd:     test.fields.expansionAdd,
+// 				expansionSearch:  test.fields.expansionSearch,
+// 				multi:            test.fields.multi,
+// 				idxPath:          test.fields.idxPath,
+// 				mu:               test.fields.mu,
+// 			}
+//
+// 			err := u.Add(test.args.key, test.args.vec)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_usearch_Reserve(t *testing.T) {
+// 	type args struct {
+// 		vectorCount int
+// 	}
+// 	type fields struct {
+// 		index            *core.Index
+// 		quantizationType core.Quantization
+// 		metricType       core.Metric
+// 		dimension        uint
+// 		connectivity     uint
+// 		expansionAdd     uint
+// 		expansionSearch  uint
+// 		multi            bool
+// 		idxPath          string
+// 		mu               *sync.RWMutex
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           vectorCount:0,
+// 		       },
+// 		       fields: fields {
+// 		           index:nil,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
+// 		           dimension:0,
+// 		           connectivity:0,
+// 		           expansionAdd:0,
+// 		           expansionSearch:0,
+// 		           multi:false,
+// 		           idxPath:"",
+// 		           mu:sync.RWMutex{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           vectorCount:0,
+// 		           },
+// 		           fields: fields {
+// 		           index:nil,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
+// 		           dimension:0,
+// 		           connectivity:0,
+// 		           expansionAdd:0,
+// 		           expansionSearch:0,
+// 		           multi:false,
+// 		           idxPath:"",
+// 		           mu:sync.RWMutex{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			u := &usearch{
+// 				index:            test.fields.index,
+// 				quantizationType: test.fields.quantizationType,
+// 				metricType:       test.fields.metricType,
+// 				dimension:        test.fields.dimension,
+// 				connectivity:     test.fields.connectivity,
+// 				expansionAdd:     test.fields.expansionAdd,
+// 				expansionSearch:  test.fields.expansionSearch,
+// 				multi:            test.fields.multi,
+// 				idxPath:          test.fields.idxPath,
+// 				mu:               test.fields.mu,
+// 			}
+//
+// 			err := u.Reserve(test.args.vectorCount)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_usearch_GetObject(t *testing.T) {
+// 	type args struct {
+// 		key   core.Key
+// 		count int
+// 	}
+// 	type fields struct {
+// 		index            *core.Index
+// 		quantizationType core.Quantization
+// 		metricType       core.Metric
+// 		dimension        uint
+// 		connectivity     uint
+// 		expansionAdd     uint
+// 		expansionSearch  uint
+// 		multi            bool
+// 		idxPath          string
+// 		mu               *sync.RWMutex
+// 	}
+// 	type want struct {
+// 		want []float32
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, []float32, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got []float32, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           key:nil,
+// 		           count:0,
+// 		       },
+// 		       fields: fields {
+// 		           index:nil,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
+// 		           dimension:0,
+// 		           connectivity:0,
+// 		           expansionAdd:0,
+// 		           expansionSearch:0,
+// 		           multi:false,
+// 		           idxPath:"",
+// 		           mu:sync.RWMutex{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           key:nil,
+// 		           count:0,
+// 		           },
+// 		           fields: fields {
+// 		           index:nil,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
+// 		           dimension:0,
+// 		           connectivity:0,
+// 		           expansionAdd:0,
+// 		           expansionSearch:0,
+// 		           multi:false,
+// 		           idxPath:"",
+// 		           mu:sync.RWMutex{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			u := &usearch{
+// 				index:            test.fields.index,
+// 				quantizationType: test.fields.quantizationType,
+// 				metricType:       test.fields.metricType,
+// 				dimension:        test.fields.dimension,
+// 				connectivity:     test.fields.connectivity,
+// 				expansionAdd:     test.fields.expansionAdd,
+// 				expansionSearch:  test.fields.expansionSearch,
+// 				multi:            test.fields.multi,
+// 				idxPath:          test.fields.idxPath,
+// 				mu:               test.fields.mu,
+// 			}
+//
+// 			got, err := u.GetObject(test.args.key, test.args.count)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_usearch_Remove(t *testing.T) {
+// 	type args struct {
+// 		key core.Key
+// 	}
+// 	type fields struct {
+// 		index            *core.Index
+// 		quantizationType core.Quantization
+// 		metricType       core.Metric
+// 		dimension        uint
+// 		connectivity     uint
+// 		expansionAdd     uint
+// 		expansionSearch  uint
+// 		multi            bool
+// 		idxPath          string
+// 		mu               *sync.RWMutex
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           key:nil,
+// 		       },
+// 		       fields: fields {
+// 		           index:nil,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
+// 		           dimension:0,
+// 		           connectivity:0,
+// 		           expansionAdd:0,
+// 		           expansionSearch:0,
+// 		           multi:false,
+// 		           idxPath:"",
+// 		           mu:sync.RWMutex{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           key:nil,
+// 		           },
+// 		           fields: fields {
+// 		           index:nil,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
+// 		           dimension:0,
+// 		           connectivity:0,
+// 		           expansionAdd:0,
+// 		           expansionSearch:0,
+// 		           multi:false,
+// 		           idxPath:"",
+// 		           mu:sync.RWMutex{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			u := &usearch{
+// 				index:            test.fields.index,
+// 				quantizationType: test.fields.quantizationType,
+// 				metricType:       test.fields.metricType,
+// 				dimension:        test.fields.dimension,
+// 				connectivity:     test.fields.connectivity,
+// 				expansionAdd:     test.fields.expansionAdd,
+// 				expansionSearch:  test.fields.expansionSearch,
+// 				multi:            test.fields.multi,
+// 				idxPath:          test.fields.idxPath,
+// 				mu:               test.fields.mu,
+// 			}
+//
+// 			err := u.Remove(test.args.key)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_usearch_Close(t *testing.T) {
+// 	type fields struct {
+// 		index            *core.Index
+// 		quantizationType core.Quantization
+// 		metricType       core.Metric
+// 		dimension        uint
+// 		connectivity     uint
+// 		expansionAdd     uint
+// 		expansionSearch  uint
+// 		multi            bool
+// 		idxPath          string
+// 		mu               *sync.RWMutex
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           index:nil,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
+// 		           dimension:0,
+// 		           connectivity:0,
+// 		           expansionAdd:0,
+// 		           expansionSearch:0,
+// 		           multi:false,
+// 		           idxPath:"",
+// 		           mu:sync.RWMutex{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           index:nil,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
+// 		           dimension:0,
+// 		           connectivity:0,
+// 		           expansionAdd:0,
+// 		           expansionSearch:0,
+// 		           multi:false,
+// 		           idxPath:"",
+// 		           mu:sync.RWMutex{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			u := &usearch{
+// 				index:            test.fields.index,
+// 				quantizationType: test.fields.quantizationType,
+// 				metricType:       test.fields.metricType,
+// 				dimension:        test.fields.dimension,
+// 				connectivity:     test.fields.connectivity,
+// 				expansionAdd:     test.fields.expansionAdd,
+// 				expansionSearch:  test.fields.expansionSearch,
+// 				multi:            test.fields.multi,
+// 				idxPath:          test.fields.idxPath,
+// 				mu:               test.fields.mu,
+// 			}
+//
+// 			err := u.Close()
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
