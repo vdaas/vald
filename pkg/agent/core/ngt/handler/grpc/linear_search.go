@@ -480,7 +480,7 @@ func (s *server) MultiLinearSearch(
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, errs.Error())
 		}
-		return nil, err
+		return nil, errs
 	}
 	return res, nil
 }
@@ -542,7 +542,7 @@ func (s *server) MultiLinearSearchByID(
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, errs.Error())
 		}
-		return nil, err
+		return nil, errs
 	}
 	return res, nil
 }

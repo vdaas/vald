@@ -482,7 +482,7 @@ func (s *server) MultiSearch(
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, errs.Error())
 		}
-		return nil, err
+		return nil, errs
 	}
 	return res, nil
 }
@@ -544,7 +544,7 @@ func (s *server) MultiSearchByID(
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, errs.Error())
 		}
-		return nil, err
+		return nil, errs
 	}
 	return res, nil
 }

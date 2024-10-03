@@ -321,7 +321,7 @@ func (s *server) RemoveByTimestamp(
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, errs.Error())
 		}
-		return nil, err
+		return nil, errs
 	}
 	if locs == nil || len(locs.GetLocations()) == 0 {
 		err := status.WrapWithNotFound(
