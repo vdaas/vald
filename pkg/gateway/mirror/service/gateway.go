@@ -16,13 +16,13 @@ package service
 import (
 	"context"
 	"reflect"
-	"strings"
 
 	"github.com/vdaas/vald/internal/client/v1/client/mirror"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 

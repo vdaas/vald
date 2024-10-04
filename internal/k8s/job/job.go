@@ -16,13 +16,13 @@ package job
 import (
 	"context"
 	"reflect"
-	"strings"
-	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 	batchv1 "k8s.io/api/batch/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/builder"

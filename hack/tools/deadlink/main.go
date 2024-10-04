@@ -23,13 +23,13 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/http/client"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
