@@ -157,15 +157,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 	}
 	g.monitorRunning.Store(true)
 
-<<<<<<< HEAD
-	addrs := make([]string, len(g.addrs))
-	for addr := range g.addrs {
-		addrs = append(addrs, addr)
-	}
-
-=======
 	addrs := slices.Collect(maps.Keys(g.addrs))
->>>>>>> 04d0a7386 (Refactor internal/net/grpc/client.go (#2674))
 	if g.dialer != nil {
 		g.dialer.StartDialerCache(ctx)
 	}
