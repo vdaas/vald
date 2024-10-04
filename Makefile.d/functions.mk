@@ -74,7 +74,7 @@ define go-build
 		-X '$(GOPKG)/internal/info.AlgorithmInfo=$5' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(if $(filter 1,$(strip $(CGO_ENABLED))),true,false)' \
 		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
 		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
 		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
@@ -434,4 +434,3 @@ define gen-deadlink-checker
 	$$BIN_PATH -path $3 -ignore-path $4 -format $5 $1; \
 	rm -rf $$BIN_PATH
 endef
-

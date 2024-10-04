@@ -37,7 +37,7 @@ cloud.google.com/go/automl v1.14.1/go.mod h1:BocG5mhT32cjmf5CXxVsdSM04VXzJW7chVT
 cloud.google.com/go/baremetalsolution v1.3.1/go.mod h1:D1djGGmBl4M6VlyjOMc1SEzDYlO4EeEG1TCUv5mCPi0=
 cloud.google.com/go/batch v1.11.0/go.mod h1:dS/ceyT1eUmQUPtRGvSaXsb8Aa4M3nCc8LIn0qUYiL4=
 cloud.google.com/go/beyondcorp v1.1.1/go.mod h1:L09o0gLkgXMxCZs4qojrgpI2/dhWtasMc71zPPiHMn4=
-cloud.google.com/go/bigquery v1.63.0/go.mod h1:TQto6OR4kw27bqjNTGkVk1Vo5PJlTgxvDJn6YEIZL/E=
+cloud.google.com/go/bigquery v1.63.1/go.mod h1:ufaITfroCk17WTqBhMpi8CRjsfHjMX07pDrQaRKKX2o=
 cloud.google.com/go/bigtable v1.18.1/go.mod h1:NAVyfJot9jlo+KmgWLUJ5DJGwNDoChzAcrecLpmuAmY=
 cloud.google.com/go/bigtable v1.20.0/go.mod h1:upJDn8frsjzpRMfybiWkD1PG6WCCL7CRl26MgVeoXY4=
 cloud.google.com/go/bigtable v1.33.0/go.mod h1:HtpnH4g25VT1pejHRtInlFPnN5sjTxbQlsYBjh9t5l0=
@@ -59,7 +59,6 @@ cloud.google.com/go/compute/metadata v0.5.2/go.mod h1:C66sj2AluDcIqakBq/M8lw8/yb
 cloud.google.com/go/contactcenterinsights v1.14.1/go.mod h1:OxSWVQxosMh18KCQ3D5UZWYxVrOcK9xrJCV5waxD2dY=
 cloud.google.com/go/container v1.40.0/go.mod h1:wNI1mOUivm+ZkpHMbouutgbD4sQxyphMwK31X5cThY4=
 cloud.google.com/go/containeranalysis v0.13.1/go.mod h1:bmd9H880BNR4Hc8JspEg8ge9WccSQfO+/N+CYvU3sEA=
-cloud.google.com/go/datacatalog v1.22.0/go.mod h1:4Wff6GphTY6guF5WphrD76jOdfBiflDiRGFAxq7t//I=
 cloud.google.com/go/datacatalog v1.22.1/go.mod h1:MscnJl9B2lpYlFoxRjicw19kFTwEke8ReKL5Y/6TWg8=
 cloud.google.com/go/dataflow v0.10.1/go.mod h1:zP4/tNjONFRcS4NcI9R94YDQEkPalimdbPkijVNJt/g=
 cloud.google.com/go/dataform v0.10.1/go.mod h1:c5y0hIOBCfszmBcLJyxnELF30gC1qC/NeHdmkzA7TNQ=
@@ -230,8 +229,8 @@ github.com/aws/aws-sdk-go-v2/credentials v1.17.37 h1:G2aOH01yW8X373JK419THj5QVqu
 github.com/aws/aws-sdk-go-v2/credentials v1.17.37/go.mod h1:0ecCjlb7htYCptRD45lXJ6aJDQac6D2NlKGpZqyTG6A=
 github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.14 h1:C/d03NAmh8C4BZXhuRNboF/DqhBkBCeDiJDcaqIT5pA=
 github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.14/go.mod h1:7I0Ju7p9mCIdlrfS+JCgqcYD0VXz/N4yozsox+0o078=
-github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.25 h1:HkpHeZMM39sGtMHVYG1buAg93vhj5d7F81y6G0OAbGc=
-github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.25/go.mod h1:j3Vz04ZjaWA6kygOsZRpmWe4CyGqfqq2u3unDTU0QGA=
+github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.26 h1:BTfwWNFVGLxW2bih/V2xhgCsYDQwG1cAWhWoW9Jx7wE=
+github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.26/go.mod h1:LA1/FxoEFFmv7XpkB8KKqLAUz8AePdK9H0Ec7PUKazs=
 github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.18 h1:kYQ3H1u0ANr9KEKlGs/jTLrBFPo8P8NaH/w7A01NeeM=
 github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.18/go.mod h1:r506HmK5JDUh9+Mw4CfGJGSSoqIiLCndAuqXuhbv67Y=
 github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.18 h1:Z7IdFUONvTcvS7YuhtVxN99v2cCoHRXOS4mTr0B/pUc=
@@ -248,8 +247,8 @@ github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.20 h1:Xbwbmk44
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.20/go.mod h1:oAfOFzUB14ltPZj1rWwRc3d/6OgD76R8KlvU3EqM9Fg=
 github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.17.18 h1:eb+tFOIl9ZsUe2259/BKPeniKuz4/02zZFH/i4Nf8Rg=
 github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.17.18/go.mod h1:GVCC2IJNJTmdlyEsSmofEy7EfJncP7DNnXDzRjJ5Keg=
-github.com/aws/aws-sdk-go-v2/service/s3 v1.63.3 h1:3zt8qqznMuAZWDTDpcwv9Xr11M/lVj2FsRR7oYBt0OA=
-github.com/aws/aws-sdk-go-v2/service/s3 v1.63.3/go.mod h1:NLTqRLe3pUNu3nTEHI6XlHLKYmc8fbHUdMxAB6+s41Q=
+github.com/aws/aws-sdk-go-v2/service/s3 v1.64.0 h1:I0p8knB/IDYSQ3dbanaCr4UhiYQ96bvKRhGYxvLyiD8=
+github.com/aws/aws-sdk-go-v2/service/s3 v1.64.0/go.mod h1:NLTqRLe3pUNu3nTEHI6XlHLKYmc8fbHUdMxAB6+s41Q=
 github.com/aws/aws-sdk-go-v2/service/sso v1.23.3 h1:rs4JCczF805+FDv2tRhZ1NU0RB2H6ryAvsWPanAr72Y=
 github.com/aws/aws-sdk-go-v2/service/sso v1.23.3/go.mod h1:XRlMvmad0ZNL+75C5FYdMvbbLkd6qiqz6foR1nA1PXY=
 github.com/aws/aws-sdk-go-v2/service/ssooidc v1.26.4 h1:yiwVzJW2ZxZTurVbYWA7QOrAaCYQR72t0wrSBfoesUE=
@@ -492,8 +491,8 @@ github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51/go.mod h1:C
 github.com/kisielk/errcheck v1.7.0/go.mod h1:1kLL+jV4e+CFfueBmI1dSK2ADDyQnlrnrY/FqKluHJQ=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/asmfmt v1.3.2/go.mod h1:AG8TuvYojzulgDAMCnYn50l/5QV3Bs/tp6j0HLHbNSE=
-github.com/klauspost/compress v1.17.11-0.20240927175842-8e14b1b5a913 h1:7s7Xd7zVElAw1qh/eh+tXDNfDNXXj38Tpq54eeG6/BM=
-github.com/klauspost/compress v1.17.11-0.20240927175842-8e14b1b5a913/go.mod h1:pMDklpSncoRMuLFrf1W9Ss9KT+0rH90U12bZKk7uwG0=
+github.com/klauspost/compress v1.17.11-0.20241002081118-f2a4f2583ec1 h1:Dvn9WOWnQvt7Z5txFg96+SqBIZ8S/n+SDW/XT1QbmLI=
+github.com/klauspost/compress v1.17.11-0.20241002081118-f2a4f2583ec1/go.mod h1:pMDklpSncoRMuLFrf1W9Ss9KT+0rH90U12bZKk7uwG0=
 github.com/klauspost/cpuid/v2 v2.2.8 h1:+StwCXwm9PdpiEkPyzBXIy+M9KUb4ODm0Zarf1kS5BM=
 github.com/klauspost/cpuid/v2 v2.2.8/go.mod h1:Lcz8mBdAVJIBVzewtcLocK12l3Y+JytZYpaMropDUws=
 github.com/kpango/fastime v1.1.9 h1:xVQHcqyPt5M69DyFH7g1EPRns1YQNap9d5eLhl/Jy84=
