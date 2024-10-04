@@ -77,21 +77,22 @@ RUN --mount=type=bind,target=.,rw \
     locales \
     git \
     cmake \
-    gcc \
     g++ \
-    unzip \
+    gcc \
     libssl-dev \
+    unzip \
     liblapack-dev \
     libomp-dev \
     libopenblas-dev \
     gfortran \
     pkg-config \
+    file \
     gawk \
     gnupg2 \
     graphviz \
     jq \
-    libhdf5-dev \
     libaec-dev \
+    libhdf5-dev \
     sed \
     zip \
     && ldconfig \
@@ -134,12 +135,12 @@ RUN --mount=type=bind,target=.,rw \
     && make kind/install \
     && make kubectl/install \
     && make kubelinter/install \
-    && make reviewdog/install \
-    && make tparse/install \
-    && make yq/install \
     && make minikube/install \
+    && make reviewdog/install \
     && make stern/install \
     && make telepresence/install \
+    && make tparse/install \
+    && make yq/install \
     && make ngt/install \
     && make faiss/install \
     && rm -rf ${GOPATH}/src/github.com/${ORG}/${REPO}/*

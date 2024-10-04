@@ -44,19 +44,19 @@ k8s/manifest/update: \
 		--set gateway.mirror.enabled=true \
 		--output-dir $(TEMP_DIR) \
 		charts/vald
-	mkdir -p k8s/gateway
-	mkdir -p k8s/manager
-	mkdir -p k8s/index/job
-	mkdir -p k8s/index/job/readreplica
-	mv $(TEMP_DIR)/vald/templates/agent k8s/agent
-	mv $(TEMP_DIR)/vald/templates/discoverer k8s/discoverer
-	mv $(TEMP_DIR)/vald/templates/gateway k8s/gateway
-	mv $(TEMP_DIR)/vald/templates/manager/index k8s/manager/index
-	mv $(TEMP_DIR)/vald/templates/index/operator k8s/index/operator
-	mv $(TEMP_DIR)/vald/templates/index/job/correction k8s/index/job/correction
-	mv $(TEMP_DIR)/vald/templates/index/job/creation k8s/index/job/creation
-	mv $(TEMP_DIR)/vald/templates/index/job/save k8s/index/job/save
-	mv $(TEMP_DIR)/vald/templates/index/job/readreplica/rotate k8s/index/job/readreplica/rotate
+	mkdir -p $(ROOTDIR)/k8s/gateway
+	mkdir -p $(ROOTDIR)/k8s/manager
+	mkdir -p $(ROOTDIR)/k8s/index/job
+	mkdir -p $(ROOTDIR)/k8s/index/job/readreplica
+	mv $(TEMP_DIR)/vald/templates/agent $(ROOTDIR)/k8s/agent
+	mv $(TEMP_DIR)/vald/templates/discoverer $(ROOTDIR)/k8s/discoverer
+	mv $(TEMP_DIR)/vald/templates/gateway $(ROOTDIR)/k8s/gateway
+	mv $(TEMP_DIR)/vald/templates/manager/index $(ROOTDIR)/k8s/manager/index
+	mv $(TEMP_DIR)/vald/templates/index/operator $(ROOTDIR)/k8s/index/operator
+	mv $(TEMP_DIR)/vald/templates/index/job/correction $(ROOTDIR)/k8s/index/job/correction
+	mv $(TEMP_DIR)/vald/templates/index/job/creation $(ROOTDIR)/k8s/index/job/creation
+	mv $(TEMP_DIR)/vald/templates/index/job/save $(ROOTDIR)/k8s/index/job/save
+	mv $(TEMP_DIR)/vald/templates/index/job/readreplica/rotate $(ROOTDIR)/k8s/index/job/readreplica/rotate
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/manifest/helm-operator/clean
@@ -72,10 +72,10 @@ k8s/manifest/helm-operator/update: \
 	helm template \
 		--output-dir $(TEMP_DIR) \
 		charts/vald-helm-operator
-	mkdir -p k8s/operator
-	mv $(TEMP_DIR)/vald-helm-operator/templates k8s/operator/helm
+	mkdir -p $(ROOTDIR)/k8s/operator
+	mv $(TEMP_DIR)/vald-helm-operator/templates $(ROOTDIR)/k8s/operator/helm
 	rm -rf $(TEMP_DIR)
-	cp -r charts/vald-helm-operator/crds k8s/operator/helm/crds
+	cp -r $(ROOTDIR)/charts/vald-helm-operator/crds $(ROOTDIR)/k8s/operator/helm/crds
 
 .PHONY: k8s/manifest/benchmark-operator/clean
 ## clean k8s manifests for benchmark-operator
@@ -90,10 +90,10 @@ k8s/manifest/benchmark-operator/update: \
 	helm template \
 		--output-dir $(TEMP_DIR) \
 		charts/vald-benchmark-operator
-	mkdir -p k8s/tools/benchmark
-	mv $(TEMP_DIR)/vald-benchmark-operator/templates k8s/tools/benchmark/operator
+	mkdir -p $(ROOTDIR)/k8s/tools/benchmark
+	mv $(TEMP_DIR)/vald-benchmark-operator/templates $(ROOTDIR)/k8s/tools/benchmark/operator
 	rm -rf $(TEMP_DIR)
-	cp -r charts/vald-benchmark-operator/crds k8s/tools/benchmark/operator/crds
+	cp -r $(ROOTDIR)/charts/vald-benchmark-operator/crds $(ROOTDIR)/k8s/tools/benchmark/operator/crds
 
 .PHONY: k8s/manifest/readreplica/clean
 ## clean k8s manifests for readreplica
@@ -108,7 +108,7 @@ k8s/manifest/readreplica/update: \
 	helm template \
 		--output-dir $(TEMP_DIR) \
 		charts/vald-readreplica
-	mv $(TEMP_DIR)/vald-readreplica/templates k8s/readreplica
+	mv $(TEMP_DIR)/vald-readreplica/templates $(ROOTDIR)/k8s/readreplica
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/vald/deploy
@@ -190,15 +190,15 @@ k8s/multi/vald/deploy:
 	-@kubectl create ns $(MIRROR01_NAMESPACE)
 	-@kubectl create ns $(MIRROR02_NAMESPACE)
 	-@kubectl create ns $(MIRROR03_NAMESPACE)
-	helm install vald-cluster-01 charts/vald \
+	helm install vald-cluster-01 $(ROOTDIR)/charts/vald \
 		-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
 		-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-01.yaml \
 		-n $(MIRROR01_NAMESPACE)
-	helm install vald-cluster-02 charts/vald \
+	helm install vald-cluster-02 $(ROOTDIR)/charts/vald \
 		-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
 		-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-02.yaml \
 		-n $(MIRROR02_NAMESPACE)
-	helm install vald-cluster-03 charts/vald \
+	helm install vald-cluster-03 $(ROOTDIR)/charts/vald \
 		-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
 		-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-03.yaml \
 		-n $(MIRROR03_NAMESPACE)
@@ -346,18 +346,18 @@ k8s/external/cert-manager/delete:
 .PHONY: k8s/external/minio/deploy
 ## deploy minio
 k8s/external/minio/deploy:
-	kubectl apply -f k8s/external/minio/deployment.yaml
-	kubectl apply -f k8s/external/minio/svc.yaml
+	kubectl apply -f $(ROOTDIR)/k8s/external/minio/deployment.yaml
+	kubectl apply -f $(ROOTDIR)/k8s/external/minio/svc.yaml
 	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
 	kubectl wait --for=condition=ready pod -l app=minio --timeout=600s
-	kubectl apply -f k8s/external/minio/mb-job.yaml
+	kubectl apply -f $(ROOTDIR)/k8s/external/minio/mb-job.yaml
 	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
 	kubectl wait --for=condition=complete job/minio-make-bucket --timeout=600s
 
 .PHONY: k8s/external/minio/delete
 ## delete minio
 k8s/external/minio/delete:
-	kubectl delete -f k8s/external/minio
+	kubectl delete -f $(ROOTDIR)/k8s/external/minio
 
 .PHONY: k8s/metrics/metrics-server/deploy
 ## deploy metrics-serrver
@@ -374,12 +374,12 @@ k8s/metrics/metrics-server/delete:
 .PHONY: k8s/metrics/prometheus/deploy
 ## deploy prometheus
 k8s/metrics/prometheus/deploy:
-	kubectl apply -f k8s/metrics/prometheus
+	kubectl apply -f $(ROOTDIR)/k8s/metrics/prometheus
 
 .PHONY: k8s/metrics/prometheus/delete
 ## delete prometheus
 k8s/metrics/prometheus/delete:
-	kubectl delete -f k8s/metrics/prometheus
+	kubectl delete -f $(ROOTDIR)/k8s/metrics/prometheus
 
 .PHONY: k8s/metrics/prometheus/operator/deploy
 ## deploy prometheus operator
@@ -395,14 +395,14 @@ k8s/metrics/prometheus/operator/delete:
 .PHONY: k8s/metrics/grafana/deploy
 ## deploy grafana
 k8s/metrics/grafana/deploy:
-	kubectl apply -f k8s/metrics/grafana/dashboards
-	kubectl apply -f k8s/metrics/grafana
+	kubectl apply -f $(ROOTDIR)/k8s/metrics/grafana/dashboards
+	kubectl apply -f $(ROOTDIR)/k8s/metrics/grafana
 
 .PHONY: k8s/metrics/grafana/delete
 ## delete grafana
 k8s/metrics/grafana/delete:
-	kubectl delete -f k8s/metrics/grafana/dashboards
-	kubectl delete -f k8s/metrics/grafana
+	kubectl delete -f $(ROOTDIR)/k8s/metrics/grafana/dashboards
+	kubectl delete -f $(ROOTDIR)/k8s/metrics/grafana
 
 .PHONY: k8s/metrics/jaeger/deploy
 ## deploy jaeger
@@ -412,63 +412,63 @@ k8s/metrics/jaeger/deploy:
 	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=jaeger-operator --timeout=60s
 	kubectl wait --for=condition=available deployment/jaeger-jaeger-operator --timeout=60s
 	sleep $(JAEGER_OPERATOR_WAIT_DURATION)
-	kubectl apply -f k8s/metrics/jaeger/jaeger.yaml
+	kubectl apply -f $(ROOTDIR)/k8s/metrics/jaeger/jaeger.yaml
 
 .PHONY: k8s/metrics/jaeger/delete
 ## delete jaeger
 k8s/metrics/jaeger/delete:
-	kubectl delete -f k8s/metrics/jaeger
+	kubectl delete -f $(ROOTDIR)/k8s/metrics/jaeger
 	helm uninstall jaeger
 
 .PHONY: k8s/metrics/loki/deploy
 ## deploy loki and promtail
 k8s/metrics/loki/deploy:
-	kubectl apply -f k8s/metrics/loki
+	kubectl apply -f $(ROOTDIR)/k8s/metrics/loki
 
 .PHONY: k8s/metrics/loki/delete
 ## delete loki and promtail
 k8s/metrics/loki/delete:
-	kubectl delete -f k8s/metrics/loki
+	kubectl delete -f $(ROOTDIR)/k8s/metrics/loki
 
 .PHONY: k8s/metrics/tempo/deploy
 ## deploy tempo and jaeger-agent
 k8s/metrics/tempo/deploy:
-	kubectl apply -f k8s/metrics/tempo
+	kubectl apply -f $(ROOTDIR)/k8s/metrics/tempo
 
 .PHONY: k8s/metrics/tempo/delete
 ## delete tempo and jaeger-agent
 k8s/metrics/tempo/delete:
-	kubectl delete -f k8s/metrics/tempo
+	kubectl delete -f $(ROOTDIR)/k8s/metrics/tempo
 
 .PHONY: k8s/metrics/profefe/deploy
 ## deploy profefe
 k8s/metrics/profefe/deploy:
-	kubectl apply -f k8s/metrics/profefe
+	kubectl apply -f $(ROOTDIR)/k8s/metrics/profefe
 
 .PHONY: k8s/metrics/profefe/delete
 ## delete profefe
 k8s/metrics/profefe/delete:
-	kubectl delete -f k8s/metrics/profefe
+	kubectl delete -f $(ROOTDIR)/k8s/metrics/profefe
 
 .PHONY: k8s/metrics/pyroscope/deploy
 ## deploy pyroscope
 k8s/metrics/pyroscope/deploy:
-	kubectl apply -k k8s/metrics/pyroscope/base
+	kubectl apply -k $(ROOTDIR)/k8s/metrics/pyroscope/base
 
 .PHONY: k8s/metrics/pyroscope/delete
 ## delete pyroscope
 k8s/metrics/pyroscope/delete:
-	kubectl delete -k k8s/metrics/pyroscope/base
+	kubectl delete -k $(ROOTDIR)/k8s/metrics/pyroscope/base
 
 .PHONY: k8s/metrics/pyroscope/pv/deploy
 ## deploy pyroscope on persistent volume
 k8s/metrics/pyroscope/pv/deploy:
-	kubectl apply -k k8s/metrics/pyroscope/overlay
+	kubectl apply -k $(ROOTDIR)/k8s/metrics/pyroscope/overlay
 
 .PHONY: k8s/metrics/pyroscope/pv/delete
 ## delete pyroscope on persistent volume
 k8s/metrics/pyroscope/pv/delete:
-	kubectl delete -k k8s/metrics/pyroscope/overlay
+	kubectl delete -k $(ROOTDIR)/k8s/metrics/pyroscope/overlay
 
 .PHONY: k8s/linkerd/deploy
 ## deploy linkerd to k8s

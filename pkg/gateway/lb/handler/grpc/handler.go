@@ -20,7 +20,6 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"io"
 	"math"
 	"slices"
 	"strconv"
@@ -33,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
