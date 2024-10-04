@@ -37,9 +37,10 @@ type Info interface {
 }
 
 type info struct {
-	baseURL  string // e.g https://github.com/vdaas/vald/tree/main
-	detail   Detail
-	prepOnce sync.Once
+	baseURL      string // e.g https://github.com/vdaas/vald/tree/main
+	detail       Detail
+	prepOnce     sync.Once
+	valdReplacer *strings.Replacer
 
 	// runtime functions
 	rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
@@ -115,13 +116,14 @@ var (
 )
 
 const (
-	goSrc      = "go/src/"
-	goSrcLen   = len(goSrc)
-	goMod      = "go/pkg/mod/"
-	goModLen   = len(goMod)
-	cgoTrue    = "true"
-	cgoFalse   = "false"
-	cgoUnknown = "unknown"
+	goSrc        = "go/src/"
+	goSrcLen     = len(goSrc)
+	goMod        = "go/pkg/mod/"
+	goModLen     = len(goMod)
+	cgoTrue      = "true"
+	cgoFalse     = "false"
+	cgoUnknown   = "unknown"
+	googleGolang = "google.golang.org"
 )
 
 // Init initializes Detail object only once.
@@ -298,11 +300,35 @@ func (i info) getDetail() Detail {
 		if funcName == "runtime.main" {
 			break
 		}
+		index := strings.LastIndex(funcName, "/")
+		if index != -1 {
+			funcName = funcName[index+1:]
+		}
 		url := i.baseURL
 		var idx int
 		switch {
 		case strings.HasPrefix(file, i.detail.GoRoot+"/src"):
-			url = "https://github.com/golang/go/blob/" + i.detail.GoVersion + strings.TrimPrefix(file, i.detail.GoRoot) + "#L" + strconv.Itoa(line)
+			url = "https://github.com/golang/go/blob/" + i.detail.GoVersion + strings.TrimPrefix(file, i.detail.GoRoot)
+		case strings.HasPrefix(file, "runtime"):
+			url = "https://github.com/golang/go/blob/" + i.detail.GoVersion + "/src/" + file
+		case strings.HasPrefix(file, googleGolang+"/grpc"):
+			// google.golang.org/grpc@v1.65.0/server.go to https://github.com/grpc/grpc-go/blob/v1.65.0/server.go
+			url = "https://github.com/grpc/grpc-go/blob/"
+			_, versionSource, ok := strings.Cut(file, "@")
+			if ok && versionSource != "" {
+				url += versionSource
+			} else {
+				url = strings.ReplaceAll(file, googleGolang+"/grpc@", url)
+			}
+		case strings.HasPrefix(file, googleGolang+"/protobuf"):
+			// google.golang.org/protobuf@v1.34.0/proto/decode.go to https://github.com/protocolbuffers/protobuf-go/blob/v1.34.0/proto/decode.go
+			url = "https://github.com/protocolbuffers/protobuf-go/blob/"
+			_, versionSource, ok := strings.Cut(file, "@")
+			if ok && versionSource != "" {
+				url += versionSource
+			} else {
+				url = strings.ReplaceAll(file, googleGolang+"/protobuf@", url)
+			}
 		case func() bool {
 			idx = strings.Index(file, goMod)
 			return idx >= 0
@@ -319,15 +345,16 @@ func (i info) getDetail() Detail {
 				}
 				url += "/" + path
 			}
-			url += "#L" + strconv.Itoa(line)
 		case func() bool {
 			idx = strings.Index(file, goSrc)
 			return idx >= 0 && strings.Index(file, valdRepo) >= 0
 		}():
-			url = strings.Replace(file[idx+goSrcLen:]+"#L"+strconv.Itoa(line), valdRepo, "https://"+valdRepo+"/blob/"+i.detail.GitCommit, -1)
+			url = i.valdReplacer.Replace(file[idx+goSrcLen:])
 		case strings.HasPrefix(file, valdRepo):
-			url = fmt.Sprintf("%s#L%d", strings.Replace(file, valdRepo, "https://"+valdRepo+"/blob/"+i.detail.GitCommit, -1), line)
+			url = i.valdReplacer.Replace(file)
 		}
+		url += "#L" + strconv.Itoa(line)
+
 		i.detail.StackTrace = append(i.detail.StackTrace, StackTrace{
 			FuncName: funcName,
 			File:     file,
@@ -364,7 +391,7 @@ func (i *info) prepare() {
 		if i.detail.CGOEnabled == "" && CGOEnabled != "" {
 			i.detail.CGOEnabled = CGOEnabled
 		}
-		switch i.detail.CGOEnabled {
+		switch CGOEnabled {
 		case "0", cgoFalse:
 			i.detail.CGOEnabled = cgoFalse
 		case "1", cgoTrue:
@@ -390,9 +417,16 @@ func (i *info) prepare() {
 		if len(i.detail.GoroutineCount) == 0 {
 			i.detail.GoroutineCount = strconv.Itoa(runtime.NumGoroutine())
 		}
+		if i.valdReplacer == nil {
+			i.valdReplacer = strings.NewReplacer(valdRepo, "https://"+valdRepo+"/blob/"+i.detail.GitCommit)
+		}
 	})
 }
 
 func (s StackTrace) String() string {
 	return "URL: " + s.URL + "\tFile: " + s.File + "\tLine: #" + strconv.Itoa(s.Line) + "\tFuncName: " + s.FuncName
+}
+
+func (s StackTrace) ShortString() string {
+	return s.URL + " " + s.FuncName
 }

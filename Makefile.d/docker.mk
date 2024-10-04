@@ -101,7 +101,7 @@ ifeq ($(REMOTE),true)
 		-t $(GHCRORG)/$(IMAGE):$(TAG) \
 		$(EXTRA_ARGS) \
 		--output type=registry,oci-mediatypes=true,compression=zstd,compression-level=5,force-compression=true,push=true \
-		-f $(DOCKERFILE) .
+		-f $(DOCKERFILE) $(ROOTDIR)
 else
 	@echo "starting local build for $(IMAGE):$(TAG)"
 	DOCKER_BUILDKIT=1 $(DOCKER) build \
@@ -113,7 +113,7 @@ else
 		$(EXTRA_ARGS) \
 		-t $(CRORG)/$(IMAGE):$(TAG) \
 		-t $(GHCRORG)/$(IMAGE):$(TAG) \
-		-f $(DOCKERFILE) .
+		-f $(DOCKERFILE) $(ROOTDIR)
 endif
 
 .PHONY: docker/name/agent-ngt

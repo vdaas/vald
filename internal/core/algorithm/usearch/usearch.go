@@ -19,11 +19,11 @@ package usearch
 
 import (
 	"strconv"
-	"sync"
 
 	core "github.com/unum-cloud/usearch/golang"
 	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 type (

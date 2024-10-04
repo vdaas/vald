@@ -139,18 +139,18 @@ GIT_COMMIT := $(eval GIT_COMMIT := $(shell git rev-list -1 HEAD))$(GIT_COMMIT)
 MAKELISTS := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
 
 ROOTDIR = $(eval ROOTDIR := $(or $(shell git rev-parse --show-toplevel), $(PWD)))$(ROOTDIR)
-PROTODIRS := $(eval PROTODIRS := $(shell find apis/proto -type d | sed -e "s%apis/proto/%%g" | grep -v "apis/proto"))$(PROTODIRS)
+PROTODIRS := $(eval PROTODIRS := $(shell find $(ROOTDIR)/apis/proto -type d | sed -e "s%apis/proto/%%g" | grep -v "apis/proto"))$(PROTODIRS)
 BENCH_DATASET_BASE_DIR = hack/benchmark/assets
 BENCH_DATASET_MD5_DIR_NAME = checksum
 BENCH_DATASET_HDF5_DIR_NAME = dataset
 BENCH_DATASET_MD5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_MD5_DIR_NAME)
 BENCH_DATASET_HDF5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR_NAME)
 
-PROTOS := $(eval PROTOS := $(shell find apis/proto -type f -regex ".*\.proto"))$(PROTOS)
+PROTOS := $(eval PROTOS := $(shell find $(ROOTDIR)/apis/proto -type f -regex ".*\.proto"))$(PROTOS)
 PROTOS_V1 := $(eval PROTOS_V1 := $(filter apis/proto/v1/%.proto,$(PROTOS)))$(PROTOS_V1)
 PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
-PBDOCS = apis/docs/v1/docs.md
+PBDOCS = $(ROOTDIR)/apis/docs/v1/docs.md
 
 LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -Ofast -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
 
@@ -795,13 +795,13 @@ changelog/update:
 	echo "" >> $(TEMP_DIR)/CHANGELOG.md
 	$(MAKE) -s changelog/next/print >> $(TEMP_DIR)/CHANGELOG.md
 	echo "" >> $(TEMP_DIR)/CHANGELOG.md
-	tail -n +2 CHANGELOG.md >> $(TEMP_DIR)/CHANGELOG.md
-	mv -f $(TEMP_DIR)/CHANGELOG.md CHANGELOG.md
+	tail -n +2 $(ROOTDIR)/CHANGELOG.md >> $(TEMP_DIR)/CHANGELOG.md
+	mv -f $(TEMP_DIR)/CHANGELOG.md $(ROOTDIR)/CHANGELOG.md
 
 .PHONY: changelog/next/print
 ## print next changelog entry
 changelog/next/print:
-	@cat hack/CHANGELOG.template.md | \
+	@cat $(ROOTDIR)/hack/CHANGELOG.template.md | \
 	    sed -e 's/{{ version }}/$(VERSION)/g'
 	@echo "$$BODY"
 

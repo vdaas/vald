@@ -22,8 +22,9 @@ import (
 	"os"
 	"regexp"
 	"slices"
-	"strings"
-	"sync"
+
+	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 type CSpellConfig struct {
