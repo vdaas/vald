@@ -418,8 +418,6 @@ define update-github-actions
 	done
 endef
 
-<<<<<<< HEAD
-=======
 define gen-deadlink-checker
 	BIN_PATH="$(TEMP_DIR)/vald-deadlink-checker-gen"; \
 	rm -rf $$BIN_PATH; \
@@ -436,4 +434,3 @@ define gen-deadlink-checker
 	$$BIN_PATH -path $3 -ignore-path $4 -format $5 $1; \
 	rm -rf $$BIN_PATH
 endef
->>>>>>> da446c017 (Refactor use Absolute path for Makefile (#2670))
