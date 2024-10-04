@@ -19,7 +19,9 @@ package grpc
 
 import (
 	"context"
+	"maps"
 	"math"
+	"slices"
 	"sync/atomic"
 	"time"
 
@@ -155,11 +157,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 	}
 	g.monitorRunning.Store(true)
 
-	addrs := make([]string, len(g.addrs))
-	for addr := range g.addrs {
-		addrs = append(addrs, addr)
-	}
-
+	addrs := slices.Collect(maps.Keys(g.addrs))
 	if g.dialer != nil {
 		g.dialer.StartDialerCache(ctx)
 	}
