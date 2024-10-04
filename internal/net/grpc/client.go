@@ -155,7 +155,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 	}
 	g.monitorRunning.Store(true)
 
-	addrs := make([]string, len(g.addrs))
+	addrs := make([]string, 0, len(g.addrs))
 	for addr := range g.addrs {
 		addrs = append(addrs, addr)
 	}
