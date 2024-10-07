@@ -121,11 +121,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		if cfg.EgressFilters.Client != nil && cfg.EgressFilters.Client.Addrs != nil {
 			as = append(as, cfg.EgressFilters.Client.Addrs...)
 		}
-		if cfg.EgressFilters.DistanceFilters != nil {
-			as = append(as, cfg.EgressFilters.DistanceFilters...)
+		for _, df := range cfg.EgressFilters.DistanceFilters {
+			as = append(as, df.Addr)
 		}
-		if cfg.EgressFilters.ObjectFilters != nil {
-			as = append(as, cfg.EgressFilters.ObjectFilters...)
+		for _, of := range cfg.EgressFilters.ObjectFilters {
+			as = append(as, of.Addr)
 		}
 		if len(as) != 0 {
 			slices.Sort(as)

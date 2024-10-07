@@ -80,12 +80,29 @@ func (j *job) getObject(ctx context.Context, ech chan error) error {
 	eg.SetLimit(j.concurrencyLimit)
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
 		log.Infof("[benchmark job] Start get object: iter = %d", i)
-		ft := []*payload.Filter_Target{}
+		fcfgs := []*payload.Filter_Config{}
 		if j.objectConfig != nil {
-			for i, target := range j.objectConfig.FilterConfig.Targets {
-				ft[i] = &payload.Filter_Target{
-					Host: target.Host,
-					Port: uint32(target.Port),
+			for _, cfg := range j.objectConfig.FilterConfigs {
+				if cfg != nil {
+					var (
+						target *payload.Filter_Target
+						query  *payload.Filter_Query
+					)
+					if cfg.Target != nil {
+						target = &payload.Filter_Target{
+							Host: cfg.Target.Host,
+							Port: uint32(cfg.Target.Port),
+						}
+					}
+					if cfg.Query != nil {
+						query = &payload.Filter_Query{
+							Query: cfg.Query.Query,
+						}
+					}
+					fcfgs = append(fcfgs, &payload.Filter_Config{
+						Target: target,
+						Query:  query,
+					})
 				}
 			}
 		}
@@ -108,9 +125,7 @@ func (j *job) getObject(ctx context.Context, ech chan error) error {
 				Id: &payload.Object_ID{
 					Id: strconv.Itoa(idx),
 				},
-				Filters: &payload.Filter_Config{
-					Targets: ft,
-				},
+				Filters: fcfgs,
 			})
 			if err != nil {
 				select {

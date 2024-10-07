@@ -20,7 +20,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/ObjectDistance"
+              "$ref": "#/definitions/FilterDistanceResponse"
             }
           },
           "default": {
@@ -37,7 +37,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ObjectDistance"
+              "$ref": "#/definitions/FilterDistanceRequest"
             }
           }
         ],
@@ -52,7 +52,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/ObjectVector"
+              "$ref": "#/definitions/FilterVectorResponse"
             }
           },
           "default": {
@@ -65,11 +65,11 @@
         "parameters": [
           {
             "name": "body",
-            "description": "Represent a vector.",
+            "description": "Represent the ID and vector pair.",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ObjectVector"
+              "$ref": "#/definitions/v1FilterVectorRequest"
             }
           }
         ],
@@ -78,6 +78,58 @@
     }
   },
   "definitions": {
+    "FilterDistanceRequest": {
+      "type": "object",
+      "properties": {
+        "distance": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/ObjectDistance"
+          },
+          "title": "Distance"
+        },
+        "query": {
+          "$ref": "#/definitions/FilterQuery",
+          "title": "Query"
+        }
+      },
+      "description": "Represent the ID and distance pair."
+    },
+    "FilterDistanceResponse": {
+      "type": "object",
+      "properties": {
+        "distance": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/ObjectDistance"
+          },
+          "title": "Distance"
+        }
+      },
+      "description": "Represent the ID and distance pair."
+    },
+    "FilterQuery": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "The raw query string."
+        }
+      },
+      "description": "Represent the filter query."
+    },
+    "FilterVectorResponse": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "$ref": "#/definitions/ObjectVector",
+          "title": "Distance"
+        }
+      },
+      "description": "Represent the ID and vector pair."
+    },
     "ObjectDistance": {
       "type": "object",
       "properties": {
@@ -149,6 +201,20 @@
         }
       },
       "description": "The `Status` type defines a logical error model that is suitable for\ndifferent programming environments, including REST APIs and RPC APIs. It is\nused by [gRPC](https://github.com/grpc). Each `Status` message contains\nthree pieces of data: error code, error message, and error details.\n\nYou can find out more about this error model and how to work with it in the\n[API Design Guide](https://cloud.google.com/apis/design/errors)."
+    },
+    "v1FilterVectorRequest": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "$ref": "#/definitions/ObjectVector",
+          "title": "Vector"
+        },
+        "query": {
+          "$ref": "#/definitions/FilterQuery",
+          "title": "Query"
+        }
+      },
+      "description": "Represent the ID and vector pair."
     }
   }
 }

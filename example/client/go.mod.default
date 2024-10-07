@@ -6,6 +6,7 @@ replace (
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate latest
 	github.com/goccy/go-json => github.com/goccy/go-json latest
 	github.com/golang/protobuf => github.com/golang/protobuf latest
+	github.com/kpango/gache/v2 => github.com/kpango/gache/v2 latest
 	github.com/kpango/glg => github.com/kpango/glg latest
 	github.com/pkg/sftp => github.com/pkg/sftp latest
 	golang.org/x/crypto => golang.org/x/crypto latest
@@ -18,4 +19,5 @@ replace (
 	google.golang.org/protobuf => google.golang.org/protobuf latest
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 latest
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 latest
+	github.com/vdaas/vald => ../../../vald
 )

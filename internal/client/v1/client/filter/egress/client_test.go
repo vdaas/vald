@@ -536,7 +536,7 @@ package egress
 // func Test_client_FilterDistance(t *testing.T) {
 // 	type args struct {
 // 		ctx  context.Context
-// 		in   *payload.Object_Distance
+// 		in   *payload.Filter_DistanceRequest
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
@@ -545,7 +545,7 @@ package egress
 // 		c     grpc.Client
 // 	}
 // 	type want struct {
-// 		wantRes *payload.Object_Distance
+// 		wantRes *payload.Filter_DistanceResponse
 // 		err     error
 // 	}
 // 	type test struct {
@@ -553,11 +553,11 @@ package egress
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, *payload.Object_Distance, error) error
+// 		checkFunc  func(want, *payload.Filter_DistanceResponse, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotRes *payload.Object_Distance, err error) error {
+// 	defaultCheckFunc := func(w want, gotRes *payload.Filter_DistanceResponse, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -652,7 +652,7 @@ package egress
 // func Test_specificAddrClient_FilterDistance(t *testing.T) {
 // 	type args struct {
 // 		ctx  context.Context
-// 		in   *payload.Object_Distance
+// 		in   *payload.Filter_DistanceRequest
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
@@ -660,7 +660,7 @@ package egress
 // 		c    grpc.Client
 // 	}
 // 	type want struct {
-// 		wantRes *payload.Object_Distance
+// 		wantRes *payload.Filter_DistanceResponse
 // 		err     error
 // 	}
 // 	type test struct {
@@ -668,11 +668,11 @@ package egress
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, *payload.Object_Distance, error) error
+// 		checkFunc  func(want, *payload.Filter_DistanceResponse, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotRes *payload.Object_Distance, err error) error {
+// 	defaultCheckFunc := func(w want, gotRes *payload.Filter_DistanceResponse, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -764,7 +764,7 @@ package egress
 // func Test_multipleAddrsClient_FilterDistance(t *testing.T) {
 // 	type args struct {
 // 		ctx  context.Context
-// 		in   *payload.Object_Distance
+// 		in   *payload.Filter_DistanceRequest
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
@@ -772,7 +772,7 @@ package egress
 // 		c     grpc.Client
 // 	}
 // 	type want struct {
-// 		wantRes *payload.Object_Distance
+// 		wantRes *payload.Filter_DistanceResponse
 // 		err     error
 // 	}
 // 	type test struct {
@@ -780,11 +780,11 @@ package egress
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, *payload.Object_Distance, error) error
+// 		checkFunc  func(want, *payload.Filter_DistanceResponse, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotRes *payload.Object_Distance, err error) error {
+// 	defaultCheckFunc := func(w want, gotRes *payload.Filter_DistanceResponse, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -876,7 +876,7 @@ package egress
 // func Test_client_FilterVector(t *testing.T) {
 // 	type args struct {
 // 		ctx  context.Context
-// 		in   *payload.Object_Vector
+// 		in   *payload.Filter_VectorRequest
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
@@ -885,7 +885,7 @@ package egress
 // 		c     grpc.Client
 // 	}
 // 	type want struct {
-// 		wantRes *payload.Object_Vector
+// 		wantRes *payload.Filter_VectorResponse
 // 		err     error
 // 	}
 // 	type test struct {
@@ -893,11 +893,11 @@ package egress
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, *payload.Object_Vector, error) error
+// 		checkFunc  func(want, *payload.Filter_VectorResponse, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotRes *payload.Object_Vector, err error) error {
+// 	defaultCheckFunc := func(w want, gotRes *payload.Filter_VectorResponse, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -992,7 +992,7 @@ package egress
 // func Test_specificAddrClient_FilterVector(t *testing.T) {
 // 	type args struct {
 // 		ctx  context.Context
-// 		in   *payload.Object_Vector
+// 		in   *payload.Filter_VectorRequest
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
@@ -1000,7 +1000,7 @@ package egress
 // 		c    grpc.Client
 // 	}
 // 	type want struct {
-// 		wantRes *payload.Object_Vector
+// 		wantRes *payload.Filter_VectorResponse
 // 		err     error
 // 	}
 // 	type test struct {
@@ -1008,11 +1008,11 @@ package egress
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, *payload.Object_Vector, error) error
+// 		checkFunc  func(want, *payload.Filter_VectorResponse, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotRes *payload.Object_Vector, err error) error {
+// 	defaultCheckFunc := func(w want, gotRes *payload.Filter_VectorResponse, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -1104,7 +1104,7 @@ package egress
 // func Test_multipleAddrsClient_FilterVector(t *testing.T) {
 // 	type args struct {
 // 		ctx  context.Context
-// 		in   *payload.Object_Vector
+// 		in   *payload.Filter_VectorRequest
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
@@ -1112,7 +1112,7 @@ package egress
 // 		c     grpc.Client
 // 	}
 // 	type want struct {
-// 		wantRes *payload.Object_Vector
+// 		wantRes *payload.Filter_VectorResponse
 // 		err     error
 // 	}
 // 	type test struct {
@@ -1120,11 +1120,11 @@ package egress
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, *payload.Object_Vector, error) error
+// 		checkFunc  func(want, *payload.Filter_VectorResponse, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotRes *payload.Object_Vector, err error) error {
+// 	defaultCheckFunc := func(w want, gotRes *payload.Filter_VectorResponse, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}

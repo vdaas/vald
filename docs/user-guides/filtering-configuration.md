@@ -72,6 +72,8 @@ Please refer to:
 - [Vald ONNX Ingress Filter](https://github.com/vdaas/vald-onnx-ingress-filter)
 - [Vald Tensorflow Ingress Filter](https://github.com/vdaas/vald-tensorflow-ingress-filter)
 
+You can also find other samples [here](../../example/client/gateway/filter).
+
 ## Configuration
 
 It is easy to enable the filtering feature.
