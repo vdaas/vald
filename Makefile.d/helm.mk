@@ -37,14 +37,14 @@ $(BINDIR)/helm-docs:
 .PHONY: helm/package/vald
 ## packaging Helm chart for Vald
 helm/package/vald:
-	helm package charts/vald
+	helm package $(ROOTDIR)/charts/vald
 
 .PHONY: helm/package/vald-helm-operator
 ## packaging Helm chart for vald-helm-operator
 helm/package/vald-helm-operator: \
 	helm/schema/crd/vald \
 	helm/schema/crd/vald-helm-operator
-	helm package charts/vald-helm-operator
+	helm package $(ROOTDIR)/charts/vald-helm-operator
 
 .PHONY: helm/package/vald-benchmark-operator
 ## packaging Helm chart for vald-helm-operator
@@ -52,11 +52,11 @@ helm/package/vald-benchmark-operator: \
 	helm/schema/crd/vald-benchmark-job \
 	helm/schema/crd/vald-benchmark-scenario \
 	helm/schema/crd/vald-benchmark-operator
-	helm package charts/vald-benchmark-operator
+	helm package $(ROOTDIR)/charts/vald-benchmark-operator
 
 .PHONY: helm/package/vald-readreplica
 helm/package/vald-readreplica:
-	helm package charts/vald-readreplica
+	helm package $(ROOTDIR)/charts/vald-readreplica
 
 .PHONY: helm/repo/add
 ## add Helm chart repository
@@ -64,42 +64,42 @@ helm/repo/add:
 	helm repo add vald https://vald.vdaas.org/charts
 
 .PHONY: helm/docs/vald
-helm/docs/vald: charts/vald/README.md
+helm/docs/vald: $(ROOTDIR)/charts/vald/README.md
 
 # force to rebuild
-.PHONY: charts/vald/README.md
-charts/vald/README.md: \
-	charts/vald/README.md.gotmpl \
-	charts/vald/values.yaml
+.PHONY: $(ROOTDIR)/charts/vald/README.md
+$(ROOTDIR)/charts/vald/README.md: \
+	$(ROOTDIR)/charts/vald/README.md.gotmpl \
+	$(ROOTDIR)/charts/vald/values.yaml
 	helm-docs
 
 .PHONY: helm/docs/vald-helm-operator
-helm/docs/vald-helm-operator: charts/vald-helm-operator/README.md
+helm/docs/vald-helm-operator: $(ROOTDIR)/charts/vald-helm-operator/README.md
 
 # force to rebuild
-.PHONY: charts/vald-helm-operator/README.md
-charts/vald-helm-operator/README.md: \
-	charts/vald-helm-operator/README.md.gotmpl \
-	charts/vald-helm-operator/values.yaml
+.PHONY: $(ROOTDIR)/charts/vald-helm-operator/README.md
+$(ROOTDIR)/charts/vald-helm-operator/README.md: \
+	$(ROOTDIR)/charts/vald-helm-operator/README.md.gotmpl \
+	$(ROOTDIR)/charts/vald-helm-operator/values.yaml
 	helm-docs
 
 .PHONY: helm/docs/vald-readreplica
-helm/docs/vald-readreplica: charts/vald-readreplica/README.md
+helm/docs/vald-readreplica: $(ROOTDIR)/charts/vald-readreplica/README.md
 
 .PHONY: helm/docs/vald-benchmark-operator
-helm/docs/vald-benchmark-operator: charts/vald-benchmark-operator/README.md
+helm/docs/vald-benchmark-operator: $(ROOTDIR)/charts/vald-benchmark-operator/README.md
 
-.PHONY: charts/vald-benchmark-operator/README.md
-charts/vald-benchmark-operator/README.md: \
-	charts/vald-benchmark-operator/README.md.gotmpl \
-	charts/vald-benchmark-operator/values.yaml
+.PHONY: $(ROOTDIR)/charts/vald-benchmark-operator/README.md
+$(ROOTDIR)/charts/vald-benchmark-operator/README.md: \
+	$(ROOTDIR)/charts/vald-benchmark-operator/README.md.gotmpl \
+	$(ROOTDIR)/charts/vald-benchmark-operator/values.yaml
 	helm-docs
 
 # force to rebuild
-.PHONY: charts/vald-readreplica/README.md
-charts/vald-readreplica/README.md: \
-	charts/vald-readreplica/README.md.gotmpl \
-	charts/vald-readreplica/values.yaml
+.PHONY: $(ROOTDIR)/charts/vald-readreplica/README.md
+$(ROOTDIR)/charts/vald-readreplica/README.md: \
+	$(ROOTDIR)/charts/vald-readreplica/README.md.gotmpl \
+	$(ROOTDIR)/charts/vald-readreplica/values.yaml
 	helm-docs
 
 .PHONY: helm/schema/all
@@ -112,42 +112,42 @@ helm/schema/all: \
 
 .PHONY: helm/schema/vald
 ## generate json schema for Vald Helm Chart
-helm/schema/vald: charts/vald/values.schema.json
+helm/schema/vald: $(ROOTDIR)/charts/vald/values.schema.json
 
-charts/vald/values.schema.json: \
-	charts/vald/values.yaml
+$(ROOTDIR)/charts/vald/values.schema.json: \
+	$(ROOTDIR)/charts/vald/values.yaml
 	$(call gen-vald-helm-schema,vald/values)
 
 .PHONY: helm/schema/vald-helm-operator
 ## generate json schema for Vald Helm Operator Chart
-helm/schema/vald-helm-operator: charts/vald-helm-operator/values.schema.json
+helm/schema/vald-helm-operator: $(ROOTDIR)/charts/vald-helm-operator/values.schema.json
 
-charts/vald-helm-operator/values.schema.json: \
-	charts/vald-helm-operator/values.yaml
+$(ROOTDIR)/charts/vald-helm-operator/values.schema.json: \
+	$(ROOTDIR)/charts/vald-helm-operator/values.yaml
 	$(call gen-vald-helm-schema,vald-helm-operator/values)
 
 .PHONY: helm/schema/vald-benchmark-job
 ## generate json schema for Vald Benchmark Job Chart
-helm/schema/vald-benchmark-job: charts/vald-benchmark-operator/job-values.schema.json
+helm/schema/vald-benchmark-job: $(ROOTDIR)/charts/vald-benchmark-operator/job-values.schema.json
 
-charts/vald-benchmark-operator/job-values.schema.json: \
-	charts/vald-benchmark-operator/schemas/job-values.yaml
+$(ROOTDIR)/charts/vald-benchmark-operator/job-values.schema.json: \
+	$(ROOTDIR)/charts/vald-benchmark-operator/schemas/job-values.yaml
 	$(call gen-vald-helm-schema,vald-benchmark-operator/schemas/job-values)
 
 .PHONY: helm/schema/vald-benchmark-scenario
 ## generate json schema for Vald Benchmark Job Chart
-helm/schema/vald-benchmark-scenario: charts/vald-benchmark-operator/scenario-values.schema.json
+helm/schema/vald-benchmark-scenario: $(ROOTDIR)/charts/vald-benchmark-operator/scenario-values.schema.json
 
-charts/vald-benchmark-operator/scenario-values.schema.json: \
-	charts/vald-benchmark-operator/schemas/scenario-values.yaml
+$(ROOTDIR)/charts/vald-benchmark-operator/scenario-values.schema.json: \
+	$(ROOTDIR)/charts/vald-benchmark-operator/schemas/scenario-values.yaml
 	$(call gen-vald-helm-schema,vald-benchmark-operator/schemas/scenario-values)
 
 .PHONY: helm/schema/vald-benchmark-operator
 ## generate json schema for Vald Benchmark Operator Chart
-helm/schema/vald-benchmark-operator: charts/vald-benchmark-operator/values.schema.json
+helm/schema/vald-benchmark-operator: $(ROOTDIR)/charts/vald-benchmark-operator/values.schema.json
 
-charts/vald-benchmark-operator/values.schema.json: \
-	charts/vald-benchmark-operator/values.yaml
+$(ROOTDIR)/charts/vald-benchmark-operator/values.schema.json: \
+	$(ROOTDIR)/charts/vald-benchmark-operator/values.yaml
 	$(call gen-vald-helm-schema,vald-benchmark-operator/values)
 
 .PHONY: yq/install

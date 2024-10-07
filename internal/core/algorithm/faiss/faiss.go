@@ -24,11 +24,11 @@ package faiss
 import "C"
 
 import (
-	"sync"
 	"unsafe"
 
 	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 type (

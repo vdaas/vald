@@ -19,12 +19,12 @@ package usearch
 
 import (
 	"strconv"
-	"strings"
 
 	"github.com/kpango/fastime"
 	core "github.com/unum-cloud/usearch/golang"
 	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/strings"
 )
 
 // Option represents the functional option for usearch.

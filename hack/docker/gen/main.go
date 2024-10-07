@@ -338,10 +338,10 @@ var (
 
 	clangBuildDeps = []string{
 		"cmake",
-		"gcc",
 		"g++",
-		"unzip",
+		"gcc",
 		"libssl-dev",
+		"unzip",
 	}
 	ngtBuildDeps = []string{
 		"liblapack-dev",
@@ -355,12 +355,13 @@ var (
 		"pkg-config",
 	}
 	devContainerDeps = []string{
+		"file",
 		"gawk",
 		"gnupg2",
 		"graphviz",
 		"jq",
-		"libhdf5-dev",
 		"libaec-dev",
+		"libhdf5-dev",
 		"sed",
 		"zip",
 	}
@@ -379,12 +380,12 @@ var (
 		"make kind/install",
 		"make kubectl/install",
 		"make kubelinter/install",
-		"make reviewdog/install",
-		"make tparse/install",
-		"make yq/install",
 		"make minikube/install",
+		"make reviewdog/install",
 		"make stern/install",
 		"make telepresence/install",
+		"make tparse/install",
+		"make yq/install",
 	}
 
 	devContainerPreprocess = []string{
@@ -805,10 +806,7 @@ func main() {
 				data.Environments["HOME"] = "/" + rootUser
 				data.Environments["USER"] = rootUser
 			} else {
-				user := data.BuildUser
-				if strings.Contains(user, ":") {
-					user = strings.SplitN(user, ":", 2)[0]
-				}
+				user, _, _ := strings.Cut(data.BuildUser, ":")
 				data.Environments["HOME"] = "/home/" + user
 				data.Environments["USER"] = user
 			}

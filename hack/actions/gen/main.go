@@ -19,19 +19,19 @@ package main
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io/fs"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"text/template"
 	"time"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"gopkg.in/yaml.v2"
 )
