@@ -18,12 +18,12 @@
 package grpc
 
 import (
-	"os"
 	"runtime"
 	"time"
 
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"

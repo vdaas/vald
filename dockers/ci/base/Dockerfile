@@ -44,8 +44,8 @@ ENV REPO=vald
 ENV RUST_HOME=/usr/local/lib/rust
 ENV TZ=Etc/UTC
 ENV USER=root
-ENV CARGO_HOME=${RUST_HOME}/cargo
 ENV RUSTUP_HOME=${RUST_HOME}/rustup
+ENV CARGO_HOME=${RUST_HOME}/cargo
 ENV PATH=${CARGO_HOME}/bin:${GOPATH}/bin:${GOROOT}/bin:${RUSTUP_HOME}/bin:/usr/local/bin:${PATH}
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -72,21 +72,22 @@ RUN --mount=type=bind,target=.,rw \
     git \
     npm \
     cmake \
-    gcc \
     g++ \
-    unzip \
+    gcc \
     libssl-dev \
+    unzip \
     liblapack-dev \
     libomp-dev \
     libopenblas-dev \
     gfortran \
     pkg-config \
+    file \
     gawk \
     gnupg2 \
     graphviz \
     jq \
-    libhdf5-dev \
     libaec-dev \
+    libhdf5-dev \
     sed \
     zip \
     && ldconfig \
@@ -114,12 +115,12 @@ RUN --mount=type=bind,target=.,rw \
     && make kind/install \
     && make kubectl/install \
     && make kubelinter/install \
-    && make reviewdog/install \
-    && make tparse/install \
-    && make yq/install \
     && make minikube/install \
+    && make reviewdog/install \
     && make stern/install \
     && make telepresence/install \
+    && make tparse/install \
+    && make yq/install \
     && make ngt/install \
     && make faiss/install \
     && make usearch/install \
