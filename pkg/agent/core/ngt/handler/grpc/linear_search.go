@@ -23,7 +23,6 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/attribute"
@@ -344,10 +343,10 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 			}()
 			res, err := s.LinearSearch(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse LinearSearch gRPC error response")
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				return &payload.Search_StreamResponse{
@@ -363,11 +362,10 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 			}, nil
 		})
 	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal,
-			"failed to parse StreamLinearSearch gRPC error response")
-		if span != nil {
+		st, _ := status.FromError(err)
+		if st != nil && span != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return err
@@ -394,10 +392,10 @@ func (s *server) StreamLinearSearchByID(
 			}()
 			res, err := s.LinearSearchByID(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse LinearSearchByID gRPC error response")
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				return &payload.Search_StreamResponse{
@@ -413,10 +411,10 @@ func (s *server) StreamLinearSearchByID(
 			}, nil
 		})
 	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamLinearSearchByID gRPC error response")
-		if span != nil {
+		st, _ := status.FromError(err)
+		if st != nil && span != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return err
@@ -454,15 +452,10 @@ func (s *server) MultiLinearSearch(
 			}()
 			r, err := s.LinearSearch(ctx, query)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal,
-					"failed to parse LinearSearch gRPC error response",
-					&errdetails.RequestInfo{
-						RequestId:   query.GetConfig().GetRequestId(),
-						ServingData: errdetails.Serialize(query),
-					})
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				mu.Lock()
@@ -480,22 +473,13 @@ func (s *server) MultiLinearSearch(
 	}
 	wg.Wait()
 	if errs != nil {
-		st, msg, err := status.ParseError(errs, codes.Internal,
-			"failed to parse MultiLinearSearch gRPC error response",
-			&errdetails.RequestInfo{
-				RequestId:   strings.Join(rids, ","),
-				ServingData: errdetails.Serialize(reqs),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.MultiLinearSearch",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-			span.SetStatus(trace.StatusError, err.Error())
+		st, _ := status.FromError(errs)
+		if st != nil && span != nil {
+			span.RecordError(errs)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
+			span.SetStatus(trace.StatusError, errs.Error())
 		}
-		return nil, err
+		return nil, errs
 	}
 	return res, nil
 }
@@ -530,15 +514,10 @@ func (s *server) MultiLinearSearchByID(
 			defer wg.Done()
 			r, err := s.LinearSearchByID(ctx, query)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal,
-					"failed to parse LinearSearchByID gRPC error response",
-					&errdetails.RequestInfo{
-						RequestId:   query.GetConfig().GetRequestId(),
-						ServingData: errdetails.Serialize(query),
-					})
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				mu.Lock()
@@ -556,22 +535,13 @@ func (s *server) MultiLinearSearchByID(
 	}
 	wg.Wait()
 	if errs != nil {
-		st, msg, err := status.ParseError(errs, codes.Internal,
-			"failed to parse MultiLinearSearchByID gRPC error response",
-			&errdetails.RequestInfo{
-				RequestId:   strings.Join(rids, ","),
-				ServingData: errdetails.Serialize(reqs),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.MultiLinearSearchByID",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			})
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-			span.SetStatus(trace.StatusError, err.Error())
+		st, _ := status.FromError(errs)
+		if st != nil && span != nil {
+			span.RecordError(errs)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
+			span.SetStatus(trace.StatusError, errs.Error())
 		}
-		return nil, err
+		return nil, errs
 	}
 	return res, nil
 }
