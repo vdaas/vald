@@ -1161,6 +1161,7 @@ internal/net/control/control_windows.go
 internal/net/dialer.go
 internal/net/dialer_test.go
 internal/net/grpc/admin/admin.go
+internal/net/grpc/channelz/channelz.go
 internal/net/grpc/client.go
 internal/net/grpc/client_test.go
 internal/net/grpc/codec.go

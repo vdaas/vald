@@ -42,7 +42,7 @@ func NewSession(conn Connection, event EventReceiver) Session {
 // Select creates and returns the SelectStmt.
 func (sess *session) Select(column ...string) SelectStmt {
 	return &selectStmt{
-		sess.Session.Select(column...),
+		sess.Session.Select(prepareSelect(column...)...),
 	}
 }
 

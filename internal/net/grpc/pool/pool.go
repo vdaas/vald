@@ -568,28 +568,45 @@ func (p *pool) IsHealthy(ctx context.Context) (healthy bool) {
 	return unhealthy < pl
 }
 
-func (p *pool) Do(ctx context.Context, f func(conn *ClientConn) error) error {
+func (p *pool) Do(ctx context.Context, f func(conn *ClientConn) error) (err error) {
 	if p == nil {
 		return errors.ErrGRPCClientConnNotFound("*")
 	}
-	conn, ok := p.Get(ctx)
+	idx, conn, ok := p.getHealthyConn(ctx, 0, p.Len())
 	if !ok || conn == nil {
 		return errors.ErrGRPCClientConnNotFound(p.addr)
 	}
-	return f(conn)
+	err = f(conn)
+	if errors.Is(err, grpc.ErrClientConnClosing) {
+		if conn != nil {
+			_ = conn.Close()
+		}
+		conn, err = p.dial(ctx, p.addr)
+		if err == nil && conn != nil && isHealthy(ctx, conn) {
+			p.store(idx, &poolConn{
+				conn: conn,
+				addr: p.addr,
+			})
+			return f(conn)
+		}
+	}
+	return err
 }
 
-func (p *pool) Get(ctx context.Context) (*ClientConn, bool) {
-	return p.getHealthyConn(ctx, 0, p.Len())
+func (p *pool) Get(ctx context.Context) (conn *ClientConn, ok bool) {
+	_, conn, ok = p.getHealthyConn(ctx, 0, p.Len())
+	return conn, ok
 }
 
-func (p *pool) getHealthyConn(ctx context.Context, cnt, retry uint64) (*ClientConn, bool) {
+func (p *pool) getHealthyConn(
+	ctx context.Context, cnt, retry uint64,
+) (idx int, conn *ClientConn, ok bool) {
 	if p == nil || p.closing.Load() {
-		return nil, false
+		return 0, nil, false
 	}
 	select {
 	case <-ctx.Done():
-		return nil, false
+		return 0, nil, false
 	default:
 	}
 	pl := p.Len()
@@ -599,14 +616,13 @@ func (p *pool) getHealthyConn(ctx context.Context, cnt, retry uint64) (*ClientCo
 			if err := p.Disconnect(); err != nil {
 				log.Debugf("failed to disconnect gRPC IP direct connection for %s,\terr: %v", p.addr, err)
 			}
-			return nil, false
+			return 0, nil, false
 		}
-		var idx int
 		if pl > 0 {
 			idx = int(p.current.Add(1) % pl)
 		}
 		if pc := p.load(idx); pc != nil && isHealthy(ctx, pc.conn) {
-			return pc.conn, true
+			return idx, pc.conn, true
 		}
 		conn, err := p.dial(ctx, p.addr)
 		if err == nil && conn != nil && isHealthy(ctx, conn) {
@@ -614,15 +630,16 @@ func (p *pool) getHealthyConn(ctx context.Context, cnt, retry uint64) (*ClientCo
 				conn: conn,
 				addr: p.addr,
 			})
-			return conn, true
+			return idx, conn, true
 		}
 		log.Warnf("failed to find gRPC connection pool for %s.\tlen(pool): %d,\tretried: %d,\terror: %v", p.addr, pl, cnt, err)
-		return nil, false
+		return idx, nil, false
 	}
 
 	if pl > 0 {
-		if pc := p.load(int(p.current.Add(1) % pl)); pc != nil && isHealthy(ctx, pc.conn) {
-			return pc.conn, true
+		idx = int(p.current.Add(1) % pl)
+		if pc := p.load(idx); pc != nil && isHealthy(ctx, pc.conn) {
+			return idx, pc.conn, true
 		}
 	}
 	retry--

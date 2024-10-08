@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/credentials"
+	"github.com/vdaas/vald/internal/net/grpc/health"
 	"github.com/vdaas/vald/internal/net/grpc/keepalive"
 	glog "github.com/vdaas/vald/internal/net/grpc/logger"
 	"github.com/vdaas/vald/internal/safety"
@@ -243,8 +244,8 @@ func New(opts ...Option) (Server, error) {
 		for _, reg := range srv.grpc.regs {
 			reg(srv.grpc.srv)
 		}
+		health.Register(srv.grpc.srv)
 	}
-
 	if srv.lc == nil {
 		srv.ctrl = control.New(srv.sockFlg, int(keepAlive))
 		srv.lc = &net.ListenConfig{

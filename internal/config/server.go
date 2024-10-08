@@ -21,7 +21,7 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/admin"
-	"github.com/vdaas/vald/internal/net/grpc/health"
+	"github.com/vdaas/vald/internal/net/grpc/channelz"
 	"github.com/vdaas/vald/internal/net/grpc/reflection"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/strings"
@@ -92,20 +92,25 @@ type HTTP2 struct {
 
 // GRPC represents the configuration for gPRC.
 type GRPC struct {
-	Keepalive                      *GRPCKeepalive `json:"keepalive,omitempty"                        yaml:"keepalive"`
-	ConnectionTimeout              string         `json:"connection_timeout,omitempty"               yaml:"connection_timeout"`
-	Interceptors                   []string       `json:"interceptors,omitempty"                     yaml:"interceptors"`
-	EnableReflection               bool           `json:"enable_reflection,omitempty"                yaml:"enable_reflection"`
 	EnableAdmin                    bool           `json:"enable_admin,omitempty"                     yaml:"enable_admin"`
+	EnableChannelz                 bool           `json:"enable_channelz,omitempty"                  yaml:"enable_channelz"`
+	EnableReflection               bool           `json:"enable_reflection,omitempty"                yaml:"enable_reflection"`
+	SharedWriteBuffer              bool           `json:"shared_write_buffer,omitempty"              yaml:"shared_write_buffer"`
+	WaitForHandlers                bool           `json:"wait_for_handlers,omitempty"                yaml:"wait_for_handlers"`
+	HeaderTableSize                uint32         `json:"header_table_size,omitempty"                yaml:"header_table_size"`
+	MaxConcurrentStreams           uint32         `json:"max_concurrent_streams,omitempty"           yaml:"max_concurrent_streams"`
+	MaxHeaderListSize              uint32         `json:"max_header_list_size,omitempty"             yaml:"max_header_list_size"`
+	NumStreamWorkers               uint32         `json:"num_stream_workers,omitempty"               yaml:"num_stream_workers"`
 	BidirectionalStreamConcurrency int            `json:"bidirectional_stream_concurrency,omitempty" yaml:"bidirectional_stream_concurrency"`
+	InitialConnWindowSize          int            `json:"initial_conn_window_size,omitempty"         yaml:"initial_conn_window_size"`
+	InitialWindowSize              int            `json:"initial_window_size,omitempty"              yaml:"initial_window_size"`
 	MaxReceiveMessageSize          int            `json:"max_receive_message_size,omitempty"         yaml:"max_receive_message_size"`
 	MaxSendMessageSize             int            `json:"max_send_message_size,omitempty"            yaml:"max_send_message_size"`
-	InitialWindowSize              int            `json:"initial_window_size,omitempty"              yaml:"initial_window_size"`
-	InitialConnWindowSize          int            `json:"initial_conn_window_size,omitempty"         yaml:"initial_conn_window_size"`
-	WriteBufferSize                int            `json:"write_buffer_size,omitempty"                yaml:"write_buffer_size"`
 	ReadBufferSize                 int            `json:"read_buffer_size,omitempty"                 yaml:"read_buffer_size"`
-	MaxHeaderListSize              int            `json:"max_header_list_size,omitempty"             yaml:"max_header_list_size"`
-	HeaderTableSize                int            `json:"header_table_size,omitempty"                yaml:"header_table_size"`
+	WriteBufferSize                int            `json:"write_buffer_size,omitempty"                yaml:"write_buffer_size"`
+	ConnectionTimeout              string         `json:"connection_timeout,omitempty"               yaml:"connection_timeout"`
+	Interceptors                   []string       `json:"interceptors,omitempty"                     yaml:"interceptors"`
+	Keepalive                      *GRPCKeepalive `json:"keepalive,omitempty"                        yaml:"keepalive"`
 }
 
 // GRPCKeepalive represents the configuration for gRPC keep-alive.
@@ -292,20 +297,22 @@ func (s *Server) Opts() []server.Option {
 		if s.GRPC != nil {
 			opts = append(opts,
 				server.WithServerMode(mode),
+				server.WithGRPCConnectionTimeout(s.GRPC.ConnectionTimeout),
+				server.WithGRPCHeaderTableSize(s.GRPC.HeaderTableSize),
+				server.WithGRPCInitialConnWindowSize(s.GRPC.InitialConnWindowSize),
+				server.WithGRPCInitialWindowSize(s.GRPC.InitialWindowSize),
+				server.WithGRPCInterceptors(s.GRPC.Interceptors...),
+				server.WithGRPCMaxConcurrentStreams(s.GRPC.MaxConcurrentStreams),
+				server.WithGRPCMaxHeaderListSize(s.GRPC.MaxHeaderListSize),
 				server.WithGRPCMaxReceiveMessageSize(s.GRPC.MaxReceiveMessageSize),
 				server.WithGRPCMaxSendMessageSize(s.GRPC.MaxSendMessageSize),
-				server.WithGRPCInitialWindowSize(s.GRPC.InitialWindowSize),
-				server.WithGRPCInitialConnWindowSize(s.GRPC.InitialConnWindowSize),
-				server.WithGRPCWriteBufferSize(s.GRPC.WriteBufferSize),
+				server.WithGRPCNumStreamWorkers(s.GRPC.NumStreamWorkers),
 				server.WithGRPCReadBufferSize(s.GRPC.ReadBufferSize),
-				server.WithGRPCConnectionTimeout(s.GRPC.ConnectionTimeout),
-				server.WithGRPCMaxHeaderListSize(s.GRPC.MaxHeaderListSize),
-				server.WithGRPCHeaderTableSize(s.GRPC.HeaderTableSize),
-				server.WithGRPCInterceptors(s.GRPC.Interceptors...),
-				server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-					health.Register(s.Name, srv)
-				}),
+				server.WithGRPCSharedWriteBuffer(s.GRPC.SharedWriteBuffer),
+				server.WithGRPCWaitForHandlers(s.GRPC.WaitForHandlers),
+				server.WithGRPCWriteBufferSize(s.GRPC.WriteBufferSize),
 			)
+
 			if s.GRPC.EnableReflection {
 				opts = append(opts,
 					server.WithGRPCRegistFunc(func(srv *grpc.Server) {
@@ -316,6 +323,12 @@ func (s *Server) Opts() []server.Option {
 				opts = append(opts,
 					server.WithGRPCRegistFunc(func(srv *grpc.Server) {
 						admin.Register(srv)
+					}))
+			}
+			if s.GRPC.EnableChannelz {
+				opts = append(opts,
+					server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+						channelz.Register(srv)
 					}))
 			}
 			if s.GRPC.Keepalive != nil {

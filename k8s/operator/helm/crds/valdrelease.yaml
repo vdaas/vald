@@ -935,6 +935,8 @@ spec:
                                           type: string
                                         enable_admin:
                                           type: boolean
+                                        enable_channelz:
+                                          type: boolean
                                         enable_reflection:
                                           type: boolean
                                         header_table_size:
@@ -969,14 +971,22 @@ spec:
                                               type: string
                                             timeout:
                                               type: string
+                                        max_concurrent_streams:
+                                          type: integer
                                         max_header_list_size:
                                           type: integer
                                         max_receive_message_size:
                                           type: integer
                                         max_send_message_size:
                                           type: integer
+                                        num_stream_workers:
+                                          type: integer
                                         read_buffer_size:
                                           type: integer
+                                        shared_write_buffer:
+                                          type: boolean
+                                        wait_for_handlers:
+                                          type: boolean
                                         write_buffer_size:
                                           type: integer
                                     mode:
@@ -1896,6 +1906,8 @@ spec:
                                               type: string
                                             enable_admin:
                                               type: boolean
+                                            enable_channelz:
+                                              type: boolean
                                             enable_reflection:
                                               type: boolean
                                             header_table_size:
@@ -1930,14 +1942,22 @@ spec:
                                                   type: string
                                                 timeout:
                                                   type: string
+                                            max_concurrent_streams:
+                                              type: integer
                                             max_header_list_size:
                                               type: integer
                                             max_receive_message_size:
                                               type: integer
                                             max_send_message_size:
                                               type: integer
+                                            num_stream_workers:
+                                              type: integer
                                             read_buffer_size:
                                               type: integer
+                                            shared_write_buffer:
+                                              type: boolean
+                                            wait_for_handlers:
+                                              type: boolean
                                             write_buffer_size:
                                               type: integer
                                         mode:
@@ -2204,9 +2224,13 @@ spec:
                                   type: string
                                 size:
                                   type: integer
+                            content_subtype:
+                              type: integer
                             dial_option:
                               type: object
                               properties:
+                                authority:
+                                  type: string
                                 backoff_base_delay:
                                   type: string
                                 backoff_jitter:
@@ -2215,8 +2239,12 @@ spec:
                                   type: string
                                 backoff_multiplier:
                                   type: number
+                                disable_retry:
+                                  type: boolean
                                 enable_backoff:
                                   type: boolean
+                                idle_timeout:
+                                  type: string
                                 initial_connection_window_size:
                                   type: integer
                                 initial_window_size:
@@ -2238,6 +2266,10 @@ spec:
                                       type: string
                                     timeout:
                                       type: string
+                                max_call_attempts:
+                                  type: integer
+                                max_header_list_size:
+                                  type: integer
                                 max_msg_size:
                                   type: integer
                                 min_connection_timeout:
@@ -2299,7 +2331,11 @@ spec:
                                           type: string
                                 read_buffer_size:
                                   type: integer
+                                shared_write_buffer:
+                                  type: boolean
                                 timeout:
+                                  type: string
+                                user_agent:
                                   type: string
                                 write_buffer_size:
                                   type: integer
@@ -2831,6 +2867,8 @@ spec:
                                           type: string
                                         enable_admin:
                                           type: boolean
+                                        enable_channelz:
+                                          type: boolean
                                         enable_reflection:
                                           type: boolean
                                         header_table_size:
@@ -2865,14 +2903,22 @@ spec:
                                               type: string
                                             timeout:
                                               type: string
+                                        max_concurrent_streams:
+                                          type: integer
                                         max_header_list_size:
                                           type: integer
                                         max_receive_message_size:
                                           type: integer
                                         max_send_message_size:
                                           type: integer
+                                        num_stream_workers:
+                                          type: integer
                                         read_buffer_size:
                                           type: integer
+                                        shared_write_buffer:
+                                          type: boolean
+                                        wait_for_handlers:
+                                          type: boolean
                                         write_buffer_size:
                                           type: integer
                                     mode:
@@ -3782,6 +3828,8 @@ spec:
                                           type: string
                                         enable_admin:
                                           type: boolean
+                                        enable_channelz:
+                                          type: boolean
                                         enable_reflection:
                                           type: boolean
                                         header_table_size:
@@ -3816,14 +3864,22 @@ spec:
                                               type: string
                                             timeout:
                                               type: string
+                                        max_concurrent_streams:
+                                          type: integer
                                         max_header_list_size:
                                           type: integer
                                         max_receive_message_size:
                                           type: integer
                                         max_send_message_size:
                                           type: integer
+                                        num_stream_workers:
+                                          type: integer
                                         read_buffer_size:
                                           type: integer
+                                        shared_write_buffer:
+                                          type: boolean
+                                        wait_for_handlers:
+                                          type: boolean
                                         write_buffer_size:
                                           type: integer
                                     mode:
@@ -4151,9 +4207,13 @@ spec:
                                           type: string
                                         size:
                                           type: integer
+                                    content_subtype:
+                                      type: integer
                                     dial_option:
                                       type: object
                                       properties:
+                                        authority:
+                                          type: string
                                         backoff_base_delay:
                                           type: string
                                         backoff_jitter:
@@ -4162,8 +4222,12 @@ spec:
                                           type: string
                                         backoff_multiplier:
                                           type: number
+                                        disable_retry:
+                                          type: boolean
                                         enable_backoff:
                                           type: boolean
+                                        idle_timeout:
+                                          type: string
                                         initial_connection_window_size:
                                           type: integer
                                         initial_window_size:
@@ -4185,6 +4249,10 @@ spec:
                                               type: string
                                             timeout:
                                               type: string
+                                        max_call_attempts:
+                                          type: integer
+                                        max_header_list_size:
+                                          type: integer
                                         max_msg_size:
                                           type: integer
                                         min_connection_timeout:
@@ -4246,7 +4314,11 @@ spec:
                                                   type: string
                                         read_buffer_size:
                                           type: integer
+                                        shared_write_buffer:
+                                          type: boolean
                                         timeout:
+                                          type: string
+                                        user_agent:
                                           type: string
                                         write_buffer_size:
                                           type: integer
@@ -4334,9 +4406,13 @@ spec:
                                       type: string
                                     size:
                                       type: integer
+                                content_subtype:
+                                  type: integer
                                 dial_option:
                                   type: object
                                   properties:
+                                    authority:
+                                      type: string
                                     backoff_base_delay:
                                       type: string
                                     backoff_jitter:
@@ -4345,8 +4421,12 @@ spec:
                                       type: string
                                     backoff_multiplier:
                                       type: number
+                                    disable_retry:
+                                      type: boolean
                                     enable_backoff:
                                       type: boolean
+                                    idle_timeout:
+                                      type: string
                                     initial_connection_window_size:
                                       type: integer
                                     initial_window_size:
@@ -4368,6 +4448,10 @@ spec:
                                           type: string
                                         timeout:
                                           type: string
+                                    max_call_attempts:
+                                      type: integer
+                                    max_header_list_size:
+                                      type: integer
                                     max_msg_size:
                                       type: integer
                                     min_connection_timeout:
@@ -4429,7 +4513,11 @@ spec:
                                               type: string
                                     read_buffer_size:
                                       type: integer
+                                    shared_write_buffer:
+                                      type: boolean
                                     timeout:
+                                      type: string
+                                    user_agent:
                                       type: string
                                     write_buffer_size:
                                       type: integer
@@ -4512,9 +4600,13 @@ spec:
                                           type: string
                                         size:
                                           type: integer
+                                    content_subtype:
+                                      type: integer
                                     dial_option:
                                       type: object
                                       properties:
+                                        authority:
+                                          type: string
                                         backoff_base_delay:
                                           type: string
                                         backoff_jitter:
@@ -4523,8 +4615,12 @@ spec:
                                           type: string
                                         backoff_multiplier:
                                           type: number
+                                        disable_retry:
+                                          type: boolean
                                         enable_backoff:
                                           type: boolean
+                                        idle_timeout:
+                                          type: string
                                         initial_connection_window_size:
                                           type: integer
                                         initial_window_size:
@@ -4546,6 +4642,10 @@ spec:
                                               type: string
                                             timeout:
                                               type: string
+                                        max_call_attempts:
+                                          type: integer
+                                        max_header_list_size:
+                                          type: integer
                                         max_msg_size:
                                           type: integer
                                         min_connection_timeout:
@@ -4607,7 +4707,11 @@ spec:
                                                   type: string
                                         read_buffer_size:
                                           type: integer
+                                        shared_write_buffer:
+                                          type: boolean
                                         timeout:
+                                          type: string
+                                        user_agent:
                                           type: string
                                         write_buffer_size:
                                           type: integer
@@ -5237,6 +5341,8 @@ spec:
                                               type: string
                                             enable_admin:
                                               type: boolean
+                                            enable_channelz:
+                                              type: boolean
                                             enable_reflection:
                                               type: boolean
                                             header_table_size:
@@ -5271,14 +5377,22 @@ spec:
                                                   type: string
                                                 timeout:
                                                   type: string
+                                            max_concurrent_streams:
+                                              type: integer
                                             max_header_list_size:
                                               type: integer
                                             max_receive_message_size:
                                               type: integer
                                             max_send_message_size:
                                               type: integer
+                                            num_stream_workers:
+                                              type: integer
                                             read_buffer_size:
                                               type: integer
+                                            shared_write_buffer:
+                                              type: boolean
+                                            wait_for_handlers:
+                                              type: boolean
                                             write_buffer_size:
                                               type: integer
                                         mode:
@@ -5598,9 +5712,13 @@ spec:
                                           type: string
                                         size:
                                           type: integer
+                                    content_subtype:
+                                      type: integer
                                     dial_option:
                                       type: object
                                       properties:
+                                        authority:
+                                          type: string
                                         backoff_base_delay:
                                           type: string
                                         backoff_jitter:
@@ -5609,8 +5727,12 @@ spec:
                                           type: string
                                         backoff_multiplier:
                                           type: number
+                                        disable_retry:
+                                          type: boolean
                                         enable_backoff:
                                           type: boolean
+                                        idle_timeout:
+                                          type: string
                                         initial_connection_window_size:
                                           type: integer
                                         initial_window_size:
@@ -5632,6 +5754,10 @@ spec:
                                               type: string
                                             timeout:
                                               type: string
+                                        max_call_attempts:
+                                          type: integer
+                                        max_header_list_size:
+                                          type: integer
                                         max_msg_size:
                                           type: integer
                                         min_connection_timeout:
@@ -5693,7 +5819,11 @@ spec:
                                                   type: string
                                         read_buffer_size:
                                           type: integer
+                                        shared_write_buffer:
+                                          type: boolean
                                         timeout:
+                                          type: string
+                                        user_agent:
                                           type: string
                                         write_buffer_size:
                                           type: integer
@@ -5773,9 +5903,13 @@ spec:
                                           type: string
                                         size:
                                           type: integer
+                                    content_subtype:
+                                      type: integer
                                     dial_option:
                                       type: object
                                       properties:
+                                        authority:
+                                          type: string
                                         backoff_base_delay:
                                           type: string
                                         backoff_jitter:
@@ -5784,8 +5918,12 @@ spec:
                                           type: string
                                         backoff_multiplier:
                                           type: number
+                                        disable_retry:
+                                          type: boolean
                                         enable_backoff:
                                           type: boolean
+                                        idle_timeout:
+                                          type: string
                                         initial_connection_window_size:
                                           type: integer
                                         initial_window_size:
@@ -5807,6 +5945,10 @@ spec:
                                               type: string
                                             timeout:
                                               type: string
+                                        max_call_attempts:
+                                          type: integer
+                                        max_header_list_size:
+                                          type: integer
                                         max_msg_size:
                                           type: integer
                                         min_connection_timeout:
@@ -5868,7 +6010,11 @@ spec:
                                                   type: string
                                         read_buffer_size:
                                           type: integer
+                                        shared_write_buffer:
+                                          type: boolean
                                         timeout:
+                                          type: string
+                                        user_agent:
                                           type: string
                                         write_buffer_size:
                                           type: integer
@@ -5950,9 +6096,13 @@ spec:
                                           type: string
                                         size:
                                           type: integer
+                                    content_subtype:
+                                      type: integer
                                     dial_option:
                                       type: object
                                       properties:
+                                        authority:
+                                          type: string
                                         backoff_base_delay:
                                           type: string
                                         backoff_jitter:
@@ -5961,8 +6111,12 @@ spec:
                                           type: string
                                         backoff_multiplier:
                                           type: number
+                                        disable_retry:
+                                          type: boolean
                                         enable_backoff:
                                           type: boolean
+                                        idle_timeout:
+                                          type: string
                                         initial_connection_window_size:
                                           type: integer
                                         initial_window_size:
@@ -5984,6 +6138,10 @@ spec:
                                               type: string
                                             timeout:
                                               type: string
+                                        max_call_attempts:
+                                          type: integer
+                                        max_header_list_size:
+                                          type: integer
                                         max_msg_size:
                                           type: integer
                                         min_connection_timeout:
@@ -6045,7 +6203,11 @@ spec:
                                                   type: string
                                         read_buffer_size:
                                           type: integer
+                                        shared_write_buffer:
+                                          type: boolean
                                         timeout:
+                                          type: string
+                                        user_agent:
                                           type: string
                                         write_buffer_size:
                                           type: integer
@@ -6665,6 +6827,8 @@ spec:
                                               type: string
                                             enable_admin:
                                               type: boolean
+                                            enable_channelz:
+                                              type: boolean
                                             enable_reflection:
                                               type: boolean
                                             header_table_size:
@@ -6699,14 +6863,22 @@ spec:
                                                   type: string
                                                 timeout:
                                                   type: string
+                                            max_concurrent_streams:
+                                              type: integer
                                             max_header_list_size:
                                               type: integer
                                             max_receive_message_size:
                                               type: integer
                                             max_send_message_size:
                                               type: integer
+                                            num_stream_workers:
+                                              type: integer
                                             read_buffer_size:
                                               type: integer
+                                            shared_write_buffer:
+                                              type: boolean
+                                            wait_for_handlers:
+                                              type: boolean
                                             write_buffer_size:
                                               type: integer
                                         mode:
@@ -7035,9 +7207,13 @@ spec:
                                       type: string
                                     size:
                                       type: integer
+                                content_subtype:
+                                  type: integer
                                 dial_option:
                                   type: object
                                   properties:
+                                    authority:
+                                      type: string
                                     backoff_base_delay:
                                       type: string
                                     backoff_jitter:
@@ -7046,8 +7222,12 @@ spec:
                                       type: string
                                     backoff_multiplier:
                                       type: number
+                                    disable_retry:
+                                      type: boolean
                                     enable_backoff:
                                       type: boolean
+                                    idle_timeout:
+                                      type: string
                                     initial_connection_window_size:
                                       type: integer
                                     initial_window_size:
@@ -7069,6 +7249,10 @@ spec:
                                           type: string
                                         timeout:
                                           type: string
+                                    max_call_attempts:
+                                      type: integer
+                                    max_header_list_size:
+                                      type: integer
                                     max_msg_size:
                                       type: integer
                                     min_connection_timeout:
@@ -7130,7 +7314,11 @@ spec:
                                               type: string
                                     read_buffer_size:
                                       type: integer
+                                    shared_write_buffer:
+                                      type: boolean
                                     timeout:
+                                      type: string
+                                    user_agent:
                                       type: string
                                     write_buffer_size:
                                       type: integer
@@ -7813,6 +8001,8 @@ spec:
                                               type: string
                                             enable_admin:
                                               type: boolean
+                                            enable_channelz:
+                                              type: boolean
                                             enable_reflection:
                                               type: boolean
                                             header_table_size:
@@ -7847,14 +8037,22 @@ spec:
                                                   type: string
                                                 timeout:
                                                   type: string
+                                            max_concurrent_streams:
+                                              type: integer
                                             max_header_list_size:
                                               type: integer
                                             max_receive_message_size:
                                               type: integer
                                             max_send_message_size:
                                               type: integer
+                                            num_stream_workers:
+                                              type: integer
                                             read_buffer_size:
                                               type: integer
+                                            shared_write_buffer:
+                                              type: boolean
+                                            wait_for_handlers:
+                                              type: boolean
                                             write_buffer_size:
                                               type: integer
                                         mode:
@@ -8175,9 +8373,13 @@ spec:
                                           type: string
                                         size:
                                           type: integer
+                                    content_subtype:
+                                      type: integer
                                     dial_option:
                                       type: object
                                       properties:
+                                        authority:
+                                          type: string
                                         backoff_base_delay:
                                           type: string
                                         backoff_jitter:
@@ -8186,8 +8388,12 @@ spec:
                                           type: string
                                         backoff_multiplier:
                                           type: number
+                                        disable_retry:
+                                          type: boolean
                                         enable_backoff:
                                           type: boolean
+                                        idle_timeout:
+                                          type: string
                                         initial_connection_window_size:
                                           type: integer
                                         initial_window_size:
@@ -8209,6 +8415,10 @@ spec:
                                               type: string
                                             timeout:
                                               type: string
+                                        max_call_attempts:
+                                          type: integer
+                                        max_header_list_size:
+                                          type: integer
                                         max_msg_size:
                                           type: integer
                                         min_connection_timeout:
@@ -8270,7 +8480,11 @@ spec:
                                                   type: string
                                         read_buffer_size:
                                           type: integer
+                                        shared_write_buffer:
+                                          type: boolean
                                         timeout:
+                                          type: string
+                                        user_agent:
                                           type: string
                                         write_buffer_size:
                                           type: integer
@@ -8350,9 +8564,13 @@ spec:
                                           type: string
                                         size:
                                           type: integer
+                                    content_subtype:
+                                      type: integer
                                     dial_option:
                                       type: object
                                       properties:
+                                        authority:
+                                          type: string
                                         backoff_base_delay:
                                           type: string
                                         backoff_jitter:
@@ -8361,8 +8579,12 @@ spec:
                                           type: string
                                         backoff_multiplier:
                                           type: number
+                                        disable_retry:
+                                          type: boolean
                                         enable_backoff:
                                           type: boolean
+                                        idle_timeout:
+                                          type: string
                                         initial_connection_window_size:
                                           type: integer
                                         initial_window_size:
@@ -8384,6 +8606,10 @@ spec:
                                               type: string
                                             timeout:
                                               type: string
+                                        max_call_attempts:
+                                          type: integer
+                                        max_header_list_size:
+                                          type: integer
                                         max_msg_size:
                                           type: integer
                                         min_connection_timeout:
@@ -8445,7 +8671,11 @@ spec:
                                                   type: string
                                         read_buffer_size:
                                           type: integer
+                                        shared_write_buffer:
+                                          type: boolean
                                         timeout:
+                                          type: string
+                                        user_agent:
                                           type: string
                                         write_buffer_size:
                                           type: integer
@@ -8534,9 +8764,13 @@ spec:
                                       type: string
                                     size:
                                       type: integer
+                                content_subtype:
+                                  type: integer
                                 dial_option:
                                   type: object
                                   properties:
+                                    authority:
+                                      type: string
                                     backoff_base_delay:
                                       type: string
                                     backoff_jitter:
@@ -8545,8 +8779,12 @@ spec:
                                       type: string
                                     backoff_multiplier:
                                       type: number
+                                    disable_retry:
+                                      type: boolean
                                     enable_backoff:
                                       type: boolean
+                                    idle_timeout:
+                                      type: string
                                     initial_connection_window_size:
                                       type: integer
                                     initial_window_size:
@@ -8568,6 +8806,10 @@ spec:
                                           type: string
                                         timeout:
                                           type: string
+                                    max_call_attempts:
+                                      type: integer
+                                    max_header_list_size:
+                                      type: integer
                                     max_msg_size:
                                       type: integer
                                     min_connection_timeout:
@@ -8629,7 +8871,11 @@ spec:
                                               type: string
                                     read_buffer_size:
                                       type: integer
+                                    shared_write_buffer:
+                                      type: boolean
                                     timeout:
+                                      type: string
+                                    user_agent:
                                       type: string
                                     write_buffer_size:
                                       type: integer
@@ -9145,6 +9391,8 @@ spec:
                                                   type: string
                                                 enable_admin:
                                                   type: boolean
+                                                enable_channelz:
+                                                  type: boolean
                                                 enable_reflection:
                                                   type: boolean
                                                 header_table_size:
@@ -9179,14 +9427,22 @@ spec:
                                                       type: string
                                                     timeout:
                                                       type: string
+                                                max_concurrent_streams:
+                                                  type: integer
                                                 max_header_list_size:
                                                   type: integer
                                                 max_receive_message_size:
                                                   type: integer
                                                 max_send_message_size:
                                                   type: integer
+                                                num_stream_workers:
+                                                  type: integer
                                                 read_buffer_size:
                                                   type: integer
+                                                shared_write_buffer:
+                                                  type: boolean
+                                                wait_for_handlers:
+                                                  type: boolean
                                                 write_buffer_size:
                                                   type: integer
                                             mode:
@@ -9420,9 +9676,13 @@ spec:
                                           type: string
                                         size:
                                           type: integer
+                                    content_subtype:
+                                      type: integer
                                     dial_option:
                                       type: object
                                       properties:
+                                        authority:
+                                          type: string
                                         backoff_base_delay:
                                           type: string
                                         backoff_jitter:
@@ -9431,8 +9691,12 @@ spec:
                                           type: string
                                         backoff_multiplier:
                                           type: number
+                                        disable_retry:
+                                          type: boolean
                                         enable_backoff:
                                           type: boolean
+                                        idle_timeout:
+                                          type: string
                                         initial_connection_window_size:
                                           type: integer
                                         initial_window_size:
@@ -9454,6 +9718,10 @@ spec:
                                               type: string
                                             timeout:
                                               type: string
+                                        max_call_attempts:
+                                          type: integer
+                                        max_header_list_size:
+                                          type: integer
                                         max_msg_size:
                                           type: integer
                                         min_connection_timeout:
@@ -9515,7 +9783,11 @@ spec:
                                                   type: string
                                         read_buffer_size:
                                           type: integer
+                                        shared_write_buffer:
+                                          type: boolean
                                         timeout:
+                                          type: string
+                                        user_agent:
                                           type: string
                                         write_buffer_size:
                                           type: integer
@@ -9595,9 +9867,13 @@ spec:
                                           type: string
                                         size:
                                           type: integer
+                                    content_subtype:
+                                      type: integer
                                     dial_option:
                                       type: object
                                       properties:
+                                        authority:
+                                          type: string
                                         backoff_base_delay:
                                           type: string
                                         backoff_jitter:
@@ -9606,8 +9882,12 @@ spec:
                                           type: string
                                         backoff_multiplier:
                                           type: number
+                                        disable_retry:
+                                          type: boolean
                                         enable_backoff:
                                           type: boolean
+                                        idle_timeout:
+                                          type: string
                                         initial_connection_window_size:
                                           type: integer
                                         initial_window_size:
@@ -9629,6 +9909,10 @@ spec:
                                               type: string
                                             timeout:
                                               type: string
+                                        max_call_attempts:
+                                          type: integer
+                                        max_header_list_size:
+                                          type: integer
                                         max_msg_size:
                                           type: integer
                                         min_connection_timeout:
@@ -9690,7 +9974,11 @@ spec:
                                                   type: string
                                         read_buffer_size:
                                           type: integer
+                                        shared_write_buffer:
+                                          type: boolean
                                         timeout:
+                                          type: string
+                                        user_agent:
                                           type: string
                                         write_buffer_size:
                                           type: integer
@@ -10211,6 +10499,8 @@ spec:
                                                   type: string
                                                 enable_admin:
                                                   type: boolean
+                                                enable_channelz:
+                                                  type: boolean
                                                 enable_reflection:
                                                   type: boolean
                                                 header_table_size:
@@ -10245,14 +10535,22 @@ spec:
                                                       type: string
                                                     timeout:
                                                       type: string
+                                                max_concurrent_streams:
+                                                  type: integer
                                                 max_header_list_size:
                                                   type: integer
                                                 max_receive_message_size:
                                                   type: integer
                                                 max_send_message_size:
                                                   type: integer
+                                                num_stream_workers:
+                                                  type: integer
                                                 read_buffer_size:
                                                   type: integer
+                                                shared_write_buffer:
+                                                  type: boolean
+                                                wait_for_handlers:
+                                                  type: boolean
                                                 write_buffer_size:
                                                   type: integer
                                             mode:
@@ -10519,9 +10817,13 @@ spec:
                                           type: string
                                         size:
                                           type: integer
+                                    content_subtype:
+                                      type: integer
                                     dial_option:
                                       type: object
                                       properties:
+                                        authority:
+                                          type: string
                                         backoff_base_delay:
                                           type: string
                                         backoff_jitter:
@@ -10530,8 +10832,12 @@ spec:
                                           type: string
                                         backoff_multiplier:
                                           type: number
+                                        disable_retry:
+                                          type: boolean
                                         enable_backoff:
                                           type: boolean
+                                        idle_timeout:
+                                          type: string
                                         initial_connection_window_size:
                                           type: integer
                                         initial_window_size:
@@ -10553,6 +10859,10 @@ spec:
                                               type: string
                                             timeout:
                                               type: string
+                                        max_call_attempts:
+                                          type: integer
+                                        max_header_list_size:
+                                          type: integer
                                         max_msg_size:
                                           type: integer
                                         min_connection_timeout:
@@ -10614,7 +10924,11 @@ spec:
                                                   type: string
                                         read_buffer_size:
                                           type: integer
+                                        shared_write_buffer:
+                                          type: boolean
                                         timeout:
+                                          type: string
+                                        user_agent:
                                           type: string
                                         write_buffer_size:
                                           type: integer
@@ -10694,9 +11008,13 @@ spec:
                                           type: string
                                         size:
                                           type: integer
+                                    content_subtype:
+                                      type: integer
                                     dial_option:
                                       type: object
                                       properties:
+                                        authority:
+                                          type: string
                                         backoff_base_delay:
                                           type: string
                                         backoff_jitter:
@@ -10705,8 +11023,12 @@ spec:
                                           type: string
                                         backoff_multiplier:
                                           type: number
+                                        disable_retry:
+                                          type: boolean
                                         enable_backoff:
                                           type: boolean
+                                        idle_timeout:
+                                          type: string
                                         initial_connection_window_size:
                                           type: integer
                                         initial_window_size:
@@ -10728,6 +11050,10 @@ spec:
                                               type: string
                                             timeout:
                                               type: string
+                                        max_call_attempts:
+                                          type: integer
+                                        max_header_list_size:
+                                          type: integer
                                         max_msg_size:
                                           type: integer
                                         min_connection_timeout:
@@ -10789,7 +11115,11 @@ spec:
                                                   type: string
                                         read_buffer_size:
                                           type: integer
+                                        shared_write_buffer:
+                                          type: boolean
                                         timeout:
+                                          type: string
+                                        user_agent:
                                           type: string
                                         write_buffer_size:
                                           type: integer
@@ -11539,6 +11869,8 @@ spec:
                                                   type: string
                                                 enable_admin:
                                                   type: boolean
+                                                enable_channelz:
+                                                  type: boolean
                                                 enable_reflection:
                                                   type: boolean
                                                 header_table_size:
@@ -11573,14 +11905,22 @@ spec:
                                                       type: string
                                                     timeout:
                                                       type: string
+                                                max_concurrent_streams:
+                                                  type: integer
                                                 max_header_list_size:
                                                   type: integer
                                                 max_receive_message_size:
                                                   type: integer
                                                 max_send_message_size:
                                                   type: integer
+                                                num_stream_workers:
+                                                  type: integer
                                                 read_buffer_size:
                                                   type: integer
+                                                shared_write_buffer:
+                                                  type: boolean
+                                                wait_for_handlers:
+                                                  type: boolean
                                                 write_buffer_size:
                                                   type: integer
                                             mode:
@@ -12293,6 +12633,8 @@ spec:
                                                       type: string
                                                     enable_admin:
                                                       type: boolean
+                                                    enable_channelz:
+                                                      type: boolean
                                                     enable_reflection:
                                                       type: boolean
                                                     header_table_size:
@@ -12327,14 +12669,22 @@ spec:
                                                           type: string
                                                         timeout:
                                                           type: string
+                                                    max_concurrent_streams:
+                                                      type: integer
                                                     max_header_list_size:
                                                       type: integer
                                                     max_receive_message_size:
                                                       type: integer
                                                     max_send_message_size:
                                                       type: integer
+                                                    num_stream_workers:
+                                                      type: integer
                                                     read_buffer_size:
                                                       type: integer
+                                                    shared_write_buffer:
+                                                      type: boolean
+                                                    wait_for_handlers:
+                                                      type: boolean
                                                     write_buffer_size:
                                                       type: integer
                                                 mode:
@@ -12590,9 +12940,13 @@ spec:
                                           type: string
                                         size:
                                           type: integer
+                                    content_subtype:
+                                      type: integer
                                     dial_option:
                                       type: object
                                       properties:
+                                        authority:
+                                          type: string
                                         backoff_base_delay:
                                           type: string
                                         backoff_jitter:
@@ -12601,8 +12955,12 @@ spec:
                                           type: string
                                         backoff_multiplier:
                                           type: number
+                                        disable_retry:
+                                          type: boolean
                                         enable_backoff:
                                           type: boolean
+                                        idle_timeout:
+                                          type: string
                                         initial_connection_window_size:
                                           type: integer
                                         initial_window_size:
@@ -12624,6 +12982,10 @@ spec:
                                               type: string
                                             timeout:
                                               type: string
+                                        max_call_attempts:
+                                          type: integer
+                                        max_header_list_size:
+                                          type: integer
                                         max_msg_size:
                                           type: integer
                                         min_connection_timeout:
@@ -12685,7 +13047,11 @@ spec:
                                                   type: string
                                         read_buffer_size:
                                           type: integer
+                                        shared_write_buffer:
+                                          type: boolean
                                         timeout:
+                                          type: string
+                                        user_agent:
                                           type: string
                                         write_buffer_size:
                                           type: integer
@@ -12765,9 +13131,13 @@ spec:
                                           type: string
                                         size:
                                           type: integer
+                                    content_subtype:
+                                      type: integer
                                     dial_option:
                                       type: object
                                       properties:
+                                        authority:
+                                          type: string
                                         backoff_base_delay:
                                           type: string
                                         backoff_jitter:
@@ -12776,8 +13146,12 @@ spec:
                                           type: string
                                         backoff_multiplier:
                                           type: number
+                                        disable_retry:
+                                          type: boolean
                                         enable_backoff:
                                           type: boolean
+                                        idle_timeout:
+                                          type: string
                                         initial_connection_window_size:
                                           type: integer
                                         initial_window_size:
@@ -12799,6 +13173,10 @@ spec:
                                               type: string
                                             timeout:
                                               type: string
+                                        max_call_attempts:
+                                          type: integer
+                                        max_header_list_size:
+                                          type: integer
                                         max_msg_size:
                                           type: integer
                                         min_connection_timeout:
@@ -12860,7 +13238,11 @@ spec:
                                                   type: string
                                         read_buffer_size:
                                           type: integer
+                                        shared_write_buffer:
+                                          type: boolean
                                         timeout:
+                                          type: string
+                                        user_agent:
                                           type: string
                                         write_buffer_size:
                                           type: integer
@@ -13381,6 +13763,8 @@ spec:
                                                   type: string
                                                 enable_admin:
                                                   type: boolean
+                                                enable_channelz:
+                                                  type: boolean
                                                 enable_reflection:
                                                   type: boolean
                                                 header_table_size:
@@ -13415,14 +13799,22 @@ spec:
                                                       type: string
                                                     timeout:
                                                       type: string
+                                                max_concurrent_streams:
+                                                  type: integer
                                                 max_header_list_size:
                                                   type: integer
                                                 max_receive_message_size:
                                                   type: integer
                                                 max_send_message_size:
                                                   type: integer
+                                                num_stream_workers:
+                                                  type: integer
                                                 read_buffer_size:
                                                   type: integer
+                                                shared_write_buffer:
+                                                  type: boolean
+                                                wait_for_handlers:
+                                                  type: boolean
                                                 write_buffer_size:
                                                   type: integer
                                             mode:
@@ -13991,6 +14383,8 @@ spec:
                                               type: string
                                             enable_admin:
                                               type: boolean
+                                            enable_channelz:
+                                              type: boolean
                                             enable_reflection:
                                               type: boolean
                                             header_table_size:
@@ -14025,14 +14419,22 @@ spec:
                                                   type: string
                                                 timeout:
                                                   type: string
+                                            max_concurrent_streams:
+                                              type: integer
                                             max_header_list_size:
                                               type: integer
                                             max_receive_message_size:
                                               type: integer
                                             max_send_message_size:
                                               type: integer
+                                            num_stream_workers:
+                                              type: integer
                                             read_buffer_size:
                                               type: integer
+                                            shared_write_buffer:
+                                              type: boolean
+                                            wait_for_handlers:
+                                              type: boolean
                                             write_buffer_size:
                                               type: integer
                                         mode:

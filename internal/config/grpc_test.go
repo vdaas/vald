@@ -504,8 +504,8 @@ func TestDialOption_Bind(t *testing.T) {
 	type fields struct {
 		WriteBufferSize             int
 		ReadBufferSize              int
-		InitialWindowSize           int
-		InitialConnectionWindowSize int
+		InitialWindowSize           int32
+		InitialConnectionWindowSize int32
 		MaxMsgSize                  int
 		BackoffMaxDelay             string
 		BackoffBaseDelay            string
@@ -539,8 +539,8 @@ func TestDialOption_Bind(t *testing.T) {
 		func() test {
 			writeBufferSize := 10000
 			readBufferSize := 10000
-			initialWindowSize := 100
-			initialConnectionWindowSize := 100
+			initialWindowSize := int32(100)
+			initialConnectionWindowSize := int32(100)
 			maxMsgSize := 1000
 			backoffMaxDelay := "3m"
 			backoffBaseDelay := "1m"
@@ -706,7 +706,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return 25 grpc.Option and nil error when all parameters are set",
+			name: "return 33 grpc.Option and nil error when all parameters are set",
 			fields: fields{
 				Addrs: []string{
 					"10.40.3.342",
@@ -778,7 +778,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 				},
 			},
 			want: want{
-				want: make([]grpc.Option, 25),
+				want: make([]grpc.Option, 33),
 			},
 		},
 		{
