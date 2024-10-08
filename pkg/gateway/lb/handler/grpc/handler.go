@@ -954,7 +954,7 @@ func (s *server) MultiLinearSearch(
 			r, err := s.LinearSearch(ctx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
-				if st!= nil && sspan != nil {
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -1253,19 +1253,10 @@ func (s *server) Insert(
 		}
 	}
 	if errs != nil {
-		st, msg, err := status.ParseError(errs, codes.Internal,
-			"failed to parse "+vald.InsertRPCName+" gRPC error response",
-			&errdetails.RequestInfo{
-				RequestId:   uuid,
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + ".DoMulti",
-				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-			}, info.Get())
-		if span != nil {
+		st, _ := status.FromError(errs)
+		if st != nil && span != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
