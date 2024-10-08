@@ -53,11 +53,11 @@ jobs:
           git_commit_gpgsign: true
       - name: Fetch PR info
         run: |
-          gh pr list --limit 30 --json number,title,body,labels,headRefName,headRefOid,mergeCommit --state merged | \
+          gh pr list --limit 100 --json number,title,body,labels,headRefName,headRefOid,mergeCommit --state merged | \
             jq --arg oid "83de9c809ffd10880caf5bcd45064bf9162f5900" '.[] | select(.mergeCommit.oid == $oid)' > ${FETCHED_GITHUB_INFO_PATH}
           cat ${FETCHED_GITHUB_INFO_PATH}
           echo "========"
-          gh pr list --limit 30 --json number,title,body,labels,headRefName,headRefOid,mergeCommit --state merged
+          gh pr list --limit 100 --json number,title,body,labels,headRefName,headRefOid,mergeCommit --state merged
           echo "========"
           echo ${GITHUB_SHA}
       - name: Set context
