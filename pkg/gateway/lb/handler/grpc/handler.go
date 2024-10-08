@@ -781,14 +781,15 @@ func (s *server) LinearSearchByID(
 		},
 	})
 	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Unknown, vald.GetObjectRPCName+" API for "+vald.LinearSearchByIDRPCName+" API uuid "+uuid+"'s request returned error", reqInfo, resInfo)
+		st, _ := status.FromError(err)
 		if span != nil && st != nil && st.Code() != codes.NotFound {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		// try search by using agent's LinearSearchByID method this operation is emergency fallback, the search quality is not same as usual LinearSearchByID operation.
-		res, attrs, err := s.doSearch(ctx, req.GetConfig(), func(ctx context.Context, fcfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		var attrs []attribute.KeyValue
+		res, attrs, err = s.doSearch(ctx, req.GetConfig(), func(ctx context.Context, fcfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			req.Config = fcfg
 			return vc.LinearSearchByID(ctx, req, copts...)
 		})
