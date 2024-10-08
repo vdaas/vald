@@ -21,6 +21,8 @@ on:
       - main
       - "release/v*.*"
       - "!release/v*.*.*"
+  pull_request:
+
 env:
   TARGET_LABEL_NAME_PREFIX: "actions/backport/"
   BACKPORT_BRANCH_NAME_PREFIX: "backport"
