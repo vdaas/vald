@@ -66,10 +66,10 @@ RUN --mount=type=bind,target=.,rw \
     locales \
     git \
     cmake \
-    gcc \
     g++ \
-    unzip \
+    gcc \
     libssl-dev \
+    unzip \
     libhdf5-dev \
     libaec-dev \
     && ldconfig \

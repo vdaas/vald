@@ -23,7 +23,6 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/attribute"
@@ -157,10 +156,10 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 			}()
 			res, err := s.Remove(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Remove gRPC error response")
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				return &payload.Object_StreamLocation{
@@ -176,10 +175,10 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 			}, nil
 		})
 	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamRemove gRPC error response")
-		if span != nil {
+		st, _ := status.FromError(err)
+		if st != nil && span != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return err
@@ -314,23 +313,14 @@ func (s *server) RemoveByTimestamp(
 		return true
 	})
 	if errs != nil {
-		st, msg, err := status.ParseError(errs, codes.Internal,
-			"failed to parse "+vald.RemoveByTimestampRPCName+" gRPC error response",
-			&errdetails.RequestInfo{
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.Remove",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			},
-		)
-		log.Error(err)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-			span.SetStatus(trace.StatusError, err.Error())
+		st, _ := status.FromError(errs)
+		log.Error(errs)
+		if st != nil && span != nil {
+			span.RecordError(errs)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
+			span.SetStatus(trace.StatusError, errs.Error())
 		}
-		return nil, err
+		return nil, errs
 	}
 	if locs == nil || len(locs.GetLocations()) == 0 {
 		err := status.WrapWithNotFound(
