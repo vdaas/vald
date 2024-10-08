@@ -2937,7 +2937,7 @@ func (s *server) RemoveByTimestamp(
 			if st == nil || st.Message() == "" {
 				// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Code(), although it is unlikely to match this condition.
 				log.Errorf("gRPC call returned not a gRPC status error: %v", err)
-				st = status.New(codes.Unknown, "failed to parse "+vald.InsertRPCName+" gRPC error response")
+				st = status.New(codes.Unknown, "failed to parse "+vald.RemoveByTimestampRPCName+" gRPC error response")
 			}
 			log.Warn(err)
 			if span != nil {
