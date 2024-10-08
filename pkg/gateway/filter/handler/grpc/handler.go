@@ -236,11 +236,8 @@ func (s *server) MultiSearchObject(
 			}()
 			r, err := s.SearchObject(ctx, query)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.SearchObjectRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -285,11 +282,8 @@ func (s *server) StreamSearchObject(stream vald.Filter_StreamSearchObjectServer)
 
 			res, err := s.SearchObject(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.SearchObjectRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -470,11 +464,8 @@ func (s *server) MultiLinearSearchObject(
 
 			r, err := s.LinearSearchObject(ctx, query)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.LinearSearchObjectRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -523,11 +514,8 @@ func (s *server) StreamLinearSearchObject(stream vald.Filter_StreamSearchObjectS
 
 			res, err := s.LinearSearchObject(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.LinearSearchObjectRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -708,11 +696,8 @@ func (s *server) StreamInsertObject(stream vald.Filter_StreamInsertObjectServer)
 
 			loc, err := s.InsertObject(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.InsertObjectRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -770,11 +755,8 @@ func (s *server) MultiInsertObject(
 
 			loc, err := s.InsertObject(ctx, query)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.InsertObjectRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -954,11 +936,8 @@ func (s *server) StreamUpdateObject(stream vald.Filter_StreamUpdateObjectServer)
 			}()
 			loc, err := s.UpdateObject(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.UpdateObjectRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -1015,11 +994,8 @@ func (s *server) MultiUpdateObject(
 			}()
 			loc, err := s.UpdateObject(ctx, query)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.UpdateObjectRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -1207,11 +1183,8 @@ func (s *server) StreamUpsertObject(stream vald.Filter_StreamUpsertObjectServer)
 
 			loc, err := s.UpsertObject(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.UpsertObjectRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -1268,11 +1241,8 @@ func (s *server) MultiUpsertObject(
 			}()
 			loc, err := s.UpsertObject(ctx, query)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.UpsertObjectRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -1381,11 +1351,8 @@ func (s *server) Search(
 	}
 	res, err = s.gateway.Search(ctx, req, s.copts...)
 	if err != nil {
-		st, ok := status.FromError(err)
-		if !ok || st == nil {
-			st = status.New(codes.Internal, "failed to convert "+vald.SearchRPCName+" gRPC error response")
-		}
-		if span != nil {
+		st, _ := status.FromError(err)
+		if st != nil && span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
@@ -1467,11 +1434,8 @@ func (s *server) SearchByID(
 	}()
 	res, err = s.gateway.SearchByID(ctx, req, s.copts...)
 	if err != nil {
-		st, ok := status.FromError(err)
-		if !ok || st == nil {
-			st = status.New(codes.Internal, "failed to convert "+vald.SearchByIDRPCName+" gRPC error response")
-		}
-		if span != nil {
+		st, _ := status.FromError(err)
+		if st != nil && span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
@@ -1559,11 +1523,8 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 			}()
 			res, err := s.Search(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.SearchRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -1609,11 +1570,8 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 			}()
 			res, err := s.SearchByID(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.SearchByIDRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -1669,11 +1627,8 @@ func (s *server) MultiSearch(
 			}()
 			r, err := s.Search(ctx, query)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.SearchRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -1727,11 +1682,8 @@ func (s *server) MultiSearchByID(
 			}()
 			r, err := s.SearchByID(ctx, query)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.SearchByIDRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -1990,11 +1942,8 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 			}()
 			res, err := s.LinearSearch(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.LinearSearchRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -2045,11 +1994,8 @@ func (s *server) StreamLinearSearchByID(
 			}()
 			res, err := s.LinearSearchByID(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.LinearSearchByIDRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -2067,11 +2013,8 @@ func (s *server) StreamLinearSearchByID(
 			}, nil
 		})
 	if err != nil {
-		st, ok := status.FromError(err)
-		if !ok || st == nil {
-			st = status.New(codes.Internal, "failed to convert "+vald.StreamLinearSearchRPCName+" gRPC error response")
-		}
-		if span != nil {
+		st, _ := status.FromError(err)
+		if st != nil && span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
@@ -2109,11 +2052,8 @@ func (s *server) MultiLinearSearch(
 			}()
 			r, err := s.LinearSearch(ctx, query)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.LinearSearchRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -2167,11 +2107,8 @@ func (s *server) MultiLinearSearchByID(
 			}()
 			r, err := s.LinearSearchByID(ctx, query)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.LinearSearchByIDRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -2357,11 +2294,8 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 			}()
 			res, err := s.Insert(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.InsertRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -2417,11 +2351,8 @@ func (s *server) MultiInsert(
 			}()
 			r, err := s.Insert(ctx, query)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.InsertRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -2601,11 +2532,8 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 			}()
 			res, err := s.Update(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.UpdateRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -2655,11 +2583,8 @@ func (s *server) MultiUpdate(
 			}()
 			r, err := s.Update(ctx, query)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.UpdateRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -2840,11 +2765,8 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 			}()
 			res, err := s.Upsert(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.UpsertRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -2862,11 +2784,8 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 			}, nil
 		})
 	if err != nil {
-		st, ok := status.FromError(err)
-		if !ok || st == nil {
-			st = status.New(codes.Internal, "failed to parse "+vald.StreamUpsertRPCName+" gRPC error response")
-		}
-		if span != nil {
+		st, _ := status.FromError(err)
+		if st != nil && span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
@@ -2905,11 +2824,8 @@ func (s *server) MultiUpsert(
 
 			r, err := s.Upsert(ctx, query)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.UpsertRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -2998,11 +2914,8 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 			}()
 			res, err := s.Remove(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.RemoveRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -3020,11 +2933,8 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 			}, nil
 		})
 	if err != nil {
-		st, ok := status.FromError(err)
-		if !ok || st == nil {
-			st = status.New(codes.Internal, "failed to parse "+vald.StreamRemoveRPCName+" gRPC error response")
-		}
-		if span != nil {
+		st, _ := status.FromError(err)
+		if st != nil && span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
@@ -3062,11 +2972,8 @@ func (s *server) MultiRemove(
 			}()
 			r, err := s.Remove(ctx, query)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.RemoveRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
@@ -3253,11 +3160,8 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 			}()
 			res, err := s.GetObject(ctx, req)
 			if err != nil {
-				st, ok := status.FromError(err)
-				if !ok || st == nil {
-					st = status.New(codes.Internal, "failed to convert "+vald.GetObjectRPCName+" gRPC error response")
-				}
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
