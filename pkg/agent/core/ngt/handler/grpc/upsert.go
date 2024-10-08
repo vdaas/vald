@@ -20,7 +20,6 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
@@ -28,7 +27,6 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
-	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 )
 
@@ -152,10 +150,10 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 			}()
 			res, err := s.Upsert(ctx, req)
 			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse Upsert gRPC error response")
-				if sspan != nil {
+				st, _ := status.FromError(err)
+				if st != nil && sspan != nil {
 					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				return &payload.Object_StreamLocation{
@@ -171,10 +169,10 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 			}, nil
 		})
 	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamUpsert gRPC error response")
-		if span != nil {
+		st, _ := status.FromError(err)
+		if st != nil && span != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return err
@@ -318,19 +316,10 @@ func (s *server) MultiUpsert(
 
 	}
 	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal,
-			"failed to parse MultiUpsert gRPC error response",
-			&errdetails.RequestInfo{
-				RequestId:   strings.Join(ids, ","),
-				ServingData: errdetails.Serialize(reqs),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.MultiUpsert",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
-		if span != nil {
+		st, _ := status.FromError(err)
+		if st != nil && span != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
