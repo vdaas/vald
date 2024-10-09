@@ -45,7 +45,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: gateway-mirror
       annotations:
-        checksum/configmap: 8546d68c1063b706eda3ba96b346cf7e76c59d8010692426f21b802aa1f35a2e
+        checksum/configmap: c0add53d9b3bcbe139206b6bed590be0671d501c5f6a6a63e2428e2e5364315f
         pyroscope.io/scrape: "true"
         pyroscope.io/application-name: vald-mirror-gateway
         pyroscope.io/profile-cpu-enabled: "true"

@@ -39,30 +39,38 @@ type GRPCClient struct {
 
 // CallOption represents the configurations for call option.
 type CallOption struct {
-	WaitForReady          bool `json:"wait_for_ready"            yaml:"wait_for_ready"`
-	MaxRetryRPCBufferSize int  `json:"max_retry_rpc_buffer_size" yaml:"max_retry_rpc_buffer_size"`
-	MaxRecvMsgSize        int  `json:"max_recv_msg_size"         yaml:"max_recv_msg_size"`
-	MaxSendMsgSize        int  `json:"max_send_msg_size"         yaml:"max_send_msg_size"`
+	WaitForReady          bool   `json:"wait_for_ready"            yaml:"wait_for_ready"`
+	MaxRetryRPCBufferSize int    `json:"max_retry_rpc_buffer_size" yaml:"max_retry_rpc_buffer_size"`
+	MaxRecvMsgSize        int    `json:"max_recv_msg_size"         yaml:"max_recv_msg_size"`
+	MaxSendMsgSize        int    `json:"max_send_msg_size"         yaml:"max_send_msg_size"`
+	ContentSubtype        string `json:"content_subtype"           yaml:"content_subtype"`
 }
 
 // DialOption represents the configurations for dial option.
 type DialOption struct {
-	WriteBufferSize             int                  `json:"write_buffer_size"              yaml:"write_buffer_size"`
-	ReadBufferSize              int                  `json:"read_buffer_size"               yaml:"read_buffer_size"`
-	InitialWindowSize           int                  `json:"initial_window_size"            yaml:"initial_window_size"`
-	InitialConnectionWindowSize int                  `json:"initial_connection_window_size" yaml:"initial_connection_window_size"`
-	MaxMsgSize                  int                  `json:"max_msg_size"                   yaml:"max_msg_size"`
-	BackoffMaxDelay             string               `json:"backoff_max_delay"              yaml:"backoff_max_delay"`
-	BackoffBaseDelay            string               `json:"backoff_base_delay"             yaml:"backoff_base_delay"`
-	BackoffJitter               float64              `json:"backoff_jitter"                 yaml:"backoff_jitter"`
-	BackoffMultiplier           float64              `json:"backoff_multiplier"             yaml:"backoff_multiplier"`
-	MinimumConnectionTimeout    string               `json:"min_connection_timeout"         yaml:"min_connection_timeout"`
-	EnableBackoff               bool                 `json:"enable_backoff"                 yaml:"enable_backoff"`
-	Insecure                    bool                 `json:"insecure"                       yaml:"insecure"`
-	Timeout                     string               `json:"timeout"                        yaml:"timeout"`
-	Interceptors                []string             `json:"interceptors,omitempty"         yaml:"interceptors"`
-	Net                         *Net                 `json:"net"                            yaml:"net"`
-	Keepalive                   *GRPCClientKeepalive `json:"keepalive"                      yaml:"keepalive"`
+	DisableRetry                bool                 `json:"disable_retry,omitempty"                  yaml:"disable_retry"`
+	EnableBackoff               bool                 `json:"enable_backoff,omitempty"                 yaml:"enable_backoff"`
+	Insecure                    bool                 `json:"insecure,omitempty"                       yaml:"insecure"`
+	SharedWriteBuffer           bool                 `json:"shared_write_buffer,omitempty"            yaml:"shared_write_buffer"`
+	InitialConnectionWindowSize int32                `json:"initial_connection_window_size,omitempty" yaml:"initial_connection_window_size"`
+	InitialWindowSize           int32                `json:"initial_window_size,omitempty"            yaml:"initial_window_size"`
+	MaxHeaderListSize           uint32               `json:"max_header_list_size,omitempty"           yaml:"max_header_list_size"`
+	MaxCallAttempts             int                  `json:"max_call_attempts,omitempty"              yaml:"max_call_attempts"`
+	MaxMsgSize                  int                  `json:"max_msg_size,omitempty"                   yaml:"max_msg_size"`
+	ReadBufferSize              int                  `json:"read_buffer_size,omitempty"               yaml:"read_buffer_size"`
+	WriteBufferSize             int                  `json:"write_buffer_size,omitempty"              yaml:"write_buffer_size"`
+	BackoffJitter               float64              `json:"backoff_jitter,omitempty"                 yaml:"backoff_jitter"`
+	BackoffMultiplier           float64              `json:"backoff_multiplier,omitempty"             yaml:"backoff_multiplier"`
+	Authority                   string               `json:"authority,omitempty"                      yaml:"authority"`
+	BackoffBaseDelay            string               `json:"backoff_base_delay,omitempty"             yaml:"backoff_base_delay"`
+	BackoffMaxDelay             string               `json:"backoff_max_delay,omitempty"              yaml:"backoff_max_delay"`
+	IdleTimeout                 string               `json:"idle_timeout,omitempty"                   yaml:"idle_timeout"`
+	MinimumConnectionTimeout    string               `json:"min_connection_timeout,omitempty"         yaml:"min_connection_timeout"`
+	Timeout                     string               `json:"timeout,omitempty"                        yaml:"timeout"`
+	UserAgent                   string               `json:"user_agent,omitempty"                     yaml:"user_agent"`
+	Interceptors                []string             `json:"interceptors,omitempty"                   yaml:"interceptors"`
+	Net                         *Net                 `json:"net,omitempty"                            yaml:"net"`
+	Keepalive                   *GRPCClientKeepalive `json:"keepalive,omitempty"                      yaml:"keepalive"`
 }
 
 // ConnectionPool represents the configurations for connection pool.
@@ -144,14 +152,20 @@ func (g *GRPCClientKeepalive) Bind() *GRPCClientKeepalive {
 
 // Bind binds the actual data from the CallOption receiver fields.
 func (c *CallOption) Bind() *CallOption {
+	c.ContentSubtype = GetActualValue(c.ContentSubtype)
 	return c
 }
 
 // Bind binds the actual data from the DialOption receiver fields.
 func (d *DialOption) Bind() *DialOption {
+	d.Authority = GetActualValue(d.Authority)
+	d.BackoffBaseDelay = GetActualValue(d.BackoffBaseDelay)
 	d.BackoffMaxDelay = GetActualValue(d.BackoffMaxDelay)
-	d.Timeout = GetActualValue(d.Timeout)
+	d.IdleTimeout = GetActualValue(d.IdleTimeout)
 	d.Interceptors = GetActualValues(d.Interceptors)
+	d.MinimumConnectionTimeout = GetActualValue(d.MinimumConnectionTimeout)
+	d.Timeout = GetActualValue(d.Timeout)
+	d.UserAgent = GetActualValue(d.UserAgent)
 	return d
 }
 
@@ -216,24 +230,31 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 
 	if g.CallOption != nil {
 		opts = append(opts,
-			grpc.WithWaitForReady(g.CallOption.WaitForReady),
-			grpc.WithMaxRetryRPCBufferSize(g.CallOption.MaxRetryRPCBufferSize),
+			grpc.WithCallContentSubtype(g.CallOption.ContentSubtype),
 			grpc.WithMaxRecvMsgSize(g.CallOption.MaxRecvMsgSize),
+			grpc.WithMaxRetryRPCBufferSize(g.CallOption.MaxRetryRPCBufferSize),
 			grpc.WithMaxSendMsgSize(g.CallOption.MaxSendMsgSize),
+			grpc.WithWaitForReady(g.CallOption.WaitForReady),
 		)
 	}
 
 	if g.DialOption != nil {
 		opts = append(opts,
-			grpc.WithWriteBufferSize(g.DialOption.WriteBufferSize),
-			grpc.WithReadBufferSize(g.DialOption.WriteBufferSize),
-			grpc.WithInitialWindowSize(g.DialOption.InitialWindowSize),
-			grpc.WithInitialConnectionWindowSize(g.DialOption.InitialWindowSize),
-			grpc.WithMaxMsgSize(g.DialOption.MaxMsgSize),
-			grpc.WithInsecure(g.DialOption.Insecure),
-			grpc.WithBackoffMaxDelay(g.DialOption.BackoffMaxDelay),
+			grpc.WithAuthority(g.DialOption.Authority),
 			grpc.WithBackoffMaxDelay(g.DialOption.BackoffMaxDelay),
 			grpc.WithClientInterceptors(g.DialOption.Interceptors...),
+			grpc.WithDisableRetry(g.DialOption.DisableRetry),
+			grpc.WithIdleTimeout(g.DialOption.IdleTimeout),
+			grpc.WithInitialConnectionWindowSize(g.DialOption.InitialConnectionWindowSize),
+			grpc.WithInitialWindowSize(g.DialOption.InitialWindowSize),
+			grpc.WithInsecure(g.DialOption.Insecure),
+			grpc.WithMaxCallAttempts(g.DialOption.MaxCallAttempts),
+			grpc.WithMaxHeaderListSize(g.DialOption.MaxHeaderListSize),
+			grpc.WithMaxMsgSize(g.DialOption.MaxMsgSize),
+			grpc.WithReadBufferSize(g.DialOption.ReadBufferSize),
+			grpc.WithSharedWriteBuffer(g.DialOption.SharedWriteBuffer),
+			grpc.WithUserAgent(g.DialOption.UserAgent),
+			grpc.WithWriteBufferSize(g.DialOption.WriteBufferSize),
 		)
 
 		if g.DialOption.Net != nil &&
