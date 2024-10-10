@@ -238,16 +238,31 @@ defaults:
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.header_table_size", "type": "integer"}
             # defaults.server_config.servers.grpc.server.grpc.header_table_size -- gRPC server header table size
             header_table_size: 0
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.max_concurrent_streams", "type": "integer"}
+            # defaults.server_config.servers.grpc.server.grpc.max_concurrent_streams -- gRPC server max concurrent stream size
+            max_concurrent_streams: 0
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.num_stream_workers", "type": "integer"}
+            # defaults.server_config.servers.grpc.server.grpc.num_stream_workers -- gRPC server number of stream workers
+            num_stream_workers: 0
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.interceptors", "type": "array", "items": {"type": "string", "enum": ["RecoverInterceptor", "AccessLogInterceptor", "TraceInterceptor", "MetricInterceptor"]}}
             # defaults.server_config.servers.grpc.server.grpc.interceptors -- gRPC server interceptors
             interceptors:
               - "RecoverInterceptor"
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.shared_write_buffer", "type": "boolean"}
+            # defaults.server_config.servers.grpc.server.grpc.shared_write_buffer -- gRPC server write buffer sharing option
+            shared_write_buffer: false
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.wait_for_handlers", "type": "boolean"}
+            # defaults.server_config.servers.grpc.server.grpc.wait_for_handlers -- gRPC server wait for handlers when stop
+            wait_for_handlers: true
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_reflection", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.enable_reflection -- gRPC server reflection option
             enable_reflection: true
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_admin", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.enable_admin -- gRPC server admin option
             enable_admin: true
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_channelz", "type": "boolean"}
+            # defaults.server_config.servers.grpc.server.grpc.enable_channelz -- gRPC server channelz option
+            enable_channelz: true
           # @schema {"name": "defaults.server_config.servers.grpc.server.socket_option", "alias": "socket_option"}
           socket_option:
             # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -738,6 +753,9 @@ defaults:
         # @schema {"name": "defaults.grpc.client.max_send_msg_size", "type": "integer"}
         # defaults.grpc.client.call_option.max_send_msg_size -- gRPC client call option max send message size
         max_send_msg_size: 0
+        # @schema {"name": "defaults.grpc.client.content_subtype", "type": "string"}
+        # defaults.grpc.client.call_option.content_subtype -- gRPC client call option content subtype
+        content_subtype: ""
       # @schema {"name": "defaults.grpc.client.dial_option", "type": "object"}
       dial_option:
         # @schema {"name": "defaults.grpc.client.dial_option.write_buffer_size", "type": "integer"}
@@ -755,6 +773,12 @@ defaults:
         # @schema {"name": "defaults.grpc.client.dial_option.max_msg_size", "type": "integer"}
         # defaults.grpc.client.dial_option.max_msg_size -- gRPC client dial option max message size
         max_msg_size: 0
+        # @schema {"name": "defaults.grpc.client.dial_option.max_header_list_size", "type": "integer"}
+        # defaults.grpc.client.dial_option.max_header_list_size -- gRPC client dial option max header list size
+        max_header_list_size: 0
+        # @schema {"name": "defaults.grpc.client.dial_option.max_call_attempts", "type": "integer"}
+        # defaults.grpc.client.dial_option.max_call_attempts -- gRPC client dial option number of max call attempts
+        max_call_attempts: 0
         # @schema {"name": "defaults.grpc.client.dial_option.backoff_max_delay", "type": "string"}
         # defaults.grpc.client.dial_option.backoff_max_delay -- gRPC client dial option max backoff delay
         backoff_max_delay: "120s"
@@ -773,9 +797,24 @@ defaults:
         # @schema {"name": "defaults.grpc.client.dial_option.enable_backoff", "type": "boolean"}
         # defaults.grpc.client.dial_option.enable_backoff -- gRPC client dial option backoff enabled
         enable_backoff: false
+        # @schema {"name": "defaults.grpc.client.dial_option.disable_retry", "type": "boolean"}
+        # defaults.grpc.client.dial_option.disable_retry -- gRPC client dial option disables retry
+        disable_retry: false
         # @schema {"name": "defaults.grpc.client.dial_option.insecure", "type": "boolean"}
         # defaults.grpc.client.dial_option.insecure -- gRPC client dial option insecure enabled
         insecure: true
+        # @schema {"name": "defaults.grpc.client.dial_option.shared_write_buffer", "type": "boolean"}
+        # defaults.grpc.client.dial_option.shared_write_buffer -- gRPC client dial option sharing write buffer
+        shared_write_buffer: false
+        # @schema {"name": "defaults.grpc.client.dial_option.authority", "type": "string"}
+        # defaults.grpc.client.dial_option.authority -- gRPC client dial option authority
+        authority: ""
+        # @schema {"name": "defaults.grpc.client.dial_option.idle_timeout", "type": "string"}
+        # defaults.grpc.client.dial_option.idle_timeout -- gRPC client dial option idle_timeout
+        idle_timeout: "1h"
+        # @schema {"name": "defaults.grpc.client.dial_option.user_agent", "type": "string"}
+        # defaults.grpc.client.dial_option.user_agent -- gRPC client dial option user_agent
+        user_agent: "Vald-gRPC"
         # @schema {"name": "defaults.grpc.client.dial_option.timeout", "type": "string"}
         # defaults.grpc.client.dial_option.timeout -- gRPC client dial option timeout
         timeout: ""
