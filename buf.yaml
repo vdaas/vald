@@ -13,13 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-version: v1
-breaking:
-  use:
-    - FILE
-lint:
-  use:
-    - DEFAULT
+version: v2
+modules:
+  - path: apis/proto
 deps:
   - buf.build/bufbuild/protovalidate
   - buf.build/googleapis/googleapis
+lint:
+  use:
+    - STANDARD
+  except:
+    - FIELD_NOT_REQUIRED
+    - PACKAGE_NO_IMPORT_CYCLE
+  disallow_comment_ignores: true
+breaking:
+  use:
+    - FILE
+  except:
+    - EXTENSION_NO_DELETE
+    - FIELD_SAME_DEFAULT

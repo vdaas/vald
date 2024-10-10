@@ -17,8 +17,6 @@ pub mod filter_client {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
     use tonic::codegen::http::Uri;
-    /** Represent the egress filter service.
-*/
     #[derive(Debug, Clone)]
     pub struct FilterClient<T> {
         inner: tonic::client::Grpc<T>,
@@ -189,8 +187,6 @@ pub mod filter_server {
             tonic::Status,
         >;
     }
-    /** Represent the egress filter service.
-*/
     #[derive(Debug)]
     pub struct FilterServer<T: Filter> {
         inner: Arc<T>,
