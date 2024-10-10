@@ -65,7 +65,7 @@ func (t *tx) InsertInto(table string) InsertStmt {
 // Select creates a SelectStmt.
 func (t *tx) Select(column ...string) SelectStmt {
 	return &selectStmt{
-		t.Tx.Select(column...),
+		t.Tx.Select(prepareSelect(column...)...),
 	}
 }
 

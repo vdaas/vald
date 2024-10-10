@@ -146,6 +146,9 @@ func New(opts ...Option) (c Client) {
 			MinConnectTimeout: g.mcd,
 		},
 	))
+	if g.copts != nil && len(g.copts) != 0 {
+		g.dopts = append(g.dopts, grpc.WithDefaultCallOptions(g.copts...))
+	}
 	g.monitorRunning.Store(false)
 	return g
 }

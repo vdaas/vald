@@ -132,7 +132,7 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 		log.Warnf("grpc.New initial Dial check to %s returned error: %v", p.addr, err)
 		if conn != nil {
 			err = conn.Close()
-			if err != nil && !errors.Is(err, grpc.ErrClientConnClosing) {
+			if err != nil {
 				log.Warn("failed to close connection:", err)
 			}
 		}
@@ -147,7 +147,7 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 		if err != nil {
 			if conn != nil {
 				cerr := conn.Close()
-				if cerr != nil && !errors.Is(cerr, grpc.ErrClientConnClosing) {
+				if cerr != nil {
 					return nil, errors.Join(err, cerr)
 				}
 			}
@@ -156,7 +156,7 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 	}
 	if conn != nil {
 		err = conn.Close()
-		if err != nil && !errors.Is(err, grpc.ErrClientConnClosing) {
+		if err != nil {
 			return nil, err
 		}
 	}
@@ -445,7 +445,7 @@ func (p *pool) Disconnect() (err error) {
 	err = p.loop(ctx, func(ctx context.Context, _ int, pc *poolConn) bool {
 		if pc != nil && pc.conn != nil {
 			ierr := pc.conn.Close()
-			if ierr != nil && !errors.Is(ierr, grpc.ErrClientConnClosing) {
+			if ierr != nil {
 				if !errors.Is(ierr, context.DeadlineExceeded) &&
 					!errors.Is(ierr, context.Canceled) {
 					log.Debugf("failed to close connection pool addr = %s\terror = %v", pc.addr, ierr)
@@ -473,7 +473,7 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 		if err != nil {
 			if conn != nil {
 				cerr := conn.Close()
-				if cerr != nil && !errors.Is(cerr, grpc.ErrClientConnClosing) {
+				if cerr != nil {
 					err = errors.Join(err, cerr)
 				}
 			}
@@ -483,7 +483,7 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 		if !isHealthy(ctx, conn) {
 			if conn != nil {
 				err = conn.Close()
-				if err != nil && !errors.Is(err, grpc.ErrClientConnClosing) {
+				if err != nil {
 					err = errors.Join(errors.ErrGRPCClientConnNotFound(addr), err)
 				} else {
 					err = errors.ErrGRPCClientConnNotFound(addr)
@@ -568,28 +568,50 @@ func (p *pool) IsHealthy(ctx context.Context) (healthy bool) {
 	return unhealthy < pl
 }
 
-func (p *pool) Do(ctx context.Context, f func(conn *ClientConn) error) error {
+func (p *pool) Do(ctx context.Context, f func(conn *ClientConn) error) (err error) {
 	if p == nil {
 		return errors.ErrGRPCClientConnNotFound("*")
 	}
-	conn, ok := p.Get(ctx)
+	idx, conn, ok := p.getHealthyConn(ctx, 0, p.Len())
 	if !ok || conn == nil {
 		return errors.ErrGRPCClientConnNotFound(p.addr)
 	}
-	return f(conn)
+	err = f(conn)
+	if errors.Is(err, grpc.ErrClientConnClosing) {
+		if conn != nil {
+			if cerr := conn.Close(); cerr != nil && !errors.Is(cerr, grpc.ErrClientConnClosing) {
+				log.Warnf("Failed to close connection: %v", cerr)
+			}
+		}
+		conn, err = p.dial(ctx, p.addr)
+		if err == nil && conn != nil && isHealthy(ctx, conn) {
+			p.store(idx, &poolConn{
+				conn: conn,
+				addr: p.addr,
+			})
+			if newErr := f(conn); newErr != nil {
+				return errors.Join(err, newErr)
+			}
+			return nil
+		}
+	}
+	return err
 }
 
-func (p *pool) Get(ctx context.Context) (*ClientConn, bool) {
-	return p.getHealthyConn(ctx, 0, p.Len())
+func (p *pool) Get(ctx context.Context) (conn *ClientConn, ok bool) {
+	_, conn, ok = p.getHealthyConn(ctx, 0, p.Len())
+	return conn, ok
 }
 
-func (p *pool) getHealthyConn(ctx context.Context, cnt, retry uint64) (*ClientConn, bool) {
+func (p *pool) getHealthyConn(
+	ctx context.Context, cnt, retry uint64,
+) (idx int, conn *ClientConn, ok bool) {
 	if p == nil || p.closing.Load() {
-		return nil, false
+		return 0, nil, false
 	}
 	select {
 	case <-ctx.Done():
-		return nil, false
+		return 0, nil, false
 	default:
 	}
 	pl := p.Len()
@@ -599,14 +621,13 @@ func (p *pool) getHealthyConn(ctx context.Context, cnt, retry uint64) (*ClientCo
 			if err := p.Disconnect(); err != nil {
 				log.Debugf("failed to disconnect gRPC IP direct connection for %s,\terr: %v", p.addr, err)
 			}
-			return nil, false
+			return 0, nil, false
 		}
-		var idx int
 		if pl > 0 {
 			idx = int(p.current.Add(1) % pl)
 		}
 		if pc := p.load(idx); pc != nil && isHealthy(ctx, pc.conn) {
-			return pc.conn, true
+			return idx, pc.conn, true
 		}
 		conn, err := p.dial(ctx, p.addr)
 		if err == nil && conn != nil && isHealthy(ctx, conn) {
@@ -614,15 +635,16 @@ func (p *pool) getHealthyConn(ctx context.Context, cnt, retry uint64) (*ClientCo
 				conn: conn,
 				addr: p.addr,
 			})
-			return conn, true
+			return idx, conn, true
 		}
 		log.Warnf("failed to find gRPC connection pool for %s.\tlen(pool): %d,\tretried: %d,\terror: %v", p.addr, pl, cnt, err)
-		return nil, false
+		return idx, nil, false
 	}
 
 	if pl > 0 {
-		if pc := p.load(int(p.current.Add(1) % pl)); pc != nil && isHealthy(ctx, pc.conn) {
-			return pc.conn, true
+		idx = int(p.current.Add(1) % pl)
+		if pc := p.load(idx); pc != nil && isHealthy(ctx, pc.conn) {
+			return idx, pc.conn, true
 		}
 	}
 	retry--
@@ -657,23 +679,17 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 		ctx, cancel := context.WithTimeout(ctx, time.Millisecond*10)
 		conn, err := net.DialContext(ctx, net.TCP.String(), addr)
 		cancel()
-		if err != nil {
+		if err != nil || conn == nil {
 			log.Warnf("failed to initialize ping addr: %s,\terr: %s", addr, err.Error())
-			if conn != nil {
-				err = conn.Close()
-				if err != nil && !errors.Is(err, grpc.ErrClientConnClosing) {
-					log.Warn("failed to close connection:", err)
-				}
-			}
-			continue
+		} else {
+			ips = append(ips, ipStr)
 		}
 		if conn != nil {
 			err = conn.Close()
-			if err != nil && !errors.Is(err, grpc.ErrClientConnClosing) {
+			if err != nil && !errors.Is(err, context.Canceled) {
 				log.Warn("failed to close connection:", err)
 			}
 		}
-		ips = append(ips, ipStr)
 	}
 
 	if len(ips) == 0 {
