@@ -127,7 +127,7 @@ ifeq ($(UNAME),Linux)
 CPU_INFO_FLAGS := $(eval CPU_INFO_FLAGS := $(shell cat /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1))$(CPU_INFO_FLAGS)
 CORES := $(eval CORES := $(shell nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null))$(CORES)
 else ifeq ($(UNAME),Darwin)
-CPU_INFO_FLAGS := ""
+CPU_INFO_FLAGS := $(eval CPU_INFO_FLAGS := $(shell sysctl -n machdep.cpu.brand_string 2>/dev/null || echo "Apple Silicon"))$(CPU_INFO_FLAGS)
 CORES := $(eval CORES := $(shell sysctl -n hw.ncpu 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null))$(CORES)
 else
 CPU_INFO_FLAGS := ""
