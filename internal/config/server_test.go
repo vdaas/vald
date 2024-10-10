@@ -640,8 +640,8 @@ func TestGRPC_Bind(t *testing.T) {
 		WriteBufferSize                int
 		ReadBufferSize                 int
 		ConnectionTimeout              string
-		MaxHeaderListSize              int
-		HeaderTableSize                int
+		MaxHeaderListSize              uint32
+		HeaderTableSize                uint32
 		Interceptors                   []string
 		EnableReflection               bool
 	}
@@ -679,8 +679,8 @@ func TestGRPC_Bind(t *testing.T) {
 			writeBufferSize := 3
 			readBufferSize := 3
 			connectionTimeout := "3s"
-			maxHeaderListSize := 5
-			headerTableSize := 1
+			maxHeaderListSize := uint32(5)
+			headerTableSize := uint32(1)
 			interceptors := []string{
 				"RecoverInterceptor",
 			}
@@ -741,8 +741,8 @@ func TestGRPC_Bind(t *testing.T) {
 			}
 			writeBufferSize := 3
 			readBufferSize := 3
-			maxHeaderListSize := 5
-			headerTableSize := 1
+			maxHeaderListSize := uint32(5)
+			headerTableSize := uint32(1)
 			enableReflection := true
 			return test{
 				name: "return GRPC when some parameters are set as environment value",
@@ -1369,7 +1369,7 @@ func TestServer_Opts(t *testing.T) {
 			},
 		},
 		{
-			name: "return 13 server.Options when NETWORK is empty, MODE is GRPC",
+			name: "return 31 server.Options when NETWORK is empty, MODE is GRPC",
 			fields: fields{
 				Name:          "vald-agent-ngt",
 				Host:          "0.0.0.0",
@@ -1424,7 +1424,7 @@ func TestServer_Opts(t *testing.T) {
 				Restart: false,
 			},
 			want: want{
-				want: make([]server.Option, 28),
+				want: make([]server.Option, 31),
 			},
 		},
 	}
