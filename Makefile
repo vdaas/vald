@@ -394,6 +394,28 @@ help:
 	{ lastLine = $$0 }' $(MAKELISTS) | sort -u
 	@printf "\n"
 
+.PHONY: perm
+## set correct permissions for dirs and files
+perm:
+	find $(ROOTDIR) -type d -not -path "$(ROOTDIR)/.git*" -exec chmod 755 {} \;
+	find $(ROOTDIR) -type f -not -path "$(ROOTDIR)/.git*" -not -name ".gitignore" -exec chmod 644 {} \;
+	if [ -d "$(ROOTDIR)/.git" ]; then \
+		chmod 750 "$(ROOTDIR)/.git"; \
+		if [ -f "$(ROOTDIR)/.git/config" ]; then \
+			chmod 644 "$(ROOTDIR)/.git/config"; \
+		fi; \
+		if [ -d "$(ROOTDIR)/.git/hooks" ]; then \
+			find "$(ROOTDIR)/.git/hooks" -type f -exec chmod 755 {} \;; \
+		fi; \
+	fi
+	if [ -f "$(ROOTDIR)/.gitignore" ]; then \
+		chmod 644 "$(ROOTDIR)/.gitignore"; \
+	fi
+	if [ -f "$(ROOTDIR)/.gitattributes" ]; then \
+		chmod 644 "$(ROOTDIR)/.gitattributes"; \
+	fi
+
+
 .PHONY: all
 ## execute clean and deps
 all: clean deps

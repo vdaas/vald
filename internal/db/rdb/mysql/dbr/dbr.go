@@ -58,3 +58,11 @@ func (*db) Open(driver, dsn string, log EventReceiver) (Connection, error) {
 func (*db) Eq(col string, val any) Builder {
 	return dbr.Eq(col, val)
 }
+
+func prepareSelect[T any](a ...T) (b []any) {
+	b = make([]any, len(a))
+	for i := range a {
+		b[i] = a[i]
+	}
+	return b
+}
