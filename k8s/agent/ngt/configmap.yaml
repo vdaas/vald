@@ -42,6 +42,7 @@ data:
             bidirectional_stream_concurrency: 20
             connection_timeout: ""
             enable_admin: true
+            enable_channelz: true
             enable_reflection: true
             header_table_size: 0
             initial_conn_window_size: 2097152
@@ -56,10 +57,14 @@ data:
               permit_without_stream: false
               time: 3h
               timeout: 60s
+            max_concurrent_streams: 0
             max_header_list_size: 0
             max_receive_message_size: 0
             max_send_message_size: 0
+            num_stream_workers: 0
             read_buffer_size: 0
+            shared_write_buffer: false
+            wait_for_handlers: true
             write_buffer_size: 0
           mode: GRPC
           network: tcp

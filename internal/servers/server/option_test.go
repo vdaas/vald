@@ -2103,7 +2103,7 @@ func TestWithGRPCConnectionTimeout(t *testing.T) {
 func TestWithGRPCMaxHeaderListSize(t *testing.T) {
 	type test struct {
 		name      string
-		size      int
+		size      uint32
 		checkFunc func(opt Option) error
 	}
 
@@ -2124,24 +2124,6 @@ func TestWithGRPCMaxHeaderListSize(t *testing.T) {
 
 		{
 			name: "not set when size is 0",
-			checkFunc: func(opt Option) error {
-				gopts := []grpc.ServerOption{
-					grpc.ConnectionTimeout(10 * time.Second),
-				}
-				got := new(server)
-				got.grpc.opts = gopts
-				opt(got)
-
-				if !reflect.DeepEqual(got.grpc.opts, gopts) {
-					return errors.New("invalid param was set")
-				}
-				return nil
-			},
-		},
-
-		{
-			name: "not set when size is less than 0",
-			size: -1,
 			checkFunc: func(opt Option) error {
 				gopts := []grpc.ServerOption{
 					grpc.ConnectionTimeout(10 * time.Second),
@@ -2171,7 +2153,7 @@ func TestWithGRPCMaxHeaderListSize(t *testing.T) {
 func TestWithGRPCHeaderTableSize(t *testing.T) {
 	type test struct {
 		name      string
-		size      int
+		size      uint32
 		checkFunc func(opt Option) error
 	}
 
@@ -2192,24 +2174,6 @@ func TestWithGRPCHeaderTableSize(t *testing.T) {
 
 		{
 			name: "not set when size is 0",
-			checkFunc: func(opt Option) error {
-				gopts := []grpc.ServerOption{
-					grpc.ConnectionTimeout(10 * time.Second),
-				}
-				got := new(server)
-				got.grpc.opts = gopts
-				opt(got)
-
-				if !reflect.DeepEqual(got.grpc.opts, gopts) {
-					return errors.New("invalid param was set")
-				}
-				return nil
-			},
-		},
-
-		{
-			name: "not set when size is less than 0",
-			size: -1,
 			checkFunc: func(opt Option) error {
 				gopts := []grpc.ServerOption{
 					grpc.ConnectionTimeout(10 * time.Second),

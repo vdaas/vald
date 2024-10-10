@@ -124,16 +124,6 @@ func WithConnectionPoolSize(size int) Option {
 	}
 }
 
-func WithDialOptions(opts ...grpc.DialOption) Option {
-	return func(g *gRPCClient) {
-		if g.dopts != nil && len(g.dopts) > 0 {
-			g.dopts = append(g.dopts, opts...)
-		} else {
-			g.dopts = opts
-		}
-	}
-}
-
 func WithBackoffMaxDelay(dur string) Option {
 	return func(g *gRPCClient) {
 		if len(dur) == 0 {
@@ -200,16 +190,6 @@ func WithMinConnectTimeout(dur string) Option {
 	}
 }
 
-func WithCallOptions(opts ...grpc.CallOption) Option {
-	return func(g *gRPCClient) {
-		if g.copts != nil && len(g.copts) > 0 {
-			g.copts = append(g.copts, opts...)
-		} else {
-			g.copts = opts
-		}
-	}
-}
-
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(g *gRPCClient) {
 		if eg != nil {
@@ -234,30 +214,61 @@ func WithCircuitBreaker(cb circuitbreaker.CircuitBreaker) Option {
 	}
 }
 
-func WithWaitForReady(flg bool) Option {
+/*
+API References https://pkg.go.dev/google.golang.org/grpc#CallOption
+
+1. Already Implemented APIs
+- func CallContentSubtype(contentSubtype string) CallOption
+- func MaxCallRecvMsgSize(bytes int) CallOption
+- func MaxCallSendMsgSize(bytes int) CallOption
+- func MaxRetryRPCBufferSize(bytes int) CallOption
+- func WaitForReady(waitForReady bool) CallOption
+
+2. Unnecessary for this package APIs
+- func Header(md *metadata.MD) CallOption
+- func Peer(p *peer.Peer) CallOption
+- func PerRPCCredentials(creds credentials.PerRPCCredentials) CallOption
+- func StaticMethod() CallOption
+- func Trailer(md *metadata.MD) CallOption
+
+3. Experimental APIs
+- func ForceCodec(codec encoding.Codec) CallOption
+- func ForceCodecV2(codec encoding.CodecV2) CallOption
+- func OnFinish(onFinish func(err error)) CallOption
+- func UseCompressor(name string) CallOption
+
+4. Deprecated APIs
+- func CallCustomCodec(codec Codec) CallOption
+- func FailFast(failFast bool) CallOption
+*/
+const defaultCallOptionLength = 5
+
+func WithCallOptions(opts ...grpc.CallOption) Option {
 	return func(g *gRPCClient) {
-		g.copts = append(g.copts,
-			grpc.WaitForReady(flg),
-		)
+		if g.copts != nil && len(g.copts) > 0 {
+			g.copts = append(g.copts, opts...)
+		} else {
+			g.copts = opts
+		}
 	}
 }
 
-func WithMaxRetryRPCBufferSize(size int) Option {
+func WithCallContentSubtype(contentSubtype string) Option {
 	return func(g *gRPCClient) {
-		if size > 1 {
-			g.copts = append(g.copts,
-				grpc.MaxRetryRPCBufferSize(size),
-			)
+		if g.copts == nil && cap(g.copts) == 0 {
+			g.copts = make([]grpc.CallOption, 0, defaultCallOptionLength)
 		}
+		g.copts = append(g.copts, grpc.CallContentSubtype(contentSubtype))
 	}
 }
 
 func WithMaxRecvMsgSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
-			g.copts = append(g.copts,
-				grpc.MaxCallRecvMsgSize(size),
-			)
+			if g.copts == nil && cap(g.copts) == 0 {
+				g.copts = make([]grpc.CallOption, 0, defaultCallOptionLength)
+			}
+			g.copts = append(g.copts, grpc.MaxCallRecvMsgSize(size))
 		}
 	}
 }
@@ -265,9 +276,95 @@ func WithMaxRecvMsgSize(size int) Option {
 func WithMaxSendMsgSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
-			g.copts = append(g.copts,
-				grpc.MaxCallSendMsgSize(size),
-			)
+			if g.copts == nil && cap(g.copts) == 0 {
+				g.copts = make([]grpc.CallOption, 0, defaultCallOptionLength)
+			}
+			g.copts = append(g.copts, grpc.MaxCallSendMsgSize(size))
+		}
+	}
+}
+
+func WithMaxRetryRPCBufferSize(size int) Option {
+	return func(g *gRPCClient) {
+		if size > 1 {
+			if g.copts == nil && cap(g.copts) == 0 {
+				g.copts = make([]grpc.CallOption, 0, defaultCallOptionLength)
+			}
+			g.copts = append(g.copts, grpc.MaxRetryRPCBufferSize(size))
+		}
+	}
+}
+
+func WithWaitForReady(flg bool) Option {
+	return func(g *gRPCClient) {
+		if g.copts == nil && cap(g.copts) == 0 {
+			g.copts = make([]grpc.CallOption, 0, defaultCallOptionLength)
+		}
+		g.copts = append(g.copts, grpc.WaitForReady(flg))
+	}
+}
+
+/*
+API References https://pkg.go.dev/google.golang.org/grpc#DialOption
+
+1. Already Implemented APIs
+- func WithAuthority(a string) DialOption
+- func WithContextDialer(f func(context.Context, string) (net.Conn, error)) DialOption
+- func WithDisableRetry() DialOption
+- func WithIdleTimeout(d time.Duration) DialOption
+- func WithInitialConnWindowSize(s int32) DialOption
+- func WithInitialWindowSize(s int32) DialOption
+- func WithKeepaliveParams(kp keepalive.ClientParameters) DialOption
+- func WithMaxCallAttempts(n int) DialOption
+- func WithMaxHeaderListSize(s uint32) DialOption
+- func WithReadBufferSize(s int) DialOption
+- func WithSharedWriteBuffer(val bool) DialOption
+- func WithTransportCredentials(creds credentials.TransportCredentials) DialOption
+- func WithUserAgent(s string) DialOption
+- func WithWriteBufferSize(s int) DialOption
+
+2. Unnecessary for this package APIs
+- func WithChainStreamInterceptor(interceptors ...StreamClientInterceptor) DialOption
+- func WithChainUnaryInterceptor(interceptors ...UnaryClientInterceptor) DialOption
+- func WithConnectParams(p ConnectParams) DialOption
+- func WithDefaultCallOptions(cos ...CallOption) DialOption
+- func WithDefaultServiceConfig(s string) DialOption
+- func WithDisableServiceConfig() DialOption
+- func WithPerRPCCredentials(creds credentials.PerRPCCredentials) DialOption
+- func WithStatsHandler(h stats.Handler) DialOption
+- func WithStreamInterceptor(f StreamClientInterceptor) DialOption
+- func WithUnaryInterceptor(f UnaryClientInterceptor) DialOption
+
+3. Experimental APIs
+- func WithChannelzParentID(c channelz.Identifier) DialOption
+- func WithCredentialsBundle(b credentials.Bundle) DialOption
+- func WithDisableHealthCheck() DialOption
+- func WithNoProxy() DialOption
+- func WithResolvers(rs ...resolver.Builder) DialOption
+
+4. Deprecated APIs
+- func FailOnNonTempDialError(f bool) DialOption
+- func WithBackoffConfig(b BackoffConfig) DialOption
+- func WithBackoffMaxDelay(md time.Duration) DialOption
+- func WithBlock() DialOption
+- func WithCodec(c Codec) DialOption
+- func WithCompressor(cp Compressor) DialOption
+- func WithDecompressor(dc Decompressor) DialOption
+- func WithDialer(f func(string, time.Duration) (net.Conn, error)) DialOption
+- func WithInsecure() DialOption
+- func WithMaxMsgSize(s int) DialOption
+- func WithReturnConnectionError() DialOption
+- func WithTimeout(d time.Duration) DialOption
+*/
+
+const defaultDialOptionLength = 14
+
+func WithDialOptions(opts ...grpc.DialOption) Option {
+	return func(g *gRPCClient) {
+		if g.dopts != nil && len(g.dopts) > 0 {
+			g.dopts = append(g.dopts, opts...)
+		} else {
+			g.dopts = opts
 		}
 	}
 }
@@ -275,6 +372,9 @@ func WithMaxSendMsgSize(size int) Option {
 func WithWriteBufferSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
+			if g.dopts == nil && cap(g.dopts) == 0 {
+				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
+			}
 			g.dopts = append(g.dopts,
 				grpc.WithWriteBufferSize(size),
 			)
@@ -285,6 +385,9 @@ func WithWriteBufferSize(size int) Option {
 func WithReadBufferSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
+			if g.dopts == nil && cap(g.dopts) == 0 {
+				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
+			}
 			g.dopts = append(g.dopts,
 				grpc.WithReadBufferSize(size),
 			)
@@ -292,21 +395,27 @@ func WithReadBufferSize(size int) Option {
 	}
 }
 
-func WithInitialWindowSize(size int) Option {
+func WithInitialWindowSize(size int32) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
+			if g.dopts == nil && cap(g.dopts) == 0 {
+				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
+			}
 			g.dopts = append(g.dopts,
-				grpc.WithInitialWindowSize(int32(size)),
+				grpc.WithInitialWindowSize(size),
 			)
 		}
 	}
 }
 
-func WithInitialConnectionWindowSize(size int) Option {
+func WithInitialConnectionWindowSize(size int32) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
+			if g.dopts == nil && cap(g.dopts) == 0 {
+				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
+			}
 			g.dopts = append(g.dopts,
-				grpc.WithInitialConnWindowSize(int32(size)),
+				grpc.WithInitialConnWindowSize(size),
 			)
 		}
 	}
@@ -315,6 +424,9 @@ func WithInitialConnectionWindowSize(size int) Option {
 func WithMaxMsgSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
+			if g.dopts == nil && cap(g.dopts) == 0 {
+				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
+			}
 			g.dopts = append(g.dopts,
 				grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(size)),
 			)
@@ -325,6 +437,9 @@ func WithMaxMsgSize(size int) Option {
 func WithInsecure(flg bool) Option {
 	return func(g *gRPCClient) {
 		if flg {
+			if g.dopts == nil && cap(g.dopts) == 0 {
+				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
+			}
 			g.dopts = append(g.dopts,
 				grpc.WithTransportCredentials(insecure.NewCredentials()),
 			)
@@ -339,21 +454,24 @@ func WithKeepaliveParams(t, to string, permitWithoutStream bool) Option {
 		}
 		td, err := timeutil.Parse(t)
 		if err != nil {
-			log.Errorf("failed to parse grpc keepalive time: %v", err)
+			log.Errorf("failed to parse grpc keepalive time: %s,\t%v", t, err)
 			return
 		}
 		if td <= 0 {
 			log.Errorf("invalid grpc keepalive time: %d", td)
 			return
 		}
-		tod, err := timeutil.Parse(t)
+		tod, err := timeutil.Parse(to)
 		if err != nil {
-			log.Errorf("failed to parse grpc keepalive timeout: %v", err)
+			log.Errorf("failed to parse grpc keepalive timeout: %s,\t%v", to, err)
 			return
 		}
 		if tod <= 0 {
 			log.Errorf("invalid grpc keepalive timeout: %d", tod)
 			return
+		}
+		if g.dopts == nil && cap(g.dopts) == 0 {
+			g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
 		}
 		g.dopts = append(g.dopts,
 			grpc.WithKeepaliveParams(
@@ -371,6 +489,9 @@ func WithDialer(der net.Dialer) Option {
 	return func(g *gRPCClient) {
 		if der != nil {
 			g.dialer = der
+			if g.dopts == nil && cap(g.dopts) == 0 {
+				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
+			}
 			g.dopts = append(g.dopts,
 				grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
 					// TODO we need change network type dynamically
@@ -385,6 +506,9 @@ func WithDialer(der net.Dialer) Option {
 func WithTLSConfig(cfg *tls.Config) Option {
 	return func(g *gRPCClient) {
 		if cfg != nil {
+			if g.dopts == nil && cap(g.dopts) == 0 {
+				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
+			}
 			g.dopts = append(g.dopts,
 				grpc.WithTransportCredentials(credentials.NewTLS(cfg)),
 			)
@@ -392,8 +516,112 @@ func WithTLSConfig(cfg *tls.Config) Option {
 	}
 }
 
+func WithAuthority(a string) Option {
+	return func(g *gRPCClient) {
+		if a != "" {
+			if g.dopts == nil && cap(g.dopts) == 0 {
+				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
+			}
+			g.dopts = append(g.dopts,
+				grpc.WithAuthority(a),
+			)
+		}
+	}
+}
+
+func WithDisableRetry(disable bool) Option {
+	return func(g *gRPCClient) {
+		if disable {
+			if g.dopts == nil && cap(g.dopts) == 0 {
+				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
+			}
+			g.dopts = append(g.dopts,
+				grpc.WithDisableRetry(),
+			)
+		}
+	}
+}
+
+func WithIdleTimeout(dur string) Option {
+	return func(g *gRPCClient) {
+		if len(dur) == 0 {
+			return
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			log.Errorf("failed to parse idle timeout duration: %v", err)
+			return
+		}
+		if d <= 0 {
+			log.Errorf("invalid idle timeout duration: %d", d)
+			return
+		}
+		if g.dopts == nil && cap(g.dopts) == 0 {
+			g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
+		}
+		g.dopts = append(g.dopts,
+			grpc.WithIdleTimeout(d),
+		)
+	}
+}
+
+func WithMaxCallAttempts(n int) Option {
+	return func(g *gRPCClient) {
+		if n > 2 {
+			if g.dopts == nil && cap(g.dopts) == 0 {
+				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
+			}
+			g.dopts = append(g.dopts,
+				grpc.WithMaxCallAttempts(n),
+			)
+		}
+	}
+}
+
+func WithMaxHeaderListSize(size uint32) Option {
+	return func(g *gRPCClient) {
+		if size > 0 {
+			if g.dopts == nil && cap(g.dopts) == 0 {
+				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
+			}
+			g.dopts = append(g.dopts,
+				grpc.WithMaxHeaderListSize(size),
+			)
+		}
+	}
+}
+
+func WithSharedWriteBuffer(enable bool) Option {
+	return func(g *gRPCClient) {
+		if enable {
+			if g.dopts == nil && cap(g.dopts) == 0 {
+				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
+			}
+			g.dopts = append(g.dopts,
+				grpc.WithSharedWriteBuffer(enable),
+			)
+		}
+	}
+}
+
+func WithUserAgent(ua string) Option {
+	return func(g *gRPCClient) {
+		if ua != "" {
+			if g.dopts == nil && cap(g.dopts) == 0 {
+				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
+			}
+			g.dopts = append(g.dopts,
+				grpc.WithUserAgent(ua),
+			)
+		}
+	}
+}
+
 func WithClientInterceptors(names ...string) Option {
 	return func(g *gRPCClient) {
+		if g.dopts == nil && cap(g.dopts) == 0 {
+			g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
+		}
 		for _, name := range names {
 			switch strings.ToLower(name) {
 			case "traceinterceptor", "trace":
