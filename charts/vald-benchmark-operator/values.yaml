@@ -33,7 +33,7 @@ image:
   repository: vdaas/vald-benchmark-operator
   # @schema {"name": "image.tag", "type": "string"}
   # image.tag -- image tag
-  tag: v1.7.13
+  tag: v1.7.14
   # @schema {"name": "image.pullPolicy", "type": "string", "enum": ["Always", "Never", "IfNotPresent"]}
   # image.pullPolicy -- image pull policy
   pullPolicy: Always
@@ -46,7 +46,7 @@ job:
     repository: vdaas/vald-benchmark-job
     # @schema {"name": "job.image.tag", "type": "string"}
     # image.tag -- image tag for job docker image
-    tag: v1.7.13
+    tag: v1.7.14
     # @schema {"name": "job.image.pullPolicy", "type": "string", "enum": ["Always", "Never", "IfNotPresent"]}
     # image.pullPolicy -- image pull policy
     pullPolicy: Always
