@@ -97,7 +97,6 @@ pub mod meta_client {
             self.inner = self.inner.max_encoding_message_size(limit);
             self
         }
-        ///
         pub async fn get(
             &mut self,
             request: impl tonic::IntoRequest<super::super::super::payload::v1::meta::Key>,
@@ -177,7 +176,6 @@ pub mod meta_server {
     /// Generated trait containing gRPC methods that should be implemented for use with MetaServer.
     #[async_trait]
     pub trait Meta: Send + Sync + 'static {
-        ///
         async fn get(
             &self,
             request: tonic::Request<super::super::super::payload::v1::meta::Key>,
