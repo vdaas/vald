@@ -19,10 +19,10 @@ metadata:
   name: default-vald-index-operator-priority
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.13
+    helm.sh/chart: vald-v1.7.14
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.13
+    app.kubernetes.io/version: v1.7.14
     app.kubernetes.io/component: index-operator
 value: 1e+06
 preemptionPolicy: Never
