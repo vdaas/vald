@@ -293,7 +293,7 @@ replace (
 	go.uber.org/goleak => go.uber.org/goleak v1.3.0
 	go.uber.org/multierr => go.uber.org/multierr v1.11.0
 	go.uber.org/zap => go.uber.org/zap v1.27.0
-	gocloud.dev => gocloud.dev v0.39.0
+	gocloud.dev => gocloud.dev v0.40.0
 	golang.org/x/crypto => golang.org/x/crypto v0.28.0
 	golang.org/x/exp => golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
 	golang.org/x/exp/typeparams => golang.org/x/exp/typeparams v0.0.0-20241009180824-f66d83c29e7c
@@ -342,7 +342,7 @@ replace (
 	nhooyr.io/websocket => nhooyr.io/websocket v1.8.17
 	rsc.io/pdf => rsc.io/pdf v0.1.1
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.19.0
-	sigs.k8s.io/json => sigs.k8s.io/json v0.0.0-20241009153224-e386a8af8d30
+	sigs.k8s.io/json => sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3
 	sigs.k8s.io/kustomize => sigs.k8s.io/kustomize v2.0.3+incompatible
 	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.4.1
 	sigs.k8s.io/yaml => sigs.k8s.io/yaml v1.4.0
