@@ -23,7 +23,6 @@ import (
 	"io/fs"
 	"os"
 	"os/signal"
-	"regexp"
 	"slices"
 	"syscall"
 	"text/template"
@@ -437,33 +436,51 @@ func appendM[K comparable](maps ...map[K]string) map[K]string {
 	return result
 }
 
-var re = regexp.MustCompile(`\$\{?(\w+)\}?`)
-
+// extractVariables efficiently extracts variables from strings
 func extractVariables(value string) []string {
-	matches := re.FindAllStringSubmatch(value, -1)
-	vars := make([]string, 0, len(matches))
-	for _, match := range matches {
-		vars = append(vars, match[1])
+	var vars []string
+	start := -1
+	for i := 0; i < len(value); i++ {
+		if value[i] == '$' && i+1 < len(value) && value[i+1] == '{' {
+			start = i + 2
+		} else if start != -1 && value[i] == '}' {
+			vars = append(vars, value[start:i])
+			start = -1
+		} else if value[i] == '$' && start == -1 {
+			start = i + 1
+			for start < len(value) && (('a' <= value[start] && value[start] <= 'z') || ('A' <= value[start] && value[start] <= 'Z') || ('0' <= value[start] && value[start] <= '9') || value[start] == '_') {
+				start++
+			}
+			vars = append(vars, value[i+1:start])
+			i = start - 1
+			start = -1
+		}
 	}
 	return vars
 }
 
+// topologicalSort sorts the elements topologically and ensures that equal-level nodes are sorted by name
 func topologicalSort(envMap map[string]string) []string {
-	// Graph structures
-	inDegree := make(map[string]int)
-	graph := make(map[string][]string)
+	inDegree := make(map[string]int)         // Tracks the in-degree of each node
+	graph := make(map[string][]string)       // Tracks the edges between nodes
+	result := make([]string, 0, len(envMap)) // Result slice pre-allocated for efficiency
 
-	// Initialize the graph
+	gl := 0
+	// Initialize the graph structure and in-degrees
 	for key, value := range envMap {
 		vars := extractVariables(value)
 		for _, refKey := range vars {
-			if refKey != key {
+			if refKey != key { // Prevent self-dependency
 				graph[refKey] = append(graph[refKey], key)
+				if len(graph[refKey]) > gl {
+					gl = len(graph[refKey])
+				}
 				inDegree[key]++
 			}
 		}
 	}
 
+	// Initialize the queue with nodes having in-degree 0 (no dependencies)
 	queue := make([]string, 0, len(envMap)-len(graph))
 	for key := range envMap {
 		if inDegree[key] == 0 {
@@ -471,21 +488,34 @@ func topologicalSort(envMap map[string]string) []string {
 		}
 	}
 
+	// Sort the initial queue to maintain lexicographical order for nodes with no dependencies
 	slices.Sort(queue)
 
-	// Topological sort
-	result := make([]string, 0, len(envMap))
+	// Preallocate a reusable slice for collecting new nodes
+	newNodes := make([]string, 0, gl)
+	// Topological sort process
 	for len(queue) > 0 {
 		node := queue[0]
 		queue = queue[1:]
+
+		// Append the result as `node=value`
 		if value, exists := envMap[node]; exists {
 			result = append(result, node+"="+value)
 		}
+
+		// Process all neighbors and decrement their in-degrees
 		for _, neighbor := range graph[node] {
 			inDegree[neighbor]--
 			if inDegree[neighbor] == 0 {
-				queue = append(queue, neighbor)
+				newNodes = append(newNodes, neighbor)
 			}
+		}
+
+		// If new nodes were found, sort them and append to the queue
+		if len(newNodes) > 0 {
+			slices.Sort(newNodes) // Sort new nodes only once
+			queue = append(queue, newNodes...)
+			newNodes = newNodes[:0] // Reuse the slice by resetting it
 		}
 	}
 
