@@ -4,7 +4,7 @@
 
 This is a Helm chart to install Vald readreplica components.
 
-Current chart version is `v1.7.13`
+Current chart version is `v1.7.14`
 
 ## Install
 

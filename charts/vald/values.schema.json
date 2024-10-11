@@ -3654,7 +3654,7 @@
                     }
                   }
                 },
-                "content_subtype": { "type": "integer" },
+                "content_subtype": { "type": "string" },
                 "dial_option": {
                   "type": "object",
                   "properties": {
@@ -6975,7 +6975,7 @@
                             }
                           }
                         },
-                        "content_subtype": { "type": "integer" },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
@@ -7330,7 +7330,7 @@
                         }
                       }
                     },
-                    "content_subtype": { "type": "integer" },
+                    "content_subtype": { "type": "string" },
                     "dial_option": {
                       "type": "object",
                       "properties": {
@@ -7677,7 +7677,7 @@
                             }
                           }
                         },
-                        "content_subtype": { "type": "integer" },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
@@ -9544,7 +9544,7 @@
                             }
                           }
                         },
-                        "content_subtype": { "type": "integer" },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
@@ -9887,7 +9887,7 @@
                             }
                           }
                         },
-                        "content_subtype": { "type": "integer" },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
@@ -10231,7 +10231,7 @@
                             }
                           }
                         },
-                        "content_subtype": { "type": "integer" },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
@@ -12104,7 +12104,7 @@
                         }
                       }
                     },
-                    "content_subtype": { "type": "integer" },
+                    "content_subtype": { "type": "string" },
                     "dial_option": {
                       "type": "object",
                       "properties": {
@@ -14090,7 +14090,7 @@
                             }
                           }
                         },
-                        "content_subtype": { "type": "integer" },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
@@ -14433,7 +14433,7 @@
                             }
                           }
                         },
-                        "content_subtype": { "type": "integer" },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
@@ -14791,7 +14791,7 @@
                         }
                       }
                     },
-                    "content_subtype": { "type": "integer" },
+                    "content_subtype": { "type": "string" },
                     "dial_option": {
                       "type": "object",
                       "properties": {
@@ -16417,7 +16417,7 @@
                             }
                           }
                         },
-                        "content_subtype": { "type": "integer" },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
@@ -16760,7 +16760,7 @@
                             }
                           }
                         },
-                        "content_subtype": { "type": "integer" },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
@@ -18444,7 +18444,7 @@
                             }
                           }
                         },
-                        "content_subtype": { "type": "integer" },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
@@ -18787,7 +18787,7 @@
                             }
                           }
                         },
-                        "content_subtype": { "type": "integer" },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
@@ -22104,7 +22104,7 @@
                             }
                           }
                         },
-                        "content_subtype": { "type": "integer" },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
@@ -22447,7 +22447,7 @@
                             }
                           }
                         },
-                        "content_subtype": { "type": "integer" },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
