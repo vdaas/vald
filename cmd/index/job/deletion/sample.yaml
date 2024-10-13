@@ -1,0 +1,230 @@
+#
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+version: v0.0.0
+time_zone: JST
+logging:
+  format: raw
+  level: info
+  logger: glg
+server_config:
+  servers:
+    - name: grpc
+      host: 0.0.0.0
+      port: 8081
+      grpc:
+        bidirectional_stream_concurrency: 20
+        connection_timeout: ""
+        header_table_size: 0
+        initial_conn_window_size: 0
+        initial_window_size: 0
+        interceptors: []
+        keepalive:
+          max_conn_age: ""
+          max_conn_age_grace: ""
+          max_conn_idle: ""
+          time: ""
+          timeout: ""
+        max_header_list_size: 0
+        max_receive_message_size: 0
+        max_send_message_size: 0
+        read_buffer_size: 0
+        write_buffer_size: 0
+      mode: GRPC
+      probe_wait_time: 3s
+      restart: true
+  health_check_servers:
+    - name: readiness
+      host: 0.0.0.0
+      port: 3001
+      http:
+        handler_timeout: ""
+        idle_timeout: ""
+        read_header_timeout: ""
+        read_timeout: ""
+        shutdown_duration: 0s
+        write_timeout: ""
+      mode: ""
+      probe_wait_time: 3s
+  metrics_servers:
+  startup_strategy:
+    - grpc
+    - readiness
+  full_shutdown_duration: 600s
+  tls:
+    ca: /path/to/ca
+    cert: /path/to/cert
+    enabled: false
+    key: /path/to/key
+deletor:
+  index_id: "sample"
+  agent_port: 8081
+  agent_name: "vald-agent-ngt"
+  agent_dns: vald-agent-ngt.default.svc.cluster.local
+  agent_namespace: "default"
+  node_name: ""
+  concurrency: 1
+  discoverer:
+    duration: 500ms
+    client:
+      addrs:
+        - vald-discoverer.default.svc.cluster.local:8081
+      health_check_duration: "1s"
+      connection_pool:
+        enable_dns_resolver: true
+        enable_rebalance: true
+        old_conn_close_duration: 3s
+        rebalance_duration: 30m
+        size: 3
+      backoff:
+        backoff_factor: 1.1
+        backoff_time_limit: 5s
+        enable_error_log: true
+        initial_duration: 5ms
+        jitter_limit: 100ms
+        maximum_duration: 5s
+        retry_count: 100
+      call_option:
+        max_recv_msg_size: 0
+        max_retry_rpc_buffer_size: 0
+        max_send_msg_size: 0
+        wait_for_ready: true
+      dial_option:
+        backoff_base_delay: 1s
+        backoff_jitter: 0.2
+        backoff_max_delay: 120s
+        backoff_multiplier: 1.6
+        enable_backoff: false
+        initial_connection_window_size: 0
+        initial_window_size: 0
+        insecure: true
+        keepalive:
+          permit_without_stream: false
+          time: ""
+          timeout: ""
+        max_msg_size: 0
+        min_connection_timeout: 20s
+        read_buffer_size: 0
+        tcp:
+          dialer:
+            dual_stack_enabled: true
+            keepalive: ""
+            timeout: ""
+          dns:
+            cache_enabled: true
+            cache_expiration: 1h
+            refresh_duration: 30m
+          tls:
+            ca: /path/to/ca
+            cert: /path/to/cert
+            enabled: false
+            key: /path/to/key
+        timeout: ""
+        write_buffer_size: 0
+      tls:
+        ca: /path/to/ca
+        cert: /path/to/cert
+        enabled: false
+        key: /path/to/key
+    agent_client_options:
+      addrs: []
+      health_check_duration: "1s"
+      connection_pool:
+        enable_dns_resolver: true
+        enable_rebalance: true
+        old_conn_close_duration: 3s
+        rebalance_duration: 30m
+        size: 3
+      backoff:
+        backoff_factor: 1.1
+        backoff_time_limit: 5s
+        enable_error_log: true
+        initial_duration: 5ms
+        jitter_limit: 100ms
+        maximum_duration: 5s
+        retry_count: 100
+      call_option:
+        max_recv_msg_size: 0
+        max_retry_rpc_buffer_size: 0
+        max_send_msg_size: 0
+        wait_for_ready: true
+      dial_option:
+        write_buffer_size: 0
+        read_buffer_size: 0
+        initial_window_size: 0
+        initial_connection_window_size: 0
+        max_msg_size: 0
+        backoff_max_delay: "120s"
+        backoff_base_delay: "1s"
+        backoff_multiplier: 1.6
+        backoff_jitter: 0.2
+        min_connection_timeout: "20s"
+        enable_backoff: false
+        insecure: true
+        timeout: ""
+        tcp:
+          dns:
+            cache_enabled: true
+            cache_expiration: 1h
+            refresh_duration: 30m
+          dialer:
+            timeout: ""
+            keepalive: "15m"
+            dual_stack_enabled: true
+          tls:
+            ca: /path/to/ca
+            cert: /path/to/cert
+            enabled: false
+            key: /path/to/key
+        keepalive:
+          permit_without_stream: false
+          time: ""
+          timeout: ""
+      tls:
+        ca: /path/to/ca
+        cert: /path/to/cert
+        enabled: false
+        key: /path/to/key
+observability:
+  enabled: false
+  otlp:
+    collector_endpoint: "otel-collector.monitoring.svc.cluster.local:4317"
+    trace_batch_timeout: "1s"
+    trace_export_timeout: "1m"
+    trace_max_export_batch_size: 1024
+    trace_max_queue_size: 256
+    metrics_export_interval: "1s"
+    metrics_export_timeout: "1m"
+    attribute:
+      namespace: "_MY_POD_NAMESPACE_"
+      pod_name: "_MY_POD_NAME_"
+      node_name: "_MY_NODE_NAME_"
+      service_name: "vald-index-creation"
+  metrics:
+    enable_cgo: true
+    enable_goroutine: true
+    enable_memory: true
+    enable_version_info: true
+    version_info_labels:
+      - vald_version
+      - server_name
+      - git_commit
+      - build_time
+      - go_version
+      - go_os
+      - go_arch
+      - algorithm_info
+  trace:
+    enabled: true

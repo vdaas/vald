@@ -1,0 +1,415 @@
+#
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vald-index-deletion-config
+  labels:
+    app.kubernetes.io/name: vald
+    helm.sh/chart: vald-v1.7.14
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: v1.7.14
+    app.kubernetes.io/component: vald-index-deletion
+data:
+  config.yaml: |
+    ---
+    version: v0.0.0
+    time_zone: UTC
+    logging:
+      format: raw
+      level: debug
+      logger: glg
+    server_config:
+      servers:
+        - name: grpc
+          host: 0.0.0.0
+          port: 8081
+          grpc:
+            bidirectional_stream_concurrency: 20
+            connection_timeout: ""
+            enable_admin: true
+            enable_channelz: true
+            enable_reflection: true
+            header_table_size: 0
+            initial_conn_window_size: 2097152
+            initial_window_size: 1048576
+            interceptors:
+            - RecoverInterceptor
+            keepalive:
+              max_conn_age: ""
+              max_conn_age_grace: ""
+              max_conn_idle: ""
+              min_time: 10m
+              permit_without_stream: false
+              time: 3h
+              timeout: 60s
+            max_concurrent_streams: 0
+            max_header_list_size: 0
+            max_receive_message_size: 0
+            max_send_message_size: 0
+            num_stream_workers: 0
+            read_buffer_size: 0
+            shared_write_buffer: false
+            wait_for_handlers: true
+            write_buffer_size: 0
+          mode: GRPC
+          network: tcp
+          probe_wait_time: 3s
+          restart: true
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: false
+            tcp_fast_open: false
+            tcp_no_delay: false
+            tcp_quick_ack: false
+          socket_path: ""
+      health_check_servers:
+        - name: liveness
+          host: 0.0.0.0
+          port: 3000
+          http:
+            handler_timeout: ""
+            http2:
+              enabled: false
+              handler_limit: 0
+              max_concurrent_streams: 0
+              max_decoder_header_table_size: 4096
+              max_encoder_header_table_size: 4096
+              max_read_frame_size: 0
+              max_upload_buffer_per_connection: 0
+              max_upload_buffer_per_stream: 0
+              permit_prohibited_cipher_suites: true
+            idle_timeout: ""
+            read_header_timeout: ""
+            read_timeout: ""
+            shutdown_duration: 5s
+            write_timeout: ""
+          mode: REST
+          network: tcp
+          probe_wait_time: 3s
+          restart: true
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: false
+            tcp_fast_open: true
+            tcp_no_delay: true
+            tcp_quick_ack: true
+          socket_path: ""
+        - name: readiness
+          host: 0.0.0.0
+          port: 3001
+          http:
+            handler_timeout: ""
+            http2:
+              enabled: false
+              handler_limit: 0
+              max_concurrent_streams: 0
+              max_decoder_header_table_size: 4096
+              max_encoder_header_table_size: 4096
+              max_read_frame_size: 0
+              max_upload_buffer_per_connection: 0
+              max_upload_buffer_per_stream: 0
+              permit_prohibited_cipher_suites: true
+            idle_timeout: ""
+            read_header_timeout: ""
+            read_timeout: ""
+            shutdown_duration: 0s
+            write_timeout: ""
+          mode: REST
+          network: tcp
+          probe_wait_time: 3s
+          restart: true
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: false
+            tcp_fast_open: true
+            tcp_no_delay: true
+            tcp_quick_ack: true
+          socket_path: ""
+      metrics_servers:
+        - name: pprof
+          host: 0.0.0.0
+          port: 6060
+          http:
+            handler_timeout: 5s
+            http2:
+              enabled: false
+              handler_limit: 0
+              max_concurrent_streams: 0
+              max_decoder_header_table_size: 4096
+              max_encoder_header_table_size: 4096
+              max_read_frame_size: 0
+              max_upload_buffer_per_connection: 0
+              max_upload_buffer_per_stream: 0
+              permit_prohibited_cipher_suites: true
+            idle_timeout: 2s
+            read_header_timeout: 1s
+            read_timeout: 1s
+            shutdown_duration: 5s
+            write_timeout: 1m
+          mode: REST
+          network: tcp
+          probe_wait_time: 3s
+          restart: true
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: true
+            tcp_defer_accept: false
+            tcp_fast_open: false
+            tcp_no_delay: false
+            tcp_quick_ack: false
+          socket_path: ""
+      startup_strategy:
+        - liveness
+        - pprof
+        - grpc
+        - readiness
+      shutdown_strategy:
+        - readiness
+        - grpc
+        - pprof
+        - liveness
+      full_shutdown_duration: 600s
+      tls:
+        ca: /path/to/ca
+        cert: /path/to/cert
+        enabled: false
+        insecure_skip_verify: false
+        key: /path/to/key
+    observability:
+      enabled: false
+      otlp:
+        collector_endpoint: ""
+        trace_batch_timeout: "1s"
+        trace_export_timeout: "1m"
+        trace_max_export_batch_size: 1024
+        trace_max_queue_size: 256
+        metrics_export_interval: "1s"
+        metrics_export_timeout: "1m"
+        attribute:
+          namespace: "_MY_POD_NAMESPACE_"
+          pod_name: "_MY_POD_NAME_"
+          node_name: "_MY_NODE_NAME_"
+          service_name: "vald-index-deletion"
+      metrics:
+        enable_cgo: true
+        enable_goroutine: true
+        enable_memory: true
+        enable_version_info: true
+        version_info_labels:
+        - vald_version
+        - server_name
+        - git_commit
+        - build_time
+        - go_version
+        - go_os
+        - go_arch
+        - algorithm_info
+      trace:
+        enabled: false
+    deletor:
+      index_id: "sample"
+      agent_port: 8081
+      agent_name: "vald-agent"
+      agent_dns: vald-agent.default.svc.cluster.local
+      agent_namespace: "_MY_POD_NAMESPACE_"
+      node_name: ""
+      concurrency: 1
+      target_addrs: []
+      discoverer:
+        duration: 500ms
+        client:
+          addrs:
+            - vald-discoverer.default.svc.cluster.local:8081
+          health_check_duration: "1s"
+          connection_pool:
+            enable_dns_resolver: true
+            enable_rebalance: true
+            old_conn_close_duration: 2m
+            rebalance_duration: 30m
+            size: 3
+          backoff:
+            backoff_factor: 1.1
+            backoff_time_limit: 5s
+            enable_error_log: true
+            initial_duration: 5ms
+            jitter_limit: 100ms
+            maximum_duration: 5s
+            retry_count: 100
+          circuit_breaker:
+            closed_error_rate: 0.7
+            closed_refresh_timeout: 10s
+            half_open_error_rate: 0.5
+            min_samples: 1000
+            open_timeout: 1s
+          call_option:
+            content_subtype: ""
+            max_recv_msg_size: 0
+            max_retry_rpc_buffer_size: 0
+            max_send_msg_size: 0
+            wait_for_ready: true
+          dial_option:
+            authority: ""
+            backoff_base_delay: 1s
+            backoff_jitter: 0.2
+            backoff_max_delay: 120s
+            backoff_multiplier: 1.6
+            disable_retry: false
+            enable_backoff: false
+            idle_timeout: 1h
+            initial_connection_window_size: 2097152
+            initial_window_size: 1048576
+            insecure: true
+            interceptors: []
+            keepalive:
+              permit_without_stream: false
+              time: ""
+              timeout: 30s
+            max_call_attempts: 0
+            max_header_list_size: 0
+            max_msg_size: 0
+            min_connection_timeout: 20s
+            net:
+              dialer:
+                dual_stack_enabled: true
+                keepalive: ""
+                timeout: ""
+              dns:
+                cache_enabled: true
+                cache_expiration: 1h
+                refresh_duration: 30m
+              socket_option:
+                ip_recover_destination_addr: false
+                ip_transparent: false
+                reuse_addr: true
+                reuse_port: true
+                tcp_cork: false
+                tcp_defer_accept: false
+                tcp_fast_open: false
+                tcp_no_delay: false
+                tcp_quick_ack: false
+              tls:
+                ca: /path/to/ca
+                cert: /path/to/cert
+                enabled: false
+                insecure_skip_verify: false
+                key: /path/to/key
+            read_buffer_size: 0
+            shared_write_buffer: false
+            timeout: ""
+            user_agent: Vald-gRPC
+            write_buffer_size: 0
+          tls:
+            ca: /path/to/ca
+            cert: /path/to/cert
+            enabled: false
+            insecure_skip_verify: false
+            key: /path/to/key
+        agent_client_options:
+          addrs: []
+          health_check_duration: "1s"
+          connection_pool:
+            enable_dns_resolver: true
+            enable_rebalance: true
+            old_conn_close_duration: 2m
+            rebalance_duration: 30m
+            size: 3
+          backoff:
+            backoff_factor: 1.1
+            backoff_time_limit: 5s
+            enable_error_log: true
+            initial_duration: 5ms
+            jitter_limit: 100ms
+            maximum_duration: 5s
+            retry_count: 100
+          circuit_breaker:
+            closed_error_rate: 0.7
+            closed_refresh_timeout: 10s
+            half_open_error_rate: 0.5
+            min_samples: 1000
+            open_timeout: 1s
+          call_option:
+            content_subtype: ""
+            max_recv_msg_size: 0
+            max_retry_rpc_buffer_size: 0
+            max_send_msg_size: 0
+            wait_for_ready: true
+          dial_option:
+            write_buffer_size: 0
+            read_buffer_size: 0
+            initial_window_size: 1.048576e+06
+            initial_connection_window_size: 2.097152e+06
+            max_msg_size: 0
+            backoff_max_delay: "120s"
+            backoff_base_delay: "1s"
+            backoff_multiplier: 1.6
+            backoff_jitter: 0.2
+            min_connection_timeout: "20s"
+            enable_backoff: false
+            insecure: true
+            timeout: ""
+            interceptors: []
+            net:
+              dns:
+                cache_enabled: true
+                cache_expiration: 1h
+                refresh_duration: 30m
+              dialer:
+                timeout: ""
+                keepalive: "15m"
+                dual_stack_enabled: true
+              tls:
+                ca: /path/to/ca
+                cert: /path/to/cert
+                enabled: false
+                insecure_skip_verify: false
+                key: /path/to/key
+              socket_option:
+                ip_recover_destination_addr: false
+                ip_transparent: false
+                reuse_addr: true
+                reuse_port: true
+                tcp_cork: false
+                tcp_defer_accept: false
+                tcp_fast_open: false
+                tcp_no_delay: false
+                tcp_quick_ack: false
+            keepalive:
+              permit_without_stream: false
+              time: ""
+              timeout: 30s
+          tls:
+            ca: /path/to/ca
+            cert: /path/to/cert
+            enabled: false
+            insecure_skip_verify: false
+            key: /path/to/key

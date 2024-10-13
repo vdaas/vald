@@ -19,6 +19,7 @@ package core
 
 const (
 	CreateIndexRPCName        = "CreateIndex"
+	DeleteIndexRPCName        = "DeleteIndex"
 	SaveIndexRPCName          = "SaveIndex"
 	CreateAndSaveIndexRPCName = "CreateAndSaveIndex"
 )
