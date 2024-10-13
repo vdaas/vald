@@ -88,6 +88,12 @@ jobs:
     with:
       target: index-creation
     secrets: inherit
+  index-deletion:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: index-deletion
+    secrets: inherit
   index-save:
     needs: [dump-contexts-to-log]
     uses: ./.github/workflows/_docker-image.yaml
