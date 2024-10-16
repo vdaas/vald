@@ -127,7 +127,6 @@ define go-example-build
 		-trimpath \
 		-o $(ROOTDIR)/$6 \
 		main.go
-	$6 -version
 endef
 
 define telepresence
