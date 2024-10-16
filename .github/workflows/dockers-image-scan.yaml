@@ -70,6 +70,10 @@ jobs:
     uses: ./.github/workflows/_docker-image-scan.yaml
     with:
       target: index-creation
+  index-deletion:
+    uses: ./.github/workflows/_docker-image-scan.yaml
+    with:
+      target: index-deletion
   index-save:
     uses: ./.github/workflows/_docker-image-scan.yaml
     with:

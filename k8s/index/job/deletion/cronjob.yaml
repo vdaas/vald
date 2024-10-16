@@ -1,0 +1,146 @@
+#
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: vald-index-deletion
+  labels:
+    app: vald-index-deletion
+    app.kubernetes.io/name: vald
+    helm.sh/chart: vald-v1.7.14
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/component: vald-index-deletion
+    app.kubernetes.io/version: v1.7.14
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  suspend: false
+  startingDeadlineSeconds: 43200
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app: vald-index-deletion
+            app.kubernetes.io/name: vald
+            helm.sh/chart: vald-v1.7.14
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/instance: release-name
+            app.kubernetes.io/component: vald-index-deletion
+            app.kubernetes.io/version: v1.7.14
+          annotations:
+            pyroscope.io/scrape: "true"
+            pyroscope.io/application-name: vald-index-deletion
+            pyroscope.io/profile-cpu-enabled: "true"
+            pyroscope.io/profile-mem-enabled: "true"
+            pyroscope.io/port: "6060"
+        spec:
+          initContainers:
+            - name: wait-for-agent
+              image: busybox:stable
+              imagePullPolicy: Always
+              command:
+                - /bin/sh
+                - -e
+                - -c
+                - |
+                  until [ "$(wget --server-response --spider --quiet http://vald-agent.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+                    echo "waiting for agent to be ready..."
+                    sleep 2;
+                  done
+            - name: wait-for-discoverer
+              image: busybox:stable
+              imagePullPolicy: Always
+              command:
+                - /bin/sh
+                - -e
+                - -c
+                - |
+                  until [ "$(wget --server-response --spider --quiet http://vald-discoverer.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+                    echo "waiting for discoverer to be ready..."
+                    sleep 2;
+                  done
+          containers:
+            - name: vald-index-deletion
+              image: "vdaas/vald-index-deletion:nightly"
+              imagePullPolicy: Always
+              volumeMounts:
+                - name: vald-index-deletion-config
+                  mountPath: /etc/server/
+              livenessProbe:
+                failureThreshold: 2
+                httpGet:
+                  path: /liveness
+                  port: liveness
+                  scheme: HTTP
+                initialDelaySeconds: 5
+                periodSeconds: 3
+                successThreshold: 1
+                timeoutSeconds: 2
+              readinessProbe:
+                failureThreshold: 2
+                httpGet:
+                  path: /readiness
+                  port: readiness
+                  scheme: HTTP
+                initialDelaySeconds: 10
+                periodSeconds: 3
+                successThreshold: 1
+                timeoutSeconds: 2
+              startupProbe:
+                failureThreshold: 30
+                httpGet:
+                  path: /liveness
+                  port: liveness
+                  scheme: HTTP
+                initialDelaySeconds: 5
+                periodSeconds: 5
+                successThreshold: 1
+                timeoutSeconds: 2
+              ports:
+                - name: liveness
+                  protocol: TCP
+                  containerPort: 3000
+                - name: readiness
+                  protocol: TCP
+                  containerPort: 3001
+                - name: grpc
+                  protocol: TCP
+                  containerPort: 8081
+                - name: pprof
+                  protocol: TCP
+                  containerPort: 6060
+              env:
+                - name: MY_NODE_NAME
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: spec.nodeName
+                - name: MY_POD_NAME
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.name
+                - name: MY_POD_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+          restartPolicy: OnFailure
+          volumes:
+            - name: vald-index-deletion-config
+              configMap:
+                defaultMode: 420
+                name: vald-index-deletion-config

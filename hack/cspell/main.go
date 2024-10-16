@@ -90,6 +90,7 @@ var (
 		"**/cmd/gateway/mirror/mirror",
 		"**/cmd/index/job/correction/index-correction",
 		"**/cmd/index/job/creation/index-creation",
+		"**/cmd/index/job/creation/index-deletion",
 		"**/cmd/index/job/readreplica/rotate/readreplica-rotate",
 		"**/cmd/index/job/save/index-save",
 		"**/cmd/index/operator/index-operator",

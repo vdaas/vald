@@ -34,6 +34,7 @@ docker/build: \
 	docker/build/gateway-mirror \
 	docker/build/index-correction \
 	docker/build/index-creation \
+	docker/build/index-deletion \
 	docker/build/index-operator \
 	docker/build/index-save \
 	docker/build/loadtest \
@@ -61,6 +62,7 @@ docker/xpanes/build:
 		docker/build/gateway-mirror \
 		docker/build/index-correction \
 		docker/build/index-creation \
+		docker/build/index-deletion \
 		docker/build/index-operator \
 		docker/build/index-save \
 		docker/build/loadtest \
@@ -337,6 +339,17 @@ docker/name/index-save:
 docker/build/index-save:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/save/Dockerfile" \
 		IMAGE=$(INDEX_SAVE_IMAGE) \
+		docker/build/image
+
+.PHONY: docker/name/index-deletion
+docker/name/index-deletion:
+	@echo "$(ORG)/$(INDEX_DELETION_IMAGE)"
+
+.PHONY: docker/build/index-deletion
+## build index-deletion image
+docker/build/index-deletion:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/deletion/Dockerfile" \
+		IMAGE=$(INDEX_DELETION_IMAGE) \
 		docker/build/image
 
 .PHONY: docker/name/index-operator

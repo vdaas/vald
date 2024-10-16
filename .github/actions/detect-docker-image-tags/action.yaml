@@ -48,6 +48,7 @@ runs:
           ["vdaas/vald-mirror-gateway"]="gateway.mirror.image.tag"
           ["vdaas/vald-manager-index"]="manager.index.image.tag"
           ["vdaas/vald-index-creation"]="manager.index.creator.image.tag"
+          ["vdaas/vald-index-deletion"]="manager.index.delete.image.tag"
           ["vdaas/vald-index-save"]="manager.index.saver.image.tag"
           ["vdaas/vald-readreplica-rotate"]="manager.index.readreplica.rotator.image.tag"
           ["vdaas/vald-helm-operator"]="image.tag"
