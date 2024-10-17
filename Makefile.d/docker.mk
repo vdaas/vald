@@ -29,16 +29,17 @@ docker/build: \
 	docker/build/ci-container \
 	docker/build/dev-container \
 	docker/build/discoverer-k8s \
+	docker/build/example-client \
 	docker/build/gateway-filter \
 	docker/build/gateway-lb \
 	docker/build/gateway-mirror \
+	docker/build/helm-operator \
 	docker/build/index-correction \
 	docker/build/index-creation \
 	docker/build/index-operator \
 	docker/build/index-save \
 	docker/build/loadtest \
 	docker/build/manager-index \
-	docker/build/helm-operator \
 	docker/build/readreplica-rotate
 
 docker/xpanes/build:
@@ -56,6 +57,7 @@ docker/xpanes/build:
 		docker/build/ci-container \
 		docker/build/dev-container \
 		docker/build/discoverer-k8s \
+		docker/build/example-client \
 		docker/build/gateway-filter \
 		docker/build/gateway-lb \
 		docker/build/gateway-mirror \
@@ -382,4 +384,16 @@ docker/name/benchmark-operator:
 docker/build/benchmark-operator:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/benchmark/operator/Dockerfile" \
 		IMAGE=$(BENCHMARK_OPERATOR_IMAGE) \
+		docker/build/image
+
+.PHONY: docker/name/example-client
+docker/name/example-client:
+	@echo "$(ORG)/$(EXAMPLE_CLIENT_IMAGE)"
+
+.PHONY: docker/build/example-client
+## build example client docker image
+docker/build/example-client:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/example/client/Dockerfile" \
+		IMAGE=$(EXAMPLE_CLIENT_IMAGE) \
+		DOCKER_OPTS="--build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
 		docker/build/image
