@@ -112,7 +112,6 @@ define go-example-build
 		-extldflags '$3' \
 		-X '$(GOPKG)/internal/info.AlgorithmInfo=$5' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$(if $(filter 1,$(strip $(CGO_ENABLED))),true,false)' \
 		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
 		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
