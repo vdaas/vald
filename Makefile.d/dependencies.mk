@@ -17,6 +17,7 @@
 .PHONY: update/libs
 ## update vald libraries including tools
 update/libs: \
+	update/buf \
 	update/chaos-mesh \
 	update/cmake \
 	update/docker \
@@ -38,6 +39,7 @@ update/libs: \
 	update/reviewdog \
 	update/rust \
 	update/telepresence \
+	update/usearch \
 	update/vald \
 	update/yq \
 	update/zlib
@@ -151,6 +153,11 @@ update/helm-docs:
 update/protobuf:
 	curl -fsSL https://api.github.com/repos/protocolbuffers/protobuf/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/PROTOBUF_VERSION
 
+.PHONY: update/buf
+## update buf version
+update/buf:
+	curl -fsSL https://api.github.com/repos/bufbuild/buf/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/BUF_VERSION
+
 .PHONY: update/kind
 ## update kind (kubernetes in docker) version
 update/kind:
@@ -190,6 +197,11 @@ update/ngt:
 ## update facebookresearch/faiss version
 update/faiss:
 	curl -fsSL https://api.github.com/repos/facebookresearch/faiss/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/FAISS_VERSION
+
+.PHONY: update/usearch
+## update usearch version
+update/usearch:
+	curl -fsSL https://api.github.com/repos/unum-cloud/usearch/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/USEARCH_VERSION
 
 .PHONY: update/cmake
 ## update CMAKE version
