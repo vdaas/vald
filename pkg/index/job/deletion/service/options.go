@@ -38,3 +38,11 @@ func WithTargetAddrs(addrs ...string) Option {
 		return nil
 	}
 }
+
+// WithTargetIndexID returns Option that sets target deleting index ID.
+func WithTargetIndexID(indexID string) Option {
+	return func(idx *index) error {
+		idx.targetIndexID = indexID
+		return nil
+	}
+}

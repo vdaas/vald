@@ -6,8 +6,8 @@ import (
 	"strings"
 	"sync"
 
-	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -19,7 +19,7 @@ import (
 
 const (
 	apiName        = "vald/index/job/delete"
-	grpcMethodName = "core.v1.Agent/" + agent.DeleteIndexRPCName
+	grpcMethodName = "vald.v1.Remove/" + vald.RemoveRPCName
 )
 
 // Deleter represents an interface for deleting.
@@ -33,8 +33,9 @@ var defaultOpts = []Option{
 }
 
 type index struct {
-	client      discoverer.Client
-	targetAddrs []string
+	client        discoverer.Client
+	targetAddrs   []string
+	targetIndexID string
 
 	concurrency int
 }
@@ -84,10 +85,10 @@ func (idx *index) Start(ctx context.Context) error {
 	}()
 
 	err := idx.doDeleteIndex(ctx,
-		func(ctx context.Context, ac agent.AgentClient, copts ...grpc.CallOption) (*payload.Empty, error) {
-			return ac.DeleteIndex(ctx, &payload.Remove_Request{
+		func(ctx context.Context, rc vald.RemoveClient, copts ...grpc.CallOption) (*payload.Object_Location, error) {
+			return rc.Remove(ctx, &payload.Remove_Request{
 				Id: &payload.Object_ID{
-					Id: "hoge",
+					Id: idx.targetIndexID,
 				},
 			}, copts...)
 		},
@@ -97,12 +98,12 @@ func (idx *index) Start(ctx context.Context) error {
 		switch {
 		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
 			err = status.WrapWithInternal(
-				agent.DeleteIndexRPCName+" API connection not found", err,
+				vald.RemoveRPCName+" API connection not found", err,
 			)
 			attrs = trace.StatusCodeInternal(err.Error())
 		case errors.Is(err, errors.ErrGRPCTargetAddrNotFound):
 			err = status.WrapWithInternal(
-				agent.DeleteIndexRPCName+" API connection target address \""+strings.Join(idx.targetAddrs, ",")+"\" not found", err,
+				vald.RemoveRPCName+" API connection target address \""+strings.Join(idx.targetAddrs, ",")+"\" not found", err,
 			)
 			attrs = trace.StatusCodeInternal(err.Error())
 		default:
@@ -111,7 +112,7 @@ func (idx *index) Start(ctx context.Context) error {
 				msg string
 			)
 			st, msg, err = status.ParseError(err, codes.Internal,
-				"failed to parse "+agent.DeleteIndexRPCName+" gRPC error response",
+				"failed to parse "+vald.RemoveRPCName+" gRPC error response",
 			)
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
@@ -128,7 +129,7 @@ func (idx *index) Start(ctx context.Context) error {
 
 func (idx *index) doDeleteIndex(
 	ctx context.Context,
-	fn func(_ context.Context, _ agent.AgentClient, _ ...grpc.CallOption) (*payload.Empty, error),
+	fn func(_ context.Context, _ vald.RemoveClient, _ ...grpc.CallOption) (*payload.Object_Location, error),
 ) (errs error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, grpcMethodName), apiName+"/service/index.doDeleteIndex")
 	defer func() {
@@ -153,34 +154,34 @@ func (idx *index) doDeleteIndex(
 	var emu sync.Mutex
 	err := idx.client.GetClient().OrderedRangeConcurrent(ctx, targetAddrs, idx.concurrency,
 		func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "OrderedRangeConcurrent/"+target), agent.DeleteIndexRPCName+"/"+target)
+			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "OrderedRangeConcurrent/"+target), vald.RemoveRPCName+"/"+target)
 			defer func() {
 				if span != nil {
 					span.End()
 				}
 			}()
-			_, err := fn(ctx, agent.NewAgentClient(conn), copts...)
+			_, err := fn(ctx, vald.NewRemoveClient(conn), copts...)
 			if err != nil {
 				var attrs trace.Attributes
 				switch {
 				case errors.Is(err, context.Canceled):
 					err = status.WrapWithCanceled(
-						agent.DeleteIndexRPCName+" API canceld", err,
+						vald.RemoveRPCName+" API canceld", err,
 					)
 					attrs = trace.StatusCodeCancelled(err.Error())
 				case errors.Is(err, context.DeadlineExceeded):
 					err = status.WrapWithCanceled(
-						agent.DeleteIndexRPCName+" API deadline exceeded", err,
+						vald.RemoveRPCName+" API deadline exceeded", err,
 					)
 					attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 				case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
 					err = status.WrapWithInternal(
-						agent.DeleteIndexRPCName+" API connection not found", err,
+						vald.RemoveRPCName+" API connection not found", err,
 					)
 					attrs = trace.StatusCodeInternal(err.Error())
 				case errors.Is(err, errors.ErrTargetNotFound):
 					err = status.WrapWithInvalidArgument(
-						agent.DeleteIndexRPCName+" API target not found", err,
+						vald.RemoveRPCName+" API target not found", err,
 					)
 					attrs = trace.StatusCodeInternal(err.Error())
 				default:
@@ -189,15 +190,19 @@ func (idx *index) doDeleteIndex(
 						msg string
 					)
 					st, msg, err = status.ParseError(err, codes.Internal,
-						"failed to parse "+agent.DeleteIndexRPCName+" gRPC error response",
+						"failed to parse "+vald.RemoveRPCName+" gRPC error response",
 					)
 					if st != nil && err != nil && st.Code() == codes.FailedPrecondition {
-						log.Warnf("DeleteIndex of %s skipped, message: %s, err: %v", target, st.Message(), errors.Join(st.Err(), err))
+						log.Warnf("DeleteIndex of %s skipped, indexID:%s, message: %s, err: %v", target, idx.targetIndexID, st.Message(), errors.Join(st.Err(), err))
+						return nil
+					}
+					if st != nil && err != nil && st.Code() == codes.NotFound {
+						log.Warn("DeleteIndex of %s skipped, indexID: %s, message: %s, err: %v", target, idx.targetIndexID, st.Message(), errors.Join(st.Err(), err))
 						return nil
 					}
 					attrs = trace.FromGRPCStatus(st.Code(), msg)
 				}
-				log.Warnf("an error occurred in (%s) during indexing: %v", target, err)
+				log.Warnf("an error occurred in (%s) deleting index(%s): %v", target, idx.targetIndexID, err)
 				if span != nil {
 					span.RecordError(err)
 					span.SetAttributes(attrs...)

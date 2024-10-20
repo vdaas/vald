@@ -86,6 +86,7 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 		service.WithDiscoverer(discoverer),
 		service.WithIndexingConcurrency(cfg.Deletion.Concurrency),
 		service.WithTargetAddrs(cfg.Deletion.TargetAddrs...),
+		service.WithTargetIndexID(cfg.Deletion.IndexID),
 	)
 	if err != nil {
 		return nil, err

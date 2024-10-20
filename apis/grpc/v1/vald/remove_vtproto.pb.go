@@ -40,7 +40,7 @@ const _ = grpc.SupportPackageIsVersion7
 
 // RemoveClient is the client API for Remove service.
 //
-// Foaaar semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RemoveClient interface {
 	// A method to remove an indexed vector.
 	Remove(ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption) (*payload.Object_Location, error)

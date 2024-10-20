@@ -44,8 +44,6 @@ const _ = grpc.SupportPackageIsVersion7
 type AgentClient interface {
 	// Represent the creating index RPC.
 	CreateIndex(ctx context.Context, in *payload.Control_CreateIndexRequest, opts ...grpc.CallOption) (*payload.Empty, error)
-	// Represent the deleting index RPC.
-	DeleteIndex(ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption) (*payload.Empty, error)
 	// Represent the saving index RPC.
 	SaveIndex(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Empty, error)
 	// Represent the creating and saving index RPC.
@@ -65,17 +63,6 @@ func (c *agentClient) CreateIndex(
 ) (*payload.Empty, error) {
 	out := new(payload.Empty)
 	err := c.cc.Invoke(ctx, "/core.v1.Agent/CreateIndex", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *agentClient) DeleteIndex(
-	ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption,
-) (*payload.Empty, error) {
-	out := new(payload.Empty)
-	err := c.cc.Invoke(ctx, "/core.v1.Agent/DeleteIndex", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -110,8 +97,6 @@ func (c *agentClient) CreateAndSaveIndex(
 type AgentServer interface {
 	// Represent the creating index RPC.
 	CreateIndex(context.Context, *payload.Control_CreateIndexRequest) (*payload.Empty, error)
-	// Represent the deleting index RPC.
-	DeleteIndex(context.Context, *payload.Remove_Request) (*payload.Empty, error)
 	// Represent the saving index RPC.
 	SaveIndex(context.Context, *payload.Empty) (*payload.Empty, error)
 	// Represent the creating and saving index RPC.
@@ -126,12 +111,6 @@ func (UnimplementedAgentServer) CreateIndex(
 	context.Context, *payload.Control_CreateIndexRequest,
 ) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateIndex not implemented")
-}
-
-func (UnimplementedAgentServer) DeleteIndex(
-	context.Context, *payload.Remove_Request,
-) (*payload.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteIndex not implemented")
 }
 
 func (UnimplementedAgentServer) SaveIndex(context.Context, *payload.Empty) (*payload.Empty, error) {
@@ -172,26 +151,6 @@ func _Agent_CreateIndex_Handler(
 	}
 	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(AgentServer).CreateIndex(ctx, req.(*payload.Control_CreateIndexRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Agent_DeleteIndex_Handler(
-	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
-) (any, error) {
-	in := new(payload.Remove_Request)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AgentServer).DeleteIndex(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/core.v1.Agent/DeleteIndex",
-	}
-	handler := func(ctx context.Context, req any) (any, error) {
-		return srv.(AgentServer).DeleteIndex(ctx, req.(*payload.Remove_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -246,10 +205,6 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateIndex",
 			Handler:    _Agent_CreateIndex_Handler,
-		},
-		{
-			MethodName: "DeleteIndex",
-			Handler:    _Agent_DeleteIndex_Handler,
 		},
 		{
 			MethodName: "SaveIndex",

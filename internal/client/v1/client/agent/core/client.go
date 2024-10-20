@@ -110,23 +110,6 @@ func (c *agentClient) CreateIndex(
 	return nil, err
 }
 
-func (c *agentClient) DeleteIndex(
-	ctx context.Context, req *client.RemoveRequest, _ ...grpc.CallOption,
-) (*client.Empty, error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+agent.DeleteIndexRPCName), apiName+"/"+agent.DeleteIndexRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	_, err := c.c.RoundRobin(ctx, func(ctx context.Context,
-		conn *grpc.ClientConn, copts ...grpc.CallOption,
-	) (any, error) {
-		return agent.NewAgentClient(conn).DeleteIndex(ctx, req, copts...)
-	})
-	return nil, err
-}
-
 func (c *agentClient) SaveIndex(
 	ctx context.Context, _ *client.Empty, _ ...grpc.CallOption,
 ) (*client.Empty, error) {
@@ -171,18 +154,6 @@ func (c *singleAgentClient) CreateIndex(
 		}
 	}()
 	return c.ac.CreateIndex(ctx, req, opts...)
-}
-
-func (c *singleAgentClient) DeleteIndex(
-	ctx context.Context, req *client.RemoveRequest, opts ...grpc.CallOption,
-) (*client.Empty, error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+agent.DeleteIndexRPCName), apiName+"/"+agent.DeleteIndexRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.ac.DeleteIndex(ctx, req, opts...)
 }
 
 func (c *singleAgentClient) SaveIndex(
