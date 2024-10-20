@@ -197,7 +197,7 @@ func (idx *index) doDeleteIndex(
 						return nil
 					}
 					if st != nil && err != nil && st.Code() == codes.NotFound {
-						log.Warn("DeleteIndex of %s skipped, indexID: %s, message: %s, err: %v", target, idx.targetIndexID, st.Message(), errors.Join(st.Err(), err))
+						log.Warnf("DeleteIndex of %s skipped, indexID: %s, message: %s, err: %v", target, idx.targetIndexID, st.Message(), errors.Join(st.Err(), err))
 						return nil
 					}
 					attrs = trace.FromGRPCStatus(st.Code(), msg)
