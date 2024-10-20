@@ -166,7 +166,7 @@ func (idx *index) doDeleteIndex(
 				switch {
 				case errors.Is(err, context.Canceled):
 					err = status.WrapWithCanceled(
-						vald.RemoveRPCName+" API canceld", err,
+						vald.RemoveRPCName+" API canceled", err,
 					)
 					attrs = trace.StatusCodeCancelled(err.Error())
 				case errors.Is(err, context.DeadlineExceeded):
