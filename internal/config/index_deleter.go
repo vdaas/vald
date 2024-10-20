@@ -13,8 +13,8 @@
 // limitations under the License.
 package config
 
-// IndexDeletor represents the configurations for index deletion.
-type IndexDeletor struct {
+// IndexDeleter represents the configurations for index deletion.
+type IndexDeleter struct {
 	// IndexID represent target delete ID
 	IndexID string `json:"index_id" yaml:"index_id"`
 
@@ -46,7 +46,7 @@ type IndexDeletor struct {
 	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
 }
 
-func (ic *IndexDeletor) Bind() *IndexDeletor {
+func (ic *IndexDeleter) Bind() *IndexDeleter {
 	ic.IndexID = GetActualValue(ic.IndexID)
 	ic.AgentName = GetActualValue(ic.AgentName)
 	ic.AgentNamespace = GetActualValue(ic.AgentNamespace)

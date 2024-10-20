@@ -236,7 +236,7 @@ data:
         - algorithm_info
       trace:
         enabled: false
-    deletor:
+    deleter:
       index_id: "sample"
       agent_port: 8081
       agent_name: "vald-agent"

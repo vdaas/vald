@@ -33,7 +33,7 @@ type Data struct {
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
 	// Deletion represents auto indexing service configurations.
-	Deletion *config.IndexDeletor `json:"deletor" yaml:"deletor"`
+	Deletion *config.IndexDeleter `json:"deleter" yaml:"deleter"`
 }
 
 // NewConfig load configurations from file path.
