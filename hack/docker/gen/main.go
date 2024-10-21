@@ -317,6 +317,10 @@ var (
 		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}\" NAME=\"${REPO}\" cmd/${PKG}/${APP_NAME}",
 		"mv \"cmd/${PKG}/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
 	}
+	goExampleBuildCommands = []string{
+		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}\" NAME=\"${REPO}\" ${PKG}/${APP_NAME}",
+		"mv \"${PKG}/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
+	}
 	rustBuildCommands = []string{
 		"make rust/target/release/${APP_NAME}",
 		"mv \"rust/target/release/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
@@ -707,6 +711,14 @@ func main() {
 					ngtPreprocess,
 					faissPreprocess)...),
 		},
+		"vald-example-client": {
+			AppName:       "client",
+			PackageDir:    "example/client",
+			ExtraPackages: append(clangBuildDeps, "libhdf5-dev", "libaec-dev"),
+			Preprocess: []string{
+				"make hdf5/install",
+			},
+		},
 		"vald-buildbase": {
 			AppName:      "buildbase",
 			AliasImage:   true,
@@ -784,6 +796,8 @@ func main() {
 				}
 				if file.Exists(file.Join(os.Args[1], "cmd", data.PackageDir)) {
 					commands = append(commands, goBuildCommands...)
+				} else if strings.HasPrefix(data.PackageDir, "example") && file.Exists(file.Join(os.Args[1], data.PackageDir)) {
+					commands = append(commands, goExampleBuildCommands...)
 				}
 				data.RunCommands = commands
 				mounts := make([]string, 0, len(defaultMounts)+len(goDefaultMounts))
