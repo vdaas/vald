@@ -31,6 +31,7 @@ binary/build: \
 	cmd/tools/benchmark/job/job \
 	cmd/tools/benchmark/operator/operator \
 	cmd/tools/cli/loadtest/loadtest \
+	example/client/client \
 	cmd/agent/core/ngt/ngt \
 	cmd/agent/core/faiss/faiss \
 	rust/target/debug/agent \
@@ -103,6 +104,10 @@ cmd/tools/cli/loadtest/loadtest:
 	$(eval CGO_ENABLED = 1)
 	$(call go-build,tools/cli/loadtest,-linkmode 'external',$(LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
 
+example/client/client:
+	$(eval CGO_ENABLED = 1)
+	$(call go-example-build,example/client,-linkmode 'external',$(LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
+
 rust/target/release/agent:
 	pushd rust && cargo build -p agent --release && popd
 
@@ -119,6 +124,7 @@ binary/build/zip: \
 	artifacts/vald-benchmark-operator-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-cli-loadtest-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-discoverer-k8s-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-example-client-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-filter-gateway-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-index-correction-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-index-creation-$(GOOS)-$(GOARCH).zip \
@@ -190,5 +196,9 @@ artifacts/vald-readreplica-rotate-$(GOOS)-$(GOARCH).zip: cmd/index/job/readrepli
 	zip --junk-paths $@ $<
 
 artifacts/vald-index-operator-$(GOOS)-$(GOARCH).zip: cmd/index/operator/index-operator
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-example-client-$(GOOS)-$(GOARCH).zip: example/client/client
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
