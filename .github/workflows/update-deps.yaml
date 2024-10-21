@@ -49,6 +49,7 @@ jobs:
           make helm/docs/vald
           make helm/docs/vald-helm-operator
           make helm/docs/vald-benchmark-operator
+          make license
           make format
       - name: Check difference
         id: check_diff
