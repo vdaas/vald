@@ -61,6 +61,16 @@ jobs:
             git diff && git status
             echo "HAS_GIT_DIFF=true" >> $GITHUB_OUTPUT
           fi
+      - name: Get Label
+        id: pr-label
+        if: ${{ steps.check_diff.outputs.HAS_GIT_DIFF == 'true' }}
+        run: |
+          LATEST=$(make version/vald | grep -o -E "[0-9]+\.[0-9]+")
+          if ${LATEST} eq "1.7"; then
+            echo "LABELS=release/v${LATEST}" >> $GITHUB_OUTPUT
+          else
+            SUPPORT=$(echo ${LATEST} | awk '{print $1-0.1}')
+            echo "LABELS=actions/backport/release/v${LATEST},release/v${SUPPORT}"
       - name: Create PR
         if: ${{ steps.check_diff.outputs.HAS_GIT_DIFF == 'true' }}
         uses: peter-evans/create-pull-request@v7
@@ -73,3 +83,4 @@ jobs:
           base: main
           title: "Update libs dependency"
           body: "Automated pull request to update Dependencies."
+          labels: ${{ steps.pr-label.LABELS }}
