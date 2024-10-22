@@ -171,7 +171,7 @@ func (idx *index) doSaveIndex(
 				switch {
 				case errors.Is(err, context.Canceled):
 					err = status.WrapWithCanceled(
-						agent.SaveIndexRPCName+" API canceld", err,
+						agent.SaveIndexRPCName+" API canceled", err,
 					)
 					attrs = trace.StatusCodeCancelled(err.Error())
 				case errors.Is(err, context.DeadlineExceeded):
