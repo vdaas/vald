@@ -51,6 +51,7 @@ jobs:
           make helm/docs/vald-benchmark-operator
           make license
           make format
+          make perm
       - name: Check difference
         id: check_diff
         run: |
