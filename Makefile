@@ -505,6 +505,7 @@ update: \
 	deps \
 	update/template \
 	go/deps \
+	go/example/deps \
 	rust/deps \
 	format
 
