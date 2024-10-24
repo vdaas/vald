@@ -70,7 +70,8 @@ jobs:
             echo "LABELS=release/v${LATEST}" >> $GITHUB_OUTPUT
           else
             SUPPORT=$(echo ${LATEST} | awk '{print $1-0.1}')
-            echo "LABELS=actions/backport/release/v${LATEST},release/v${SUPPORT}"
+            echo "LABELS=actions/backport/release/v${LATEST},release/v${SUPPORT}" >> $GITHUB_OUTPUT
+          fi
       - name: Create PR
         if: ${{ steps.check_diff.outputs.HAS_GIT_DIFF == 'true' }}
         uses: peter-evans/create-pull-request@v7
@@ -83,4 +84,4 @@ jobs:
           base: main
           title: "Update libs dependency"
           body: "Automated pull request to update Dependencies."
-          labels: ${{ steps.pr-label.LABELS }}
+          labels: ${{ steps.pr-label.outputs.LABELS }}
