@@ -16,7 +16,6 @@ Here is the list of Official SDKs.
 - [Java](https://github.com/vdaas/vald-client-java)
 - [Python](https://github.com/vdaas/vald-client-python)
 - [Node.js](https://github.com/vdaas/vald-client-node)
-- [Clojure](https://github.com/vdaas/vald-client-clj)
 
 ## How to use SDKs
 
