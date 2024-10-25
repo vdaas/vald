@@ -304,7 +304,7 @@ docker/name/loadtest:
 ## build loadtest image
 docker/build/loadtest:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/cli/loadtest/Dockerfile" \
-		DOCKER_OPTS="--build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
+		DOCKER_OPTS="$${DOCKER_OPTS:+$${DOCKER_OPTS}} --build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF4_VERSION=$(HDF5_VERSION)" \
 		IMAGE=$(LOADTEST_IMAGE) \
 		docker/build/image
 
@@ -372,7 +372,7 @@ docker/name/benchmark-job:
 docker/build/benchmark-job:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/benchmark/job/Dockerfile" \
 		IMAGE=$(BENCHMARK_JOB_IMAGE) \
-		DOCKER_OPTS="--build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
+		DOCKER_OPTS="$${DOCKER_OPTS:+$${DOCKER_OPTS}} --build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF4_VERSION=$(HDF5_VERSION)" \
 		docker/build/image
 
 .PHONY: docker/name/benchmark-operator
@@ -395,5 +395,5 @@ docker/name/example-client:
 docker/build/example-client:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/example/client/Dockerfile" \
 		IMAGE=$(EXAMPLE_CLIENT_IMAGE) \
-		DOCKER_OPTS="--build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
+		DOCKER_OPTS="$${DOCKER_OPTS:+$${DOCKER_OPTS}} --build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF4_VERSION=$(HDF5_VERSION)" \
 		docker/build/image
