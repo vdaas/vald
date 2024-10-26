@@ -15,10 +15,10 @@ package main
 
 import (
 	"context"
-	"log"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/index/job/deletion/config"

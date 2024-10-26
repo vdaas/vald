@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"reflect"
-	"strings"
 	"sync"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -15,6 +14,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/strings"
 )
 
 const (
