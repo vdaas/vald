@@ -96,6 +96,7 @@
 .github/workflows/dockers-image-scan.yaml
 .github/workflows/dockers-index-correction-image.yaml
 .github/workflows/dockers-index-creation-image.yaml
+.github/workflows/dockers-index-deletion-image.yaml
 .github/workflows/dockers-index-operator-image.yaml
 .github/workflows/dockers-index-save-image.yaml
 .github/workflows/dockers-loadtest-image.yaml

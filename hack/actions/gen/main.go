@@ -337,6 +337,7 @@ const (
 
 	indexCorrection = "index-correction"
 	indexCreation   = "index-creation"
+	indexDeletion   = "index-deletion"
 	indexSave       = "index-save"
 	indexOperator   = "index-operator"
 
@@ -567,6 +568,10 @@ func main() {
 		"vald-index-creation": {
 			AppName:    "index-creation",
 			PackageDir: "index/job/creation",
+		},
+		"vald-index-deletion": {
+			AppName:    "index-deletion",
+			PackageDir: "index/job/deletion",
 		},
 		"vald-index-save": {
 			AppName:    "index-save",
