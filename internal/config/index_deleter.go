@@ -36,8 +36,8 @@ type IndexDeleter struct {
 	// Concurrency represents indexing concurrency.
 	Concurrency int `json:"concurrency" yaml:"concurrency"`
 
-	// CreationPoolSize represents batch pool size for indexing.
-	CreationPoolSize uint32 `json:"creation_pool_size" yaml:"creation_pool_size"`
+	// DeletionPoolSize represents batch pool size for indexing.
+	DeletionPoolSize uint32 `json:"deletion_pool_size" yaml:"deletion_pool_size"`
 
 	// TargetAddrs represents indexing target addresses.
 	TargetAddrs []string `json:"target_addrs" yaml:"target_addrs"`
