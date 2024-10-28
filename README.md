@@ -10,7 +10,6 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/vdaas/vald.svg)](https://pkg.go.dev/github.com/vdaas/vald)
 [![Codacy Badge](https://img.shields.io/codacy/grade/a6e544eee7bc49e08a000bb10ba3deed?style=flat-square)](https://www.codacy.com/app/i.can.feel.gravity/vald?utm_source=github.com&utm_medium=referral&utm_content=vdaas/vald&utm_campaign=Badge_Grade)
 [![Go Report Card](https://goreportcard.com/badge/github.com/vdaas/vald?style=flat-square)](https://goreportcard.com/report/github.com/vdaas/vald)
-[![DepShield Badge](https://depshield.sonatype.org/badges/vdaas/vald/depshield.svg?style=flat-square)](https://depshield.github.io)
 [![FOSSA Status](https://app.fossa.com/api/projects/custom%2B21465%2Fvald.svg?type=small)](https://app.fossa.com/projects/custom%2B21465%2Fvald?ref=badge_small)
 [![DeepSource](https://static.deepsource.io/deepsource-badge-light-mini.svg)](https://deepsource.io/gh/vdaas/vald/?ref=repository-badge)
 [![DeepSource](https://deepsource.io/gh/vdaas/vald.svg/?label=resolved+issues&show_trend=true&token=UpNEsc0zsAfGw-MPPa6O05Lb)](https://deepsource.io/gh/vdaas/vald/?ref=repository-badge)
