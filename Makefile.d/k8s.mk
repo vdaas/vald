@@ -534,8 +534,9 @@ telepresence/install: $(BINDIR)/telepresence
 
 $(BINDIR)/telepresence:
 	mkdir -p $(BINDIR)
+	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
 	cd $(TEMP_DIR) \
-		&& curl -fsSL "https://app.getambassador.io/download/tel2oss/releases/download/v$(TELEPRESENCE_VERSION)/telepresence-$(OS)-$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))" -o $(BINDIR)/telepresence \
+		&& curl -fsSL "https://app.getambassador.io/download/tel2oss/releases/download/v$(TELEPRESENCE_VERSION)/telepresence-$(OS)-$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]'))" -o $(BINDIR)/telepresence \
 		&& chmod a+x $(BINDIR)/telepresence
 
 .PHONY: telepresence/swap/agent-ngt
