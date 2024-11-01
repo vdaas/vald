@@ -154,6 +154,8 @@ $(ROOTDIR)/charts/vald-benchmark-operator/values.schema.json: \
 .PHONY: yq/install
 ## install yq
 yq/install: $(BINDIR)/yq
+
+$(BINDIR)/yq:
 	mkdir -p $(BINDIR)
 	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
 	cd $(TEMP_DIR) \
