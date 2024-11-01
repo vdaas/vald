@@ -28,7 +28,8 @@ helm-docs/install: $(BINDIR)/helm-docs
 
 $(BINDIR)/helm-docs:
 	mkdir -p $(BINDIR)
-	TAR_NAME=helm-docs_$(HELM_DOCS_VERSION)_$(UNAME)_$(ARCH).tar.gz \
+	$(eval DARH := $(subst aarch64,arm64,$(ARCH)))
+	TAR_NAME=helm-docs_$(HELM_DOCS_VERSION)_$(UNAME)_$(DARCH).tar.gz \
 	    && cd $(TEMP_DIR) \
 	    && curl -fsSL "https://github.com/norwoodj/helm-docs/releases/download/v$(HELM_DOCS_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}"\
 	    && tar xzvf "$(TEMP_DIR)/$${TAR_NAME}" \
@@ -153,11 +154,10 @@ $(ROOTDIR)/charts/vald-benchmark-operator/values.schema.json: \
 .PHONY: yq/install
 ## install yq
 yq/install: $(BINDIR)/yq
-
-$(BINDIR)/yq:
 	mkdir -p $(BINDIR)
+	$(eval DARH := $(subst aarch64,arm64,$(ARCH)))
 	cd $(TEMP_DIR) \
-	    && curl -fsSL https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_$(OS)_$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/yq \
+	    && curl -fsSL https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_$(OS)_$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/yq \
 	    && chmod a+x $(BINDIR)/yq
 
 .PHONY: helm/schema/crd/all
