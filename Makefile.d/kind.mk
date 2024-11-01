@@ -19,7 +19,8 @@ kind/install: $(BINDIR)/kind
 
 $(BINDIR)/kind:
 	mkdir -p $(BINDIR)
-	curl -fsSL https://github.com/kubernetes-sigs/kind/releases/download/v$(KIND_VERSION)/kind-$(OS)-$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/kind
+	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
+	curl -fsSL https://github.com/kubernetes-sigs/kind/releases/download/v$(KIND_VERSION)/kind-$(OS)-$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/kind
 	chmod a+x $(BINDIR)/kind
 
 .PHONY: kind/start
