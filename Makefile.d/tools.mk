@@ -71,7 +71,8 @@ $(BINDIR)/reviewdog:
 kubectl/install: $(BINDIR)/kubectl
 
 $(BINDIR)/kubectl:
-	curl -fsSL "https://dl.k8s.io/release/$(KUBECTL_VERSION)/bin/$(OS)/$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))/kubectl" -o $(BINDIR)/kubectl
+	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
+	curl -fsSL "https://dl.k8s.io/release/$(KUBECTL_VERSION)/bin/$(OS)/$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]'))/kubectl" -o $(BINDIR)/kubectl
 	chmod a+x $(BINDIR)/kubectl
 
 .PHONY: textlint/install
