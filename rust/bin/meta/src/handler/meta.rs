@@ -20,20 +20,20 @@ use proto::{meta::v1::meta_server, payload::v1::{meta, Empty}};
 impl meta_server::Meta for super::Meta {
     async fn get(
         &self,
-        request: tonic::Request<meta::Key>,
+        _request: tonic::Request<meta::Key>,
     ) -> std::result::Result<tonic::Response<meta::Value>, tonic::Status> {
         todo!()
     }
     async fn set(
         &self,
-        request: tonic::Request<meta::KeyValue>,
+        _request: tonic::Request<meta::KeyValue>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
         todo!()
     }
     
     async fn delete(
         &self,
-        request: tonic::Request<meta::Key>,
+        _request: tonic::Request<meta::Key>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
         todo!()
     }
