@@ -13,14 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-[workspace]
-members = [
-	"libs/observability",
-	"libs/proto",
-	"bin/meta",
-	"bin/agent",
-	"libs/algorithm",
-	"libs/algorithms/ngt",
-	"libs/algorithms/qbg",
-	"libs/algorithms/faiss",
-]
+[package]
+name = "qbg"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.88"
+cxx = { version = "1.0.128", features = ["c++20"] }
+
+[build-dependencies]
+cxx-build = "1.0.128"
+miette = { version = "7.2.0", features = ["fancy"] }
+
+[dev-dependencies]
