@@ -22,5 +22,6 @@ edition = "2021"
 anyhow = "1.0.88"
 faiss = { version = "0.1.0", path = "../algorithms/faiss" }
 ngt = { version = "0.1.0", path = "../algorithms/ngt" }
+qbg = { version = "0.1.0", path = "../algorithms/qbg" }
 proto = { version = "0.1.0", path = "../proto" }
 tonic = "0.12.2"
