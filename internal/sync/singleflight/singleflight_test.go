@@ -57,7 +57,9 @@ func TestNew(t *testing.T) {
 		{
 			name: "returns Group implementation",
 			want: want{
-				want: &group[any]{},
+				want: &group[any]{
+					m: make(map[string]*call[any]),
+				},
 			},
 		},
 	}
@@ -636,6 +638,54 @@ func ExampleGroup() {
 	// Shared: true
 	// Equal results: true
 	// Result: func 1
+}
+
+func TestDoTimeout(t *testing.T) {
+	g := New[string]()
+	start := time.Now()
+	v, _, err := g.Do(context.Background(), "key", func(context.Context) (string, error) {
+		time.Sleep(100 * time.Millisecond)
+		return "bar", nil
+	})
+	if err != nil {
+		t.Errorf("Do error: %v", err)
+	}
+	if v != "bar" {
+		t.Errorf("Do = %s; want %s", v, "bar")
+	}
+	if time.Since(start) < 100*time.Millisecond {
+		t.Errorf("Do executed too quickly; expected delay")
+	}
+}
+
+func TestDoMultipleErrors(t *testing.T) {
+	g := New[string]()
+	var calls int32
+	someErr := errors.New("Some error")
+
+	const n = 10
+	var wg sync.WaitGroup
+	for i := 0; i < n; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			v, _, err := g.Do(context.Background(), "key", func(context.Context) (string, error) {
+				atomic.AddInt32(&calls, 1)
+				time.Sleep(10 * time.Millisecond)
+				return "", someErr
+			})
+			if err != someErr {
+				t.Errorf("Do error = %v; want %v", err, someErr)
+			}
+			if v != "" {
+				t.Errorf("Do = %v; want empty string", v)
+			}
+		}()
+	}
+	wg.Wait()
+	if got := atomic.LoadInt32(&calls); got != 1 {
+		t.Errorf("number of calls = %d; want 1", got)
+	}
 }
 
 // NOT IMPLEMENTED BELOW
