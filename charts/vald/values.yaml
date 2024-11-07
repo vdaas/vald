@@ -823,16 +823,19 @@ defaults:
         interceptors: []
         # @schema {"name": "defaults.grpc.client.dial_option.net", "type": "object", "anchor": "net"}
         net:
+          # @schema {"name": "defaults.grpc.client.dial_option.net.network", "type": "string", "enum": ["tcp", "udp", "unix"]}
+          # defaults.grpc.client.dial_option.net.network -- gRPC client dialer network type
+          network: tcp
           # @schema {"name": "defaults.grpc.client.dial_option.net.dns", "type": "object"}
           dns:
             # @schema {"name": "defaults.grpc.client.dial_option.net.dns.cache_enabled", "type": "boolean"}
-            # defaults.grpc.client.dial_option.net.dns.cache_enabled -- gRPC client TCP DNS cache enabled
+            # defaults.grpc.client.dial_option.net.dns.cache_enabled -- gRPC client DNS cache enabled
             cache_enabled: true
             # @schema {"name": "defaults.grpc.client.dial_option.net.dns.refresh_duration", "type": "string"}
-            # defaults.grpc.client.dial_option.net.dns.refresh_duration -- gRPC client TCP DNS cache refresh duration
+            # defaults.grpc.client.dial_option.net.dns.refresh_duration -- gRPC client DNS cache refresh duration
             refresh_duration: 30m
             # @schema {"name": "defaults.grpc.client.dial_option.net.dns.cache_expiration", "type": "string"}
-            # defaults.grpc.client.dial_option.net.dns.cache_expiration -- gRPC client TCP DNS cache expiration
+            # defaults.grpc.client.dial_option.net.dns.cache_expiration -- gRPC client DNS cache expiration
             cache_expiration: 1h
           # @schema {"name": "defaults.grpc.client.dial_option.net.dialer", "type": "object"}
           dialer:
@@ -1815,12 +1818,14 @@ gateway:
     gateway_config:
       # @schema {"name": "gateway.mirror.gateway_config.net", "alias": "net"}
       net:
+        # gateway.mirror.gateway_config.net.network.cache_enabled -- gRPC client dialer network type
+        network: tcp
         dns:
-          # gateway.mirror.gateway_config.net.dns.cache_enabled -- TCP DNS cache enabled
+          # gateway.mirror.gateway_config.net.dns.cache_enabled -- DNS cache enabled
           cache_enabled: true
-          # gateway.mirror.gateway_config.net.dns.refresh_duration -- TCP DNS cache refresh duration
+          # gateway.mirror.gateway_config.net.dns.refresh_duration -- DNS cache refresh duration
           refresh_duration: 5m
-          # gateway.mirror.gateway_config.net.dns.cache_expiration -- TCP DNS cache expiration
+          # gateway.mirror.gateway_config.net.dns.cache_expiration -- DNS cache expiration
           cache_expiration: 24h
         dialer:
           # gateway.mirror.gateway_config.net.dialer.timeout -- TCP dialer timeout
@@ -2630,12 +2635,14 @@ agent:
       client:
         # @schema {"name": "agent.sidecar.config.client.net", "alias": "net"}
         net:
+          # agent.sidecar.config.client.net.network -- gRPC client dialer network type
+          network: tcp
           dns:
-            # agent.sidecar.config.client.net.dns.cache_enabled -- HTTP client TCP DNS cache enabled
+            # agent.sidecar.config.client.net.dns.cache_enabled -- HTTP client DNS cache enabled
             cache_enabled: true
-            # agent.sidecar.config.client.net.dns.refresh_duration -- HTTP client TCP DNS cache refresh duration
+            # agent.sidecar.config.client.net.dns.refresh_duration -- HTTP client DNS cache refresh duration
             refresh_duration: 1h
-            # agent.sidecar.config.client.net.dns.refresh_duration -- HTTP client TCP DNS cache expiration
+            # agent.sidecar.config.client.net.dns.refresh_duration -- HTTP client DNS cache expiration
             cache_expiration: 24h
           dialer:
             # agent.sidecar.config.client.net.dialer.timeout -- HTTP client TCP dialer connect timeout
@@ -3005,12 +3012,14 @@ discoverer:
         fields: {}
     # @schema {"name": "discoverer.discoverer.net", "alias": "net"}
     net:
+      # discoverer.discoverer.net.network -- gRPC client dialer network type
+      network: tcp
       dns:
-        # discoverer.discoverer.net.dns.cache_enabled -- TCP DNS cache enabled
+        # discoverer.discoverer.net.dns.cache_enabled -- DNS cache enabled
         cache_enabled: true
-        # discoverer.discoverer.net.dns.refresh_duration -- TCP DNS cache refresh duration
+        # discoverer.discoverer.net.dns.refresh_duration -- DNS cache refresh duration
         refresh_duration: 5m
-        # discoverer.discoverer.net.dns.cache_expiration -- TCP DNS cache expiration
+        # discoverer.discoverer.net.dns.cache_expiration -- DNS cache expiration
         cache_expiration: 24h
       dialer:
         # discoverer.discoverer.net.dialer.timeout -- TCP dialer timeout

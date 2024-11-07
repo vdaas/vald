@@ -306,6 +306,7 @@ data:
                 cache_enabled: true
                 cache_expiration: 1h
                 refresh_duration: 30m
+              network: tcp
               socket_option:
                 ip_recover_destination_addr: false
                 ip_transparent: false
@@ -392,6 +393,7 @@ data:
                 cache_enabled: true
                 cache_expiration: 1h
                 refresh_duration: 30m
+              network: tcp
               socket_option:
                 ip_recover_destination_addr: false
                 ip_transparent: false

@@ -18,8 +18,10 @@
 package discoverer
 
 import (
+	"cmp"
 	"context"
 	"reflect"
+	"slices"
 	"sync/atomic"
 	"time"
 
@@ -96,16 +98,16 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 		}
 	}
 
-	ech := make(chan error, 100)
-	addrs, err := c.dnsDiscovery(ctx, ech)
-	if err != nil {
-		close(ech)
-		return nil, err
+	addrs, err := c.updateDiscoveryInfo(ctx)
+	if err != nil || len(addrs) == 0 {
+		addrs, err = c.dnsDiscovery(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
-	c.addrs.Store(&addrs)
 
 	var aech <-chan error
-	if c.autoconn {
+	if c.client == nil {
 		c.client = grpc.New(
 			append(
 				c.opts,
@@ -113,23 +115,38 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 				grpc.WithErrGroup(c.eg),
 			)...,
 		)
-		if c.client != nil {
-			aech, err = c.client.StartConnectionMonitor(ctx)
+		aech, err = c.client.StartConnectionMonitor(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, addr := range addrs {
+			if c.onConnect != nil {
+				err = c.onConnect(ctx, c, addr)
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+	} else {
+		for _, addr := range addrs {
+			err = c.connect(ctx, addr)
 			if err != nil {
-				close(ech)
 				return nil, err
 			}
 		}
+		aech, err = c.client.StartConnectionMonitor(ctx)
 	}
-
-	err = c.discover(ctx, ech)
 	if err != nil {
-		close(ech)
+		return nil, err
+	}
+	c.addrs.Store(&addrs)
+
+	err = c.discover(ctx)
+	if err != nil {
 		return nil, errors.Join(c.dscClient.Close(ctx), err)
 	}
-
+	ech := make(chan error, 100)
 	c.eg.Go(safety.RecoverFunc(func() (err error) {
-		defer close(ech)
 		dt := time.NewTicker(c.dscDur)
 		defer dt.Stop()
 		finalize := func() (err error) {
@@ -158,7 +175,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 			case err = <-aech:
 			case err = <-rrech:
 			case <-dt.C:
-				err = c.discover(ctx, ech)
+				err = c.discover(ctx)
 			}
 			if err != nil {
 				log.Error(err)
@@ -177,13 +194,10 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 func (c *client) GetAddrs(ctx context.Context) (addrs []string) {
 	a := c.addrs.Load()
 	if a == nil {
-		ips, err := net.DefaultResolver.LookupIPAddr(ctx, c.dns)
+		var err error
+		addrs, err = c.dnsDiscovery(ctx)
 		if err != nil {
 			return nil
-		}
-		addrs = make([]string, 0, len(ips))
-		for _, ip := range ips {
-			addrs = append(addrs, ip.String())
 		}
 	} else {
 		addrs = *a
@@ -217,7 +231,7 @@ func (c *client) GetReadClient() grpc.Client {
 
 func (c *client) connect(ctx context.Context, addr string) (err error) {
 	if c.autoconn && c.client != nil {
-		_, err = c.client.Connect(ctx, addr)
+		_, err = c.client.Connect(ctx, addr, c.client.GetDialOption()...)
 		if err != nil {
 			return err
 		}
@@ -238,7 +252,7 @@ func (c *client) disconnect(ctx context.Context, addr string) (err error) {
 	return
 }
 
-func (c *client) dnsDiscovery(ctx context.Context, ech chan<- error) (addrs []string, err error) {
+func (c *client) dnsDiscovery(ctx context.Context) (addrs []string, err error) {
 	ips, err := net.DefaultResolver.LookupIPAddr(ctx, c.dns)
 	if err != nil || len(ips) == 0 {
 		return nil, errors.ErrAddrCouldNotDiscover(err, c.dns)
@@ -249,7 +263,6 @@ func (c *client) dnsDiscovery(ctx context.Context, ech chan<- error) (addrs []st
 		addr := net.JoinHostPort(ip.String(), uint16(c.port))
 		if err = c.connect(ctx, addr); err != nil {
 			log.Debugf("dns discovery connect for addr = %s from dns = %s failed %v", addr, c.dns, err)
-			ech <- err
 		} else {
 			log.Debugf("dns discovery connect for addr = %s from dns = %s succeeded", addr, c.dns)
 			addrs = append(addrs, addr)
@@ -264,7 +277,7 @@ func (c *client) dnsDiscovery(ctx context.Context, ech chan<- error) (addrs []st
 	return addrs, nil
 }
 
-func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
+func (c *client) discover(ctx context.Context) (err error) {
 	if c.dscClient == nil || (c.autoconn && c.client == nil) {
 		return errors.ErrGRPCClientNotFound
 	}
@@ -272,7 +285,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 	var connected []string
 	if bo := c.client.GetBackoff(); bo != nil {
 		_, err = bo.Do(ctx, func(ctx context.Context) (any, bool, error) {
-			connected, err = c.updateDiscoveryInfo(ctx, ech)
+			connected, err = c.updateDiscoveryInfo(ctx)
 			if err != nil {
 				if !errors.Is(err, errors.ErrGRPCClientNotFound) &&
 					!errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
@@ -283,11 +296,11 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 			return nil, false, nil
 		})
 	} else {
-		connected, err = c.updateDiscoveryInfo(ctx, ech)
+		connected, err = c.updateDiscoveryInfo(ctx)
 	}
 	if err != nil {
 		log.Warnf("failed to discover addrs from discoverer API, error: %v,\ttrying to dns discovery from %s...", err, c.dns)
-		connected, err = c.dnsDiscovery(ctx, ech)
+		connected, err = c.dnsDiscovery(ctx)
 		if err != nil {
 			return err
 		}
@@ -295,12 +308,10 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 
 	oldAddrs := c.GetAddrs(ctx)
 	c.addrs.Store(&connected)
-	return c.disconnectOldAddrs(ctx, oldAddrs, connected, ech)
+	return c.disconnectOldAddrs(ctx, oldAddrs, connected)
 }
 
-func (c *client) updateDiscoveryInfo(
-	ctx context.Context, ech chan<- error,
-) (connected []string, err error) {
+func (c *client) updateDiscoveryInfo(ctx context.Context) (connected []string, err error) {
 	nodes, err := c.discoverNodes(ctx)
 	if err != nil {
 		log.Warnf("error detected when discovering nodes,\terrors: %v", err)
@@ -310,7 +321,7 @@ func (c *client) updateDiscoveryInfo(
 		log.Warn("no nodes found")
 		return nil, errors.ErrNodeNotFound("all")
 	}
-	connected, err = c.discoverAddrs(ctx, nodes, ech)
+	connected, err = c.discoverAddrs(ctx, nodes)
 	if err != nil {
 		return nil, err
 	}
@@ -343,20 +354,38 @@ func (c *client) discoverNodes(ctx context.Context) (nodes *payload.Info_Nodes, 
 		}
 		return nodes, nil
 	})
-	return nodes, err
+	if err != nil {
+		return nil, err
+	}
+	slices.SortFunc(nodes.Nodes, func(left, right *payload.Info_Node) int {
+		return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
+	})
+	return nodes, nil
 }
 
 func (c *client) discoverAddrs(
-	ctx context.Context, nodes *payload.Info_Nodes, ech chan<- error,
+	ctx context.Context, nodes *payload.Info_Nodes,
 ) (addrs []string, err error) {
+	if nodes == nil {
+		return nil, errors.ErrAddrCouldNotDiscover(err, c.dns)
+	}
 	maxPodLen := 0
 	podLength := 0
-	for _, node := range nodes.GetNodes() {
-		l := len(node.GetPods().GetPods())
-		podLength += l
-		if l > maxPodLen {
-			maxPodLen = l
+	for i, node := range nodes.GetNodes() {
+		if node != nil && node.GetPods() != nil && node.GetPods().GetPods() != nil {
+			l := len(node.GetPods().GetPods())
+			podLength += l
+			if l > maxPodLen {
+				maxPodLen = l
+			}
+			slices.SortFunc(nodes.Nodes[i].Pods.Pods, func(left, right *payload.Info_Pod) int {
+				return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
+			})
 		}
+	}
+	nbody, err := nodes.MarshalJSON()
+	if err != nil {
+		log.Debug(string(nbody))
 	}
 	addrs = make([]string, 0, podLength)
 	for i := 0; i < maxPodLen; i++ {
@@ -371,15 +400,12 @@ func (c *client) discoverAddrs(
 					len(node.GetPods().GetPods()[i].GetIp()) != 0 {
 					addr := net.JoinHostPort(node.GetPods().GetPods()[i].GetIp(), uint16(c.port))
 					if err = c.connect(ctx, addr); err != nil {
-						select {
-						case <-ctx.Done():
-							return nil, ctx.Err()
-						case ech <- errors.ErrAddrCouldNotDiscover(err, addr):
-						}
+						log.Debugf("resource based discovery connect from discoverer API for addr = %s failed %v", addr, errors.ErrAddrCouldNotDiscover(err, addr))
 						err = nil
 					} else {
 						addrs = append(addrs, addr)
 					}
+
 				}
 			}
 		}
@@ -388,7 +414,7 @@ func (c *client) discoverAddrs(
 }
 
 func (c *client) disconnectOldAddrs(
-	ctx context.Context, oldAddrs, connectedAddrs []string, ech chan<- error,
+	ctx context.Context, oldAddrs, connectedAddrs []string,
 ) (err error) {
 	if !c.autoconn {
 		return nil
@@ -404,7 +430,7 @@ func (c *client) disconnectOldAddrs(
 			c.eg.Go(safety.RecoverFunc(func() error {
 				err = c.disconnect(ctx, old)
 				if err != nil {
-					ech <- err
+					log.Error(err)
 				}
 				return nil
 			}))
@@ -420,22 +446,12 @@ func (c *client) disconnectOldAddrs(
 			if !ok {
 				err = c.disconnect(ctx, addr)
 				if err != nil {
-					select {
-					case <-ctx.Done():
-						return errors.Join(ctx.Err(), err)
-					case ech <- err:
-						return err
-					}
+					return err
 				}
 			}
 			return nil
 		}); err != nil {
-			select {
-			case <-ctx.Done():
-				return errors.Join(ctx.Err(), err)
-			case ech <- err:
-				return err
-			}
+			log.Error(err)
 		}
 	}
 	return nil
