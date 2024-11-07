@@ -133,6 +133,7 @@ type Client interface {
 	CreateIndex(t *testing.T, ctx context.Context) error
 	SaveIndex(t *testing.T, ctx context.Context) error
 	IndexInfo(t *testing.T, ctx context.Context) (*payload.Info_Index_Count, error)
+	IndexDetail(t *testing.T, ctx context.Context) (*payload.Info_Index_Detail, error)
 }
 
 type client struct {
@@ -180,6 +181,15 @@ func (c *client) IndexInfo(t *testing.T, ctx context.Context) (*payload.Info_Ind
 	}
 
 	return client.IndexInfo(ctx, &payload.Empty{})
+}
+
+func (c *client) IndexDetail(t *testing.T, ctx context.Context) (*payload.Info_Index_Detail, error) {
+	client, err := c.getClient()
+	if err != nil {
+		return nil, err
+	}
+	
+	return client.IndexDetail(ctx, &payload.Empty{})
 }
 
 func (c *client) getGRPCConn() (*grpc.ClientConn, error) {
