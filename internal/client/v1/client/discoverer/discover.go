@@ -384,7 +384,7 @@ func (c *client) discoverAddrs(
 		}
 	}
 	nbody, err := nodes.MarshalJSON()
-	if err != nil {
+	if err == nil && nbody != nil {
 		log.Debug(string(nbody))
 	}
 	addrs = make([]string, 0, podLength)
