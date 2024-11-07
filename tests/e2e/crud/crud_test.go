@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"testing"
 	"time"
 
@@ -802,9 +803,32 @@ func TestE2EIndexJobCorrection(t *testing.T) {
 	}
 
 	t.Log("Test case 2: execute index correction after one agent removed")
-	t.Log("removing vald-agent-0...")
-	cmd := exec.CommandContext(ctx, "sh", "-c", "kubectl delete pod vald-agent-0 && kubectl wait --for=condition=Ready pod/vald-agent-0")
+	detail, err := op.IndexDetail(t, ctx)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+	var target string
+	for a, c := range detail.Counts {
+		if c.Stored > 0 {
+			target = strings.Split(a, ":")[0]
+			break
+		}
+	}
+
+	cmd := exec.CommandContext(ctx, "sh", "-c", fmt.Sprintf("kubectl get pods -o custom-columns=:metadata.name --no-headers=true --field-selector=\"status.podIP=%s\"", target))
 	out, err := cmd.Output()
+	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			t.Fatalf("%s, %s, %v", string(out), string(exitErr.Stderr), err)
+		} else {
+			t.Fatalf("unexpected error on creating job: %v", err)
+		}
+	}
+	agent := strings.TrimRight(string(out), "\n")
+
+	t.Logf("removing %s...", agent)
+	cmd = exec.CommandContext(ctx, "sh", "-c", fmt.Sprintf("kubectl delete pod %s && kubectl wait --for=condition=Ready pod/%s", agent, agent))
+	out, err = cmd.Output()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
 			t.Fatalf("%s, %s, %v", string(out), string(exitErr.Stderr), err)
