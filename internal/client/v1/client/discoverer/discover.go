@@ -358,6 +358,9 @@ func (c *client) discoverNodes(ctx context.Context) (nodes *payload.Info_Nodes, 
 		return nil, err
 	}
 	slices.SortFunc(nodes.Nodes, func(left, right *payload.Info_Node) int {
+		if left.GetMemory() == nil || right.GetMemory() == nil {
+			return 0 // Default comparison value; adjust as needed.
+		}
 		return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
 	})
 	return nodes, nil
@@ -379,13 +382,12 @@ func (c *client) discoverAddrs(
 				maxPodLen = l
 			}
 			slices.SortFunc(nodes.Nodes[i].Pods.Pods, func(left, right *payload.Info_Pod) int {
+				if left.GetMemory() == nil || right.GetMemory() == nil {
+					return 0 // Default comparison value; adjust as needed.
+				}
 				return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
 			})
 		}
-	}
-	nbody, err := nodes.MarshalJSON()
-	if err == nil && nbody != nil {
-		log.Debug(string(nbody))
 	}
 	addrs = make([]string, 0, podLength)
 	for i := 0; i < maxPodLen; i++ {
