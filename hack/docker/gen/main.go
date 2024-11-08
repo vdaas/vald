@@ -238,7 +238,7 @@ const (
 	defaultBuildStageName = "builder"
 	maintainerKey         = "MAINTAINER"
 	minimumArgumentLength = 2
-	ubuntuVersion         = "22.04"
+	ubuntuVersion         = "24.04"
 
 	goWorkdir   = "${GOPATH}/src/github.com"
 	rustWorkdir = "${HOME}/rust/src/github.com"
