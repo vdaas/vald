@@ -63,14 +63,20 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 		srv, ok := l.servers[name]
 
 		if !ok || srv == nil {
-			ech <- errors.ErrServerNotFound(name)
+			select {
+			case <-ctx.Done():
+			case ech <- errors.ErrServerNotFound(name):
+			}
 			continue
 		}
 
 		if !l.servers[name].IsRunning() {
 			err := l.servers[name].ListenAndServe(ctx, ech)
 			if err != nil {
-				ech <- err
+				select {
+				case <-ctx.Done():
+				case ech <- err:
+				}
 			}
 		}
 	}
@@ -79,7 +85,10 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 		if !l.servers[name].IsRunning() {
 			err := l.servers[name].ListenAndServe(ctx, ech)
 			if err != nil {
-				ech <- err
+				select {
+				case <-ctx.Done():
+				case ech <- err:
+				}
 			}
 		}
 	}

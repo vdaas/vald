@@ -1273,6 +1273,12 @@ spec:
                                           type: string
                                         refresh_duration:
                                           type: string
+                                    network:
+                                      type: string
+                                      enum:
+                                        - tcp
+                                        - udp
+                                        - unix
                                     socket_option:
                                       type: object
                                       properties:
@@ -2295,6 +2301,12 @@ spec:
                                           type: string
                                         refresh_duration:
                                           type: string
+                                    network:
+                                      type: string
+                                      enum:
+                                        - tcp
+                                        - udp
+                                        - unix
                                     socket_option:
                                       type: object
                                       properties:
@@ -3171,6 +3183,12 @@ spec:
                                   type: string
                                 refresh_duration:
                                   type: string
+                            network:
+                              type: string
+                              enum:
+                                - tcp
+                                - udp
+                                - unix
                             socket_option:
                               type: object
                               properties:
@@ -4278,6 +4296,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -4477,6 +4501,12 @@ spec:
                                               type: string
                                             refresh_duration:
                                               type: string
+                                        network:
+                                          type: string
+                                          enum:
+                                            - tcp
+                                            - udp
+                                            - unix
                                         socket_option:
                                           type: object
                                           properties:
@@ -4671,6 +4701,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -5783,6 +5819,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -5974,6 +6016,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -6167,6 +6215,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -7278,6 +7332,12 @@ spec:
                                               type: string
                                             refresh_duration:
                                               type: string
+                                        network:
+                                          type: string
+                                          enum:
+                                            - tcp
+                                            - udp
+                                            - unix
                                         socket_option:
                                           type: object
                                           properties:
@@ -7376,6 +7436,12 @@ spec:
                                       type: string
                                     refresh_duration:
                                       type: string
+                                network:
+                                  type: string
+                                  enum:
+                                    - tcp
+                                    - udp
+                                    - unix
                                 socket_option:
                                   type: object
                                   properties:
@@ -8444,6 +8510,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -8635,6 +8707,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -8835,6 +8913,12 @@ spec:
                                               type: string
                                             refresh_duration:
                                               type: string
+                                        network:
+                                          type: string
+                                          enum:
+                                            - tcp
+                                            - udp
+                                            - unix
                                         socket_option:
                                           type: object
                                           properties:
@@ -9747,6 +9831,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -9938,6 +10028,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -10888,6 +10984,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -11079,6 +11181,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -13011,6 +13119,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -13202,6 +13316,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:

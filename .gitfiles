@@ -89,6 +89,7 @@
 .github/workflows/dockers-ci-container-image.yaml
 .github/workflows/dockers-dev-container-image.yaml
 .github/workflows/dockers-discoverer-k8s-image.yaml
+.github/workflows/dockers-example-client-image.yaml
 .github/workflows/dockers-gateway-filter-image.yaml
 .github/workflows/dockers-gateway-lb-image.yaml
 .github/workflows/dockers-gateway-mirror-image.yaml
@@ -97,6 +98,7 @@
 .github/workflows/dockers-index-correction-image.yaml
 .github/workflows/dockers-index-creation-image.yaml
 .github/workflows/dockers-index-deletion-image.yaml
+.github/workflows/dockers-index-deletion.yaml
 .github/workflows/dockers-index-operator-image.yaml
 .github/workflows/dockers-index-save-image.yaml
 .github/workflows/dockers-loadtest-image.yaml
@@ -123,7 +125,7 @@
 .github/workflows/semver-patch.yaml
 .github/workflows/test-hack.yaml
 .github/workflows/unit-test.yaml
-.github/workflows/update-actions.yaml
+.github/workflows/update-deps.yaml
 .github/workflows/update-protobuf.yaml
 .github/workflows/update-pull-request-and-issue-template.yaml
 .github/workflows/update-web-docs.yaml
@@ -199,8 +201,6 @@ apis/grpc/v1/vald/update_vtproto.pb.go
 apis/grpc/v1/vald/upsert.pb.go
 apis/grpc/v1/vald/upsert_vtproto.pb.go
 apis/grpc/v1/vald/vald.go
-apis/proto/buf.lock
-apis/proto/buf.yaml
 apis/proto/v1/agent/core/agent.proto
 apis/proto/v1/agent/sidecar/sidecar.proto
 apis/proto/v1/discoverer/discoverer.proto
@@ -304,7 +304,8 @@ assets/test/templates/option/function.tmpl
 assets/test/templates/option/header.tmpl
 assets/test/templates/option/results.tmpl
 buf.gen.yaml
-buf.work.yaml
+buf.lock
+buf.yaml
 charts/vald-benchmark-operator/Chart.yaml
 charts/vald-benchmark-operator/README.md
 charts/vald-benchmark-operator/README.md.gotmpl
@@ -490,6 +491,8 @@ cmd/index/job/correction/sample.yaml
 cmd/index/job/creation/main.go
 cmd/index/job/creation/main_test.go
 cmd/index/job/creation/sample.yaml
+cmd/index/job/deletion/main.go
+cmd/index/job/deletion/sample.yaml
 cmd/index/job/readreplica/rotate/main.go
 cmd/index/job/readreplica/rotate/main_test.go
 cmd/index/job/readreplica/rotate/sample.yaml
@@ -537,6 +540,7 @@ dockers/dev/Dockerfile
 dockers/dev/README.md
 dockers/discoverer/k8s/Dockerfile
 dockers/discoverer/k8s/README.md
+dockers/example/client/Dockerfile
 dockers/gateway/filter/Dockerfile
 dockers/gateway/filter/README.md
 dockers/gateway/lb/Dockerfile
@@ -544,6 +548,7 @@ dockers/gateway/lb/README.md
 dockers/gateway/mirror/Dockerfile
 dockers/index/job/correction/Dockerfile
 dockers/index/job/creation/Dockerfile
+dockers/index/job/deletion/Dockerfile
 dockers/index/job/readreplica/rotate/Dockerfile
 dockers/index/job/save/Dockerfile
 dockers/index/operator/Dockerfile
@@ -838,6 +843,7 @@ internal/config/grpc_test.go
 internal/config/index.go
 internal/config/index_creation.go
 internal/config/index_creation_test.go
+internal/config/index_deleter.go
 internal/config/index_operator.go
 internal/config/index_operator_test.go
 internal/config/index_save.go
@@ -1245,6 +1251,8 @@ internal/net/net.go
 internal/net/net_test.go
 internal/net/option.go
 internal/net/option_test.go
+internal/net/quic/conn.go
+internal/net/quic/listener.go
 internal/observability/attribute/attribute.go
 internal/observability/attribute/attribute_test.go
 internal/observability/exporter/exporter.go
@@ -1455,6 +1463,8 @@ k8s/index/job/correction/configmap.yaml
 k8s/index/job/correction/cronjob.yaml
 k8s/index/job/creation/configmap.yaml
 k8s/index/job/creation/cronjob.yaml
+k8s/index/job/deletion/configmap.yaml
+k8s/index/job/deletion/cronjob.yaml
 k8s/index/job/save/configmap.yaml
 k8s/index/job/save/cronjob.yaml
 k8s/index/operator/configmap.yaml
@@ -1789,6 +1799,10 @@ pkg/index/job/creation/service/options.go
 pkg/index/job/creation/service/options_test.go
 pkg/index/job/creation/usecase/creation.go
 pkg/index/job/creation/usecase/creation_test.go
+pkg/index/job/deletion/config/config.go
+pkg/index/job/deletion/service/deleter.go
+pkg/index/job/deletion/service/options.go
+pkg/index/job/deletion/usecase/deletion.go
 pkg/index/job/readreplica/rotate/config/config.go
 pkg/index/job/readreplica/rotate/config/config_test.go
 pkg/index/job/readreplica/rotate/service/options.go

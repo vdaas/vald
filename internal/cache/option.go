@@ -36,7 +36,7 @@ func defaultOptions[V any]() []Option[V] {
 }
 
 // WithExpiredHook returns Option after set expiredHook when f is not nil.
-func WithExpiredHook[V any](f func(context.Context, string)) Option[V] {
+func WithExpiredHook[V any](f func(context.Context, string, V)) Option[V] {
 	return func(c *cache[V]) {
 		if f != nil {
 			c.expiredHook = f

@@ -1425,7 +1425,7 @@ func Test_dialer_dial(t *testing.T) {
 				return nil
 			},
 			want: want{
-				err: errors.New("missing address"),
+				err: errors.ErrInvalidAddress(TCP.String(), ""),
 			},
 		},
 		{
@@ -1452,7 +1452,7 @@ func Test_dialer_dial(t *testing.T) {
 				return nil
 			},
 			want: want{
-				err: net.UnknownNetworkError("invalid"),
+				err: errors.ErrInvalidAddress(TCP.String(), ""),
 			},
 		},
 		{
@@ -1477,7 +1477,7 @@ func Test_dialer_dial(t *testing.T) {
 				return nil
 			},
 			want: want{
-				err: net.UnknownNetworkError(""),
+				err: errors.ErrInvalidAddress(TCP.String(), ""),
 			},
 		},
 	}
@@ -1585,7 +1585,7 @@ func Test_dialer_cacheExpireHook(t *testing.T) {
 				test.beforeFunc(d)
 			}
 
-			d.cacheExpireHook(ctx, test.args.addr)
+			d.cacheExpireHook(ctx, test.args.addr, nil)
 			if err := checkFunc(d); err != nil {
 				tt.Errorf("error = %v", err)
 			}
