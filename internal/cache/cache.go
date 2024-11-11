@@ -30,7 +30,7 @@ type cache[V any] struct {
 	cacher         cacher.Type
 	expireDur      time.Duration
 	expireCheckDur time.Duration
-	expiredHook    func(context.Context, string)
+	expiredHook    func(context.Context, string, V)
 }
 
 // New returns the Cache instance or error.
