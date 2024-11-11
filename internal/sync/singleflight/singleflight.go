@@ -104,7 +104,9 @@ type Result[V any] struct {
 
 // New returns Group implementation.
 func New[V any]() Group[V] {
-	return new(group[V])
+	return &group[V]{
+		m: make(map[string]*call[V]),
+	}
 }
 
 // Do executes and returns the results of the given function, making
@@ -116,14 +118,10 @@ func (g *group[V]) Do(
 	ctx context.Context, key string, fn func(context.Context) (V, error),
 ) (v V, shared bool, err error) {
 	g.mu.Lock()
-	if g.m == nil {
-		g.m = make(map[string]*call[V])
-	}
 	if c, ok := g.m[key]; ok {
 		g.mu.Unlock()
 		atomic.AddUint64(&c.dups, 1)
 		c.wg.Wait()
-
 		if e, ok := c.err.(*panicError); ok {
 			panic(e)
 		} else if c.err == errGoexit {
@@ -149,9 +147,6 @@ func (g *group[V]) DoChan(
 ) <-chan Result[V] {
 	ch := make(chan Result[V])
 	g.mu.Lock()
-	if g.m == nil {
-		g.m = make(map[string]*call[V])
-	}
 	if c, ok := g.m[key]; ok {
 		c.dups++
 		c.chans = append(c.chans, ch)
@@ -249,4 +244,23 @@ func (g *group[V]) Forget(key string) {
 	g.mu.Lock()
 	delete(g.m, key)
 	g.mu.Unlock()
+}
+
+// ForgetUnshared tells the singleflight to forget about a key if it is not
+// shared with any other goroutines. Future calls to Do for a forgotten key
+// will call the function rather than waiting for an earlier call to complete.
+// Returns whether the key was forgotten or unknown--that is, whether no
+// other goroutines are waiting for the result.
+func (g *group[V]) ForgetUnshared(key string) bool {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	c, ok := g.m[key]
+	if !ok {
+		return true
+	}
+	if c.dups == 0 {
+		delete(g.m, key)
+		return true
+	}
+	return false
 }
