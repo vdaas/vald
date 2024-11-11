@@ -29,7 +29,7 @@ type cache[V any] struct {
 	gache          gache.Gache[V]
 	expireDur      time.Duration
 	expireCheckDur time.Duration
-	expiredHook    func(context.Context, string)
+	expiredHook    func(context.Context, string, V)
 }
 
 // New loads a cache model and returns a new cache struct.
