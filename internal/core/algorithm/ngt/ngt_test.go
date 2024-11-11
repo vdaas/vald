@@ -33,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/singleflight"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -43,8 +44,9 @@ var (
 		// !!! These fields will not be verified in the entire test
 		// Do not validate C dependencies
 		comparator.IgnoreFields(ngt{},
-			"dimension", "prop", "epool", "index", "ospace", "eps"),
+			"dimension", "prop", "epool", "index", "ospace", "eps", "group"),
 		comparator.RWMutexComparer,
+		comparator.MutexComparer,
 		comparator.ErrorComparer,
 		comparator.AtomicUint64Comparator,
 	}
@@ -140,8 +142,10 @@ func TestNew(t *testing.T) {
 						bulkInsertChunkSize: 100,
 						ces:                 10,
 						objectType:          Float,
-						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
+						mu:                  new(sync.RWMutex),
+						cmu:                 new(sync.RWMutex),
+						smu:                 new(sync.Mutex),
+						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
 					},
 				},
@@ -168,8 +172,10 @@ func TestNew(t *testing.T) {
 						poolSize:            DefaultPoolSize,
 						bulkInsertChunkSize: 100,
 						objectType:          Float,
-						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
+						mu:                  new(sync.RWMutex),
+						cmu:                 new(sync.RWMutex),
+						smu:                 new(sync.Mutex),
+						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
 					},
 				},
@@ -195,8 +201,10 @@ func TestNew(t *testing.T) {
 						poolSize:            100,
 						bulkInsertChunkSize: 100,
 						objectType:          Uint8,
-						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
+						mu:                  new(sync.RWMutex),
+						cmu:                 new(sync.RWMutex),
+						smu:                 new(sync.Mutex),
+						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
 					},
 				},
@@ -326,8 +334,10 @@ func TestLoad(t *testing.T) {
 						poolSize:            DefaultPoolSize,
 						bulkInsertChunkSize: 100,
 						objectType:          Uint8,
-						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
+						mu:                  new(sync.RWMutex),
+						cmu:                 new(sync.RWMutex),
+						smu:                 new(sync.Mutex),
+						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
 					},
 				},
@@ -394,8 +404,10 @@ func TestLoad(t *testing.T) {
 						poolSize:            DefaultPoolSize,
 						bulkInsertChunkSize: 100,
 						objectType:          Uint8,
-						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
+						mu:                  new(sync.RWMutex),
+						cmu:                 new(sync.RWMutex),
+						smu:                 new(sync.Mutex),
+						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
 					},
 				},
@@ -462,8 +474,10 @@ func TestLoad(t *testing.T) {
 						poolSize:            DefaultPoolSize,
 						bulkInsertChunkSize: 100,
 						objectType:          Float,
-						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
+						mu:                  new(sync.RWMutex),
+						cmu:                 new(sync.RWMutex),
+						smu:                 new(sync.Mutex),
+						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
 					},
 				},
@@ -530,8 +544,10 @@ func TestLoad(t *testing.T) {
 						poolSize:            DefaultPoolSize,
 						bulkInsertChunkSize: 100,
 						objectType:          Float,
-						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
+						mu:                  new(sync.RWMutex),
+						cmu:                 new(sync.RWMutex),
+						smu:                 new(sync.Mutex),
+						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
 					},
 				},
@@ -728,8 +744,10 @@ func Test_gen(t *testing.T) {
 					poolSize:            DefaultPoolSize,
 					bulkInsertChunkSize: 100,
 					objectType:          Float,
-					mu:                  &sync.RWMutex{},
-					cmu:                 &sync.RWMutex{},
+					mu:                  new(sync.RWMutex),
+					cmu:                 new(sync.RWMutex),
+					smu:                 new(sync.Mutex),
+					group:               singleflight.New[*GraphStatistics](),
 					epl:                 DefaultErrorBufferLimit,
 				},
 			},
@@ -777,8 +795,10 @@ func Test_gen(t *testing.T) {
 						poolSize:            DefaultPoolSize,
 						bulkInsertChunkSize: 100,
 						objectType:          Uint8,
-						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
+						mu:                  new(sync.RWMutex),
+						cmu:                 new(sync.RWMutex),
+						smu:                 new(sync.Mutex),
+						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
 					},
 				},
@@ -1123,6 +1143,7 @@ func Test_ngt_open(t *testing.T) {
 		poolSize            uint32
 		mu                  *sync.RWMutex
 		cmu                 *sync.RWMutex
+		smu                 *sync.Mutex
 	}
 	type want struct {
 		err error
@@ -1148,6 +1169,7 @@ func Test_ngt_open(t *testing.T) {
 			epsilon:             fields.epsilon,
 			poolSize:            fields.poolSize,
 			mu:                  fields.mu,
+			smu:                 fields.smu,
 		}
 		if err := n.setup(); err != nil {
 			t.Error(err)
@@ -1171,6 +1193,7 @@ func Test_ngt_open(t *testing.T) {
 				objectType: Float,
 				mu:         &sync.RWMutex{},
 				cmu:        &sync.RWMutex{},
+				smu:        &sync.Mutex{},
 			},
 			beforeFunc: func(t *testing.T, fields fields) {
 				t.Helper()
@@ -1206,6 +1229,7 @@ func Test_ngt_open(t *testing.T) {
 				objectType: Float,
 				mu:         &sync.RWMutex{},
 				cmu:        &sync.RWMutex{},
+				smu:        &sync.Mutex{},
 			},
 			want: want{
 				err: errors.ErrIndexFileNotFound,
@@ -1220,6 +1244,7 @@ func Test_ngt_open(t *testing.T) {
 				objectType: Float,
 				mu:         &sync.RWMutex{},
 				cmu:        &sync.RWMutex{},
+				smu:        &sync.Mutex{},
 			},
 			beforeFunc: func(t *testing.T, fields fields) {
 				t.Helper()

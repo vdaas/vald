@@ -82,6 +82,7 @@ RUN --mount=type=bind,target=.,rw \
 FROM gcr.io/distroless/static:nonroot
 LABEL maintainer="vdaas.org vald team <vald@vdaas.org>"
 COPY --from=builder /usr/bin/index-deletion /usr/bin/index-deletion
+COPY cmd/index/job/deletion/sample.yaml /etc/server/config.yaml
 # skipcq: DOK-DL3002
 USER nonroot:nonroot
 ENTRYPOINT ["/usr/bin/index-deletion"]

@@ -1516,7 +1516,8 @@ func Test_dialer_dial(t *testing.T) {
 func Test_dialer_cacheExpireHook(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		addr string
+		addr  string
+		cache *dialerCache
 	}
 	type want struct{}
 	type test struct {
@@ -1585,7 +1586,7 @@ func Test_dialer_cacheExpireHook(t *testing.T) {
 				test.beforeFunc(d)
 			}
 
-			d.cacheExpireHook(ctx, test.args.addr)
+			d.cacheExpireHook(ctx, test.args.addr, test.args.cache)
 			if err := checkFunc(d); err != nil {
 				tt.Errorf("error = %v", err)
 			}
