@@ -188,7 +188,7 @@ func (c *client) IndexDetail(t *testing.T, ctx context.Context) (*payload.Info_I
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return client.IndexDetail(ctx, &payload.Empty{})
 }
 
