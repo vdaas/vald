@@ -64,15 +64,10 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get update -y \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --fix-missing \
-    curl \
-    gnupg \
-    software-properties-common \
-    && add-apt-repository ppa:ubuntu-toolchain-r/test -y \
-    && apt-get update -y \
-    && apt-get upgrade -y \
-    && apt-get install -y --no-install-recommends --fix-missing \
     build-essential \
     ca-certificates \
+    curl \
+    gnupg \
     tzdata \
     locales \
     git \
