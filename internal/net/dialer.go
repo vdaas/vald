@@ -454,7 +454,7 @@ func (d *dialer) tlsHandshake(
 	return tconn, nil
 }
 
-func (d *dialer) cacheExpireHook(ctx context.Context, addr string) {
+func (d *dialer) cacheExpireHook(ctx context.Context, addr string, _ *dialerCache) {
 	if err := safety.RecoverFunc(func() (err error) {
 		_, err = d.lookup(ctx, addr)
 		return
