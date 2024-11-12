@@ -1,6 +1,6 @@
 module github.com/vdaas/vald
 
-go 1.23.2
+go 1.23.3
 
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.116.0
@@ -15,7 +15,7 @@ replace (
 	cloud.google.com/go/secretmanager => cloud.google.com/go/secretmanager v1.14.2
 	cloud.google.com/go/storage => cloud.google.com/go/storage v1.46.0
 	cloud.google.com/go/trace => cloud.google.com/go/trace v1.11.2
-	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt v0.17.0
+	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt v0.18.0
 	contrib.go.opencensus.io/exporter/aws => contrib.go.opencensus.io/exporter/aws v0.0.0-20230502192102-15967c811cec
 	contrib.go.opencensus.io/exporter/prometheus => contrib.go.opencensus.io/exporter/prometheus v0.4.2
 	contrib.go.opencensus.io/integrations/ocsql => contrib.go.opencensus.io/integrations/ocsql v0.1.7
@@ -192,11 +192,11 @@ replace (
 	github.com/jstemmer/go-junit-report => github.com/jstemmer/go-junit-report v1.0.0
 	github.com/kisielk/errcheck => github.com/kisielk/errcheck v1.8.0
 	github.com/kisielk/gotool => github.com/kisielk/gotool v1.0.0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.17.12-0.20241104152713-826a08c25cd8
+	github.com/klauspost/compress => github.com/klauspost/compress v1.17.12-0.20241112120047-11e333db04cf
 	github.com/klauspost/cpuid/v2 => github.com/klauspost/cpuid/v2 v2.2.9
 	github.com/kpango/fastime => github.com/kpango/fastime v1.1.9
 	github.com/kpango/fuid => github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
-	github.com/kpango/gache/v2 => github.com/kpango/gache/v2 v2.1.0
+	github.com/kpango/gache/v2 => github.com/kpango/gache/v2 v2.1.1
 	github.com/kpango/glg => github.com/kpango/glg v1.6.15
 	github.com/kr/fs => github.com/kr/fs v0.1.0
 	github.com/kr/pretty => github.com/kr/pretty v0.3.1
@@ -378,6 +378,7 @@ require (
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10
 	github.com/quasilyte/go-ruleguard v0.0.0-00010101000000-000000000000
 	github.com/quasilyte/go-ruleguard/dsl v0.3.22
+	github.com/quic-go/quic-go v0.48.1
 	github.com/scylladb/gocqlx v0.0.0-00010101000000-000000000000
 	github.com/stretchr/testify v1.9.0
 	github.com/unum-cloud/usearch/golang v0.0.0-20241104182314-dccdd8e4152d
@@ -461,6 +462,7 @@ require (
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/go-pdf/fpdf v0.9.0 // indirect
+	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/go-toolsmith/astcopy v1.0.2 // indirect
 	github.com/go-toolsmith/astequal v1.1.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -497,6 +499,7 @@ require (
 	github.com/monochromegane/go-gitignore v0.0.0-20200626010858-205db1a8cc00 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
+	github.com/onsi/ginkgo/v2 v2.21.0 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
@@ -517,6 +520,7 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.54.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
+	go.uber.org/mock v0.4.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.29.0 // indirect
 	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c // indirect

@@ -1251,6 +1251,8 @@ internal/net/net.go
 internal/net/net_test.go
 internal/net/option.go
 internal/net/option_test.go
+internal/net/quic/conn.go
+internal/net/quic/listener.go
 internal/observability/attribute/attribute.go
 internal/observability/attribute/attribute_test.go
 internal/observability/exporter/exporter.go
