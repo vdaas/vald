@@ -24,8 +24,8 @@ $(BINDIR)/helm:
 	TAR_NAME=helm-$(HELM_VERSION)-$(OS)-$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) \
 	    && cd $(TEMP_DIR) \
 	    && curl -fsSL "https://get.helm.sh/$${TAR_NAME}.tar.gz" -o "$(TEMP_DIR)/$${TAR_NAME}" \
-	    && tar xzvf "$(TEMP_DIR)/$${TAR_NAME}" \
-	    && mv $(OS)-$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]'))/helm $(BINDIR)/helm
+	    && tar xzvf --strip=1 "$(TEMP_DIR)/$${TAR_NAME}" \
+	    && mv helm $(BINDIR)/helm
 
 .PHONY: helm-docs/install
 ## install helm-docs
