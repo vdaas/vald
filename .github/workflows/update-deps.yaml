@@ -42,6 +42,7 @@ jobs:
         run: |
           make files
           make update
+          make deps
           make helm/schema/all
           make k8s/manifest/update
           make k8s/manifest/helm-operator/update
