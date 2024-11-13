@@ -154,7 +154,10 @@ func Test_listener_ListenAndServe(t *testing.T) {
 				args: args{
 					ctx: func() context.Context {
 						ctx, cancel := context.WithCancel(ctx)
-						defer cancel()
+						go func() {
+							defer cancel()
+							time.Sleep(time.Second)
+						}()
 						return ctx
 					}(),
 				},
@@ -176,9 +179,8 @@ func Test_listener_ListenAndServe(t *testing.T) {
 					}
 
 					if len(werrs) != len(gerrs) {
-						return errors.Errorf("errors count is not equals: want: %v, got: %v", len(werrs), len(gerrs))
+						return errors.Errorf("errors count is not equals: want: %v, got: %v", werrs, gerrs)
 					}
-
 					for i := range werrs {
 						if gerrs[i].Error() != werrs[i].Error() {
 							return errors.Errorf("errors[%d] is not equals: want: %v, got: %v", i, werrs[i], gerrs[i])

@@ -1273,6 +1273,12 @@ spec:
                                           type: string
                                         refresh_duration:
                                           type: string
+                                    network:
+                                      type: string
+                                      enum:
+                                        - tcp
+                                        - udp
+                                        - unix
                                     socket_option:
                                       type: object
                                       properties:
@@ -2152,6 +2158,11 @@ spec:
                       items:
                         type: object
                         x-kubernetes-preserve-unknown-fields: true
+                    unhealthyPodEvictionPolicy:
+                      type: string
+                      enum:
+                        - AlwaysAllow
+                        - IfHealthyBudget
                     version:
                       type: string
                       pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
@@ -2295,6 +2306,12 @@ spec:
                                           type: string
                                         refresh_duration:
                                           type: string
+                                    network:
+                                      type: string
+                                      enum:
+                                        - tcp
+                                        - udp
+                                        - unix
                                     socket_option:
                                       type: object
                                       properties:
@@ -3171,6 +3188,12 @@ spec:
                                   type: string
                                 refresh_duration:
                                   type: string
+                            network:
+                              type: string
+                              enum:
+                                - tcp
+                                - udp
+                                - unix
                             socket_option:
                               type: object
                               properties:
@@ -4072,6 +4095,11 @@ spec:
                       items:
                         type: object
                         x-kubernetes-preserve-unknown-fields: true
+                    unhealthyPodEvictionPolicy:
+                      type: string
+                      enum:
+                        - AlwaysAllow
+                        - IfHealthyBudget
                     version:
                       type: string
                       pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
@@ -4278,6 +4306,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -4477,6 +4511,12 @@ spec:
                                               type: string
                                             refresh_duration:
                                               type: string
+                                        network:
+                                          type: string
+                                          enum:
+                                            - tcp
+                                            - udp
+                                            - unix
                                         socket_option:
                                           type: object
                                           properties:
@@ -4671,6 +4711,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -5578,6 +5624,11 @@ spec:
                           items:
                             type: object
                             x-kubernetes-preserve-unknown-fields: true
+                        unhealthyPodEvictionPolicy:
+                          type: string
+                          enum:
+                            - AlwaysAllow
+                            - IfHealthyBudget
                         version:
                           type: string
                           pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
@@ -5783,6 +5834,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -5974,6 +6031,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -6167,6 +6230,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -7064,6 +7133,11 @@ spec:
                           items:
                             type: object
                             x-kubernetes-preserve-unknown-fields: true
+                        unhealthyPodEvictionPolicy:
+                          type: string
+                          enum:
+                            - AlwaysAllow
+                            - IfHealthyBudget
                         version:
                           type: string
                           pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
@@ -7278,6 +7352,12 @@ spec:
                                               type: string
                                             refresh_duration:
                                               type: string
+                                        network:
+                                          type: string
+                                          enum:
+                                            - tcp
+                                            - udp
+                                            - unix
                                         socket_option:
                                           type: object
                                           properties:
@@ -7376,6 +7456,12 @@ spec:
                                       type: string
                                     refresh_duration:
                                       type: string
+                                network:
+                                  type: string
+                                  enum:
+                                    - tcp
+                                    - udp
+                                    - unix
                                 socket_option:
                                   type: object
                                   properties:
@@ -8245,6 +8331,11 @@ spec:
                           items:
                             type: object
                             x-kubernetes-preserve-unknown-fields: true
+                        unhealthyPodEvictionPolicy:
+                          type: string
+                          enum:
+                            - AlwaysAllow
+                            - IfHealthyBudget
                         version:
                           type: string
                           pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
@@ -8444,6 +8535,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -8635,6 +8732,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -8835,6 +8938,12 @@ spec:
                                               type: string
                                             refresh_duration:
                                               type: string
+                                        network:
+                                          type: string
+                                          enum:
+                                            - tcp
+                                            - udp
+                                            - unix
                                         socket_option:
                                           type: object
                                           properties:
@@ -9747,6 +9856,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -9938,6 +10053,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -10888,6 +11009,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -11079,6 +11206,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -13011,6 +13144,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -13202,6 +13341,12 @@ spec:
                                                   type: string
                                                 refresh_duration:
                                                   type: string
+                                            network:
+                                              type: string
+                                              enum:
+                                                - tcp
+                                                - udp
+                                                - unix
                                             socket_option:
                                               type: object
                                               properties:
@@ -14620,6 +14765,11 @@ spec:
                           items:
                             type: object
                             x-kubernetes-preserve-unknown-fields: true
+                        unhealthyPodEvictionPolicy:
+                          type: string
+                          enum:
+                            - AlwaysAllow
+                            - IfHealthyBudget
                         version:
                           type: string
                           pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
