@@ -35,4 +35,5 @@ spec:
   selector:
     matchLabels:
       app: {{ $index.name }}
+  unhealthyPodEvictionPolicy: {{ $index.unhealthyPodEvictionPolicy }}
 {{- end }}

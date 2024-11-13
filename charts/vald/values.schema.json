@@ -1997,17 +1997,22 @@
                           "properties": {
                             "cache_enabled": {
                               "type": "boolean",
-                              "description": "gRPC client TCP DNS cache enabled"
+                              "description": "gRPC client DNS cache enabled"
                             },
                             "cache_expiration": {
                               "type": "string",
-                              "description": "gRPC client TCP DNS cache expiration"
+                              "description": "gRPC client DNS cache expiration"
                             },
                             "refresh_duration": {
                               "type": "string",
-                              "description": "gRPC client TCP DNS cache refresh duration"
+                              "description": "gRPC client DNS cache refresh duration"
                             }
                           }
+                        },
+                        "network": {
+                          "type": "string",
+                          "description": "gRPC client dialer network type",
+                          "enum": ["tcp", "udp", "unix"]
                         },
                         "socket_option": {
                           "type": "object",
@@ -3539,6 +3544,11 @@
           "description": "topology spread constraints of gateway pods",
           "items": { "type": "object" }
         },
+        "unhealthyPodEvictionPolicy": {
+          "type": "string",
+          "description": "controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.",
+          "enum": ["AlwaysAllow", "IfHealthyBudget"]
+        },
         "version": {
           "type": "string",
           "description": "version of gateway config",
@@ -3768,17 +3778,22 @@
                           "properties": {
                             "cache_enabled": {
                               "type": "boolean",
-                              "description": "gRPC client TCP DNS cache enabled"
+                              "description": "gRPC client DNS cache enabled"
                             },
                             "cache_expiration": {
                               "type": "string",
-                              "description": "gRPC client TCP DNS cache expiration"
+                              "description": "gRPC client DNS cache expiration"
                             },
                             "refresh_duration": {
                               "type": "string",
-                              "description": "gRPC client TCP DNS cache refresh duration"
+                              "description": "gRPC client DNS cache refresh duration"
                             }
                           }
+                        },
+                        "network": {
+                          "type": "string",
+                          "description": "gRPC client dialer network type",
+                          "enum": ["tcp", "udp", "unix"]
                         },
                         "socket_option": {
                           "type": "object",
@@ -5259,17 +5274,22 @@
                   "properties": {
                     "cache_enabled": {
                       "type": "boolean",
-                      "description": "gRPC client TCP DNS cache enabled"
+                      "description": "gRPC client DNS cache enabled"
                     },
                     "cache_expiration": {
                       "type": "string",
-                      "description": "gRPC client TCP DNS cache expiration"
+                      "description": "gRPC client DNS cache expiration"
                     },
                     "refresh_duration": {
                       "type": "string",
-                      "description": "gRPC client TCP DNS cache refresh duration"
+                      "description": "gRPC client DNS cache refresh duration"
                     }
                   }
+                },
+                "network": {
+                  "type": "string",
+                  "description": "gRPC client dialer network type",
+                  "enum": ["tcp", "udp", "unix"]
                 },
                 "socket_option": {
                   "type": "object",
@@ -6784,6 +6804,11 @@
           "description": "topology spread constraints of gateway pods",
           "items": { "type": "object" }
         },
+        "unhealthyPodEvictionPolicy": {
+          "type": "string",
+          "description": "controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.",
+          "enum": ["AlwaysAllow", "IfHealthyBudget"]
+        },
         "version": {
           "type": "string",
           "description": "version of gateway config",
@@ -7089,17 +7114,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -7444,17 +7474,22 @@
                               "properties": {
                                 "cache_enabled": {
                                   "type": "boolean",
-                                  "description": "gRPC client TCP DNS cache enabled"
+                                  "description": "gRPC client DNS cache enabled"
                                 },
                                 "cache_expiration": {
                                   "type": "string",
-                                  "description": "gRPC client TCP DNS cache expiration"
+                                  "description": "gRPC client DNS cache expiration"
                                 },
                                 "refresh_duration": {
                                   "type": "string",
-                                  "description": "gRPC client TCP DNS cache refresh duration"
+                                  "description": "gRPC client DNS cache refresh duration"
                                 }
                               }
+                            },
+                            "network": {
+                              "type": "string",
+                              "description": "gRPC client dialer network type",
+                              "enum": ["tcp", "udp", "unix"]
                             },
                             "socket_option": {
                               "type": "object",
@@ -7791,17 +7826,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -9353,6 +9393,11 @@
               "description": "topology spread constraints of gateway pods",
               "items": { "type": "object" }
             },
+            "unhealthyPodEvictionPolicy": {
+              "type": "string",
+              "description": "controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.",
+              "enum": ["AlwaysAllow", "IfHealthyBudget"]
+            },
             "version": {
               "type": "string",
               "description": "version of gateway config",
@@ -9658,17 +9703,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -10001,17 +10051,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -10345,17 +10400,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -11894,6 +11954,11 @@
               "description": "topology spread constraints of gateway pods",
               "items": { "type": "object" }
             },
+            "unhealthyPodEvictionPolicy": {
+              "type": "string",
+              "description": "controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.",
+              "enum": ["AlwaysAllow", "IfHealthyBudget"]
+            },
             "version": {
               "type": "string",
               "description": "version of gateway config",
@@ -12218,17 +12283,22 @@
                               "properties": {
                                 "cache_enabled": {
                                   "type": "boolean",
-                                  "description": "gRPC client TCP DNS cache enabled"
+                                  "description": "gRPC client DNS cache enabled"
                                 },
                                 "cache_expiration": {
                                   "type": "string",
-                                  "description": "gRPC client TCP DNS cache expiration"
+                                  "description": "gRPC client DNS cache expiration"
                                 },
                                 "refresh_duration": {
                                   "type": "string",
-                                  "description": "gRPC client TCP DNS cache refresh duration"
+                                  "description": "gRPC client DNS cache refresh duration"
                                 }
                               }
+                            },
+                            "network": {
+                              "type": "string",
+                              "description": "gRPC client dialer network type",
+                              "enum": ["tcp", "udp", "unix"]
                             },
                             "socket_option": {
                               "type": "object",
@@ -12400,17 +12470,22 @@
                       "properties": {
                         "cache_enabled": {
                           "type": "boolean",
-                          "description": "gRPC client TCP DNS cache enabled"
+                          "description": "gRPC client DNS cache enabled"
                         },
                         "cache_expiration": {
                           "type": "string",
-                          "description": "gRPC client TCP DNS cache expiration"
+                          "description": "gRPC client DNS cache expiration"
                         },
                         "refresh_duration": {
                           "type": "string",
-                          "description": "gRPC client TCP DNS cache refresh duration"
+                          "description": "gRPC client DNS cache refresh duration"
                         }
                       }
+                    },
+                    "network": {
+                      "type": "string",
+                      "description": "gRPC client dialer network type",
+                      "enum": ["tcp", "udp", "unix"]
                     },
                     "socket_option": {
                       "type": "object",
@@ -13904,6 +13979,11 @@
               "description": "topology spread constraints of gateway pods",
               "items": { "type": "object" }
             },
+            "unhealthyPodEvictionPolicy": {
+              "type": "string",
+              "description": "controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.",
+              "enum": ["AlwaysAllow", "IfHealthyBudget"]
+            },
             "version": {
               "type": "string",
               "description": "version of gateway config",
@@ -14204,17 +14284,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -14547,17 +14632,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -14905,17 +14995,22 @@
                               "properties": {
                                 "cache_enabled": {
                                   "type": "boolean",
-                                  "description": "gRPC client TCP DNS cache enabled"
+                                  "description": "gRPC client DNS cache enabled"
                                 },
                                 "cache_expiration": {
                                   "type": "string",
-                                  "description": "gRPC client TCP DNS cache expiration"
+                                  "description": "gRPC client DNS cache expiration"
                                 },
                                 "refresh_duration": {
                                   "type": "string",
-                                  "description": "gRPC client TCP DNS cache refresh duration"
+                                  "description": "gRPC client DNS cache refresh duration"
                                 }
                               }
+                            },
+                            "network": {
+                              "type": "string",
+                              "description": "gRPC client dialer network type",
+                              "enum": ["tcp", "udp", "unix"]
                             },
                             "socket_option": {
                               "type": "object",
@@ -16531,17 +16626,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -16874,17 +16974,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -18558,17 +18663,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -18901,17 +19011,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -22218,17 +22333,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -22561,17 +22681,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -25084,6 +25209,11 @@
               "type": "array",
               "description": "topology spread constraints of gateway pods",
               "items": { "type": "object" }
+            },
+            "unhealthyPodEvictionPolicy": {
+              "type": "string",
+              "description": "controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.",
+              "enum": ["AlwaysAllow", "IfHealthyBudget"]
             },
             "version": {
               "type": "string",
