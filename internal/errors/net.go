@@ -41,4 +41,10 @@ var (
 	ErrLookupIPAddrNotFound = func(host string) error {
 		return Errorf("failed to lookup ip addrs for host: %s", host)
 	}
+
+	ErrInvalidAddress = func(network, addr string) error {
+		return Errorf("invalid address %s detected for network: %s", addr, network)
+	}
+
+	ErrEmptyALPNs = New("empty ALPN protocols detected")
 )

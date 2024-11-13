@@ -29,3 +29,4 @@ spec:
   selector:
     matchLabels:
       app: vald-agent
+  unhealthyPodEvictionPolicy: IfHealthyBudget

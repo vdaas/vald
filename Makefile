@@ -51,6 +51,10 @@ MIRROR_GATEWAY_IMAGE            = $(NAME)-mirror-gateway
 READREPLICA_ROTATE_IMAGE        = $(NAME)-readreplica-rotate
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
+DEADLINK_CHECK_PATH            ?= ""
+DEADLINK_IGNORE_PATH           ?= ""
+DEADLINK_CHECK_FORMAT           = html
+
 DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE = $(GHCRORG)/$(BUILDKIT_SYFT_SCANNER_IMAGE):nightly
 
 VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
@@ -470,6 +474,11 @@ dockerfile:
 ## generate workflows
 workflow:
 	$(call gen-workflow,$(ROOTDIR),$(MAINTAINER))
+
+.PHONY: deadlink-checker
+## generate deadlink-checker
+deadlink-checker:
+	$(call gen-deadlink-checker,$(ROOTDIR),$(MAINTAINER),$(DEADLINK_CHECK_PATH),$(DEADLINK_IGNORE_PATH),$(DEADLINK_CHECK_FORMAT))
 
 .PHONY: init
 ## initialize development environment
