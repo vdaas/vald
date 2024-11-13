@@ -21,11 +21,11 @@ helm/install: $(BINDIR)/helm
 $(BINDIR)/helm:
 	mkdir -p $(BINDIR)
 	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
-	TAR_NAME=helm-$(HELM_VERSION)-$(OS)-$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')).tar.gz \
+	TAR_NAME=helm-$(HELM_VERSION)-$(OS)-$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) \
 	    && cd $(TEMP_DIR) \
-	    && curl -fsSL "https://github.com/helm/helm/releases/download/$(HELM_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}"
+	    && curl -fsSL "https://get.helm.sh/$${TAR_NAME}.tar.gz" -o "$(TEMP_DIR)/$${TAR_NAME}" \
 	    && tar xzvf "$(TEMP_DIR)/$${TAR_NAME}" \
-	    && mv helm $(BINDIR)/helm
+	    && mv $(OS)-$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]'))/helm $(BINDIR)/helm
 
 .PHONY: helm-docs/install
 ## install helm-docs
