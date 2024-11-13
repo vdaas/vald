@@ -1306,7 +1306,7 @@ func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 	}
 	n.copyNGT(nn)
 
-	return n.loadStatistics()
+	return n.loadStatistics(ctx)
 }
 
 func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
@@ -1450,13 +1450,24 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			return err
 		}
 	}
-	return n.loadStatistics()
+	return n.loadStatistics(ctx)
 }
 
-func (n *ngt) loadStatistics() error {
+func (n *ngt) loadStatistics(ctx context.Context) (err error) {
 	if n.IsStatisticsEnabled() {
 		log.Info("loading index statistics to cache")
-		stats, err := n.core.GetGraphStatistics(core.AdditionalStatistics)
+		var stats *core.GraphStatistics
+		done := make(chan struct{})
+		n.eg.Go(safety.RecoverFunc(func() error {
+			defer close(done)
+			stats, err = n.core.GetGraphStatistics(ctx, core.AdditionalStatistics)
+			return nil
+		}))
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-done:
+		}
 		if err != nil {
 			log.Errorf("failed to load index statistics to cache: %v", err)
 			return err

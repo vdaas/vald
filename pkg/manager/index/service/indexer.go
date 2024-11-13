@@ -56,7 +56,7 @@ type index struct {
 	indexDurationLimit     time.Duration
 	saveIndexDuration      time.Duration
 	saveIndexDurationLimit time.Duration
-	shouldSaveList         sync.Map[string, struct{}]
+	shouldSaveList         sync.Map[string, bool]
 	createIndexConcurrency int
 	saveIndexConcurrency   int
 	indexInfos             sync.Map[string, *payload.Info_Index_Count]
@@ -66,8 +66,6 @@ type index struct {
 	uuidsCount             uint32
 	uncommittedUUIDsCount  uint32
 }
-
-var empty = struct{}{}
 
 func New(opts ...Option) (idx Indexer, err error) {
 	i := new(index)
@@ -243,7 +241,7 @@ func (idx *index) createIndex(ctx context.Context, enableLowIndexSkip bool) (err
 				log.Warnf("an error occurred while calling CreateIndex of %s: %s", addr, err)
 				return err
 			}
-			_, ok = idx.shouldSaveList.LoadOrStore(addr, empty)
+			_, ok = idx.shouldSaveList.LoadOrStore(addr, true)
 			if ok {
 				log.Debugf("addr %s already queued for saveIndex", addr)
 				return nil
@@ -278,10 +276,10 @@ func (idx *index) saveIndex(ctx context.Context, force bool) (err error) {
 			if err != nil {
 				st, ok := status.FromError(err)
 				if ok && st != nil && st.Code() == codes.FailedPrecondition {
-					log.Debugf("CreateIndex of %s skipped, message: %s, err: %v", addr, st.Message(), errors.Join(st.Err(), err))
+					log.Debugf("SaveIndex of %s skipped, message: %s, err: %v", addr, st.Message(), errors.Join(st.Err(), err))
 					return nil
 				}
-				log.Warnf("an error occurred while calling CreateIndex of %s: %s", addr, err)
+				log.Warnf("an error occurred while calling SaveIndex of %s: %s", addr, err)
 				return err
 			}
 			return nil

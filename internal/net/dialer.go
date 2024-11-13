@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/control"
+	"github.com/vdaas/vald/internal/net/quic"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
@@ -123,7 +124,7 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 			if d.dnsCache, err = cache.New(
 				cache.WithExpireDuration[*dialerCache](d.dnsCacheExpirationStr),
 				cache.WithExpireCheckDuration[*dialerCache](d.dnsRefreshDurationStr),
-				cache.WithExpiredHook[*dialerCache](d.cacheExpireHook),
+				cache.WithExpiredHook(d.cacheExpireHook),
 			); err != nil {
 				return nil, err
 			}
@@ -310,6 +311,17 @@ func (d *dialer) cachedDialer(ctx context.Context, network, addr string) (conn C
 	return d.dial(ctx, network, addr)
 }
 
+func isQUICDial(network, addr string) bool {
+	if !IsUDP(network) {
+		return false
+	}
+	host, port, err := SplitHostPort(addr)
+	if err != nil || host == "" || port == 0 {
+		return false
+	}
+	return port != 53
+}
+
 func (d *dialer) dial(ctx context.Context, network, addr string) (conn Conn, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Dialer.dial")
 	defer func() {
@@ -317,26 +329,33 @@ func (d *dialer) dial(ctx context.Context, network, addr string) (conn Conn, err
 			span.End()
 		}
 	}()
+	if NetworkTypeFromString(network) == Unknown {
+		network = TCP.String()
+	}
+	if addr == "" {
+		return nil, errors.ErrInvalidAddress(network, addr)
+	}
 	log.Debugf("%s connection dialing to addr %s", network, addr)
-	err = safety.RecoverWithoutPanicFunc(func() error {
-		conn, err = d.der.DialContext(ctx, network, addr)
+	err = safety.RecoverWithoutPanicFunc(func() (err error) {
+		if isQUICDial(network, addr) {
+			conn, err = quic.DialContext(ctx, addr, d.tlsConfig)
+		} else {
+			if IsUDP(network) {
+				network = TCP.String()
+			}
+			conn, err = d.der.DialContext(ctx, network, addr)
+		}
 		return err
 	})()
 	if err != nil {
-		defer func(conn Conn) {
-			if conn != nil {
-				if err != nil {
-					err = errors.Join(conn.Close(), err)
-					return
-				}
-				err = conn.Close()
-			}
-		}(conn)
+		if conn != nil {
+			err = errors.Join(conn.Close(), err)
+		}
 		return nil, err
 	}
 
 	d.tmu.RLock()
-	if d.tlsConfig != nil {
+	if !IsUDP(network) && d.tlsConfig != nil {
 		d.tmu.RUnlock()
 		return d.tlsHandshake(ctx, conn, network, addr)
 	}
@@ -423,15 +442,12 @@ func (d *dialer) tlsHandshake(
 			})()
 		}
 		if err != nil || conn == nil {
-			defer func(conn Conn) {
-				if conn != nil {
-					if err != nil {
-						err = errors.Join(conn.Close(), err)
-						return
-					}
-					err = conn.Close()
+			if conn != nil {
+				if err != nil {
+					return nil, errors.Join(conn.Close(), err)
 				}
-			}(conn)
+				return nil, conn.Close()
+			}
 			return nil, err
 		}
 		tconn, ok := conn.(*tls.Conn)
@@ -454,11 +470,15 @@ func (d *dialer) tlsHandshake(
 	return tconn, nil
 }
 
-func (d *dialer) cacheExpireHook(ctx context.Context, addr string) {
+func (d *dialer) cacheExpireHook(ctx context.Context, addr string, dc *dialerCache) {
 	if err := safety.RecoverFunc(func() (err error) {
 		_, err = d.lookup(ctx, addr)
 		return
 	})(); err != nil {
-		log.Errorf("dns cache expiration hook process returned error: %v\tfor addr:\t%s", err, addr)
+		if dc != nil {
+			log.Errorf("dns cache expiration hook process returned error: %v\tfor addr:\t%s\tips: %v\tlen: %d", err, addr, dc.ips, dc.Len())
+		} else {
+			log.Errorf("dns cache expiration hook process returned error: %v\tfor addr:\t%s", err, addr)
+		}
 	}
 }

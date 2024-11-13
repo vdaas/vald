@@ -272,8 +272,12 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 			if err != nil {
 				return nil, err
 			}
+			network := g.DialOption.Net.Network
+			if network == "" {
+				network = net.TCP.String()
+			}
 			opts = append(opts,
-				grpc.WithDialer(der),
+				grpc.WithDialer(network, der),
 			)
 		}
 
