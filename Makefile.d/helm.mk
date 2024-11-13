@@ -24,7 +24,7 @@ $(BINDIR)/helm:
 	TAR_NAME=helm-$(HELM_VERSION)-$(OS)-$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) \
 	    && cd $(TEMP_DIR) \
 	    && curl -fsSL "https://get.helm.sh/$${TAR_NAME}.tar.gz" -o "$(TEMP_DIR)/$${TAR_NAME}" \
-	    && tar xzvf --strip=1 "$(TEMP_DIR)/$${TAR_NAME}" \
+	    && tar -xzvf "$(TEMP_DIR)/$${TAR_NAME}" --strip=1 \
 	    && mv helm $(BINDIR)/helm
 
 .PHONY: helm-docs/install
@@ -37,7 +37,7 @@ $(BINDIR)/helm-docs:
 	TAR_NAME=helm-docs_$(HELM_DOCS_VERSION)_$(UNAME)_$(DARCH).tar.gz \
 	    && cd $(TEMP_DIR) \
 	    && curl -fsSL "https://github.com/norwoodj/helm-docs/releases/download/v$(HELM_DOCS_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}"\
-	    && tar xzvf "$(TEMP_DIR)/$${TAR_NAME}" \
+	    && tar -xzvf "$(TEMP_DIR)/$${TAR_NAME}" \
 	    && mv helm-docs $(BINDIR)/helm-docs
 
 .PHONY: helm/package/vald
