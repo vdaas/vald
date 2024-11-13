@@ -485,18 +485,26 @@ func WithKeepaliveParams(t, to string, permitWithoutStream bool) Option {
 	}
 }
 
-func WithDialer(der net.Dialer) Option {
+func WithDialer(network string, der net.Dialer) Option {
 	return func(g *gRPCClient) {
 		if der != nil {
 			g.dialer = der
 			if g.dopts == nil && cap(g.dopts) == 0 {
 				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
 			}
+			nt := net.NetworkTypeFromString(network)
+			switch nt {
+			case net.UDP, net.UDP4, net.UDP6:
+				nt = net.UDP
+			case net.UNIX, net.UNIXGRAM, net.UNIXPACKET:
+				nt = net.UNIX
+			default:
+				nt = net.TCP
+			}
 			g.dopts = append(g.dopts,
 				grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
-					// TODO we need change network type dynamically
-					log.Debugf("gRPC context Dialer addr is %s", addr)
-					return der.GetDialer()(ctx, net.TCP.String(), addr)
+					log.Debugf("gRPC context Dialer for network %s, addr is %s", nt.String(), addr)
+					return g.dialer.GetDialer()(ctx, nt.String(), addr)
 				}),
 			)
 		}
