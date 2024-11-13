@@ -170,7 +170,7 @@ func TestWithGache(t *testing.T) {
 func TestWithExpiredHook(t *testing.T) {
 	type T = cache[any]
 	type args struct {
-		f func(context.Context, string)
+		f func(context.Context, string, any)
 	}
 	type want struct {
 		want *T
@@ -193,7 +193,7 @@ func TestWithExpiredHook(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			fn := func(context.Context, string) {}
+			fn := func(context.Context, string, any) {}
 			return test{
 				name: "set success when f is not nil",
 				args: args{

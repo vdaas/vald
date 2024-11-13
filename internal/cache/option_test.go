@@ -30,7 +30,7 @@ import (
 
 func TestWithExpiredHook(t *testing.T) {
 	type args struct {
-		f func(context.Context, string)
+		f func(context.Context, string, any)
 	}
 	type want struct {
 		want *cache[any]
@@ -51,7 +51,7 @@ func TestWithExpiredHook(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			fn := func(context.Context, string) {}
+			fn := func(context.Context, string, any) {}
 			return test{
 				name: "set success when f is not nil",
 				args: args{
@@ -93,7 +93,7 @@ func TestWithExpiredHook(t *testing.T) {
 			}
 
 			got := new(cache[any])
-			opts := WithExpiredHook[any](test.args.f)
+			opts := WithExpiredHook(test.args.f)
 			opts(got)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
