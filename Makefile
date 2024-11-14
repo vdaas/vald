@@ -153,6 +153,8 @@ PROTOS_V1 := $(eval PROTOS_V1 := $(filter apis/proto/v1/%.proto,$(PROTOS)))$(PRO
 PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
 PBDOCS = $(ROOTDIR)/apis/docs/v1/docs.md
+PROTO_APIS := $(eval PROTO_APIS := $(filter $(ROOTDIR)/apis/proto/v1/vald/%.proto,$(PROTOS)))$(PROTO_APIS)
+PROTO_API_DOCS := $(PROTO_APIS:$(ROOTDIR)/apis/proto/v1/vald/%.proto=$(ROOTDIR)/apis/docs/v1/%.md)
 
 LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -Ofast -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
 

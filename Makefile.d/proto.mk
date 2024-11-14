@@ -17,7 +17,8 @@
 ## build protobufs
 proto/all: \
 	proto/deps \
-	proto/gen
+	proto/gen/code \
+	proto/gen/api/docs
 
 .PHONY: proto/clean
 ## clean proto artifacts
@@ -34,15 +35,20 @@ proto/paths/print:
 .PHONY: proto/deps
 ## install protobuf dependencies
 proto/deps: \
-	$(GOBIN)/buf
+	$(GOBIN)/buf \
+	$(GOBIN)/protoc-gen-doc
 
 .PHONY: proto/clean/deps
 ## uninstall all protobuf dependencies
 proto/clean/deps:
 	rm -rf $(GOBIN)/buf
+	rm -rf $(GOBIN)/protoc-gen-doc
 
 $(GOBIN)/buf:
 	$(call go-install, github.com/bufbuild/buf/cmd/buf)
+
+$(GOBIN)/protoc-gen-doc:
+	$(call go-install, github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc)
 
 $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto:
 	curl -fsSL https://raw.githubusercontent.com/googleapis/googleapis/master/google/rpc/error_details.proto -o $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto
@@ -50,13 +56,22 @@ $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto:
 	sed  -i -e "s%google.golang.org/genproto/googleapis/rpc/errdetails;errdetails%$(GOPKG)/apis/grpc/v1/rpc/errdetails%" $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto
 	sed  -i -e "s/com.google.rpc/org.vdaas.vald.api.v1.rpc/" $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto
 
-proto/gen: \
+proto/gen/code: \
 	$(PROTOS) \
 	proto/deps
 	@$(call green, "generating pb.go and swagger.json files and documents for API v1...")
 	buf format -w
 	buf generate
 	make proto/replace
+
+proto/gen/api/docs: $(PROTO_API_DOCS)
+
+$(ROOTDIR)/apis/docs/v1/%.md: $(ROOTDIR)/apis/proto/v1/vald/%.proto
+	@$(call green, "generating documents for API v1...")
+	buf generate --template=buf.gen.doc.yaml --path $(subst $(ROOTDIR)/,,$<)
+	@sleep 1
+	mv $(ROOTDIR)/apis/docs/v1/vald/tmp.md $@
+	rmdir $(ROOTDIR)/apis/docs/v1/vald
 
 proto/replace:
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs -P$(CORES) sed -i -E "s%google.golang.org/grpc/codes%$(GOPKG)/internal/net/grpc/codes%g"
