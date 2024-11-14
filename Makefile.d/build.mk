@@ -25,6 +25,8 @@ binary/build: \
 	cmd/index/job/correction/index-correction \
 	cmd/index/job/creation/index-creation \
 	cmd/index/job/deletion/index-deletion \
+	cmd/index/job/exportation/index-exportation \
+	cmd/index/job/importation/index-importation \
 	cmd/index/job/readreplica/rotate/readreplica-rotate \
 	cmd/index/job/save/index-save \
 	cmd/index/operator/index-operator \
@@ -84,6 +86,14 @@ cmd/index/job/deletion/index-deletion:
 	$(eval CGO_ENABLED = 0)
 	$(call go-build,index/job/deletion,,-static,,,$@)
 
+cmd/index/job/exportation/index-exportation:
+	$(eval CGO_ENABLED = 0)
+	$(call go-build,index/job/exportation,,-static,,,$@)
+
+cmd/index/job/importation/index-importation:
+	$(eval CGO_ENABLED = 0)
+	$(call go-build,index/job/importation,,-static,,,$@)
+
 cmd/index/job/save/index-save:
 	$(eval CGO_ENABLED = 0)
 	$(call go-build,index/job/save,,-static,,,$@)
@@ -128,6 +138,8 @@ binary/build/zip: \
 	artifacts/vald-index-correction-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-index-creation-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-index-deletion-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-index-exportation-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-index-importation-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-index-operator-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-index-save-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-lb-gateway-$(GOOS)-$(GOARCH).zip \
@@ -184,6 +196,14 @@ artifacts/vald-index-creation-$(GOOS)-$(GOARCH).zip: cmd/index/job/creation/inde
 	zip --junk-paths $@ $<
 
 artifacts/vald-index-deletion-$(GOOS)-$(GOARCH).zip: cmd/index/job/deletion/index-deletion
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-index-exporation-$(GOOS)-$(GOARCH).zip: cmd/index/job/exportation/index-exportation
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-index-importation-$(GOOS)-$(GOARCH).zip: cmd/index/job/importation/index-importation
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 
