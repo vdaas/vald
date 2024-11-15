@@ -24,8 +24,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: vdaas/vald/.github/actions/dump-context@main
+  detect-ci-container:
+    uses: ./.github/workflows/_detect-ci-container.yaml
   update-version:
     runs-on: ubuntu-latest
+    needs: [detect-ci-container]
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -42,7 +47,6 @@ jobs:
         run: |
           make files
           make update
-          make deps
           make helm/schema/all
           make k8s/manifest/update
           make k8s/manifest/helm-operator/update
@@ -50,6 +54,7 @@ jobs:
           make helm/docs/vald
           make helm/docs/vald-helm-operator
           make helm/docs/vald-benchmark-operator
+          : # delete `make license` if it is not needed.
           make license
           make format
           make perm
