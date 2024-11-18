@@ -37,6 +37,7 @@ import (
 )
 
 var tmpl = fmt.Sprintf(`# syntax = docker/dockerfile:latest
+# check=error=true
 #
 # Copyright (C) 2019-{{.Year}} {{.Maintainer}}
 #
