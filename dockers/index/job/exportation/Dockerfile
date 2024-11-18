@@ -82,6 +82,7 @@ RUN --mount=type=bind,target=.,rw \
 FROM gcr.io/distroless/static:nonroot
 LABEL maintainer="vdaas.org vald team <vald@vdaas.org>"
 COPY --from=builder /usr/bin/index-exportation /usr/bin/index-exportation
+COPY cmd/index/job/exportation/sample.yaml /etc/server/config.yaml
 # skipcq: DOK-DL3002
 USER nonroot:nonroot
 ENTRYPOINT ["/usr/bin/index-exportation"]
