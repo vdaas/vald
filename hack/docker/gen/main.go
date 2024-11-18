@@ -93,20 +93,12 @@ RUN {{RunMounts .RunMounts}} \
     && apt-get clean \
     && apt-get update -y \
     && apt-get upgrade -y \
-{{- if eq (ContainerName .ContainerType) "%s"}}
-    && apt-get install -y --no-install-recommends --fix-missing \
-    curl \
-    gnupg \
-    software-properties-common \
-    && add-apt-repository ppa:ubuntu-toolchain-r/test -y \
-    && apt-get update -y \
-    && apt-get upgrade -y \
-{{- end}}
     && apt-get install -y --no-install-recommends --fix-missing \
     build-essential \
     ca-certificates \
-{{- if not (eq (ContainerName .ContainerType) "%s")}}
     curl \
+{{- if eq (ContainerName .ContainerType) "%s"}}
+    gnupg \
 {{- end}}
     tzdata \
     locales \
@@ -144,7 +136,6 @@ ENTRYPOINT [{{Entrypoint .Entrypoints}}]
 ENTRYPOINT ["{{.BinDir}}/{{.AppName}}"]
 {{- end}}
 {{- end}}`, DevContainer.String(), CIContainer.String(),
-	DevContainer.String(),
 	DevContainer.String(),
 	DevContainer.String(), CIContainer.String(),
 	DevContainer.String(), CIContainer.String())
@@ -239,7 +230,7 @@ const (
 	defaultBuildStageName = "builder"
 	maintainerKey         = "MAINTAINER"
 	minimumArgumentLength = 2
-	ubuntuVersion         = "22.04"
+	ubuntuVersion         = "24.04"
 
 	goWorkdir   = "${GOPATH}/src/github.com"
 	rustWorkdir = "${HOME}/rust/src/github.com"
