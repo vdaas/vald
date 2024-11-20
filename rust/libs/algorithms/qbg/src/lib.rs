@@ -13,6 +13,115 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+pub mod property {
+    use super::ffi;
+    use cxx::UniquePtr;
+
+    pub struct Property {
+        inner: UniquePtr<ffi::Property>,
+    }
+
+    impl Property {
+        pub fn new() -> Self {
+            let inner = ffi::new_property();
+            Property { inner }
+        }
+
+        pub fn init_construction_parameters(&mut self) {
+            self.inner.pin_mut().init_qbg_construction_parameters();
+        }
+
+        pub fn set_extended_dimension(&mut self, extended_dimension: usize) {
+            self.inner.pin_mut().set_extended_dimension(extended_dimension);
+        }
+
+        pub fn set_dimension(&mut self, dimension: usize) {
+            self.inner.pin_mut().set_dimension(dimension);
+        }
+
+        pub fn set_number_of_subvectors(&mut self, number_of_subvectors: usize) {
+            self.inner.pin_mut().set_number_of_subvectors(number_of_subvectors);
+        }
+
+        pub fn set_number_of_blobs(&mut self, number_of_blobs: usize) {
+            self.inner.pin_mut().set_number_of_blobs(number_of_blobs);
+        }
+
+        pub fn set_internal_data_type(&mut self, internal_data_type: i32) {
+            self.inner.pin_mut().set_internal_data_type(internal_data_type);
+        }
+
+        pub fn set_data_type(&mut self, data_type: i32) {
+            self.inner.pin_mut().set_data_type(data_type);
+        }
+
+        pub fn set_distance_type(&mut self, distance_type: i32) {
+            self.inner.pin_mut().set_distance_type(distance_type);
+        }
+
+        pub fn init_build_parameters(&mut self) {
+            self.inner.pin_mut().init_qbg_build_parameters();
+        }
+
+        pub fn set_number_of_objects(&mut self, number_of_objects: usize) {
+            self.inner.pin_mut().set_number_of_objects(number_of_objects);
+        }
+    }
+}
+
+pub mod index {
+    use super::ffi;
+    use super::property::Property;
+    use cxx::UniquePtr;
+
+    pub struct Index {
+        inner: UniquePtr<ffi::Index>,
+    }
+
+    impl Index {
+        pub fn new(path: &str, property: &mut Property) -> Result<Self, cxx::Exception> {
+            let inner = ffi::new_index(&path.to_string(), property.inner.pin_mut())?;
+            Ok(Index { inner })
+        }
+
+        pub fn append(&mut self, vector: &[f32]) -> Result<i32, cxx::Exception> {
+            self.inner.pin_mut().append(vector)
+        }
+
+        pub fn build(&mut self, path: &str, property: &mut Property) {
+            self.inner
+                .pin_mut()
+                .build_index(&path.to_string(), property.inner.pin_mut());
+        }
+
+        pub fn save(&mut self) {
+            self.inner.pin_mut().save_index();
+        }
+
+        pub fn close(&mut self) {
+            self.inner.pin_mut().close_index();
+        }
+
+        pub fn search(
+            &mut self,
+            query: &[f32],
+            k: usize,
+        ) -> Result<(Vec<i32>, Vec<f32>), cxx::Exception> {
+            let mut ids = vec![0; k];
+            let mut distances = vec![0.0; k];
+            unsafe {
+                self.inner.pin_mut().search(
+                    query,
+                    k,
+                    ids.as_mut_ptr(),
+                    distances.as_mut_ptr(),
+                );
+            }
+            Ok((ids, distances))
+        }
+    }
+}
+
 #[cxx::bridge]
 pub mod ffi {
     unsafe extern "C++" {
@@ -224,5 +333,29 @@ mod tests {
         index.pin_mut().close_index();
 
         return Ok(());
+    }
+
+    use crate::{index::Index, property::Property};
+
+    #[test]
+    fn test_index_creation() {
+        let dimension = 128;
+        let path = "index";
+
+        let mut property = Property::new();
+        property.init_construction_parameters();
+        property.set_dimension(dimension);
+        property.set_number_of_subvectors(64);
+        property.set_number_of_objects(500);
+
+        let mut index = Index::new(path, &mut property).expect("Failed to create index");
+
+        for i in 0..100 {
+            let vec: Vec<f32> = (0..dimension).map(|d| (i + d) as f32).collect();
+            index.append(&vec).expect("Failed to append vector");
+        }
+
+        index.save();
+        index.close();
     }
 }
