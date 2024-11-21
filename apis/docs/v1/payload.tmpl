@@ -1,0 +1,42 @@
+{{- $skip_types := list "Search.AggregationAlgorithm" "Remove.Timestamp.Operator" -}}
+{{- range .Scalars -}}
+  {{- $skip_types = append $skip_types .ProtoType -}}
+{{- end -}}
+
+{{- range .Files -}}
+  {{- range .Messages -}}
+  {{ printf "{{- define \"scheme.%s\" }}" .FullName }}
+  message {{ .LongName }} {
+    {{- range $i, $ := .Fields }}
+    {{if $.Label}}{{ $.Label }} {{end}}{{ $.LongType }} {{ $.Name }} = {{ add1 $i }};
+    {{- else }}
+    // empty
+    {{- end }}
+  }
+    {{- range $i, $ := .Fields -}}
+      {{- if not (or (has $.LongType $skip_types) (hasPrefix "google" $.FullType)) -}}
+        {{- printf "\n\n{{ template \"scheme.%s\" }}\n" $.FullType -}}
+      {{- end -}}
+    {{- end }}
+    {{- println "\n{{- end -}}\n" -}}
+
+    {{- printf "{{- define \"field.%s\" }}\n" .FullName -}}
+    {{- printf "  - %s\n" .LongName -}}
+    {{- if .HasFields }}
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+      {{- range .Fields }}
+    | {{ .Name }} | {{ .LongType }} | {{.Label }} | {{ .Description }} |
+      {{- end }}
+
+      {{- range $i, $ := .Fields -}}
+        {{- if not (or (has $.LongType $skip_types) (hasPrefix "google" $.FullType)) -}}
+          {{- printf "\n\n{{ template \"field.%s\" }}\n" $.FullType -}}
+        {{- end -}}
+      {{- end -}}
+    {{- else }}
+    empty
+    {{- end -}}
+    {{- println "\n{{- end -}}\n" -}}
+  {{- end -}}
+{{- end -}}

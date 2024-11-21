@@ -64,14 +64,25 @@ proto/gen/code: \
 	buf generate
 	make proto/replace
 
-proto/gen/api/docs: $(PROTO_API_DOCS)
+proto/gen/api/docs: \
+	proto/gen/api/docs/payload \
+	$(PROTO_API_DOCS)
 
-$(ROOTDIR)/apis/docs/v1/%.md: $(ROOTDIR)/apis/proto/v1/vald/%.proto
+proto/gen/api/docs/payload: $(ROOTDIR)/apis/docs/v1/payload.md.tmpl
+
+$(ROOTDIR)/apis/docs/v1/payload.md.tmpl: $(ROOTDIR)/apis/proto/v1/payload/payload.proto $(ROOTDIR)/apis/docs/v1/payload.tmpl
+	@$(call green, "generating payload  v1...")
+	buf generate --template=apis/docs/buf.gen.payload.yaml --path apis/proto/v1/payload/payload.proto
+
+$(ROOTDIR)/apis/docs/v1/%.md: $(ROOTDIR)/apis/proto/v1/vald/%.proto $(ROOTDIR)/apis/docs/v1/payload.md.tmpl $(ROOTDIR)/apis/docs/v1/doc.tmpl
 	@$(call green, "generating documents for API v1...")
-	buf generate --template=buf.gen.doc.yaml --path $(subst $(ROOTDIR)/,,$<)
+	buf generate --template=apis/docs/buf.gen.tmpl.yaml --path $(subst $(ROOTDIR)/,,$<)
+	cat apis/docs/v1/payload.md.tmpl apis/docs/v1/_doc.md.tmpl > apis/docs/v1/doc.md.tmpl
 	@sleep 1
-	mv $(ROOTDIR)/apis/docs/v1/vald/tmp.md $@
-	rmdir $(ROOTDIR)/apis/docs/v1/vald
+	buf generate --template=apis/docs/buf.gen.doc.yaml
+	@sleep 1
+	mv $(ROOTDIR)/apis/docs/v1/doc.md $@
+	rm apis/docs/v1/*doc.md.tmpl
 
 proto/replace:
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs -P$(CORES) sed -i -E "s%google.golang.org/grpc/codes%$(GOPKG)/internal/net/grpc/codes%g"

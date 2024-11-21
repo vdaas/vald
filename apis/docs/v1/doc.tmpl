@@ -1,0 +1,53 @@
+{{ range .Files -}}
+{{ range .Services -}}
+# Vald {{ .Name }} APIs
+
+## Overview
+
+{{.Description}}
+
+```rpc
+service {{.Name}} {
+
+{{ range .Methods }}  rpc {{ .Name }}({{ .RequestFullType }}) returns ({{ .ResponseFullType }}) {}
+{{ end }}
+}
+```
+
+{{ range .Methods -}}
+## {{ .Name }} RPC
+
+{{ .Description }}
+
+### Input
+
+- the scheme of `{{ .RequestFullType }}`
+
+  ```rpc
+{{ printf "{{- template \"scheme.%s\" }}" .RequestFullType }}
+  ```
+{{ printf "{{ template \"field.%s\" }}" .RequestFullType }}
+
+### Output
+
+- the scheme of `{{ .ResponseFullType }}`
+
+  ```rpc
+{{ printf "{{- template \"scheme.%s\" }}" .ResponseFullType }}
+  ```
+{{ printf "{{ template \"field.%s\" }}" .ResponseFullType }}
+
+### Status Code
+
+| code | desc.             |
+| :--: | :---------------- |
+| 0    | OK                |
+| 1    | CANCELLED         |
+| 3    | INVALID_ARGUMENT  |
+| 4    | DEADLINE_EXCEEDED |
+| 5    | NOT_FOUND         |
+| 13   | INTERNAL          |
+
+{{ end -}}
+{{- end -}}
+{{- end -}}

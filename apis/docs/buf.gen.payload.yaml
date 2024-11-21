@@ -23,5 +23,5 @@ managed:
       value: github.com/vdaas/vald/apis/grpc
 plugins:
   - local: protoc-gen-doc
-    out: apis/docs
-    opt: apis/docs/v1/docs.md.tmpl,tmp.md,source_relative
+    out: apis/docs/v1
+    opt: apis/docs/v1/payload.tmpl,payload.md.tmpl
