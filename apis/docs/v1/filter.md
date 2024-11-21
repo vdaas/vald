@@ -86,68 +86,60 @@ A method to search object.
 
   - Search.ObjectRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | object | bytes |  | The binary object to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-    | vectorizer | Filter.Target |  | Filter configuration. |
-
+    |   field    | type          | label | desc.                                    |
+    | :--------: | :------------ | :---- | :--------------------------------------- |
+    |   object   | bytes         |       | The binary object to be searched.        |
+    |   config   | Search.Config |       | The configuration of the search request. |
+    | vectorizer | Filter.Target |       | Filter configuration.                    |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
+
+  - Filter.Config
+
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
-
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -168,29 +160,28 @@ A method to search object.
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## MultiSearchObject RPC
 
@@ -260,75 +251,66 @@ A method to search multiple objects.
 
   - Search.MultiObjectRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field   | type                 | label    | desc.                                                           |
+    | :------: | :------------------- | :------- | :-------------------------------------------------------------- |
     | requests | Search.ObjectRequest | repeated | Represent the multiple search by binary object request content. |
-
 
   - Search.ObjectRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | object | bytes |  | The binary object to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-    | vectorizer | Filter.Target |  | Filter configuration. |
-
+    |   field    | type          | label | desc.                                    |
+    | :--------: | :------------ | :---- | :--------------------------------------- |
+    |   object   | bytes         |       | The binary object to be searched.        |
+    |   config   | Search.Config |       | The configuration of the search request. |
+    | vectorizer | Filter.Target |       | Filter configuration.                    |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
+
+  - Filter.Config
+
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
-
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -354,36 +336,34 @@ A method to search multiple objects.
 
   - Search.Responses
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |   field   | type            | label    | desc.                                           |
+    | :-------: | :-------------- | :------- | :---------------------------------------------- |
     | responses | Search.Response | repeated | Represent the multiple search response content. |
-
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## StreamSearchObject RPC
 
@@ -448,68 +428,60 @@ A method to search object by bidirectional streaming.
 
   - Search.ObjectRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | object | bytes |  | The binary object to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-    | vectorizer | Filter.Target |  | Filter configuration. |
-
+    |   field    | type          | label | desc.                                    |
+    | :--------: | :------------ | :---- | :--------------------------------------- |
+    |   object   | bytes         |       | The binary object to be searched.        |
+    |   config   | Search.Config |       | The configuration of the search request. |
+    | vectorizer | Filter.Target |       | Filter configuration.                    |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
+
+  - Filter.Config
+
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
-
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -536,37 +508,35 @@ A method to search object by bidirectional streaming.
 
   - Search.StreamResponse
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | response | Search.Response |  | Represent the search response. |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    |  field   | type              | label | desc.                          |
+    | :------: | :---------------- | :---- | :----------------------------- |
+    | response | Search.Response   |       | Represent the search response. |
+    |  status  | google.rpc.Status |       | The RPC error status.          |
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## InsertObject RPC
 
@@ -618,53 +588,46 @@ A method insert object.
 
   - Insert.ObjectRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | object | Object.Blob |  | The binary object to be inserted. |
-    | config | Insert.Config |  | The configuration of the insert request. |
-    | vectorizer | Filter.Target |  | Filter configurations. |
-
+    |   field    | type          | label | desc.                                    |
+    | :--------: | :------------ | :---- | :--------------------------------------- |
+    |   object   | Object.Blob   |       | The binary object to be inserted.        |
+    |   config   | Insert.Config |       | The configuration of the insert request. |
+    | vectorizer | Filter.Target |       | Filter configurations.                   |
 
   - Object.Blob
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The object ID. |
-    | object | bytes |  | The binary object. |
-
-
+    | field  | type   | label | desc.              |
+    | :----: | :----- | :---- | :----------------- |
+    |   id   | string |       | The object ID.     |
+    | object | bytes  |       | The binary object. |
 
   - Insert.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during insert operation. |
-    | filters | Filter.Config |  | Filter configurations. |
-    | timestamp | int64 |  | Insert timestamp. |
-
+    |          field          | type          | label | desc.                                               |
+    | :---------------------: | :------------ | :---- | :-------------------------------------------------- |
+    | skip_strict_exist_check | bool          |       | A flag to skip exist check during insert operation. |
+    |         filters         | Filter.Config |       | Filter configurations.                              |
+    |        timestamp        | int64         |       | Insert timestamp.                                   |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -680,22 +643,22 @@ A method insert object.
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## StreamInsertObject RPC
 
@@ -747,53 +710,46 @@ Represent the streaming RPC to insert object by bidirectional streaming.
 
   - Insert.ObjectRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | object | Object.Blob |  | The binary object to be inserted. |
-    | config | Insert.Config |  | The configuration of the insert request. |
-    | vectorizer | Filter.Target |  | Filter configurations. |
-
+    |   field    | type          | label | desc.                                    |
+    | :--------: | :------------ | :---- | :--------------------------------------- |
+    |   object   | Object.Blob   |       | The binary object to be inserted.        |
+    |   config   | Insert.Config |       | The configuration of the insert request. |
+    | vectorizer | Filter.Target |       | Filter configurations.                   |
 
   - Object.Blob
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The object ID. |
-    | object | bytes |  | The binary object. |
-
-
+    | field  | type   | label | desc.              |
+    | :----: | :----- | :---- | :----------------- |
+    |   id   | string |       | The object ID.     |
+    | object | bytes  |       | The binary object. |
 
   - Insert.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during insert operation. |
-    | filters | Filter.Config |  | Filter configurations. |
-    | timestamp | int64 |  | Insert timestamp. |
-
+    |          field          | type          | label | desc.                                               |
+    | :---------------------: | :------------ | :---- | :-------------------------------------------------- |
+    | skip_strict_exist_check | bool          |       | A flag to skip exist check during insert operation. |
+    |         filters         | Filter.Config |       | Filter configurations.                              |
+    |        timestamp        | int64         |       | Insert timestamp.                                   |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -815,30 +771,29 @@ Represent the streaming RPC to insert object by bidirectional streaming.
 
   - Object.StreamLocation
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | location | Object.Location |  | The vector location. |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    |  field   | type              | label | desc.                 |
+    | :------: | :---------------- | :---- | :-------------------- |
+    | location | Object.Location   |       | The vector location.  |
+    |  status  | google.rpc.Status |       | The RPC error status. |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## MultiInsertObject RPC
 
@@ -895,60 +850,52 @@ A method to insert multiple objects.
 
   - Insert.MultiObjectRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field   | type                 | label    | desc.                                        |
+    | :------: | :------------------- | :------- | :------------------------------------------- |
     | requests | Insert.ObjectRequest | repeated | Represent multiple insert by object content. |
-
 
   - Insert.ObjectRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | object | Object.Blob |  | The binary object to be inserted. |
-    | config | Insert.Config |  | The configuration of the insert request. |
-    | vectorizer | Filter.Target |  | Filter configurations. |
-
+    |   field    | type          | label | desc.                                    |
+    | :--------: | :------------ | :---- | :--------------------------------------- |
+    |   object   | Object.Blob   |       | The binary object to be inserted.        |
+    |   config   | Insert.Config |       | The configuration of the insert request. |
+    | vectorizer | Filter.Target |       | Filter configurations.                   |
 
   - Object.Blob
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The object ID. |
-    | object | bytes |  | The binary object. |
-
-
+    | field  | type   | label | desc.              |
+    | :----: | :----- | :---- | :----------------- |
+    |   id   | string |       | The object ID.     |
+    | object | bytes  |       | The binary object. |
 
   - Insert.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during insert operation. |
-    | filters | Filter.Config |  | Filter configurations. |
-    | timestamp | int64 |  | Insert timestamp. |
-
+    |          field          | type          | label | desc.                                               |
+    | :---------------------: | :------------ | :---- | :-------------------------------------------------- |
+    | skip_strict_exist_check | bool          |       | A flag to skip exist check during insert operation. |
+    |         filters         | Filter.Config |       | Filter configurations.                              |
+    |        timestamp        | int64         |       | Insert timestamp.                                   |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -969,29 +916,28 @@ A method to insert multiple objects.
 
   - Object.Locations
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | locations | Object.Location | repeated |  |
-
+    |   field   | type            | label    | desc. |
+    | :-------: | :-------------- | :------- | :---- |
+    | locations | Object.Location | repeated |       |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## UpdateObject RPC
 
@@ -1044,55 +990,49 @@ A method to update object.
 
   - Update.ObjectRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | object | Object.Blob |  | The binary object to be updated. |
-    | config | Update.Config |  | The configuration of the update request. |
-    | vectorizer | Filter.Target |  | Filter target. |
-
+    |   field    | type          | label | desc.                                    |
+    | :--------: | :------------ | :---- | :--------------------------------------- |
+    |   object   | Object.Blob   |       | The binary object to be updated.         |
+    |   config   | Update.Config |       | The configuration of the update request. |
+    | vectorizer | Filter.Target |       | Filter target.                           |
 
   - Object.Blob
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The object ID. |
-    | object | bytes |  | The binary object. |
-
-
+    | field  | type   | label | desc.              |
+    | :----: | :----- | :---- | :----------------- |
+    |   id   | string |       | The object ID.     |
+    | object | bytes  |       | The binary object. |
 
   - Update.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
-    | filters | Filter.Config |  | Filter configuration. |
-    | timestamp | int64 |  | Update timestamp. |
-    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-during update operation. |
+        | field | type | label | desc. |
+        | :---: | :--- | :---- | :---- |
+        | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
+        | filters | Filter.Config |  | Filter configuration. |
+        | timestamp | int64 |  | Update timestamp. |
+        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
 
+    during update operation. |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -1108,22 +1048,22 @@ during update operation. |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## StreamUpdateObject RPC
 
@@ -1176,55 +1116,49 @@ A method to update object by bidirectional streaming.
 
   - Update.ObjectRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | object | Object.Blob |  | The binary object to be updated. |
-    | config | Update.Config |  | The configuration of the update request. |
-    | vectorizer | Filter.Target |  | Filter target. |
-
+    |   field    | type          | label | desc.                                    |
+    | :--------: | :------------ | :---- | :--------------------------------------- |
+    |   object   | Object.Blob   |       | The binary object to be updated.         |
+    |   config   | Update.Config |       | The configuration of the update request. |
+    | vectorizer | Filter.Target |       | Filter target.                           |
 
   - Object.Blob
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The object ID. |
-    | object | bytes |  | The binary object. |
-
-
+    | field  | type   | label | desc.              |
+    | :----: | :----- | :---- | :----------------- |
+    |   id   | string |       | The object ID.     |
+    | object | bytes  |       | The binary object. |
 
   - Update.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
-    | filters | Filter.Config |  | Filter configuration. |
-    | timestamp | int64 |  | Update timestamp. |
-    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-during update operation. |
+        | field | type | label | desc. |
+        | :---: | :--- | :---- | :---- |
+        | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
+        | filters | Filter.Config |  | Filter configuration. |
+        | timestamp | int64 |  | Update timestamp. |
+        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
 
+    during update operation. |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -1246,30 +1180,29 @@ during update operation. |
 
   - Object.StreamLocation
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | location | Object.Location |  | The vector location. |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    |  field   | type              | label | desc.                 |
+    | :------: | :---------------- | :---- | :-------------------- |
+    | location | Object.Location   |       | The vector location.  |
+    |  status  | google.rpc.Status |       | The RPC error status. |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## MultiUpdateObject RPC
 
@@ -1327,62 +1260,55 @@ A method to update multiple objects.
 
   - Update.MultiObjectRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field   | type                 | label    | desc.                                                 |
+    | :------: | :------------------- | :------- | :---------------------------------------------------- |
     | requests | Update.ObjectRequest | repeated | Represent the multiple update object request content. |
-
 
   - Update.ObjectRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | object | Object.Blob |  | The binary object to be updated. |
-    | config | Update.Config |  | The configuration of the update request. |
-    | vectorizer | Filter.Target |  | Filter target. |
-
+    |   field    | type          | label | desc.                                    |
+    | :--------: | :------------ | :---- | :--------------------------------------- |
+    |   object   | Object.Blob   |       | The binary object to be updated.         |
+    |   config   | Update.Config |       | The configuration of the update request. |
+    | vectorizer | Filter.Target |       | Filter target.                           |
 
   - Object.Blob
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The object ID. |
-    | object | bytes |  | The binary object. |
-
-
+    | field  | type   | label | desc.              |
+    | :----: | :----- | :---- | :----------------- |
+    |   id   | string |       | The object ID.     |
+    | object | bytes  |       | The binary object. |
 
   - Update.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
-    | filters | Filter.Config |  | Filter configuration. |
-    | timestamp | int64 |  | Update timestamp. |
-    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-during update operation. |
+        | field | type | label | desc. |
+        | :---: | :--- | :---- | :---- |
+        | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
+        | filters | Filter.Config |  | Filter configuration. |
+        | timestamp | int64 |  | Update timestamp. |
+        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
 
+    during update operation. |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -1403,29 +1329,28 @@ during update operation. |
 
   - Object.Locations
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | locations | Object.Location | repeated |  |
-
+    |   field   | type            | label    | desc. |
+    | :-------: | :-------------- | :------- | :---- |
+    | locations | Object.Location | repeated |       |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## UpsertObject RPC
 
@@ -1478,55 +1403,49 @@ A method to upsert object.
 
   - Upsert.ObjectRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | object | Object.Blob |  | The binary object to be upserted. |
-    | config | Upsert.Config |  | The configuration of the upsert request. |
-    | vectorizer | Filter.Target |  | Filter target. |
-
+    |   field    | type          | label | desc.                                    |
+    | :--------: | :------------ | :---- | :--------------------------------------- |
+    |   object   | Object.Blob   |       | The binary object to be upserted.        |
+    |   config   | Upsert.Config |       | The configuration of the upsert request. |
+    | vectorizer | Filter.Target |       | Filter target.                           |
 
   - Object.Blob
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The object ID. |
-    | object | bytes |  | The binary object. |
-
-
+    | field  | type   | label | desc.              |
+    | :----: | :----- | :---- | :----------------- |
+    |   id   | string |       | The object ID.     |
+    | object | bytes  |       | The binary object. |
 
   - Upsert.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-    | filters | Filter.Config |  | Filter configuration. |
-    | timestamp | int64 |  | Upsert timestamp. |
-    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-during update operation. |
+        | field | type | label | desc. |
+        | :---: | :--- | :---- | :---- |
+        | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
+        | filters | Filter.Config |  | Filter configuration. |
+        | timestamp | int64 |  | Upsert timestamp. |
+        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
 
+    during update operation. |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -1542,22 +1461,22 @@ during update operation. |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## StreamUpsertObject RPC
 
@@ -1610,55 +1529,49 @@ A method to upsert object by bidirectional streaming.
 
   - Upsert.ObjectRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | object | Object.Blob |  | The binary object to be upserted. |
-    | config | Upsert.Config |  | The configuration of the upsert request. |
-    | vectorizer | Filter.Target |  | Filter target. |
-
+    |   field    | type          | label | desc.                                    |
+    | :--------: | :------------ | :---- | :--------------------------------------- |
+    |   object   | Object.Blob   |       | The binary object to be upserted.        |
+    |   config   | Upsert.Config |       | The configuration of the upsert request. |
+    | vectorizer | Filter.Target |       | Filter target.                           |
 
   - Object.Blob
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The object ID. |
-    | object | bytes |  | The binary object. |
-
-
+    | field  | type   | label | desc.              |
+    | :----: | :----- | :---- | :----------------- |
+    |   id   | string |       | The object ID.     |
+    | object | bytes  |       | The binary object. |
 
   - Upsert.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-    | filters | Filter.Config |  | Filter configuration. |
-    | timestamp | int64 |  | Upsert timestamp. |
-    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-during update operation. |
+        | field | type | label | desc. |
+        | :---: | :--- | :---- | :---- |
+        | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
+        | filters | Filter.Config |  | Filter configuration. |
+        | timestamp | int64 |  | Upsert timestamp. |
+        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
 
+    during update operation. |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -1680,30 +1593,29 @@ during update operation. |
 
   - Object.StreamLocation
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | location | Object.Location |  | The vector location. |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    |  field   | type              | label | desc.                 |
+    | :------: | :---------------- | :---- | :-------------------- |
+    | location | Object.Location   |       | The vector location.  |
+    |  status  | google.rpc.Status |       | The RPC error status. |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## MultiUpsertObject RPC
 
@@ -1761,62 +1673,55 @@ A method to upsert multiple objects.
 
   - Upsert.MultiObjectRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field   | type                 | label    | desc.                                                 |
+    | :------: | :------------------- | :------- | :---------------------------------------------------- |
     | requests | Upsert.ObjectRequest | repeated | Represent the multiple upsert object request content. |
-
 
   - Upsert.ObjectRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | object | Object.Blob |  | The binary object to be upserted. |
-    | config | Upsert.Config |  | The configuration of the upsert request. |
-    | vectorizer | Filter.Target |  | Filter target. |
-
+    |   field    | type          | label | desc.                                    |
+    | :--------: | :------------ | :---- | :--------------------------------------- |
+    |   object   | Object.Blob   |       | The binary object to be upserted.        |
+    |   config   | Upsert.Config |       | The configuration of the upsert request. |
+    | vectorizer | Filter.Target |       | Filter target.                           |
 
   - Object.Blob
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The object ID. |
-    | object | bytes |  | The binary object. |
-
-
+    | field  | type   | label | desc.              |
+    | :----: | :----- | :---- | :----------------- |
+    |   id   | string |       | The object ID.     |
+    | object | bytes  |       | The binary object. |
 
   - Upsert.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-    | filters | Filter.Config |  | Filter configuration. |
-    | timestamp | int64 |  | Upsert timestamp. |
-    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-during update operation. |
+        | field | type | label | desc. |
+        | :---: | :--- | :---- | :---- |
+        | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
+        | filters | Filter.Config |  | Filter configuration. |
+        | timestamp | int64 |  | Upsert timestamp. |
+        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
 
+    during update operation. |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -1837,27 +1742,25 @@ during update operation. |
 
   - Object.Locations
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | locations | Object.Location | repeated |  |
-
+    |   field   | type            | label    | desc. |
+    | :-------: | :-------------- | :------- | :---- |
+    | locations | Object.Location | repeated |       |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
-
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |

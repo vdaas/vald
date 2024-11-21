@@ -44,26 +44,23 @@ A method to remove an indexed vector.
 
   - Remove.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | Object.ID |  | The object ID to be removed. |
-    | config | Remove.Config |  | The configuration of the remove request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | Object.ID     |       | The object ID to be removed.             |
+    | config | Remove.Config |       | The configuration of the remove request. |
 
   - Object.ID
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  |  |
-
-
+    | field | type   | label | desc. |
+    | :---: | :----- | :---- | :---- |
+    |  id   | string |       |       |
 
   - Remove.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-    | timestamp | int64 |  | Remove timestamp. |
+    |          field          | type  | label | desc.                                               |
+    | :---------------------: | :---- | :---- | :-------------------------------------------------- |
+    | skip_strict_exist_check | bool  |       | A flag to skip exist check during upsert operation. |
+    |        timestamp        | int64 |       | Remove timestamp.                                   |
 
 ### Output
 
@@ -79,22 +76,22 @@ A method to remove an indexed vector.
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## RemoveByTimestamp RPC
 
@@ -118,18 +115,18 @@ A method to remove an indexed vector based on timestamp.
 
   - Remove.TimestampRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | timestamps | Remove.Timestamp | repeated | The timestamp comparison list. If more than one is specified, the `AND`
-search is applied. |
+        | field | type | label | desc. |
+        | :---: | :--- | :---- | :---- |
+        | timestamps | Remove.Timestamp | repeated | The timestamp comparison list. If more than one is specified, the `AND`
 
+    search is applied. |
 
   - Remove.Timestamp
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | timestamp | int64 |  | The timestamp. |
-    | operator | Remove.Timestamp.Operator |  | The conditional operator. |
+    |   field   | type                      | label | desc.                     |
+    | :-------: | :------------------------ | :---- | :------------------------ |
+    | timestamp | int64                     |       | The timestamp.            |
+    | operator  | Remove.Timestamp.Operator |       | The conditional operator. |
 
 ### Output
 
@@ -150,29 +147,28 @@ search is applied. |
 
   - Object.Locations
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | locations | Object.Location | repeated |  |
-
+    |   field   | type            | label    | desc. |
+    | :-------: | :-------------- | :------- | :---- |
+    | locations | Object.Location | repeated |       |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## StreamRemove RPC
 
@@ -203,26 +199,23 @@ A method to remove multiple indexed vectors by bidirectional streaming.
 
   - Remove.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | Object.ID |  | The object ID to be removed. |
-    | config | Remove.Config |  | The configuration of the remove request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | Object.ID     |       | The object ID to be removed.             |
+    | config | Remove.Config |       | The configuration of the remove request. |
 
   - Object.ID
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  |  |
-
-
+    | field | type   | label | desc. |
+    | :---: | :----- | :---- | :---- |
+    |  id   | string |       |       |
 
   - Remove.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-    | timestamp | int64 |  | Remove timestamp. |
+    |          field          | type  | label | desc.                                               |
+    | :---------------------: | :---- | :---- | :-------------------------------------------------- |
+    | skip_strict_exist_check | bool  |       | A flag to skip exist check during upsert operation. |
+    |        timestamp        | int64 |       | Remove timestamp.                                   |
 
 ### Output
 
@@ -244,30 +237,29 @@ A method to remove multiple indexed vectors by bidirectional streaming.
 
   - Object.StreamLocation
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | location | Object.Location |  | The vector location. |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    |  field   | type              | label | desc.                 |
+    | :------: | :---------------- | :---- | :-------------------- |
+    | location | Object.Location   |       | The vector location.  |
+    |  status  | google.rpc.Status |       | The RPC error status. |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## MultiRemove RPC
 
@@ -303,33 +295,29 @@ A method to remove multiple indexed vectors in a single request.
 
   - Remove.MultiRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field   | type           | label    | desc.                                          |
+    | :------: | :------------- | :------- | :--------------------------------------------- |
     | requests | Remove.Request | repeated | Represent the multiple remove request content. |
-
 
   - Remove.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | Object.ID |  | The object ID to be removed. |
-    | config | Remove.Config |  | The configuration of the remove request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | Object.ID     |       | The object ID to be removed.             |
+    | config | Remove.Config |       | The configuration of the remove request. |
 
   - Object.ID
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  |  |
-
-
+    | field | type   | label | desc. |
+    | :---: | :----- | :---- | :---- |
+    |  id   | string |       |       |
 
   - Remove.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-    | timestamp | int64 |  | Remove timestamp. |
+    |          field          | type  | label | desc.                                               |
+    | :---------------------: | :---- | :---- | :-------------------------------------------------- |
+    | skip_strict_exist_check | bool  |       | A flag to skip exist check during upsert operation. |
+    |        timestamp        | int64 |       | Remove timestamp.                                   |
 
 ### Output
 
@@ -350,27 +338,25 @@ A method to remove multiple indexed vectors in a single request.
 
   - Object.Locations
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | locations | Object.Location | repeated |  |
-
+    |   field   | type            | label    | desc. |
+    | :-------: | :-------------- | :------- | :---- |
+    | locations | Object.Location | repeated |       |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
-
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |

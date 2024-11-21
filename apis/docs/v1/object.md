@@ -32,9 +32,9 @@ A method to check whether a specified ID is indexed or not.
 
   - Object.ID
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  |  |
+    | field | type   | label | desc. |
+    | :---: | :----- | :---- | :---- |
+    |  id   | string |       |       |
 
 ### Output
 
@@ -48,20 +48,20 @@ A method to check whether a specified ID is indexed or not.
 
   - Object.ID
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  |  |
+    | field | type   | label | desc. |
+    | :---: | :----- | :---- | :---- |
+    |  id   | string |       |       |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## GetObject RPC
 
@@ -97,33 +97,29 @@ A method to fetch a vector.
 
   - Object.VectorRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | Object.ID |  | The vector ID to be fetched. |
-    | filters | Filter.Config |  | Filter configurations. |
-
+    |  field  | type          | label | desc.                        |
+    | :-----: | :------------ | :---- | :--------------------------- |
+    |   id    | Object.ID     |       | The vector ID to be fetched. |
+    | filters | Filter.Config |       | Filter configurations.       |
 
   - Object.ID
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  |  |
-
-
+    | field | type   | label | desc. |
+    | :---: | :----- | :---- | :---- |
+    |  id   | string |       |       |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -139,22 +135,22 @@ A method to fetch a vector.
 
   - Object.Vector
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | vector | float | repeated | The vector. |
-    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    |   field   | type   | label    | desc.                                           |
+    | :-------: | :----- | :------- | :---------------------------------------------- |
+    |    id     | string |          | The vector ID.                                  |
+    |  vector   | float  | repeated | The vector.                                     |
+    | timestamp | int64  |          | timestamp represents when this vector inserted. |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## StreamGetObject RPC
 
@@ -190,33 +186,29 @@ A method to fetch vectors by bidirectional streaming.
 
   - Object.VectorRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | Object.ID |  | The vector ID to be fetched. |
-    | filters | Filter.Config |  | Filter configurations. |
-
+    |  field  | type          | label | desc.                        |
+    | :-----: | :------------ | :---- | :--------------------------- |
+    |   id    | Object.ID     |       | The vector ID to be fetched. |
+    | filters | Filter.Config |       | Filter configurations.       |
 
   - Object.ID
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  |  |
-
-
+    | field | type   | label | desc. |
+    | :---: | :----- | :---- | :---- |
+    |  id   | string |       |       |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -238,30 +230,29 @@ A method to fetch vectors by bidirectional streaming.
 
   - Object.StreamVector
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | Object.Vector |  | The vector. |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    | field  | type              | label | desc.                 |
+    | :----: | :---------------- | :---- | :-------------------- |
+    | vector | Object.Vector     |       | The vector.           |
+    | status | google.rpc.Status |       | The RPC error status. |
 
   - Object.Vector
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | vector | float | repeated | The vector. |
-    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    |   field   | type   | label    | desc.                                           |
+    | :-------: | :----- | :------- | :---------------------------------------------- |
+    |    id     | string |          | The vector ID.                                  |
+    |  vector   | float  | repeated | The vector.                                     |
+    | timestamp | int64  |          | timestamp represents when this vector inserted. |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## StreamListObject RPC
 
@@ -301,30 +292,29 @@ A method to get all the vectors with server streaming
 
   - Object.List.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | Object.Vector |  | The vector |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    | field  | type              | label | desc.                 |
+    | :----: | :---------------- | :---- | :-------------------- |
+    | vector | Object.Vector     |       | The vector            |
+    | status | google.rpc.Status |       | The RPC error status. |
 
   - Object.Vector
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | vector | float | repeated | The vector. |
-    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    |   field   | type   | label    | desc.                                           |
+    | :-------: | :----- | :------- | :---------------------------------------------- |
+    |    id     | string |          | The vector ID.                                  |
+    |  vector   | float  | repeated | The vector.                                     |
+    | timestamp | int64  |          | timestamp represents when this vector inserted. |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## GetTimestamp RPC
 
@@ -347,16 +337,15 @@ Represent the RPC to get the vector metadata. This RPC is mainly used for index 
 
   - Object.TimestampRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | Object.ID |  | The vector ID to be fetched. |
-
+    | field | type      | label | desc.                        |
+    | :---: | :-------- | :---- | :--------------------------- |
+    |  id   | Object.ID |       | The vector ID to be fetched. |
 
   - Object.ID
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  |  |
+    | field | type   | label | desc. |
+    | :---: | :----- | :---- | :---- |
+    |  id   | string |       |       |
 
 ### Output
 
@@ -371,19 +360,18 @@ Represent the RPC to get the vector metadata. This RPC is mainly used for index 
 
   - Object.Timestamp
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+    |   field   | type   | label | desc.                                           |
+    | :-------: | :----- | :---- | :---------------------------------------------- |
+    |    id     | string |       | The vector ID.                                  |
+    | timestamp | int64  |       | timestamp represents when this vector inserted. |
 
 ### Status Code
 
 | code | desc.             |
 | :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
-
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
