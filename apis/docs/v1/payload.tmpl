@@ -1,4 +1,4 @@
-{{- $skip_types := list "Search.AggregationAlgorithm" "Remove.Timestamp.Operator" -}}
+{{- $skip_types := list -}}
 {{- range .Scalars -}}
   {{- $skip_types = append $skip_types .ProtoType -}}
 {{- end -}}
@@ -8,7 +8,7 @@
   {{ printf "{{- define \"scheme.%s\" }}" .FullName }}
   message {{ .LongName }} {
     {{- range $i, $ := .Fields }}
-    {{if $.Label}}{{ $.Label }} {{end}}{{ $.LongType }} {{ $.Name }} = {{ add1 $i }};
+    {{ if $.Label }}{{ $.Label }} {{end}}{{ $.LongType }} {{ $.Name }} = {{ add1 $i }};
     {{- else }}
     // empty
     {{- end }}
@@ -31,12 +31,23 @@
 
       {{- range $i, $ := .Fields -}}
         {{- if not (or (has $.LongType $skip_types) (hasPrefix "google" $.FullType)) -}}
-          {{- printf "\n\n{{ template \"field.%s\" }}\n" $.FullType -}}
+          {{- printf "\n\n{{ template \"field.%s\" }}" $.FullType -}}
         {{- end -}}
       {{- end -}}
     {{- else }}
     empty
     {{- end -}}
+    {{- println "\n{{- end -}}\n" -}}
+  {{- end -}}
+  {{- range .Enums -}}
+    {{- printf "{{ define \"scheme.%s\" }}" .FullName }}
+  enum  {{ .LongName }} {
+    {{- range .Values }}
+    {{ .Name }} = {{ .Number }};
+    {{- end }}
+  }
+    {{- println "\n{{- end -}}\n" -}}
+    {{- printf "{{ define \"field.%s\" }}\n" .FullName -}}
     {{- println "\n{{- end -}}\n" -}}
   {{- end -}}
 {{- end -}}

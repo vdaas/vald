@@ -1,20 +1,13 @@
 # Vald Flush APIs
 
-## Overview
-
-Flush service provides ways to flush all indexed vectors.
-
-```rpc
+## Overview```rpc
 service Flush {
 
   rpc Flush(payload.v1.Flush.Request) returns (payload.v1.Info.Index.Count) {}
 
 }
 ```
-
 ## Flush RPC
-
-A method to flush all indexed vector.
 
 ### Input
 
@@ -45,20 +38,12 @@ A method to flush all indexed vector.
 
   - Info.Index.Count
 
-    |    field    | type   | label | desc.                        |
-    | :---------: | :----- | :---- | :--------------------------- |
-    |   stored    | uint32 |       | The stored index count.      |
-    | uncommitted | uint32 |       | The uncommitted index count. |
-    |  indexing   | bool   |       | The indexing index count.    |
-    |   saving    | bool   |       | The saving index count.      |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | stored | uint32 |  | The stored index count. |
+    | uncommitted | uint32 |  | The uncommitted index count. |
+    | indexing | bool |  | The indexing index count. |
+    | saving | bool |  | The saving index count. |
 
-### Status Code
 
-| code | desc.             |
-| :--: | :---------------- |
-|  0   | OK                |
-|  1   | CANCELLED         |
-|  3   | INVALID_ARGUMENT  |
-|  4   | DEADLINE_EXCEEDED |
-|  5   | NOT_FOUND         |
-|  13  | INTERNAL          |
+

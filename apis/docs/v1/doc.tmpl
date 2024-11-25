@@ -1,11 +1,18 @@
-{{ range .Files -}}
-{{ range .Services -}}
+{{- range .Files -}}
+{{- range .Services -}}
+{{- $descs := dict -}}
+{{- range $desc := (splitList "---\n" .Description) -}}
+{{- $lines := splitList "\n" $desc -}}
+{{- $_ := set $descs (first $lines) (join "\n" (rest $lines)) -}}
+{{- end -}}
 # Vald {{ .Name }} APIs
 
 ## Overview
+{{- if hasKey $descs "Overview" }}
 
-{{.Description}}
+{{ pluck "Overview" $descs | first }}
 
+{{ end -}}
 ```rpc
 service {{.Name}} {
 
@@ -13,12 +20,19 @@ service {{.Name}} {
 {{ end }}
 }
 ```
+{{ range .Methods }}
 
-{{ range .Methods -}}
+{{- $descs := dict -}}
+{{- range $desc := (splitList "---\n" .Description) -}}
+{{- $lines := splitList "\n" $desc -}}
+{{- $_ := set $descs (first $lines) (join "\n" (rest $lines)) -}}
+{{- end -}}
 ## {{ .Name }} RPC
+{{ if hasKey $descs "Overview" }}
 
-{{ .Description }}
+{{ pluck "Overview" $descs | first }}
 
+{{ end }}
 ### Input
 
 - the scheme of `{{ .RequestFullType }}`
@@ -37,16 +51,23 @@ service {{.Name}} {
   ```
 {{ printf "{{ template \"field.%s\" }}" .ResponseFullType }}
 
+{{ if hasKey $descs "Status Code" }}
+
 ### Status Code
 
-| code | desc.             |
-| :--: | :---------------- |
-| 0    | OK                |
-| 1    | CANCELLED         |
-| 3    | INVALID_ARGUMENT  |
-| 4    | DEADLINE_EXCEEDED |
-| 5    | NOT_FOUND         |
-| 13   | INTERNAL          |
+{{ pluck "Status Code" $descs | first }}
+
+Please refer to [Response Status Code](../status.md) for more details.
+
+{{ end }}
+
+{{- if hasKey $descs "Troubleshooting" }}
+
+### Troubleshooting
+
+{{ pluck "Troubleshooting" $descs | first }}
+
+{{ end }}
 
 {{ end -}}
 {{- end -}}

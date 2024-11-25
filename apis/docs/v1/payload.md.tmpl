@@ -95,7 +95,6 @@
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
 {{ template "field.payload.v1.Filter.Target" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Filter.Target" }}
@@ -167,7 +166,6 @@
     | annotations | Info.Annotations.AnnotationsEntry | repeated |  |
 
 {{ template "field.payload.v1.Info.Annotations.AnnotationsEntry" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Info.Annotations.AnnotationsEntry" }}
@@ -271,7 +269,6 @@
     | live_agents | uint32 |  | live agent replica of vald cluster |
 
 {{ template "field.payload.v1.Info.Index.Detail.CountsEntry" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Info.Index.Detail.CountsEntry" }}
@@ -293,7 +290,6 @@
     | value | Info.Index.Count |  |  |
 
 {{ template "field.payload.v1.Info.Index.Count" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Info.Index.Property" }}
@@ -393,7 +389,6 @@
     | details | Info.Index.PropertyDetail.DetailsEntry | repeated |  |
 
 {{ template "field.payload.v1.Info.Index.PropertyDetail.DetailsEntry" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Info.Index.PropertyDetail.DetailsEntry" }}
@@ -415,7 +410,6 @@
     | value | Info.Index.Property |  |  |
 
 {{ template "field.payload.v1.Info.Index.Property" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Info.Index.Statistics" }}
@@ -513,7 +507,6 @@
     | details | Info.Index.StatisticsDetail.DetailsEntry | repeated | count infos for each agents |
 
 {{ template "field.payload.v1.Info.Index.StatisticsDetail.DetailsEntry" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Info.Index.StatisticsDetail.DetailsEntry" }}
@@ -535,7 +528,6 @@
     | value | Info.Index.Statistics |  |  |
 
 {{ template "field.payload.v1.Info.Index.Statistics" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Info.Index.UUID" }}
@@ -595,7 +587,6 @@
     | labels | Info.Labels.LabelsEntry | repeated |  |
 
 {{ template "field.payload.v1.Info.Labels.LabelsEntry" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Info.Labels.LabelsEntry" }}
@@ -666,12 +657,9 @@
 
 {{ template "field.payload.v1.Info.CPU" }}
 
-
 {{ template "field.payload.v1.Info.Memory" }}
 
-
 {{ template "field.payload.v1.Info.Pods" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Info.Nodes" }}
@@ -691,7 +679,6 @@
     | nodes | Info.Node | repeated | The multiple node information. |
 
 {{ template "field.payload.v1.Info.Node" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Info.Pod" }}
@@ -730,12 +717,9 @@
 
 {{ template "field.payload.v1.Info.CPU" }}
 
-
 {{ template "field.payload.v1.Info.Memory" }}
 
-
 {{ template "field.payload.v1.Info.Node" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Info.Pods" }}
@@ -755,7 +739,6 @@
     | pods | Info.Pod | repeated | The multiple pod information. |
 
 {{ template "field.payload.v1.Info.Pod" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Info.Service" }}
@@ -792,12 +775,9 @@
 
 {{ template "field.payload.v1.Info.ServicePort" }}
 
-
 {{ template "field.payload.v1.Info.Labels" }}
 
-
 {{ template "field.payload.v1.Info.Annotations" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Info.ServicePort" }}
@@ -833,7 +813,6 @@
     | services | Info.Service | repeated | The multiple service information. |
 
 {{ template "field.payload.v1.Info.Service" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Insert" }}
@@ -869,7 +848,6 @@
     | timestamp | int64 |  | Insert timestamp. |
 
 {{ template "field.payload.v1.Filter.Config" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Insert.MultiObjectRequest" }}
@@ -889,7 +867,6 @@
     | requests | Insert.ObjectRequest | repeated | Represent multiple insert by object content. |
 
 {{ template "field.payload.v1.Insert.ObjectRequest" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Insert.MultiRequest" }}
@@ -909,7 +886,6 @@
     | requests | Insert.Request | repeated | Represent multiple insert request content. |
 
 {{ template "field.payload.v1.Insert.Request" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Insert.ObjectRequest" }}
@@ -940,12 +916,9 @@
 
 {{ template "field.payload.v1.Object.Blob" }}
 
-
 {{ template "field.payload.v1.Insert.Config" }}
 
-
 {{ template "field.payload.v1.Filter.Target" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Insert.Request" }}
@@ -971,9 +944,7 @@
 
 {{ template "field.payload.v1.Object.Vector" }}
 
-
 {{ template "field.payload.v1.Insert.Config" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Meta" }}
@@ -1025,9 +996,7 @@
 
 {{ template "field.payload.v1.Meta.Key" }}
 
-
 {{ template "field.payload.v1.Meta.Value" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Meta.Value" }}
@@ -1089,7 +1058,6 @@
     | targets | Mirror.Target | repeated | The multiple target information. |
 
 {{ template "field.payload.v1.Mirror.Target" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Object" }}
@@ -1207,7 +1175,6 @@
     | status | google.rpc.Status |  | The RPC error status. |
 
 {{ template "field.payload.v1.Object.Vector" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Object.Location" }}
@@ -1245,7 +1212,6 @@
     | locations | Object.Location | repeated |  |
 
 {{ template "field.payload.v1.Object.Location" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Object.ReshapeVector" }}
@@ -1283,7 +1249,6 @@
     | status | google.rpc.Status |  | The RPC error status. |
 
 {{ template "field.payload.v1.Object.Blob" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Object.StreamDistance" }}
@@ -1305,7 +1270,6 @@
     | status | google.rpc.Status |  | The RPC error status. |
 
 {{ template "field.payload.v1.Object.Distance" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Object.StreamLocation" }}
@@ -1327,7 +1291,6 @@
     | status | google.rpc.Status |  | The RPC error status. |
 
 {{ template "field.payload.v1.Object.Location" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Object.StreamVector" }}
@@ -1349,7 +1312,6 @@
     | status | google.rpc.Status |  | The RPC error status. |
 
 {{ template "field.payload.v1.Object.Vector" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Object.Timestamp" }}
@@ -1385,7 +1347,6 @@
     | id | Object.ID |  | The vector ID to be fetched. |
 
 {{ template "field.payload.v1.Object.ID" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Object.Vector" }}
@@ -1429,9 +1390,7 @@
 
 {{ template "field.payload.v1.Object.ID" }}
 
-
 {{ template "field.payload.v1.Filter.Config" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Object.Vectors" }}
@@ -1451,7 +1410,6 @@
     | vectors | Object.Vector | repeated |  |
 
 {{ template "field.payload.v1.Object.Vector" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Remove" }}
@@ -1499,7 +1457,6 @@
     | requests | Remove.Request | repeated | Represent the multiple remove request content. |
 
 {{ template "field.payload.v1.Remove.Request" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Remove.Request" }}
@@ -1525,9 +1482,7 @@
 
 {{ template "field.payload.v1.Object.ID" }}
 
-
 {{ template "field.payload.v1.Remove.Config" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Remove.Timestamp" }}
@@ -1535,6 +1490,9 @@
     int64 timestamp = 1;
     Remove.Timestamp.Operator operator = 2;
   }
+
+{{ template "scheme.payload.v1.Remove.Timestamp.Operator" }}
+
 {{- end -}}
 
 {{- define "field.payload.v1.Remove.Timestamp" }}
@@ -1544,6 +1502,8 @@
     | :---: | :--- | :---- | :---- |
     | timestamp | int64 |  | The timestamp. |
     | operator | Remove.Timestamp.Operator |  | The conditional operator. |
+
+{{ template "field.payload.v1.Remove.Timestamp.Operator" }}
 {{- end -}}
 
 {{- define "scheme.payload.v1.Remove.TimestampRequest" }}
@@ -1564,7 +1524,6 @@
 search is applied. |
 
 {{ template "field.payload.v1.Remove.Timestamp" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Search" }}
@@ -1599,6 +1558,9 @@ search is applied. |
 
 {{ template "scheme.payload.v1.Filter.Config" }}
 
+
+{{ template "scheme.payload.v1.Search.AggregationAlgorithm" }}
+
 {{- end -}}
 
 {{- define "field.payload.v1.Search.Config" }}
@@ -1620,9 +1582,9 @@ search is applied. |
 
 {{ template "field.payload.v1.Filter.Config" }}
 
-
 {{ template "field.payload.v1.Filter.Config" }}
 
+{{ template "field.payload.v1.Search.AggregationAlgorithm" }}
 {{- end -}}
 
 {{- define "scheme.payload.v1.Search.IDRequest" }}
@@ -1644,7 +1606,6 @@ search is applied. |
     | config | Search.Config |  | The configuration of the search request. |
 
 {{ template "field.payload.v1.Search.Config" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Search.MultiIDRequest" }}
@@ -1664,7 +1625,6 @@ search is applied. |
     | requests | Search.IDRequest | repeated | Represent the multiple search by ID request content. |
 
 {{ template "field.payload.v1.Search.IDRequest" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Search.MultiObjectRequest" }}
@@ -1684,7 +1644,6 @@ search is applied. |
     | requests | Search.ObjectRequest | repeated | Represent the multiple search by binary object request content. |
 
 {{ template "field.payload.v1.Search.ObjectRequest" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Search.MultiRequest" }}
@@ -1704,7 +1663,6 @@ search is applied. |
     | requests | Search.Request | repeated | Represent the multiple search request content. |
 
 {{ template "field.payload.v1.Search.Request" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Search.ObjectRequest" }}
@@ -1732,9 +1690,7 @@ search is applied. |
 
 {{ template "field.payload.v1.Search.Config" }}
 
-
 {{ template "field.payload.v1.Filter.Target" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Search.Request" }}
@@ -1756,7 +1712,6 @@ search is applied. |
     | config | Search.Config |  | The configuration of the search request. |
 
 {{ template "field.payload.v1.Search.Config" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Search.Response" }}
@@ -1778,7 +1733,6 @@ search is applied. |
     | results | Object.Distance | repeated | Search results. |
 
 {{ template "field.payload.v1.Object.Distance" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Search.Responses" }}
@@ -1798,7 +1752,6 @@ search is applied. |
     | responses | Search.Response | repeated | Represent the multiple search response content. |
 
 {{ template "field.payload.v1.Search.Response" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Search.StreamResponse" }}
@@ -1820,7 +1773,6 @@ search is applied. |
     | status | google.rpc.Status |  | The RPC error status. |
 
 {{ template "field.payload.v1.Search.Response" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Update" }}
@@ -1859,7 +1811,6 @@ search is applied. |
 during update operation. |
 
 {{ template "field.payload.v1.Filter.Config" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Update.MultiObjectRequest" }}
@@ -1879,7 +1830,6 @@ during update operation. |
     | requests | Update.ObjectRequest | repeated | Represent the multiple update object request content. |
 
 {{ template "field.payload.v1.Update.ObjectRequest" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Update.MultiRequest" }}
@@ -1899,7 +1849,6 @@ during update operation. |
     | requests | Update.Request | repeated | Represent the multiple update request content. |
 
 {{ template "field.payload.v1.Update.Request" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Update.ObjectRequest" }}
@@ -1930,12 +1879,9 @@ during update operation. |
 
 {{ template "field.payload.v1.Object.Blob" }}
 
-
 {{ template "field.payload.v1.Update.Config" }}
 
-
 {{ template "field.payload.v1.Filter.Target" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Update.Request" }}
@@ -1961,9 +1907,7 @@ during update operation. |
 
 {{ template "field.payload.v1.Object.Vector" }}
 
-
 {{ template "field.payload.v1.Update.Config" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Update.TimestampRequest" }}
@@ -2020,7 +1964,6 @@ during update operation. |
 during update operation. |
 
 {{ template "field.payload.v1.Filter.Config" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Upsert.MultiObjectRequest" }}
@@ -2040,7 +1983,6 @@ during update operation. |
     | requests | Upsert.ObjectRequest | repeated | Represent the multiple upsert object request content. |
 
 {{ template "field.payload.v1.Upsert.ObjectRequest" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Upsert.MultiRequest" }}
@@ -2060,7 +2002,6 @@ during update operation. |
     | requests | Upsert.Request | repeated | Represent the multiple upsert request content. |
 
 {{ template "field.payload.v1.Upsert.Request" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Upsert.ObjectRequest" }}
@@ -2091,12 +2032,9 @@ during update operation. |
 
 {{ template "field.payload.v1.Object.Blob" }}
 
-
 {{ template "field.payload.v1.Upsert.Config" }}
 
-
 {{ template "field.payload.v1.Filter.Target" }}
-
 {{- end -}}
 
 {{- define "scheme.payload.v1.Upsert.Request" }}
@@ -2122,8 +2060,35 @@ during update operation. |
 
 {{ template "field.payload.v1.Object.Vector" }}
 
-
 {{ template "field.payload.v1.Upsert.Config" }}
+{{- end -}}
+
+{{ define "scheme.payload.v1.Remove.Timestamp.Operator" }}
+  enum  Remove.Timestamp.Operator {
+    Eq = 0;
+    Ne = 1;
+    Ge = 2;
+    Gt = 3;
+    Le = 4;
+    Lt = 5;
+  }
+{{- end -}}
+
+{{ define "field.payload.v1.Remove.Timestamp.Operator" }}
+
+{{- end -}}
+
+{{ define "scheme.payload.v1.Search.AggregationAlgorithm" }}
+  enum  Search.AggregationAlgorithm {
+    Unknown = 0;
+    ConcurrentQueue = 1;
+    SortSlice = 2;
+    SortPoolSlice = 3;
+    PairingHeap = 4;
+  }
+{{- end -}}
+
+{{ define "field.payload.v1.Search.AggregationAlgorithm" }}
 
 {{- end -}}
 

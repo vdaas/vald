@@ -1,10 +1,6 @@
 # Vald Upsert APIs
 
-## Overview
-
-Upsert service provides ways to insert/update vectors.
-
-```rpc
+## Overview```rpc
 service Upsert {
 
   rpc Upsert(payload.v1.Upsert.Request) returns (payload.v1.Object.Location) {}
@@ -13,10 +9,7 @@ service Upsert {
 
 }
 ```
-
 ## Upsert RPC
-
-A method to insert/update a vector.
 
 ### Input
 
@@ -58,42 +51,45 @@ A method to insert/update a vector.
 
   - Upsert.Request
 
-    | field  | type          | label | desc.                                    |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be upserted.               |
-    | config | Upsert.Config |       | The configuration of the upsert request. |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | vector | Object.Vector |  | The vector to be upserted. |
+    | config | Upsert.Config |  | The configuration of the upsert request. |
+
 
   - Object.Vector
 
-    |   field   | type   | label    | desc.                                           |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+
 
   - Upsert.Config
 
-        | field | type | label | desc. |
-        | :---: | :--- | :---- | :---- |
-        | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-        | filters | Filter.Config |  | Filter configuration. |
-        | timestamp | int64 |  | Upsert timestamp. |
-        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
+    | filters | Filter.Config |  | Filter configuration. |
+    | timestamp | int64 |  | Upsert timestamp. |
+    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
+during update operation. |
 
-    during update operation. |
 
   - Filter.Config
 
-    |  field  | type          | label    | desc.                                      |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
 
   - Filter.Target
 
-    | field | type   | label | desc.                |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 
 ### Output
 
@@ -109,26 +105,15 @@ A method to insert/update a vector.
 
   - Object.Location
 
-    | field | type   | label    | desc.                     |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
-### Status Code
 
-| code | desc.             |
-| :--: | :---------------- |
-|  0   | OK                |
-|  1   | CANCELLED         |
-|  3   | INVALID_ARGUMENT  |
-|  4   | DEADLINE_EXCEEDED |
-|  5   | NOT_FOUND         |
-|  13  | INTERNAL          |
 
 ## StreamUpsert RPC
-
-A method to insert/update multiple vectors by bidirectional streaming.
 
 ### Input
 
@@ -170,42 +155,45 @@ A method to insert/update multiple vectors by bidirectional streaming.
 
   - Upsert.Request
 
-    | field  | type          | label | desc.                                    |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be upserted.               |
-    | config | Upsert.Config |       | The configuration of the upsert request. |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | vector | Object.Vector |  | The vector to be upserted. |
+    | config | Upsert.Config |  | The configuration of the upsert request. |
+
 
   - Object.Vector
 
-    |   field   | type   | label    | desc.                                           |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+
 
   - Upsert.Config
 
-        | field | type | label | desc. |
-        | :---: | :--- | :---- | :---- |
-        | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-        | filters | Filter.Config |  | Filter configuration. |
-        | timestamp | int64 |  | Upsert timestamp. |
-        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
+    | filters | Filter.Config |  | Filter configuration. |
+    | timestamp | int64 |  | Upsert timestamp. |
+    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
+during update operation. |
 
-    during update operation. |
 
   - Filter.Config
 
-    |  field  | type          | label    | desc.                                      |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
 
   - Filter.Target
 
-    | field | type   | label | desc.                |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 
 ### Output
 
@@ -227,33 +215,23 @@ A method to insert/update multiple vectors by bidirectional streaming.
 
   - Object.StreamLocation
 
-    |  field   | type              | label | desc.                 |
-    | :------: | :---------------- | :---- | :-------------------- |
-    | location | Object.Location   |       | The vector location.  |
-    |  status  | google.rpc.Status |       | The RPC error status. |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | location | Object.Location |  | The vector location. |
+    | status | google.rpc.Status |  | The RPC error status. |
+
 
   - Object.Location
 
-    | field | type   | label    | desc.                     |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
-### Status Code
 
-| code | desc.             |
-| :--: | :---------------- |
-|  0   | OK                |
-|  1   | CANCELLED         |
-|  3   | INVALID_ARGUMENT  |
-|  4   | DEADLINE_EXCEEDED |
-|  5   | NOT_FOUND         |
-|  13  | INTERNAL          |
 
 ## MultiUpsert RPC
-
-A method to insert/update multiple vectors in a single request.
 
 ### Input
 
@@ -300,48 +278,52 @@ A method to insert/update multiple vectors in a single request.
 
   - Upsert.MultiRequest
 
-    |  field   | type           | label    | desc.                                          |
-    | :------: | :------------- | :------- | :--------------------------------------------- |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
     | requests | Upsert.Request | repeated | Represent the multiple upsert request content. |
+
 
   - Upsert.Request
 
-    | field  | type          | label | desc.                                    |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be upserted.               |
-    | config | Upsert.Config |       | The configuration of the upsert request. |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | vector | Object.Vector |  | The vector to be upserted. |
+    | config | Upsert.Config |  | The configuration of the upsert request. |
+
 
   - Object.Vector
 
-    |   field   | type   | label    | desc.                                           |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+
 
   - Upsert.Config
 
-        | field | type | label | desc. |
-        | :---: | :--- | :---- | :---- |
-        | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-        | filters | Filter.Config |  | Filter configuration. |
-        | timestamp | int64 |  | Upsert timestamp. |
-        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
+    | filters | Filter.Config |  | Filter configuration. |
+    | timestamp | int64 |  | Upsert timestamp. |
+    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
+during update operation. |
 
-    during update operation. |
 
   - Filter.Config
 
-    |  field  | type          | label    | desc.                                      |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
 
   - Filter.Target
 
-    | field | type   | label | desc.                |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 
 ### Output
 
@@ -362,25 +344,18 @@ A method to insert/update multiple vectors in a single request.
 
   - Object.Locations
 
-    |   field   | type            | label    | desc. |
-    | :-------: | :-------------- | :------- | :---- |
-    | locations | Object.Location | repeated |       |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | locations | Object.Location | repeated |  |
+
 
   - Object.Location
 
-    | field | type   | label    | desc.                     |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
-### Status Code
 
-| code | desc.             |
-| :--: | :---------------- |
-|  0   | OK                |
-|  1   | CANCELLED         |
-|  3   | INVALID_ARGUMENT  |
-|  4   | DEADLINE_EXCEEDED |
-|  5   | NOT_FOUND         |
-|  13  | INTERNAL          |
+
