@@ -1,12 +1,14 @@
 # Vald Flush APIs
 
 ## Overview```rpc
+
 service Flush {
 
-  rpc Flush(payload.v1.Flush.Request) returns (payload.v1.Info.Index.Count) {}
+rpc Flush(payload.v1.Flush.Request) returns (payload.v1.Info.Index.Count) {}
 
 }
-```
+
+````
 ## Flush RPC
 
 ### Input
@@ -17,11 +19,11 @@ service Flush {
   message Flush.Request {
     // empty
   }
-  ```
+````
 
-  - Flush.Request
+- Flush.Request
 
-    empty
+  empty
 
 ### Output
 
@@ -38,12 +40,9 @@ service Flush {
 
   - Info.Index.Count
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | stored | uint32 |  | The stored index count. |
-    | uncommitted | uint32 |  | The uncommitted index count. |
-    | indexing | bool |  | The indexing index count. |
-    | saving | bool |  | The saving index count. |
-
-
-
+    |    field    | type   | label | desc.                        |
+    | :---------: | :----- | :---- | :--------------------------- |
+    |   stored    | uint32 |       | The stored index count.      |
+    | uncommitted | uint32 |       | The uncommitted index count. |
+    |  indexing   | bool   |       | The indexing index count.    |
+    |   saving    | bool   |       | The saving index count.      |

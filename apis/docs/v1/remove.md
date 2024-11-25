@@ -1,15 +1,17 @@
 # Vald Remove APIs
 
 ## Overview```rpc
+
 service Remove {
 
-  rpc Remove(payload.v1.Remove.Request) returns (payload.v1.Object.Location) {}
-  rpc RemoveByTimestamp(payload.v1.Remove.TimestampRequest) returns (payload.v1.Object.Locations) {}
-  rpc StreamRemove(payload.v1.Remove.Request) returns (payload.v1.Object.StreamLocation) {}
-  rpc MultiRemove(payload.v1.Remove.MultiRequest) returns (payload.v1.Object.Locations) {}
+rpc Remove(payload.v1.Remove.Request) returns (payload.v1.Object.Location) {}
+rpc RemoveByTimestamp(payload.v1.Remove.TimestampRequest) returns (payload.v1.Object.Locations) {}
+rpc StreamRemove(payload.v1.Remove.Request) returns (payload.v1.Object.StreamLocation) {}
+rpc MultiRemove(payload.v1.Remove.MultiRequest) returns (payload.v1.Object.Locations) {}
 
 }
-```
+
+````
 ## Remove RPC
 
 ### Input
@@ -33,29 +35,27 @@ service Remove {
     bool skip_strict_exist_check = 1;
     int64 timestamp = 2;
   }
-  ```
+````
 
-  - Remove.Request
+- Remove.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | Object.ID |  | The object ID to be removed. |
-    | config | Remove.Config |  | The configuration of the remove request. |
+  | field  | type          | label | desc.                                    |
+  | :----: | :------------ | :---- | :--------------------------------------- |
+  |   id   | Object.ID     |       | The object ID to be removed.             |
+  | config | Remove.Config |       | The configuration of the remove request. |
 
+- Object.ID
 
-  - Object.ID
+  | field | type   | label | desc. |
+  | :---: | :----- | :---- | :---- |
+  |  id   | string |       |       |
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  |  |
+- Remove.Config
 
-
-  - Remove.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-    | timestamp | int64 |  | Remove timestamp. |
+  |          field          | type  | label | desc.                                               |
+  | :---------------------: | :---- | :---- | :-------------------------------------------------- |
+  | skip_strict_exist_check | bool  |       | A flag to skip exist check during upsert operation. |
+  |        timestamp        | int64 |       | Remove timestamp.                                   |
 
 ### Output
 
@@ -71,13 +71,11 @@ service Remove {
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
-
-
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ## RemoveByTimestamp RPC
 
@@ -109,20 +107,18 @@ service Remove {
 
   - Remove.TimestampRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | timestamps | Remove.Timestamp | repeated | The timestamp comparison list. If more than one is specified, the `AND`
-search is applied. |
+        | field | type | label | desc. |
+        | :---: | :--- | :---- | :---- |
+        | timestamps | Remove.Timestamp | repeated | The timestamp comparison list. If more than one is specified, the `AND`
 
+    search is applied. |
 
   - Remove.Timestamp
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | timestamp | int64 |  | The timestamp. |
-    | operator | Remove.Timestamp.Operator |  | The conditional operator. |
-
-
+    |   field   | type                      | label | desc.                     |
+    | :-------: | :------------------------ | :---- | :------------------------ |
+    | timestamp | int64                     |       | The timestamp.            |
+    | operator  | Remove.Timestamp.Operator |       | The conditional operator. |
 
 ### Output
 
@@ -143,20 +139,17 @@ search is applied. |
 
   - Object.Locations
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | locations | Object.Location | repeated |  |
-
+    |   field   | type            | label    | desc. |
+    | :-------: | :-------------- | :------- | :---- |
+    | locations | Object.Location | repeated |       |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
-
-
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ## StreamRemove RPC
 
@@ -185,25 +178,23 @@ search is applied. |
 
   - Remove.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | Object.ID |  | The object ID to be removed. |
-    | config | Remove.Config |  | The configuration of the remove request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | Object.ID     |       | The object ID to be removed.             |
+    | config | Remove.Config |       | The configuration of the remove request. |
 
   - Object.ID
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  |  |
-
+    | field | type   | label | desc. |
+    | :---: | :----- | :---- | :---- |
+    |  id   | string |       |       |
 
   - Remove.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-    | timestamp | int64 |  | Remove timestamp. |
+    |          field          | type  | label | desc.                                               |
+    | :---------------------: | :---- | :---- | :-------------------------------------------------- |
+    | skip_strict_exist_check | bool  |       | A flag to skip exist check during upsert operation. |
+    |        timestamp        | int64 |       | Remove timestamp.                                   |
 
 ### Output
 
@@ -225,21 +216,18 @@ search is applied. |
 
   - Object.StreamLocation
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | location | Object.Location |  | The vector location. |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    |  field   | type              | label | desc.                 |
+    | :------: | :---------------- | :---- | :-------------------- |
+    | location | Object.Location   |       | The vector location.  |
+    |  status  | google.rpc.Status |       | The RPC error status. |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
-
-
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ## MultiRemove RPC
 
@@ -273,32 +261,29 @@ search is applied. |
 
   - Remove.MultiRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field   | type           | label    | desc.                                          |
+    | :------: | :------------- | :------- | :--------------------------------------------- |
     | requests | Remove.Request | repeated | Represent the multiple remove request content. |
-
 
   - Remove.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | Object.ID |  | The object ID to be removed. |
-    | config | Remove.Config |  | The configuration of the remove request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | Object.ID     |       | The object ID to be removed.             |
+    | config | Remove.Config |       | The configuration of the remove request. |
 
   - Object.ID
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  |  |
-
+    | field | type   | label | desc. |
+    | :---: | :----- | :---- | :---- |
+    |  id   | string |       |       |
 
   - Remove.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-    | timestamp | int64 |  | Remove timestamp. |
+    |          field          | type  | label | desc.                                               |
+    | :---------------------: | :---- | :---- | :-------------------------------------------------- |
+    | skip_strict_exist_check | bool  |       | A flag to skip exist check during upsert operation. |
+    |        timestamp        | int64 |       | Remove timestamp.                                   |
 
 ### Output
 
@@ -319,18 +304,14 @@ search is applied. |
 
   - Object.Locations
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | locations | Object.Location | repeated |  |
-
+    |   field   | type            | label    | desc. |
+    | :-------: | :-------------- | :------- | :---- |
+    | locations | Object.Location | repeated |       |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
-
-
-
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |

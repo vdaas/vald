@@ -1,15 +1,17 @@
 # Vald Update APIs
 
 ## Overview```rpc
+
 service Update {
 
-  rpc Update(payload.v1.Update.Request) returns (payload.v1.Object.Location) {}
-  rpc StreamUpdate(payload.v1.Update.Request) returns (payload.v1.Object.StreamLocation) {}
-  rpc MultiUpdate(payload.v1.Update.MultiRequest) returns (payload.v1.Object.Locations) {}
-  rpc UpdateTimestamp(payload.v1.Update.TimestampRequest) returns (payload.v1.Object.Location) {}
+rpc Update(payload.v1.Update.Request) returns (payload.v1.Object.Location) {}
+rpc StreamUpdate(payload.v1.Update.Request) returns (payload.v1.Object.StreamLocation) {}
+rpc MultiUpdate(payload.v1.Update.MultiRequest) returns (payload.v1.Object.Locations) {}
+rpc UpdateTimestamp(payload.v1.Update.TimestampRequest) returns (payload.v1.Object.Location) {}
 
 }
-```
+
+````
 ## Update RPC
 
 ### Input
@@ -48,49 +50,46 @@ service Update {
     string host = 1;
     uint32 port = 2;
   }
-  ```
+````
 
-  - Update.Request
+- Update.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | Object.Vector |  | The vector to be updated. |
-    | config | Update.Config |  | The configuration of the update request. |
+  | field  | type          | label | desc.                                    |
+  | :----: | :------------ | :---- | :--------------------------------------- |
+  | vector | Object.Vector |       | The vector to be updated.                |
+  | config | Update.Config |       | The configuration of the update request. |
 
+- Object.Vector
 
-  - Object.Vector
+  |   field   | type   | label    | desc.                                           |
+  | :-------: | :----- | :------- | :---------------------------------------------- |
+  |    id     | string |          | The vector ID.                                  |
+  |  vector   | float  | repeated | The vector.                                     |
+  | timestamp | int64  |          | timestamp represents when this vector inserted. |
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | vector | float | repeated | The vector. |
-    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+- Update.Config
 
+      | field | type | label | desc. |
+      | :---: | :--- | :---- | :---- |
+      | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
+      | filters | Filter.Config |  | Filter configuration. |
+      | timestamp | int64 |  | Update timestamp. |
+      | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
 
-  - Update.Config
+  during update operation. |
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
-    | filters | Filter.Config |  | Filter configuration. |
-    | timestamp | int64 |  | Update timestamp. |
-    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-during update operation. |
+- Filter.Config
 
+  |  field  | type          | label    | desc.                                      |
+  | :-----: | :------------ | :------- | :----------------------------------------- |
+  | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
-  - Filter.Config
+- Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+  | field | type   | label | desc.                |
+  | :---: | :----- | :---- | :------------------- |
+  | host  | string |       | The target hostname. |
+  | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -106,13 +105,11 @@ during update operation. |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
-
-
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ## StreamUpdate RPC
 
@@ -156,45 +153,42 @@ during update operation. |
 
   - Update.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | Object.Vector |  | The vector to be updated. |
-    | config | Update.Config |  | The configuration of the update request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    | vector | Object.Vector |       | The vector to be updated.                |
+    | config | Update.Config |       | The configuration of the update request. |
 
   - Object.Vector
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | vector | float | repeated | The vector. |
-    | timestamp | int64 |  | timestamp represents when this vector inserted. |
-
+    |   field   | type   | label    | desc.                                           |
+    | :-------: | :----- | :------- | :---------------------------------------------- |
+    |    id     | string |          | The vector ID.                                  |
+    |  vector   | float  | repeated | The vector.                                     |
+    | timestamp | int64  |          | timestamp represents when this vector inserted. |
 
   - Update.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
-    | filters | Filter.Config |  | Filter configuration. |
-    | timestamp | int64 |  | Update timestamp. |
-    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-during update operation. |
+        | field | type | label | desc. |
+        | :---: | :--- | :---- | :---- |
+        | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
+        | filters | Filter.Config |  | Filter configuration. |
+        | timestamp | int64 |  | Update timestamp. |
+        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
 
+    during update operation. |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -216,21 +210,18 @@ during update operation. |
 
   - Object.StreamLocation
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | location | Object.Location |  | The vector location. |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    |  field   | type              | label | desc.                 |
+    | :------: | :---------------- | :---- | :-------------------- |
+    | location | Object.Location   |       | The vector location.  |
+    |  status  | google.rpc.Status |       | The RPC error status. |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
-
-
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ## MultiUpdate RPC
 
@@ -279,52 +270,48 @@ during update operation. |
 
   - Update.MultiRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field   | type           | label    | desc.                                          |
+    | :------: | :------------- | :------- | :--------------------------------------------- |
     | requests | Update.Request | repeated | Represent the multiple update request content. |
-
 
   - Update.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | Object.Vector |  | The vector to be updated. |
-    | config | Update.Config |  | The configuration of the update request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    | vector | Object.Vector |       | The vector to be updated.                |
+    | config | Update.Config |       | The configuration of the update request. |
 
   - Object.Vector
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | vector | float | repeated | The vector. |
-    | timestamp | int64 |  | timestamp represents when this vector inserted. |
-
+    |   field   | type   | label    | desc.                                           |
+    | :-------: | :----- | :------- | :---------------------------------------------- |
+    |    id     | string |          | The vector ID.                                  |
+    |  vector   | float  | repeated | The vector.                                     |
+    | timestamp | int64  |          | timestamp represents when this vector inserted. |
 
   - Update.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
-    | filters | Filter.Config |  | Filter configuration. |
-    | timestamp | int64 |  | Update timestamp. |
-    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-during update operation. |
+        | field | type | label | desc. |
+        | :---: | :--- | :---- | :---- |
+        | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
+        | filters | Filter.Config |  | Filter configuration. |
+        | timestamp | int64 |  | Update timestamp. |
+        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
 
+    during update operation. |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -345,20 +332,17 @@ during update operation. |
 
   - Object.Locations
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | locations | Object.Location | repeated |  |
-
+    |   field   | type            | label    | desc. |
+    | :-------: | :-------------- | :------- | :---- |
+    | locations | Object.Location | repeated |       |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
-
-
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ## UpdateTimestamp RPC
 
@@ -376,11 +360,11 @@ during update operation. |
 
   - Update.TimestampRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | timestamp | int64 |  | timestamp represents when this vector inserted. |
-    | force | bool |  | force represents forcefully update the timestamp. |
+    |   field   | type   | label | desc.                                             |
+    | :-------: | :----- | :---- | :------------------------------------------------ |
+    |    id     | string |       | The vector ID.                                    |
+    | timestamp | int64  |       | timestamp represents when this vector inserted.   |
+    |   force   | bool   |       | force represents forcefully update the timestamp. |
 
 ### Output
 
@@ -396,11 +380,8 @@ during update operation. |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
-
-
-
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |

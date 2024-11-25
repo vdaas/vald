@@ -1,14 +1,16 @@
 # Vald Upsert APIs
 
 ## Overview```rpc
+
 service Upsert {
 
-  rpc Upsert(payload.v1.Upsert.Request) returns (payload.v1.Object.Location) {}
-  rpc StreamUpsert(payload.v1.Upsert.Request) returns (payload.v1.Object.StreamLocation) {}
-  rpc MultiUpsert(payload.v1.Upsert.MultiRequest) returns (payload.v1.Object.Locations) {}
+rpc Upsert(payload.v1.Upsert.Request) returns (payload.v1.Object.Location) {}
+rpc StreamUpsert(payload.v1.Upsert.Request) returns (payload.v1.Object.StreamLocation) {}
+rpc MultiUpsert(payload.v1.Upsert.MultiRequest) returns (payload.v1.Object.Locations) {}
 
 }
-```
+
+````
 ## Upsert RPC
 
 ### Input
@@ -47,49 +49,46 @@ service Upsert {
     string host = 1;
     uint32 port = 2;
   }
-  ```
+````
 
-  - Upsert.Request
+- Upsert.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | Object.Vector |  | The vector to be upserted. |
-    | config | Upsert.Config |  | The configuration of the upsert request. |
+  | field  | type          | label | desc.                                    |
+  | :----: | :------------ | :---- | :--------------------------------------- |
+  | vector | Object.Vector |       | The vector to be upserted.               |
+  | config | Upsert.Config |       | The configuration of the upsert request. |
 
+- Object.Vector
 
-  - Object.Vector
+  |   field   | type   | label    | desc.                                           |
+  | :-------: | :----- | :------- | :---------------------------------------------- |
+  |    id     | string |          | The vector ID.                                  |
+  |  vector   | float  | repeated | The vector.                                     |
+  | timestamp | int64  |          | timestamp represents when this vector inserted. |
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | vector | float | repeated | The vector. |
-    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+- Upsert.Config
 
+      | field | type | label | desc. |
+      | :---: | :--- | :---- | :---- |
+      | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
+      | filters | Filter.Config |  | Filter configuration. |
+      | timestamp | int64 |  | Upsert timestamp. |
+      | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
 
-  - Upsert.Config
+  during update operation. |
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-    | filters | Filter.Config |  | Filter configuration. |
-    | timestamp | int64 |  | Upsert timestamp. |
-    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-during update operation. |
+- Filter.Config
 
+  |  field  | type          | label    | desc.                                      |
+  | :-----: | :------------ | :------- | :----------------------------------------- |
+  | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
-  - Filter.Config
+- Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+  | field | type   | label | desc.                |
+  | :---: | :----- | :---- | :------------------- |
+  | host  | string |       | The target hostname. |
+  | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -105,13 +104,11 @@ during update operation. |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
-
-
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ## StreamUpsert RPC
 
@@ -155,45 +152,42 @@ during update operation. |
 
   - Upsert.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | Object.Vector |  | The vector to be upserted. |
-    | config | Upsert.Config |  | The configuration of the upsert request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    | vector | Object.Vector |       | The vector to be upserted.               |
+    | config | Upsert.Config |       | The configuration of the upsert request. |
 
   - Object.Vector
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | vector | float | repeated | The vector. |
-    | timestamp | int64 |  | timestamp represents when this vector inserted. |
-
+    |   field   | type   | label    | desc.                                           |
+    | :-------: | :----- | :------- | :---------------------------------------------- |
+    |    id     | string |          | The vector ID.                                  |
+    |  vector   | float  | repeated | The vector.                                     |
+    | timestamp | int64  |          | timestamp represents when this vector inserted. |
 
   - Upsert.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-    | filters | Filter.Config |  | Filter configuration. |
-    | timestamp | int64 |  | Upsert timestamp. |
-    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-during update operation. |
+        | field | type | label | desc. |
+        | :---: | :--- | :---- | :---- |
+        | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
+        | filters | Filter.Config |  | Filter configuration. |
+        | timestamp | int64 |  | Upsert timestamp. |
+        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
 
+    during update operation. |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -215,21 +209,18 @@ during update operation. |
 
   - Object.StreamLocation
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | location | Object.Location |  | The vector location. |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    |  field   | type              | label | desc.                 |
+    | :------: | :---------------- | :---- | :-------------------- |
+    | location | Object.Location   |       | The vector location.  |
+    |  status  | google.rpc.Status |       | The RPC error status. |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
-
-
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |
 
 ## MultiUpsert RPC
 
@@ -278,52 +269,48 @@ during update operation. |
 
   - Upsert.MultiRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field   | type           | label    | desc.                                          |
+    | :------: | :------------- | :------- | :--------------------------------------------- |
     | requests | Upsert.Request | repeated | Represent the multiple upsert request content. |
-
 
   - Upsert.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | Object.Vector |  | The vector to be upserted. |
-    | config | Upsert.Config |  | The configuration of the upsert request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    | vector | Object.Vector |       | The vector to be upserted.               |
+    | config | Upsert.Config |       | The configuration of the upsert request. |
 
   - Object.Vector
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | vector | float | repeated | The vector. |
-    | timestamp | int64 |  | timestamp represents when this vector inserted. |
-
+    |   field   | type   | label    | desc.                                           |
+    | :-------: | :----- | :------- | :---------------------------------------------- |
+    |    id     | string |          | The vector ID.                                  |
+    |  vector   | float  | repeated | The vector.                                     |
+    | timestamp | int64  |          | timestamp represents when this vector inserted. |
 
   - Upsert.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
-    | filters | Filter.Config |  | Filter configuration. |
-    | timestamp | int64 |  | Upsert timestamp. |
-    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-during update operation. |
+        | field | type | label | desc. |
+        | :---: | :--- | :---- | :---- |
+        | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
+        | filters | Filter.Config |  | Filter configuration. |
+        | timestamp | int64 |  | Upsert timestamp. |
+        | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
 
+    during update operation. |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -344,18 +331,14 @@ during update operation. |
 
   - Object.Locations
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | locations | Object.Location | repeated |  |
-
+    |   field   | type            | label    | desc. |
+    | :-------: | :-------------- | :------- | :---- |
+    | locations | Object.Location | repeated |       |
 
   - Object.Location
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | name | string |  | The name of the location. |
-    | uuid | string |  | The UUID of the vector. |
-    | ips | string | repeated | The IP list. |
-
-
-
+    | field | type   | label    | desc.                     |
+    | :---: | :----- | :------- | :------------------------ |
+    | name  | string |          | The name of the location. |
+    | uuid  | string |          | The UUID of the vector.   |
+    |  ips  | string | repeated | The IP list.              |

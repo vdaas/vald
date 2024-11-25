@@ -1,16 +1,18 @@
 # Vald Object APIs
 
 ## Overview```rpc
+
 service Object {
 
-  rpc Exists(payload.v1.Object.ID) returns (payload.v1.Object.ID) {}
-  rpc GetObject(payload.v1.Object.VectorRequest) returns (payload.v1.Object.Vector) {}
-  rpc StreamGetObject(payload.v1.Object.VectorRequest) returns (payload.v1.Object.StreamVector) {}
-  rpc StreamListObject(payload.v1.Object.List.Request) returns (payload.v1.Object.List.Response) {}
-  rpc GetTimestamp(payload.v1.Object.TimestampRequest) returns (payload.v1.Object.Timestamp) {}
+rpc Exists(payload.v1.Object.ID) returns (payload.v1.Object.ID) {}
+rpc GetObject(payload.v1.Object.VectorRequest) returns (payload.v1.Object.Vector) {}
+rpc StreamGetObject(payload.v1.Object.VectorRequest) returns (payload.v1.Object.StreamVector) {}
+rpc StreamListObject(payload.v1.Object.List.Request) returns (payload.v1.Object.List.Response) {}
+rpc GetTimestamp(payload.v1.Object.TimestampRequest) returns (payload.v1.Object.Timestamp) {}
 
 }
-```
+
+````
 ## Exists RPC
 
 ### Input
@@ -21,13 +23,13 @@ service Object {
   message Object.ID {
     string id = 1;
   }
-  ```
+````
 
-  - Object.ID
+- Object.ID
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  |  |
+  | field | type   | label | desc. |
+  | :---: | :----- | :---- | :---- |
+  |  id   | string |       |       |
 
 ### Output
 
@@ -41,11 +43,9 @@ service Object {
 
   - Object.ID
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  |  |
-
-
+    | field | type   | label | desc. |
+    | :---: | :----- | :---- | :---- |
+    |  id   | string |       |       |
 
 ## GetObject RPC
 
@@ -79,32 +79,29 @@ service Object {
 
   - Object.VectorRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | Object.ID |  | The vector ID to be fetched. |
-    | filters | Filter.Config |  | Filter configurations. |
-
+    |  field  | type          | label | desc.                        |
+    | :-----: | :------------ | :---- | :--------------------------- |
+    |   id    | Object.ID     |       | The vector ID to be fetched. |
+    | filters | Filter.Config |       | Filter configurations.       |
 
   - Object.ID
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  |  |
-
+    | field | type   | label | desc. |
+    | :---: | :----- | :---- | :---- |
+    |  id   | string |       |       |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -120,13 +117,11 @@ service Object {
 
   - Object.Vector
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | vector | float | repeated | The vector. |
-    | timestamp | int64 |  | timestamp represents when this vector inserted. |
-
-
+    |   field   | type   | label    | desc.                                           |
+    | :-------: | :----- | :------- | :---------------------------------------------- |
+    |    id     | string |          | The vector ID.                                  |
+    |  vector   | float  | repeated | The vector.                                     |
+    | timestamp | int64  |          | timestamp represents when this vector inserted. |
 
 ## StreamGetObject RPC
 
@@ -160,32 +155,29 @@ service Object {
 
   - Object.VectorRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | Object.ID |  | The vector ID to be fetched. |
-    | filters | Filter.Config |  | Filter configurations. |
-
+    |  field  | type          | label | desc.                        |
+    | :-----: | :------------ | :---- | :--------------------------- |
+    |   id    | Object.ID     |       | The vector ID to be fetched. |
+    | filters | Filter.Config |       | Filter configurations.       |
 
   - Object.ID
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  |  |
-
+    | field | type   | label | desc. |
+    | :---: | :----- | :---- | :---- |
+    |  id   | string |       |       |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -207,21 +199,18 @@ service Object {
 
   - Object.StreamVector
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | Object.Vector |  | The vector. |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    | field  | type              | label | desc.                 |
+    | :----: | :---------------- | :---- | :-------------------- |
+    | vector | Object.Vector     |       | The vector.           |
+    | status | google.rpc.Status |       | The RPC error status. |
 
   - Object.Vector
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | vector | float | repeated | The vector. |
-    | timestamp | int64 |  | timestamp represents when this vector inserted. |
-
-
+    |   field   | type   | label    | desc.                                           |
+    | :-------: | :----- | :------- | :---------------------------------------------- |
+    |    id     | string |          | The vector ID.                                  |
+    |  vector   | float  | repeated | The vector.                                     |
+    | timestamp | int64  |          | timestamp represents when this vector inserted. |
 
 ## StreamListObject RPC
 
@@ -259,21 +248,18 @@ service Object {
 
   - Object.List.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | Object.Vector |  | The vector |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    | field  | type              | label | desc.                 |
+    | :----: | :---------------- | :---- | :-------------------- |
+    | vector | Object.Vector     |       | The vector            |
+    | status | google.rpc.Status |       | The RPC error status. |
 
   - Object.Vector
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | vector | float | repeated | The vector. |
-    | timestamp | int64 |  | timestamp represents when this vector inserted. |
-
-
+    |   field   | type   | label    | desc.                                           |
+    | :-------: | :----- | :------- | :---------------------------------------------- |
+    |    id     | string |          | The vector ID.                                  |
+    |  vector   | float  | repeated | The vector.                                     |
+    | timestamp | int64  |          | timestamp represents when this vector inserted. |
 
 ## GetTimestamp RPC
 
@@ -294,16 +280,15 @@ service Object {
 
   - Object.TimestampRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | Object.ID |  | The vector ID to be fetched. |
-
+    | field | type      | label | desc.                        |
+    | :---: | :-------- | :---- | :--------------------------- |
+    |  id   | Object.ID |       | The vector ID to be fetched. |
 
   - Object.ID
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  |  |
+    | field | type   | label | desc. |
+    | :---: | :----- | :---- | :---- |
+    |  id   | string |       |       |
 
 ### Output
 
@@ -318,10 +303,7 @@ service Object {
 
   - Object.Timestamp
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | timestamp | int64 |  | timestamp represents when this vector inserted. |
-
-
-
+    |   field   | type   | label | desc.                                           |
+    | :-------: | :----- | :---- | :---------------------------------------------- |
+    |    id     | string |       | The vector ID.                                  |
+    | timestamp | int64  |       | timestamp represents when this vector inserted. |

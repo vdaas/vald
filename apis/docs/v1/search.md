@@ -1,23 +1,25 @@
 # Vald Search APIs
 
 ## Overview```rpc
+
 service Search {
 
-  rpc Search(payload.v1.Search.Request) returns (payload.v1.Search.Response) {}
-  rpc SearchByID(payload.v1.Search.IDRequest) returns (payload.v1.Search.Response) {}
-  rpc StreamSearch(payload.v1.Search.Request) returns (payload.v1.Search.StreamResponse) {}
-  rpc StreamSearchByID(payload.v1.Search.IDRequest) returns (payload.v1.Search.StreamResponse) {}
-  rpc MultiSearch(payload.v1.Search.MultiRequest) returns (payload.v1.Search.Responses) {}
-  rpc MultiSearchByID(payload.v1.Search.MultiIDRequest) returns (payload.v1.Search.Responses) {}
-  rpc LinearSearch(payload.v1.Search.Request) returns (payload.v1.Search.Response) {}
-  rpc LinearSearchByID(payload.v1.Search.IDRequest) returns (payload.v1.Search.Response) {}
-  rpc StreamLinearSearch(payload.v1.Search.Request) returns (payload.v1.Search.StreamResponse) {}
-  rpc StreamLinearSearchByID(payload.v1.Search.IDRequest) returns (payload.v1.Search.StreamResponse) {}
-  rpc MultiLinearSearch(payload.v1.Search.MultiRequest) returns (payload.v1.Search.Responses) {}
-  rpc MultiLinearSearchByID(payload.v1.Search.MultiIDRequest) returns (payload.v1.Search.Responses) {}
+rpc Search(payload.v1.Search.Request) returns (payload.v1.Search.Response) {}
+rpc SearchByID(payload.v1.Search.IDRequest) returns (payload.v1.Search.Response) {}
+rpc StreamSearch(payload.v1.Search.Request) returns (payload.v1.Search.StreamResponse) {}
+rpc StreamSearchByID(payload.v1.Search.IDRequest) returns (payload.v1.Search.StreamResponse) {}
+rpc MultiSearch(payload.v1.Search.MultiRequest) returns (payload.v1.Search.Responses) {}
+rpc MultiSearchByID(payload.v1.Search.MultiIDRequest) returns (payload.v1.Search.Responses) {}
+rpc LinearSearch(payload.v1.Search.Request) returns (payload.v1.Search.Response) {}
+rpc LinearSearchByID(payload.v1.Search.IDRequest) returns (payload.v1.Search.Response) {}
+rpc StreamLinearSearch(payload.v1.Search.Request) returns (payload.v1.Search.StreamResponse) {}
+rpc StreamLinearSearchByID(payload.v1.Search.IDRequest) returns (payload.v1.Search.StreamResponse) {}
+rpc MultiLinearSearch(payload.v1.Search.MultiRequest) returns (payload.v1.Search.Responses) {}
+rpc MultiLinearSearchByID(payload.v1.Search.MultiIDRequest) returns (payload.v1.Search.Responses) {}
 
 }
-```
+
+````
 ## Search RPC
 
 ### Input
@@ -77,63 +79,56 @@ service Search {
     SortPoolSlice = 3;
     PairingHeap = 4;
   }
-  ```
+````
 
-  - Search.Request
+- Search.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | float | repeated | The vector to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
+  | field  | type          | label    | desc.                                    |
+  | :----: | :------------ | :------- | :--------------------------------------- |
+  | vector | float         | repeated | The vector to be searched.               |
+  | config | Search.Config |          | The configuration of the search request. |
 
+- Search.Config
 
-  - Search.Config
+  |         field         | type                        | label | desc.                                        |
+  | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+  |      request_id       | string                      |       | Unique request ID.                           |
+  |          num          | uint32                      |       | Maximum number of result to be returned.     |
+  |        radius         | float                       |       | Search radius.                               |
+  |        epsilon        | float                       |       | Search coefficient.                          |
+  |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+  |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+  |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+  |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+  | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+  |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+  |        nprobe         | uint32                      |       | Search nprobe.                               |
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
+- Filter.Config
 
+  |  field  | type          | label    | desc.                                      |
+  | :-----: | :------------ | :------- | :----------------------------------------- |
+  | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
-  - Filter.Config
+- Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+  | field | type   | label | desc.                |
+  | :---: | :----- | :---- | :------------------- |
+  | host  | string |       | The target hostname. |
+  | port  | uint32 |       | The target port.     |
 
+- Filter.Config
 
-  - Filter.Target
+  |  field  | type          | label    | desc.                                      |
+  | :-----: | :------------ | :------- | :----------------------------------------- |
+  | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+- Filter.Target
 
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
-
+  | field | type   | label | desc.                |
+  | :---: | :----- | :---- | :------------------- |
+  | host  | string |       | The target hostname. |
+  | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -154,20 +149,17 @@ service Search {
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ## SearchByID RPC
 
@@ -232,59 +224,52 @@ service Search {
 
   - Search.IDRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | string        |       | The vector ID to be searched.            |
+    | config | Search.Config |       | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -305,20 +290,17 @@ service Search {
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ## StreamSearch RPC
 
@@ -383,59 +365,52 @@ service Search {
 
   - Search.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | float | repeated | The vector to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label    | desc.                                    |
+    | :----: | :------------ | :------- | :--------------------------------------- |
+    | vector | float         | repeated | The vector to be searched.               |
+    | config | Search.Config |          | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -462,28 +437,24 @@ service Search {
 
   - Search.StreamResponse
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | response | Search.Response |  | Represent the search response. |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    |  field   | type              | label | desc.                          |
+    | :------: | :---------------- | :---- | :----------------------------- |
+    | response | Search.Response   |       | Represent the search response. |
+    |  status  | google.rpc.Status |       | The RPC error status.          |
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ## StreamSearchByID RPC
 
@@ -548,59 +519,52 @@ service Search {
 
   - Search.IDRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | string        |       | The vector ID to be searched.            |
+    | config | Search.Config |       | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -627,28 +591,24 @@ service Search {
 
   - Search.StreamResponse
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | response | Search.Response |  | Represent the search response. |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    |  field   | type              | label | desc.                          |
+    | :------: | :---------------- | :---- | :----------------------------- |
+    | response | Search.Response   |       | Represent the search response. |
+    |  status  | google.rpc.Status |       | The RPC error status.          |
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ## MultiSearch RPC
 
@@ -718,66 +678,58 @@ service Search {
 
   - Search.MultiRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field   | type           | label    | desc.                                          |
+    | :------: | :------------- | :------- | :--------------------------------------------- |
     | requests | Search.Request | repeated | Represent the multiple search request content. |
-
 
   - Search.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | float | repeated | The vector to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label    | desc.                                    |
+    | :----: | :------------ | :------- | :--------------------------------------- |
+    | vector | float         | repeated | The vector to be searched.               |
+    | config | Search.Config |          | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -803,27 +755,23 @@ service Search {
 
   - Search.Responses
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |   field   | type            | label    | desc.                                           |
+    | :-------: | :-------------- | :------- | :---------------------------------------------- |
     | responses | Search.Response | repeated | Represent the multiple search response content. |
-
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ## MultiSearchByID RPC
 
@@ -893,66 +841,58 @@ service Search {
 
   - Search.MultiIDRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field   | type             | label    | desc.                                                |
+    | :------: | :--------------- | :------- | :--------------------------------------------------- |
     | requests | Search.IDRequest | repeated | Represent the multiple search by ID request content. |
-
 
   - Search.IDRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | string        |       | The vector ID to be searched.            |
+    | config | Search.Config |       | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -978,27 +918,23 @@ service Search {
 
   - Search.Responses
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |   field   | type            | label    | desc.                                           |
+    | :-------: | :-------------- | :------- | :---------------------------------------------- |
     | responses | Search.Response | repeated | Represent the multiple search response content. |
-
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ## LinearSearch RPC
 
@@ -1063,59 +999,52 @@ service Search {
 
   - Search.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | float | repeated | The vector to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label    | desc.                                    |
+    | :----: | :------------ | :------- | :--------------------------------------- |
+    | vector | float         | repeated | The vector to be searched.               |
+    | config | Search.Config |          | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -1136,20 +1065,17 @@ service Search {
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ## LinearSearchByID RPC
 
@@ -1214,59 +1140,52 @@ service Search {
 
   - Search.IDRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | string        |       | The vector ID to be searched.            |
+    | config | Search.Config |       | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -1287,20 +1206,17 @@ service Search {
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ## StreamLinearSearch RPC
 
@@ -1365,59 +1281,52 @@ service Search {
 
   - Search.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | float | repeated | The vector to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label    | desc.                                    |
+    | :----: | :------------ | :------- | :--------------------------------------- |
+    | vector | float         | repeated | The vector to be searched.               |
+    | config | Search.Config |          | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -1444,28 +1353,24 @@ service Search {
 
   - Search.StreamResponse
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | response | Search.Response |  | Represent the search response. |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    |  field   | type              | label | desc.                          |
+    | :------: | :---------------- | :---- | :----------------------------- |
+    | response | Search.Response   |       | Represent the search response. |
+    |  status  | google.rpc.Status |       | The RPC error status.          |
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ## StreamLinearSearchByID RPC
 
@@ -1530,59 +1435,52 @@ service Search {
 
   - Search.IDRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | string        |       | The vector ID to be searched.            |
+    | config | Search.Config |       | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -1609,28 +1507,24 @@ service Search {
 
   - Search.StreamResponse
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | response | Search.Response |  | Represent the search response. |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    |  field   | type              | label | desc.                          |
+    | :------: | :---------------- | :---- | :----------------------------- |
+    | response | Search.Response   |       | Represent the search response. |
+    |  status  | google.rpc.Status |       | The RPC error status.          |
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ## MultiLinearSearch RPC
 
@@ -1700,66 +1594,58 @@ service Search {
 
   - Search.MultiRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field   | type           | label    | desc.                                          |
+    | :------: | :------------- | :------- | :--------------------------------------------- |
     | requests | Search.Request | repeated | Represent the multiple search request content. |
-
 
   - Search.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | float | repeated | The vector to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label    | desc.                                    |
+    | :----: | :------------ | :------- | :--------------------------------------- |
+    | vector | float         | repeated | The vector to be searched.               |
+    | config | Search.Config |          | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -1785,27 +1671,23 @@ service Search {
 
   - Search.Responses
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |   field   | type            | label    | desc.                                           |
+    | :-------: | :-------------- | :------- | :---------------------------------------------- |
     | responses | Search.Response | repeated | Represent the multiple search response content. |
-
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ## MultiLinearSearchByID RPC
 
@@ -1875,66 +1757,58 @@ service Search {
 
   - Search.MultiIDRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field   | type             | label    | desc.                                                |
+    | :------: | :--------------- | :------- | :--------------------------------------------------- |
     | requests | Search.IDRequest | repeated | Represent the multiple search by ID request content. |
-
 
   - Search.IDRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | string        |       | The vector ID to be searched.            |
+    | config | Search.Config |       | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -1960,25 +1834,20 @@ service Search {
 
   - Search.Responses
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |   field   | type            | label    | desc.                                           |
+    | :-------: | :-------------- | :------- | :---------------------------------------------- |
     | responses | Search.Response | repeated | Represent the multiple search response content. |
-
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
