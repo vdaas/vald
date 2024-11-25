@@ -895,6 +895,8 @@ spec:
           {{- toYaml .Job.securityContext | nindent 12 }}
         {{- end }}
       {{- end }}
+      affinity:
+        {{- include "vald.affinity" .Job.affinity | nindent 8 }}
       containers:
         - name: {{ .Job.name }}
           image: "{{ .Job.image.repository }}:{{ default .default.Values.defaults.image.tag .Job.image.tag }}"
@@ -928,6 +930,14 @@ spec:
           configMap:
             defaultMode: 420
             name: {{ .Job.name }}-config
+      {{- if .Job.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Job.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Job.tolerations }}
+      tolerations:
+        {{- toYaml .Job.tolerations | nindent 8 }}
+      {{- end }}
       {{- if .Job.serviceAccount }}
       serviceAccountName: {{ .Job.serviceAccount.name }}
       {{- end }}
