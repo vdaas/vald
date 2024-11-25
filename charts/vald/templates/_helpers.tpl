@@ -896,8 +896,10 @@ spec:
           {{- toYaml .Job.securityContext | nindent 12 }}
         {{- end }}
       {{- end }}
+      {{- if .Job.affinity }}
       affinity:
         {{- include "vald.affinity" .Job.affinity | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Job.name }}
           image: "{{ .Job.image.repository }}:{{ default .default.Values.defaults.image.tag .Job.image.tag }}"
