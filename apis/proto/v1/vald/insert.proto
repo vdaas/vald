@@ -33,8 +33,6 @@ service Insert {
   // Inset RPC is the method to add a new single vector.
   // ---
   // Status Code
-  // | code | desc.             |
-  // | :--: | :---------------- |
   // | 0    | OK                |
   // | 1    | CANCELLED         |
   // | 3    | INVALID_ARGUMENT  |
@@ -68,8 +66,6 @@ service Insert {
   // It's the recommended method to insert a large number of vectors.
   // ---
   // Status Code
-  // | code | name              |
-  // | :--: | :---------------- |
   // |  0   | OK                |
   // |  1   | CANCELLED         |
   // |  3   | INVALID_ARGUMENT  |
@@ -101,8 +97,6 @@ service Insert {
   // </div>
   // ---
   // Status Code
-  // | code | name              |
-  // | :--: | :---------------- |
   // |  0   | OK                |
   // |  1   | CANCELLED         |
   // |  3   | INVALID_ARGUMENT  |

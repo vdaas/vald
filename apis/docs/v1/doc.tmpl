@@ -8,11 +8,9 @@
 # Vald {{ .Name }} APIs
 
 ## Overview
-{{- if hasKey $descs "Overview" }}
 
-{{ pluck "Overview" $descs | first }}
+{{ if hasKey $descs "Overview" }}{{ pluck "Overview" $descs | first }}{{ end }}
 
-{{ end -}}
 ```rpc
 service {{.Name}} {
 
@@ -28,11 +26,9 @@ service {{.Name}} {
 {{- $_ := set $descs (first $lines) (join "\n" (rest $lines)) -}}
 {{- end -}}
 ## {{ .Name }} RPC
-{{ if hasKey $descs "Overview" }}
 
-{{ pluck "Overview" $descs | first }}
+{{ if hasKey $descs "Overview" }}{{ pluck "Overview" $descs | first }}{{ end }}
 
-{{ end }}
 ### Input
 
 - the scheme of `{{ .RequestFullType }}`
@@ -55,6 +51,8 @@ service {{.Name}} {
 
 ### Status Code
 
+| code | description       |
+| :--: | :---------------- |
 {{ pluck "Status Code" $descs | first }}
 
 Please refer to [Response Status Code](../status.md) for more details.
