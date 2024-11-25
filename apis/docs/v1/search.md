@@ -22,10 +22,10 @@ service Search {
 
 }
 ```
+
 ## Search RPC
 
 Search RPC is the method to search vector(s) similar to the request vector.
-
 
 ### Input
 
@@ -88,59 +88,52 @@ Search RPC is the method to search vector(s) similar to the request vector.
 
   - Search.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | float | repeated | The vector to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label    | desc.                                    |
+    | :----: | :------------ | :------- | :--------------------------------------- |
+    | vector | float         | repeated | The vector to be searched.               |
+    | config | Search.Config |          | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -161,20 +154,17 @@ Search RPC is the method to search vector(s) similar to the request vector.
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
@@ -188,10 +178,7 @@ Search RPC is the method to search vector(s) similar to the request vector.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-
 Please refer to [Response Status Code](../status.md) for more details.
-
-
 
 ### Troubleshooting
 
@@ -207,13 +194,10 @@ Here are some common reasons and how to resolve each error.
 | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 
-
-
 ## SearchByID RPC
 
 SearchByID RPC is the method to search similar vectors using a user-defined vector ID.<br>
 The vector with the same requested ID should be indexed into the `vald-agent` before searching.
-
 
 ### Input
 
@@ -276,59 +260,52 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
 
   - Search.IDRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | string        |       | The vector ID to be searched.            |
+    | config | Search.Config |       | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -349,20 +326,17 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
@@ -376,10 +350,7 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-
 Please refer to [Response Status Code](../status.md) for more details.
-
-
 
 ### Troubleshooting
 
@@ -394,8 +365,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
-
-
 
 ## StreamSearch RPC
 
@@ -403,7 +372,6 @@ StreamSearch RPC is the method to search vectors with multi queries(vectors) usi
 Using the bidirectional streaming RPC, the search request can be communicated in any order between the client and server.
 Each Search request and response are independent.
 
-
 ### Input
 
 - the scheme of `payload.v1.Search.Request`
@@ -465,59 +433,52 @@ Each Search request and response are independent.
 
   - Search.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | float | repeated | The vector to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label    | desc.                                    |
+    | :----: | :------------ | :------- | :--------------------------------------- |
+    | vector | float         | repeated | The vector to be searched.               |
+    | config | Search.Config |          | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -544,28 +505,24 @@ Each Search request and response are independent.
 
   - Search.StreamResponse
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | response | Search.Response |  | Represent the search response. |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    |  field   | type              | label | desc.                          |
+    | :------: | :---------------- | :---- | :----------------------------- |
+    | response | Search.Response   |       | Represent the search response. |
+    |  status  | google.rpc.Status |       | The RPC error status.          |
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
@@ -579,10 +536,7 @@ Each Search request and response are independent.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-
 Please refer to [Response Status Code](../status.md) for more details.
-
-
 
 ### Troubleshooting
 
@@ -598,14 +552,11 @@ Here are some common reasons and how to resolve each error.
 | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 
-
-
 ## StreamSearchByID RPC
 
 StreamSearchByID RPC is the method to search vectors with multi queries(IDs) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
 Using the bidirectional streaming RPC, the search request can be communicated in any order between the client and server.
 Each SearchByID request and response are independent.
-
 
 ### Input
 
@@ -668,59 +619,52 @@ Each SearchByID request and response are independent.
 
   - Search.IDRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | string        |       | The vector ID to be searched.            |
+    | config | Search.Config |       | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -747,28 +691,24 @@ Each SearchByID request and response are independent.
 
   - Search.StreamResponse
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | response | Search.Response |  | Represent the search response. |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    |  field   | type              | label | desc.                          |
+    | :------: | :---------------- | :---- | :----------------------------- |
+    | response | Search.Response   |       | Represent the search response. |
+    |  status  | google.rpc.Status |       | The RPC error status.          |
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
@@ -782,10 +722,7 @@ Each SearchByID request and response are independent.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-
 Please refer to [Response Status Code](../status.md) for more details.
-
-
 
 ### Troubleshooting
 
@@ -800,8 +737,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
-
-
 
 ## MultiSearch RPC
 
@@ -812,7 +747,6 @@ gRPC has a message size limitation.<br>
 Please be careful that the size of the request exceeds the limit.
 </div>
 
-
 ### Input
 
 - the scheme of `payload.v1.Search.MultiRequest`
@@ -879,66 +813,58 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.MultiRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field   | type           | label    | desc.                                          |
+    | :------: | :------------- | :------- | :--------------------------------------------- |
     | requests | Search.Request | repeated | Represent the multiple search request content. |
-
 
   - Search.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | float | repeated | The vector to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label    | desc.                                    |
+    | :----: | :------------ | :------- | :--------------------------------------- |
+    | vector | float         | repeated | The vector to be searched.               |
+    | config | Search.Config |          | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -964,27 +890,23 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.Responses
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |   field   | type            | label    | desc.                                           |
+    | :-------: | :-------------- | :------- | :---------------------------------------------- |
     | responses | Search.Response | repeated | Represent the multiple search response content. |
-
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
@@ -998,14 +920,11 @@ Please be careful that the size of the request exceeds the limit.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-
 Please refer to [Response Status Code](../status.md) for more details.
-
-
 
 ### Troubleshooting
 
-  The request process may not be completed when the response code is NOT `0 (OK)`.
+The request process may not be completed when the response code is NOT `0 (OK)`.
 
 Here are some common reasons and how to resolve each error.
 
@@ -1016,8 +935,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
-
 
 ## MultiSearchByID RPC
 
@@ -1028,7 +945,6 @@ gRPC has a message size limitation.<br>
 Please be careful that the size of the request exceeds the limit.
 </div>
 
-
 ### Input
 
 - the scheme of `payload.v1.Search.MultiIDRequest`
@@ -1095,66 +1011,58 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.MultiIDRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field   | type             | label    | desc.                                                |
+    | :------: | :--------------- | :------- | :--------------------------------------------------- |
     | requests | Search.IDRequest | repeated | Represent the multiple search by ID request content. |
-
 
   - Search.IDRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | string        |       | The vector ID to be searched.            |
+    | config | Search.Config |       | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -1180,27 +1088,23 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.Responses
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |   field   | type            | label    | desc.                                           |
+    | :-------: | :-------------- | :------- | :---------------------------------------------- |
     | responses | Search.Response | repeated | Represent the multiple search response content. |
-
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
@@ -1214,10 +1118,7 @@ Please be careful that the size of the request exceeds the limit.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-
 Please refer to [Response Status Code](../status.md) for more details.
-
-
 
 ### Troubleshooting
 
@@ -1233,12 +1134,9 @@ Here are some common reasons and how to resolve each error.
 | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 
-
-
 ## LinearSearch RPC
 
 LinearSearch RPC is the method to linear search vector(s) similar to the request vector.
-
 
 ### Input
 
@@ -1301,59 +1199,52 @@ LinearSearch RPC is the method to linear search vector(s) similar to the request
 
   - Search.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | float | repeated | The vector to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label    | desc.                                    |
+    | :----: | :------------ | :------- | :--------------------------------------- |
+    | vector | float         | repeated | The vector to be searched.               |
+    | config | Search.Config |          | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -1374,20 +1265,17 @@ LinearSearch RPC is the method to linear search vector(s) similar to the request
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
@@ -1401,10 +1289,7 @@ LinearSearch RPC is the method to linear search vector(s) similar to the request
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-
 Please refer to [Response Status Code](../status.md) for more details.
-
-
 
 ### Troubleshooting
 
@@ -1419,8 +1304,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
-
 
 ## LinearSearchByID RPC
 
@@ -1428,7 +1311,6 @@ LinearSearchByID RPC is the method to linear search similar vectors using a user
 The vector with the same requested ID should be indexed into the `vald-agent` before searching.
 You will get a `NOT_FOUND` error if the vector isn't stored.
 
-
 ### Input
 
 - the scheme of `payload.v1.Search.IDRequest`
@@ -1490,59 +1372,52 @@ You will get a `NOT_FOUND` error if the vector isn't stored.
 
   - Search.IDRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | string        |       | The vector ID to be searched.            |
+    | config | Search.Config |       | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -1563,20 +1438,17 @@ You will get a `NOT_FOUND` error if the vector isn't stored.
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
@@ -1590,10 +1462,7 @@ You will get a `NOT_FOUND` error if the vector isn't stored.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-
 Please refer to [Response Status Code](../status.md) for more details.
-
-
 
 ### Troubleshooting
 
@@ -1609,14 +1478,11 @@ Here are some common reasons and how to resolve each error.
 | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 
-
-
 ## StreamLinearSearch RPC
 
 StreamLinearSearch RPC is the method to linear search vectors with multi queries(vectors) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
 Using the bidirectional streaming RPC, the linear search request can be communicated in any order between the client and server.
 Each LinearSearch request and response are independent.
-
 
 ### Input
 
@@ -1679,59 +1545,52 @@ Each LinearSearch request and response are independent.
 
   - Search.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | float | repeated | The vector to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label    | desc.                                    |
+    | :----: | :------------ | :------- | :--------------------------------------- |
+    | vector | float         | repeated | The vector to be searched.               |
+    | config | Search.Config |          | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -1758,28 +1617,24 @@ Each LinearSearch request and response are independent.
 
   - Search.StreamResponse
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | response | Search.Response |  | Represent the search response. |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    |  field   | type              | label | desc.                          |
+    | :------: | :---------------- | :---- | :----------------------------- |
+    | response | Search.Response   |       | Represent the search response. |
+    |  status  | google.rpc.Status |       | The RPC error status.          |
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
@@ -1793,10 +1648,7 @@ Each LinearSearch request and response are independent.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-
 Please refer to [Response Status Code](../status.md) for more details.
-
-
 
 ### Troubleshooting
 
@@ -1812,14 +1664,11 @@ Here are some common reasons and how to resolve each error.
 | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 
-
-
 ## StreamLinearSearchByID RPC
 
-  StreamLinearSearchByID RPC is the method to linear search vectors with multi queries(IDs) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+StreamLinearSearchByID RPC is the method to linear search vectors with multi queries(IDs) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
 Using the bidirectional streaming RPC, the linear search request can be communicated in any order between the client and server.
 Each LinearSearchByID request and response are independent.
-
 
 ### Input
 
@@ -1882,59 +1731,52 @@ Each LinearSearchByID request and response are independent.
 
   - Search.IDRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | string        |       | The vector ID to be searched.            |
+    | config | Search.Config |       | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -1961,28 +1803,24 @@ Each LinearSearchByID request and response are independent.
 
   - Search.StreamResponse
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | response | Search.Response |  | Represent the search response. |
-    | status | google.rpc.Status |  | The RPC error status. |
-
+    |  field   | type              | label | desc.                          |
+    | :------: | :---------------- | :---- | :----------------------------- |
+    | response | Search.Response   |       | Represent the search response. |
+    |  status  | google.rpc.Status |       | The RPC error status.          |
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
@@ -1996,10 +1834,7 @@ Each LinearSearchByID request and response are independent.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-
 Please refer to [Response Status Code](../status.md) for more details.
-
-
 
 ### Troubleshooting
 
@@ -2014,8 +1849,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
-
-
 
 ## MultiLinearSearch RPC
 
@@ -2025,7 +1858,6 @@ MultiLinearSearch RPC is the method to linear search vectors with multiple vecto
 gRPC has a message size limitation.<br>
 Please be careful that the size of the request exceeds the limit.
 </div>
-
 
 ### Input
 
@@ -2093,66 +1925,58 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.MultiRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field   | type           | label    | desc.                                          |
+    | :------: | :------------- | :------- | :--------------------------------------------- |
     | requests | Search.Request | repeated | Represent the multiple search request content. |
-
 
   - Search.Request
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | vector | float | repeated | The vector to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label    | desc.                                    |
+    | :----: | :------------ | :------- | :--------------------------------------- |
+    | vector | float         | repeated | The vector to be searched.               |
+    | config | Search.Config |          | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -2178,27 +2002,23 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.Responses
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |   field   | type            | label    | desc.                                           |
+    | :-------: | :-------------- | :------- | :---------------------------------------------- |
     | responses | Search.Response | repeated | Represent the multiple search response content. |
-
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
@@ -2212,14 +2032,11 @@ Please be careful that the size of the request exceeds the limit.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-
 Please refer to [Response Status Code](../status.md) for more details.
-
-
 
 ### Troubleshooting
 
-  The request process may not be completed when the response code is NOT `0 (OK)`.
+The request process may not be completed when the response code is NOT `0 (OK)`.
 
 Here are some common reasons and how to resolve each error.
 
@@ -2231,8 +2048,6 @@ Here are some common reasons and how to resolve each error.
 | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 
-
-
 ## MultiLinearSearchByID RPC
 
 MultiLinearSearchByID RPC is the method to linear search vectors with multiple IDs in **1** request.
@@ -2241,7 +2056,7 @@ MultiLinearSearchByID RPC is the method to linear search vectors with multiple I
 gRPC has a message size limitation.<br>
 Please be careful that the size of the request exceeds the limit.
 </div>
-// 
+//
 
 ### Input
 
@@ -2309,66 +2124,58 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.MultiIDRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field   | type             | label    | desc.                                                |
+    | :------: | :--------------- | :------- | :--------------------------------------------------- |
     | requests | Search.IDRequest | repeated | Represent the multiple search by ID request content. |
-
 
   - Search.IDRequest
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID to be searched. |
-    | config | Search.Config |  | The configuration of the search request. |
-
+    | field  | type          | label | desc.                                    |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | string        |       | The vector ID to be searched.            |
+    | config | Search.Config |       | The configuration of the search request. |
 
   - Search.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | Unique request ID. |
-    | num | uint32 |  | Maximum number of result to be returned. |
-    | radius | float |  | Search radius. |
-    | epsilon | float |  | Search coefficient. |
-    | timeout | int64 |  | Search timeout in nanoseconds. |
-    | ingress_filters | Filter.Config |  | Ingress filter configurations. |
-    | egress_filters | Filter.Config |  | Egress filter configurations. |
-    | min_num | uint32 |  | Minimum number of result to be returned. |
-    | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
-    | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
-    | nprobe | uint32 |  | Search nprobe. |
-
-
-  - Filter.Config
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-
-  - Filter.Target
-
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
-
+    |         field         | type                        | label | desc.                                        |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
 
   - Filter.Config
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
 
   - Filter.Target
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | host | string |  | The target hostname. |
-    | port | uint32 |  | The target port. |
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
+  - Filter.Config
 
+    |  field  | type          | label    | desc.                                      |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | desc.                |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -2394,27 +2201,23 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.Responses
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    |   field   | type            | label    | desc.                                           |
+    | :-------: | :-------------- | :------- | :---------------------------------------------- |
     | responses | Search.Response | repeated | Represent the multiple search response content. |
-
 
   - Search.Response
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | request_id | string |  | The unique request ID. |
-    | results | Object.Distance | repeated | Search results. |
-
+    |   field    | type            | label    | desc.                  |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
-    | id | string |  | The vector ID. |
-    | distance | float |  | The distance. |
-
-
+    |  field   | type   | label | desc.          |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
@@ -2428,10 +2231,7 @@ Please be careful that the size of the request exceeds the limit.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
-
 Please refer to [Response Status Code](../status.md) for more details.
-
-
 
 ### Troubleshooting
 
@@ -2446,6 +2246,3 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
-
-
-
