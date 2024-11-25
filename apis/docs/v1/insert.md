@@ -13,10 +13,10 @@ service Insert {
 
 }
 ```
-
 ## Insert RPC
 
 Inset RPC is the method to add a new single vector.
+
 
 ### Input
 
@@ -57,39 +57,43 @@ Inset RPC is the method to add a new single vector.
 
   - Insert.Request
 
-    | field  | type          | label | desc.                                    |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be inserted.               |
-    | config | Insert.Config |       | The configuration of the insert request. |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | vector | Object.Vector |  | The vector to be inserted. |
+    | config | Insert.Config |  | The configuration of the insert request. |
+
 
   - Object.Vector
 
-    |   field   | type   | label    | desc.                                           |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+
 
   - Insert.Config
 
-    |          field          | type          | label | desc.                                               |
-    | :---------------------: | :------------ | :---- | :-------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       | A flag to skip exist check during insert operation. |
-    |         filters         | Filter.Config |       | Filter configurations.                              |
-    |        timestamp        | int64         |       | Insert timestamp.                                   |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | skip_strict_exist_check | bool |  | A flag to skip exist check during insert operation. |
+    | filters | Filter.Config |  | Filter configurations. |
+    | timestamp | int64 |  | Insert timestamp. |
+
 
   - Filter.Config
 
-    |  field  | type          | label    | desc.                                      |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
 
   - Filter.Target
 
-    | field | type   | label | desc.                |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 
 ### Output
 
@@ -105,24 +109,29 @@ Inset RPC is the method to add a new single vector.
 
   - Object.Location
 
-    | field | type   | label    | desc.                     |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
+
+
 
 ### Status Code
 
-| code | desc.             |
+| code | description       |
 | :--: | :---------------- |
-|  0   | OK                |
-|  1   | CANCELLED         |
-|  3   | INVALID_ARGUMENT  |
-|  4   | DEADLINE_EXCEEDED |
-|  5   | NOT_FOUND         |
-|  13  | INTERNAL          |
+| 0    | OK                |
+| 1    | CANCELLED         |
+| 3    | INVALID_ARGUMENT  |
+| 4    | DEADLINE_EXCEEDED |
+| 5    | NOT_FOUND         |
+| 13   | INTERNAL          |
+
 
 Please refer to [Response Status Code](../status.md) for more details.
+
+
 
 ### Troubleshooting
 
@@ -138,12 +147,15 @@ Here are some common reasons and how to resolve each error.
 | ALREADY_EXISTS    | Request ID is already inserted.                                                                                                                     | Change request ID.                                                                       |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
 
+
+
 ## StreamInsert RPC
 
 StreamInsert RPC is the method to add new multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
 Using the bidirectional streaming RPC, the insert request can be communicated in any order between client and server.
 Each Insert request and response are independent.
 It's the recommended method to insert a large number of vectors.
+
 
 ### Input
 
@@ -184,39 +196,43 @@ It's the recommended method to insert a large number of vectors.
 
   - Insert.Request
 
-    | field  | type          | label | desc.                                    |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be inserted.               |
-    | config | Insert.Config |       | The configuration of the insert request. |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | vector | Object.Vector |  | The vector to be inserted. |
+    | config | Insert.Config |  | The configuration of the insert request. |
+
 
   - Object.Vector
 
-    |   field   | type   | label    | desc.                                           |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+
 
   - Insert.Config
 
-    |          field          | type          | label | desc.                                               |
-    | :---------------------: | :------------ | :---- | :-------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       | A flag to skip exist check during insert operation. |
-    |         filters         | Filter.Config |       | Filter configurations.                              |
-    |        timestamp        | int64         |       | Insert timestamp.                                   |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | skip_strict_exist_check | bool |  | A flag to skip exist check during insert operation. |
+    | filters | Filter.Config |  | Filter configurations. |
+    | timestamp | int64 |  | Insert timestamp. |
+
 
   - Filter.Config
 
-    |  field  | type          | label    | desc.                                      |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
 
   - Filter.Target
 
-    | field | type   | label | desc.                |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 
 ### Output
 
@@ -238,22 +254,25 @@ It's the recommended method to insert a large number of vectors.
 
   - Object.StreamLocation
 
-    |  field   | type              | label | desc.                 |
-    | :------: | :---------------- | :---- | :-------------------- |
-    | location | Object.Location   |       | The vector location.  |
-    |  status  | google.rpc.Status |       | The RPC error status. |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | location | Object.Location |  | The vector location. |
+    | status | google.rpc.Status |  | The RPC error status. |
+
 
   - Object.Location
 
-    | field | type   | label    | desc.                     |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
+
+
 
 ### Status Code
 
-| code | name              |
+| code | description       |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -263,7 +282,10 @@ It's the recommended method to insert a large number of vectors.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
+
 Please refer to [Response Status Code](../status.md) for more details.
+
+
 
 ### Troubleshooting
 
@@ -279,6 +301,8 @@ Here are some common reasons and how to resolve each error.
 | ALREADY_EXISTS    | Request ID is already inserted.                                                                                                                     | Change request ID.                                                                       |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
 
+
+
 ## MultiInsert RPC
 
 MultiInsert RPC is the method to add multiple new vectors in **1** request.
@@ -287,6 +311,7 @@ MultiInsert RPC is the method to add multiple new vectors in **1** request.
 gRPC has a message size limitation.<br>
 Please be careful that the size of the request exceeds the limit.
 </div>
+
 
 ### Input
 
@@ -332,45 +357,50 @@ Please be careful that the size of the request exceeds the limit.
 
   - Insert.MultiRequest
 
-    |  field   | type           | label    | desc.                                      |
-    | :------: | :------------- | :------- | :----------------------------------------- |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
     | requests | Insert.Request | repeated | Represent multiple insert request content. |
+
 
   - Insert.Request
 
-    | field  | type          | label | desc.                                    |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    | vector | Object.Vector |       | The vector to be inserted.               |
-    | config | Insert.Config |       | The configuration of the insert request. |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | vector | Object.Vector |  | The vector to be inserted. |
+    | config | Insert.Config |  | The configuration of the insert request. |
+
 
   - Object.Vector
 
-    |   field   | type   | label    | desc.                                           |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
+
 
   - Insert.Config
 
-    |          field          | type          | label | desc.                                               |
-    | :---------------------: | :------------ | :---- | :-------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       | A flag to skip exist check during insert operation. |
-    |         filters         | Filter.Config |       | Filter configurations.                              |
-    |        timestamp        | int64         |       | Insert timestamp.                                   |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | skip_strict_exist_check | bool |  | A flag to skip exist check during insert operation. |
+    | filters | Filter.Config |  | Filter configurations. |
+    | timestamp | int64 |  | Insert timestamp. |
+
 
   - Filter.Config
 
-    |  field  | type          | label    | desc.                                      |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
 
   - Filter.Target
 
-    | field | type   | label | desc.                |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 
 ### Output
 
@@ -391,21 +421,24 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Locations
 
-    |   field   | type            | label    | desc. |
-    | :-------: | :-------------- | :------- | :---- |
-    | locations | Object.Location | repeated |       |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | locations | Object.Location | repeated |  |
+
 
   - Object.Location
 
-    | field | type   | label    | desc.                     |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+    | field | type | label | desc. |
+    | :---: | :--- | :---- | :---- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
+
+
 
 ### Status Code
 
-| code | name              |
+| code | description       |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -415,7 +448,10 @@ Please be careful that the size of the request exceeds the limit.
 |  10  | ABORTED           |
 |  13  | INTERNAL          |
 
+
 Please refer to [Response Status Code](../status.md) for more details.
+
+
 
 ### Troubleshooting
 
@@ -430,3 +466,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | ALREADY_EXISTS    | Request ID is already inserted.                                                                                                                     | Change request ID.                                                                       |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
+
+
+
