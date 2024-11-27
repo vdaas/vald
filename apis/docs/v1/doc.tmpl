@@ -9,7 +9,7 @@
 
 ## Overview
 
-{{ if hasKey $descs "Overview" }}{{ pluck "Overview" $descs | first }}{{ end }}
+{{ if hasKey $descs "Overview" }}{{ $descs.Overview | trim }}{{ end }}
 
 ```rpc
 service {{.Name}} {
@@ -18,6 +18,7 @@ service {{.Name}} {
 {{ end }}
 }
 ```
+
 {{ range .Methods }}
 
 {{- $descs := dict -}}
@@ -27,33 +28,34 @@ service {{.Name}} {
 {{- end -}}
 ## {{ .Name }} RPC
 
-{{ if hasKey $descs "Overview" }}{{ pluck "Overview" $descs | first }}{{ end }}
+{{ if hasKey $descs "Overview" }}{{ $descs.Overview | trim }}{{ end }}
 
 ### Input
 
 - the scheme of `{{ .RequestFullType }}`
 
   ```rpc
-{{ printf "{{- template \"scheme.%s\" }}" .RequestFullType }}
+{{ printf  "{{- template \"scheme:%s\" }}\n" .RequestFullType }}
   ```
-{{ printf "{{ template \"field.%s\" }}" .RequestFullType }}
+
+{{ printf  "{{- template \"field:%s\" }}\n" .RequestFullType }}
 
 ### Output
 
 - the scheme of `{{ .ResponseFullType }}`
 
   ```rpc
-{{ printf "{{- template \"scheme.%s\" }}" .ResponseFullType }}
+{{ printf "{{- template \"scheme:%s\" }}\n" .ResponseFullType }}
   ```
-{{ printf "{{ template \"field.%s\" }}" .ResponseFullType }}
 
-{{ if hasKey $descs "Status Code" }}
+{{ printf "{{ template \"field:%s\" }}\n" .ResponseFullType }}
 
+{{- if hasKey $descs "Status Code" }}
 ### Status Code
 
 | code | description       |
 | :--: | :---------------- |
-{{ pluck "Status Code" $descs | first }}
+{{ pluck "Status Code" $descs | first | trim }}
 
 Please refer to [Response Status Code](../status.md) for more details.
 
@@ -63,10 +65,9 @@ Please refer to [Response Status Code](../status.md) for more details.
 
 ### Troubleshooting
 
-{{ pluck "Troubleshooting" $descs | first }}
-
+{{ pluck "Troubleshooting" $descs | first | trim }}
 {{ end }}
 
-{{ end -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}

@@ -1,42 +1,962 @@
-{{- define "scheme.payload.v1.Control" }}
+{{- define "scheme:payload.v1.Control" -}}
+{{ template "_scheme:payload.v1.Control" }}
+{{- end -}}
+{{- define "field:payload.v1.Control" -}}
+{{ template "_field:payload.v1.Control" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Control.CreateIndexRequest" -}}
+{{ template "_scheme:payload.v1.Control.CreateIndexRequest" }}
+{{- end -}}
+{{- define "field:payload.v1.Control.CreateIndexRequest" -}}
+{{ template "_field:payload.v1.Control.CreateIndexRequest" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Discoverer" -}}
+{{ template "_scheme:payload.v1.Discoverer" }}
+{{- end -}}
+{{- define "field:payload.v1.Discoverer" -}}
+{{ template "_field:payload.v1.Discoverer" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Discoverer.Request" -}}
+{{ template "_scheme:payload.v1.Discoverer.Request" }}
+{{- end -}}
+{{- define "field:payload.v1.Discoverer.Request" -}}
+{{ template "_field:payload.v1.Discoverer.Request" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Empty" -}}
+{{ template "_scheme:payload.v1.Empty" }}
+{{- end -}}
+{{- define "field:payload.v1.Empty" -}}
+{{ template "_field:payload.v1.Empty" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Filter" -}}
+{{ template "_scheme:payload.v1.Filter" }}
+{{- end -}}
+{{- define "field:payload.v1.Filter" -}}
+{{ template "_field:payload.v1.Filter" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Filter.Config" -}}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Filter.Config" -}}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Filter.Target" -}}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Filter.Target" -}}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Flush" -}}
+{{ template "_scheme:payload.v1.Flush" }}
+{{- end -}}
+{{- define "field:payload.v1.Flush" -}}
+{{ template "_field:payload.v1.Flush" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Flush.Request" -}}
+{{ template "_scheme:payload.v1.Flush.Request" }}
+{{- end -}}
+{{- define "field:payload.v1.Flush.Request" -}}
+{{ template "_field:payload.v1.Flush.Request" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info" -}}
+{{ template "_scheme:payload.v1.Info" }}
+{{- end -}}
+{{- define "field:payload.v1.Info" -}}
+{{ template "_field:payload.v1.Info" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Annotations" -}}
+{{ template "_scheme:payload.v1.Info.Annotations" }}
+{{ template "_scheme:payload.v1.Info.Annotations.AnnotationsEntry" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Annotations" -}}
+{{ template "_field:payload.v1.Info.Annotations" }}
+{{ template "_field:payload.v1.Info.Annotations.AnnotationsEntry" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Annotations.AnnotationsEntry" -}}
+{{ template "_scheme:payload.v1.Info.Annotations.AnnotationsEntry" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Annotations.AnnotationsEntry" -}}
+{{ template "_field:payload.v1.Info.Annotations.AnnotationsEntry" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.CPU" -}}
+{{ template "_scheme:payload.v1.Info.CPU" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.CPU" -}}
+{{ template "_field:payload.v1.Info.CPU" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.IPs" -}}
+{{ template "_scheme:payload.v1.Info.IPs" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.IPs" -}}
+{{ template "_field:payload.v1.Info.IPs" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Index" -}}
+{{ template "_scheme:payload.v1.Info.Index" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Index" -}}
+{{ template "_field:payload.v1.Info.Index" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Index.Count" -}}
+{{ template "_scheme:payload.v1.Info.Index.Count" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Index.Count" -}}
+{{ template "_field:payload.v1.Info.Index.Count" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Index.Detail" -}}
+{{ template "_scheme:payload.v1.Info.Index.Detail" }}
+{{ template "_scheme:payload.v1.Info.Index.Detail.CountsEntry" }}
+{{ template "_scheme:payload.v1.Info.Index.Count" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Index.Detail" -}}
+{{ template "_field:payload.v1.Info.Index.Detail" }}
+{{ template "_field:payload.v1.Info.Index.Detail.CountsEntry" }}
+{{ template "_field:payload.v1.Info.Index.Count" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Index.Detail.CountsEntry" -}}
+{{ template "_scheme:payload.v1.Info.Index.Detail.CountsEntry" }}
+{{ template "_scheme:payload.v1.Info.Index.Count" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Index.Detail.CountsEntry" -}}
+{{ template "_field:payload.v1.Info.Index.Detail.CountsEntry" }}
+{{ template "_field:payload.v1.Info.Index.Count" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Index.Property" -}}
+{{ template "_scheme:payload.v1.Info.Index.Property" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Index.Property" -}}
+{{ template "_field:payload.v1.Info.Index.Property" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Index.PropertyDetail" -}}
+{{ template "_scheme:payload.v1.Info.Index.PropertyDetail" }}
+{{ template "_scheme:payload.v1.Info.Index.PropertyDetail.DetailsEntry" }}
+{{ template "_scheme:payload.v1.Info.Index.Property" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Index.PropertyDetail" -}}
+{{ template "_field:payload.v1.Info.Index.PropertyDetail" }}
+{{ template "_field:payload.v1.Info.Index.PropertyDetail.DetailsEntry" }}
+{{ template "_field:payload.v1.Info.Index.Property" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Index.PropertyDetail.DetailsEntry" -}}
+{{ template "_scheme:payload.v1.Info.Index.PropertyDetail.DetailsEntry" }}
+{{ template "_scheme:payload.v1.Info.Index.Property" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Index.PropertyDetail.DetailsEntry" -}}
+{{ template "_field:payload.v1.Info.Index.PropertyDetail.DetailsEntry" }}
+{{ template "_field:payload.v1.Info.Index.Property" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Index.Statistics" -}}
+{{ template "_scheme:payload.v1.Info.Index.Statistics" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Index.Statistics" -}}
+{{ template "_field:payload.v1.Info.Index.Statistics" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Index.StatisticsDetail" -}}
+{{ template "_scheme:payload.v1.Info.Index.StatisticsDetail" }}
+{{ template "_scheme:payload.v1.Info.Index.StatisticsDetail.DetailsEntry" }}
+{{ template "_scheme:payload.v1.Info.Index.Statistics" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Index.StatisticsDetail" -}}
+{{ template "_field:payload.v1.Info.Index.StatisticsDetail" }}
+{{ template "_field:payload.v1.Info.Index.StatisticsDetail.DetailsEntry" }}
+{{ template "_field:payload.v1.Info.Index.Statistics" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Index.StatisticsDetail.DetailsEntry" -}}
+{{ template "_scheme:payload.v1.Info.Index.StatisticsDetail.DetailsEntry" }}
+{{ template "_scheme:payload.v1.Info.Index.Statistics" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Index.StatisticsDetail.DetailsEntry" -}}
+{{ template "_field:payload.v1.Info.Index.StatisticsDetail.DetailsEntry" }}
+{{ template "_field:payload.v1.Info.Index.Statistics" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Index.UUID" -}}
+{{ template "_scheme:payload.v1.Info.Index.UUID" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Index.UUID" -}}
+{{ template "_field:payload.v1.Info.Index.UUID" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Index.UUID.Committed" -}}
+{{ template "_scheme:payload.v1.Info.Index.UUID.Committed" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Index.UUID.Committed" -}}
+{{ template "_field:payload.v1.Info.Index.UUID.Committed" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Index.UUID.Uncommitted" -}}
+{{ template "_scheme:payload.v1.Info.Index.UUID.Uncommitted" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Index.UUID.Uncommitted" -}}
+{{ template "_field:payload.v1.Info.Index.UUID.Uncommitted" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Labels" -}}
+{{ template "_scheme:payload.v1.Info.Labels" }}
+{{ template "_scheme:payload.v1.Info.Labels.LabelsEntry" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Labels" -}}
+{{ template "_field:payload.v1.Info.Labels" }}
+{{ template "_field:payload.v1.Info.Labels.LabelsEntry" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Labels.LabelsEntry" -}}
+{{ template "_scheme:payload.v1.Info.Labels.LabelsEntry" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Labels.LabelsEntry" -}}
+{{ template "_field:payload.v1.Info.Labels.LabelsEntry" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Memory" -}}
+{{ template "_scheme:payload.v1.Info.Memory" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Memory" -}}
+{{ template "_field:payload.v1.Info.Memory" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Node" -}}
+{{ template "_scheme:payload.v1.Info.Node" }}
+{{ template "_scheme:payload.v1.Info.CPU" }}
+{{ template "_scheme:payload.v1.Info.Memory" }}
+{{ template "_scheme:payload.v1.Info.Pods" }}
+{{ template "_scheme:payload.v1.Info.Pod" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Node" -}}
+{{ template "_field:payload.v1.Info.Node" }}
+{{ template "_field:payload.v1.Info.CPU" }}
+{{ template "_field:payload.v1.Info.Memory" }}
+{{ template "_field:payload.v1.Info.Pods" }}
+{{ template "_field:payload.v1.Info.Pod" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Nodes" -}}
+{{ template "_scheme:payload.v1.Info.Nodes" }}
+{{ template "_scheme:payload.v1.Info.Node" }}
+{{ template "_scheme:payload.v1.Info.CPU" }}
+{{ template "_scheme:payload.v1.Info.Memory" }}
+{{ template "_scheme:payload.v1.Info.Pods" }}
+{{ template "_scheme:payload.v1.Info.Pod" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Nodes" -}}
+{{ template "_field:payload.v1.Info.Nodes" }}
+{{ template "_field:payload.v1.Info.Node" }}
+{{ template "_field:payload.v1.Info.CPU" }}
+{{ template "_field:payload.v1.Info.Memory" }}
+{{ template "_field:payload.v1.Info.Pods" }}
+{{ template "_field:payload.v1.Info.Pod" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Pod" -}}
+{{ template "_scheme:payload.v1.Info.Pod" }}
+{{ template "_scheme:payload.v1.Info.CPU" }}
+{{ template "_scheme:payload.v1.Info.Memory" }}
+{{ template "_scheme:payload.v1.Info.Node" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Pod" -}}
+{{ template "_field:payload.v1.Info.Pod" }}
+{{ template "_field:payload.v1.Info.CPU" }}
+{{ template "_field:payload.v1.Info.Memory" }}
+{{ template "_field:payload.v1.Info.Node" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Pods" -}}
+{{ template "_scheme:payload.v1.Info.Pods" }}
+{{ template "_scheme:payload.v1.Info.Pod" }}
+{{ template "_scheme:payload.v1.Info.CPU" }}
+{{ template "_scheme:payload.v1.Info.Memory" }}
+{{ template "_scheme:payload.v1.Info.Node" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Pods" -}}
+{{ template "_field:payload.v1.Info.Pods" }}
+{{ template "_field:payload.v1.Info.Pod" }}
+{{ template "_field:payload.v1.Info.CPU" }}
+{{ template "_field:payload.v1.Info.Memory" }}
+{{ template "_field:payload.v1.Info.Node" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Service" -}}
+{{ template "_scheme:payload.v1.Info.Service" }}
+{{ template "_scheme:payload.v1.Info.ServicePort" }}
+{{ template "_scheme:payload.v1.Info.Labels" }}
+{{ template "_scheme:payload.v1.Info.Annotations" }}
+{{ template "_scheme:payload.v1.Info.Labels.LabelsEntry" }}
+{{ template "_scheme:payload.v1.Info.Annotations.AnnotationsEntry" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Service" -}}
+{{ template "_field:payload.v1.Info.Service" }}
+{{ template "_field:payload.v1.Info.ServicePort" }}
+{{ template "_field:payload.v1.Info.Labels" }}
+{{ template "_field:payload.v1.Info.Annotations" }}
+{{ template "_field:payload.v1.Info.Labels.LabelsEntry" }}
+{{ template "_field:payload.v1.Info.Annotations.AnnotationsEntry" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.ServicePort" -}}
+{{ template "_scheme:payload.v1.Info.ServicePort" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.ServicePort" -}}
+{{ template "_field:payload.v1.Info.ServicePort" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.Services" -}}
+{{ template "_scheme:payload.v1.Info.Services" }}
+{{ template "_scheme:payload.v1.Info.Service" }}
+{{ template "_scheme:payload.v1.Info.ServicePort" }}
+{{ template "_scheme:payload.v1.Info.Labels" }}
+{{ template "_scheme:payload.v1.Info.Annotations" }}
+{{ template "_scheme:payload.v1.Info.Labels.LabelsEntry" }}
+{{ template "_scheme:payload.v1.Info.Annotations.AnnotationsEntry" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.Services" -}}
+{{ template "_field:payload.v1.Info.Services" }}
+{{ template "_field:payload.v1.Info.Service" }}
+{{ template "_field:payload.v1.Info.ServicePort" }}
+{{ template "_field:payload.v1.Info.Labels" }}
+{{ template "_field:payload.v1.Info.Annotations" }}
+{{ template "_field:payload.v1.Info.Labels.LabelsEntry" }}
+{{ template "_field:payload.v1.Info.Annotations.AnnotationsEntry" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Insert" -}}
+{{ template "_scheme:payload.v1.Insert" }}
+{{- end -}}
+{{- define "field:payload.v1.Insert" -}}
+{{ template "_field:payload.v1.Insert" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Insert.Config" -}}
+{{ template "_scheme:payload.v1.Insert.Config" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Insert.Config" -}}
+{{ template "_field:payload.v1.Insert.Config" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Insert.MultiObjectRequest" -}}
+{{ template "_scheme:payload.v1.Insert.MultiObjectRequest" }}
+{{ template "_scheme:payload.v1.Insert.ObjectRequest" }}
+{{ template "_scheme:payload.v1.Object.Blob" }}
+{{ template "_scheme:payload.v1.Insert.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{- end -}}
+{{- define "field:payload.v1.Insert.MultiObjectRequest" -}}
+{{ template "_field:payload.v1.Insert.MultiObjectRequest" }}
+{{ template "_field:payload.v1.Insert.ObjectRequest" }}
+{{ template "_field:payload.v1.Object.Blob" }}
+{{ template "_field:payload.v1.Insert.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Insert.MultiRequest" -}}
+{{ template "_scheme:payload.v1.Insert.MultiRequest" }}
+{{ template "_scheme:payload.v1.Insert.Request" }}
+{{ template "_scheme:payload.v1.Object.Vector" }}
+{{ template "_scheme:payload.v1.Insert.Config" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Insert.MultiRequest" -}}
+{{ template "_field:payload.v1.Insert.MultiRequest" }}
+{{ template "_field:payload.v1.Insert.Request" }}
+{{ template "_field:payload.v1.Object.Vector" }}
+{{ template "_field:payload.v1.Insert.Config" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Insert.ObjectRequest" -}}
+{{ template "_scheme:payload.v1.Insert.ObjectRequest" }}
+{{ template "_scheme:payload.v1.Object.Blob" }}
+{{ template "_scheme:payload.v1.Insert.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{- end -}}
+{{- define "field:payload.v1.Insert.ObjectRequest" -}}
+{{ template "_field:payload.v1.Insert.ObjectRequest" }}
+{{ template "_field:payload.v1.Object.Blob" }}
+{{ template "_field:payload.v1.Insert.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Insert.Request" -}}
+{{ template "_scheme:payload.v1.Insert.Request" }}
+{{ template "_scheme:payload.v1.Object.Vector" }}
+{{ template "_scheme:payload.v1.Insert.Config" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Insert.Request" -}}
+{{ template "_field:payload.v1.Insert.Request" }}
+{{ template "_field:payload.v1.Object.Vector" }}
+{{ template "_field:payload.v1.Insert.Config" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Meta" -}}
+{{ template "_scheme:payload.v1.Meta" }}
+{{- end -}}
+{{- define "field:payload.v1.Meta" -}}
+{{ template "_field:payload.v1.Meta" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Meta.Key" -}}
+{{ template "_scheme:payload.v1.Meta.Key" }}
+{{- end -}}
+{{- define "field:payload.v1.Meta.Key" -}}
+{{ template "_field:payload.v1.Meta.Key" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Meta.KeyValue" -}}
+{{ template "_scheme:payload.v1.Meta.KeyValue" }}
+{{ template "_scheme:payload.v1.Meta.Key" }}
+{{ template "_scheme:payload.v1.Meta.Value" }}
+{{- end -}}
+{{- define "field:payload.v1.Meta.KeyValue" -}}
+{{ template "_field:payload.v1.Meta.KeyValue" }}
+{{ template "_field:payload.v1.Meta.Key" }}
+{{ template "_field:payload.v1.Meta.Value" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Meta.Value" -}}
+{{ template "_scheme:payload.v1.Meta.Value" }}
+{{- end -}}
+{{- define "field:payload.v1.Meta.Value" -}}
+{{ template "_field:payload.v1.Meta.Value" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Mirror" -}}
+{{ template "_scheme:payload.v1.Mirror" }}
+{{- end -}}
+{{- define "field:payload.v1.Mirror" -}}
+{{ template "_field:payload.v1.Mirror" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Mirror.Target" -}}
+{{ template "_scheme:payload.v1.Mirror.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Mirror.Target" -}}
+{{ template "_field:payload.v1.Mirror.Target" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Mirror.Targets" -}}
+{{ template "_scheme:payload.v1.Mirror.Targets" }}
+{{ template "_scheme:payload.v1.Mirror.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Mirror.Targets" -}}
+{{ template "_field:payload.v1.Mirror.Targets" }}
+{{ template "_field:payload.v1.Mirror.Target" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object" -}}
+{{ template "_scheme:payload.v1.Object" }}
+{{- end -}}
+{{- define "field:payload.v1.Object" -}}
+{{ template "_field:payload.v1.Object" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.Blob" -}}
+{{ template "_scheme:payload.v1.Object.Blob" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.Blob" -}}
+{{ template "_field:payload.v1.Object.Blob" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.Distance" -}}
+{{ template "_scheme:payload.v1.Object.Distance" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.Distance" -}}
+{{ template "_field:payload.v1.Object.Distance" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.ID" -}}
+{{ template "_scheme:payload.v1.Object.ID" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.ID" -}}
+{{ template "_field:payload.v1.Object.ID" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.IDs" -}}
+{{ template "_scheme:payload.v1.Object.IDs" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.IDs" -}}
+{{ template "_field:payload.v1.Object.IDs" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.List" -}}
+{{ template "_scheme:payload.v1.Object.List" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.List" -}}
+{{ template "_field:payload.v1.Object.List" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.List.Request" -}}
+{{ template "_scheme:payload.v1.Object.List.Request" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.List.Request" -}}
+{{ template "_field:payload.v1.Object.List.Request" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.List.Response" -}}
+{{ template "_scheme:payload.v1.Object.List.Response" }}
+{{ template "_scheme:payload.v1.Object.Vector" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.List.Response" -}}
+{{ template "_field:payload.v1.Object.List.Response" }}
+{{ template "_field:payload.v1.Object.Vector" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.Location" -}}
+{{ template "_scheme:payload.v1.Object.Location" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.Location" -}}
+{{ template "_field:payload.v1.Object.Location" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.Locations" -}}
+{{ template "_scheme:payload.v1.Object.Locations" }}
+{{ template "_scheme:payload.v1.Object.Location" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.Locations" -}}
+{{ template "_field:payload.v1.Object.Locations" }}
+{{ template "_field:payload.v1.Object.Location" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.ReshapeVector" -}}
+{{ template "_scheme:payload.v1.Object.ReshapeVector" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.ReshapeVector" -}}
+{{ template "_field:payload.v1.Object.ReshapeVector" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.StreamBlob" -}}
+{{ template "_scheme:payload.v1.Object.StreamBlob" }}
+{{ template "_scheme:payload.v1.Object.Blob" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.StreamBlob" -}}
+{{ template "_field:payload.v1.Object.StreamBlob" }}
+{{ template "_field:payload.v1.Object.Blob" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.StreamDistance" -}}
+{{ template "_scheme:payload.v1.Object.StreamDistance" }}
+{{ template "_scheme:payload.v1.Object.Distance" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.StreamDistance" -}}
+{{ template "_field:payload.v1.Object.StreamDistance" }}
+{{ template "_field:payload.v1.Object.Distance" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.StreamLocation" -}}
+{{ template "_scheme:payload.v1.Object.StreamLocation" }}
+{{ template "_scheme:payload.v1.Object.Location" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.StreamLocation" -}}
+{{ template "_field:payload.v1.Object.StreamLocation" }}
+{{ template "_field:payload.v1.Object.Location" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.StreamVector" -}}
+{{ template "_scheme:payload.v1.Object.StreamVector" }}
+{{ template "_scheme:payload.v1.Object.Vector" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.StreamVector" -}}
+{{ template "_field:payload.v1.Object.StreamVector" }}
+{{ template "_field:payload.v1.Object.Vector" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.Timestamp" -}}
+{{ template "_scheme:payload.v1.Object.Timestamp" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.Timestamp" -}}
+{{ template "_field:payload.v1.Object.Timestamp" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.TimestampRequest" -}}
+{{ template "_scheme:payload.v1.Object.TimestampRequest" }}
+{{ template "_scheme:payload.v1.Object.ID" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.TimestampRequest" -}}
+{{ template "_field:payload.v1.Object.TimestampRequest" }}
+{{ template "_field:payload.v1.Object.ID" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.Vector" -}}
+{{ template "_scheme:payload.v1.Object.Vector" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.Vector" -}}
+{{ template "_field:payload.v1.Object.Vector" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.VectorRequest" -}}
+{{ template "_scheme:payload.v1.Object.VectorRequest" }}
+{{ template "_scheme:payload.v1.Object.ID" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.VectorRequest" -}}
+{{ template "_field:payload.v1.Object.VectorRequest" }}
+{{ template "_field:payload.v1.Object.ID" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Object.Vectors" -}}
+{{ template "_scheme:payload.v1.Object.Vectors" }}
+{{ template "_scheme:payload.v1.Object.Vector" }}
+{{- end -}}
+{{- define "field:payload.v1.Object.Vectors" -}}
+{{ template "_field:payload.v1.Object.Vectors" }}
+{{ template "_field:payload.v1.Object.Vector" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Remove" -}}
+{{ template "_scheme:payload.v1.Remove" }}
+{{- end -}}
+{{- define "field:payload.v1.Remove" -}}
+{{ template "_field:payload.v1.Remove" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Remove.Config" -}}
+{{ template "_scheme:payload.v1.Remove.Config" }}
+{{- end -}}
+{{- define "field:payload.v1.Remove.Config" -}}
+{{ template "_field:payload.v1.Remove.Config" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Remove.MultiRequest" -}}
+{{ template "_scheme:payload.v1.Remove.MultiRequest" }}
+{{ template "_scheme:payload.v1.Remove.Request" }}
+{{ template "_scheme:payload.v1.Object.ID" }}
+{{ template "_scheme:payload.v1.Remove.Config" }}
+{{- end -}}
+{{- define "field:payload.v1.Remove.MultiRequest" -}}
+{{ template "_field:payload.v1.Remove.MultiRequest" }}
+{{ template "_field:payload.v1.Remove.Request" }}
+{{ template "_field:payload.v1.Object.ID" }}
+{{ template "_field:payload.v1.Remove.Config" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Remove.Request" -}}
+{{ template "_scheme:payload.v1.Remove.Request" }}
+{{ template "_scheme:payload.v1.Object.ID" }}
+{{ template "_scheme:payload.v1.Remove.Config" }}
+{{- end -}}
+{{- define "field:payload.v1.Remove.Request" -}}
+{{ template "_field:payload.v1.Remove.Request" }}
+{{ template "_field:payload.v1.Object.ID" }}
+{{ template "_field:payload.v1.Remove.Config" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Remove.Timestamp" -}}
+{{ template "_scheme:payload.v1.Remove.Timestamp" }}
+{{ template "_scheme:payload.v1.Remove.Timestamp.Operator" }}
+{{- end -}}
+{{- define "field:payload.v1.Remove.Timestamp" -}}
+{{ template "_field:payload.v1.Remove.Timestamp" }}
+{{ template "_field:payload.v1.Remove.Timestamp.Operator" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Remove.TimestampRequest" -}}
+{{ template "_scheme:payload.v1.Remove.TimestampRequest" }}
+{{ template "_scheme:payload.v1.Remove.Timestamp" }}
+{{ template "_scheme:payload.v1.Remove.Timestamp.Operator" }}
+{{- end -}}
+{{- define "field:payload.v1.Remove.TimestampRequest" -}}
+{{ template "_field:payload.v1.Remove.TimestampRequest" }}
+{{ template "_field:payload.v1.Remove.Timestamp" }}
+{{ template "_field:payload.v1.Remove.Timestamp.Operator" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Search" -}}
+{{ template "_scheme:payload.v1.Search" }}
+{{- end -}}
+{{- define "field:payload.v1.Search" -}}
+{{ template "_field:payload.v1.Search" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Search.Config" -}}
+{{ template "_scheme:payload.v1.Search.Config" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{ template "_scheme:payload.v1.Search.AggregationAlgorithm" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Search.Config" -}}
+{{ template "_field:payload.v1.Search.Config" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{ template "_field:payload.v1.Search.AggregationAlgorithm" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Search.IDRequest" -}}
+{{ template "_scheme:payload.v1.Search.IDRequest" }}
+{{ template "_scheme:payload.v1.Search.Config" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{ template "_scheme:payload.v1.Search.AggregationAlgorithm" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Search.IDRequest" -}}
+{{ template "_field:payload.v1.Search.IDRequest" }}
+{{ template "_field:payload.v1.Search.Config" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{ template "_field:payload.v1.Search.AggregationAlgorithm" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Search.MultiIDRequest" -}}
+{{ template "_scheme:payload.v1.Search.MultiIDRequest" }}
+{{ template "_scheme:payload.v1.Search.IDRequest" }}
+{{ template "_scheme:payload.v1.Search.Config" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{ template "_scheme:payload.v1.Search.AggregationAlgorithm" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Search.MultiIDRequest" -}}
+{{ template "_field:payload.v1.Search.MultiIDRequest" }}
+{{ template "_field:payload.v1.Search.IDRequest" }}
+{{ template "_field:payload.v1.Search.Config" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{ template "_field:payload.v1.Search.AggregationAlgorithm" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Search.MultiObjectRequest" -}}
+{{ template "_scheme:payload.v1.Search.MultiObjectRequest" }}
+{{ template "_scheme:payload.v1.Search.ObjectRequest" }}
+{{ template "_scheme:payload.v1.Search.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{ template "_scheme:payload.v1.Search.AggregationAlgorithm" }}
+{{- end -}}
+{{- define "field:payload.v1.Search.MultiObjectRequest" -}}
+{{ template "_field:payload.v1.Search.MultiObjectRequest" }}
+{{ template "_field:payload.v1.Search.ObjectRequest" }}
+{{ template "_field:payload.v1.Search.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{ template "_field:payload.v1.Search.AggregationAlgorithm" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Search.MultiRequest" -}}
+{{ template "_scheme:payload.v1.Search.MultiRequest" }}
+{{ template "_scheme:payload.v1.Search.Request" }}
+{{ template "_scheme:payload.v1.Search.Config" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{ template "_scheme:payload.v1.Search.AggregationAlgorithm" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Search.MultiRequest" -}}
+{{ template "_field:payload.v1.Search.MultiRequest" }}
+{{ template "_field:payload.v1.Search.Request" }}
+{{ template "_field:payload.v1.Search.Config" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{ template "_field:payload.v1.Search.AggregationAlgorithm" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Search.ObjectRequest" -}}
+{{ template "_scheme:payload.v1.Search.ObjectRequest" }}
+{{ template "_scheme:payload.v1.Search.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{ template "_scheme:payload.v1.Search.AggregationAlgorithm" }}
+{{- end -}}
+{{- define "field:payload.v1.Search.ObjectRequest" -}}
+{{ template "_field:payload.v1.Search.ObjectRequest" }}
+{{ template "_field:payload.v1.Search.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{ template "_field:payload.v1.Search.AggregationAlgorithm" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Search.Request" -}}
+{{ template "_scheme:payload.v1.Search.Request" }}
+{{ template "_scheme:payload.v1.Search.Config" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{ template "_scheme:payload.v1.Search.AggregationAlgorithm" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Search.Request" -}}
+{{ template "_field:payload.v1.Search.Request" }}
+{{ template "_field:payload.v1.Search.Config" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{ template "_field:payload.v1.Search.AggregationAlgorithm" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Search.Response" -}}
+{{ template "_scheme:payload.v1.Search.Response" }}
+{{ template "_scheme:payload.v1.Object.Distance" }}
+{{- end -}}
+{{- define "field:payload.v1.Search.Response" -}}
+{{ template "_field:payload.v1.Search.Response" }}
+{{ template "_field:payload.v1.Object.Distance" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Search.Responses" -}}
+{{ template "_scheme:payload.v1.Search.Responses" }}
+{{ template "_scheme:payload.v1.Search.Response" }}
+{{ template "_scheme:payload.v1.Object.Distance" }}
+{{- end -}}
+{{- define "field:payload.v1.Search.Responses" -}}
+{{ template "_field:payload.v1.Search.Responses" }}
+{{ template "_field:payload.v1.Search.Response" }}
+{{ template "_field:payload.v1.Object.Distance" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Search.StreamResponse" -}}
+{{ template "_scheme:payload.v1.Search.StreamResponse" }}
+{{ template "_scheme:payload.v1.Search.Response" }}
+{{ template "_scheme:payload.v1.Object.Distance" }}
+{{- end -}}
+{{- define "field:payload.v1.Search.StreamResponse" -}}
+{{ template "_field:payload.v1.Search.StreamResponse" }}
+{{ template "_field:payload.v1.Search.Response" }}
+{{ template "_field:payload.v1.Object.Distance" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Update" -}}
+{{ template "_scheme:payload.v1.Update" }}
+{{- end -}}
+{{- define "field:payload.v1.Update" -}}
+{{ template "_field:payload.v1.Update" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Update.Config" -}}
+{{ template "_scheme:payload.v1.Update.Config" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Update.Config" -}}
+{{ template "_field:payload.v1.Update.Config" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Update.MultiObjectRequest" -}}
+{{ template "_scheme:payload.v1.Update.MultiObjectRequest" }}
+{{ template "_scheme:payload.v1.Update.ObjectRequest" }}
+{{ template "_scheme:payload.v1.Object.Blob" }}
+{{ template "_scheme:payload.v1.Update.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{- end -}}
+{{- define "field:payload.v1.Update.MultiObjectRequest" -}}
+{{ template "_field:payload.v1.Update.MultiObjectRequest" }}
+{{ template "_field:payload.v1.Update.ObjectRequest" }}
+{{ template "_field:payload.v1.Object.Blob" }}
+{{ template "_field:payload.v1.Update.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Update.MultiRequest" -}}
+{{ template "_scheme:payload.v1.Update.MultiRequest" }}
+{{ template "_scheme:payload.v1.Update.Request" }}
+{{ template "_scheme:payload.v1.Object.Vector" }}
+{{ template "_scheme:payload.v1.Update.Config" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Update.MultiRequest" -}}
+{{ template "_field:payload.v1.Update.MultiRequest" }}
+{{ template "_field:payload.v1.Update.Request" }}
+{{ template "_field:payload.v1.Object.Vector" }}
+{{ template "_field:payload.v1.Update.Config" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Update.ObjectRequest" -}}
+{{ template "_scheme:payload.v1.Update.ObjectRequest" }}
+{{ template "_scheme:payload.v1.Object.Blob" }}
+{{ template "_scheme:payload.v1.Update.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{- end -}}
+{{- define "field:payload.v1.Update.ObjectRequest" -}}
+{{ template "_field:payload.v1.Update.ObjectRequest" }}
+{{ template "_field:payload.v1.Object.Blob" }}
+{{ template "_field:payload.v1.Update.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Update.Request" -}}
+{{ template "_scheme:payload.v1.Update.Request" }}
+{{ template "_scheme:payload.v1.Object.Vector" }}
+{{ template "_scheme:payload.v1.Update.Config" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Update.Request" -}}
+{{ template "_field:payload.v1.Update.Request" }}
+{{ template "_field:payload.v1.Object.Vector" }}
+{{ template "_field:payload.v1.Update.Config" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Update.TimestampRequest" -}}
+{{ template "_scheme:payload.v1.Update.TimestampRequest" }}
+{{- end -}}
+{{- define "field:payload.v1.Update.TimestampRequest" -}}
+{{ template "_field:payload.v1.Update.TimestampRequest" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Upsert" -}}
+{{ template "_scheme:payload.v1.Upsert" }}
+{{- end -}}
+{{- define "field:payload.v1.Upsert" -}}
+{{ template "_field:payload.v1.Upsert" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Upsert.Config" -}}
+{{ template "_scheme:payload.v1.Upsert.Config" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Upsert.Config" -}}
+{{ template "_field:payload.v1.Upsert.Config" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Upsert.MultiObjectRequest" -}}
+{{ template "_scheme:payload.v1.Upsert.MultiObjectRequest" }}
+{{ template "_scheme:payload.v1.Upsert.ObjectRequest" }}
+{{ template "_scheme:payload.v1.Object.Blob" }}
+{{ template "_scheme:payload.v1.Upsert.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{- end -}}
+{{- define "field:payload.v1.Upsert.MultiObjectRequest" -}}
+{{ template "_field:payload.v1.Upsert.MultiObjectRequest" }}
+{{ template "_field:payload.v1.Upsert.ObjectRequest" }}
+{{ template "_field:payload.v1.Object.Blob" }}
+{{ template "_field:payload.v1.Upsert.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Upsert.MultiRequest" -}}
+{{ template "_scheme:payload.v1.Upsert.MultiRequest" }}
+{{ template "_scheme:payload.v1.Upsert.Request" }}
+{{ template "_scheme:payload.v1.Object.Vector" }}
+{{ template "_scheme:payload.v1.Upsert.Config" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Upsert.MultiRequest" -}}
+{{ template "_field:payload.v1.Upsert.MultiRequest" }}
+{{ template "_field:payload.v1.Upsert.Request" }}
+{{ template "_field:payload.v1.Object.Vector" }}
+{{ template "_field:payload.v1.Upsert.Config" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Upsert.ObjectRequest" -}}
+{{ template "_scheme:payload.v1.Upsert.ObjectRequest" }}
+{{ template "_scheme:payload.v1.Object.Blob" }}
+{{ template "_scheme:payload.v1.Upsert.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{- end -}}
+{{- define "field:payload.v1.Upsert.ObjectRequest" -}}
+{{ template "_field:payload.v1.Upsert.ObjectRequest" }}
+{{ template "_field:payload.v1.Object.Blob" }}
+{{ template "_field:payload.v1.Upsert.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Upsert.Request" -}}
+{{ template "_scheme:payload.v1.Upsert.Request" }}
+{{ template "_scheme:payload.v1.Object.Vector" }}
+{{ template "_scheme:payload.v1.Upsert.Config" }}
+{{ template "_scheme:payload.v1.Filter.Config" }}
+{{ template "_scheme:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "field:payload.v1.Upsert.Request" -}}
+{{ template "_field:payload.v1.Upsert.Request" }}
+{{ template "_field:payload.v1.Object.Vector" }}
+{{ template "_field:payload.v1.Upsert.Config" }}
+{{ template "_field:payload.v1.Filter.Config" }}
+{{ template "_field:payload.v1.Filter.Target" }}
+{{- end -}}
+{{- define "_scheme:payload.v1.Control" }}
   message Control {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Control" }}
+{{- define "_field:payload.v1.Control" }}
   - Control
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Control.CreateIndexRequest" }}
+{{- define "_scheme:payload.v1.Control.CreateIndexRequest" }}
   message Control.CreateIndexRequest {
     uint32 pool_size = 1;
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Control.CreateIndexRequest" }}
+{{- define "_field:payload.v1.Control.CreateIndexRequest" }}
   - Control.CreateIndexRequest
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | pool_size | uint32 |  | The pool size of the create index operation. |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Discoverer" }}
+{{- define "_scheme:payload.v1.Discoverer" }}
   message Discoverer {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Discoverer" }}
+{{- define "_field:payload.v1.Discoverer" }}
   - Discoverer
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Discoverer.Request" }}
+{{- define "_scheme:payload.v1.Discoverer.Request" }}
   message Discoverer.Request {
     string name = 1;
     string namespace = 2;
@@ -44,7 +964,7 @@
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Discoverer.Request" }}
+{{- define "_field:payload.v1.Discoverer.Request" }}
   - Discoverer.Request
 
     | field | type | label | desc. |
@@ -52,139 +972,139 @@
     | name | string |  | The agent name to be discovered. |
     | namespace | string |  | The namespace to be discovered. |
     | node | string |  | The node to be discovered. |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Empty" }}
+{{- define "_scheme:payload.v1.Empty" }}
   message Empty {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Empty" }}
+{{- define "_field:payload.v1.Empty" }}
   - Empty
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Filter" }}
+{{- define "_scheme:payload.v1.Filter" }}
   message Filter {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Filter" }}
+{{- define "_field:payload.v1.Filter" }}
   - Filter
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Filter.Config" }}
+{{- define "_scheme:payload.v1.Filter.Config" }}
   message Filter.Config {
     repeated Filter.Target targets = 1;
   }
-
-{{ template "scheme.payload.v1.Filter.Target" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Filter.Config" }}
+{{- define "_field:payload.v1.Filter.Config" }}
   - Filter.Config
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
-{{ template "field.payload.v1.Filter.Target" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Filter.Target" }}
+{{- define "_scheme:payload.v1.Filter.Target" }}
   message Filter.Target {
     string host = 1;
     uint32 port = 2;
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Filter.Target" }}
+{{- define "_field:payload.v1.Filter.Target" }}
   - Filter.Target
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | host | string |  | The target hostname. |
     | port | uint32 |  | The target port. |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Flush" }}
+{{- define "_scheme:payload.v1.Flush" }}
   message Flush {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Flush" }}
+{{- define "_field:payload.v1.Flush" }}
   - Flush
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Flush.Request" }}
+{{- define "_scheme:payload.v1.Flush.Request" }}
   message Flush.Request {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Flush.Request" }}
+{{- define "_field:payload.v1.Flush.Request" }}
   - Flush.Request
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info" }}
+{{- define "_scheme:payload.v1.Info" }}
   message Info {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Info" }}
+{{- define "_field:payload.v1.Info" }}
   - Info
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Annotations" }}
+{{- define "_scheme:payload.v1.Info.Annotations" }}
   message Info.Annotations {
     repeated Info.Annotations.AnnotationsEntry annotations = 1;
   }
-
-{{ template "scheme.payload.v1.Info.Annotations.AnnotationsEntry" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Annotations" }}
+{{- define "_field:payload.v1.Info.Annotations" }}
   - Info.Annotations
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | annotations | Info.Annotations.AnnotationsEntry | repeated |  |
 
-{{ template "field.payload.v1.Info.Annotations.AnnotationsEntry" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Annotations.AnnotationsEntry" }}
+{{- define "_scheme:payload.v1.Info.Annotations.AnnotationsEntry" }}
   message Info.Annotations.AnnotationsEntry {
     string key = 1;
     string value = 2;
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Annotations.AnnotationsEntry" }}
+{{- define "_field:payload.v1.Info.Annotations.AnnotationsEntry" }}
   - Info.Annotations.AnnotationsEntry
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | key | string |  |  |
     | value | string |  |  |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.CPU" }}
+{{- define "_scheme:payload.v1.Info.CPU" }}
   message Info.CPU {
     double limit = 1;
     double request = 2;
@@ -192,7 +1112,7 @@
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Info.CPU" }}
+{{- define "_field:payload.v1.Info.CPU" }}
   - Info.CPU
 
     | field | type | label | desc. |
@@ -200,35 +1120,39 @@
     | limit | double |  | The CPU resource limit. |
     | request | double |  | The CPU resource requested. |
     | usage | double |  | The CPU usage. |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.IPs" }}
+{{- define "_scheme:payload.v1.Info.IPs" }}
   message Info.IPs {
     repeated string ip = 1;
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Info.IPs" }}
+{{- define "_field:payload.v1.Info.IPs" }}
   - Info.IPs
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | ip | string | repeated |  |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Index" }}
+{{- define "_scheme:payload.v1.Info.Index" }}
   message Info.Index {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Index" }}
+{{- define "_field:payload.v1.Info.Index" }}
   - Info.Index
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Index.Count" }}
+{{- define "_scheme:payload.v1.Info.Index.Count" }}
   message Info.Index.Count {
     uint32 stored = 1;
     uint32 uncommitted = 2;
@@ -237,7 +1161,7 @@
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Index.Count" }}
+{{- define "_field:payload.v1.Info.Index.Count" }}
   - Info.Index.Count
 
     | field | type | label | desc. |
@@ -246,20 +1170,19 @@
     | uncommitted | uint32 |  | The uncommitted index count. |
     | indexing | bool |  | The indexing index count. |
     | saving | bool |  | The saving index count. |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Index.Detail" }}
+{{- define "_scheme:payload.v1.Info.Index.Detail" }}
   message Info.Index.Detail {
     repeated Info.Index.Detail.CountsEntry counts = 1;
     uint32 replica = 2;
     uint32 live_agents = 3;
   }
-
-{{ template "scheme.payload.v1.Info.Index.Detail.CountsEntry" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Index.Detail" }}
+{{- define "_field:payload.v1.Info.Index.Detail" }}
   - Info.Index.Detail
 
     | field | type | label | desc. |
@@ -268,20 +1191,17 @@
     | replica | uint32 |  | index replica of vald cluster |
     | live_agents | uint32 |  | live agent replica of vald cluster |
 
-{{ template "field.payload.v1.Info.Index.Detail.CountsEntry" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Index.Detail.CountsEntry" }}
+{{- define "_scheme:payload.v1.Info.Index.Detail.CountsEntry" }}
   message Info.Index.Detail.CountsEntry {
     string key = 1;
     Info.Index.Count value = 2;
   }
-
-{{ template "scheme.payload.v1.Info.Index.Count" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Index.Detail.CountsEntry" }}
+{{- define "_field:payload.v1.Info.Index.Detail.CountsEntry" }}
   - Info.Index.Detail.CountsEntry
 
     | field | type | label | desc. |
@@ -289,10 +1209,10 @@
     | key | string |  |  |
     | value | Info.Index.Count |  |  |
 
-{{ template "field.payload.v1.Info.Index.Count" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Index.Property" }}
+{{- define "_scheme:payload.v1.Info.Index.Property" }}
   message Info.Index.Property {
     int32 dimension = 1;
     int32 thread_pool_size = 2;
@@ -331,7 +1251,7 @@
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Index.Property" }}
+{{- define "_field:payload.v1.Info.Index.Property" }}
   - Info.Index.Property
 
     | field | type | label | desc. |
@@ -370,38 +1290,34 @@
     | build_time_limit | float |  |  |
     | outgoing_edge | int32 |  |  |
     | incoming_edge | int32 |  |  |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Index.PropertyDetail" }}
+{{- define "_scheme:payload.v1.Info.Index.PropertyDetail" }}
   message Info.Index.PropertyDetail {
     repeated Info.Index.PropertyDetail.DetailsEntry details = 1;
   }
-
-{{ template "scheme.payload.v1.Info.Index.PropertyDetail.DetailsEntry" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Index.PropertyDetail" }}
+{{- define "_field:payload.v1.Info.Index.PropertyDetail" }}
   - Info.Index.PropertyDetail
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | details | Info.Index.PropertyDetail.DetailsEntry | repeated |  |
 
-{{ template "field.payload.v1.Info.Index.PropertyDetail.DetailsEntry" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Index.PropertyDetail.DetailsEntry" }}
+{{- define "_scheme:payload.v1.Info.Index.PropertyDetail.DetailsEntry" }}
   message Info.Index.PropertyDetail.DetailsEntry {
     string key = 1;
     Info.Index.Property value = 2;
   }
-
-{{ template "scheme.payload.v1.Info.Index.Property" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Index.PropertyDetail.DetailsEntry" }}
+{{- define "_field:payload.v1.Info.Index.PropertyDetail.DetailsEntry" }}
   - Info.Index.PropertyDetail.DetailsEntry
 
     | field | type | label | desc. |
@@ -409,10 +1325,10 @@
     | key | string |  |  |
     | value | Info.Index.Property |  |  |
 
-{{ template "field.payload.v1.Info.Index.Property" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Index.Statistics" }}
+{{- define "_scheme:payload.v1.Info.Index.Statistics" }}
   message Info.Index.Statistics {
     bool valid = 1;
     int32 median_indegree = 2;
@@ -450,7 +1366,7 @@
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Index.Statistics" }}
+{{- define "_field:payload.v1.Info.Index.Statistics" }}
   - Info.Index.Statistics
 
     | field | type | label | desc. |
@@ -488,38 +1404,34 @@
     | indegree_count | int64 | repeated |  |
     | outdegree_histogram | uint64 | repeated |  |
     | indegree_histogram | uint64 | repeated |  |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Index.StatisticsDetail" }}
+{{- define "_scheme:payload.v1.Info.Index.StatisticsDetail" }}
   message Info.Index.StatisticsDetail {
     repeated Info.Index.StatisticsDetail.DetailsEntry details = 1;
   }
-
-{{ template "scheme.payload.v1.Info.Index.StatisticsDetail.DetailsEntry" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Index.StatisticsDetail" }}
+{{- define "_field:payload.v1.Info.Index.StatisticsDetail" }}
   - Info.Index.StatisticsDetail
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | details | Info.Index.StatisticsDetail.DetailsEntry | repeated | count infos for each agents |
 
-{{ template "field.payload.v1.Info.Index.StatisticsDetail.DetailsEntry" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Index.StatisticsDetail.DetailsEntry" }}
+{{- define "_scheme:payload.v1.Info.Index.StatisticsDetail.DetailsEntry" }}
   message Info.Index.StatisticsDetail.DetailsEntry {
     string key = 1;
     Info.Index.Statistics value = 2;
   }
-
-{{ template "scheme.payload.v1.Info.Index.Statistics" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Index.StatisticsDetail.DetailsEntry" }}
+{{- define "_field:payload.v1.Info.Index.StatisticsDetail.DetailsEntry" }}
   - Info.Index.StatisticsDetail.DetailsEntry
 
     | field | type | label | desc. |
@@ -527,85 +1439,88 @@
     | key | string |  |  |
     | value | Info.Index.Statistics |  |  |
 
-{{ template "field.payload.v1.Info.Index.Statistics" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Index.UUID" }}
+{{- define "_scheme:payload.v1.Info.Index.UUID" }}
   message Info.Index.UUID {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Index.UUID" }}
+{{- define "_field:payload.v1.Info.Index.UUID" }}
   - Info.Index.UUID
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Index.UUID.Committed" }}
+{{- define "_scheme:payload.v1.Info.Index.UUID.Committed" }}
   message Info.Index.UUID.Committed {
     string uuid = 1;
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Index.UUID.Committed" }}
+{{- define "_field:payload.v1.Info.Index.UUID.Committed" }}
   - Info.Index.UUID.Committed
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | uuid | string |  |  |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Index.UUID.Uncommitted" }}
+{{- define "_scheme:payload.v1.Info.Index.UUID.Uncommitted" }}
   message Info.Index.UUID.Uncommitted {
     string uuid = 1;
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Index.UUID.Uncommitted" }}
+{{- define "_field:payload.v1.Info.Index.UUID.Uncommitted" }}
   - Info.Index.UUID.Uncommitted
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | uuid | string |  |  |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Labels" }}
+{{- define "_scheme:payload.v1.Info.Labels" }}
   message Info.Labels {
     repeated Info.Labels.LabelsEntry labels = 1;
   }
-
-{{ template "scheme.payload.v1.Info.Labels.LabelsEntry" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Labels" }}
+{{- define "_field:payload.v1.Info.Labels" }}
   - Info.Labels
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | labels | Info.Labels.LabelsEntry | repeated |  |
 
-{{ template "field.payload.v1.Info.Labels.LabelsEntry" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Labels.LabelsEntry" }}
+{{- define "_scheme:payload.v1.Info.Labels.LabelsEntry" }}
   message Info.Labels.LabelsEntry {
     string key = 1;
     string value = 2;
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Labels.LabelsEntry" }}
+{{- define "_field:payload.v1.Info.Labels.LabelsEntry" }}
   - Info.Labels.LabelsEntry
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | key | string |  |  |
     | value | string |  |  |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Memory" }}
+{{- define "_scheme:payload.v1.Info.Memory" }}
   message Info.Memory {
     double limit = 1;
     double request = 2;
@@ -613,7 +1528,7 @@
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Memory" }}
+{{- define "_field:payload.v1.Info.Memory" }}
   - Info.Memory
 
     | field | type | label | desc. |
@@ -621,9 +1536,11 @@
     | limit | double |  | The memory limit. |
     | request | double |  | The memory requested. |
     | usage | double |  | The memory usage. |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Node" }}
+{{- define "_scheme:payload.v1.Info.Node" }}
   message Info.Node {
     string name = 1;
     string internal_addr = 2;
@@ -632,18 +1549,9 @@
     Info.Memory memory = 5;
     Info.Pods Pods = 6;
   }
-
-{{ template "scheme.payload.v1.Info.CPU" }}
-
-
-{{ template "scheme.payload.v1.Info.Memory" }}
-
-
-{{ template "scheme.payload.v1.Info.Pods" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Node" }}
+{{- define "_field:payload.v1.Info.Node" }}
   - Info.Node
 
     | field | type | label | desc. |
@@ -655,33 +1563,26 @@
     | memory | Info.Memory |  | The memory information of the node. |
     | Pods | Info.Pods |  | The pod information of the node. |
 
-{{ template "field.payload.v1.Info.CPU" }}
-
-{{ template "field.payload.v1.Info.Memory" }}
-
-{{ template "field.payload.v1.Info.Pods" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Nodes" }}
+{{- define "_scheme:payload.v1.Info.Nodes" }}
   message Info.Nodes {
     repeated Info.Node nodes = 1;
   }
-
-{{ template "scheme.payload.v1.Info.Node" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Nodes" }}
+{{- define "_field:payload.v1.Info.Nodes" }}
   - Info.Nodes
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | nodes | Info.Node | repeated | The multiple node information. |
 
-{{ template "field.payload.v1.Info.Node" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Pod" }}
+{{- define "_scheme:payload.v1.Info.Pod" }}
   message Info.Pod {
     string app_name = 1;
     string name = 2;
@@ -691,18 +1592,9 @@
     Info.Memory memory = 6;
     Info.Node node = 7;
   }
-
-{{ template "scheme.payload.v1.Info.CPU" }}
-
-
-{{ template "scheme.payload.v1.Info.Memory" }}
-
-
-{{ template "scheme.payload.v1.Info.Node" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Pod" }}
+{{- define "_field:payload.v1.Info.Pod" }}
   - Info.Pod
 
     | field | type | label | desc. |
@@ -715,33 +1607,26 @@
     | memory | Info.Memory |  | The memory information of the pod. |
     | node | Info.Node |  | The node information of the pod. |
 
-{{ template "field.payload.v1.Info.CPU" }}
-
-{{ template "field.payload.v1.Info.Memory" }}
-
-{{ template "field.payload.v1.Info.Node" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Pods" }}
+{{- define "_scheme:payload.v1.Info.Pods" }}
   message Info.Pods {
     repeated Info.Pod pods = 1;
   }
-
-{{ template "scheme.payload.v1.Info.Pod" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Pods" }}
+{{- define "_field:payload.v1.Info.Pods" }}
   - Info.Pods
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | pods | Info.Pod | repeated | The multiple pod information. |
 
-{{ template "field.payload.v1.Info.Pod" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Service" }}
+{{- define "_scheme:payload.v1.Info.Service" }}
   message Info.Service {
     string name = 1;
     string cluster_ip = 2;
@@ -750,18 +1635,9 @@
     Info.Labels labels = 5;
     Info.Annotations annotations = 6;
   }
-
-{{ template "scheme.payload.v1.Info.ServicePort" }}
-
-
-{{ template "scheme.payload.v1.Info.Labels" }}
-
-
-{{ template "scheme.payload.v1.Info.Annotations" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Service" }}
+{{- define "_field:payload.v1.Info.Service" }}
   - Info.Service
 
     | field | type | label | desc. |
@@ -773,72 +1649,64 @@
     | labels | Info.Labels |  | The labels of the service. |
     | annotations | Info.Annotations |  | The annotations of the service. |
 
-{{ template "field.payload.v1.Info.ServicePort" }}
-
-{{ template "field.payload.v1.Info.Labels" }}
-
-{{ template "field.payload.v1.Info.Annotations" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.ServicePort" }}
+{{- define "_scheme:payload.v1.Info.ServicePort" }}
   message Info.ServicePort {
     string name = 1;
     int32 port = 2;
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Info.ServicePort" }}
+{{- define "_field:payload.v1.Info.ServicePort" }}
   - Info.ServicePort
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | name | string |  | The name of the port. |
     | port | int32 |  | The port number |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Info.Services" }}
+{{- define "_scheme:payload.v1.Info.Services" }}
   message Info.Services {
     repeated Info.Service services = 1;
   }
-
-{{ template "scheme.payload.v1.Info.Service" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Info.Services" }}
+{{- define "_field:payload.v1.Info.Services" }}
   - Info.Services
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | services | Info.Service | repeated | The multiple service information. |
 
-{{ template "field.payload.v1.Info.Service" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Insert" }}
+{{- define "_scheme:payload.v1.Insert" }}
   message Insert {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Insert" }}
+{{- define "_field:payload.v1.Insert" }}
   - Insert
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Insert.Config" }}
+{{- define "_scheme:payload.v1.Insert.Config" }}
   message Insert.Config {
     bool skip_strict_exist_check = 1;
     Filter.Config filters = 2;
     int64 timestamp = 3;
   }
-
-{{ template "scheme.payload.v1.Filter.Config" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Insert.Config" }}
+{{- define "_field:payload.v1.Insert.Config" }}
   - Insert.Config
 
     | field | type | label | desc. |
@@ -847,65 +1715,50 @@
     | filters | Filter.Config |  | Filter configurations. |
     | timestamp | int64 |  | Insert timestamp. |
 
-{{ template "field.payload.v1.Filter.Config" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Insert.MultiObjectRequest" }}
+{{- define "_scheme:payload.v1.Insert.MultiObjectRequest" }}
   message Insert.MultiObjectRequest {
     repeated Insert.ObjectRequest requests = 1;
   }
-
-{{ template "scheme.payload.v1.Insert.ObjectRequest" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Insert.MultiObjectRequest" }}
+{{- define "_field:payload.v1.Insert.MultiObjectRequest" }}
   - Insert.MultiObjectRequest
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | requests | Insert.ObjectRequest | repeated | Represent multiple insert by object content. |
 
-{{ template "field.payload.v1.Insert.ObjectRequest" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Insert.MultiRequest" }}
+{{- define "_scheme:payload.v1.Insert.MultiRequest" }}
   message Insert.MultiRequest {
     repeated Insert.Request requests = 1;
   }
-
-{{ template "scheme.payload.v1.Insert.Request" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Insert.MultiRequest" }}
+{{- define "_field:payload.v1.Insert.MultiRequest" }}
   - Insert.MultiRequest
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | requests | Insert.Request | repeated | Represent multiple insert request content. |
 
-{{ template "field.payload.v1.Insert.Request" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Insert.ObjectRequest" }}
+{{- define "_scheme:payload.v1.Insert.ObjectRequest" }}
   message Insert.ObjectRequest {
     Object.Blob object = 1;
     Insert.Config config = 2;
     Filter.Target vectorizer = 3;
   }
-
-{{ template "scheme.payload.v1.Object.Blob" }}
-
-
-{{ template "scheme.payload.v1.Insert.Config" }}
-
-
-{{ template "scheme.payload.v1.Filter.Target" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Insert.ObjectRequest" }}
+{{- define "_field:payload.v1.Insert.ObjectRequest" }}
   - Insert.ObjectRequest
 
     | field | type | label | desc. |
@@ -914,27 +1767,17 @@
     | config | Insert.Config |  | The configuration of the insert request. |
     | vectorizer | Filter.Target |  | Filter configurations. |
 
-{{ template "field.payload.v1.Object.Blob" }}
-
-{{ template "field.payload.v1.Insert.Config" }}
-
-{{ template "field.payload.v1.Filter.Target" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Insert.Request" }}
+{{- define "_scheme:payload.v1.Insert.Request" }}
   message Insert.Request {
     Object.Vector vector = 1;
     Insert.Config config = 2;
   }
-
-{{ template "scheme.payload.v1.Object.Vector" }}
-
-
-{{ template "scheme.payload.v1.Insert.Config" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Insert.Request" }}
+{{- define "_field:payload.v1.Insert.Request" }}
   - Insert.Request
 
     | field | type | label | desc. |
@@ -942,51 +1785,45 @@
     | vector | Object.Vector |  | The vector to be inserted. |
     | config | Insert.Config |  | The configuration of the insert request. |
 
-{{ template "field.payload.v1.Object.Vector" }}
-
-{{ template "field.payload.v1.Insert.Config" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Meta" }}
+{{- define "_scheme:payload.v1.Meta" }}
   message Meta {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Meta" }}
+{{- define "_field:payload.v1.Meta" }}
   - Meta
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Meta.Key" }}
+{{- define "_scheme:payload.v1.Meta.Key" }}
   message Meta.Key {
     string key = 1;
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Meta.Key" }}
+{{- define "_field:payload.v1.Meta.Key" }}
   - Meta.Key
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | key | string |  |  |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Meta.KeyValue" }}
+{{- define "_scheme:payload.v1.Meta.KeyValue" }}
   message Meta.KeyValue {
     Meta.Key key = 1;
     Meta.Value value = 2;
   }
-
-{{ template "scheme.payload.v1.Meta.Key" }}
-
-
-{{ template "scheme.payload.v1.Meta.Value" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Meta.KeyValue" }}
+{{- define "_field:payload.v1.Meta.KeyValue" }}
   - Meta.KeyValue
 
     | field | type | label | desc. |
@@ -994,179 +1831,183 @@
     | key | Meta.Key |  |  |
     | value | Meta.Value |  |  |
 
-{{ template "field.payload.v1.Meta.Key" }}
-
-{{ template "field.payload.v1.Meta.Value" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Meta.Value" }}
+{{- define "_scheme:payload.v1.Meta.Value" }}
   message Meta.Value {
     google.protobuf.Any value = 1;
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Meta.Value" }}
+{{- define "_field:payload.v1.Meta.Value" }}
   - Meta.Value
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | value | google.protobuf.Any |  |  |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Mirror" }}
+{{- define "_scheme:payload.v1.Mirror" }}
   message Mirror {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Mirror" }}
+{{- define "_field:payload.v1.Mirror" }}
   - Mirror
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Mirror.Target" }}
+{{- define "_scheme:payload.v1.Mirror.Target" }}
   message Mirror.Target {
     string host = 1;
     uint32 port = 2;
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Mirror.Target" }}
+{{- define "_field:payload.v1.Mirror.Target" }}
   - Mirror.Target
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | host | string |  | The target hostname. |
     | port | uint32 |  | The target port. |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Mirror.Targets" }}
+{{- define "_scheme:payload.v1.Mirror.Targets" }}
   message Mirror.Targets {
     repeated Mirror.Target targets = 1;
   }
-
-{{ template "scheme.payload.v1.Mirror.Target" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Mirror.Targets" }}
+{{- define "_field:payload.v1.Mirror.Targets" }}
   - Mirror.Targets
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | targets | Mirror.Target | repeated | The multiple target information. |
 
-{{ template "field.payload.v1.Mirror.Target" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object" }}
+{{- define "_scheme:payload.v1.Object" }}
   message Object {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Object" }}
+{{- define "_field:payload.v1.Object" }}
   - Object
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.Blob" }}
+{{- define "_scheme:payload.v1.Object.Blob" }}
   message Object.Blob {
     string id = 1;
     bytes object = 2;
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Object.Blob" }}
+{{- define "_field:payload.v1.Object.Blob" }}
   - Object.Blob
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | id | string |  | The object ID. |
     | object | bytes |  | The binary object. |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.Distance" }}
+{{- define "_scheme:payload.v1.Object.Distance" }}
   message Object.Distance {
     string id = 1;
     float distance = 2;
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Object.Distance" }}
+{{- define "_field:payload.v1.Object.Distance" }}
   - Object.Distance
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | id | string |  | The vector ID. |
     | distance | float |  | The distance. |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.ID" }}
+{{- define "_scheme:payload.v1.Object.ID" }}
   message Object.ID {
     string id = 1;
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Object.ID" }}
+{{- define "_field:payload.v1.Object.ID" }}
   - Object.ID
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | id | string |  |  |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.IDs" }}
+{{- define "_scheme:payload.v1.Object.IDs" }}
   message Object.IDs {
     repeated string ids = 1;
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Object.IDs" }}
+{{- define "_field:payload.v1.Object.IDs" }}
   - Object.IDs
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | ids | string | repeated |  |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.List" }}
+{{- define "_scheme:payload.v1.Object.List" }}
   message Object.List {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Object.List" }}
+{{- define "_field:payload.v1.Object.List" }}
   - Object.List
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.List.Request" }}
+{{- define "_scheme:payload.v1.Object.List.Request" }}
   message Object.List.Request {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Object.List.Request" }}
+{{- define "_field:payload.v1.Object.List.Request" }}
   - Object.List.Request
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.List.Response" }}
+{{- define "_scheme:payload.v1.Object.List.Response" }}
   message Object.List.Response {
     Object.Vector vector = 1;
     google.rpc.Status status = 2;
   }
-
-{{ template "scheme.payload.v1.Object.Vector" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Object.List.Response" }}
+{{- define "_field:payload.v1.Object.List.Response" }}
   - Object.List.Response
 
     | field | type | label | desc. |
@@ -1174,10 +2015,10 @@
     | vector | Object.Vector |  | The vector |
     | status | google.rpc.Status |  | The RPC error status. |
 
-{{ template "field.payload.v1.Object.Vector" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.Location" }}
+{{- define "_scheme:payload.v1.Object.Location" }}
   message Object.Location {
     string name = 1;
     string uuid = 2;
@@ -1185,7 +2026,7 @@
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Object.Location" }}
+{{- define "_field:payload.v1.Object.Location" }}
   - Object.Location
 
     | field | type | label | desc. |
@@ -1193,54 +2034,52 @@
     | name | string |  | The name of the location. |
     | uuid | string |  | The UUID of the vector. |
     | ips | string | repeated | The IP list. |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.Locations" }}
+{{- define "_scheme:payload.v1.Object.Locations" }}
   message Object.Locations {
     repeated Object.Location locations = 1;
   }
-
-{{ template "scheme.payload.v1.Object.Location" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Object.Locations" }}
+{{- define "_field:payload.v1.Object.Locations" }}
   - Object.Locations
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | locations | Object.Location | repeated |  |
 
-{{ template "field.payload.v1.Object.Location" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.ReshapeVector" }}
+{{- define "_scheme:payload.v1.Object.ReshapeVector" }}
   message Object.ReshapeVector {
     bytes object = 1;
     repeated int32 shape = 2;
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Object.ReshapeVector" }}
+{{- define "_field:payload.v1.Object.ReshapeVector" }}
   - Object.ReshapeVector
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | object | bytes |  | The binary object. |
     | shape | int32 | repeated | The new shape. |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.StreamBlob" }}
+{{- define "_scheme:payload.v1.Object.StreamBlob" }}
   message Object.StreamBlob {
     Object.Blob blob = 1;
     google.rpc.Status status = 2;
   }
-
-{{ template "scheme.payload.v1.Object.Blob" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Object.StreamBlob" }}
+{{- define "_field:payload.v1.Object.StreamBlob" }}
   - Object.StreamBlob
 
     | field | type | label | desc. |
@@ -1248,20 +2087,17 @@
     | blob | Object.Blob |  | The binary object. |
     | status | google.rpc.Status |  | The RPC error status. |
 
-{{ template "field.payload.v1.Object.Blob" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.StreamDistance" }}
+{{- define "_scheme:payload.v1.Object.StreamDistance" }}
   message Object.StreamDistance {
     Object.Distance distance = 1;
     google.rpc.Status status = 2;
   }
-
-{{ template "scheme.payload.v1.Object.Distance" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Object.StreamDistance" }}
+{{- define "_field:payload.v1.Object.StreamDistance" }}
   - Object.StreamDistance
 
     | field | type | label | desc. |
@@ -1269,20 +2105,17 @@
     | distance | Object.Distance |  | The distance. |
     | status | google.rpc.Status |  | The RPC error status. |
 
-{{ template "field.payload.v1.Object.Distance" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.StreamLocation" }}
+{{- define "_scheme:payload.v1.Object.StreamLocation" }}
   message Object.StreamLocation {
     Object.Location location = 1;
     google.rpc.Status status = 2;
   }
-
-{{ template "scheme.payload.v1.Object.Location" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Object.StreamLocation" }}
+{{- define "_field:payload.v1.Object.StreamLocation" }}
   - Object.StreamLocation
 
     | field | type | label | desc. |
@@ -1290,20 +2123,17 @@
     | location | Object.Location |  | The vector location. |
     | status | google.rpc.Status |  | The RPC error status. |
 
-{{ template "field.payload.v1.Object.Location" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.StreamVector" }}
+{{- define "_scheme:payload.v1.Object.StreamVector" }}
   message Object.StreamVector {
     Object.Vector vector = 1;
     google.rpc.Status status = 2;
   }
-
-{{ template "scheme.payload.v1.Object.Vector" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Object.StreamVector" }}
+{{- define "_field:payload.v1.Object.StreamVector" }}
   - Object.StreamVector
 
     | field | type | label | desc. |
@@ -1311,45 +2141,44 @@
     | vector | Object.Vector |  | The vector. |
     | status | google.rpc.Status |  | The RPC error status. |
 
-{{ template "field.payload.v1.Object.Vector" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.Timestamp" }}
+{{- define "_scheme:payload.v1.Object.Timestamp" }}
   message Object.Timestamp {
     string id = 1;
     int64 timestamp = 2;
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Object.Timestamp" }}
+{{- define "_field:payload.v1.Object.Timestamp" }}
   - Object.Timestamp
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | id | string |  | The vector ID. |
     | timestamp | int64 |  | timestamp represents when this vector inserted. |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.TimestampRequest" }}
+{{- define "_scheme:payload.v1.Object.TimestampRequest" }}
   message Object.TimestampRequest {
     Object.ID id = 1;
   }
-
-{{ template "scheme.payload.v1.Object.ID" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Object.TimestampRequest" }}
+{{- define "_field:payload.v1.Object.TimestampRequest" }}
   - Object.TimestampRequest
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | id | Object.ID |  | The vector ID to be fetched. |
 
-{{ template "field.payload.v1.Object.ID" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.Vector" }}
+{{- define "_scheme:payload.v1.Object.Vector" }}
   message Object.Vector {
     string id = 1;
     repeated float vector = 2;
@@ -1357,7 +2186,7 @@
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Object.Vector" }}
+{{- define "_field:payload.v1.Object.Vector" }}
   - Object.Vector
 
     | field | type | label | desc. |
@@ -1365,22 +2194,18 @@
     | id | string |  | The vector ID. |
     | vector | float | repeated | The vector. |
     | timestamp | int64 |  | timestamp represents when this vector inserted. |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.VectorRequest" }}
+{{- define "_scheme:payload.v1.Object.VectorRequest" }}
   message Object.VectorRequest {
     Object.ID id = 1;
     Filter.Config filters = 2;
   }
-
-{{ template "scheme.payload.v1.Object.ID" }}
-
-
-{{ template "scheme.payload.v1.Filter.Config" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Object.VectorRequest" }}
+{{- define "_field:payload.v1.Object.VectorRequest" }}
   - Object.VectorRequest
 
     | field | type | label | desc. |
@@ -1388,91 +2213,79 @@
     | id | Object.ID |  | The vector ID to be fetched. |
     | filters | Filter.Config |  | Filter configurations. |
 
-{{ template "field.payload.v1.Object.ID" }}
-
-{{ template "field.payload.v1.Filter.Config" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Object.Vectors" }}
+{{- define "_scheme:payload.v1.Object.Vectors" }}
   message Object.Vectors {
     repeated Object.Vector vectors = 1;
   }
-
-{{ template "scheme.payload.v1.Object.Vector" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Object.Vectors" }}
+{{- define "_field:payload.v1.Object.Vectors" }}
   - Object.Vectors
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | vectors | Object.Vector | repeated |  |
 
-{{ template "field.payload.v1.Object.Vector" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Remove" }}
+{{- define "_scheme:payload.v1.Remove" }}
   message Remove {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Remove" }}
+{{- define "_field:payload.v1.Remove" }}
   - Remove
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Remove.Config" }}
+{{- define "_scheme:payload.v1.Remove.Config" }}
   message Remove.Config {
     bool skip_strict_exist_check = 1;
     int64 timestamp = 2;
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Remove.Config" }}
+{{- define "_field:payload.v1.Remove.Config" }}
   - Remove.Config
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
     | timestamp | int64 |  | Remove timestamp. |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Remove.MultiRequest" }}
+{{- define "_scheme:payload.v1.Remove.MultiRequest" }}
   message Remove.MultiRequest {
     repeated Remove.Request requests = 1;
   }
-
-{{ template "scheme.payload.v1.Remove.Request" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Remove.MultiRequest" }}
+{{- define "_field:payload.v1.Remove.MultiRequest" }}
   - Remove.MultiRequest
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | requests | Remove.Request | repeated | Represent the multiple remove request content. |
 
-{{ template "field.payload.v1.Remove.Request" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Remove.Request" }}
+{{- define "_scheme:payload.v1.Remove.Request" }}
   message Remove.Request {
     Object.ID id = 1;
     Remove.Config config = 2;
   }
-
-{{ template "scheme.payload.v1.Object.ID" }}
-
-
-{{ template "scheme.payload.v1.Remove.Config" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Remove.Request" }}
+{{- define "_field:payload.v1.Remove.Request" }}
   - Remove.Request
 
     | field | type | label | desc. |
@@ -1480,22 +2293,17 @@
     | id | Object.ID |  | The object ID to be removed. |
     | config | Remove.Config |  | The configuration of the remove request. |
 
-{{ template "field.payload.v1.Object.ID" }}
-
-{{ template "field.payload.v1.Remove.Config" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Remove.Timestamp" }}
+{{- define "_scheme:payload.v1.Remove.Timestamp" }}
   message Remove.Timestamp {
     int64 timestamp = 1;
     Remove.Timestamp.Operator operator = 2;
   }
-
-{{ template "scheme.payload.v1.Remove.Timestamp.Operator" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Remove.Timestamp" }}
+{{- define "_field:payload.v1.Remove.Timestamp" }}
   - Remove.Timestamp
 
     | field | type | label | desc. |
@@ -1503,19 +2311,16 @@
     | timestamp | int64 |  | The timestamp. |
     | operator | Remove.Timestamp.Operator |  | The conditional operator. |
 
-{{ template "field.payload.v1.Remove.Timestamp.Operator" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Remove.TimestampRequest" }}
+{{- define "_scheme:payload.v1.Remove.TimestampRequest" }}
   message Remove.TimestampRequest {
     repeated Remove.Timestamp timestamps = 1;
   }
-
-{{ template "scheme.payload.v1.Remove.Timestamp" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Remove.TimestampRequest" }}
+{{- define "_field:payload.v1.Remove.TimestampRequest" }}
   - Remove.TimestampRequest
 
     | field | type | label | desc. |
@@ -1523,22 +2328,22 @@
     | timestamps | Remove.Timestamp | repeated | The timestamp comparison list. If more than one is specified, the `AND`
 search is applied. |
 
-{{ template "field.payload.v1.Remove.Timestamp" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Search" }}
+{{- define "_scheme:payload.v1.Search" }}
   message Search {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Search" }}
+{{- define "_field:payload.v1.Search" }}
   - Search
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Search.Config" }}
+{{- define "_scheme:payload.v1.Search.Config" }}
   message Search.Config {
     string request_id = 1;
     uint32 num = 2;
@@ -1552,18 +2357,9 @@ search is applied. |
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
   }
-
-{{ template "scheme.payload.v1.Filter.Config" }}
-
-
-{{ template "scheme.payload.v1.Filter.Config" }}
-
-
-{{ template "scheme.payload.v1.Search.AggregationAlgorithm" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Search.Config" }}
+{{- define "_field:payload.v1.Search.Config" }}
   - Search.Config
 
     | field | type | label | desc. |
@@ -1580,24 +2376,17 @@ search is applied. |
     | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
     | nprobe | uint32 |  | Search nprobe. |
 
-{{ template "field.payload.v1.Filter.Config" }}
-
-{{ template "field.payload.v1.Filter.Config" }}
-
-{{ template "field.payload.v1.Search.AggregationAlgorithm" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Search.IDRequest" }}
+{{- define "_scheme:payload.v1.Search.IDRequest" }}
   message Search.IDRequest {
     string id = 1;
     Search.Config config = 2;
   }
-
-{{ template "scheme.payload.v1.Search.Config" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Search.IDRequest" }}
+{{- define "_field:payload.v1.Search.IDRequest" }}
   - Search.IDRequest
 
     | field | type | label | desc. |
@@ -1605,81 +2394,66 @@ search is applied. |
     | id | string |  | The vector ID to be searched. |
     | config | Search.Config |  | The configuration of the search request. |
 
-{{ template "field.payload.v1.Search.Config" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Search.MultiIDRequest" }}
+{{- define "_scheme:payload.v1.Search.MultiIDRequest" }}
   message Search.MultiIDRequest {
     repeated Search.IDRequest requests = 1;
   }
-
-{{ template "scheme.payload.v1.Search.IDRequest" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Search.MultiIDRequest" }}
+{{- define "_field:payload.v1.Search.MultiIDRequest" }}
   - Search.MultiIDRequest
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | requests | Search.IDRequest | repeated | Represent the multiple search by ID request content. |
 
-{{ template "field.payload.v1.Search.IDRequest" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Search.MultiObjectRequest" }}
+{{- define "_scheme:payload.v1.Search.MultiObjectRequest" }}
   message Search.MultiObjectRequest {
     repeated Search.ObjectRequest requests = 1;
   }
-
-{{ template "scheme.payload.v1.Search.ObjectRequest" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Search.MultiObjectRequest" }}
+{{- define "_field:payload.v1.Search.MultiObjectRequest" }}
   - Search.MultiObjectRequest
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | requests | Search.ObjectRequest | repeated | Represent the multiple search by binary object request content. |
 
-{{ template "field.payload.v1.Search.ObjectRequest" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Search.MultiRequest" }}
+{{- define "_scheme:payload.v1.Search.MultiRequest" }}
   message Search.MultiRequest {
     repeated Search.Request requests = 1;
   }
-
-{{ template "scheme.payload.v1.Search.Request" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Search.MultiRequest" }}
+{{- define "_field:payload.v1.Search.MultiRequest" }}
   - Search.MultiRequest
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | requests | Search.Request | repeated | Represent the multiple search request content. |
 
-{{ template "field.payload.v1.Search.Request" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Search.ObjectRequest" }}
+{{- define "_scheme:payload.v1.Search.ObjectRequest" }}
   message Search.ObjectRequest {
     bytes object = 1;
     Search.Config config = 2;
     Filter.Target vectorizer = 3;
   }
-
-{{ template "scheme.payload.v1.Search.Config" }}
-
-
-{{ template "scheme.payload.v1.Filter.Target" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Search.ObjectRequest" }}
+{{- define "_field:payload.v1.Search.ObjectRequest" }}
   - Search.ObjectRequest
 
     | field | type | label | desc. |
@@ -1688,22 +2462,17 @@ search is applied. |
     | config | Search.Config |  | The configuration of the search request. |
     | vectorizer | Filter.Target |  | Filter configuration. |
 
-{{ template "field.payload.v1.Search.Config" }}
-
-{{ template "field.payload.v1.Filter.Target" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Search.Request" }}
+{{- define "_scheme:payload.v1.Search.Request" }}
   message Search.Request {
     repeated float vector = 1;
     Search.Config config = 2;
   }
-
-{{ template "scheme.payload.v1.Search.Config" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Search.Request" }}
+{{- define "_field:payload.v1.Search.Request" }}
   - Search.Request
 
     | field | type | label | desc. |
@@ -1711,20 +2480,17 @@ search is applied. |
     | vector | float | repeated | The vector to be searched. |
     | config | Search.Config |  | The configuration of the search request. |
 
-{{ template "field.payload.v1.Search.Config" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Search.Response" }}
+{{- define "_scheme:payload.v1.Search.Response" }}
   message Search.Response {
     string request_id = 1;
     repeated Object.Distance results = 2;
   }
-
-{{ template "scheme.payload.v1.Object.Distance" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Search.Response" }}
+{{- define "_field:payload.v1.Search.Response" }}
   - Search.Response
 
     | field | type | label | desc. |
@@ -1732,39 +2498,33 @@ search is applied. |
     | request_id | string |  | The unique request ID. |
     | results | Object.Distance | repeated | Search results. |
 
-{{ template "field.payload.v1.Object.Distance" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Search.Responses" }}
+{{- define "_scheme:payload.v1.Search.Responses" }}
   message Search.Responses {
     repeated Search.Response responses = 1;
   }
-
-{{ template "scheme.payload.v1.Search.Response" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Search.Responses" }}
+{{- define "_field:payload.v1.Search.Responses" }}
   - Search.Responses
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | responses | Search.Response | repeated | Represent the multiple search response content. |
 
-{{ template "field.payload.v1.Search.Response" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Search.StreamResponse" }}
+{{- define "_scheme:payload.v1.Search.StreamResponse" }}
   message Search.StreamResponse {
     Search.Response response = 1;
     google.rpc.Status status = 2;
   }
-
-{{ template "scheme.payload.v1.Search.Response" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Search.StreamResponse" }}
+{{- define "_field:payload.v1.Search.StreamResponse" }}
   - Search.StreamResponse
 
     | field | type | label | desc. |
@@ -1772,34 +2532,31 @@ search is applied. |
     | response | Search.Response |  | Represent the search response. |
     | status | google.rpc.Status |  | The RPC error status. |
 
-{{ template "field.payload.v1.Search.Response" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Update" }}
+{{- define "_scheme:payload.v1.Update" }}
   message Update {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Update" }}
+{{- define "_field:payload.v1.Update" }}
   - Update
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Update.Config" }}
+{{- define "_scheme:payload.v1.Update.Config" }}
   message Update.Config {
     bool skip_strict_exist_check = 1;
     Filter.Config filters = 2;
     int64 timestamp = 3;
     bool disable_balanced_update = 4;
   }
-
-{{ template "scheme.payload.v1.Filter.Config" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Update.Config" }}
+{{- define "_field:payload.v1.Update.Config" }}
   - Update.Config
 
     | field | type | label | desc. |
@@ -1810,65 +2567,50 @@ search is applied. |
     | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
 during update operation. |
 
-{{ template "field.payload.v1.Filter.Config" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Update.MultiObjectRequest" }}
+{{- define "_scheme:payload.v1.Update.MultiObjectRequest" }}
   message Update.MultiObjectRequest {
     repeated Update.ObjectRequest requests = 1;
   }
-
-{{ template "scheme.payload.v1.Update.ObjectRequest" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Update.MultiObjectRequest" }}
+{{- define "_field:payload.v1.Update.MultiObjectRequest" }}
   - Update.MultiObjectRequest
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | requests | Update.ObjectRequest | repeated | Represent the multiple update object request content. |
 
-{{ template "field.payload.v1.Update.ObjectRequest" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Update.MultiRequest" }}
+{{- define "_scheme:payload.v1.Update.MultiRequest" }}
   message Update.MultiRequest {
     repeated Update.Request requests = 1;
   }
-
-{{ template "scheme.payload.v1.Update.Request" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Update.MultiRequest" }}
+{{- define "_field:payload.v1.Update.MultiRequest" }}
   - Update.MultiRequest
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | requests | Update.Request | repeated | Represent the multiple update request content. |
 
-{{ template "field.payload.v1.Update.Request" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Update.ObjectRequest" }}
+{{- define "_scheme:payload.v1.Update.ObjectRequest" }}
   message Update.ObjectRequest {
     Object.Blob object = 1;
     Update.Config config = 2;
     Filter.Target vectorizer = 3;
   }
-
-{{ template "scheme.payload.v1.Object.Blob" }}
-
-
-{{ template "scheme.payload.v1.Update.Config" }}
-
-
-{{ template "scheme.payload.v1.Filter.Target" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Update.ObjectRequest" }}
+{{- define "_field:payload.v1.Update.ObjectRequest" }}
   - Update.ObjectRequest
 
     | field | type | label | desc. |
@@ -1877,27 +2619,17 @@ during update operation. |
     | config | Update.Config |  | The configuration of the update request. |
     | vectorizer | Filter.Target |  | Filter target. |
 
-{{ template "field.payload.v1.Object.Blob" }}
-
-{{ template "field.payload.v1.Update.Config" }}
-
-{{ template "field.payload.v1.Filter.Target" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Update.Request" }}
+{{- define "_scheme:payload.v1.Update.Request" }}
   message Update.Request {
     Object.Vector vector = 1;
     Update.Config config = 2;
   }
-
-{{ template "scheme.payload.v1.Object.Vector" }}
-
-
-{{ template "scheme.payload.v1.Update.Config" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Update.Request" }}
+{{- define "_field:payload.v1.Update.Request" }}
   - Update.Request
 
     | field | type | label | desc. |
@@ -1905,12 +2637,10 @@ during update operation. |
     | vector | Object.Vector |  | The vector to be updated. |
     | config | Update.Config |  | The configuration of the update request. |
 
-{{ template "field.payload.v1.Object.Vector" }}
-
-{{ template "field.payload.v1.Update.Config" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Update.TimestampRequest" }}
+{{- define "_scheme:payload.v1.Update.TimestampRequest" }}
   message Update.TimestampRequest {
     string id = 1;
     int64 timestamp = 2;
@@ -1918,7 +2648,7 @@ during update operation. |
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Update.TimestampRequest" }}
+{{- define "_field:payload.v1.Update.TimestampRequest" }}
   - Update.TimestampRequest
 
     | field | type | label | desc. |
@@ -1926,33 +2656,32 @@ during update operation. |
     | id | string |  | The vector ID. |
     | timestamp | int64 |  | timestamp represents when this vector inserted. |
     | force | bool |  | force represents forcefully update the timestamp. |
+
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Upsert" }}
+{{- define "_scheme:payload.v1.Upsert" }}
   message Upsert {
     // empty
   }
 {{- end -}}
 
-{{- define "field.payload.v1.Upsert" }}
+{{- define "_field:payload.v1.Upsert" }}
   - Upsert
 
     empty
 {{- end -}}
 
-{{- define "scheme.payload.v1.Upsert.Config" }}
+{{- define "_scheme:payload.v1.Upsert.Config" }}
   message Upsert.Config {
     bool skip_strict_exist_check = 1;
     Filter.Config filters = 2;
     int64 timestamp = 3;
     bool disable_balanced_update = 4;
   }
-
-{{ template "scheme.payload.v1.Filter.Config" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Upsert.Config" }}
+{{- define "_field:payload.v1.Upsert.Config" }}
   - Upsert.Config
 
     | field | type | label | desc. |
@@ -1963,65 +2692,50 @@ during update operation. |
     | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
 during update operation. |
 
-{{ template "field.payload.v1.Filter.Config" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Upsert.MultiObjectRequest" }}
+{{- define "_scheme:payload.v1.Upsert.MultiObjectRequest" }}
   message Upsert.MultiObjectRequest {
     repeated Upsert.ObjectRequest requests = 1;
   }
-
-{{ template "scheme.payload.v1.Upsert.ObjectRequest" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Upsert.MultiObjectRequest" }}
+{{- define "_field:payload.v1.Upsert.MultiObjectRequest" }}
   - Upsert.MultiObjectRequest
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | requests | Upsert.ObjectRequest | repeated | Represent the multiple upsert object request content. |
 
-{{ template "field.payload.v1.Upsert.ObjectRequest" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Upsert.MultiRequest" }}
+{{- define "_scheme:payload.v1.Upsert.MultiRequest" }}
   message Upsert.MultiRequest {
     repeated Upsert.Request requests = 1;
   }
-
-{{ template "scheme.payload.v1.Upsert.Request" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Upsert.MultiRequest" }}
+{{- define "_field:payload.v1.Upsert.MultiRequest" }}
   - Upsert.MultiRequest
 
     | field | type | label | desc. |
     | :---: | :--- | :---- | :---- |
     | requests | Upsert.Request | repeated | Represent the multiple upsert request content. |
 
-{{ template "field.payload.v1.Upsert.Request" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Upsert.ObjectRequest" }}
+{{- define "_scheme:payload.v1.Upsert.ObjectRequest" }}
   message Upsert.ObjectRequest {
     Object.Blob object = 1;
     Upsert.Config config = 2;
     Filter.Target vectorizer = 3;
   }
-
-{{ template "scheme.payload.v1.Object.Blob" }}
-
-
-{{ template "scheme.payload.v1.Upsert.Config" }}
-
-
-{{ template "scheme.payload.v1.Filter.Target" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Upsert.ObjectRequest" }}
+{{- define "_field:payload.v1.Upsert.ObjectRequest" }}
   - Upsert.ObjectRequest
 
     | field | type | label | desc. |
@@ -2030,27 +2744,17 @@ during update operation. |
     | config | Upsert.Config |  | The configuration of the upsert request. |
     | vectorizer | Filter.Target |  | Filter target. |
 
-{{ template "field.payload.v1.Object.Blob" }}
-
-{{ template "field.payload.v1.Upsert.Config" }}
-
-{{ template "field.payload.v1.Filter.Target" }}
+    
 {{- end -}}
 
-{{- define "scheme.payload.v1.Upsert.Request" }}
+{{- define "_scheme:payload.v1.Upsert.Request" }}
   message Upsert.Request {
     Object.Vector vector = 1;
     Upsert.Config config = 2;
   }
-
-{{ template "scheme.payload.v1.Object.Vector" }}
-
-
-{{ template "scheme.payload.v1.Upsert.Config" }}
-
 {{- end -}}
 
-{{- define "field.payload.v1.Upsert.Request" }}
+{{- define "_field:payload.v1.Upsert.Request" }}
   - Upsert.Request
 
     | field | type | label | desc. |
@@ -2058,12 +2762,10 @@ during update operation. |
     | vector | Object.Vector |  | The vector to be upserted. |
     | config | Upsert.Config |  | The configuration of the upsert request. |
 
-{{ template "field.payload.v1.Object.Vector" }}
-
-{{ template "field.payload.v1.Upsert.Config" }}
+    
 {{- end -}}
 
-{{ define "scheme.payload.v1.Remove.Timestamp.Operator" }}
+{{ define "_scheme:payload.v1.Remove.Timestamp.Operator" }}
   enum  Remove.Timestamp.Operator {
     Eq = 0;
     Ne = 1;
@@ -2074,11 +2776,8 @@ during update operation. |
   }
 {{- end -}}
 
-{{ define "field.payload.v1.Remove.Timestamp.Operator" }}
-
-{{- end -}}
-
-{{ define "scheme.payload.v1.Search.AggregationAlgorithm" }}
+{{ define "_field:payload.v1.Remove.Timestamp.Operator" }}{{- end -}}
+{{ define "_scheme:payload.v1.Search.AggregationAlgorithm" }}
   enum  Search.AggregationAlgorithm {
     Unknown = 0;
     ConcurrentQueue = 1;
@@ -2088,7 +2787,4 @@ during update operation. |
   }
 {{- end -}}
 
-{{ define "field.payload.v1.Search.AggregationAlgorithm" }}
-
-{{- end -}}
-
+{{ define "_field:payload.v1.Search.AggregationAlgorithm" }}{{- end -}}

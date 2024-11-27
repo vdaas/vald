@@ -3,9 +3,68 @@
   {{- $skip_types = append $skip_types .ProtoType -}}
 {{- end -}}
 
+{{- define "_bfs" -}}
+  {{- $g := .args.g -}}
+  {{- $q := .args.q -}}
+  {{- $v := .args.v -}}
+  {{- if $q -}}
+    {{- $head := first $q -}}
+    {{- if not (has $head $v) -}}
+      {{- $q = rest $q -}}
+      {{- range $e := (pluck $head .args.g | first) -}}
+        {{- $q = append $q $e -}}
+      {{- end -}}
+      {{- $v = append $v $head -}}
+      {{- $_ := set .args "q" $q -}}
+      {{- $_ := set .args "v" $v -}}
+      {{- if $q -}}
+        {{- template "_bfs" . -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "bfs" -}}
+  {{- $_ := set .args "q" (list .args.start) -}}
+  {{- $_ := set .args "v" (list) -}}
+  {{- template "_bfs" . -}}
+  {{- $visited := list -}}
+  {{- range .args.v -}}
+    {{- $visited = append $visited . -}}
+  {{- end -}}
+  {{- $_ := set . "visited" $visited -}}
+{{- end -}}
+
 {{- range .Files -}}
+  {{- $deps := dict -}}
   {{- range .Messages -}}
-  {{ printf "{{- define \"scheme.%s\" }}" .FullName }}
+    {{- $fields := list -}}
+    {{- range .Fields -}}
+      {{- if not (or (has .LongType $skip_types) (hasPrefix "google" .FullType)) -}}
+        {{- $fields = append $fields .FullType -}}
+      {{- end -}}
+    {{- end -}}
+    {{- $_ := set $deps .FullName (uniq $fields) -}}
+  {{- end -}}
+
+  {{- range .Messages -}}
+    {{- with $d := dict "args" (dict "g" $deps "start" .FullName) -}}
+      {{- template "bfs" $d -}}
+        {{- printf  "{{- define \"scheme:%s\" -}}" $d.args.start -}}
+        {{- range $d.visited -}}
+          {{- printf "\n{{ template \"_scheme:%s\" }}" . -}}
+        {{- end -}}
+        {{- println "\n{{- end -}}" -}}
+        {{- printf  "{{- define \"field:%s\" -}}" $d.args.start -}}
+        {{- range $d.visited -}}
+          {{- printf "\n{{ template \"_field:%s\" }}" . -}}
+        {{- end -}}
+        {{- println "\n{{- end -}}" -}}
+    {{- end -}}
+  {{- end -}}
+
+  {{- range .Messages -}}
+  {{ printf "{{- define \"_scheme:%s\" }}" .FullName }}
   message {{ .LongName }} {
     {{- range $i, $ := .Fields }}
     {{ if $.Label }}{{ $.Label }} {{end}}{{ $.LongType }} {{ $.Name }} = {{ add1 $i }};
@@ -13,14 +72,9 @@
     // empty
     {{- end }}
   }
-    {{- range $i, $ := .Fields -}}
-      {{- if not (or (has $.LongType $skip_types) (hasPrefix "google" $.FullType)) -}}
-        {{- printf "\n\n{{ template \"scheme.%s\" }}\n" $.FullType -}}
-      {{- end -}}
-    {{- end }}
     {{- println "\n{{- end -}}\n" -}}
 
-    {{- printf "{{- define \"field.%s\" }}\n" .FullName -}}
+    {{- printf "{{- define \"_field:%s\" }}\n" .FullName -}}
     {{- printf "  - %s\n" .LongName -}}
     {{- if .HasFields }}
     | field | type | label | desc. |
@@ -29,25 +83,19 @@
     | {{ .Name }} | {{ .LongType }} | {{.Label }} | {{ .Description }} |
       {{- end }}
 
-      {{- range $i, $ := .Fields -}}
-        {{- if not (or (has $.LongType $skip_types) (hasPrefix "google" $.FullType)) -}}
-          {{- printf "\n\n{{ template \"field.%s\" }}" $.FullType -}}
-        {{- end -}}
-      {{- end -}}
-    {{- else }}
+    {{ else }}
     empty
     {{- end -}}
     {{- println "\n{{- end -}}\n" -}}
   {{- end -}}
   {{- range .Enums -}}
-    {{- printf "{{ define \"scheme.%s\" }}" .FullName }}
+    {{- printf "{{ define \"_scheme:%s\" }}" .FullName }}
   enum  {{ .LongName }} {
     {{- range .Values }}
     {{ .Name }} = {{ .Number }};
     {{- end }}
   }
     {{- println "\n{{- end -}}\n" -}}
-    {{- printf "{{ define \"field.%s\" }}\n" .FullName -}}
-    {{- println "\n{{- end -}}\n" -}}
+    {{- printf "{{ define \"_field:%s\" }}{{- end -}}\n" .FullName -}}
   {{- end -}}
 {{- end -}}
