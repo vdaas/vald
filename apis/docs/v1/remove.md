@@ -29,38 +29,36 @@ Remove RPC is the method to remove a single vector.
     Remove.Config config = 2;
   }
 
-
   message Object.ID {
     string id = 1;
   }
-
-
 
   message Remove.Config {
     bool skip_strict_exist_check = 1;
     int64 timestamp = 2;
   }
-  ```
 
+  ```
   - Remove.Request
 
-    | field  | type          | label | desc.                                    |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    |   id   | Object.ID     |       | The object ID to be removed.             |
-    | config | Remove.Config |       | The configuration of the remove request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | Object.ID |  | The object ID to be removed. |
+    | config | Remove.Config |  | The configuration of the remove request. |
 
   - Object.ID
 
-    | field | type   | label | desc. |
-    | :---: | :----- | :---- | :---- |
-    |  id   | string |       |       |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  |  |
 
   - Remove.Config
 
-    |          field          | type  | label | desc.                                               |
-    | :---------------------: | :---- | :---- | :-------------------------------------------------- |
-    | skip_strict_exist_check | bool  |       | A flag to skip exist check during upsert operation. |
-    |        timestamp        | int64 |       | Remove timestamp.                                   |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
+    | timestamp | int64 |  | Remove timestamp. |
+
 
 ### Output
 
@@ -72,15 +70,17 @@ Remove RPC is the method to remove a single vector.
     string uuid = 2;
     repeated string ips = 3;
   }
+
   ```
+
 
   - Object.Location
 
-    | field | type   | label    | desc.                     |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -96,6 +96,8 @@ Remove RPC is the method to remove a single vector.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -109,7 +111,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## RemoveByTimestamp RPC
 
 RemoveByTimestamp RPC is the method to remove vectors based on timestamp.
@@ -129,12 +130,10 @@ This design allows for versatile deletion operations, facilitating tasks such as
     repeated Remove.Timestamp timestamps = 1;
   }
 
-
   message Remove.Timestamp {
     int64 timestamp = 1;
     Remove.Timestamp.Operator operator = 2;
   }
-
 
   enum  Remove.Timestamp.Operator {
     Eq = 0;
@@ -144,22 +143,23 @@ This design allows for versatile deletion operations, facilitating tasks such as
     Le = 4;
     Lt = 5;
   }
-  ```
 
+  ```
   - Remove.TimestampRequest
 
-        | field | type | label | desc. |
-        | :---: | :--- | :---- | :---- |
-        | timestamps | Remove.Timestamp | repeated | The timestamp comparison list. If more than one is specified, the `AND`
-
-    search is applied. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | timestamps | Remove.Timestamp | repeated | The timestamp comparison list. If more than one is specified, the `AND`
+search is applied. |
 
   - Remove.Timestamp
 
-    |   field   | type                      | label | desc.                     |
-    | :-------: | :------------------------ | :---- | :------------------------ |
-    | timestamp | int64                     |       | The timestamp.            |
-    | operator  | Remove.Timestamp.Operator |       | The conditional operator. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | timestamp | int64 |  | The timestamp. |
+    | operator | Remove.Timestamp.Operator |  | The conditional operator. |
+
+
 
 ### Output
 
@@ -170,27 +170,28 @@ This design allows for versatile deletion operations, facilitating tasks such as
     repeated Object.Location locations = 1;
   }
 
-
   message Object.Location {
     string name = 1;
     string uuid = 2;
     repeated string ips = 3;
   }
+
   ```
+
 
   - Object.Locations
 
-    |   field   | type            | label    | desc. |
-    | :-------: | :-------------- | :------- | :---- |
-    | locations | Object.Location | repeated |       |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | locations | Object.Location | repeated |  |
 
   - Object.Location
 
-    | field | type   | label    | desc.                     |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -204,6 +205,8 @@ This design allows for versatile deletion operations, facilitating tasks such as
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -215,8 +218,7 @@ Here are some common reasons and how to resolve each error.
 | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.                              |
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed.                             |
 | NOT_FOUND         | No vectors in the system match the specified timestamp conditions.                              | Check whether vectors matching the specified timestamp conditions exist in the system, and fix conditions if needed. |
-| INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.                                 |
-
+| INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.
 ## StreamRemove RPC
 
 A method to remove multiple indexed vectors by bidirectional streaming.
@@ -236,38 +238,36 @@ It's the recommended method to remove a large number of vectors.
     Remove.Config config = 2;
   }
 
-
   message Object.ID {
     string id = 1;
   }
-
-
 
   message Remove.Config {
     bool skip_strict_exist_check = 1;
     int64 timestamp = 2;
   }
-  ```
 
+  ```
   - Remove.Request
 
-    | field  | type          | label | desc.                                    |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    |   id   | Object.ID     |       | The object ID to be removed.             |
-    | config | Remove.Config |       | The configuration of the remove request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | Object.ID |  | The object ID to be removed. |
+    | config | Remove.Config |  | The configuration of the remove request. |
 
   - Object.ID
 
-    | field | type   | label | desc. |
-    | :---: | :----- | :---- | :---- |
-    |  id   | string |       |       |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  |  |
 
   - Remove.Config
 
-    |          field          | type  | label | desc.                                               |
-    | :---------------------: | :---- | :---- | :-------------------------------------------------- |
-    | skip_strict_exist_check | bool  |       | A flag to skip exist check during upsert operation. |
-    |        timestamp        | int64 |       | Remove timestamp.                                   |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
+    | timestamp | int64 |  | Remove timestamp. |
+
 
 ### Output
 
@@ -279,28 +279,29 @@ It's the recommended method to remove a large number of vectors.
     google.rpc.Status status = 2;
   }
 
-
   message Object.Location {
     string name = 1;
     string uuid = 2;
     repeated string ips = 3;
   }
+
   ```
+
 
   - Object.StreamLocation
 
-    |  field   | type              | label | desc.                 |
-    | :------: | :---------------- | :---- | :-------------------- |
-    | location | Object.Location   |       | The vector location.  |
-    |  status  | google.rpc.Status |       | The RPC error status. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | location | Object.Location |  | The vector location. |
+    | status | google.rpc.Status |  | The RPC error status. |
 
   - Object.Location
 
-    | field | type   | label    | desc.                     |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -316,6 +317,8 @@ It's the recommended method to remove a large number of vectors.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -329,7 +332,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## MultiRemove RPC
 
 MultiRemove is the method to remove multiple vectors in **1** request.
@@ -348,50 +350,47 @@ Please be careful that the size of the request exceeds the limit.
     repeated Remove.Request requests = 1;
   }
 
-
   message Remove.Request {
     Object.ID id = 1;
     Remove.Config config = 2;
   }
 
-
   message Object.ID {
     string id = 1;
   }
-
-
 
   message Remove.Config {
     bool skip_strict_exist_check = 1;
     int64 timestamp = 2;
   }
-  ```
 
+  ```
   - Remove.MultiRequest
 
-    |  field   | type           | label    | desc.                                          |
-    | :------: | :------------- | :------- | :--------------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | requests | Remove.Request | repeated | Represent the multiple remove request content. |
 
   - Remove.Request
 
-    | field  | type          | label | desc.                                    |
-    | :----: | :------------ | :---- | :--------------------------------------- |
-    |   id   | Object.ID     |       | The object ID to be removed.             |
-    | config | Remove.Config |       | The configuration of the remove request. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | Object.ID |  | The object ID to be removed. |
+    | config | Remove.Config |  | The configuration of the remove request. |
 
   - Object.ID
 
-    | field | type   | label | desc. |
-    | :---: | :----- | :---- | :---- |
-    |  id   | string |       |       |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  |  |
 
   - Remove.Config
 
-    |          field          | type  | label | desc.                                               |
-    | :---------------------: | :---- | :---- | :-------------------------------------------------- |
-    | skip_strict_exist_check | bool  |       | A flag to skip exist check during upsert operation. |
-    |        timestamp        | int64 |       | Remove timestamp.                                   |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
+    | timestamp | int64 |  | Remove timestamp. |
+
 
 ### Output
 
@@ -402,27 +401,28 @@ Please be careful that the size of the request exceeds the limit.
     repeated Object.Location locations = 1;
   }
 
-
   message Object.Location {
     string name = 1;
     string uuid = 2;
     repeated string ips = 3;
   }
+
   ```
+
 
   - Object.Locations
 
-    |   field   | type            | label    | desc. |
-    | :-------: | :-------------- | :------- | :---- |
-    | locations | Object.Location | repeated |       |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | locations | Object.Location | repeated |  |
 
   - Object.Location
 
-    | field | type   | label    | desc.                     |
-    | :---: | :----- | :------- | :------------------------ |
-    | name  | string |          | The name of the location. |
-    | uuid  | string |          | The UUID of the vector.   |
-    |  ips  | string | repeated | The IP list.              |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  | The name of the location. |
+    | uuid | string |  | The UUID of the vector. |
+    | ips | string | repeated | The IP list. |
 
 ### Status Code
 
@@ -437,6 +437,8 @@ Please be careful that the size of the request exceeds the limit.
 |  13  | INTERNAL          |
 
 Please refer to [Response Status Code](../status.md) for more details.
+
+
 
 ### Troubleshooting
 

@@ -28,11 +28,12 @@ Represent the RPC to get the index information.
   message Empty {
     // empty
   }
-  ```
 
+  ```
   - Empty
 
     empty
+
 
 ### Output
 
@@ -45,17 +46,18 @@ Represent the RPC to get the index information.
     bool indexing = 3;
     bool saving = 4;
   }
+
   ```
+
 
   - Info.Index.Count
 
-    |    field    | type   | label | desc.                        |
-    | :---------: | :----- | :---- | :--------------------------- |
-    |   stored    | uint32 |       | The stored index count.      |
-    | uncommitted | uint32 |       | The uncommitted index count. |
-    |  indexing   | bool   |       | The indexing index count.    |
-    |   saving    | bool   |       | The saving index count.      |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | stored | uint32 |  | The stored index count. |
+    | uncommitted | uint32 |  | The uncommitted index count. |
+    | indexing | bool |  | The indexing index count. |
+    | saving | bool |  | The saving index count. |
 ## IndexDetail RPC
 
 Represent the RPC to get the index information for each agents.
@@ -68,11 +70,12 @@ Represent the RPC to get the index information for each agents.
   message Empty {
     // empty
   }
-  ```
 
+  ```
   - Empty
 
     empty
+
 
 ### Output
 
@@ -85,12 +88,10 @@ Represent the RPC to get the index information for each agents.
     uint32 live_agents = 3;
   }
 
-
   message Info.Index.Detail.CountsEntry {
     string key = 1;
     Info.Index.Count value = 2;
   }
-
 
   message Info.Index.Count {
     uint32 stored = 1;
@@ -98,32 +99,33 @@ Represent the RPC to get the index information for each agents.
     bool indexing = 3;
     bool saving = 4;
   }
+
   ```
+
 
   - Info.Index.Detail
 
-    |    field    | type                          | label    | desc.                              |
-    | :---------: | :---------------------------- | :------- | :--------------------------------- |
-    |   counts    | Info.Index.Detail.CountsEntry | repeated | count infos for each agents        |
-    |   replica   | uint32                        |          | index replica of vald cluster      |
-    | live_agents | uint32                        |          | live agent replica of vald cluster |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | counts | Info.Index.Detail.CountsEntry | repeated | count infos for each agents |
+    | replica | uint32 |  | index replica of vald cluster |
+    | live_agents | uint32 |  | live agent replica of vald cluster |
 
   - Info.Index.Detail.CountsEntry
 
-    | field | type             | label | desc. |
-    | :---: | :--------------- | :---- | :---- |
-    |  key  | string           |       |       |
-    | value | Info.Index.Count |       |       |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | key | string |  |  |
+    | value | Info.Index.Count |  |  |
 
   - Info.Index.Count
 
-    |    field    | type   | label | desc.                        |
-    | :---------: | :----- | :---- | :--------------------------- |
-    |   stored    | uint32 |       | The stored index count.      |
-    | uncommitted | uint32 |       | The uncommitted index count. |
-    |  indexing   | bool   |       | The indexing index count.    |
-    |   saving    | bool   |       | The saving index count.      |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | stored | uint32 |  | The stored index count. |
+    | uncommitted | uint32 |  | The uncommitted index count. |
+    | indexing | bool |  | The indexing index count. |
+    | saving | bool |  | The saving index count. |
 ## IndexStatistics RPC
 
 Represent the RPC to get the index statistics.
@@ -136,11 +138,12 @@ Represent the RPC to get the index statistics.
   message Empty {
     // empty
   }
-  ```
 
+  ```
   - Empty
 
     empty
+
 
 ### Output
 
@@ -182,46 +185,47 @@ Represent the RPC to get the index statistics.
     repeated uint64 outdegree_histogram = 32;
     repeated uint64 indegree_histogram = 33;
   }
+
   ```
+
 
   - Info.Index.Statistics
 
-    |                field                 | type   | label    | desc. |
-    | :----------------------------------: | :----- | :------- | :---- |
-    |                valid                 | bool   |          |       |
-    |           median_indegree            | int32  |          |       |
-    |           median_outdegree           | int32  |          |       |
-    |        max_number_of_indegree        | uint64 |          |       |
-    |       max_number_of_outdegree        | uint64 |          |       |
-    |        min_number_of_indegree        | uint64 |          |       |
-    |       min_number_of_outdegree        | uint64 |          |       |
-    |            mode_indegree             | uint64 |          |       |
-    |            mode_outdegree            | uint64 |          |       |
-    |      nodes_skipped_for_10_edges      | uint64 |          |       |
-    | nodes_skipped_for_indegree_distance  | uint64 |          |       |
-    |           number_of_edges            | uint64 |          |       |
-    |      number_of_indexed_objects       | uint64 |          |       |
-    |           number_of_nodes            | uint64 |          |       |
-    |    number_of_nodes_without_edges     | uint64 |          |       |
-    |   number_of_nodes_without_indegree   | uint64 |          |       |
-    |          number_of_objects           | uint64 |          |       |
-    |      number_of_removed_objects       | uint64 |          |       |
-    |      size_of_object_repository       | uint64 |          |       |
-    | size_of_refinement_object_repository | uint64 |          |       |
-    |         variance_of_indegree         | double |          |       |
-    |        variance_of_outdegree         | double |          |       |
-    |           mean_edge_length           | double |          |       |
-    |    mean_edge_length_for_10_edges     | double |          |       |
-    | mean_indegree_distance_for_10_edges  | double |          |       |
-    |    mean_number_of_edges_per_node     | double |          |       |
-    |             c1_indegree              | double |          |       |
-    |             c5_indegree              | double |          |       |
-    |            c95_outdegree             | double |          |       |
-    |            c99_outdegree             | double |          |       |
-    |            indegree_count            | int64  | repeated |       |
-    |         outdegree_histogram          | uint64 | repeated |       |
-    |          indegree_histogram          | uint64 | repeated |       |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | valid | bool |  |  |
+    | median_indegree | int32 |  |  |
+    | median_outdegree | int32 |  |  |
+    | max_number_of_indegree | uint64 |  |  |
+    | max_number_of_outdegree | uint64 |  |  |
+    | min_number_of_indegree | uint64 |  |  |
+    | min_number_of_outdegree | uint64 |  |  |
+    | mode_indegree | uint64 |  |  |
+    | mode_outdegree | uint64 |  |  |
+    | nodes_skipped_for_10_edges | uint64 |  |  |
+    | nodes_skipped_for_indegree_distance | uint64 |  |  |
+    | number_of_edges | uint64 |  |  |
+    | number_of_indexed_objects | uint64 |  |  |
+    | number_of_nodes | uint64 |  |  |
+    | number_of_nodes_without_edges | uint64 |  |  |
+    | number_of_nodes_without_indegree | uint64 |  |  |
+    | number_of_objects | uint64 |  |  |
+    | number_of_removed_objects | uint64 |  |  |
+    | size_of_object_repository | uint64 |  |  |
+    | size_of_refinement_object_repository | uint64 |  |  |
+    | variance_of_indegree | double |  |  |
+    | variance_of_outdegree | double |  |  |
+    | mean_edge_length | double |  |  |
+    | mean_edge_length_for_10_edges | double |  |  |
+    | mean_indegree_distance_for_10_edges | double |  |  |
+    | mean_number_of_edges_per_node | double |  |  |
+    | c1_indegree | double |  |  |
+    | c5_indegree | double |  |  |
+    | c95_outdegree | double |  |  |
+    | c99_outdegree | double |  |  |
+    | indegree_count | int64 | repeated |  |
+    | outdegree_histogram | uint64 | repeated |  |
+    | indegree_histogram | uint64 | repeated |  |
 ## IndexStatisticsDetail RPC
 
 Represent the RPC to get the index statistics for each agents.
@@ -234,11 +238,12 @@ Represent the RPC to get the index statistics for each agents.
   message Empty {
     // empty
   }
-  ```
 
+  ```
   - Empty
 
     empty
+
 
 ### Output
 
@@ -249,12 +254,10 @@ Represent the RPC to get the index statistics for each agents.
     repeated Info.Index.StatisticsDetail.DetailsEntry details = 1;
   }
 
-
   message Info.Index.StatisticsDetail.DetailsEntry {
     string key = 1;
     Info.Index.Statistics value = 2;
   }
-
 
   message Info.Index.Statistics {
     bool valid = 1;
@@ -291,59 +294,60 @@ Represent the RPC to get the index statistics for each agents.
     repeated uint64 outdegree_histogram = 32;
     repeated uint64 indegree_histogram = 33;
   }
+
   ```
+
 
   - Info.Index.StatisticsDetail
 
-    |  field  | type                                     | label    | desc.                       |
-    | :-----: | :--------------------------------------- | :------- | :-------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | details | Info.Index.StatisticsDetail.DetailsEntry | repeated | count infos for each agents |
 
   - Info.Index.StatisticsDetail.DetailsEntry
 
-    | field | type                  | label | desc. |
-    | :---: | :-------------------- | :---- | :---- |
-    |  key  | string                |       |       |
-    | value | Info.Index.Statistics |       |       |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | key | string |  |  |
+    | value | Info.Index.Statistics |  |  |
 
   - Info.Index.Statistics
 
-    |                field                 | type   | label    | desc. |
-    | :----------------------------------: | :----- | :------- | :---- |
-    |                valid                 | bool   |          |       |
-    |           median_indegree            | int32  |          |       |
-    |           median_outdegree           | int32  |          |       |
-    |        max_number_of_indegree        | uint64 |          |       |
-    |       max_number_of_outdegree        | uint64 |          |       |
-    |        min_number_of_indegree        | uint64 |          |       |
-    |       min_number_of_outdegree        | uint64 |          |       |
-    |            mode_indegree             | uint64 |          |       |
-    |            mode_outdegree            | uint64 |          |       |
-    |      nodes_skipped_for_10_edges      | uint64 |          |       |
-    | nodes_skipped_for_indegree_distance  | uint64 |          |       |
-    |           number_of_edges            | uint64 |          |       |
-    |      number_of_indexed_objects       | uint64 |          |       |
-    |           number_of_nodes            | uint64 |          |       |
-    |    number_of_nodes_without_edges     | uint64 |          |       |
-    |   number_of_nodes_without_indegree   | uint64 |          |       |
-    |          number_of_objects           | uint64 |          |       |
-    |      number_of_removed_objects       | uint64 |          |       |
-    |      size_of_object_repository       | uint64 |          |       |
-    | size_of_refinement_object_repository | uint64 |          |       |
-    |         variance_of_indegree         | double |          |       |
-    |        variance_of_outdegree         | double |          |       |
-    |           mean_edge_length           | double |          |       |
-    |    mean_edge_length_for_10_edges     | double |          |       |
-    | mean_indegree_distance_for_10_edges  | double |          |       |
-    |    mean_number_of_edges_per_node     | double |          |       |
-    |             c1_indegree              | double |          |       |
-    |             c5_indegree              | double |          |       |
-    |            c95_outdegree             | double |          |       |
-    |            c99_outdegree             | double |          |       |
-    |            indegree_count            | int64  | repeated |       |
-    |         outdegree_histogram          | uint64 | repeated |       |
-    |          indegree_histogram          | uint64 | repeated |       |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | valid | bool |  |  |
+    | median_indegree | int32 |  |  |
+    | median_outdegree | int32 |  |  |
+    | max_number_of_indegree | uint64 |  |  |
+    | max_number_of_outdegree | uint64 |  |  |
+    | min_number_of_indegree | uint64 |  |  |
+    | min_number_of_outdegree | uint64 |  |  |
+    | mode_indegree | uint64 |  |  |
+    | mode_outdegree | uint64 |  |  |
+    | nodes_skipped_for_10_edges | uint64 |  |  |
+    | nodes_skipped_for_indegree_distance | uint64 |  |  |
+    | number_of_edges | uint64 |  |  |
+    | number_of_indexed_objects | uint64 |  |  |
+    | number_of_nodes | uint64 |  |  |
+    | number_of_nodes_without_edges | uint64 |  |  |
+    | number_of_nodes_without_indegree | uint64 |  |  |
+    | number_of_objects | uint64 |  |  |
+    | number_of_removed_objects | uint64 |  |  |
+    | size_of_object_repository | uint64 |  |  |
+    | size_of_refinement_object_repository | uint64 |  |  |
+    | variance_of_indegree | double |  |  |
+    | variance_of_outdegree | double |  |  |
+    | mean_edge_length | double |  |  |
+    | mean_edge_length_for_10_edges | double |  |  |
+    | mean_indegree_distance_for_10_edges | double |  |  |
+    | mean_number_of_edges_per_node | double |  |  |
+    | c1_indegree | double |  |  |
+    | c5_indegree | double |  |  |
+    | c95_outdegree | double |  |  |
+    | c99_outdegree | double |  |  |
+    | indegree_count | int64 | repeated |  |
+    | outdegree_histogram | uint64 | repeated |  |
+    | indegree_histogram | uint64 | repeated |  |
 ## IndexProperty RPC
 
 Represent the RPC to get the index property.
@@ -356,11 +360,12 @@ Represent the RPC to get the index property.
   message Empty {
     // empty
   }
-  ```
 
+  ```
   - Empty
 
     empty
+
 
 ### Output
 
@@ -371,12 +376,10 @@ Represent the RPC to get the index property.
     repeated Info.Index.PropertyDetail.DetailsEntry details = 1;
   }
 
-
   message Info.Index.PropertyDetail.DetailsEntry {
     string key = 1;
     Info.Index.Property value = 2;
   }
-
 
   message Info.Index.Property {
     int32 dimension = 1;
@@ -414,56 +417,58 @@ Represent the RPC to get the index property.
     int32 outgoing_edge = 33;
     int32 incoming_edge = 34;
   }
+
   ```
+
 
   - Info.Index.PropertyDetail
 
-    |  field  | type                                   | label    | desc. |
-    | :-----: | :------------------------------------- | :------- | :---- |
-    | details | Info.Index.PropertyDetail.DetailsEntry | repeated |       |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | details | Info.Index.PropertyDetail.DetailsEntry | repeated |  |
 
   - Info.Index.PropertyDetail.DetailsEntry
 
-    | field | type                | label | desc. |
-    | :---: | :------------------ | :---- | :---- |
-    |  key  | string              |       |       |
-    | value | Info.Index.Property |       |       |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | key | string |  |  |
+    | value | Info.Index.Property |  |  |
 
   - Info.Index.Property
 
-    |               field                | type   | label | desc. |
-    | :--------------------------------: | :----- | :---- | :---- |
-    |             dimension              | int32  |       |       |
-    |          thread_pool_size          | int32  |       |       |
-    |            object_type             | string |       |       |
-    |           distance_type            | string |       |       |
-    |             index_type             | string |       |       |
-    |           database_type            | string |       |       |
-    |          object_alignment          | string |       |       |
-    |      path_adjustment_interval      | int32  |       |       |
-    |      graph_shared_memory_size      | int32  |       |       |
-    |      tree_shared_memory_size       | int32  |       |       |
-    |     object_shared_memory_size      | int32  |       |       |
-    |          prefetch_offset           | int32  |       |       |
-    |           prefetch_size            | int32  |       |       |
-    |           accuracy_table           | string |       |       |
-    |            search_type             | string |       |       |
-    |           max_magnitude            | float  |       |       |
-    | n_of_neighbors_for_insertion_order | int32  |       |       |
-    |    epsilon_for_insertion_order     | float  |       |       |
-    |       refinement_object_type       | string |       |       |
-    |        truncation_threshold        | int32  |       |       |
-    |       edge_size_for_creation       | int32  |       |       |
-    |        edge_size_for_search        | int32  |       |       |
-    |    edge_size_limit_for_creation    | int32  |       |       |
-    |    insertion_radius_coefficient    | double |       |       |
-    |             seed_size              | int32  |       |       |
-    |             seed_type              | string |       |       |
-    |    truncation_thread_pool_size     | int32  |       |       |
-    |      batch_size_for_creation       | int32  |       |       |
-    |             graph_type             | string |       |       |
-    |       dynamic_edge_size_base       | int32  |       |       |
-    |       dynamic_edge_size_rate       | int32  |       |       |
-    |          build_time_limit          | float  |       |       |
-    |           outgoing_edge            | int32  |       |       |
-    |           incoming_edge            | int32  |       |       |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | dimension | int32 |  |  |
+    | thread_pool_size | int32 |  |  |
+    | object_type | string |  |  |
+    | distance_type | string |  |  |
+    | index_type | string |  |  |
+    | database_type | string |  |  |
+    | object_alignment | string |  |  |
+    | path_adjustment_interval | int32 |  |  |
+    | graph_shared_memory_size | int32 |  |  |
+    | tree_shared_memory_size | int32 |  |  |
+    | object_shared_memory_size | int32 |  |  |
+    | prefetch_offset | int32 |  |  |
+    | prefetch_size | int32 |  |  |
+    | accuracy_table | string |  |  |
+    | search_type | string |  |  |
+    | max_magnitude | float |  |  |
+    | n_of_neighbors_for_insertion_order | int32 |  |  |
+    | epsilon_for_insertion_order | float |  |  |
+    | refinement_object_type | string |  |  |
+    | truncation_threshold | int32 |  |  |
+    | edge_size_for_creation | int32 |  |  |
+    | edge_size_for_search | int32 |  |  |
+    | edge_size_limit_for_creation | int32 |  |  |
+    | insertion_radius_coefficient | double |  |  |
+    | seed_size | int32 |  |  |
+    | seed_type | string |  |  |
+    | truncation_thread_pool_size | int32 |  |  |
+    | batch_size_for_creation | int32 |  |  |
+    | graph_type | string |  |  |
+    | dynamic_edge_size_base | int32 |  |  |
+    | dynamic_edge_size_rate | int32 |  |  |
+    | build_time_limit | float |  |  |
+    | outgoing_edge | int32 |  |  |
+    | incoming_edge | int32 |  |  |

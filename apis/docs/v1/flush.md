@@ -24,11 +24,12 @@ Flush RPC is the method to remove all vectors.
   message Flush.Request {
     // empty
   }
-  ```
 
+  ```
   - Flush.Request
 
     empty
+
 
 ### Output
 
@@ -41,16 +42,18 @@ Flush RPC is the method to remove all vectors.
     bool indexing = 3;
     bool saving = 4;
   }
+
   ```
+
 
   - Info.Index.Count
 
-    |    field    | type   | label | desc.                        |
-    | :---------: | :----- | :---- | :--------------------------- |
-    |   stored    | uint32 |       | The stored index count.      |
-    | uncommitted | uint32 |       | The uncommitted index count. |
-    |  indexing   | bool   |       | The indexing index count.    |
-    |   saving    | bool   |       | The saving index count.      |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | stored | uint32 |  | The stored index count. |
+    | uncommitted | uint32 |  | The uncommitted index count. |
+    | indexing | bool |  | The indexing index count. |
+    | saving | bool |  | The saving index count. |
 
 ### Status Code
 
@@ -64,3 +67,4 @@ Flush RPC is the method to remove all vectors.
 |  13  | INTERNAL          |
 
 Please refer to [Response Status Code](../status.md) for more details.
+

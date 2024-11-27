@@ -77,8 +77,8 @@
     {{- printf "{{- define \"_field:%s\" }}\n" .FullName -}}
     {{- printf "  - %s\n" .LongName -}}
     {{- if .HasFields }}
-    | field | type | label | desc. |
-    | :---: | :--- | :---- | :---- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
       {{- range .Fields }}
     | {{ .Name }} | {{ .LongType }} | {{.Label }} | {{ .Description }} |
       {{- end }}
