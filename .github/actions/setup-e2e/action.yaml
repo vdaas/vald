@@ -89,6 +89,11 @@ runs:
       if: ${{ inputs.require_minikube == 'true' }}
       shell: bash
       run: |
+        # TODO: consider use apt install for ci
+        # Add Docker's official GPG key:
+        groupadd docker
+        usermod -aG docker $USER
+        newgrp docker
         make minikube/install
         make minikube/start
     - name: Check Kubernetes cluster

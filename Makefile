@@ -373,6 +373,8 @@ E2E_REMOVE_FROM                    ?= 0
 
 TEST_RESULT_DIR ?= /tmp
 
+MINIKUBE_DRIVER = none
+
 include Makefile.d/functions.mk
 
 .PHONY: maintainer
