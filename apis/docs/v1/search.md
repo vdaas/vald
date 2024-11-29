@@ -6,39 +6,20 @@ Search Service is responsible for searching vectors similar to the user request 
 
 ```rpc
 service Search {
+
   rpc Search(payload.v1.Search.Request) returns (payload.v1.Search.Response) {}
-
-  rpc SearchByID(payload.v1.Search.IDRequest)
-      returns (payload.v1.Search.Response) {}
-
-  rpc StreamSearch(stream payload.v1.Search.Request)
-      returns (stream payload.v1.Search.StreamResponse) {}
-
-  rpc StreamSearchByID(stream payload.v1.Search.IDRequest)
-      returns (stream payload.v1.Search.StreamResponse) {}
-
-  rpc MultiSearch(payload.v1.Search.MultiRequest)
-      returns (payload.v1.Search.Responses) {}
-
-  rpc MultiSearchByID(payload.v1.Search.MultiIDRequest)
-      returns (payload.v1.Search.Responses) {}
-
+  rpc SearchByID(payload.v1.Search.IDRequest) returns (payload.v1.Search.Response) {}
+  rpc StreamSearch(payload.v1.Search.Request) returns (payload.v1.Search.StreamResponse) {}
+  rpc StreamSearchByID(payload.v1.Search.IDRequest) returns (payload.v1.Search.StreamResponse) {}
+  rpc MultiSearch(payload.v1.Search.MultiRequest) returns (payload.v1.Search.Responses) {}
+  rpc MultiSearchByID(payload.v1.Search.MultiIDRequest) returns (payload.v1.Search.Responses) {}
   rpc LinearSearch(payload.v1.Search.Request) returns (payload.v1.Search.Response) {}
+  rpc LinearSearchByID(payload.v1.Search.IDRequest) returns (payload.v1.Search.Response) {}
+  rpc StreamLinearSearch(payload.v1.Search.Request) returns (payload.v1.Search.StreamResponse) {}
+  rpc StreamLinearSearchByID(payload.v1.Search.IDRequest) returns (payload.v1.Search.StreamResponse) {}
+  rpc MultiLinearSearch(payload.v1.Search.MultiRequest) returns (payload.v1.Search.Responses) {}
+  rpc MultiLinearSearchByID(payload.v1.Search.MultiIDRequest) returns (payload.v1.Search.Responses) {}
 
-  rpc LinearSearchByID(payload.v1.Search.IDRequest)
-      returns (payload.v1.Search.Response) {}
-
-  rpc StreamLinearSearch(stream payload.v1.Search.Request)
-      returns (stream payload.v1.Search.StreamResponse) {}
-
-  rpc StreamLinearSearchByID(stream payload.v1.Search.IDRequest)
-      returns (stream payload.v1.Search.StreamResponse) {}
-
-  rpc MultiLinearSearch(payload.v1.Search.MultiRequest)
-      returns (payload.v1.Search.Responses) {}
-
-  rpc MultiLinearSearchByID(payload.v1.Search.MultiIDRequest)
-      returns (payload.v1.Search.Responses) {}
 }
 ```
 
@@ -51,92 +32,114 @@ Search RPC is the method to search vector(s) similar to the request vector.
 - the scheme of `payload.v1.Search.Request`
 
   ```rpc
-  message Search {
-    message Request {
-      repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
-      Config config = 2;
-    }
-
-    message Config {
-      string request_id = 1;
-      uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
-      float radius = 3;
-      float epsilon = 4;
-      int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
-      uint32 min_num = 8;
-      AggregationAlgorithm aggregation_algorithm = 9;
-    }
+  message Search.Request {
+    repeated float vector = 1;
+    Search.Config config = 2;
   }
 
-  enum AggregationAlgorithm {
+  message Search.Config {
+    string request_id = 1;
+    uint32 num = 2;
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    Search.AggregationAlgorithm aggregation_algorithm = 9;
+    google.protobuf.FloatValue ratio = 10;
+    uint32 nprobe = 11;
+  }
+
+  message Filter.Config {
+    repeated Filter.Target targets = 1;
+  }
+
+  enum  Search.AggregationAlgorithm {
     Unknown = 0;
     ConcurrentQueue = 1;
     SortSlice = 2;
     SortPoolSlice = 3;
     PairingHeap = 4;
   }
+
+  message Filter.Target {
+    string host = 1;
+    uint32 port = 2;
+  }
+
   ```
 
   - Search.Request
 
-    | field  | type   | label                  | required | description                                             |
-    | :----: | :----- | :--------------------- | :------: | :------------------------------------------------------ |
-    | vector | float  | repeated(Array[float]) |    \*    | The vector data. Its dimension is between 2 and 65,536. |
-    | config | Config |                        |    \*    | The configuration of the search request.                |
+    | field  | type          | label    | description                              |
+    | :----: | :------------ | :------- | :--------------------------------------- |
+    | vector | float         | repeated | The vector to be searched.               |
+    | config | Search.Config |          | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        radius         | float                |       |    \*    | The search radius.                                                            |
-    |        epsilon        | float                |       |    \*    | The search coefficient (default value is `0.1`).                              |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                        | label | description                                  |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
+
+  - Filter.Config
+
+    |  field  | type          | label    | description                                |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | description          |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
-- the scheme of `payload.v1.Search.Response`.
+- the scheme of `payload.v1.Search.Response`
 
   ```rpc
-  message Search {
-    message Response {
-      string request_id = 1;
-      repeated Object.Distance results = 2;
-    }
+  message Search.Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
   }
 
-  message Object {
-    message Distance {
-      string id = 1;
-      float distance = 2;
-    }
+  message Object.Distance {
+    string id = 1;
+    float distance = 2;
   }
+
   ```
 
   - Search.Response
 
-    |   field    | type            | label                            | description            |
-    | :--------: | :-------------- | :------------------------------- | :--------------------- |
-    | request_id | string          |                                  | The unique request ID. |
-    |  results   | Object.Distance | repeated(Array[Object.Distance]) | Search results.        |
+    |   field    | type            | label    | description            |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    |  field   | type   | label | description                                                    |
-    | :------: | :----- | :---- | :------------------------------------------------------------- |
-    |    id    | string |       | The vector ID.                                                 |
-    | distance | float  |       | The distance between the result vector and the request vector. |
+    |  field   | type   | label | description    |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
-| code | name              |
+| code | description       |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -172,92 +175,114 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
 - the scheme of `payload.v1.Search.IDRequest`
 
   ```rpc
-  message Search {
-    message IDRequest {
-      string id = 1;
-      Config config = 2;
-    }
-
-    message Config {
-      string request_id = 1;
-      uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
-      float radius = 3;
-      float epsilon = 4;
-      int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
-      uint32 min_num = 8;
-      AggregationAlgorithm aggregation_algorithm = 9;
-    }
+  message Search.IDRequest {
+    string id = 1;
+    Search.Config config = 2;
   }
 
-  enum AggregationAlgorithm {
+  message Search.Config {
+    string request_id = 1;
+    uint32 num = 2;
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    Search.AggregationAlgorithm aggregation_algorithm = 9;
+    google.protobuf.FloatValue ratio = 10;
+    uint32 nprobe = 11;
+  }
+
+  message Filter.Config {
+    repeated Filter.Target targets = 1;
+  }
+
+  enum  Search.AggregationAlgorithm {
     Unknown = 0;
     ConcurrentQueue = 1;
     SortSlice = 2;
     SortPoolSlice = 3;
     PairingHeap = 4;
   }
+
+  message Filter.Target {
+    string host = 1;
+    uint32 port = 2;
+  }
+
   ```
 
   - Search.IDRequest
 
-    | field  | type   | label | required | description                              |
-    | :----: | :----- | :---- | :------: | :--------------------------------------- |
-    |   id   | string |       |    \*    | The vector ID to be searched.            |
-    | config | Config |       |    \*    | The configuration of the search request. |
+    | field  | type          | label | description                              |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | string        |       | The vector ID to be searched.            |
+    | config | Search.Config |       | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        radius         | float                |       |    \*    | The search radius.                                                            |
-    |        epsilon        | float                |       |    \*    | The search coefficient (default value is `0.1`).                              |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                        | label | description                                  |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
+
+  - Filter.Config
+
+    |  field  | type          | label    | description                                |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | description          |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
-- the scheme of `payload.v1.Search.Response`.
+- the scheme of `payload.v1.Search.Response`
 
   ```rpc
-  message Search {
-    message Response {
-      string request_id = 1;
-      repeated Object.Distance results = 2;
-    }
+  message Search.Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
   }
 
-  message Object {
-    message Distance {
-      string id = 1;
-      float distance = 2;
-    }
+  message Object.Distance {
+    string id = 1;
+    float distance = 2;
   }
+
   ```
 
   - Search.Response
 
-    |   field    | type            | label                            | description            |
-    | :--------: | :-------------- | :------------------------------- | :--------------------- |
-    | request_id | string          |                                  | The unique request ID. |
-    |  results   | Object.Distance | repeated(Array[Object.Distance]) | Search results.        |
+    |   field    | type            | label    | description            |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    |  field   | type   | label | description                                                    |
-    | :------: | :----- | :---- | :------------------------------------------------------------- |
-    |    id    | string |       | The vector ID.                                                 |
-    | distance | float  |       | The distance between the result vector and the request vector. |
+    |  field   | type   | label | description    |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
-| code | name              |
+| code | description       |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -291,109 +316,129 @@ Each Search request and response are independent.
 
 ### Input
 
-- the scheme of `payload.v1.Search.Request stream`
+- the scheme of `payload.v1.Search.Request`
 
   ```rpc
-  message Search {
-    message Request {
-      repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
-      Config config = 2;
-    }
-
-    message Config {
-      string request_id = 1;
-      uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
-      float radius = 3;
-      float epsilon = 4;
-      int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
-      uint32 min_num = 8;
-      AggregationAlgorithm aggregation_algorithm = 9;
-    }
+  message Search.Request {
+    repeated float vector = 1;
+    Search.Config config = 2;
   }
 
-  enum AggregationAlgorithm {
+  message Search.Config {
+    string request_id = 1;
+    uint32 num = 2;
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    Search.AggregationAlgorithm aggregation_algorithm = 9;
+    google.protobuf.FloatValue ratio = 10;
+    uint32 nprobe = 11;
+  }
+
+  message Filter.Config {
+    repeated Filter.Target targets = 1;
+  }
+
+  enum  Search.AggregationAlgorithm {
     Unknown = 0;
     ConcurrentQueue = 1;
     SortSlice = 2;
     SortPoolSlice = 3;
     PairingHeap = 4;
   }
+
+  message Filter.Target {
+    string host = 1;
+    uint32 port = 2;
+  }
+
   ```
 
   - Search.Request
 
-    | field  | type   | label                  | required | description                                             |
-    | :----: | :----- | :--------------------- | :------: | :------------------------------------------------------ |
-    | vector | float  | repeated(Array[float]) |    \*    | The vector data. Its dimension is between 2 and 65,536. |
-    | config | Config |                        |    \*    | The configuration of the search request.                |
+    | field  | type          | label    | description                              |
+    | :----: | :------------ | :------- | :--------------------------------------- |
+    | vector | float         | repeated | The vector to be searched.               |
+    | config | Search.Config |          | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        radius         | float                |       |    \*    | The search radius.                                                            |
-    |        epsilon        | float                |       |    \*    | The search coefficient (default value is `0.1`).                              |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                        | label | description                                  |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
+
+  - Filter.Config
+
+    |  field  | type          | label    | description                                |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | description          |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
-- the scheme of `payload.v1.Search.StreamResponse`.
+- the scheme of `payload.v1.Search.StreamResponse`
 
   ```rpc
-  message Search {
-    message StreamResponse {
-      oneof payload {
-        Response response = 1;
-        google.rpc.Status status = 2;
-      }
-    }
-
-    message Response {
-      string request_id = 1;
-      repeated Object.Distance results = 2;
-    }
+  message Search.StreamResponse {
+    Search.Response response = 1;
+    google.rpc.Status status = 2;
   }
 
-  message Object {
-    message Distance {
-      string id = 1;
-      float distance = 2;
-    }
+  message Search.Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
   }
+
+  message Object.Distance {
+    string id = 1;
+    float distance = 2;
+  }
+
   ```
 
   - Search.StreamResponse
 
-    |  field   | type              | label | description                 |
-    | :------: | :---------------- | :---- | :-------------------------- |
-    | response | Response          |       | The search result response. |
-    |  status  | google.rpc.Status |       | The status of Google RPC.   |
+    |  field   | type              | label | description                    |
+    | :------: | :---------------- | :---- | :----------------------------- |
+    | response | Search.Response   |       | Represent the search response. |
+    |  status  | google.rpc.Status |       | The RPC error status.          |
 
   - Search.Response
 
-    |   field    | type            | label                            | description            |
-    | :--------: | :-------------- | :------------------------------- | :--------------------- |
-    | request_id | string          |                                  | The unique request ID. |
-    |  results   | Object.Distance | repeated(Array[Object.Distance]) | Search results.        |
+    |   field    | type            | label    | description            |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    |  field   | type   | label | description                                                    |
-    | :------: | :----- | :---- | :------------------------------------------------------------- |
-    |    id    | string |       | The vector ID.                                                 |
-    | distance | float  |       | The distance between the result vector and the request vector. |
+    |  field   | type   | label | description    |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
-| code | name              |
+| code | description       |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -427,109 +472,129 @@ Each SearchByID request and response are independent.
 
 ### Input
 
-- the scheme of `payload.v1.Search.IDRequest stream`
+- the scheme of `payload.v1.Search.IDRequest`
 
   ```rpc
-  message Search {
-    message IDRequest {
-      string id = 1;
-      Config config = 2;
-    }
-
-    message Config {
-      string request_id = 1;
-      uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
-      float radius = 3;
-      float epsilon = 4;
-      int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
-      uint32 min_num = 8;
-      AggregationAlgorithm aggregation_algorithm = 9;
-    }
+  message Search.IDRequest {
+    string id = 1;
+    Search.Config config = 2;
   }
 
-  enum AggregationAlgorithm {
+  message Search.Config {
+    string request_id = 1;
+    uint32 num = 2;
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    Search.AggregationAlgorithm aggregation_algorithm = 9;
+    google.protobuf.FloatValue ratio = 10;
+    uint32 nprobe = 11;
+  }
+
+  message Filter.Config {
+    repeated Filter.Target targets = 1;
+  }
+
+  enum  Search.AggregationAlgorithm {
     Unknown = 0;
     ConcurrentQueue = 1;
     SortSlice = 2;
     SortPoolSlice = 3;
     PairingHeap = 4;
   }
+
+  message Filter.Target {
+    string host = 1;
+    uint32 port = 2;
+  }
+
   ```
 
   - Search.IDRequest
 
-    | field  | type   | label | required | description                              |
-    | :----: | :----- | :---- | :------: | :--------------------------------------- |
-    |   id   | string |       |    \*    | The vector ID to be searched.            |
-    | config | Config |       |    \*    | The configuration of the search request. |
+    | field  | type          | label | description                              |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | string        |       | The vector ID to be searched.            |
+    | config | Search.Config |       | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        radius         | float                |       |    \*    | The search radius.                                                            |
-    |        epsilon        | float                |       |    \*    | The search coefficient (default value is `0.1`).                              |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                        | label | description                                  |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
+
+  - Filter.Config
+
+    |  field  | type          | label    | description                                |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | description          |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
-- the scheme of `payload.v1.Search.StreamResponse`.
+- the scheme of `payload.v1.Search.StreamResponse`
 
   ```rpc
-  message Search {
-    message StreamResponse {
-      oneof payload {
-        Response response = 1;
-        google.rpc.Status status = 2;
-      }
-    }
-
-    message Response {
-      string request_id = 1;
-      repeated Object.Distance results = 2;
-    }
+  message Search.StreamResponse {
+    Search.Response response = 1;
+    google.rpc.Status status = 2;
   }
 
-  message Object {
-    message Distance {
-      string id = 1;
-      float distance = 2;
-    }
+  message Search.Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
   }
+
+  message Object.Distance {
+    string id = 1;
+    float distance = 2;
+  }
+
   ```
 
   - Search.StreamResponse
 
-    |  field   | type              | label | description                 |
-    | :------: | :---------------- | :---- | :-------------------------- |
-    | response | Response          |       | The search result response. |
-    |  status  | google.rpc.Status |       | The status of Google RPC.   |
+    |  field   | type              | label | description                    |
+    | :------: | :---------------- | :---- | :----------------------------- |
+    | response | Search.Response   |       | Represent the search response. |
+    |  status  | google.rpc.Status |       | The RPC error status.          |
 
   - Search.Response
 
-    |   field    | type            | label                            | description            |
-    | :--------: | :-------------- | :------------------------------- | :--------------------- |
-    | request_id | string          |                                  | The unique request ID. |
-    |  results   | Object.Distance | repeated(Array[Object.Distance]) | Search results.        |
+    |   field    | type            | label    | description            |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    |  field   | type   | label | description                                                    |
-    | :------: | :----- | :---- | :------------------------------------------------------------- |
-    |    id    | string |       | The vector ID.                                                 |
-    | distance | float  |       | The distance between the result vector and the request vector. |
+    |  field   | type   | label | description    |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
-| code | name              |
+| code | description       |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -569,112 +634,134 @@ Please be careful that the size of the request exceeds the limit.
 - the scheme of `payload.v1.Search.MultiRequest`
 
   ```rpc
-  message Search {
-    message MultiRequest {
-      repeated Request requests = 1;
-    }
-
-    message Request {
-      repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
-      Config config = 2;
-    }
-
-    message Config {
-      string request_id = 1;
-      uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
-      float radius = 3;
-      float epsilon = 4;
-      int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
-      uint32 min_num = 8;
-      AggregationAlgorithm aggregation_algorithm = 9;
-    }
+  message Search.MultiRequest {
+    repeated Search.Request requests = 1;
   }
 
-  enum AggregationAlgorithm {
+  message Search.Request {
+    repeated float vector = 1;
+    Search.Config config = 2;
+  }
+
+  message Search.Config {
+    string request_id = 1;
+    uint32 num = 2;
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    Search.AggregationAlgorithm aggregation_algorithm = 9;
+    google.protobuf.FloatValue ratio = 10;
+    uint32 nprobe = 11;
+  }
+
+  message Filter.Config {
+    repeated Filter.Target targets = 1;
+  }
+
+  enum  Search.AggregationAlgorithm {
     Unknown = 0;
     ConcurrentQueue = 1;
     SortSlice = 2;
     SortPoolSlice = 3;
     PairingHeap = 4;
   }
+
+  message Filter.Target {
+    string host = 1;
+    uint32 port = 2;
+  }
+
   ```
 
   - Search.MultiRequest
 
-    |  field   | type                     | label | required | description              |
-    | :------: | :----------------------- | :---- | :------: | :----------------------- |
-    | requests | repeated(Array[Request]) |       |    \*    | The search request list. |
+    |  field   | type           | label    | description                                    |
+    | :------: | :------------- | :------- | :--------------------------------------------- |
+    | requests | Search.Request | repeated | Represent the multiple search request content. |
 
   - Search.Request
 
-    | field  | type   | label                  | required | description                                             |
-    | :----: | :----- | :--------------------- | :------: | :------------------------------------------------------ |
-    | vector | float  | repeated(Array[float]) |    \*    | The vector data. Its dimension is between 2 and 65,536. |
-    | config | Config |                        |    \*    | The configuration of the search request.                |
+    | field  | type          | label    | description                              |
+    | :----: | :------------ | :------- | :--------------------------------------- |
+    | vector | float         | repeated | The vector to be searched.               |
+    | config | Search.Config |          | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        radius         | float                |       |    \*    | The search radius.                                                            |
-    |        epsilon        | float                |       |    \*    | The search coefficient (default value is `0.1`).                              |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                        | label | description                                  |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
+
+  - Filter.Config
+
+    |  field  | type          | label    | description                                |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | description          |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
-- the scheme of `payload.v1.Search.Responses`.
+- the scheme of `payload.v1.Search.Responses`
 
   ```rpc
-  message Search {
-    message Responses {
-      repeated Response responses = 1;
-    }
-
-    message Response {
-      string request_id = 1;
-      repeated Object.Distance results = 2;
-    }
+  message Search.Responses {
+    repeated Search.Response responses = 1;
   }
 
-  message Object {
-    message Distance {
-      string id = 1;
-      float distance = 2;
-    }
+  message Search.Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
   }
+
+  message Object.Distance {
+    string id = 1;
+    float distance = 2;
+  }
+
   ```
 
   - Search.Responses
 
-    |   field   | type     | label                     | description                          |
-    | :-------: | :------- | :------------------------ | :----------------------------------- |
-    | responses | Response | repeated(Array[Response]) | The list of search results response. |
+    |   field   | type            | label    | description                                     |
+    | :-------: | :-------------- | :------- | :---------------------------------------------- |
+    | responses | Search.Response | repeated | Represent the multiple search response content. |
 
   - Search.Response
 
-    |   field    | type            | label                            | description            |
-    | :--------: | :-------------- | :------------------------------- | :--------------------- |
-    | request_id | string          |                                  | The unique request ID. |
-    |  results   | Object.Distance | repeated(Array[Object.Distance]) | Search results.        |
+    |   field    | type            | label    | description            |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    |  field   | type   | label | description                                                    |
-    | :------: | :----- | :---- | :------------------------------------------------------------- |
-    |    id    | string |       | The vector ID.                                                 |
-    | distance | float  |       | The distance between the result vector and the request vector. |
+    |  field   | type   | label | description    |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
-| code | name              |
+| code | description       |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -711,116 +798,137 @@ Please be careful that the size of the request exceeds the limit.
 
 ### Input
 
-- the scheme of `payload.v1.Search.MultiIDRequest stream`
+- the scheme of `payload.v1.Search.MultiIDRequest`
 
   ```rpc
-  message Search {
-
-    message MultiIDRequest {
-        repeated IDRequest requests = 1;
-    }
-
-    message IDRequest {
-      string id = 1;
-      Config config = 2;
-    }
-
-    message Config {
-      string request_id = 1;
-      uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
-      float radius = 3;
-      float epsilon = 4;
-      int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
-      uint32 min_num = 8;
-      AggregationAlgorithm aggregation_algorithm = 9;
-    }
+  message Search.MultiIDRequest {
+    repeated Search.IDRequest requests = 1;
   }
 
-  enum AggregationAlgorithm {
+  message Search.IDRequest {
+    string id = 1;
+    Search.Config config = 2;
+  }
+
+  message Search.Config {
+    string request_id = 1;
+    uint32 num = 2;
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    Search.AggregationAlgorithm aggregation_algorithm = 9;
+    google.protobuf.FloatValue ratio = 10;
+    uint32 nprobe = 11;
+  }
+
+  message Filter.Config {
+    repeated Filter.Target targets = 1;
+  }
+
+  enum  Search.AggregationAlgorithm {
     Unknown = 0;
     ConcurrentQueue = 1;
     SortSlice = 2;
     SortPoolSlice = 3;
     PairingHeap = 4;
   }
+
+  message Filter.Target {
+    string host = 1;
+    uint32 port = 2;
+  }
+
   ```
 
   - Search.MultiIDRequest
 
-    |  field   | type      | label                      | required | description                  |
-    | :------: | :-------- | :------------------------- | :------: | :--------------------------- |
-    | requests | IDRequest | repeated(Array[IDRequest]) |    \*    | The searchByID request list. |
+    |  field   | type             | label    | description                                          |
+    | :------: | :--------------- | :------- | :--------------------------------------------------- |
+    | requests | Search.IDRequest | repeated | Represent the multiple search by ID request content. |
 
   - Search.IDRequest
 
-    | field  | type   | label | required | description                              |
-    | :----: | :----- | :---- | :------: | :--------------------------------------- |
-    |   id   | string |       |    \*    | The vector ID to be searched.            |
-    | config | Config |       |    \*    | The configuration of the search request. |
+    | field  | type          | label | description                              |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | string        |       | The vector ID to be searched.            |
+    | config | Search.Config |       | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        radius         | float                |       |    \*    | The search radius.                                                            |
-    |        epsilon        | float                |       |    \*    | The search coefficient (default value is `0.1`).                              |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                        | label | description                                  |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
+
+  - Filter.Config
+
+    |  field  | type          | label    | description                                |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | description          |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
-- the scheme of `payload.v1.Search.Responses`.
+- the scheme of `payload.v1.Search.Responses`
 
   ```rpc
-  message Search {
-    message Responses {
-      repeated Response responses = 1;
-    }
-
-    message Response {
-      string request_id = 1;
-      repeated Object.Distance results = 2;
-    }
+  message Search.Responses {
+    repeated Search.Response responses = 1;
   }
 
-  message Object {
-    message Distance {
-      string id = 1;
-      float distance = 2;
-    }
+  message Search.Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
   }
+
+  message Object.Distance {
+    string id = 1;
+    float distance = 2;
+  }
+
   ```
 
   - Search.Responses
 
-    |   field   | type     | label                     | description                          |
-    | :-------: | :------- | :------------------------ | :----------------------------------- |
-    | responses | Response | repeated(Array[Response]) | The list of search results response. |
+    |   field   | type            | label    | description                                     |
+    | :-------: | :-------------- | :------- | :---------------------------------------------- |
+    | responses | Search.Response | repeated | Represent the multiple search response content. |
 
   - Search.Response
 
-    |   field    | type            | label                            | description            |
-    | :--------: | :-------------- | :------------------------------- | :--------------------- |
-    | request_id | string          |                                  | The unique request ID. |
-    |  results   | Object.Distance | repeated(Array[Object.Distance]) | Search results.        |
+    |   field    | type            | label    | description            |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    |  field   | type   | label | description                                                    |
-    | :------: | :----- | :---- | :------------------------------------------------------------- |
-    |    id    | string |       | The vector ID.                                                 |
-    | distance | float  |       | The distance between the result vector and the request vector. |
+    |  field   | type   | label | description    |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
-| code | name              |
+| code | description       |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -855,88 +963,114 @@ LinearSearch RPC is the method to linear search vector(s) similar to the request
 - the scheme of `payload.v1.Search.Request`
 
   ```rpc
-  message Search {
-    message Request {
-      repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
-      Config config = 2;
-    }
-
-    message Config {
-      string request_id = 1;
-      uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
-      int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
-      uint32 min_num = 8;
-      AggregationAlgorithm aggregation_algorithm = 9;
-    }
+  message Search.Request {
+    repeated float vector = 1;
+    Search.Config config = 2;
   }
 
-  enum AggregationAlgorithm {
+  message Search.Config {
+    string request_id = 1;
+    uint32 num = 2;
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    Search.AggregationAlgorithm aggregation_algorithm = 9;
+    google.protobuf.FloatValue ratio = 10;
+    uint32 nprobe = 11;
+  }
+
+  message Filter.Config {
+    repeated Filter.Target targets = 1;
+  }
+
+  enum  Search.AggregationAlgorithm {
     Unknown = 0;
     ConcurrentQueue = 1;
     SortSlice = 2;
     SortPoolSlice = 3;
     PairingHeap = 4;
   }
+
+  message Filter.Target {
+    string host = 1;
+    uint32 port = 2;
+  }
+
   ```
 
   - Search.Request
 
-    | field  | type   | label                  | required | description                                             |
-    | :----: | :----- | :--------------------- | :------: | :------------------------------------------------------ |
-    | vector | float  | repeated(Array[float]) |    \*    | The vector data. Its dimension is between 2 and 65,536. |
-    | config | Config |                        |    \*    | The configuration of the search request.                |
+    | field  | type          | label    | description                              |
+    | :----: | :------------ | :------- | :--------------------------------------- |
+    | vector | float         | repeated | The vector to be searched.               |
+    | config | Search.Config |          | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                        | label | description                                  |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
+
+  - Filter.Config
+
+    |  field  | type          | label    | description                                |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | description          |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
-- the scheme of `payload.v1.Search.Response`.
+- the scheme of `payload.v1.Search.Response`
 
   ```rpc
-  message Search {
-    message Response {
-      string request_id = 1;
-      repeated Object.Distance results = 2;
-    }
+  message Search.Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
   }
 
-  message Object {
-    message Distance {
-      string id = 1;
-      float distance = 2;
-    }
+  message Object.Distance {
+    string id = 1;
+    float distance = 2;
   }
+
   ```
 
   - Search.Response
 
-    |   field    | type            | label                            | description            |
-    | :--------: | :-------------- | :------------------------------- | :--------------------- |
-    | request_id | string          |                                  | The unique request ID. |
-    |  results   | Object.Distance | repeated(Array[Object.Distance]) | Search results.        |
+    |   field    | type            | label    | description            |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    |  field   | type   | label | description                                                    |
-    | :------: | :----- | :---- | :------------------------------------------------------------- |
-    |    id    | string |       | The vector ID.                                                 |
-    | distance | float  |       | The distance between the result vector and the request vector. |
+    |  field   | type   | label | description    |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
-| code | name              |
+| code | description       |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -973,88 +1107,114 @@ You will get a `NOT_FOUND` error if the vector isn't stored.
 - the scheme of `payload.v1.Search.IDRequest`
 
   ```rpc
-  message Search {
-    message IDRequest {
-      string id = 1;
-      Config config = 2;
-    }
-
-    message Config {
-      string request_id = 1;
-      uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
-      int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
-      uint32 min_num = 8;
-      AggregationAlgorithm aggregation_algorithm = 9;
-    }
+  message Search.IDRequest {
+    string id = 1;
+    Search.Config config = 2;
   }
 
-  enum AggregationAlgorithm {
+  message Search.Config {
+    string request_id = 1;
+    uint32 num = 2;
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    Search.AggregationAlgorithm aggregation_algorithm = 9;
+    google.protobuf.FloatValue ratio = 10;
+    uint32 nprobe = 11;
+  }
+
+  message Filter.Config {
+    repeated Filter.Target targets = 1;
+  }
+
+  enum  Search.AggregationAlgorithm {
     Unknown = 0;
     ConcurrentQueue = 1;
     SortSlice = 2;
     SortPoolSlice = 3;
     PairingHeap = 4;
   }
+
+  message Filter.Target {
+    string host = 1;
+    uint32 port = 2;
+  }
+
   ```
 
   - Search.IDRequest
 
-    | field  | type   | label | required | description                              |
-    | :----: | :----- | :---- | :------: | :--------------------------------------- |
-    |   id   | string |       |    \*    | The vector ID to be searched.            |
-    | config | Config |       |    \*    | The configuration of the search request. |
+    | field  | type          | label | description                              |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | string        |       | The vector ID to be searched.            |
+    | config | Search.Config |       | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                        | label | description                                  |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
+
+  - Filter.Config
+
+    |  field  | type          | label    | description                                |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | description          |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
-- the scheme of `payload.v1.Search.Response`.
+- the scheme of `payload.v1.Search.Response`
 
   ```rpc
-  message Search {
-    message Response {
-      string request_id = 1;
-      repeated Object.Distance results = 2;
-    }
+  message Search.Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
   }
 
-  message Object {
-    message Distance {
-      string id = 1;
-      float distance = 2;
-    }
+  message Object.Distance {
+    string id = 1;
+    float distance = 2;
   }
+
   ```
 
   - Search.Response
 
-    |   field    | type            | label                            | description            |
-    | :--------: | :-------------- | :------------------------------- | :--------------------- |
-    | request_id | string          |                                  | The unique request ID. |
-    |  results   | Object.Distance | repeated(Array[Object.Distance]) | Search results.        |
+    |   field    | type            | label    | description            |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    |  field   | type   | label | description                                                    |
-    | :------: | :----- | :---- | :------------------------------------------------------------- |
-    |    id    | string |       | The vector ID.                                                 |
-    | distance | float  |       | The distance between the result vector and the request vector. |
+    |  field   | type   | label | description    |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
-| code | name              |
+| code | description       |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -1088,105 +1248,129 @@ Each LinearSearch request and response are independent.
 
 ### Input
 
-- the scheme of `payload.v1.Search.Request stream`
+- the scheme of `payload.v1.Search.Request`
 
   ```rpc
-  message Search {
-    message Request {
-      repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
-      Config config = 2;
-    }
-
-    message Config {
-      string request_id = 1;
-      uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
-      int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
-      uint32 min_num = 8;
-      AggregationAlgorithm aggregation_algorithm = 9;
-    }
+  message Search.Request {
+    repeated float vector = 1;
+    Search.Config config = 2;
   }
 
-  enum AggregationAlgorithm {
+  message Search.Config {
+    string request_id = 1;
+    uint32 num = 2;
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    Search.AggregationAlgorithm aggregation_algorithm = 9;
+    google.protobuf.FloatValue ratio = 10;
+    uint32 nprobe = 11;
+  }
+
+  message Filter.Config {
+    repeated Filter.Target targets = 1;
+  }
+
+  enum  Search.AggregationAlgorithm {
     Unknown = 0;
     ConcurrentQueue = 1;
     SortSlice = 2;
     SortPoolSlice = 3;
     PairingHeap = 4;
   }
+
+  message Filter.Target {
+    string host = 1;
+    uint32 port = 2;
+  }
+
   ```
 
   - Search.Request
 
-    | field  | type   | label                  | required | description                                             |
-    | :----: | :----- | :--------------------- | :------: | :------------------------------------------------------ |
-    | vector | float  | repeated(Array[float]) |    \*    | The vector data. Its dimension is between 2 and 65,536. |
-    | config | Config |                        |    \*    | The configuration of the search request.                |
+    | field  | type          | label    | description                              |
+    | :----: | :------------ | :------- | :--------------------------------------- |
+    | vector | float         | repeated | The vector to be searched.               |
+    | config | Search.Config |          | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                        | label | description                                  |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
+
+  - Filter.Config
+
+    |  field  | type          | label    | description                                |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | description          |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
-- the scheme of `payload.v1.Search.StreamResponse`.
+- the scheme of `payload.v1.Search.StreamResponse`
 
   ```rpc
-  message Search {
-    message StreamResponse {
-      oneof payload {
-        Response response = 1;
-        google.rpc.Status status = 2;
-      }
-    }
-
-    message Response {
-      string request_id = 1;
-      repeated Object.Distance results = 2;
-    }
+  message Search.StreamResponse {
+    Search.Response response = 1;
+    google.rpc.Status status = 2;
   }
 
-  message Object {
-    message Distance {
-      string id = 1;
-      float distance = 2;
-    }
+  message Search.Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
   }
+
+  message Object.Distance {
+    string id = 1;
+    float distance = 2;
+  }
+
   ```
 
   - Search.StreamResponse
 
-    |  field   | type              | label | description                 |
-    | :------: | :---------------- | :---- | :-------------------------- |
-    | response | Response          |       | The search result response. |
-    |  status  | google.rpc.Status |       | The status of Google RPC.   |
+    |  field   | type              | label | description                    |
+    | :------: | :---------------- | :---- | :----------------------------- |
+    | response | Search.Response   |       | Represent the search response. |
+    |  status  | google.rpc.Status |       | The RPC error status.          |
 
   - Search.Response
 
-    |   field    | type            | label                            | description            |
-    | :--------: | :-------------- | :------------------------------- | :--------------------- |
-    | request_id | string          |                                  | The unique request ID. |
-    |  results   | Object.Distance | repeated(Array[Object.Distance]) | Search results.        |
+    |   field    | type            | label    | description            |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    |  field   | type   | label | description                                                    |
-    | :------: | :----- | :---- | :------------------------------------------------------------- |
-    |    id    | string |       | The vector ID.                                                 |
-    | distance | float  |       | The distance between the result vector and the request vector. |
+    |  field   | type   | label | description    |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
-| code | name              |
+| code | description       |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -1220,105 +1404,129 @@ Each LinearSearchByID request and response are independent.
 
 ### Input
 
-- the scheme of `payload.v1.Search.IDRequest stream`
+- the scheme of `payload.v1.Search.IDRequest`
 
   ```rpc
-  message Search {
-    message IDRequest {
-      string id = 1;
-      Config config = 2;
-    }
-
-    message Config {
-      string request_id = 1;
-      uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
-      int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
-      uint32 min_num = 8;
-      AggregationAlgorithm aggregation_algorithm = 9;
-    }
+  message Search.IDRequest {
+    string id = 1;
+    Search.Config config = 2;
   }
 
-  enum AggregationAlgorithm {
+  message Search.Config {
+    string request_id = 1;
+    uint32 num = 2;
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    Search.AggregationAlgorithm aggregation_algorithm = 9;
+    google.protobuf.FloatValue ratio = 10;
+    uint32 nprobe = 11;
+  }
+
+  message Filter.Config {
+    repeated Filter.Target targets = 1;
+  }
+
+  enum  Search.AggregationAlgorithm {
     Unknown = 0;
     ConcurrentQueue = 1;
     SortSlice = 2;
     SortPoolSlice = 3;
     PairingHeap = 4;
   }
+
+  message Filter.Target {
+    string host = 1;
+    uint32 port = 2;
+  }
+
   ```
 
   - Search.IDRequest
 
-    | field  | type   | label | required | description                              |
-    | :----: | :----- | :---- | :------: | :--------------------------------------- |
-    |   id   | string |       |    \*    | The vector ID to be searched.            |
-    | config | Config |       |    \*    | The configuration of the search request. |
+    | field  | type          | label | description                              |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | string        |       | The vector ID to be searched.            |
+    | config | Search.Config |       | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                        | label | description                                  |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
+
+  - Filter.Config
+
+    |  field  | type          | label    | description                                |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | description          |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
-- the scheme of `payload.v1.Search.StreamResponse`.
+- the scheme of `payload.v1.Search.StreamResponse`
 
   ```rpc
-  message Search {
-    message StreamResponse {
-      oneof payload {
-        Response response = 1;
-        google.rpc.Status status = 2;
-      }
-    }
-
-    message Response {
-      string request_id = 1;
-      repeated Object.Distance results = 2;
-    }
+  message Search.StreamResponse {
+    Search.Response response = 1;
+    google.rpc.Status status = 2;
   }
 
-  message Object {
-    message Distance {
-      string id = 1;
-      float distance = 2;
-    }
+  message Search.Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
   }
+
+  message Object.Distance {
+    string id = 1;
+    float distance = 2;
+  }
+
   ```
 
   - Search.StreamResponse
 
-    |  field   | type              | label | description                 |
-    | :------: | :---------------- | :---- | :-------------------------- |
-    | response | Response          |       | The search result response. |
-    |  status  | google.rpc.Status |       | The status of Google RPC.   |
+    |  field   | type              | label | description                    |
+    | :------: | :---------------- | :---- | :----------------------------- |
+    | response | Search.Response   |       | Represent the search response. |
+    |  status  | google.rpc.Status |       | The RPC error status.          |
 
   - Search.Response
 
-    |   field    | type            | label                            | description            |
-    | :--------: | :-------------- | :------------------------------- | :--------------------- |
-    | request_id | string          |                                  | The unique request ID. |
-    |  results   | Object.Distance | repeated(Array[Object.Distance]) | Search results.        |
+    |   field    | type            | label    | description            |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    |  field   | type   | label | description                                                    |
-    | :------: | :----- | :---- | :------------------------------------------------------------- |
-    |    id    | string |       | The vector ID.                                                 |
-    | distance | float  |       | The distance between the result vector and the request vector. |
+    |  field   | type   | label | description    |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
-| code | name              |
+| code | description       |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -1358,108 +1566,134 @@ Please be careful that the size of the request exceeds the limit.
 - the scheme of `payload.v1.Search.MultiRequest`
 
   ```rpc
-  message Search {
-    message MultiRequest {
-      repeated Request requests = 1;
-    }
-
-    message Request {
-      repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
-      Config config = 2;
-    }
-
-    message Config {
-      string request_id = 1;
-      uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
-      int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
-      uint32 min_num = 8;
-      AggregationAlgorithm aggregation_algorithm = 9;
-    }
+  message Search.MultiRequest {
+    repeated Search.Request requests = 1;
   }
 
-  enum AggregationAlgorithm {
+  message Search.Request {
+    repeated float vector = 1;
+    Search.Config config = 2;
+  }
+
+  message Search.Config {
+    string request_id = 1;
+    uint32 num = 2;
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    Search.AggregationAlgorithm aggregation_algorithm = 9;
+    google.protobuf.FloatValue ratio = 10;
+    uint32 nprobe = 11;
+  }
+
+  message Filter.Config {
+    repeated Filter.Target targets = 1;
+  }
+
+  enum  Search.AggregationAlgorithm {
     Unknown = 0;
     ConcurrentQueue = 1;
     SortSlice = 2;
     SortPoolSlice = 3;
     PairingHeap = 4;
   }
+
+  message Filter.Target {
+    string host = 1;
+    uint32 port = 2;
+  }
+
   ```
 
   - Search.MultiRequest
 
-    |  field   | type                     | label | required | description             |
-    | :------: | :----------------------- | :---- | :------: | :---------------------- |
-    | requests | repeated(Array[Request]) |       |    \*    | The search request list |
+    |  field   | type           | label    | description                                    |
+    | :------: | :------------- | :------- | :--------------------------------------------- |
+    | requests | Search.Request | repeated | Represent the multiple search request content. |
 
   - Search.Request
 
-    | field  | type   | label                  | required | description                                             |
-    | :----: | :----- | :--------------------- | :------: | :------------------------------------------------------ |
-    | vector | float  | repeated(Array[float]) |    \*    | The vector data. Its dimension is between 2 and 65,536. |
-    | config | Config |                        |    \*    | The configuration of the search request.                |
+    | field  | type          | label    | description                              |
+    | :----: | :------------ | :------- | :--------------------------------------- |
+    | vector | float         | repeated | The vector to be searched.               |
+    | config | Search.Config |          | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                        | label | description                                  |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
+
+  - Filter.Config
+
+    |  field  | type          | label    | description                                |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | description          |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
-- the scheme of `payload.v1.Search.Responses`.
+- the scheme of `payload.v1.Search.Responses`
 
   ```rpc
-  message Search {
-    message Responses {
-      repeated Response responses = 1;
-    }
-
-    message Response {
-      string request_id = 1;
-      repeated Object.Distance results = 2;
-    }
+  message Search.Responses {
+    repeated Search.Response responses = 1;
   }
 
-  message Object {
-    message Distance {
-      string id = 1;
-      float distance = 2;
-    }
+  message Search.Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
   }
+
+  message Object.Distance {
+    string id = 1;
+    float distance = 2;
+  }
+
   ```
 
   - Search.Responses
 
-    |   field   | type     | label                     | description                         |
-    | :-------: | :------- | :------------------------ | :---------------------------------- |
-    | responses | Response | repeated(Array[Response]) | The list of search results response |
+    |   field   | type            | label    | description                                     |
+    | :-------: | :-------------- | :------- | :---------------------------------------------- |
+    | responses | Search.Response | repeated | Represent the multiple search response content. |
 
   - Search.Response
 
-    |   field    | type            | label                            | description            |
-    | :--------: | :-------------- | :------------------------------- | :--------------------- |
-    | request_id | string          |                                  | The unique request ID. |
-    |  results   | Object.Distance | repeated(Array[Object.Distance]) | Search results.        |
+    |   field    | type            | label    | description            |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    |  field   | type   | label | description                                                    |
-    | :------: | :----- | :---- | :------------------------------------------------------------- |
-    |    id    | string |       | The vector ID.                                                 |
-    | distance | float  |       | The distance between the result vector and the request vector. |
+    |  field   | type   | label | description    |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
-| code | name              |
+| code | description       |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -1493,115 +1727,141 @@ MultiLinearSearchByID RPC is the method to linear search vectors with multiple I
 gRPC has a message size limitation.<br>
 Please be careful that the size of the request exceeds the limit.
 </div>
+//
 
 ### Input
 
-- the scheme of `payload.v1.Search.MultiIDRequest stream`
+- the scheme of `payload.v1.Search.MultiIDRequest`
 
   ```rpc
-  message Search {
-
-    message MultiIDRequest {
-        repeated IDRequest requests = 1;
-    }
-
-    message IDRequest {
-      string id = 1;
-      Config config = 2;
-    }
-
-    message Config {
-      string request_id = 1;
-      uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
-      int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
-      uint32 min_num = 8;
-      AggregationAlgorithm aggregation_algorithm = 9;
-    }
+  message Search.MultiIDRequest {
+    repeated Search.IDRequest requests = 1;
   }
 
-  enum AggregationAlgorithm {
+  message Search.IDRequest {
+    string id = 1;
+    Search.Config config = 2;
+  }
+
+  message Search.Config {
+    string request_id = 1;
+    uint32 num = 2;
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    Search.AggregationAlgorithm aggregation_algorithm = 9;
+    google.protobuf.FloatValue ratio = 10;
+    uint32 nprobe = 11;
+  }
+
+  message Filter.Config {
+    repeated Filter.Target targets = 1;
+  }
+
+  enum  Search.AggregationAlgorithm {
     Unknown = 0;
     ConcurrentQueue = 1;
     SortSlice = 2;
     SortPoolSlice = 3;
     PairingHeap = 4;
   }
+
+  message Filter.Target {
+    string host = 1;
+    uint32 port = 2;
+  }
+
   ```
 
   - Search.MultiIDRequest
 
-    |  field   | type      | label                      | required | description                  |
-    | :------: | :-------- | :------------------------- | :------: | :--------------------------- |
-    | requests | IDRequest | repeated(Array[IDRequest]) |    \*    | The searchByID request list. |
+    |  field   | type             | label    | description                                          |
+    | :------: | :--------------- | :------- | :--------------------------------------------------- |
+    | requests | Search.IDRequest | repeated | Represent the multiple search by ID request content. |
 
   - Search.IDRequest
 
-    | field  | type   | label | required | description                              |
-    | :----: | :----- | :---- | :------: | :--------------------------------------- |
-    |   id   | string |       |    \*    | The vector ID to be searched.            |
-    | config | Config |       |    \*    | The configuration of the search request. |
+    | field  | type          | label | description                              |
+    | :----: | :------------ | :---- | :--------------------------------------- |
+    |   id   | string        |       | The vector ID to be searched.            |
+    | config | Search.Config |       | The configuration of the search request. |
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                        | label | description                                  |
+    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
+    |      request_id       | string                      |       | Unique request ID.                           |
+    |          num          | uint32                      |       | Maximum number of result to be returned.     |
+    |        radius         | float                       |       | Search radius.                               |
+    |        epsilon        | float                       |       | Search coefficient.                          |
+    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
+    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |       | Search nprobe.                               |
+
+  - Filter.Config
+
+    |  field  | type          | label    | description                                |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
+
+  - Filter.Target
+
+    | field | type   | label | description          |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
-- the scheme of `payload.v1.Search.Responses`.
+- the scheme of `payload.v1.Search.Responses`
 
   ```rpc
-  message Search {
-    message Responses {
-      repeated Response responses = 1;
-    }
-
-    message Response {
-      string request_id = 1;
-      repeated Object.Distance results = 2;
-    }
+  message Search.Responses {
+    repeated Search.Response responses = 1;
   }
 
-  message Object {
-    message Distance {
-      string id = 1;
-      float distance = 2;
-    }
+  message Search.Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
   }
+
+  message Object.Distance {
+    string id = 1;
+    float distance = 2;
+  }
+
   ```
 
   - Search.Responses
 
-    |   field   | type     | label                     | description                          |
-    | :-------: | :------- | :------------------------ | :----------------------------------- |
-    | responses | Response | repeated(Array[Response]) | The list of search results response. |
+    |   field   | type            | label    | description                                     |
+    | :-------: | :-------------- | :------- | :---------------------------------------------- |
+    | responses | Search.Response | repeated | Represent the multiple search response content. |
 
   - Search.Response
 
-    |   field    | type            | label                            | description            |
-    | :--------: | :-------------- | :------------------------------- | :--------------------- |
-    | request_id | string          |                                  | The unique request ID. |
-    |  results   | Object.Distance | repeated(Array[Object.Distance]) | Search results.        |
+    |   field    | type            | label    | description            |
+    | :--------: | :-------------- | :------- | :--------------------- |
+    | request_id | string          |          | The unique request ID. |
+    |  results   | Object.Distance | repeated | Search results.        |
 
   - Object.Distance
 
-    |  field   | type   | label | description                                                    |
-    | :------: | :----- | :---- | :------------------------------------------------------------- |
-    |    id    | string |       | The vector ID.                                                 |
-    | distance | float  |       | The distance between the result vector and the request vector. |
+    |  field   | type   | label | description    |
+    | :------: | :----- | :---- | :------------- |
+    |    id    | string |       | The vector ID. |
+    | distance | float  |       | The distance.  |
 
 ### Status Code
 
-| code | name              |
+| code | description       |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |

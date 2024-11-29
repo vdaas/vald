@@ -1,0 +1,73 @@
+{{- range .Files -}}
+{{- range .Services -}}
+{{- $descs := dict -}}
+{{- range $desc := (splitList "---\n" .Description) -}}
+{{- $lines := splitList "\n" $desc -}}
+{{- $_ := set $descs (first $lines) (join "\n" (rest $lines)) -}}
+{{- end -}}
+# Vald {{ .Name }} APIs
+
+## Overview
+
+{{ if hasKey $descs "Overview" }}{{ $descs.Overview | trim }}{{ end }}
+
+```rpc
+service {{.Name}} {
+
+{{ range .Methods }}  rpc {{ .Name }}({{ .RequestFullType }}) returns ({{ .ResponseFullType }}) {}
+{{ end }}
+}
+```
+
+{{ range .Methods }}
+
+{{- $descs := dict -}}
+{{- range $desc := (splitList "---\n" .Description) -}}
+{{- $lines := splitList "\n" $desc -}}
+{{- $_ := set $descs (first $lines) (join "\n" (rest $lines)) -}}
+{{- end -}}
+## {{ .Name }} RPC
+
+{{ if hasKey $descs "Overview" }}{{ $descs.Overview | trim }}{{ end }}
+
+### Input
+
+- the scheme of `{{ .RequestFullType }}`
+
+  ```rpc
+{{ printf  "{{- template \"scheme:%s\" }}\n" .RequestFullType }}
+  ```
+
+{{ printf  "{{- template \"field:%s\" }}\n" .RequestFullType }}
+
+### Output
+
+- the scheme of `{{ .ResponseFullType }}`
+
+  ```rpc
+{{ printf "{{- template \"scheme:%s\" }}\n" .ResponseFullType }}
+  ```
+
+{{ printf "{{ template \"field:%s\" }}\n" .ResponseFullType }}
+
+{{- if hasKey $descs "Status Code" }}
+### Status Code
+
+| code | description       |
+| :--: | :---------------- |
+{{ pluck "Status Code" $descs | first | trim }}
+
+Please refer to [Response Status Code](../status.md) for more details.
+
+{{ end }}
+
+{{- if hasKey $descs "Troubleshooting" }}
+
+### Troubleshooting
+
+{{ pluck "Troubleshooting" $descs | first | trim }}
+{{ end }}
+
+{{- end -}}
+{{- end -}}
+{{- end -}}
