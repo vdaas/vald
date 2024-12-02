@@ -25,3 +25,5 @@ plugins:
   - local: protoc-gen-doc
     out: apis/docs/v1
     opt: apis/docs/v1/payload.tmpl,payload.md.tmpl
+inputs:
+  - proto_file: apis/proto/v1/payload/payload.proto

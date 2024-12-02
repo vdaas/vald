@@ -82,20 +82,19 @@
       {{- range .Fields }}
     | {{ .Name }} | {{ .LongType }} | {{.Label }} | {{ .Description }} |
       {{- end }}
-
-    {{ else }}
+    {{- else }}
     empty
     {{- end -}}
     {{- println "\n{{- end -}}\n" -}}
   {{- end -}}
   {{- range .Enums -}}
     {{- printf "{{ define \"_scheme:%s\" }}" .FullName }}
-  enum  {{ .LongName }} {
+  enum {{ .LongName }} {
     {{- range .Values }}
     {{ .Name }} = {{ .Number }};
     {{- end }}
   }
     {{- println "\n{{- end -}}\n" -}}
-    {{- printf "{{ define \"_field:%s\" }}{{- end -}}\n" .FullName -}}
+    {{- printf "{{- define \"_field:%s\" -}}{{- end -}}\n" .FullName -}}
   {{- end -}}
 {{- end -}}

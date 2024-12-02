@@ -940,8 +940,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | pool_size | uint32 |  | The pool size of the create index operation. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Discoverer" }}
@@ -972,8 +970,6 @@
     | name | string |  | The agent name to be discovered. |
     | namespace | string |  | The namespace to be discovered. |
     | node | string |  | The node to be discovered. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Empty" }}
@@ -1012,8 +1008,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Filter.Target" }}
@@ -1030,8 +1024,6 @@
     | :---: | :--- | :---- | :---------- |
     | host | string |  | The target hostname. |
     | port | uint32 |  | The target port. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Flush" }}
@@ -1082,8 +1074,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | annotations | Info.Annotations.AnnotationsEntry | repeated |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Annotations.AnnotationsEntry" }}
@@ -1100,8 +1090,6 @@
     | :---: | :--- | :---- | :---------- |
     | key | string |  |  |
     | value | string |  |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.CPU" }}
@@ -1120,8 +1108,6 @@
     | limit | double |  | The CPU resource limit. |
     | request | double |  | The CPU resource requested. |
     | usage | double |  | The CPU usage. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.IPs" }}
@@ -1136,8 +1122,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | ip | string | repeated |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Index" }}
@@ -1170,8 +1154,6 @@
     | uncommitted | uint32 |  | The uncommitted index count. |
     | indexing | bool |  | The indexing index count. |
     | saving | bool |  | The saving index count. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Index.Detail" }}
@@ -1190,8 +1172,6 @@
     | counts | Info.Index.Detail.CountsEntry | repeated | count infos for each agents |
     | replica | uint32 |  | index replica of vald cluster |
     | live_agents | uint32 |  | live agent replica of vald cluster |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Index.Detail.CountsEntry" }}
@@ -1208,8 +1188,6 @@
     | :---: | :--- | :---- | :---------- |
     | key | string |  |  |
     | value | Info.Index.Count |  |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Index.Property" }}
@@ -1290,8 +1268,6 @@
     | build_time_limit | float |  |  |
     | outgoing_edge | int32 |  |  |
     | incoming_edge | int32 |  |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Index.PropertyDetail" }}
@@ -1306,8 +1282,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | details | Info.Index.PropertyDetail.DetailsEntry | repeated |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Index.PropertyDetail.DetailsEntry" }}
@@ -1324,8 +1298,6 @@
     | :---: | :--- | :---- | :---------- |
     | key | string |  |  |
     | value | Info.Index.Property |  |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Index.Statistics" }}
@@ -1404,8 +1376,6 @@
     | indegree_count | int64 | repeated |  |
     | outdegree_histogram | uint64 | repeated |  |
     | indegree_histogram | uint64 | repeated |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Index.StatisticsDetail" }}
@@ -1420,8 +1390,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | details | Info.Index.StatisticsDetail.DetailsEntry | repeated | count infos for each agents |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Index.StatisticsDetail.DetailsEntry" }}
@@ -1438,8 +1406,6 @@
     | :---: | :--- | :---- | :---------- |
     | key | string |  |  |
     | value | Info.Index.Statistics |  |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Index.UUID" }}
@@ -1466,8 +1432,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | uuid | string |  |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Index.UUID.Uncommitted" }}
@@ -1482,8 +1446,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | uuid | string |  |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Labels" }}
@@ -1498,8 +1460,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | labels | Info.Labels.LabelsEntry | repeated |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Labels.LabelsEntry" }}
@@ -1516,8 +1476,6 @@
     | :---: | :--- | :---- | :---------- |
     | key | string |  |  |
     | value | string |  |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Memory" }}
@@ -1536,8 +1494,6 @@
     | limit | double |  | The memory limit. |
     | request | double |  | The memory requested. |
     | usage | double |  | The memory usage. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Node" }}
@@ -1562,8 +1518,6 @@
     | cpu | Info.CPU |  | The CPU information of the node. |
     | memory | Info.Memory |  | The memory information of the node. |
     | Pods | Info.Pods |  | The pod information of the node. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Nodes" }}
@@ -1578,8 +1532,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | nodes | Info.Node | repeated | The multiple node information. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Pod" }}
@@ -1606,8 +1558,6 @@
     | cpu | Info.CPU |  | The CPU information of the pod. |
     | memory | Info.Memory |  | The memory information of the pod. |
     | node | Info.Node |  | The node information of the pod. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Pods" }}
@@ -1622,8 +1572,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | pods | Info.Pod | repeated | The multiple pod information. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Service" }}
@@ -1648,8 +1596,6 @@
     | ports | Info.ServicePort | repeated | The port of the svc. |
     | labels | Info.Labels |  | The labels of the service. |
     | annotations | Info.Annotations |  | The annotations of the service. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.ServicePort" }}
@@ -1666,8 +1612,6 @@
     | :---: | :--- | :---- | :---------- |
     | name | string |  | The name of the port. |
     | port | int32 |  | The port number |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Services" }}
@@ -1682,8 +1626,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | services | Info.Service | repeated | The multiple service information. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Insert" }}
@@ -1714,8 +1656,6 @@
     | skip_strict_exist_check | bool |  | A flag to skip exist check during insert operation. |
     | filters | Filter.Config |  | Filter configurations. |
     | timestamp | int64 |  | Insert timestamp. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Insert.MultiObjectRequest" }}
@@ -1730,8 +1670,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | requests | Insert.ObjectRequest | repeated | Represent multiple insert by object content. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Insert.MultiRequest" }}
@@ -1746,8 +1684,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | requests | Insert.Request | repeated | Represent multiple insert request content. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Insert.ObjectRequest" }}
@@ -1766,8 +1702,6 @@
     | object | Object.Blob |  | The binary object to be inserted. |
     | config | Insert.Config |  | The configuration of the insert request. |
     | vectorizer | Filter.Target |  | Filter configurations. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Insert.Request" }}
@@ -1784,8 +1718,6 @@
     | :---: | :--- | :---- | :---------- |
     | vector | Object.Vector |  | The vector to be inserted. |
     | config | Insert.Config |  | The configuration of the insert request. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Meta" }}
@@ -1812,8 +1744,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | key | string |  |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Meta.KeyValue" }}
@@ -1830,8 +1760,6 @@
     | :---: | :--- | :---- | :---------- |
     | key | Meta.Key |  |  |
     | value | Meta.Value |  |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Meta.Value" }}
@@ -1846,8 +1774,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | value | google.protobuf.Any |  |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Mirror" }}
@@ -1876,8 +1802,6 @@
     | :---: | :--- | :---- | :---------- |
     | host | string |  | The target hostname. |
     | port | uint32 |  | The target port. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Mirror.Targets" }}
@@ -1892,8 +1816,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | targets | Mirror.Target | repeated | The multiple target information. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object" }}
@@ -1922,8 +1844,6 @@
     | :---: | :--- | :---- | :---------- |
     | id | string |  | The object ID. |
     | object | bytes |  | The binary object. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.Distance" }}
@@ -1940,8 +1860,6 @@
     | :---: | :--- | :---- | :---------- |
     | id | string |  | The vector ID. |
     | distance | float |  | The distance. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.ID" }}
@@ -1956,8 +1874,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | id | string |  |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.IDs" }}
@@ -1972,8 +1888,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | ids | string | repeated |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.List" }}
@@ -2014,8 +1928,6 @@
     | :---: | :--- | :---- | :---------- |
     | vector | Object.Vector |  | The vector |
     | status | google.rpc.Status |  | The RPC error status. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.Location" }}
@@ -2034,8 +1946,6 @@
     | name | string |  | The name of the location. |
     | uuid | string |  | The UUID of the vector. |
     | ips | string | repeated | The IP list. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.Locations" }}
@@ -2050,8 +1960,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | locations | Object.Location | repeated |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.ReshapeVector" }}
@@ -2068,8 +1976,6 @@
     | :---: | :--- | :---- | :---------- |
     | object | bytes |  | The binary object. |
     | shape | int32 | repeated | The new shape. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.StreamBlob" }}
@@ -2086,8 +1992,6 @@
     | :---: | :--- | :---- | :---------- |
     | blob | Object.Blob |  | The binary object. |
     | status | google.rpc.Status |  | The RPC error status. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.StreamDistance" }}
@@ -2104,8 +2008,6 @@
     | :---: | :--- | :---- | :---------- |
     | distance | Object.Distance |  | The distance. |
     | status | google.rpc.Status |  | The RPC error status. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.StreamLocation" }}
@@ -2122,8 +2024,6 @@
     | :---: | :--- | :---- | :---------- |
     | location | Object.Location |  | The vector location. |
     | status | google.rpc.Status |  | The RPC error status. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.StreamVector" }}
@@ -2140,8 +2040,6 @@
     | :---: | :--- | :---- | :---------- |
     | vector | Object.Vector |  | The vector. |
     | status | google.rpc.Status |  | The RPC error status. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.Timestamp" }}
@@ -2158,8 +2056,6 @@
     | :---: | :--- | :---- | :---------- |
     | id | string |  | The vector ID. |
     | timestamp | int64 |  | timestamp represents when this vector inserted. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.TimestampRequest" }}
@@ -2174,8 +2070,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | id | Object.ID |  | The vector ID to be fetched. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.Vector" }}
@@ -2194,8 +2088,6 @@
     | id | string |  | The vector ID. |
     | vector | float | repeated | The vector. |
     | timestamp | int64 |  | timestamp represents when this vector inserted. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.VectorRequest" }}
@@ -2212,8 +2104,6 @@
     | :---: | :--- | :---- | :---------- |
     | id | Object.ID |  | The vector ID to be fetched. |
     | filters | Filter.Config |  | Filter configurations. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Object.Vectors" }}
@@ -2228,8 +2118,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | vectors | Object.Vector | repeated |  |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Remove" }}
@@ -2258,8 +2146,6 @@
     | :---: | :--- | :---- | :---------- |
     | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
     | timestamp | int64 |  | Remove timestamp. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Remove.MultiRequest" }}
@@ -2274,8 +2160,6 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | requests | Remove.Request | repeated | Represent the multiple remove request content. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Remove.Request" }}
@@ -2292,8 +2176,6 @@
     | :---: | :--- | :---- | :---------- |
     | id | Object.ID |  | The object ID to be removed. |
     | config | Remove.Config |  | The configuration of the remove request. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Remove.Timestamp" }}
@@ -2310,8 +2192,6 @@
     | :---: | :--- | :---- | :---------- |
     | timestamp | int64 |  | The timestamp. |
     | operator | Remove.Timestamp.Operator |  | The conditional operator. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Remove.TimestampRequest" }}
@@ -2327,8 +2207,6 @@
     | :---: | :--- | :---- | :---------- |
     | timestamps | Remove.Timestamp | repeated | The timestamp comparison list. If more than one is specified, the `AND`
 search is applied. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Search" }}
@@ -2375,8 +2253,6 @@ search is applied. |
     | aggregation_algorithm | Search.AggregationAlgorithm |  | Aggregation Algorithm |
     | ratio | google.protobuf.FloatValue |  | Search ratio for agent return result number. |
     | nprobe | uint32 |  | Search nprobe. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Search.IDRequest" }}
@@ -2393,8 +2269,6 @@ search is applied. |
     | :---: | :--- | :---- | :---------- |
     | id | string |  | The vector ID to be searched. |
     | config | Search.Config |  | The configuration of the search request. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Search.MultiIDRequest" }}
@@ -2409,8 +2283,6 @@ search is applied. |
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | requests | Search.IDRequest | repeated | Represent the multiple search by ID request content. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Search.MultiObjectRequest" }}
@@ -2425,8 +2297,6 @@ search is applied. |
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | requests | Search.ObjectRequest | repeated | Represent the multiple search by binary object request content. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Search.MultiRequest" }}
@@ -2441,8 +2311,6 @@ search is applied. |
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | requests | Search.Request | repeated | Represent the multiple search request content. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Search.ObjectRequest" }}
@@ -2461,8 +2329,6 @@ search is applied. |
     | object | bytes |  | The binary object to be searched. |
     | config | Search.Config |  | The configuration of the search request. |
     | vectorizer | Filter.Target |  | Filter configuration. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Search.Request" }}
@@ -2479,8 +2345,6 @@ search is applied. |
     | :---: | :--- | :---- | :---------- |
     | vector | float | repeated | The vector to be searched. |
     | config | Search.Config |  | The configuration of the search request. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Search.Response" }}
@@ -2497,8 +2361,6 @@ search is applied. |
     | :---: | :--- | :---- | :---------- |
     | request_id | string |  | The unique request ID. |
     | results | Object.Distance | repeated | Search results. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Search.Responses" }}
@@ -2513,8 +2375,6 @@ search is applied. |
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | responses | Search.Response | repeated | Represent the multiple search response content. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Search.StreamResponse" }}
@@ -2531,8 +2391,6 @@ search is applied. |
     | :---: | :--- | :---- | :---------- |
     | response | Search.Response |  | Represent the search response. |
     | status | google.rpc.Status |  | The RPC error status. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Update" }}
@@ -2566,8 +2424,6 @@ search is applied. |
     | timestamp | int64 |  | Update timestamp. |
     | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
 during update operation. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Update.MultiObjectRequest" }}
@@ -2582,8 +2438,6 @@ during update operation. |
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | requests | Update.ObjectRequest | repeated | Represent the multiple update object request content. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Update.MultiRequest" }}
@@ -2598,8 +2452,6 @@ during update operation. |
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | requests | Update.Request | repeated | Represent the multiple update request content. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Update.ObjectRequest" }}
@@ -2618,8 +2470,6 @@ during update operation. |
     | object | Object.Blob |  | The binary object to be updated. |
     | config | Update.Config |  | The configuration of the update request. |
     | vectorizer | Filter.Target |  | Filter target. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Update.Request" }}
@@ -2636,8 +2486,6 @@ during update operation. |
     | :---: | :--- | :---- | :---------- |
     | vector | Object.Vector |  | The vector to be updated. |
     | config | Update.Config |  | The configuration of the update request. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Update.TimestampRequest" }}
@@ -2656,8 +2504,6 @@ during update operation. |
     | id | string |  | The vector ID. |
     | timestamp | int64 |  | timestamp represents when this vector inserted. |
     | force | bool |  | force represents forcefully update the timestamp. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Upsert" }}
@@ -2691,8 +2537,6 @@ during update operation. |
     | timestamp | int64 |  | Upsert timestamp. |
     | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
 during update operation. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Upsert.MultiObjectRequest" }}
@@ -2707,8 +2551,6 @@ during update operation. |
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | requests | Upsert.ObjectRequest | repeated | Represent the multiple upsert object request content. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Upsert.MultiRequest" }}
@@ -2723,8 +2565,6 @@ during update operation. |
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | requests | Upsert.Request | repeated | Represent the multiple upsert request content. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Upsert.ObjectRequest" }}
@@ -2743,8 +2583,6 @@ during update operation. |
     | object | Object.Blob |  | The binary object to be upserted. |
     | config | Upsert.Config |  | The configuration of the upsert request. |
     | vectorizer | Filter.Target |  | Filter target. |
-
-    
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Upsert.Request" }}
@@ -2761,12 +2599,10 @@ during update operation. |
     | :---: | :--- | :---- | :---------- |
     | vector | Object.Vector |  | The vector to be upserted. |
     | config | Upsert.Config |  | The configuration of the upsert request. |
-
-    
 {{- end -}}
 
 {{ define "_scheme:payload.v1.Remove.Timestamp.Operator" }}
-  enum  Remove.Timestamp.Operator {
+  enum Remove.Timestamp.Operator {
     Eq = 0;
     Ne = 1;
     Ge = 2;
@@ -2776,9 +2612,9 @@ during update operation. |
   }
 {{- end -}}
 
-{{ define "_field:payload.v1.Remove.Timestamp.Operator" }}{{- end -}}
+{{- define "_field:payload.v1.Remove.Timestamp.Operator" -}}{{- end -}}
 {{ define "_scheme:payload.v1.Search.AggregationAlgorithm" }}
-  enum  Search.AggregationAlgorithm {
+  enum Search.AggregationAlgorithm {
     Unknown = 0;
     ConcurrentQueue = 1;
     SortSlice = 2;
@@ -2787,4 +2623,4 @@ during update operation. |
   }
 {{- end -}}
 
-{{ define "_field:payload.v1.Search.AggregationAlgorithm" }}{{- end -}}
+{{- define "_field:payload.v1.Search.AggregationAlgorithm" -}}{{- end -}}

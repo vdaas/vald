@@ -33,10 +33,9 @@ Exists RPC is the method to check that a vector exists in the `vald-agent`.
 
   - Object.ID
 
-    | field | type   | label | description |
-    | :---: | :----- | :---- | :---------- |
-    |  id   | string |       |             |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  |  |
 ### Output
 
 - the scheme of `payload.v1.Object.ID`
@@ -50,9 +49,9 @@ Exists RPC is the method to check that a vector exists in the `vald-agent`.
 
   - Object.ID
 
-    | field | type   | label | description |
-    | :---: | :----- | :---- | :---------- |
-    |  id   | string |       |             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  |  |
 
 ### Status Code
 
@@ -67,6 +66,7 @@ Exists RPC is the method to check that a vector exists in the `vald-agent`.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -80,7 +80,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## GetObject RPC
 
 GetObject RPC is the method to get the metadata of a vector inserted into the `vald-agent`.
@@ -112,30 +111,29 @@ GetObject RPC is the method to get the metadata of a vector inserted into the `v
 
   - Object.VectorRequest
 
-    |  field  | type          | label | description                  |
-    | :-----: | :------------ | :---- | :--------------------------- |
-    |   id    | Object.ID     |       | The vector ID to be fetched. |
-    | filters | Filter.Config |       | Filter configurations.       |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | Object.ID |  | The vector ID to be fetched. |
+    | filters | Filter.Config |  | Filter configurations. |
 
   - Object.ID
 
-    | field | type   | label | description |
-    | :---: | :----- | :---- | :---------- |
-    |  id   | string |       |             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  |  |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Object.Vector`
@@ -151,11 +149,11 @@ GetObject RPC is the method to get the metadata of a vector inserted into the `v
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
 
 ### Status Code
 
@@ -170,6 +168,7 @@ GetObject RPC is the method to get the metadata of a vector inserted into the `v
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -183,7 +182,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## StreamGetObject RPC
 
 StreamGetObject RPC is the method to get the metadata of multiple existing vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
@@ -217,30 +215,29 @@ Each Upsert request and response are independent.
 
   - Object.VectorRequest
 
-    |  field  | type          | label | description                  |
-    | :-----: | :------------ | :---- | :--------------------------- |
-    |   id    | Object.ID     |       | The vector ID to be fetched. |
-    | filters | Filter.Config |       | Filter configurations.       |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | Object.ID |  | The vector ID to be fetched. |
+    | filters | Filter.Config |  | Filter configurations. |
 
   - Object.ID
 
-    | field | type   | label | description |
-    | :---: | :----- | :---- | :---------- |
-    |  id   | string |       |             |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  |  |
 
   - Filter.Config
 
-    |  field  | type          | label    | description                                |
-    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
     | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
   - Filter.Target
 
-    | field | type   | label | description          |
-    | :---: | :----- | :---- | :------------------- |
-    | host  | string |       | The target hostname. |
-    | port  | uint32 |       | The target port.     |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | host | string |  | The target hostname. |
+    | port | uint32 |  | The target port. |
 ### Output
 
 - the scheme of `payload.v1.Object.StreamVector`
@@ -261,18 +258,18 @@ Each Upsert request and response are independent.
 
   - Object.StreamVector
 
-    | field  | type              | label | description           |
-    | :----: | :---------------- | :---- | :-------------------- |
-    | vector | Object.Vector     |       | The vector.           |
-    | status | google.rpc.Status |       | The RPC error status. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | Object.Vector |  | The vector. |
+    | status | google.rpc.Status |  | The RPC error status. |
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
 
 ### Status Code
 
@@ -287,6 +284,7 @@ Each Upsert request and response are independent.
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 The request process may not be completed when the response code is NOT `0 (OK)`.
@@ -300,7 +298,6 @@ Here are some common reasons and how to resolve each error.
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
 | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## StreamListObject RPC
 
 A method to get all the vectors with server streaming
@@ -319,7 +316,6 @@ A method to get all the vectors with server streaming
   - Object.List.Request
 
     empty
-
 ### Output
 
 - the scheme of `payload.v1.Object.List.Response`
@@ -340,32 +336,31 @@ A method to get all the vectors with server streaming
 
   - Object.List.Response
 
-    | field  | type              | label | description           |
-    | :----: | :---------------- | :---- | :-------------------- |
-    | vector | Object.Vector     |       | The vector            |
-    | status | google.rpc.Status |       | The RPC error status. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | vector | Object.Vector |  | The vector |
+    | status | google.rpc.Status |  | The RPC error status. |
 
   - Object.Vector
 
-    |   field   | type   | label    | description                                     |
-    | :-------: | :----- | :------- | :---------------------------------------------- |
-    |    id     | string |          | The vector ID.                                  |
-    |  vector   | float  | repeated | The vector.                                     |
-    | timestamp | int64  |          | timestamp represents when this vector inserted. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | vector | float | repeated | The vector. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
 
 ### Status Code
 
-| code | description |
-| :--: | :---------- |
-
+| code | description       |
+| :--: | :---------------- |
 TODO
 
 Please refer to [Response Status Code](../status.md) for more details.
 
+
 ### Troubleshooting
 
 TODO
-
 ## GetTimestamp RPC
 
 Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
@@ -387,16 +382,15 @@ Represent the RPC to get the vector metadata. This RPC is mainly used for index 
 
   - Object.TimestampRequest
 
-    | field | type      | label | description                  |
-    | :---: | :-------- | :---- | :--------------------------- |
-    |  id   | Object.ID |       | The vector ID to be fetched. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | Object.ID |  | The vector ID to be fetched. |
 
   - Object.ID
 
-    | field | type   | label | description |
-    | :---: | :----- | :---- | :---------- |
-    |  id   | string |       |             |
-
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  |  |
 ### Output
 
 - the scheme of `payload.v1.Object.Timestamp`
@@ -411,19 +405,19 @@ Represent the RPC to get the vector metadata. This RPC is mainly used for index 
 
   - Object.Timestamp
 
-    |   field   | type   | label | description                                     |
-    | :-------: | :----- | :---- | :---------------------------------------------- |
-    |    id     | string |       | The vector ID.                                  |
-    | timestamp | int64  |       | timestamp represents when this vector inserted. |
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | id | string |  | The vector ID. |
+    | timestamp | int64 |  | timestamp represents when this vector inserted. |
 
 ### Status Code
 
-| code | description |
-| :--: | :---------- |
-
+| code | description       |
+| :--: | :---------------- |
 TODO
 
 Please refer to [Response Status Code](../status.md) for more details.
+
 
 ### Troubleshooting
 
