@@ -75,6 +75,15 @@ spec:
                     echo "waiting for discoverer to be ready..."
                     sleep 2;
                   done
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution: []
+            podAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution: []
+              requiredDuringSchedulingIgnoredDuringExecution: []
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution: []
+              requiredDuringSchedulingIgnoredDuringExecution: []
           containers:
             - name: vald-index-creation
               image: "vdaas/vald-index-creation:nightly"

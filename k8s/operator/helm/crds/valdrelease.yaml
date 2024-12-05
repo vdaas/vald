@@ -8406,6 +8406,51 @@ spec:
                         corrector:
                           type: object
                           properties:
+                            affinity:
+                              type: object
+                              properties:
+                                nodeAffinity:
+                                  type: object
+                                  properties:
+                                    preferredDuringSchedulingIgnoredDuringExecution:
+                                      type: array
+                                      items:
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
+                                    requiredDuringSchedulingIgnoredDuringExecution:
+                                      type: object
+                                      properties:
+                                        nodeSelectorTerms:
+                                          type: array
+                                          items:
+                                            type: object
+                                            x-kubernetes-preserve-unknown-fields: true
+                                podAffinity:
+                                  type: object
+                                  properties:
+                                    preferredDuringSchedulingIgnoredDuringExecution:
+                                      type: array
+                                      items:
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
+                                    requiredDuringSchedulingIgnoredDuringExecution:
+                                      type: array
+                                      items:
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
+                                podAntiAffinity:
+                                  type: object
+                                  properties:
+                                    preferredDuringSchedulingIgnoredDuringExecution:
+                                      type: array
+                                      items:
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
+                                    requiredDuringSchedulingIgnoredDuringExecution:
+                                      type: array
+                                      items:
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
                             agent_namespace:
                               type: string
                             discoverer:
@@ -9037,6 +9082,9 @@ spec:
                               type: string
                             node_name:
                               type: string
+                            nodeSelector:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             observability:
                               type: object
                               properties:
@@ -9714,6 +9762,11 @@ spec:
                               minimum: 1
                             suspend:
                               type: boolean
+                            tolerations:
+                              type: array
+                              items:
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
                             ttlSecondsAfterFinished:
                               type: integer
                             version:
@@ -9722,6 +9775,51 @@ spec:
                         creator:
                           type: object
                           properties:
+                            affinity:
+                              type: object
+                              properties:
+                                nodeAffinity:
+                                  type: object
+                                  properties:
+                                    preferredDuringSchedulingIgnoredDuringExecution:
+                                      type: array
+                                      items:
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
+                                    requiredDuringSchedulingIgnoredDuringExecution:
+                                      type: object
+                                      properties:
+                                        nodeSelectorTerms:
+                                          type: array
+                                          items:
+                                            type: object
+                                            x-kubernetes-preserve-unknown-fields: true
+                                podAffinity:
+                                  type: object
+                                  properties:
+                                    preferredDuringSchedulingIgnoredDuringExecution:
+                                      type: array
+                                      items:
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
+                                    requiredDuringSchedulingIgnoredDuringExecution:
+                                      type: array
+                                      items:
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
+                                podAntiAffinity:
+                                  type: object
+                                  properties:
+                                    preferredDuringSchedulingIgnoredDuringExecution:
+                                      type: array
+                                      items:
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
+                                    requiredDuringSchedulingIgnoredDuringExecution:
+                                      type: array
+                                      items:
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
                             agent_namespace:
                               type: string
                             concurrency:
@@ -10157,6 +10255,9 @@ spec:
                               type: string
                             node_name:
                               type: string
+                            nodeSelector:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             observability:
                               type: object
                               properties:
@@ -10835,6 +10936,11 @@ spec:
                               type: array
                               items:
                                 type: string
+                            tolerations:
+                              type: array
+                              items:
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
                             ttlSecondsAfterFinished:
                               type: integer
                             version:
@@ -13012,6 +13118,51 @@ spec:
                         saver:
                           type: object
                           properties:
+                            affinity:
+                              type: object
+                              properties:
+                                nodeAffinity:
+                                  type: object
+                                  properties:
+                                    preferredDuringSchedulingIgnoredDuringExecution:
+                                      type: array
+                                      items:
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
+                                    requiredDuringSchedulingIgnoredDuringExecution:
+                                      type: object
+                                      properties:
+                                        nodeSelectorTerms:
+                                          type: array
+                                          items:
+                                            type: object
+                                            x-kubernetes-preserve-unknown-fields: true
+                                podAffinity:
+                                  type: object
+                                  properties:
+                                    preferredDuringSchedulingIgnoredDuringExecution:
+                                      type: array
+                                      items:
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
+                                    requiredDuringSchedulingIgnoredDuringExecution:
+                                      type: array
+                                      items:
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
+                                podAntiAffinity:
+                                  type: object
+                                  properties:
+                                    preferredDuringSchedulingIgnoredDuringExecution:
+                                      type: array
+                                      items:
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
+                                    requiredDuringSchedulingIgnoredDuringExecution:
+                                      type: array
+                                      items:
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
                             agent_namespace:
                               type: string
                             concurrency:
@@ -13445,6 +13596,9 @@ spec:
                               type: string
                             node_name:
                               type: string
+                            nodeSelector:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             observability:
                               type: object
                               properties:
@@ -14123,6 +14277,11 @@ spec:
                               type: array
                               items:
                                 type: string
+                            tolerations:
+                              type: array
+                              items:
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
                             ttlSecondsAfterFinished:
                               type: integer
                             version:
