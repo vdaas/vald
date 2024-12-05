@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.7.14
+    tag: v1.7.15
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -3427,6 +3427,30 @@ manager:
       # @schema {"name": "manager.index.corrector.node_name", "type": "string"}
       # manager.index.corrector.node_name -- node name
       node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.corrector.nodeSelector", "alias": "nodeSelector"}
+      # manager.index.corrector.nodeSelector -- node selector
+      nodeSelector: {}
+      # @schema {"name": "manager.index.corrector.tolerations", "alias": "tolerations"}
+      # manager.index.corrector.tolerations -- tolerations
+      tolerations: []
+      # @schema {"name": "manager.index.corrector.affinity", "alias": "affinity"}
+      affinity:
+        nodeAffinity:
+          # manager.index.corrector.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          requiredDuringSchedulingIgnoredDuringExecution:
+            # manager.index.corrector.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+            nodeSelectorTerms: []
+        podAffinity:
+          # manager.index.corrector.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          # manager.index.corrector.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+          requiredDuringSchedulingIgnoredDuringExecution: []
+        podAntiAffinity:
+          # manager.index.corrector.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          # manager.index.corrector.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+          requiredDuringSchedulingIgnoredDuringExecution: []
       # @schema {"name": "manager.index.corrector.gateway", "alias": "grpc.client"}
       # manager.index.corrector.gateway -- gRPC client for gateway (overrides defaults.grpc.client)
       gateway: {}
@@ -3539,6 +3563,30 @@ manager:
       # @schema {"name": "manager.index.creator.node_name", "type": "string"}
       # manager.index.creator.node_name -- node name
       node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.creator.nodeSelector", "alias": "nodeSelector"}
+      # manager.index.creator.nodeSelector -- node selector
+      nodeSelector: {}
+      # @schema {"name": "manager.index.creator.tolerations", "alias": "tolerations"}
+      # manager.index.creator.tolerations -- tolerations
+      tolerations: []
+      # @schema {"name": "manager.index.creator.affinity", "alias": "affinity"}
+      affinity:
+        nodeAffinity:
+          # manager.index.creator.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          requiredDuringSchedulingIgnoredDuringExecution:
+            # manager.index.creator.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+            nodeSelectorTerms: []
+        podAffinity:
+          # manager.index.creator.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          # manager.index.creator.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+          requiredDuringSchedulingIgnoredDuringExecution: []
+        podAntiAffinity:
+          # manager.index.creator.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          # manager.index.creator.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+          requiredDuringSchedulingIgnoredDuringExecution: []
       # @schema {"name": "manager.index.creator.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "manager.index.creator.discoverer.duration", "type": "string"}
@@ -3645,6 +3693,30 @@ manager:
       # @schema {"name": "manager.index.saver.node_name", "type": "string"}
       # manager.index.saver.node_name -- node name
       node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.saver.nodeSelector", "alias": "nodeSelector"}
+      # manager.index.saver.nodeSelector -- node selector
+      nodeSelector: {}
+      # @schema {"name": "manager.index.saver.tolerations", "alias": "tolerations"}
+      # manager.index.saver.tolerations -- tolerations
+      tolerations: []
+      # @schema {"name": "manager.index.saver.affinity", "alias": "affinity"}
+      affinity:
+        nodeAffinity:
+          # manager.index.saver.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          requiredDuringSchedulingIgnoredDuringExecution:
+            # manager.index.saver.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+            nodeSelectorTerms: []
+        podAffinity:
+          # manager.index.saver.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          # manager.index.saver.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+          requiredDuringSchedulingIgnoredDuringExecution: []
+        podAntiAffinity:
+          # manager.index.saver.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          # manager.index.saver.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+          requiredDuringSchedulingIgnoredDuringExecution: []
       # @schema {"name": "manager.index.saver.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "manager.index.saver.discoverer.duration", "type": "string"}
