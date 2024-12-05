@@ -20,11 +20,11 @@ metadata:
   labels:
     app: vald-index-save
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.14
+    helm.sh/chart: vald-v1.7.15
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
     app.kubernetes.io/component: vald-index-save
-    app.kubernetes.io/version: v1.7.14
+    app.kubernetes.io/version: v1.7.15
 spec:
   schedule: "0 */3 * * *"
   concurrencyPolicy: Forbid
@@ -38,11 +38,11 @@ spec:
           labels:
             app: vald-index-save
             app.kubernetes.io/name: vald
-            helm.sh/chart: vald-v1.7.14
+            helm.sh/chart: vald-v1.7.15
             app.kubernetes.io/managed-by: Helm
             app.kubernetes.io/instance: release-name
             app.kubernetes.io/component: vald-index-save
-            app.kubernetes.io/version: v1.7.14
+            app.kubernetes.io/version: v1.7.15
           annotations:
             pyroscope.io/scrape: "true"
             pyroscope.io/application-name: vald-index-save
@@ -75,6 +75,15 @@ spec:
                     echo "waiting for discoverer to be ready..."
                     sleep 2;
                   done
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution: []
+            podAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution: []
+              requiredDuringSchedulingIgnoredDuringExecution: []
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution: []
+              requiredDuringSchedulingIgnoredDuringExecution: []
           containers:
             - name: vald-index-save
               image: "vdaas/vald-index-save:nightly"
