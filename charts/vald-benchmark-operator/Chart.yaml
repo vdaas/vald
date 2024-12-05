@@ -32,7 +32,7 @@ appVersion: "1.16.0"
 
 apiVersion: v2
 name: vald-benchmark-operator
-version: v1.7.14
+version: v1.7.15
 description: A benchmark operator for benchmarking the Vald cluster.
 type: application
 keywords:
