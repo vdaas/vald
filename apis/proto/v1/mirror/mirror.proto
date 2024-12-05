@@ -25,9 +25,18 @@ option java_multiple_files = true;
 option java_outer_classname = "ValdMirror";
 option java_package = "org.vdaas.vald.api.v1.mirror";
 
-// Represent the mirror service.
+// Overview
+// Mirror Service is responsible for providing the `Register` interface for the Vald Mirror Gateway.
 service Mirror {
-  // Register is the RPC to register other mirror servers.
+  // Overview
+  // Register RPC is the method to register other Vald Mirror Gateway targets.
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  13  | INTERNAL          |
   rpc Register(payload.v1.Mirror.Targets) returns (payload.v1.Mirror.Targets) {
     option (google.api.http) = {
       post: "/mirror/register"
