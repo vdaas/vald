@@ -51,6 +51,7 @@ var (
 {{.Escape}}
 `))
 	docker = template.Must(template.New("Apache License").Parse(`{{.Escape}} syntax = docker/dockerfile:latest
+{{.Escape}} check=error=true
 {{.Escape}}
 {{.Escape}} Copyright (C) 2019-{{.Year}} {{.Maintainer}}
 {{.Escape}}
