@@ -538,7 +538,7 @@ func Join(paths ...string) (path string) {
 	} else {
 		path = replacer.Replace(paths[0])
 	}
-	if filepath.IsAbs(path) {
+	if filepath.IsAbs(path) || !Exists(path) {
 		return filepath.Clean(path)
 	}
 

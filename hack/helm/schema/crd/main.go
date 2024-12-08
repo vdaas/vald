@@ -28,7 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/strings"
-	yaml "gopkg.in/yaml.v2"
+	yaml "sigs.k8s.io/yaml"
 )
 
 const (
