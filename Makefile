@@ -473,7 +473,7 @@ dockerfile:
 .PHONY: workflow
 ## generate workflows
 workflow:
-	$(call gen-workflow,$(ROOTDIR),$(MAINTAINER))
+	$(call gen-dockerfile,$(ROOTDIR),$(MAINTAINER))
 
 .PHONY: deadlink-checker
 ## generate deadlink-checker
