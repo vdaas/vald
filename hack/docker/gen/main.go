@@ -508,6 +508,7 @@ var (
 		"make telepresence/install",
 		"make tparse/install",
 		"make yq/install",
+		"make docker-cli/install",
 	}
 
 	devContainerPreprocess = []string{
@@ -807,7 +808,7 @@ func main() {
 			ContainerType: CIContainer,
 			PackageDir:    "ci/base",
 			RuntimeUser:   defaultBuildUser,
-			ExtraPackages: append([]string{"npm"}, append(clangBuildDeps,
+			ExtraPackages: append([]string{"npm", "sudo"}, append(clangBuildDeps,
 				append(ngtBuildDeps,
 					append(faissBuildDeps,
 						append(rustBuildDeps,

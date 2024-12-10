@@ -154,8 +154,8 @@ e2e/actions/run/readreplica: \
 	$(MAKE) k8s/vald/deploy \
 		HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-readreplica.yaml
 	sleep 20
-	kubectl wait --for=condition=Ready pod -l "app=$(AGENT_NGT_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl wait --for=condition=ContainersReady pod -l "app=$(AGENT_NGT_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
+	kubectl wait --for=condition=Ready pod -l "app=$(AGENT_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
+	kubectl wait --for=condition=ContainersReady pod -l "app=$(AGENT_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	$(MAKE) k8s/vald-readreplica/deploy \
 		HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-readreplica.yaml
 	sleep 3
