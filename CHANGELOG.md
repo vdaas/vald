@@ -6127,7 +6127,7 @@
 - update dependencies version ([#381](https://github.com/vdaas/vald/pull/381))
 - Fix missing value on compressor health servers ([#377](https://github.com/vdaas/vald/pull/377))
 - Fix compressor readiness shutdown_duration / Fix cassandra … ([#376](https://github.com/vdaas/vald/pull/376))
-- Bump gopkg.in/yaml.v2 from 2.2.8 to 2.3.0 ([#375](https://github.com/vdaas/vald/pull/375))
+- Bump sigs.k8s.io/yaml from 2.2.8 to 2.3.0 ([#375](https://github.com/vdaas/vald/pull/375))
 - Fix`internal/log/format` to match the test template ([#369](https://github.com/vdaas/vald/pull/369))
 - Fix `internal/log/logger` to match the test template ([#371](https://github.com/vdaas/vald/pull/371))
 - Fix failing tests of `internal/log` and modified to match the test template ([#368](https://github.com/vdaas/vald/pull/368))

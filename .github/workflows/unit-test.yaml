@@ -23,7 +23,7 @@ on:
     paths:
       - "go.mod"
       - "go.sum"
-      - ".github/workflows/test.yaml"
+      - ".github/workflows/unit-test.yaml"
       - "internal/**"
       - "pkg/**"
       - "cmd/**"
@@ -31,7 +31,7 @@ on:
     paths:
       - "go.mod"
       - "go.sum"
-      - ".github/workflows/test.yaml"
+      - ".github/workflows/unit-test.yaml"
       - "internal/**"
       - "pkg/**"
       - "cmd/**"

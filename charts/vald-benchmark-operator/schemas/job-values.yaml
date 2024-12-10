@@ -267,7 +267,7 @@ client_config:
     # @schema {"name": "client_config.dial_option.timeout", "type": "string"}
     # client_config.dial_option.timeout -- gRPC client dial option timeout
     timeout: ""
-    # @schema {"name": "client_config.dial_option.interceptors", "type": "array", "items": {"type": "string", "enum": ["TraceInterceptor"]}}
+    # @schema {"name": "client_config.dial_option.interceptors", "type": "array", "items": {"type": "string", "enum": ["TraceInterceptor", "MetricInterceptor"]}}
     # client_config.dial_option.interceptors -- gRPC client interceptors
     interceptors: []
     # @schema {"name": "client_config.dial_option.net", "type": "object", "anchor": "net"}
