@@ -1,6 +1,6 @@
 module github.com/vdaas/vald/example/client
 
-go 1.23.3
+go 1.23.4
 
 replace (
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate latest
@@ -16,6 +16,6 @@ replace (
 	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc latest
 	google.golang.org/grpc => google.golang.org/grpc latest
 	google.golang.org/protobuf => google.golang.org/protobuf latest
-	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 latest
+	sigs.k8s.io/yaml => sigs.k8s.io/yaml latest
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 latest
 )
