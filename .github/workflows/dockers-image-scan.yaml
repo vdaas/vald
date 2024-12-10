@@ -89,7 +89,7 @@ jobs:
   operator-helm:
     uses: ./.github/workflows/_docker-image-scan.yaml
     with:
-      target: operator/helm
+      target: helm-operator
   readreplica-rotate:
     uses: ./.github/workflows/_docker-image-scan.yaml
     with:
