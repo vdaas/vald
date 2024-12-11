@@ -335,11 +335,13 @@ const (
 
 	managerIndex = "manager-index"
 
-	indexCorrection = "index-correction"
-	indexCreation   = "index-creation"
-	indexDeletion   = "index-deletion"
-	indexSave       = "index-save"
-	indexOperator   = "index-operator"
+	indexCorrection  = "index-correction"
+	indexCreation    = "index-creation"
+	indexDeletion    = "index-deletion"
+	indexExportation = "index-exportation"
+	indexImportation = "index-importation"
+	indexSave        = "index-save"
+	indexOperator    = "index-operator"
 
 	readreplicaRotate = "readreplica-rotate"
 
@@ -572,6 +574,14 @@ func main() {
 		"vald-index-deletion": {
 			AppName:    "index-deletion",
 			PackageDir: "index/job/deletion",
+		},
+		"vald-index-exportation": {
+			AppName:    "index-exportation",
+			PackageDir: "index/job/exportation",
+		},
+		"vald-index-importation": {
+			AppName:    "index-importation",
+			PackageDir: "index/job/importation",
 		},
 		"vald-index-save": {
 			AppName:    "index-save",
