@@ -49,8 +49,6 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-      - name: Setup Helm environment
-        uses: ./.github/actions/setup-helm
       - name: Packaging
         run: |
           make helm/package/vald

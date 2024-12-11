@@ -156,17 +156,6 @@ $(ROOTDIR)/charts/vald-benchmark-operator/values.schema.json: \
 	$(ROOTDIR)/charts/vald-benchmark-operator/values.yaml
 	$(call gen-vald-helm-schema,vald-benchmark-operator/values)
 
-.PHONY: yq/install
-## install yq
-yq/install: $(BINDIR)/yq
-
-$(BINDIR)/yq:
-	mkdir -p $(BINDIR)
-	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
-	cd $(TEMP_DIR) \
-	    && curl -fsSL https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_$(OS)_$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/yq \
-	    && chmod a+x $(BINDIR)/yq
-
 .PHONY: helm/schema/crd/all
 helm/schema/crd/all: \
 	helm/schema/crd/vald \

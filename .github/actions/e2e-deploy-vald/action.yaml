@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 name: "Deploy Vald for E2E test"
-description: "A action to deploy vald for E2E test"
+description: "An action to deploy vald for E2E test"
 inputs:
   require_minio:
     description: "If Minio is required, set this to true."

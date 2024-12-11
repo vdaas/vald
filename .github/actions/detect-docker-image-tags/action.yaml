@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 name: "Detect Docker image tags"
-description: "A action to detect Docker image tags"
+description: "An action to detect Docker image tags"
 inputs:
   tags:
     description: "Tag name to check whether exists or not"

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 name: "Setup yq environment"
-description: "A action to set up yq"
+description: "An action to set up yq"
 inputs:
   yq_version:
     description: "The yq version to use. The default version is `versions/YQ_VERSION`"

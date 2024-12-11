@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 name: "Setup E2E environment"
-description: "A action to set up the environment for executing E2E test"
+description: "An action to set up the environment for executing E2E test"
 inputs:
   require_libhdf5:
     description: "If libhdf5 is not required, set this to false"

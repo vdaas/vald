@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 name: "Setup k3d environment"
-description: "A action to set up k3d (k3s in Docker)"
+description: "An action to set up k3d (k3s in Docker)"
 inputs:
   version:
     description: "k3d version"
@@ -67,12 +67,21 @@ runs:
         echo "tag=${K3S_VERSION}" >> $GITHUB_OUTPUT
       env:
         K3S_VERSION: ${{ inputs.k3s_version }}
-    - name: Install k3d
+    - name: Check if k3d is installed
+      id: check_k3d
       shell: bash
       run: |
-        curl -s ${REPO_URL} | ${{ steps.k3d_version.outputs.tag }} bash
-      env:
-        REPO_URL: "https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh"
+        if command -v k3d &> /dev/null; then
+          echo "k3d_installed=true" >> $GITHUB_OUTPUT
+          echo "installed_version=$(k3d version --short | sed 's/^v//')" >> $GITHUB_OUTPUT
+        else
+          echo "k3d_installed=false" >> $GITHUB_OUTPUT
+        fi
+    - name: Install k3d (if not installed or version mismatch)
+      if: steps.check_k3d.outputs.k3d_installed == 'false' || steps.check_k3d.outputs.installed_version != steps.k3d_version.outputs.tag
+      shell: bash
+      run: |
+        make k3d/install
     - name: Check k3d version
       shell: bash
       run: |

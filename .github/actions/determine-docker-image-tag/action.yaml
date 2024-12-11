@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 name: "Determine Docker image tag"
-description: "A action to determine Docker image tag"
+description: "An action to determine Docker image tag"
 outputs:
   TAGS:
     description: "docker image tag list"
