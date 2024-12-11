@@ -60,7 +60,6 @@ var (
 	SplitAfter     = strings.SplitAfter
 	SplitAfterN    = strings.SplitAfterN
 	SplitN         = strings.SplitN
-	Title          = strings.Title
 	ToLower        = strings.ToLower
 	ToLowerSpecial = strings.ToLowerSpecial
 	ToTitle        = strings.ToTitle
