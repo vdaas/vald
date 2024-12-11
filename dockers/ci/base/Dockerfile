@@ -72,6 +72,7 @@ RUN --mount=type=bind,target=.,rw \
     locales \
     git \
     npm \
+    sudo \
     cmake \
     g++ \
     gcc \
@@ -122,6 +123,7 @@ RUN --mount=type=bind,target=.,rw \
     && make telepresence/install \
     && make tparse/install \
     && make yq/install \
+    && make docker-cli/install \
     && make ngt/install \
     && make faiss/install \
     && make usearch/install \

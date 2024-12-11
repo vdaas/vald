@@ -261,3 +261,12 @@ $(LIB_PATH)/libhdf5.a: $(LIB_PATH) \
 	&& make install \
 	&& cd $(ROOTDIR) \
 	&& rm -rf $(TEMP_DIR)/hdf5.tar.gz $(TEMP_DIR)/hdf5
+
+.PHONY: docker-cli/install
+docker-cli/install: $(BINDIR)/docker
+
+$(BINDIR)/docker: $(BINDIR)
+	curl -fsSL https://download.docker.com/linux/static/stable/$(shell uname -m)/docker-$(shell echo $(DOCKER_VERSION) | cut -c2-).tgz -o $(TEMP_DIR)/docker.tgz \
+	&& tar -xzvf $(TEMP_DIR)/docker.tgz -C $(TEMP_DIR) \
+	&& mv $(TEMP_DIR)/docker/docker $(BINDIR) \
+	&& rm -rf $(TEMP_DIR)/docker{.tgz,}
