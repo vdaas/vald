@@ -15,12 +15,12 @@
 ### Versions
 
 <!--- Please change the versions below along with your environment -->
-- Vald Version: v1.7.14
-- Go Version: v1.23.3
-- Rust Version: v1.82.0
-- Docker Version: v27.3.1
-- Kubernetes Version: v1.31.2
-- Helm Version: v3.16.2
+- Vald Version: v1.7.15
+- Go Version: v1.23.4
+- Rust Version: v1.83.0
+- Docker Version: v27.4.0
+- Kubernetes Version: v1.31.4
+- Helm Version: v3.16.3
 - NGT Version: v2.3.4
 - Faiss Version: v1.9.0
 
