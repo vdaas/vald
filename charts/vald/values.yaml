@@ -818,7 +818,7 @@ defaults:
         # @schema {"name": "defaults.grpc.client.dial_option.timeout", "type": "string"}
         # defaults.grpc.client.dial_option.timeout -- gRPC client dial option timeout
         timeout: ""
-        # @schema {"name": "defaults.grpc.client.dial_option.interceptors", "type": "array", "items": {"type": "string", "enum": ["TraceInterceptor"]}}
+        # @schema {"name": "defaults.grpc.client.dial_option.interceptors", "type": "array", "items": {"type": "string", "enum": ["TraceInterceptor", "MetricInterceptor"]}}
         # defaults.grpc.client.dial_option.interceptors -- gRPC client interceptors
         interceptors: []
         # @schema {"name": "defaults.grpc.client.dial_option.net", "type": "object", "anchor": "net"}

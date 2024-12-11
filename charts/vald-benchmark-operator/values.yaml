@@ -171,7 +171,7 @@ job:
       # @schema {"name": "job.client_config.dial_option.timeout", "type": "string"}
       # job.client_config.dial_option.timeout -- gRPC client dial option timeout
       timeout: ""
-      # @schema {"name": "job.client_config.dial_option.interceptors", "type": "array", "items": {"type": "string", "enum": ["TraceInterceptor"]}}
+      # @schema {"name": "job.client_config.dial_option.interceptors", "type": "array", "items": {"type": "string", "enum": ["TraceInterceptor", "MetricInterceptor"]}}
       # job.client_config.dial_option.interceptors -- gRPC client interceptors
       interceptors: []
       # @schema {"name": "job.client_config.dial_option.net", "type": "object", "anchor": "net"}
@@ -407,7 +407,7 @@ server_config:
           initial_conn_window_size: 0
           # @schema {"name": "server_config.servers.grpc.server.grpc.initial_window_size", "type": "integer"}
           initial_window_size: 0
-          # @schema {"name": "server_config.servers.grpc.server.grpc.interceptors", "type": "array", "items": {"type": "string"}}
+          # @schema {"name": "server_config.servers.grpc.server.grpc.interceptors", "type": "array", "items": {"type": "string", "enum": ["RecoverInterceptor", "AccessLogInterceptor", "TraceInterceptor", "MetricInterceptor"]}}
           interceptors: []
           # @schema {"name": "server_config.servers.grpc.server.grpc.keepalive", "type": "object"}
           keepalive:
