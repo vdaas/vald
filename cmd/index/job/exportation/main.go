@@ -38,7 +38,8 @@ func main() {
 			runner.WithName(name),
 			runner.WithVersion(info.Version, maxVersion, minVersion),
 			runner.WithConfigLoader(func(path string) (any, *config.GlobalConfig, error) {
-				cfg, err := config.NewConfig(path)
+				// cfg, err := config.NewConfig(path)
+				cfg, err := config.NewConfig("cmd/index/job/exportation/sample.yaml")
 				if err != nil {
 					return nil, nil, errors.Wrap(err, "failed to load "+name+"'s configuration")
 				}
