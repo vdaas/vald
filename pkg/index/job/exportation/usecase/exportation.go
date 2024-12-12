@@ -19,12 +19,16 @@ import (
 	"syscall"
 
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
+	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
 	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/index/job/exportation/config"
@@ -74,29 +78,29 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 		}
 	}
 
-	// grpcServerOptions := []server.Option{
-	// 	server.WithGRPCOption(
-	// 		grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
-	// 		grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
-	// 	),
-	// }
+	grpcServerOptions := []server.Option{
+		server.WithGRPCOption(
+			grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
+			grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
+		),
+	}
 
-	// // For health check and metrics
-	// srv, err := starter.New(starter.WithConfig(cfg.Server),
-	// 	starter.WithGRPC(func(_ *iconf.Server) []server.Option {
-	// 		return grpcServerOptions
-	// 	}),
-	// )
-	// if err != nil {
-	// 	return nil, err
-	// }
+	// For health check and metrics
+	srv, err := starter.New(starter.WithConfig(cfg.Server),
+		starter.WithGRPC(func(_ *iconf.Server) []server.Option {
+			return grpcServerOptions
+		}),
+	)
+	if err != nil {
+		return nil, err
+	}
 
 	return &run{
 		eg:            eg,
 		cfg:           cfg,
 		observability: obs,
-		// server:        srv,
-		exporter: exporter,
+		server:        srv,
+		exporter:      exporter,
 	}, nil
 }
 
