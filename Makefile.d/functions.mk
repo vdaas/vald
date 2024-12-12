@@ -446,3 +446,11 @@ define gen-deadlink-checker
 	$$BIN_PATH -path $3 -ignore-path $4 -format $5 $1; \
 	rm -rf $$BIN_PATH
 endef
+
+define gen-api-document
+	buf generate --template=apis/docs/buf.gen.tmpl.yaml --path $2
+	cat apis/docs/v1/payload.md.tmpl apis/docs/v1/_doc.md.tmpl > apis/docs/v1/doc.md.tmpl; \
+	buf generate --template=apis/docs/buf.gen.doc.yaml --path $2; \
+	mv $(ROOTDIR)/apis/docs/v1/doc.md $1; \
+	rm apis/docs/v1/*doc.md.tmpl
+endef
