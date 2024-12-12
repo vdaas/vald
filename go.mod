@@ -36,7 +36,7 @@ replace (
 	github.com/Azure/go-autorest/tracing => github.com/Azure/go-autorest/tracing v0.6.1-0.20240530140449-f7ea664c9cff
 	github.com/BurntSushi/toml => github.com/BurntSushi/toml v1.4.0
 	github.com/DATA-DOG/go-sqlmock => github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/GoogleCloudPlatform/cloudsql-proxy => github.com/GoogleCloudPlatform/cloudsql-proxy v1.37.2
+	github.com/GoogleCloudPlatform/cloudsql-proxy => github.com/GoogleCloudPlatform/cloudsql-proxy v1.37.3
 	github.com/Masterminds/semver/v3 => github.com/Masterminds/semver/v3 v3.3.1
 	github.com/ajstarks/deck => github.com/ajstarks/deck v0.0.0-20240918141114-8d365813662d
 	github.com/ajstarks/deck/generate => github.com/ajstarks/deck/generate v0.0.0-20240918141114-8d365813662d
@@ -131,7 +131,7 @@ replace (
 	github.com/gobwas/httphead => github.com/gobwas/httphead v0.1.0
 	github.com/gobwas/pool => github.com/gobwas/pool v0.2.1
 	github.com/gobwas/ws => github.com/gobwas/ws v1.4.0
-	github.com/goccy/go-json => github.com/goccy/go-json v0.10.3
+	github.com/goccy/go-json => github.com/goccy/go-json v0.10.4
 	github.com/gocql/gocql => github.com/gocql/gocql v1.7.0
 	github.com/gocraft/dbr/v2 => github.com/gocraft/dbr/v2 v2.7.7
 	github.com/godbus/dbus/v5 => github.com/godbus/dbus/v5 v5.1.0
@@ -294,7 +294,7 @@ replace (
 	go.uber.org/multierr => go.uber.org/multierr v1.11.0
 	go.uber.org/zap => go.uber.org/zap v1.27.0
 	gocloud.dev => gocloud.dev v0.40.0
-	golang.org/x/crypto => golang.org/x/crypto v0.30.0
+	golang.org/x/crypto => golang.org/x/crypto v0.31.0
 	golang.org/x/exp => golang.org/x/exp v0.0.0-20241210194714-1829a127f884
 	golang.org/x/exp/typeparams => golang.org/x/exp/typeparams v0.0.0-20241210194714-1829a127f884
 	golang.org/x/image => golang.org/x/image v0.23.0
