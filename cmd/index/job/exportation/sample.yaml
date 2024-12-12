@@ -75,7 +75,7 @@ exporter:
   index_path: "/var/export/index"
   gateway:
     addrs:
-      - vald-lb-gateway.default.svc.cluster.local:8081
+      - localhost:20000
     health_check_duration: "1s"
     connection_pool:
       enable_dns_resolver: true
