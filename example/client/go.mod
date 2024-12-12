@@ -4,11 +4,11 @@ go 1.23.4
 
 replace (
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v1.1.0
-	github.com/goccy/go-json => github.com/goccy/go-json v0.10.3
+	github.com/goccy/go-json => github.com/goccy/go-json v0.10.4
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.4
 	github.com/kpango/glg => github.com/kpango/glg v1.6.15
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.7
-	golang.org/x/crypto => golang.org/x/crypto v0.30.0
+	golang.org/x/crypto => golang.org/x/crypto v0.31.0
 	golang.org/x/net => golang.org/x/net v0.32.0
 	golang.org/x/text => golang.org/x/text v0.21.0
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20241209162323-e6fa225c2576

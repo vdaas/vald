@@ -20,7 +20,7 @@ assignees: ""
 - Go Version: v1.23.4
 - Rust Version: v1.83.0
 - Docker Version: v27.4.0
-- Kubernetes Version: v1.31.4
+- Kubernetes Version: v1.32.0
 - Helm Version: v3.16.3
 - NGT Version: v2.3.5
 - Faiss Version: v1.9.0
