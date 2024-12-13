@@ -36,6 +36,10 @@ inputs:
     description: "If minikube is not required, set this to true and set require_k3d to false"
     required: false
     default: "false"
+  require_kind:
+    description: "If kind is not required, set this to true and set require_k3d to false"
+    required: false
+    default: "false"
   ingress_port:
     description: 'If it is not "0", ingress will be exposed to the specified port'
     required: false
@@ -91,6 +95,12 @@ runs:
       run: |
         make minikube/install
         make minikube/start
+    - name: Setup kind environment
+      if: ${{ inputs.require_kind == 'true' }}
+      shell: bash
+      run: |
+        make kind/install
+        make kind/vs/start
     - name: Check Kubernetes cluster
       shell: bash
       run: |

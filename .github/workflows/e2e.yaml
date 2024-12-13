@@ -315,7 +315,7 @@ jobs:
         uses: ./.github/actions/setup-e2e
         with:
           require_k3d: "false"
-          require_minikube: "true"
+          require_kind: "true"
       - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
