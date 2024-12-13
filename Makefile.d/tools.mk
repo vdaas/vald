@@ -118,7 +118,6 @@ $(NPM_GLOBAL_PREFIX)/bin/cspell:
 	cspell link add @cspell/dict-rust
 	cspell link add @cspell/dict-shell
 
-
 .PHONY: buf/install
 buf/install: $(BINDIR)/buf
 
@@ -261,3 +260,15 @@ $(LIB_PATH)/libhdf5.a: $(LIB_PATH) \
 	&& make install \
 	&& cd $(ROOTDIR) \
 	&& rm -rf $(TEMP_DIR)/hdf5.tar.gz $(TEMP_DIR)/hdf5
+
+.PHONY: yq/install
+## install yq
+yq/install: $(BINDIR)/yq
+
+$(BINDIR)/yq:
+	mkdir -p $(BINDIR)
+	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
+	cd $(TEMP_DIR) \
+	    && curl -fsSL https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_$(OS)_$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/yq \
+	    && chmod a+x $(BINDIR)/yq
+

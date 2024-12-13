@@ -38,8 +38,6 @@ jobs:
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - uses: ./.github/actions/setup-go
-      - uses: ./.github/actions/setup-helm
       - name: Generate schema for charts/vald
         run: |
           make helm/schema/vald
@@ -58,8 +56,6 @@ jobs:
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - uses: ./.github/actions/setup-go
-      - uses: ./.github/actions/setup-helm
       - name: Generate schema for charts/vald-helm-operator
         run: |
           make helm/schema/vald-helm-operator
@@ -79,9 +75,6 @@ jobs:
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - uses: ./.github/actions/setup-yq
-      - uses: ./.github/actions/setup-go
-      - uses: ./.github/actions/setup-helm
       - uses: ./.github/actions/setup-k3d
         with:
           options: "--api-port host.docker.internal:6443 --kubeconfig-update-default --kubeconfig-switch-context"
