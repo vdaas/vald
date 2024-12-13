@@ -36,6 +36,10 @@ import (
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
+const (
+	sep = string(os.PathSeparator)
+)
+
 // Open opens the file with the given path, flag and permission.
 // If the folder does not exists, create the folder.
 // If the file does not exist, create the file.
@@ -476,8 +480,8 @@ func ListInDir(path string) ([]string, error) {
 	if !exists {
 		return nil, err
 	}
-	if fi.Mode().IsDir() && !strings.HasSuffix(path, string(os.PathSeparator)) {
-		path += string(os.PathSeparator)
+	if fi.Mode().IsDir() && !strings.HasSuffix(path, sep) {
+		path += sep
 	}
 	path = filepath.Dir(path)
 	files, err := filepath.Glob(Join(path, "*"))
@@ -538,7 +542,7 @@ func Join(paths ...string) (path string) {
 	} else {
 		path = replacer.Replace(paths[0])
 	}
-	if filepath.IsAbs(path) {
+	if filepath.IsAbs(path) || !Exists(path) {
 		return filepath.Clean(path)
 	}
 
@@ -548,20 +552,24 @@ func Join(paths ...string) (path string) {
 		log.Warn(err)
 		return filepath.Clean(path)
 	}
-	return filepath.Clean(joinFilePaths(root, path))
+	abs := joinFilePaths(root, path)
+	if !Exists(abs) {
+		return filepath.Clean(path)
+	}
+	return filepath.Clean(abs)
 }
 
 var replacer = strings.NewReplacer(
-	string(os.PathSeparator)+string(os.PathSeparator)+string(os.PathSeparator),
-	string(os.PathSeparator),
-	string(os.PathSeparator)+string(os.PathSeparator),
-	string(os.PathSeparator),
+	sep+sep+sep,
+	sep,
+	sep+sep,
+	sep,
 )
 
 func joinFilePaths(paths ...string) (path string) {
 	for i, path := range paths {
 		if path != "" {
-			return replacer.Replace(strings.Join(paths[i:], string(os.PathSeparator)))
+			return replacer.Replace(strings.Join(paths[i:], sep))
 		}
 	}
 	return ""
