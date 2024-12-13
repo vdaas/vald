@@ -151,14 +151,14 @@ e2e/actions/run/readreplica: \
 	kubectl wait -n kube-system --for=condition=Ready pod -l app.kubernetes.io/name=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl wait -n kube-system --for=condition=ContainersReady pod -l app.kubernetes.io/name=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	sleep 3
+	$(MAKE) k8s/vald-readreplica/deploy \
+		HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-readreplica.yaml
+	sleep 3
 	$(MAKE) k8s/vald/deploy \
 		HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-readreplica.yaml
 	sleep 20
 	kubectl wait --for=condition=Ready pod -l "app=$(AGENT_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl wait --for=condition=ContainersReady pod -l "app=$(AGENT_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	$(MAKE) k8s/vald-readreplica/deploy \
-		HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-readreplica.yaml
-	sleep 3
 	kubectl wait --for=condition=Ready pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl wait --for=condition=ContainersReady pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl get pods
@@ -166,7 +166,7 @@ e2e/actions/run/readreplica: \
 	echo $$pod_name; \
 	$(MAKE) E2E_TARGET_POD_NAME=$$pod_name e2e/readreplica
 	$(MAKE) k8s/vald/delete
-	$(MAKE) minikube/delete
+	$(MAKE) kind/vs/stop
 
 .PHONY: e2e/actions/run/stream/crud/skip
 ## run GitHub Actions E2E test (Stream CRUD with SkipExistsCheck = true)

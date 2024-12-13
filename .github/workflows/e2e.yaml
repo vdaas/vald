@@ -316,16 +316,15 @@ jobs:
         with:
           require_k3d: "false"
           require_kind: "true"
-      - name: Deploy Vald
-        id: deploy_vald
-        uses: ./.github/actions/e2e-deploy-vald
-        with:
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-readreplica.yaml
-          wait_for_selector: app=vald-agent
       - name: Deploy Vald Read Replica
         id: deploy_vald_readreplica
         uses: ./.github/actions/e2e-deploy-vald-readreplica
+        with:
+          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+          values: .github/helm/values/values-readreplica.yaml
+      - name: Deploy Vald
+        id: deploy_vald
+        uses: ./.github/actions/e2e-deploy-vald
         with:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-readreplica.yaml
@@ -347,7 +346,7 @@ jobs:
             E2E_TARGET_NAMESPACE=default \
             e2e/readreplica
         env:
-          POD_NAME: ${{ steps.deploy_vald_readreplica.outputs.POD_NAME }}
+          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
   e2e-stream-crud-with-mirror:
     name: "E2E test (Stream CRUD) with mirror"
     needs: [detect-ci-container]
