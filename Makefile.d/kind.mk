@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+SNAPSHOTTER_VERSION=v8.2.0
+
 .PHONY: kind/install
 ## install KinD
 kind/install: $(BINDIR)/kind
@@ -25,7 +28,8 @@ $(BINDIR)/kind:
 
 .PHONY: kind/start
 ## start kind (kubernetes in docker) cluster
-kind/start:
+kind/start: \
+	$(BINDIR)/docker
 	kind create cluster --name $(NAME)
 	@make kind/login
 
@@ -36,7 +40,8 @@ kind/login:
 
 .PHONY: kind/stop
 ## stop kind (kubernetes in docker) cluster
-kind/stop:
+kind/stop: \
+	$(BINDIR)/docker
 	kind delete cluster --name $(NAME)
 
 .PHONY: kind/restart
@@ -54,7 +59,6 @@ kind/cluster/start:
 	kubectl apply -f https://projectcontour.io/quickstart/operator.yaml
 	kubectl apply -f https://projectcontour.io/quickstart/contour-custom-resource.yaml
 
-
 .PHONY: kind/cluster/stop
 ## stop kind (kubernetes in docker) multi node cluster
 kind/cluster/stop:
@@ -70,3 +74,33 @@ kind/cluster/login:
 kind/cluster/restart: \
 	kind/cluster/stop \
 	kind/cluster/start
+
+.PHONY: kind/vs/start
+## start kind (kubernetes in docker) cluster with volume snapshot
+kind/vs/start: \
+	$(BINDIR)/docker
+	sed -e 's/apiServerAddress: "127.0.0.1"/apiServerAddress: "$(shell grep host.docker.internal /etc/hosts | cut -f1)"/' $(ROOTDIR)/k8s/debug/kind/e2e.yaml | kind create cluster --name $(NAME)-vs --config - 
+
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
+
+	@make kind/vs/login
+
+.PHONY: kind/vs/stop
+## stop kind (kubernetes in docker) cluster with volume snapshot
+kind/vs/stop:
+	kind delete cluster --name $(NAME)-vs
+
+.PHONY: kind/vs/login
+## login command for kind (kubernetes in docker)  cluster with volume snapshot
+kind/vs/login:
+	kubectl cluster-info --context kind-$(NAME)-vs
+
+.PHONY: kind/vs/restart
+## restart kind (kubernetes in docker) cluster with volume snapshot
+kind/vs/restart: \
+	kind/vs/stop \
+	kind/vs/start

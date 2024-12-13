@@ -27,7 +27,7 @@ $(BINDIR)/minikube:
 .PHONY: minikube/start
 minikube/start: \
 	$(BINDIR)/docker
-	minikube start --driver=docker --force
+	minikube start --driver=docker --force --alsologtostderr -v=1
 	minikube addons enable volumesnapshots
 	minikube addons enable csi-hostpath-driver
 	minikube addons disable storage-provisioner
