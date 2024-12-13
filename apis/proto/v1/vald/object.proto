@@ -42,9 +42,9 @@ service Object {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                   | how to resolve                                                                           |
   // | :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
@@ -69,9 +69,9 @@ service Object {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                   | how to resolve                                                                           |
   // | :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
@@ -98,9 +98,9 @@ service Object {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                   | how to resolve                                                                           |
   // | :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
