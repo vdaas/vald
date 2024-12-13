@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 name: "Deploy Chaos Mesh"
-description: "A action to deploy Chaos Mesh"
+description: "An action to deploy Chaos Mesh"
 inputs:
   chaos_mesh_version:
     description: "The Chaos Mesh version to use. The default version is `versions/CHAOS_MESH_VERSION`"
