@@ -262,8 +262,10 @@ k8s/vald-readreplica/deploy:
 		--output-dir $(TEMP_DIR) \
 		charts/vald-readreplica
 	kubectl apply -f $(TEMP_DIR)/vald-readreplica/templates
-	sleep 2
-	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=vald-readreplica --timeout=600s
+	sleep 5
+
+	# kubectl get pods
+	# kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=vald-readreplica --timeout=600s
 
 .PHONY: k8s/vald-readreplica/delete
 ## delete vald-helm-operator from k8s

@@ -59,6 +59,8 @@ agent:
     snapshot_classname: "csi-hostpath-snapclass"
     hpa:
       enabled: true
+    name: vald-agent-readreplica
+    volume_name: vald-agent-readreplica-pvc
 discoverer:
   minReplicas: 1
   hpa:
