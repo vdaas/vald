@@ -145,21 +145,12 @@ e2e/actions/run/job: \
 ## run GitHub Actions E2E test (Stream CRUD with read replica )
 e2e/actions/run/readreplica: \
 	hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
-	kind/vs/restart \
-	k8s/metrics/metrics-server/deploy
-	helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server -n kube-system
+	kind/vs/restart
 	kubectl wait -n kube-system --for=condition=Available deployment/metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	sleep 2
 	kubectl wait -n kube-system --for=condition=Ready pod -l app.kubernetes.io/name=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl wait -n kube-system --for=condition=ContainersReady pod -l app.kubernetes.io/name=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	sleep 3
-	mkdir -p $(TEMP_DIR)/csi-driver-hostpath \
-		&& curl -fsSL https://github.com/kubernetes-csi/csi-driver-host-path/archive/refs/tags/v1.15.0.tar.gz | tar zxf - -C $(TEMP_DIR)/csi-driver-hostpath --strip-components 1 \
-		&& cd $(TEMP_DIR)/csi-driver-hostpath \
-		&& deploy/kubernetes-latest/deploy.sh \
-		&& kubectl apply -f ./examples/csi-storageclass.yaml \
-		&& kubectl apply -f ././examples/csi-pvc.yaml \
-		&& rm -rf $(TEMP_DIR)/csi-driver-hostpath
 	$(MAKE) k8s/vald/deploy \
 		HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-readreplica.yaml
 	sleep 20
