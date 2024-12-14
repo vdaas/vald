@@ -735,6 +735,10 @@ func main() {
 			AppName:    "index-deletion",
 			PackageDir: "index/job/deletion",
 		},
+		"vald-index-importation": {
+			AppName:    "index-importation",
+			PackageDir: "index/job/importation",
+		},
 		"vald-readreplica-rotate": {
 			AppName:    "readreplica-rotate",
 			PackageDir: "index/job/readreplica/rotate",
