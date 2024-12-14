@@ -43,6 +43,7 @@ INDEX_CORRECTION_IMAGE          = $(NAME)-index-correction
 INDEX_CREATION_IMAGE            = $(NAME)-index-creation
 INDEX_DELETION_IMAGE            = $(NAME)-index-deletion
 INDEX_EXPORTATION_IMAGE         = $(NAME)-index-exportation
+INDEX_IMPORTATION_IMAGE         = $(NAME)-index-importation
 INDEX_OPERATOR_IMAGE            = $(NAME)-index-operator
 INDEX_SAVE_IMAGE                = $(NAME)-index-save
 LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
