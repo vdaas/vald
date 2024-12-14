@@ -37,6 +37,7 @@ docker/build: \
 	docker/build/index-correction \
 	docker/build/index-creation \
 	docker/build/index-deletion \
+	docker/build/index-importation \
 	docker/build/index-operator \
 	docker/build/index-save \
 	docker/build/loadtest \
@@ -65,6 +66,7 @@ docker/xpanes/build:
 		docker/build/index-correction \
 		docker/build/index-creation \
 		docker/build/index-deletion \
+		docker/build/index-importation \
 		docker/build/index-operator \
 		docker/build/index-save \
 		docker/build/loadtest \
@@ -352,6 +354,13 @@ docker/name/index-deletion:
 docker/build/index-deletion:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/deletion/Dockerfile" \
 		IMAGE=$(INDEX_DELETION_IMAGE) \
+		docker/build/image
+
+.PHONY: docker/build/index-importation
+## build index-importation image
+docker/build/index-importation:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/importation/Dockerfile" \
+		IMAGE=$(INDEX_IMPORTATION_IMAGE) \
 		docker/build/image
 
 .PHONY: docker/name/index-operator
