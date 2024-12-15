@@ -38,7 +38,6 @@ docker/build: \
 	docker/build/index-creation \
 	docker/build/index-deletion \
 	docker/build/index-exportation \
-	docker/build/index-importation \
 	docker/build/index-operator \
 	docker/build/index-save \
 	docker/build/loadtest \
@@ -68,7 +67,6 @@ docker/xpanes/build:
 		docker/build/index-creation \
 		docker/build/index-deletion \
 		docker/build/index-exportation \
-		docker/build/index-importation \
 		docker/build/index-operator \
 		docker/build/index-save \
 		docker/build/loadtest \
@@ -367,17 +365,6 @@ docker/name/index-exporation:
 docker/build/index-exportation:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/exportation/Dockerfile" \
 		IMAGE=$(INDEX_EXPORTATION_IMAGE) \
-		docker/build/image
-
-.PHONY: docker/name/index-importation
-docker/name/index-importation:
-	@echo "$(ORG)/$(INDEX_IMPORTATION_IMAGE)"
-
-.PHONY: docker/build/index-importation
-## build index-importation image
-docker/build/index-importation:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/importation/Dockerfile" \
-		IMAGE=$(INDEX_IMPORTATION_IMAGE) \
 		docker/build/image
 
 .PHONY: docker/name/index-operator
