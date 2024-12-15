@@ -1,4 +1,5 @@
 # syntax = docker/dockerfile:latest
+# check=error=true
 #
 # Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
