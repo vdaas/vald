@@ -13,7 +13,17 @@
 // limitations under the License.
 package main
 
-import "fmt"
+import (
+	"context"
+	"log"
+
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/runner"
+	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/pkg/index/job/importation/config"
+	"github.com/vdaas/vald/pkg/index/job/importation/usecase"
+)
 
 const (
 	maxVersion = "v0.0.10"
@@ -22,5 +32,29 @@ const (
 )
 
 func main() {
-	fmt.Println("hello world")
+	if err := safety.RecoverFunc(func() error {
+		return runner.Do(
+			context.Background(),
+			runner.WithName(name),
+			runner.WithVersion(info.Version, maxVersion, minVersion),
+			runner.WithConfigLoader(func(path string) (any, *config.GlobalConfig, error) {
+				// cfg, err := config.NewConfig(path)
+				cfg, err := config.NewConfig("cmd/index/job/importation/sample.yaml")
+				if err != nil {
+					return nil, nil, errors.Wrap(err, "failed to load "+name+"'s configuration")
+				}
+				return cfg, &cfg.GlobalConfig, nil
+			}),
+			runner.WithDaemonInitializer(func(cfg any) (runner.Runner, error) {
+				c, ok := cfg.(*config.Data)
+				if !ok {
+					return nil, errors.ErrInvalidConfig
+				}
+				return usecase.New(c)
+			}),
+		)
+	})(); err != nil {
+		log.Fatal(err, info.Get())
+		return
+	}
 }

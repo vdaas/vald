@@ -173,12 +173,14 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 func BidirectionalStreamClient[Q, R proto.Message, S TypedClientStream[Q, R]](
 	stream S, concurrency int, sendDataProvider func() (Q, bool), callBack func(R, error) bool,
 ) (err error) {
+	if any(stream) == nil {
+		return errors.ErrGRPCClientStreamNotFound
+	}
 	ctx, cancel := context.WithCancel(stream.Context())
 	eg, ctx := errgroup.New(ctx)
 	if concurrency > 0 {
 		eg.SetLimit(concurrency)
 	}
-
 	eg.Go(safety.RecoverFunc(func() (err error) {
 		for {
 			select {
