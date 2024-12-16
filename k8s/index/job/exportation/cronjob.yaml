@@ -51,7 +51,8 @@ spec:
             pyroscope.io/port: "6060"
         spec:
           initContainers:
-            - name: wait-for-agent
+      initContainers:
+            - name: wait-for-gateway-lb
               image: busybox:stable
               imagePullPolicy: Always
               command:
@@ -59,20 +60,8 @@ spec:
                 - -e
                 - -c
                 - |
-                  until [ "$(wget --server-response --spider --quiet http://vald-agent.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
-                    echo "waiting for agent to be ready..."
-                    sleep 2;
-                  done
-            - name: wait-for-discoverer
-              image: busybox:stable
-              imagePullPolicy: Always
-              command:
-                - /bin/sh
-                - -e
-                - -c
-                - |
-                  until [ "$(wget --server-response --spider --quiet http://vald-discoverer.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
-                    echo "waiting for discoverer to be ready..."
+                  until [ "$(wget --server-response --spider --quiet http://vald-lb-gateway.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+                    echo "waiting for gateway-lb to be ready..."
                     sleep 2;
                   done
           containers:
