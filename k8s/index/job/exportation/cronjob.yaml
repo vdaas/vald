@@ -51,7 +51,6 @@ spec:
             pyroscope.io/port: "6060"
         spec:
           initContainers:
-      initContainers:
             - name: wait-for-gateway-lb
               image: busybox:stable
               imagePullPolicy: Always
