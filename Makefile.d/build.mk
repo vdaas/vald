@@ -193,7 +193,7 @@ artifacts/vald-index-deletion-$(GOOS)-$(GOARCH).zip: cmd/index/job/deletion/inde
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 
-artifacts/vald-index-exporation-$(GOOS)-$(GOARCH).zip: cmd/index/job/exportation/index-exportation
+artifacts/vald-index-exportation-$(GOOS)-$(GOARCH).zip: cmd/index/job/exportation/index-exportation
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 
