@@ -91,8 +91,8 @@ kind/vs/start: \
 		&& curl -fsSL https://github.com/kubernetes-csi/csi-driver-host-path/archive/refs/tags/v1.15.0.tar.gz | tar zxf - -C $(TEMP_DIR)/csi-driver-hostpath --strip-components 1 \
 		&& cd $(TEMP_DIR)/csi-driver-hostpath \
 		&& deploy/kubernetes-latest/deploy.sh \
-		&& kubectl apply -f ./examples/csi-storageclass.yaml \
-		&& kubectl apply -f ././examples/csi-pvc.yaml \
+		&& kubectl apply -f examples/csi-storageclass.yaml \
+		&& kubectl apply -f examples/csi-pvc.yaml \
 		&& rm -rf $(TEMP_DIR)/csi-driver-hostpath
 
 	@make k8s/metrics/metrics-server/deploy
