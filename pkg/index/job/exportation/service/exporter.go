@@ -76,7 +76,7 @@ func New(opts ...Option) (Exporter, error) {
 
 	if err := file.MkdirAll(e.indexPath, os.ModePerm); err != nil {
 		log.Errorf("failed to create dir %s", e.indexPath)
-		return nil, err
+		return nil, errors.Wrap(err, "failed to create index path directory")
 	}
 
 	path := file.Join(e.indexPath, fmt.Sprintf("%s.db", strconv.FormatInt(time.Now().Unix(), 10)))
