@@ -140,7 +140,8 @@ func (e *export) doExportIndex(
 	ctx, cancel := context.WithCancelCause(egctx)
 	gatewayAddrs := e.gateway.GRPCClient().ConnectedAddrs()
 	if len(gatewayAddrs) == 0 {
-		log.Errorf("Active gateway is not found.: %v ", ctx.Err())
+		log.Errorf("Active gateway is not found: %v", ctx.Err())
+		return errors.New("no active gateways available")
 	}
 
 	conn, err := grpc.NewClient(gatewayAddrs[0], grpc.WithTransportCredentials(insecure.NewCredentials()))
