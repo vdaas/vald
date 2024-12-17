@@ -355,23 +355,6 @@ define gen-dockerfile
 	rm -rf $$BIN_PATH
 endef
 
-define gen-workflow
-	BIN_PATH="$(TEMP_DIR)/vald-actions-gen"; \
-	rm -rf $$BIN_PATH; \
-	MAINTAINER=$2 \
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	go build -modcacherw \
-		-mod=readonly \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $$BIN_PATH $(ROOTDIR)/hack/actions/gen/main.go; \
-	$$BIN_PATH $1; \
-	rm -rf $$BIN_PATH
-endef
-
 define gen-vald-helm-schema
 	BIN_PATH="$(TEMP_DIR)/vald-helm-schema-gen"; \
 	rm -rf $$BIN_PATH; \
@@ -462,4 +445,12 @@ define gen-deadlink-checker
 		-o $$BIN_PATH $(ROOTDIR)/hack/tools/deadlink/main.go; \
 	$$BIN_PATH -path $3 -ignore-path $4 -format $5 $1; \
 	rm -rf $$BIN_PATH
+endef
+
+define gen-api-document
+	buf generate --template=apis/docs/buf.gen.tmpl.yaml --path $2
+	cat apis/docs/v1/payload.md.tmpl apis/docs/v1/_doc.md.tmpl > apis/docs/v1/doc.md.tmpl; \
+	buf generate --template=apis/docs/buf.gen.doc.yaml --path $2; \
+	mv $(ROOTDIR)/apis/docs/v1/doc.md $1; \
+	rm apis/docs/v1/*doc.md.tmpl
 endef
