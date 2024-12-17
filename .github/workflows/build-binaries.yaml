@@ -38,7 +38,6 @@ jobs:
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - uses: ./.github/actions/setup-go
       - name: Build and zip
         run: |
           make binary/build/zip
