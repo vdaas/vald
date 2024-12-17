@@ -343,7 +343,7 @@ docker/build/index-deletion:
 		docker/build/image
 
 .PHONY: docker/name/index-exportation
-docker/name/index-exporation:
+docker/name/index-exportation:
 	@echo "$(ORG)/$(INDEX_EXPORTATION_IMAGE)"
 
 .PHONY: docker/build/index-exportation
