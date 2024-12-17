@@ -26,7 +26,7 @@ metadata:
     app.kubernetes.io/component: vald-index-exportation
     app.kubernetes.io/version: v1.7.14
 spec:
-  schedule: "* * * * *"
+  schedule: "0 * * * *"
   concurrencyPolicy: Forbid
   suspend: true
   startingDeadlineSeconds: 43200
