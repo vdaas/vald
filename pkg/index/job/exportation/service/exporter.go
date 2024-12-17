@@ -46,6 +46,7 @@ const (
 type Exporter interface {
 	StartClient(ctx context.Context) (<-chan error, error)
 	Start(ctx context.Context) error
+	PreStop(ctx context.Context) error
 }
 
 type export struct {
@@ -214,4 +215,8 @@ func (e *export) doExportIndex(
 			}
 		}
 	}
+}
+
+func (e *export) PreStop(ctx context.Context) error {
+	return e.storedVector.Close(false)
 }
