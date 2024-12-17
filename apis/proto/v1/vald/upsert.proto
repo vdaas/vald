@@ -44,9 +44,9 @@ service Upsert {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                                                                       | how to resolve                                                                           |
   // | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
@@ -79,9 +79,9 @@ service Upsert {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                                                                       | how to resolve                                                                           |
   // | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
@@ -93,7 +93,7 @@ service Upsert {
 
   // Overview
   // MultiUpsert is the method to update existing multiple vectors and add new multiple vectors in **1** request.
-  // 
+  //
   // <div class="notice">
   // gRPC has a message size limitation.<br>
   // Please be careful that the size of the request exceeds the limit.
@@ -111,9 +111,9 @@ service Upsert {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                                                                       | how to resolve                                                                           |
   // | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |

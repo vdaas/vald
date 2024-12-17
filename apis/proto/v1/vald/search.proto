@@ -43,9 +43,9 @@ service Search {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                                   | how to resolve                                                                           |
   // | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
@@ -75,9 +75,9 @@ service Search {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                                                    | how to resolve                                                                           |
   // | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
@@ -108,9 +108,9 @@ service Search {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                                   | how to resolve                                                                           |
   // | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
@@ -136,9 +136,9 @@ service Search {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                                                    | how to resolve                                                                           |
   // | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
@@ -150,7 +150,7 @@ service Search {
 
   // Overview
   // MultiSearch RPC is the method to search vectors with multiple vectors in **1** request.
-  // 
+  //
   // <div class="notice">
   // gRPC has a message size limitation.<br>
   // Please be careful that the size of the request exceeds the limit.
@@ -167,9 +167,9 @@ service Search {
   // ---
   // Troubleshooting
   //   The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                                   | how to resolve                                                                           |
   // | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
@@ -186,7 +186,7 @@ service Search {
 
   // Overview
   // MultiSearchByID RPC is the method to search vectors with multiple IDs in **1** request.
-  // 
+  //
   // <div class="notice">
   // gRPC has a message size limitation.<br>
   // Please be careful that the size of the request exceeds the limit.
@@ -203,9 +203,9 @@ service Search {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                                                    | how to resolve                                                                           |
   // | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
@@ -234,9 +234,9 @@ service Search {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                                   | how to resolve                                                                           |
   // | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
@@ -267,9 +267,9 @@ service Search {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                                                    | how to resolve                                                                           |
   // | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
@@ -300,9 +300,9 @@ service Search {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                                   | how to resolve                                                                           |
   // | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
@@ -328,9 +328,9 @@ service Search {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                                                    | how to resolve                                                                           |
   // | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
@@ -342,7 +342,7 @@ service Search {
 
   // Overview
   // MultiLinearSearch RPC is the method to linear search vectors with multiple vectors in **1** request.
-  // 
+  //
   // <div class="notice">
   // gRPC has a message size limitation.<br>
   // Please be careful that the size of the request exceeds the limit.
@@ -359,9 +359,9 @@ service Search {
   // ---
   // Troubleshooting
   //   The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                                   | how to resolve                                                                           |
   // | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
@@ -378,7 +378,7 @@ service Search {
 
   // Overview
   // MultiLinearSearchByID RPC is the method to linear search vectors with multiple IDs in **1** request.
-  // 
+  //
   // <div class="notice">
   // gRPC has a message size limitation.<br>
   // Please be careful that the size of the request exceeds the limit.
@@ -395,9 +395,9 @@ service Search {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                                                    | how to resolve                                                                           |
   // | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |

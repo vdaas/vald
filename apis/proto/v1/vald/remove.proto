@@ -43,9 +43,9 @@ service Remove {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                   | how to resolve                                                                           |
   // | :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
@@ -62,7 +62,7 @@ service Remove {
 
   // Overview
   // RemoveByTimestamp RPC is the method to remove vectors based on timestamp.
-  // 
+  //
   // <div class="notice">
   // In the TimestampRequest message, the 'timestamps' field is repeated, allowing the inclusion of multiple Timestamp.<br>
   // When multiple Timestamps are provided, it results in an `AND` condition, enabling the realization of deletions with specified ranges.<br>
@@ -78,15 +78,15 @@ service Remove {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                   | how to resolve                                                                                                       |
   // | :---------------- | :---------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.                              |
   // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed.                             |
   // | NOT_FOUND         | No vectors in the system match the specified timestamp conditions.                              | Check whether vectors matching the specified timestamp conditions exist in the system, and fix conditions if needed. |
-  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.         
+  // | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.
   rpc RemoveByTimestamp(payload.v1.Remove.TimestampRequest) returns (payload.v1.Object.Locations) {
     option (google.api.http) = {
       post: "/remove/timestamp"
@@ -96,7 +96,7 @@ service Remove {
 
   // Overview
   // A method to remove multiple indexed vectors by bidirectional streaming.
-  // 
+  //
   // StreamRemove RPC is the method to remove multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
   // Using the bidirectional streaming RPC, the remove request can be communicated in any order between client and server.
   // Each Remove request and response are independent.
@@ -113,9 +113,9 @@ service Remove {
   // ---
   // Troubleshooting
   //   The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                   | how to resolve                                                                           |
   // | :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
@@ -127,7 +127,7 @@ service Remove {
 
   // Overview
   // MultiRemove is the method to remove multiple vectors in **1** request.
-  // 
+  //
   // <div class="notice">
   // gRPC has a message size limitation.<br>
   // Please be careful that the size of the request exceeds the limit.
@@ -144,9 +144,9 @@ service Remove {
   // ---
   // Troubleshooting
   // The request process may not be completed when the response code is NOT `0 (OK)`.
-  // 
+  //
   // Here are some common reasons and how to resolve each error.
-  // 
+  //
   // | name              | common reason                                                                                   | how to resolve                                                                           |
   // | :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
   // | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
