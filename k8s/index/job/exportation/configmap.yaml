@@ -192,7 +192,7 @@ data:
           namespace: "_MY_POD_NAMESPACE_"
           pod_name: "_MY_POD_NAME_"
           node_name: "_MY_NODE_NAME_"
-          service_name: "vald-index-deletion"
+          service_name: "vald-index-exportation"
       metrics:
         enable_cgo: true
         enable_goroutine: true
