@@ -116,7 +116,7 @@ func (r *run) PreStart(ctx context.Context) error {
 // during the operation and an error representing any initialization errors.
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 3)
-	var sech, oech, cech <-chan error
+	var sech, oech <-chan error
 	if r.observability != nil {
 		oech = r.observability.Start(ctx)
 	}
@@ -167,14 +167,19 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 }
 
 // PreStop is a method called before execution of Stop.
-func (*run) PreStop(_ context.Context) error {
-	return nil
+func (r *run) PreStop(ctx context.Context) error {
+	return r.exporter.PreStop(ctx)
 }
 
 // Stop is a method used to stop an operation in the run.
 func (r *run) Stop(ctx context.Context) (errs error) {
 	if r.observability != nil {
 		if err := r.observability.Stop(ctx); err != nil {
+			errs = errors.Join(errs, err)
+		}
+	}
+	if r.server != nil {
+		if err := r.server.Shutdown(ctx); err != nil {
 			errs = errors.Join(errs, err)
 		}
 	}
