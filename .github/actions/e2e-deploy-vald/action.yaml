@@ -97,10 +97,7 @@ runs:
       if: ${{ inputs.use_local_charts == 'true' }}
       run: |
         make k8s/vald/deploy HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
-
         sleep 3
-
-        kubectl get pods
 
         kubectl wait --for=condition=Ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
 

@@ -25,9 +25,8 @@ $(BINDIR)/minikube:
 # Start minikube with CSI Driver and Volume Snapshots support
 # Only use this for development related to Volume Snapshots. Usually k3d is faster.
 .PHONY: minikube/start
-minikube/start: \
-	$(BINDIR)/docker
-	minikube start --driver=docker --force --alsologtostderr -v=1
+minikube/start:
+	minikube start
 	minikube addons enable volumesnapshots
 	minikube addons enable csi-hostpath-driver
 	minikube addons disable storage-provisioner
