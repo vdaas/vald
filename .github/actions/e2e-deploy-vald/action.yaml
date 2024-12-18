@@ -97,9 +97,7 @@ runs:
       if: ${{ inputs.use_local_charts == 'true' }}
       run: |
         make k8s/vald/deploy HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
-        kubectl delete pod --selector=app=vald-lb-gateway
-
-        sleep 10
+        sleep 3
 
         kubectl wait --for=condition=Ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
 
