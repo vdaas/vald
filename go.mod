@@ -13,7 +13,7 @@ replace (
 	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.22.0
 	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub v1.45.3
 	cloud.google.com/go/secretmanager => cloud.google.com/go/secretmanager v1.14.2
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.47.0
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.47.0 // https://github.com/googleapis/google-cloud-go/issues/11283
 	cloud.google.com/go/trace => cloud.google.com/go/trace v1.11.2
 	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt v0.22.0
 	contrib.go.opencensus.io/exporter/aws => contrib.go.opencensus.io/exporter/aws v0.0.0-20230502192102-15967c811cec
@@ -131,7 +131,7 @@ replace (
 	github.com/gobwas/httphead => github.com/gobwas/httphead v0.1.0
 	github.com/gobwas/pool => github.com/gobwas/pool v0.2.1
 	github.com/gobwas/ws => github.com/gobwas/ws v1.4.0
-	github.com/goccy/go-json => github.com/goccy/go-json v0.10.4
+	github.com/goccy/go-json => github.com/goccy/go-json v0.10.3 // https://github.com/goccy/go-json/issues/529
 	github.com/gocql/gocql => github.com/gocql/gocql v1.7.0
 	github.com/gocraft/dbr/v2 => github.com/gocraft/dbr/v2 v2.7.7
 	github.com/godbus/dbus/v5 => github.com/godbus/dbus/v5 v5.1.0

@@ -13,7 +13,7 @@ replace (
 	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring upgrade
 	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub upgrade
 	cloud.google.com/go/secretmanager => cloud.google.com/go/secretmanager upgrade
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.47.0
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.47.0 // https://github.com/googleapis/google-cloud-go/issues/11283
 	cloud.google.com/go/trace => cloud.google.com/go/trace upgrade
 	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt upgrade
 	contrib.go.opencensus.io/exporter/aws => contrib.go.opencensus.io/exporter/aws upgrade
@@ -131,7 +131,7 @@ replace (
 	github.com/gobwas/httphead => github.com/gobwas/httphead upgrade
 	github.com/gobwas/pool => github.com/gobwas/pool upgrade
 	github.com/gobwas/ws => github.com/gobwas/ws upgrade
-	github.com/goccy/go-json => github.com/goccy/go-json upgrade
+	github.com/goccy/go-json => github.com/goccy/go-json v0.10.3 // https://github.com/goccy/go-json/issues/529
 	github.com/gocql/gocql => github.com/gocql/gocql upgrade
 	github.com/gocraft/dbr/v2 => github.com/gocraft/dbr/v2 upgrade
 	github.com/godbus/dbus/v5 => github.com/godbus/dbus/v5 upgrade
