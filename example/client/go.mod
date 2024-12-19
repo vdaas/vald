@@ -9,12 +9,12 @@ replace (
 	github.com/kpango/glg => github.com/kpango/glg v1.6.15
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.7
 	golang.org/x/crypto => golang.org/x/crypto v0.31.0
-	golang.org/x/net => golang.org/x/net v0.32.0
+	golang.org/x/net => golang.org/x/net v0.33.0
 	golang.org/x/text => golang.org/x/text v0.21.0
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20241216192217-9240e9c98484
 	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20241216192217-9240e9c98484
 	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20241216192217-9240e9c98484
-	google.golang.org/grpc => google.golang.org/grpc v1.69.0
+	google.golang.org/grpc => google.golang.org/grpc v1.69.2
 	google.golang.org/protobuf => google.golang.org/protobuf v1.36.0
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
 	sigs.k8s.io/yaml => sigs.k8s.io/yaml v1.4.0
