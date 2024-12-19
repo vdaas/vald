@@ -19,6 +19,14 @@ defaults:
     level: debug
   networkPolicy:
     enabled: true
+  server_config:
+    healths:
+      liveness:
+        livenessProbe:
+          initialDelaySeconds: 120
+      readiness:
+        readinessProbe:
+          initialDelaySeconds: 120
 gateway:
   lb:
     enabled: true
@@ -31,14 +39,6 @@ gateway:
         memory: 50Mi
     gateway_config:
       index_replica: 3
-  server_config:
-    healths:
-      liveness:
-        livenessProbe:
-          initialDelaySeconds: 120
-      readiness:
-        readinessProbe:
-          initialDelaySeconds: 120
 agent:
   minReplicas: 3
   maxReplicas: 10
