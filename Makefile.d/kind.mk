@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+SNAPSHOTTER_VERSION=v8.2.0
+
 .PHONY: kind/install
 ## install KinD
 kind/install: $(BINDIR)/kind
@@ -25,7 +28,8 @@ $(BINDIR)/kind:
 
 .PHONY: kind/start
 ## start kind (kubernetes in docker) cluster
-kind/start:
+kind/start: \
+	$(BINDIR)/docker
 	kind create cluster --name $(NAME)
 	@make kind/login
 
@@ -36,7 +40,8 @@ kind/login:
 
 .PHONY: kind/stop
 ## stop kind (kubernetes in docker) cluster
-kind/stop:
+kind/stop: \
+	$(BINDIR)/docker
 	kind delete cluster --name $(NAME)
 
 .PHONY: kind/restart
@@ -45,7 +50,6 @@ kind/restart: \
 	kind/stop \
 	kind/start
 
-
 .PHONY: kind/cluster/start
 ## start kind (kubernetes in docker) multi node cluster
 kind/cluster/start:
@@ -53,7 +57,6 @@ kind/cluster/start:
 	kind create cluster --name $(NAME)-cluster --config $(ROOTDIR)/k8s/debug/kind/config.yaml
 	kubectl apply -f https://projectcontour.io/quickstart/operator.yaml
 	kubectl apply -f https://projectcontour.io/quickstart/contour-custom-resource.yaml
-
 
 .PHONY: kind/cluster/stop
 ## stop kind (kubernetes in docker) multi node cluster
@@ -70,3 +73,45 @@ kind/cluster/login:
 kind/cluster/restart: \
 	kind/cluster/stop \
 	kind/cluster/start
+
+.PHONY: kind/vs/start
+## start kind (kubernetes in docker) cluster with volume snapshot
+kind/vs/start: \
+	$(BINDIR)/docker
+	sed -e 's/apiServerAddress: "127.0.0.1"/apiServerAddress: "$(shell grep host.docker.internal /etc/hosts | cut -f1)"/' $(ROOTDIR)/k8s/debug/kind/e2e.yaml | kind create cluster --name $(NAME)-vs --config - 
+	@make kind/vs/login
+
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
+
+	mkdir -p $(TEMP_DIR)/csi-driver-hostpath \
+		&& curl -fsSL https://github.com/kubernetes-csi/csi-driver-host-path/archive/refs/tags/v1.15.0.tar.gz | tar zxf - -C $(TEMP_DIR)/csi-driver-hostpath --strip-components 1 \
+		&& cd $(TEMP_DIR)/csi-driver-hostpath \
+		&& deploy/kubernetes-latest/deploy.sh \
+		&& kubectl apply -f examples/csi-storageclass.yaml \
+		&& kubectl apply -f examples/csi-pvc.yaml \
+		&& rm -rf $(TEMP_DIR)/csi-driver-hostpath
+
+	@make k8s/metrics/metrics-server/deploy
+	helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server -n kube-system
+	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
+
+.PHONY: kind/vs/stop
+## stop kind (kubernetes in docker) cluster with volume snapshot
+kind/vs/stop: \
+	$(BINDIR)/docker
+	kind delete cluster --name $(NAME)-vs
+
+.PHONY: kind/vs/login
+## login command for kind (kubernetes in docker)  cluster with volume snapshot
+kind/vs/login:
+	kubectl cluster-info --context kind-$(NAME)-vs
+
+.PHONY: kind/vs/restart
+## restart kind (kubernetes in docker) cluster with volume snapshot
+kind/vs/restart: \
+	kind/vs/stop \
+	kind/vs/start

@@ -16,9 +16,17 @@
 
 defaults:
   logging:
-    level: info
+    level: debug
   networkPolicy:
     enabled: true
+  server_config:
+    healths:
+      liveness:
+        livenessProbe:
+          initialDelaySeconds: 120
+      readiness:
+        readinessProbe:
+          initialDelaySeconds: 120
 gateway:
   lb:
     enabled: true
@@ -31,6 +39,25 @@ gateway:
         memory: 50Mi
     gateway_config:
       index_replica: 3
+    initContainers:
+      - type: wait-for
+        name: wait-for-discoverer
+        target: discoverer
+        image: busybox:stable
+        imagePullPolicy: Always
+        sleepDuration: 2
+      - type: wait-for
+        name: wait-for-agent
+        target: agent
+        image: busybox:stable
+        imagePullPolicy: Always
+        sleepDuration: 2
+      - type: wait-for
+        name: wait-for-agent-readreplica
+        target: agent-readreplica
+        image: busybox:stable
+        imagePullPolicy: Always
+        sleepDuration: 2
 agent:
   minReplicas: 3
   maxReplicas: 10
@@ -59,6 +86,8 @@ agent:
     snapshot_classname: "csi-hostpath-snapclass"
     hpa:
       enabled: true
+    name: vald-agent-readreplica
+    volume_name: vald-agent-readreplica-pvc
 discoverer:
   minReplicas: 1
   hpa:
