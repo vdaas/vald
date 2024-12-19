@@ -13,7 +13,7 @@ replace (
 	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring upgrade
 	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub upgrade
 	cloud.google.com/go/secretmanager => cloud.google.com/go/secretmanager upgrade
-	cloud.google.com/go/storage => cloud.google.com/go/storage upgrade
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.47.0
 	cloud.google.com/go/trace => cloud.google.com/go/trace upgrade
 	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt upgrade
 	contrib.go.opencensus.io/exporter/aws => contrib.go.opencensus.io/exporter/aws upgrade
