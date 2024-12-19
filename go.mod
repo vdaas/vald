@@ -329,22 +329,22 @@ replace (
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
 	honnef.co/go/tools => honnef.co/go/tools v0.5.1
-	k8s.io/api => k8s.io/api v0.31.2
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.31.2
-	k8s.io/apimachinery => k8s.io/apimachinery v0.31.2
-	k8s.io/cli-runtime => k8s.io/cli-runtime v0.31.2
-	k8s.io/client-go => k8s.io/client-go v0.31.2
-	k8s.io/component-base => k8s.io/component-base v0.31.2
+	k8s.io/api => k8s.io/api v0.32.0
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.32.0
+	k8s.io/apimachinery => k8s.io/apimachinery v0.32.0
+	k8s.io/cli-runtime => k8s.io/cli-runtime v0.32.0
+	k8s.io/client-go => k8s.io/client-go v0.32.0
+	k8s.io/component-base => k8s.io/component-base v0.32.0
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.130.1
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20241212222426-2c72e554b1e7
-	k8s.io/kubernetes => k8s.io/kubernetes v0.31.2
-	k8s.io/metrics => k8s.io/metrics v0.31.2
+	k8s.io/kubernetes => k8s.io/kubernetes v0.32.0
+	k8s.io/metrics => k8s.io/metrics v0.32.0
 	nhooyr.io/websocket => nhooyr.io/websocket v1.8.17
 	rsc.io/pdf => rsc.io/pdf v0.1.1
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.19.1
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.19.3
 	sigs.k8s.io/json => sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8
 	sigs.k8s.io/kustomize => sigs.k8s.io/kustomize v2.0.3+incompatible
-	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.4.1
+	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.5.0
 	sigs.k8s.io/yaml => sigs.k8s.io/yaml v1.4.0
 )
 
@@ -383,7 +383,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/unum-cloud/usearch/golang v0.0.0-20241213232841-3964f8392443
 	github.com/zeebo/xxh3 v1.0.2
-	go.etcd.io/bbolt v1.3.9
+	go.etcd.io/bbolt v1.3.11
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.54.0
 	go.opentelemetry.io/otel v1.33.0
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v0.0.0-00010101000000-000000000000
@@ -412,10 +412,10 @@ require (
 	google.golang.org/grpc v1.68.1
 	google.golang.org/protobuf v1.36.0
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.31.2
-	k8s.io/apimachinery v0.31.2
+	k8s.io/api v0.32.0
+	k8s.io/apimachinery v0.32.0
 	k8s.io/cli-runtime v0.0.0-00010101000000-000000000000
-	k8s.io/client-go v0.31.2
+	k8s.io/client-go v0.32.0
 	k8s.io/metrics v0.0.0-00010101000000-000000000000
 	k8s.io/utils v0.0.0-20241210054802-24370beab758
 	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
@@ -423,7 +423,7 @@ require (
 )
 
 require (
-	cel.dev/expr v0.16.2 // indirect
+	cel.dev/expr v0.18.0 // indirect
 	cloud.google.com/go v0.117.0 // indirect
 	cloud.google.com/go/auth v0.13.0 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.6 // indirect
@@ -432,7 +432,7 @@ require (
 	cloud.google.com/go/monitoring v1.22.0 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	git.sr.ht/~sbinet/gg v0.6.0 // indirect
-	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
+	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.24.2 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.48.1 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.48.1 // indirect
@@ -481,10 +481,9 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
-	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7 // indirect
+	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.24.0 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
-	github.com/imdario/mergo v0.3.6 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
@@ -492,7 +491,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/moby/spdystream v0.4.0 // indirect
+	github.com/moby/spdystream v0.5.0 // indirect
 	github.com/moby/term v0.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
@@ -520,7 +519,6 @@ require (
 	go.opentelemetry.io/contrib/detectors/gcp v1.31.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.54.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.4.0 // indirect
-	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	go.uber.org/mock v0.4.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.31.0 // indirect
@@ -538,9 +536,9 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.31.0 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
-	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
-	sigs.k8s.io/kustomize/api v0.17.2 // indirect
-	sigs.k8s.io/kustomize/kyaml v0.17.1 // indirect
+	k8s.io/kube-openapi v0.0.0-20241105132330-32ad38e42d3f // indirect
+	sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3 // indirect
+	sigs.k8s.io/kustomize/api v0.18.0 // indirect
+	sigs.k8s.io/kustomize/kyaml v0.18.1 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.2 // indirect
 )
