@@ -38,6 +38,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestEncodeResponse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w            http.ResponseWriter
 		data         any
@@ -108,6 +109,7 @@ func TestEncodeResponse(t *testing.T) {
 }
 
 func TestDecodeRequest(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		r    *http.Request
 		data map[string]string
@@ -177,6 +179,7 @@ func TestDecodeRequest(t *testing.T) {
 }
 
 func TestHandler(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w     http.ResponseWriter
 		r     *http.Request
@@ -330,6 +333,7 @@ func TestHandler(t *testing.T) {
 }
 
 func TestErrorHandler(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w    http.ResponseWriter
 		r    *http.Request
@@ -394,6 +398,7 @@ func TestErrorHandler(t *testing.T) {
 }
 
 func TestDecodeResponse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		res  *http.Response
 		data any
@@ -543,6 +548,7 @@ func TestDecodeResponse(t *testing.T) {
 }
 
 func TestEncodeRequest(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		req          *http.Request
 		data         any
@@ -655,6 +661,7 @@ func TestEncodeRequest(t *testing.T) {
 }
 
 func TestRequest(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx     context.Context
 		method  string
