@@ -35,10 +35,10 @@ gateway:
     healths:
       liveness:
         livenessProbe:
-          initialDelaySeconds: 60
+          initialDelaySeconds: 120
       readiness:
         readinessProbe:
-          initialDelaySeconds: 60
+          initialDelaySeconds: 120
 agent:
   minReplicas: 3
   maxReplicas: 10
