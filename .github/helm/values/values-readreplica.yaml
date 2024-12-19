@@ -16,7 +16,7 @@
 
 defaults:
   logging:
-    level: info
+    level: debug
   networkPolicy:
     enabled: true
 gateway:
@@ -31,25 +31,14 @@ gateway:
         memory: 50Mi
     gateway_config:
       index_replica: 3
-    initContainers:
-      - type: wait-for
-        name: wait-for-discoverer
-        target: discoverer
-        image: busybox:stable
-        imagePullPolicy: Always
-        sleepDuration: 2
-      - type: wait-for
-        name: wait-for-agent
-        target: agent
-        image: busybox:stable
-        imagePullPolicy: Always
-        sleepDuration: 2
-      - type: wait-for
-        name: wait-for-agent-readreplica
-        target: agent-readreplica
-        image: busybox:stable
-        imagePullPolicy: Always
-        sleepDuration: 2
+  server_config:
+    healths:
+      liveness:
+        livenessProbe:
+          initialDelaySeconds: 60
+      readiness:
+        readinessProbe:
+          initialDelaySeconds: 60
 agent:
   minReplicas: 3
   maxReplicas: 10
