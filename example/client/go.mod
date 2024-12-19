@@ -4,7 +4,7 @@ go 1.23.4
 
 replace (
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v1.1.0
-	github.com/goccy/go-json => github.com/goccy/go-json v0.10.4
+	github.com/goccy/go-json => github.com/goccy/go-json v0.10.3
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.4
 	github.com/kpango/glg => github.com/kpango/glg v1.6.15
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.7
