@@ -85,7 +85,7 @@ runs:
       run: |
         make k8s/vald-readreplica/deploy HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
 
-        kubectl logs -l app=vald-lb-gateway > gateway.log &
+        stern vald-lb-gateway | tee gateway.log &
         sleep 3
 
         kubectl get pods
