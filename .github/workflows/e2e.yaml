@@ -341,10 +341,6 @@ jobs:
             e2e/readreplica
         env:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
-      - name: output logs on failure
-        if: failure()
-        run: |
-          cat ./gateway.log
   e2e-stream-crud-with-mirror:
     name: "E2E test (Stream CRUD) with mirror"
     needs: [detect-ci-container]
