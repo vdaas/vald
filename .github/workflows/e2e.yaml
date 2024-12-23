@@ -322,12 +322,6 @@ jobs:
         with:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-readreplica.yaml
-      - name: Deploy Vald
-        id: deploy_vald
-        uses: ./.github/actions/e2e-deploy-vald
-        with:
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-readreplica.yaml
           wait_for_selector: app=vald-lb-gateway
       - name: Run E2E CRUD with read replica rotation
         run: |

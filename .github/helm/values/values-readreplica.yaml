@@ -19,14 +19,6 @@ defaults:
     level: debug
   networkPolicy:
     enabled: true
-  server_config:
-    healths:
-      liveness:
-        livenessProbe:
-          initialDelaySeconds: 120
-      readiness:
-        readinessProbe:
-          initialDelaySeconds: 120
 gateway:
   lb:
     enabled: true
