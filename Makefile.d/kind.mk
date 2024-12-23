@@ -20,7 +20,7 @@ SNAPSHOTTER_VERSION=v8.2.0
 ## install KinD
 kind/install: $(BINDIR)/kind
 
-$(BINDIR)/kind:
+$(BINDIR)/kind: $(BINDIR)/docker
 	mkdir -p $(BINDIR)
 	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
 	curl -fsSL https://github.com/kubernetes-sigs/kind/releases/download/v$(KIND_VERSION)/kind-$(OS)-$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/kind
@@ -28,8 +28,7 @@ $(BINDIR)/kind:
 
 .PHONY: kind/start
 ## start kind (kubernetes in docker) cluster
-kind/start: \
-	$(BINDIR)/docker
+kind/start:
 	kind create cluster --name $(NAME)
 	@make kind/login
 
@@ -40,8 +39,7 @@ kind/login:
 
 .PHONY: kind/stop
 ## stop kind (kubernetes in docker) cluster
-kind/stop: \
-	$(BINDIR)/docker
+kind/stop:
 	kind delete cluster --name $(NAME)
 
 .PHONY: kind/restart
@@ -76,8 +74,7 @@ kind/cluster/restart: \
 
 .PHONY: kind/vs/start
 ## start kind (kubernetes in docker) cluster with volume snapshot
-kind/vs/start: \
-	$(BINDIR)/docker
+kind/vs/start:
 	sed -e 's/apiServerAddress: "127.0.0.1"/apiServerAddress: "$(shell grep host.docker.internal /etc/hosts | cut -f1)"/' $(ROOTDIR)/k8s/debug/kind/e2e.yaml | kind create cluster --name $(NAME)-vs --config - 
 	@make kind/vs/login
 
@@ -101,8 +98,7 @@ kind/vs/start: \
 
 .PHONY: kind/vs/stop
 ## stop kind (kubernetes in docker) cluster with volume snapshot
-kind/vs/stop: \
-	$(BINDIR)/docker
+kind/vs/stop:
 	kind delete cluster --name $(NAME)-vs
 
 .PHONY: kind/vs/login

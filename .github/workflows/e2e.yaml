@@ -335,12 +335,12 @@ jobs:
             E2E_UPDATE_COUNT=100 \
             E2E_UPSERT_COUNT=100 \
             E2E_REMOVE_COUNT=100 \
-            E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=10m \
             E2E_TARGET_POD_NAME=${POD_NAME} \
             E2E_TARGET_NAMESPACE=default \
             e2e/readreplica
         env:
-          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+          POD_NAME: ${{ steps.deploy_vald_readreplica.outputs.POD_NAME }}
   e2e-stream-crud-with-mirror:
     name: "E2E test (Stream CRUD) with mirror"
     needs: [detect-ci-container]
