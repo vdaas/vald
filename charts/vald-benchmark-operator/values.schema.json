@@ -164,7 +164,10 @@
                 "interceptors": {
                   "type": "array",
                   "description": "gRPC client interceptors",
-                  "items": { "type": "string", "enum": ["TraceInterceptor"] }
+                  "items": {
+                    "type": "string",
+                    "enum": ["TraceInterceptor", "MetricInterceptor"]
+                  }
                 },
                 "keepalive": {
                   "type": "object",
@@ -698,7 +701,15 @@
                         "initial_window_size": { "type": "integer" },
                         "interceptors": {
                           "type": "array",
-                          "items": { "type": "string" }
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "RecoverInterceptor",
+                              "AccessLogInterceptor",
+                              "TraceInterceptor",
+                              "MetricInterceptor"
+                            ]
+                          }
                         },
                         "keepalive": {
                           "type": "object",
