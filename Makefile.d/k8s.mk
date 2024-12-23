@@ -267,7 +267,6 @@ k8s/vald-readreplica/deploy: k8s/vald/deploy
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb || true
 
 	kubectl get pods
-	kubectl wait --for=condition=ready pod -l app=vald-lb-gateway --timeout=600s
 
 .PHONY: k8s/vald-readreplica/delete
 ## delete vald-helm-operator from k8s
