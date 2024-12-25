@@ -137,6 +137,7 @@ RUN --mount=type=bind,target=.,rw \
     && make telepresence/install \
     && make tparse/install \
     && make yq/install \
+    && make docker-cli/install \
     && make ngt/install \
     && make faiss/install \
     && rm -rf ${GOPATH}/src/github.com/${ORG}/${REPO}/*
