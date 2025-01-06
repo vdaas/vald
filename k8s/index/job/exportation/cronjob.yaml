@@ -65,7 +65,7 @@ spec:
                   done
           containers:
             - name: vald-index-exportation
-              image: "vdaas/vald-index-exportation:latest"
+              image: "vdaas/vald-index-exportation:nightly"
               imagePullPolicy: Never
               volumeMounts:
                 - name: vald-index-exportation-config
