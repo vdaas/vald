@@ -76,7 +76,7 @@ func New(opts ...Option) (idx Indexer, err error) {
 	}
 	i.indexing.Store(false)
 	i.saving.Store(false)
-	if i.indexDuration+i.indexDurationLimit+i.saveIndexDurationLimit <= 0 {
+	if i.indexDuration < 0 && i.indexDurationLimit < 0 && i.saveIndexDurationLimit < 0 {
 		return nil, errors.ErrInvalidConfig
 	}
 	return i, nil
