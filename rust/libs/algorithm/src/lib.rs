@@ -13,19 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-use std::{error, fmt};
-
 use anyhow::Result;
 use proto::payload::v1::search;
+use std::{error, fmt, i64};
 
 #[derive(Debug)]
 pub enum Error {
-    CreateIndexingIsInProgress{},
-    FlushingIsInProgress{},
-    EmptySearchResult{},
-    IncompatibleDimensionSize{got: usize, want: usize},
-
-    Unknown{},
+    CreateIndexingIsInProgress {},
+    FlushingIsInProgress {},
+    EmptySearchResult {},
+    IncompatibleDimensionSize { got: usize, want: usize },
+    UUIDAlreadyExists { id: usize },
+    UUIDNotFound { id: usize },
+    UncommittedIndexNotFound {},
+    InvalidUUID { uuid: String },
+    ObjectIDNotFound { uuid: String },
+    Unknown {},
 }
 
 impl error::Error for Error {}
@@ -33,16 +36,49 @@ impl error::Error for Error {}
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::CreateIndexingIsInProgress{} => write!(f, "create indexing is in progress"),
-            Error::FlushingIsInProgress{} => write!(f, "flush is in progress"),
-            Error::EmptySearchResult{} => write!(f, "search result is empty"),
-            Error::IncompatibleDimensionSize { got, want } => write!(f, "incompatible dimension size detected\trequested: {},\tconfigured: {}", got, want),
-            Error::Unknown {  } => write!(f, "unknown error")
+            Error::CreateIndexingIsInProgress {} => write!(f, "create indexing is in progress"),
+            Error::FlushingIsInProgress {} => write!(f, "flush is in progress"),
+            Error::EmptySearchResult {} => write!(f, "search result is empty"),
+            Error::IncompatibleDimensionSize { got, want } => write!(
+                f,
+                "incompatible dimension size detected\trequested: {},\tconfigured: {}",
+                got, want
+            ),
+            Error::UUIDAlreadyExists { id } => write!(f, "uuid {} index already exists", id),
+            Error::UUIDNotFound { id } => {
+                if *id == (0 as usize) {
+                    write!(f, "object uuid not found")
+                } else {
+                    write!(f, "object uuid {}'s metadata not found", id)
+                }
+            }
+            Error::UncommittedIndexNotFound {} => write!(f, "uncommitted indexes are not found"),
+            Error::InvalidUUID { uuid } => write!(f, "uuid \"{}\" is invalid", uuid),
+            Error::ObjectIDNotFound { uuid } => write!(f, "uuid {}'s object id not found", uuid),
+            Error::Unknown {} => write!(f, "unknown error"),
         }
     }
 }
 
 pub trait ANN: Send + Sync {
+    fn exists(&self, uuid: String) -> bool;
+    fn create_index(&mut self) -> Result<(), Error>;
+    fn save_index(&mut self) -> Result<(), Error>;
+    fn insert(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error>;
+    fn update(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error>;
+    fn remove(&mut self, uuid: String, ts: i64) -> Result<(), Error>;
+    fn search(
+        &self,
+        vector: Vec<f32>,
+        k: u32,
+        epsilon: f32,
+        radius: f32,
+    ) -> Result<search::Response, Error>;
+    fn get_object(&self, uuid: String) -> Result<(Vec<f32>, i64), Error>;
     fn get_dimension_size(&self) -> usize;
-    fn search(&self, vector: Vec<f32>, dim: u32, epsilon: f32, radius: f32) -> Result<tonic::Response<search::Response>, Error>;
+    fn len(&self) -> u32;
+    fn insert_vqueue_buffer_len(&self) -> u32;
+    fn delete_vqueue_buffer_len(&self) -> u32;
+    fn is_indexing(&self) -> bool;
+    fn is_saving(&self) -> bool;
 }

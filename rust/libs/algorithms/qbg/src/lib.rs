@@ -95,16 +95,21 @@ pub mod ffi {
         fn insert(self: Pin<&mut Index>, v: &[f32]) -> Result<i32>;
         fn remove(self: Pin<&mut Index>, id: usize) -> Result<()>;
         fn search(
-            self: Pin<&mut Index>,
+            self: &Index,
             v: &[f32],
             k: usize,
             radius: f32,
             epsilon: f32,
         ) -> UniquePtr<CxxVector<SearchResult>>;
-        fn get_object(self: Pin<&mut Index>, id: usize) -> Result<*mut f32>;
-        fn get_dimension(self: Pin<&mut Index>) -> Result<usize>;
+        fn get_object(self: &Index, id: usize) -> Result<*mut f32>;
+        fn get_dimension(self: &Index) -> Result<usize>;
     }
 }
+
+unsafe impl Sync for ffi::Property {}
+unsafe impl Send for ffi::Property {}
+unsafe impl Sync for ffi::Index {}
+unsafe impl Send for ffi::Index {}
 
 pub mod property {
     use super::ffi;
@@ -365,13 +370,14 @@ pub mod index {
         }
 
         pub fn search(
-            &mut self,
+            &self,
             v: &[f32],
             k: usize,
             radius: f32,
             epsilon: f32,
         ) -> Result<Vec<(u32, f32)>, cxx::Exception> {
-            let mut search_results = self.inner.pin_mut().search(v, k, radius, epsilon);
+            let index = self.inner.as_ref().unwrap();
+            let mut search_results = index.search(v, k, radius, epsilon);
             Ok(search_results
                 .pin_mut()
                 .into_iter()
@@ -379,16 +385,17 @@ pub mod index {
                 .collect())
         }
 
-        pub fn get_object(&mut self, id: usize) -> Result<&[f32], cxx::Exception> {
-            let dim = self.inner.pin_mut().get_dimension()?;
-            match self.inner.pin_mut().get_object(id) {
+        pub fn get_object(&self, id: usize) -> Result<&[f32], cxx::Exception> {
+            let dim = self.inner.get_dimension()?;
+            match self.inner.get_object(id) {
                 Ok(v) => Ok(unsafe { slice::from_raw_parts(v, dim) }),
                 Err(e) => Err(e),
             }
         }
 
-        pub fn get_dimension(&mut self) -> Result<usize, cxx::Exception> {
-            self.inner.pin_mut().get_dimension()
+        pub fn get_dimension(&self) -> Result<usize, cxx::Exception> {
+            let index = self.inner.as_ref().unwrap();
+            index.get_dimension()
         }
     }
 }
