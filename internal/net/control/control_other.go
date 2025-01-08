@@ -19,9 +19,14 @@
 // Package control provides network socket option
 package control
 
-var SetsockoptInt = func(fd, level, opt int, value int) (err error) {
-	return nil
-}
+var (
+	SetsockoptInt = func(fd, level, opt int, value int) (err error) {
+		return nil
+	}
+	SetsockoptString = func(fd, level, opt int, s string) (err error) {
+		return nil
+	}
+)
 
 const (
 	SOL_SOCKET           = 0
@@ -39,6 +44,7 @@ const (
 	TCP_KEEPIDLE         = 0
 	TCP_FASTOPEN         = 0
 	TCP_FASTOPEN_CONNECT = 0
+	TCP_USER_TIMEOUT     = 0
 	IP_TRANSPARENT       = 0
 	IPV6_TRANSPARENT     = 0
 	IP_RECVORIGDSTADDR   = 0

@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-.PHONY: test
-
 .PHONY: tparse/install
 ## install tparse
 tparse/install: \
@@ -40,6 +37,7 @@ gotests/install: \
 $(GOPATH)bin/gotests:
 	$(call go-install, github.com/cweill/gotests/gotests)
 
+.PHONY: test
 ## run tests for cmd, internal, pkg
 test:
 	GOPRIVATE=$(GOPRIVATE) \

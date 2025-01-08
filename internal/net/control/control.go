@@ -39,9 +39,20 @@ type control struct {
 	ipTransparent            bool
 	ipRecoverDestinationAddr bool
 	keepAlive                int
+	tcpMultiPath             bool
+	tcpUserTimeout           int
+	bindToDevice             string
+	ipMTUDiscover            bool
+	ipFreeBind               bool
+	tcpCongestion            string
+	tcpWindowClamp           int
+	lingerTime               int
+	rcvBufSize               int
+	sndBufSize               int
+	socketMark               int
 }
 
-// SocketFlag represents the flag to enable specific feature for the socket listener.
+// SocketFlag represents the flag to enable specific features for the socket listener.
 type SocketFlag uint
 
 const (
@@ -54,6 +65,17 @@ const (
 	TCPDeferAccept
 	IPTransparent
 	IPRecoverDestinationAddr
+	MPTCP
+	TCPUserTimeout
+	BindToDevice
+	IPMTUDiscover
+	IPFreeBind
+	TCPCongestion
+	TCPWindowClamp
+	LingerTime
+	RecvBufferSize
+	SendBufferSize
+	SocketMark
 )
 
 // New returns the socket controller.
@@ -68,6 +90,7 @@ func New(flag SocketFlag, keepAlive int) SocketController {
 		tcpDeferAccept:           flag&TCPDeferAccept == TCPDeferAccept,
 		ipTransparent:            flag&IPTransparent == IPTransparent,
 		ipRecoverDestinationAddr: flag&IPRecoverDestinationAddr == IPRecoverDestinationAddr,
+		tcpMultiPath:             flag&MPTCP == MPTCP,
 		keepAlive:                keepAlive,
 	}
 }
@@ -100,6 +123,8 @@ func (ctrl *control) controlFunc(network, address string, c syscall.RawConn) (er
 	return c.Control(func(fd uintptr) {
 		f := int(fd)
 		var ierr error
+
+		// ReusePort and ReuseAddr
 		if SO_REUSEPORT != 0 {
 			ierr = SetsockoptInt(f, SOL_SOCKET, SO_REUSEPORT, boolint(ctrl.reusePort))
 			if ierr != nil {
@@ -112,7 +137,17 @@ func (ctrl *control) controlFunc(network, address string, c syscall.RawConn) (er
 				err = errors.Join(err, ierr)
 			}
 		}
+
+		// TCP options
 		if isTCP(network) {
+			// MPTCP
+			if ctrl.tcpMultiPath {
+				const IPPROTO_MPTCP = 262
+				ierr = SetsockoptInt(f, IPPROTO_MPTCP, 1, 1)
+				if ierr != nil {
+					err = errors.Join(err, ierr)
+				}
+			}
 			if TCP_FASTOPEN != 0 {
 				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_FASTOPEN, boolint(ctrl.tcpFastOpen))
 				if ierr != nil {
@@ -149,6 +184,24 @@ func (ctrl *control) controlFunc(network, address string, c syscall.RawConn) (er
 					err = errors.Join(err, ierr)
 				}
 			}
+			if TCP_USER_TIMEOUT != 0 && ctrl.tcpUserTimeout > 0 {
+				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_USER_TIMEOUT, ctrl.tcpUserTimeout)
+				if ierr != nil {
+					err = errors.Join(err, ierr)
+				}
+			}
+			if ctrl.tcpCongestion != "" {
+				ierr = SetsockoptString(f, IPPROTO_TCP, TCP_CONGESTION, ctrl.tcpCongestion)
+				if ierr != nil {
+					err = errors.Join(err, ierr)
+				}
+			}
+			if TCP_WINDOW_CLAMP != 0 && ctrl.tcpWindowClamp > 0 {
+				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_WINDOW_CLAMP, ctrl.tcpWindowClamp)
+				if ierr != nil {
+					err = errors.Join(err, ierr)
+				}
+			}
 		}
 		var sol, trans, rda int
 		switch network {
@@ -165,6 +218,19 @@ func (ctrl *control) controlFunc(network, address string, c syscall.RawConn) (er
 		}
 		if sol != 0 && rda != 0 {
 			ierr = SetsockoptInt(f, sol, rda, boolint(ctrl.ipRecoverDestinationAddr))
+			if ierr != nil {
+				err = errors.Join(err, ierr)
+			}
+		}
+		// IP options
+		if ctrl.bindToDevice != "" {
+			ierr = SetsockoptString(f, SOL_SOCKET, SO_BINDTODEVICE, ctrl.bindToDevice)
+			if ierr != nil {
+				err = errors.Join(err, ierr)
+			}
+		}
+		if ctrl.ipFreeBind {
+			ierr = SetsockoptInt(f, SOL_SOCKET, SO_FREEBIND, 1)
 			if ierr != nil {
 				err = errors.Join(err, ierr)
 			}
@@ -188,6 +254,36 @@ func (ctrl *control) controlFunc(network, address string, c syscall.RawConn) (er
 				if ierr != nil {
 					err = errors.Join(err, ierr)
 				}
+			}
+		}
+
+		// Buffer sizes
+		if ctrl.rcvBufSize > 0 {
+			ierr = SetsockoptInt(f, SOL_SOCKET, SO_RCVBUF, ctrl.rcvBufSize)
+			if ierr != nil {
+				err = errors.Join(err, ierr)
+			}
+		}
+		if ctrl.sndBufSize > 0 {
+			ierr = SetsockoptInt(f, SOL_SOCKET, SO_SNDBUF, ctrl.sndBufSize)
+			if ierr != nil {
+				err = errors.Join(err, ierr)
+			}
+		}
+
+		// Linger
+		if ctrl.lingerTime > 0 {
+			ierr = SetsockoptLinger(f, SOL_SOCKET, SO_LINGER, ctrl.lingerTime)
+			if ierr != nil {
+				err = errors.Join(err, ierr)
+			}
+		}
+
+		// SocketMark
+		if ctrl.socketMark > 0 {
+			ierr = SetsockoptInt(f, SOL_SOCKET, SO_MARK, ctrl.socketMark)
+			if ierr != nil {
+				err = errors.Join(err, ierr)
 			}
 		}
 	})

@@ -21,7 +21,10 @@ package control
 
 import "golang.org/x/sys/unix"
 
-var SetsockoptInt = unix.SetsockoptInt
+var (
+	SetsockoptInt    = unix.SetsockoptInt
+	SetsockoptString = unix.SetsockoptString
+)
 
 const (
 	SOL_SOCKET  = unix.SOL_SOCKET
@@ -39,6 +42,7 @@ const (
 	TCP_DEFER_ACCEPT = unix.TCP_DEFER_ACCEPT
 	TCP_KEEPINTVL    = unix.TCP_KEEPINTVL
 	TCP_KEEPIDLE     = unix.TCP_KEEPIDLE
+	TCP_USER_TIMEOUT = unix.TCP_USER_TIMEOUT
 	// from linux/include/uapi/linux/tcp.h.
 	TCP_FASTOPEN         = unix.TCP_FASTOPEN
 	TCP_FASTOPEN_CONNECT = unix.TCP_FASTOPEN_CONNECT

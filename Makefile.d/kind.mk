@@ -45,7 +45,6 @@ kind/restart: \
 	kind/stop \
 	kind/start
 
-
 .PHONY: kind/cluster/start
 ## start kind (kubernetes in docker) multi node cluster
 kind/cluster/start:
@@ -53,7 +52,6 @@ kind/cluster/start:
 	kind create cluster --name $(NAME)-cluster --config $(ROOTDIR)/k8s/debug/kind/config.yaml
 	kubectl apply -f https://projectcontour.io/quickstart/operator.yaml
 	kubectl apply -f https://projectcontour.io/quickstart/contour-custom-resource.yaml
-
 
 .PHONY: kind/cluster/stop
 ## stop kind (kubernetes in docker) multi node cluster

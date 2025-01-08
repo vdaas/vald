@@ -21,12 +21,17 @@ package control
 
 import "golang.org/x/sys/windows"
 
-var SetsockoptInt = func(fd, level, opt int, value int) (err error) {
-	if level == windows.SOL_SOCKET && opt == windows.SO_REUSEADDR {
-		return windows.SetsockoptInt(windows.Handle(fd), level, opt, value)
+var (
+	SetsockoptInt = func(fd, level, opt int, value int) (err error) {
+		if level == windows.SOL_SOCKET && opt == windows.SO_REUSEADDR {
+			return windows.SetsockoptInt(windows.Handle(fd), level, opt, value)
+		}
+		return nil
 	}
-	return nil
-}
+	SetsockoptString = func(fd, level, opt int, s string) (err error) {
+		return nil
+	}
+)
 
 const (
 	SOL_SOCKET           = windows.SOL_SOCKET
@@ -44,6 +49,7 @@ const (
 	TCP_KEEPIDLE         = 0
 	TCP_FASTOPEN         = 0
 	TCP_FASTOPEN_CONNECT = 0
+	TCP_USER_TIMEOUT     = 0
 	IP_TRANSPARENT       = 0
 	IPV6_TRANSPARENT     = 0
 	IP_RECVORIGDSTADDR   = 0

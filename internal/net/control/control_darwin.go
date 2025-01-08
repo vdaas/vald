@@ -25,7 +25,10 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-var SetsockoptInt = unix.SetsockoptInt
+var (
+	SetsockoptInt    = unix.SetsockoptInt
+	SetsockoptString = unix.SetsockoptString
+)
 
 const (
 	SOL_SOCKET  = syscall.SOL_SOCKET
@@ -33,10 +36,9 @@ const (
 	SOL_IP      = 0
 	SOL_IPV6    = 0
 
-	SO_REUSEADDR = unix.SO_REUSEADDR
-	SO_REUSEPORT = unix.SO_REUSEPORT
-	SO_KEEPALIVE = unix.SO_KEEPALIVE
-
+	SO_REUSEADDR         = unix.SO_REUSEADDR
+	SO_REUSEPORT         = unix.SO_REUSEPORT
+	SO_KEEPALIVE         = unix.SO_KEEPALIVE
 	TCP_NODELAY          = unix.TCP_NODELAY
 	TCP_CORK             = 0
 	TCP_QUICKACK         = 0
@@ -45,6 +47,7 @@ const (
 	TCP_KEEPIDLE         = 0
 	TCP_FASTOPEN         = unix.TCP_FASTOPEN
 	TCP_FASTOPEN_CONNECT = 0
+	TCP_USER_TIMEOUT     = 0
 
 	IP_TRANSPARENT   = 0
 	IPV6_TRANSPARENT = 0

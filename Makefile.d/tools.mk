@@ -271,4 +271,3 @@ $(BINDIR)/yq:
 	cd $(TEMP_DIR) \
 	    && curl -fsSL https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_$(OS)_$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/yq \
 	    && chmod a+x $(BINDIR)/yq
-

@@ -281,4 +281,3 @@ update/template:
 	sed -i -e "s/^- Faiss Version: .*$$/- Faiss Version: v$(FAISS_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
 	sed -i -e "s/^- Faiss Version: .*$$/- Faiss Version: v$(FAISS_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
 	sed -i -e "s/^- Faiss Version: .*$$/- Faiss Version: v$(FAISS_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
-
