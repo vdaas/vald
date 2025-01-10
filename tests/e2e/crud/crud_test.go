@@ -1032,18 +1032,19 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		for {
-			searchFunc()
-			time.Sleep(1 * time.Second)
 			select {
 			case <-done:
 				return
 			default:
+				searchFunc()
+				time.Sleep(1 * time.Second)
 			}
 		}
 	}()
 	kubectl.RolloutRestart(ctx, t, "statefulset", "vald-agent")
 
 	// Wait for StatefulSet to be ready
+	time.Sleep(10 * time.Second)
 	t.Log("waiting for agent pods ready...")
 	swg := sync.WaitGroup{}
 	swg.Add(1)
@@ -1055,9 +1056,9 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 				t.Fatalf("an error occurred: %s", err)
 			}
 			if ok {
-				return
+				t.Log("statefulset is ok", ok)
+				break
 			}
-			continue
 		}
 	}()
 	swg.Wait()
@@ -1067,33 +1068,30 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 		t.Fatalf("an error occurred: count = %d, err = %s", cnt.Stored, err)
 	}
 
-	// err = op.Exists(t, ctx, "0")
-	// if err != nil {
-	// 	t.Fatalf("an error occurred: %s", err)
-	// }
-	//
-	// err = op.GetObject(t, ctx, operation.Dataset{
-	// 	Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
-	// })
-	// if err != nil {
-	// 	t.Fatalf("an error occurred: %s", err)
-	// }
-	//
-	// err = op.Remove(t, ctx, operation.Dataset{
-	// 	Train: ds.Train[removeFrom : removeFrom+removeNum],
-	// })
-	// if err != nil {
-	// 	t.Fatalf("an error occurred: %s", err)
-	// }
-	//
-	// // Remove all vector data after the current - 1 hour.
-	// err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
-	// if err != nil {
-	// 	t.Fatalf("an error occurred: %s", err)
-	// }
-	time.AfterFunc(5*time.Second, func() {
-		close(done)
-		fmt.Println("canceling all goroutines")
+	err = op.Exists(t, ctx, "0")
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.GetObject(t, ctx, operation.Dataset{
+		Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
 	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Remove(t, ctx, operation.Dataset{
+		Train: ds.Train[removeFrom : removeFrom+removeNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// Remove all vector data after the current - 1 hour.
+	err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+	close(done)
 	wg.Wait()
 }
