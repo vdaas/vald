@@ -26,6 +26,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -986,4 +987,113 @@ func TestE2EReadReplica(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
+}
+
+// TestE2EReadReplica tests that search requests succeed with read replica resources.
+func TestE2EAgentRolloutRestart(t *testing.T) {
+	t.Cleanup(teardown)
+
+	if kubeClient == nil {
+		var err error
+		kubeClient, err = client.New(kubeConfig)
+		if err != nil {
+			t.Skipf("TestE2EReadReplica needs kubernetes client but failed to create one: %s", err)
+		}
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Insert(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	sleep(t, waitAfterInsertDuration)
+
+	// TODO Dipatch Search Inf-Loop
+	searchFunc := func() {
+		_ = op.Search(t, ctx, operation.Dataset{
+			Test:      ds.Test[searchFrom : searchFrom+searchNum],
+			Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
+		})
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	done := make(chan struct{})
+	go func() {
+		defer wg.Done()
+		for {
+			searchFunc()
+			time.Sleep(1 * time.Second)
+			select {
+			case <-done:
+				return
+			default:
+			}
+		}
+	}()
+	kubectl.RolloutRestart(ctx, t, "statefulset", "vald-agent")
+
+	// Wait for StatefulSet to be ready
+	t.Log("waiting for agent pods ready...")
+	swg := sync.WaitGroup{}
+	swg.Add(1)
+	go func() {
+		defer swg.Done()
+		for {
+			ok, err := kubeClient.WaitForStatefulSetReady(ctx, namespace, "vald-agent", 10*time.Minute)
+			if err != nil {
+				t.Fatalf("an error occurred: %s", err)
+			}
+			if ok {
+				return
+			}
+			continue
+		}
+	}()
+	swg.Wait()
+
+	cnt, err := op.IndexInfo(t, ctx)
+	if err != nil {
+		t.Fatalf("an error occurred: count = %d, err = %s", cnt.Stored, err)
+	}
+
+	// err = op.Exists(t, ctx, "0")
+	// if err != nil {
+	// 	t.Fatalf("an error occurred: %s", err)
+	// }
+	//
+	// err = op.GetObject(t, ctx, operation.Dataset{
+	// 	Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
+	// })
+	// if err != nil {
+	// 	t.Fatalf("an error occurred: %s", err)
+	// }
+	//
+	// err = op.Remove(t, ctx, operation.Dataset{
+	// 	Train: ds.Train[removeFrom : removeFrom+removeNum],
+	// })
+	// if err != nil {
+	// 	t.Fatalf("an error occurred: %s", err)
+	// }
+	//
+	// // Remove all vector data after the current - 1 hour.
+	// err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
+	// if err != nil {
+	// 	t.Fatalf("an error occurred: %s", err)
+	// }
+	time.AfterFunc(5*time.Second, func() {
+		close(done)
+		fmt.Println("canceling all goroutines")
+	})
+	wg.Wait()
 }

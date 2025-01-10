@@ -40,6 +40,16 @@ func RolloutResource(ctx context.Context, t *testing.T, resource string) error {
 	return runCmd(t, cmd)
 }
 
+func RolloutRestart(ctx context.Context, t *testing.T, resource string, name string) error {
+	t.Helper()
+
+	cmd := exec.CommandContext(ctx, "kubectl", "rollout", "restart", resource, name)
+	if err := runCmd(t, cmd); err != nil {
+		return err
+	}
+	return runCmd(t, cmd)
+}
+
 // WaitResources waits for multiple resources to be ready.
 func WaitResources(
 	ctx context.Context, t *testing.T, resource, labelSelector, condition, timeout string,

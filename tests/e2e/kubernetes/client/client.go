@@ -68,6 +68,11 @@ type Client interface {
 		name, namespace string,
 		cronJob *v1.CronJob,
 	) error
+	WaitForStatefulSetReady(
+		ctx context.Context,
+		namespace, name string,
+		timeout time.Duration,
+	) (ok bool, err error)
 }
 
 type client struct {
@@ -200,4 +205,29 @@ func (cli *client) CreateJobFromCronJob(
 
 	_, err := cli.clientset.BatchV1().Jobs(namespace).Create(ctx, job, metav1.CreateOptions{})
 	return err
+}
+
+func (cli *client) WaitForStatefulSetReady(
+	ctx context.Context, namespace, name string, timeout time.Duration,
+) (ok bool, err error) {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	tick := time.NewTicker(time.Second)
+	defer tick.Stop()
+
+	for {
+		ss, err := cli.clientset.AppsV1().StatefulSets(namespace).Get(ctx, name, metav1.GetOptions{})
+		if err != nil {
+			return false, err
+		}
+		if ss.Status.UpdatedReplicas == ss.Status.Replicas && ss.Status.ReadyReplicas == ss.Status.Replicas {
+			return true, nil
+		}
+		select {
+		case <-ctx.Done():
+			return false, ctx.Err()
+		case <-tick.C:
+		}
+	}
 }

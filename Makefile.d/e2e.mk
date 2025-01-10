@@ -89,6 +89,11 @@ e2e/index/job/correction:
 e2e/readreplica:
 	$(call run-e2e-crud-test,-run TestE2EReadReplica)
 
+.PHONY: e2e/rollaout/restart/agent
+## run rollout-restart agent e2e
+e2e/rolloout/restart/agent:
+	$(call run-e2e-crud-test,-run TestE2EAgentRolloutRestart)
+
 .PHONY: e2e/maxdim
 ## run e2e/maxdim
 e2e/maxdim:
