@@ -368,6 +368,7 @@ E2E_UPDATE_COUNT                   ?= 10
 E2E_UPSERT_COUNT                   ?= 10
 E2E_WAIT_FOR_CREATE_INDEX_DURATION ?= 8m
 E2E_WAIT_FOR_START_TIMEOUT         ?= 10m
+E2E_WAIT_FOR_RESOURCE_READY        ?= 3m
 E2E_SEARCH_FROM                    ?= 0
 E2E_SEARCH_BY_ID_FROM              ?= 0
 E2E_INSERT_FROM                    ?= 0

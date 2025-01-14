@@ -63,7 +63,8 @@ var (
 	upsertFrom     int
 	removeFrom     int
 
-	waitAfterInsertDuration time.Duration
+	waitAfterInsertDuration   time.Duration
+	waitResourceReadyDuration time.Duration
 
 	kubeClient client.Client
 	namespace  string
@@ -97,6 +98,7 @@ func init() {
 
 	datasetName := flag.String("dataset", "fashion-mnist-784-euclidean.hdf5", "dataset")
 	waitAfterInsert := flag.String("wait-after-insert", "3m", "wait duration after inserting vectors")
+	waitResourceReady := flag.String("wait-resource-ready", "3m", "wait duration for resource ready")
 
 	pf := flag.Bool("portforward", false, "enable port forwarding")
 	pfPodName := flag.String("portforward-pod-name", "vald-gateway-0", "pod name (only for port forward)")
@@ -129,6 +131,11 @@ func init() {
 	fmt.Println("loading finished")
 
 	waitAfterInsertDuration, err = time.ParseDuration(*waitAfterInsert)
+	if err != nil {
+		panic(err)
+	}
+
+	waitResourceReadyDuration, err = time.ParseDuration(*waitResourceReady)
 	if err != nil {
 		panic(err)
 	}
@@ -1018,7 +1025,6 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 
 	sleep(t, waitAfterInsertDuration)
 
-	// TODO Dipatch Search Inf-Loop
 	searchFunc := func() {
 		_ = op.Search(t, ctx, operation.Dataset{
 			Test:      ds.Test[searchFrom : searchFrom+searchNum],
@@ -1037,31 +1043,17 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 				return
 			default:
 				searchFunc()
-				time.Sleep(1 * time.Second)
+				time.Sleep(10 * time.Second)
 			}
 		}
 	}()
-	kubectl.RolloutRestart(ctx, t, "statefulset", "vald-agent")
 
 	// Wait for StatefulSet to be ready
-	time.Sleep(10 * time.Second)
-	t.Log("waiting for agent pods ready...")
-	swg := sync.WaitGroup{}
-	swg.Add(1)
-	go func() {
-		defer swg.Done()
-		for {
-			ok, err := kubeClient.WaitForStatefulSetReady(ctx, namespace, "vald-agent", 10*time.Minute)
-			if err != nil {
-				t.Fatalf("an error occurred: %s", err)
-			}
-			if ok {
-				t.Log("statefulset is ok", ok)
-				break
-			}
-		}
-	}()
-	swg.Wait()
+	t.Log("rollout restart agent and waiting for agent pods ready...")
+	err = kubectl.RolloutResourceName(ctx, t, "statefulset", "vald-agent", waitResourceReadyDuration.String())
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
 
 	cnt, err := op.IndexInfo(t, ctx)
 	if err != nil {

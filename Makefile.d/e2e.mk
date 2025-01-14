@@ -91,7 +91,7 @@ e2e/readreplica:
 
 .PHONY: e2e/rollaout/restart/agent
 ## run rollout-restart agent e2e
-e2e/rolloout/restart/agent:
+e2e/rollout/restart/agent:
 	$(call run-e2e-crud-test,-run TestE2EAgentRolloutRestart)
 
 .PHONY: e2e/maxdim
