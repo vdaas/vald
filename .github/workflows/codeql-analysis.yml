@@ -31,7 +31,7 @@ on:
       - "release/v*.*"
       - "!release/v*.*.*"
     paths:
-      - ".github/workflows/codeql-analysis.yml"
+      - ".github/workflows/codeql-analysis.yaml"
       - "**.go"
   schedule:
     - cron: "0 1 * * *"
@@ -42,7 +42,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
   detect-ci-container:
-    uses: ./.github/workflows/_detect-ci-container.yml
+    uses: ./.github/workflows/_detect-ci-container.yaml
   codeql-build:
     name: CodeQL
     runs-on: ubuntu-latest

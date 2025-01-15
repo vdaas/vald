@@ -1,0 +1,86 @@
+#
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Run FOSSA scan"
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - "labeled"
+jobs:
+  dump-contexts-to-log:
+    if: github.ref == 'refs/heads/main' || github.event.action == 'labeled' && github.event.label.name == 'actions/fossa'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/dump-context
+  detect-ci-container:
+    uses: ./.github/workflows/_detect-ci-container.yaml
+  fossa-scan:
+    name: "trigger FOSSA scan"
+    runs-on: ubuntu-latest
+    needs: [dump-contexts-to-log, detect-ci-container]
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - name: "Install fossa-cli"
+        run: |
+          curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | bash
+      - name: "Run for main branch"
+        if: github.ref == 'refs/heads/main'
+        run: |
+          fossa analyze --branch main --revision ${GITHUB_SHA}
+        env:
+          FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_SHA: ${{ github.sha }}
+      - name: "Run for PRs"
+        if: github.event_name == 'pull_request'
+        run: |
+          curl -s ${PR_INFO_URL} > /tmp/pr_info.json
+          PR_RESP=`cat /tmp/pr_info.json`
+          HEAD_BRANCH=$(cat /tmp/pr_info.json | jq -r .head.ref)
+          if [ -z "$HEAD_BRANCH" ]; then
+            echo "Cannot get head branch information for PR #${PR_NUM}!"
+            echo "API response: $PR_RESP"
+            fossa analyze --revision ${GITHUB_SHA}
+          else
+            echo "Head branch for PR #${PR_NUM} is ${HEAD_BRANCH}"
+
+            fossa analyze --branch ${HEAD_BRANCH} --revision ${GITHUB_SHA}
+
+            ESCAPED=`echo -n "${HEAD_BRANCH}" | python3 -c 'import urllib.parse; import sys; print(urllib.parse.quote(sys.stdin.read(), safe=""))'`
+
+            curl --include --verbose --fail \
+            -H "Accept: application/json" \
+            -H "Content-Type:application/json" \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            --request POST \
+            --data "{\"body\": \"**[FOSSA]** The scan result will be available at https://app.fossa.com/projects/custom%2B21465%2Fvald/refs/branch/${ESCAPED}/${GITHUB_SHA}\"}" \
+            $API_URL
+          fi
+        env:
+          FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_SHA: ${{ github.sha }}
+          PR_INFO_URL: ${{ github.event.pull_request.url }}
+          API_URL: ${{ github.event.pull_request.comments_url }}
+          PR_NUM: ${{ github.event.pull_request.number }}
