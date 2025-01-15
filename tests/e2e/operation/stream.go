@@ -660,7 +660,6 @@ func (c *client) InsertWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					mu.Lock()
 					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
@@ -668,7 +667,6 @@ func (c *client) InsertWithParameters(
 							err.Error(),
 						),
 					)
-					mu.Unlock()
 				}
 				return
 			}
@@ -857,6 +855,7 @@ func (c *client) UpsertWithParameters(
 	}
 
 	wg := sync.WaitGroup{}
+	mu := sync.Mutex{}
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -865,7 +864,9 @@ func (c *client) UpsertWithParameters(
 		for {
 			res, err := sc.Recv()
 			if err == io.EOF {
+				mu.Lock()
 				rerr = ierr
+				mu.Unlock()
 				return
 			}
 
@@ -879,7 +880,9 @@ func (c *client) UpsertWithParameters(
 						),
 					)
 				}
+				mu.Lock()
 				rerr = ierr
+				mu.Unlock()
 				return
 			}
 
@@ -918,7 +921,10 @@ func (c *client) UpsertWithParameters(
 			},
 		})
 		if err != nil {
-			return err
+			mu.Lock()
+			rerr = errors.Join(rerr, err)
+			mu.Unlock()
+			return
 		}
 	}
 
