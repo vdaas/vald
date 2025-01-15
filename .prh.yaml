@@ -17,7 +17,6 @@ version: 1
 # index: ann
 # index: besteffort
 # index: burstable
-# index: clojure
 # index: configmap
 # index: docker
 # index: documentation
@@ -74,10 +73,6 @@ rules:
         to: Burstable
   - pattern: configMap
     expected: ConfigMap
-    options:
-      wordBoundary: true
-  - pattern: clojure
-    expected: Clojure
     options:
       wordBoundary: true
   - pattern: docker
