@@ -42,7 +42,7 @@ define profile-web
 endef
 
 define go-lint
-	golangci-lint run --config .golangci.yml --fix
+	golangci-lint run --config .golangci.yaml --fix
 endef
 
 define go-vet
@@ -74,7 +74,7 @@ define go-build
 		-X '$(GOPKG)/internal/info.AlgorithmInfo=$5' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(if $(filter 1,$(strip $(CGO_ENABLED))),true,false)' \
 		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
 		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
 		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
@@ -89,6 +89,35 @@ define go-build
 		-o $6 \
 		$(ROOTDIR)/cmd/$1/main.go
 	$6 -version
+endef
+
+define go-example-build
+	echo $(GO_SOURCES_INTERNAL)
+	echo $(PBGOS)
+	echo $(shell find $(ROOTDIR)/$1 -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	cd $(ROOTDIR)/$1 && \
+	CFLAGS="$(CFLAGS)" \
+	CXXFLAGS="$(CXXFLAGS)" \
+	CGO_ENABLED=$(CGO_ENABLED) \
+	CGO_CXXFLAGS="$3" \
+	CGO_FFLAGS="$3" \
+	CGO_LDFLAGS="$3" \
+	GO111MODULE=on \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	GOPRIVATE=$(GOPRIVATE) \
+	GO_VERSION=$(GO_VERSION) \
+	go build \
+		--ldflags "-w $2 \
+		-extldflags '$3' \
+		-buildid=" \
+		-modcacherw \
+		-mod=readonly \
+		-a \
+		-tags "osusergo netgo static_build$4" \
+		-trimpath \
+		-o $(ROOTDIR)/$6 \
+		main.go
 endef
 
 define telepresence
@@ -401,3 +430,27 @@ define update-github-actions
 	done
 endef
 
+define gen-deadlink-checker
+	BIN_PATH="$(TEMP_DIR)/vald-deadlink-checker-gen"; \
+	rm -rf $$BIN_PATH; \
+	MAINTAINER=$2 \
+	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	go build -modcacherw \
+		-mod=readonly \
+		-a \
+		-tags "osusergo netgo static_build" \
+		-trimpath \
+		-o $$BIN_PATH $(ROOTDIR)/hack/tools/deadlink/main.go; \
+	$$BIN_PATH -path $3 -ignore-path $4 -format $5 $1; \
+	rm -rf $$BIN_PATH
+endef
+
+define gen-api-document
+	buf generate --template=apis/docs/buf.gen.tmpl.yaml --path $2
+	cat apis/docs/v1/payload.md.tmpl apis/docs/v1/_doc.md.tmpl > apis/docs/v1/doc.md.tmpl; \
+	buf generate --template=apis/docs/buf.gen.doc.yaml --path $2; \
+	mv $(ROOTDIR)/apis/docs/v1/doc.md $1; \
+	rm apis/docs/v1/*doc.md.tmpl
+endef

@@ -24,8 +24,8 @@ TAG                            ?= latest
 CRORG                          ?= $(ORG)
 GHCRORG                         = ghcr.io/$(REPO)
 AGENT_IMAGE                     = $(NAME)-agent
-AGENT_NGT_IMAGE                 = $(AGENT_IMAGE)-ngt
 AGENT_FAISS_IMAGE               = $(AGENT_IMAGE)-faiss
+AGENT_NGT_IMAGE                 = $(AGENT_IMAGE)-ngt
 AGENT_SIDECAR_IMAGE             = $(AGENT_IMAGE)-sidecar
 BENCHMARK_JOB_IMAGE             = $(NAME)-benchmark-job
 BENCHMARK_OPERATOR_IMAGE        = $(NAME)-benchmark-operator
@@ -36,10 +36,12 @@ BUILDKIT_SYFT_SCANNER_IMAGE     = $(BUILDKIT_IMAGE)-syft-scanner
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
 DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
+EXAMPLE_CLIENT_IMAGE            = $(NAME)-example-client
 FILTER_GATEWAY_IMAGE            = $(NAME)-filter-gateway
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 INDEX_CORRECTION_IMAGE          = $(NAME)-index-correction
 INDEX_CREATION_IMAGE            = $(NAME)-index-creation
+INDEX_DELETION_IMAGE            = $(NAME)-index-deletion
 INDEX_OPERATOR_IMAGE            = $(NAME)-index-operator
 INDEX_SAVE_IMAGE                = $(NAME)-index-save
 LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
@@ -48,6 +50,10 @@ MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 MIRROR_GATEWAY_IMAGE            = $(NAME)-mirror-gateway
 READREPLICA_ROTATE_IMAGE        = $(NAME)-readreplica-rotate
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
+
+DEADLINK_CHECK_PATH            ?= ""
+DEADLINK_IGNORE_PATH           ?= ""
+DEADLINK_CHECK_FORMAT           = html
 
 DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE = $(GHCRORG)/$(BUILDKIT_SYFT_SCANNER_IMAGE):nightly
 
@@ -85,6 +91,7 @@ BUF_VERSION               := $(eval BUF_VERSION := $(shell cat versions/BUF_VERS
 CMAKE_VERSION             := $(eval CMAKE_VERSION := $(shell cat versions/CMAKE_VERSION))$(CMAKE_VERSION)
 DOCKER_VERSION            := $(eval DOCKER_VERSION := $(shell cat versions/DOCKER_VERSION))$(DOCKER_VERSION)
 FAISS_VERSION             := $(eval FAISS_VERSION := $(shell cat versions/FAISS_VERSION))$(FAISS_VERSION)
+USEARCH_VERSION           := $(eval USEARCH_VERSION := $(shell cat versions/USEARCH_VERSION))$(USEARCH_VERSION)
 GOLANGCILINT_VERSION      := $(eval GOLANGCILINT_VERSION := $(shell cat versions/GOLANGCILINT_VERSION))$(GOLANGCILINT_VERSION)
 GO_VERSION                := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
 HDF5_VERSION              := $(eval HDF5_VERSION := $(shell cat versions/HDF5_VERSION))$(HDF5_VERSION)
@@ -103,7 +110,6 @@ PROTOBUF_VERSION          := $(eval PROTOBUF_VERSION := $(shell cat versions/PRO
 REVIEWDOG_VERSION         := $(eval REVIEWDOG_VERSION := $(shell cat versions/REVIEWDOG_VERSION))$(REVIEWDOG_VERSION)
 RUST_VERSION              := $(eval RUST_VERSION := $(shell cat versions/RUST_VERSION))$(RUST_VERSION)
 TELEPRESENCE_VERSION      := $(eval TELEPRESENCE_VERSION := $(shell cat versions/TELEPRESENCE_VERSION))$(TELEPRESENCE_VERSION)
-VALDCLI_VERSION           := $(eval VALDCLI_VERSION := $(shell cat versions/VALDCLI_VERSION))$(VALDCLI_VERSION)
 YQ_VERSION                := $(eval YQ_VERSION := $(shell cat versions/YQ_VERSION))$(YQ_VERSION)
 ZLIB_VERSION              := $(eval ZLIB_VERSION := $(shell cat versions/ZLIB_VERSION))$(ZLIB_VERSION)
 
@@ -123,7 +129,7 @@ ifeq ($(UNAME),Linux)
 CPU_INFO_FLAGS := $(eval CPU_INFO_FLAGS := $(shell cat /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1))$(CPU_INFO_FLAGS)
 CORES := $(eval CORES := $(shell nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null))$(CORES)
 else ifeq ($(UNAME),Darwin)
-CPU_INFO_FLAGS := ""
+CPU_INFO_FLAGS := $(eval CPU_INFO_FLAGS := $(shell sysctl -n machdep.cpu.brand_string 2>/dev/null || echo "Apple Silicon"))$(CPU_INFO_FLAGS)
 CORES := $(eval CORES := $(shell sysctl -n hw.ncpu 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null))$(CORES)
 else
 CPU_INFO_FLAGS := ""
@@ -135,18 +141,22 @@ GIT_COMMIT := $(eval GIT_COMMIT := $(shell git rev-list -1 HEAD))$(GIT_COMMIT)
 MAKELISTS := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
 
 ROOTDIR = $(eval ROOTDIR := $(or $(shell git rev-parse --show-toplevel), $(PWD)))$(ROOTDIR)
-PROTODIRS := $(eval PROTODIRS := $(shell find apis/proto -type d | sed -e "s%apis/proto/%%g" | grep -v "apis/proto"))$(PROTODIRS)
+PROTODIRS := $(eval PROTODIRS := $(shell find $(ROOTDIR)/apis/proto -type d | sed -e "s%apis/proto/%%g" | grep -v "apis/proto"))$(PROTODIRS)
 BENCH_DATASET_BASE_DIR = hack/benchmark/assets
 BENCH_DATASET_MD5_DIR_NAME = checksum
 BENCH_DATASET_HDF5_DIR_NAME = dataset
 BENCH_DATASET_MD5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_MD5_DIR_NAME)
 BENCH_DATASET_HDF5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR_NAME)
 
-PROTOS := $(eval PROTOS := $(shell find apis/proto -type f -regex ".*\.proto"))$(PROTOS)
+PROTOS := $(eval PROTOS := $(shell find $(ROOTDIR)/apis/proto -type f -regex ".*\.proto"))$(PROTOS)
 PROTOS_V1 := $(eval PROTOS_V1 := $(filter apis/proto/v1/%.proto,$(PROTOS)))$(PROTOS_V1)
 PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
-PBDOCS = apis/docs/v1/docs.md
+PBDOCS = $(ROOTDIR)/apis/docs/v1/docs.md
+PROTO_VALD_APIS := $(eval PROTO_VALD_APIS := $(filter $(ROOTDIR)/apis/proto/v1/vald/%.proto,$(PROTOS)))$(PROTO_VALD_APIS)
+PROTO_VALD_API_DOCS := $(PROTO_VALD_APIS:$(ROOTDIR)/apis/proto/v1/vald/%.proto=$(ROOTDIR)/apis/docs/v1/%.md)
+PROTO_MIRROR_APIS := $(eval PROTO_MIRROR_APIS := $(filter $(ROOTDIR)/apis/proto/v1/mirror/%.proto,$(PROTOS)))$(PROTO_MIRROR_APIS)
+PROTO_MIRROR_API_DOCS := $(PROTO_MIRROR_APIS:$(ROOTDIR)/apis/proto/v1/mirror/%.proto=$(ROOTDIR)/apis/docs/v1/%.md)
 
 LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -Ofast -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
 
@@ -390,6 +400,28 @@ help:
 	{ lastLine = $$0 }' $(MAKELISTS) | sort -u
 	@printf "\n"
 
+.PHONY: perm
+## set correct permissions for dirs and files
+perm:
+	find $(ROOTDIR) -type d -not -path "$(ROOTDIR)/.git*" -exec chmod 755 {} \;
+	find $(ROOTDIR) -type f -not -path "$(ROOTDIR)/.git*" -not -name ".gitignore" -exec chmod 644 {} \;
+	if [ -d "$(ROOTDIR)/.git" ]; then \
+		chmod 750 "$(ROOTDIR)/.git"; \
+		if [ -f "$(ROOTDIR)/.git/config" ]; then \
+			chmod 644 "$(ROOTDIR)/.git/config"; \
+		fi; \
+		if [ -d "$(ROOTDIR)/.git/hooks" ]; then \
+			find "$(ROOTDIR)/.git/hooks" -type f -exec chmod 755 {} \;; \
+		fi; \
+	fi
+	if [ -f "$(ROOTDIR)/.gitignore" ]; then \
+		chmod 644 "$(ROOTDIR)/.gitignore"; \
+	fi
+	if [ -f "$(ROOTDIR)/.gitattributes" ]; then \
+		chmod 644 "$(ROOTDIR)/.gitattributes"; \
+	fi
+
+
 .PHONY: all
 ## execute clean and deps
 all: clean deps
@@ -442,6 +474,16 @@ license:
 dockerfile:
 	$(call gen-dockerfile,$(ROOTDIR),$(MAINTAINER))
 
+.PHONY: workflow
+## generate workflows
+workflow:
+	$(call gen-dockerfile,$(ROOTDIR),$(MAINTAINER))
+
+.PHONY: deadlink-checker
+## generate deadlink-checker
+deadlink-checker:
+	$(call gen-deadlink-checker,$(ROOTDIR),$(MAINTAINER),$(DEADLINK_CHECK_PATH),$(DEADLINK_IGNORE_PATH),$(DEADLINK_CHECK_FORMAT))
+
 .PHONY: init
 ## initialize development environment
 init: \
@@ -455,7 +497,6 @@ init: \
 tools/install: \
 	helm/install \
 	kind/install \
-	valdcli/install \
 	telepresence/install \
 	textlint/install
 
@@ -469,6 +510,7 @@ update: \
 	deps \
 	update/template \
 	go/deps \
+	go/example/deps \
 	rust/deps \
 	format
 
@@ -598,6 +640,11 @@ version/ngt:
 version/faiss:
 	@echo $(FAISS_VERSION)
 
+.PHONY: version/usearch
+## print usearch version
+version/usearch:
+	@echo $(USEARCH_VERSION)
+
 .PHONY: version/docker
 ## print Kubernetes version
 version/docker:
@@ -619,10 +666,6 @@ version/helm:
 .PHONY: version/yq
 version/yq:
 	@echo $(YQ_VERSION)
-
-.PHONY: version/valdcli
-version/valdcli:
-	@echo $(VALDCLI_VERSION)
 
 .PHONY: version/telepresence
 version/telepresence:
@@ -660,7 +703,7 @@ $(LIB_PATH)/libfaiss.a:
 		-DBUILD_STATIC_EXECS=ON \
 		-DBUILD_TESTING=OFF \
 		-DFAISS_ENABLE_PYTHON=OFF \
-	        -DFAISS_ENABLE_GPU=OFF \
+		-DFAISS_ENABLE_GPU=OFF \
 		-DBLA_VENDOR=OpenBLAS \
 		-DCMAKE_C_FLAGS="$(LDFLAGS)" \
 		-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_LDFLAGS)" \
@@ -670,6 +713,35 @@ $(LIB_PATH)/libfaiss.a:
 	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build install
 	cd $(ROOTDIR)
 	rm -rf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz $(TEMP_DIR)/faiss-$(FAISS_VERSION)
+	ldconfig
+
+.PHONY: usearch/install
+## install usearch
+usearch/install: $(USR_LOCAL)/include/usearch.h
+$(USR_LOCAL)/include/usearch.h:
+	git clone --depth 1 --recursive --branch v$(USEARCH_VERSION) https://github.com/unum-cloud/usearch $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
+	cd $(TEMP_DIR)/usearch-$(USEARCH_VERSION) && \
+	cmake -DCMAKE_BUILD_TYPE=Release \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DBUILD_TESTING=OFF \
+		-DUSEARCH_BUILD_LIB_C=ON \
+		-DUSEARCH_USE_FP16LIB=ON \
+		-DUSEARCH_USE_OPENMP=ON \
+		-DUSEARCH_USE_SIMSIMD=ON \
+		-DUSEARCH_USE_JEMALLOC=ON \
+		-DCMAKE_C_FLAGS="$(CFLAGS)" \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
+		-B $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
+	cmake --build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build -j$(CORES)
+	cmake --install $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build --prefix=$(USR_LOCAL)
+	cd $(ROOTDIR)
+	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build/libusearch_static_c.a $(LIB_PATH)/libusearch_c.a
+	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build/libusearch_static_c.a $(LIB_PATH)/libusearch_static_c.a
+	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build/libusearch_c.so $(LIB_PATH)/libusearch_c.so
+	cp $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/c/usearch.h $(USR_LOCAL)/include/usearch.h
+	rm -rf $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
 	ldconfig
 
 .PHONY: cmake/install
@@ -689,7 +761,6 @@ cmake/install:
 	cd $(ROOTDIR)
 	rm -rf $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
 	ldconfig
-	# -DCMAKE_USE_OPENSSL=OFF
 
 .PHONY: lint
 ## run lints
@@ -737,14 +808,14 @@ files/textlint: \
 ## run cspell for document
 docs/cspell:\
 	cspell/install
-	cspell-cli $(ROOTDIR)/docs/**/*.md --show-suggestions $(CSPELL_EXTRA_OPTIONS)
+	cspell $(ROOTDIR)/docs/**/*.md --show-suggestions $(CSPELL_EXTRA_OPTIONS)
 
 .PHONY: files/cspell
 ## run cspell for document
 files/cspell: \
 	files \
 	cspell/install
-	cspell-cli $(ROOTDIR)/.gitfiles --show-suggestions $(CSPELL_EXTRA_OPTIONS)
+	cspell $(ROOTDIR)/.gitfiles --show-suggestions $(CSPELL_EXTRA_OPTIONS)
 
 .PHONY: changelog/update
 ## update changelog
@@ -753,20 +824,19 @@ changelog/update:
 	echo "" >> $(TEMP_DIR)/CHANGELOG.md
 	$(MAKE) -s changelog/next/print >> $(TEMP_DIR)/CHANGELOG.md
 	echo "" >> $(TEMP_DIR)/CHANGELOG.md
-	tail -n +2 CHANGELOG.md >> $(TEMP_DIR)/CHANGELOG.md
-	mv -f $(TEMP_DIR)/CHANGELOG.md CHANGELOG.md
+	tail -n +2 $(ROOTDIR)/CHANGELOG.md >> $(TEMP_DIR)/CHANGELOG.md
+	mv -f $(TEMP_DIR)/CHANGELOG.md $(ROOTDIR)/CHANGELOG.md
 
 .PHONY: changelog/next/print
 ## print next changelog entry
 changelog/next/print:
-	@cat hack/CHANGELOG.template.md | \
+	@cat $(ROOTDIR)/hack/CHANGELOG.template.md | \
 	    sed -e 's/{{ version }}/$(VERSION)/g'
 	@echo "$$BODY"
 
 include Makefile.d/actions.mk
 include Makefile.d/bench.mk
 include Makefile.d/build.mk
-include Makefile.d/client.mk
 include Makefile.d/dependencies.mk
 include Makefile.d/docker.mk
 include Makefile.d/e2e.mk
@@ -775,7 +845,7 @@ include Makefile.d/helm.mk
 include Makefile.d/k3d.mk
 include Makefile.d/k8s.mk
 include Makefile.d/kind.mk
+include Makefile.d/minikube.mk
 include Makefile.d/proto.mk
 include Makefile.d/test.mk
 include Makefile.d/tools.mk
-include Makefile.d/minikube.mk

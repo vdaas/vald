@@ -284,6 +284,16 @@ test/cmd:
 	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/cmd/...
 
+.PHONY: test/rust/qbg
+## run tests for qbg
+test/rust/qbg:
+	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_ffi_qbg --exact --show-output
+	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_ffi_qbg_prebuilt --exact --show-output
+	rm -rf rust/libs/algorithms/qbg/index/
+	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_property --exact --show-output
+	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_index --exact --show-output
+	rm -rf rust/libs/algorithms/qbg/index/
+
 .PHONY: test/hack
 ## run tests for hack
 test/hack:

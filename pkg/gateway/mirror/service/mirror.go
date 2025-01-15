@@ -26,7 +26,6 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
-	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/sync"
@@ -64,10 +63,10 @@ func NewMirrorClient(conn *grpc.ClientConn) MirrorClient {
 }
 
 type mirr struct {
-	addrl         sync.Map[string, any]    // List of all connected addresses
+	addrs         sync.Map[string, any]    // List of all connected addresses
 	selfMirrTgts  []*payload.Mirror_Target // Targets of self mirror gateway
-	selfMirrAddrl sync.Map[string, any]    // List of self Mirror gateway addresses
-	gwAddrl       sync.Map[string, any]    // List of Vald gateway (LB gateway) addresses
+	selfMirrAddrs sync.Map[string, any]    // List of self Mirror gateway addresses
+	gwAddrs       sync.Map[string, any]    // List of Vald gateway (LB gateway) addresses
 	eg            errgroup.Group
 	registerDur   time.Duration
 	gateway       Gateway
@@ -90,7 +89,7 @@ func NewMirror(opts ...MirrorOption) (_ Mirror, err error) {
 	}
 
 	m.selfMirrTgts = make([]*payload.Mirror_Target, 0)
-	m.selfMirrAddrl.Range(func(addr string, _ any) bool {
+	m.selfMirrAddrs.Range(func(addr string, _ any) bool {
 		var (
 			host string
 			port uint16
@@ -178,12 +177,6 @@ func (m *mirr) registers(
 		}
 	}()
 
-	reqInfo := &errdetails.RequestInfo{
-		ServingData: errdetails.Serialize(tgts),
-	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + mirror.RegisterRPCName,
-	}
 	resTgts := make([]*payload.Mirror_Target, 0, len(tgts.GetTargets()))
 	exists := make(map[string]bool)
 	var result sync.Map[string, error] // map[target host: error]
@@ -203,37 +196,36 @@ func (m *mirr) registers(
 			switch {
 			case errors.Is(err, context.Canceled):
 				err = status.WrapWithCanceled(
-					mirror.RegisterRPCName+" API canceld", err, reqInfo, resInfo,
+					mirror.RegisterRPCName+" API canceled", err,
 				)
 				attrs = trace.StatusCodeCancelled(err.Error())
 			case errors.Is(err, context.DeadlineExceeded):
 				err = status.WrapWithCanceled(
-					mirror.RegisterRPCName+" API deadline exceeded", err, reqInfo, resInfo,
+					mirror.RegisterRPCName+" API deadline exceeded", err,
 				)
 				attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 			case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
 				err = status.WrapWithInternal(
-					mirror.RegisterRPCName+" API connection not found", err, reqInfo, resInfo,
+					mirror.RegisterRPCName+" API connection not found", err,
 				)
 				attrs = trace.StatusCodeInternal(err.Error())
 			case errors.Is(err, errors.ErrTargetNotFound):
 				err = status.WrapWithInvalidArgument(
-					mirror.RegisterRPCName+" API target not found", err, reqInfo, resInfo,
+					mirror.RegisterRPCName+" API target not found", err,
 				)
 				attrs = trace.StatusCodeInvalidArgument(err.Error())
 			default:
-				var (
-					st  *status.Status
-					msg string
-				)
-				st, msg, err = status.ParseError(err, codes.Internal,
-					"failed to parse "+mirror.RegisterRPCName+" gRPC error response", reqInfo, resInfo,
-				)
-				attrs = trace.FromGRPCStatus(st.Code(), msg)
+				st, _ := status.FromError(err)
+				if st == nil || st.Message() == "" {
+					// This condition is implemented just in case to prevent nil pointer errors when retrieving st.Code() and st.Message(), although it is unlikely to match this condition.
+					log.Errorf("gRPC call returned not a gRPC status error: %v", err)
+					st = status.New(codes.Unknown, "failed to parse "+mirror.RegisterRPCName+" gRPC error response")
+				}
+				attrs = trace.FromGRPCStatus(st.Code(), st.Message())
 
 				// When the ingress resource is deleted, the controller's default backend results(Unimplemented error) are returned so that the connection should be disconnected.
 				// If it is a different namespace on the same cluster, the connection is automatically disconnected because the net.grpc health check fails.
-				if st != nil && st.Code() == codes.Unimplemented {
+				if st.Code() == codes.Unimplemented {
 					host, port, err := net.SplitHostPort(target)
 					if err != nil {
 						log.Warn(err)
@@ -247,7 +239,7 @@ func (m *mirr) registers(
 					}
 				}
 			}
-			log.Error("failed to send Register API to %s\t: %v", target, err)
+			log.Errorf("failed to send Register API to %s\t: %v", target, err)
 			if span != nil {
 				span.RecordError(err)
 				span.SetAttributes(attrs...)
@@ -278,7 +270,7 @@ func (m *mirr) registers(
 	if err != nil {
 		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
 			err = status.WrapWithInternal(
-				mirror.RegisterRPCName+" API connection not found", err, reqInfo, resInfo,
+				mirror.RegisterRPCName+" API connection not found", err,
 			)
 			log.Warn(err)
 			if span != nil {
@@ -288,11 +280,11 @@ func (m *mirr) registers(
 			}
 			return nil, err
 		}
+		log.Error(err)
 
 		st, msg, err := status.ParseError(err, codes.Internal,
-			"failed to parse "+mirror.RegisterRPCName+" gRPC error response", reqInfo, resInfo,
+			"failed to parse "+mirror.RegisterRPCName+" gRPC error response",
 		)
-		log.Warn(err)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -317,15 +309,16 @@ func (m *mirr) Connect(ctx context.Context, targets ...*payload.Mirror_Target) e
 	for _, target := range targets {
 		addr := net.JoinHostPort(target.GetHost(), uint16(target.GetPort())) // addr: host:port
 		if !m.isSelfMirrorAddr(addr) && !m.isGatewayAddr(addr) {
-			_, ok := m.addrl.Load(addr)
+			_, ok := m.addrs.Load(addr)
 			if !ok || !m.IsConnected(ctx, addr) {
+				m.gateway.GRPCClient().SetDisableResolveDNSAddr(addr, true)
 				_, err := m.gateway.GRPCClient().Connect(ctx, addr)
 				if err != nil {
-					m.addrl.Delete(addr)
+					m.addrs.Delete(addr)
 					return err
 				}
 			}
-			m.addrl.Store(addr, struct{}{})
+			m.addrs.Store(addr, struct{}{})
 		}
 	}
 	return nil
@@ -345,13 +338,13 @@ func (m *mirr) Disconnect(ctx context.Context, targets ...*payload.Mirror_Target
 	for _, target := range targets {
 		addr := net.JoinHostPort(target.GetHost(), uint16(target.GetPort()))
 		if !m.isGatewayAddr(addr) {
-			_, ok := m.addrl.Load(addr)
+			_, ok := m.addrs.Load(addr)
 			if ok || m.IsConnected(ctx, addr) {
 				if err := m.gateway.GRPCClient().Disconnect(ctx, addr); err != nil &&
 					!errors.Is(err, errors.ErrGRPCClientConnNotFound(addr)) {
 					return err
 				}
-				m.addrl.Delete(addr)
+				m.addrs.Delete(addr)
 			}
 		}
 	}
@@ -366,7 +359,7 @@ func (m *mirr) IsConnected(ctx context.Context, addr string) bool {
 // MirrorTargets returns the Mirror targets, including the address of this gateway and the addresses of other Mirror gateways
 // to which this gateway is currently connected.
 func (m *mirr) MirrorTargets(ctx context.Context) (tgts []*payload.Mirror_Target, err error) {
-	tgts = make([]*payload.Mirror_Target, 0, m.addrl.Len())
+	tgts = make([]*payload.Mirror_Target, 0, m.addrs.Len())
 	m.RangeMirrorAddr(func(addr string, _ any) bool {
 		if m.IsConnected(ctx, addr) {
 			var (
@@ -391,12 +384,12 @@ func (m *mirr) MirrorTargets(ctx context.Context) (tgts []*payload.Mirror_Target
 }
 
 func (m *mirr) isSelfMirrorAddr(addr string) bool {
-	_, ok := m.selfMirrAddrl.Load(addr)
+	_, ok := m.selfMirrAddrs.Load(addr)
 	return ok
 }
 
 func (m *mirr) isGatewayAddr(addr string) bool {
-	_, ok := m.gwAddrl.Load(addr)
+	_, ok := m.gwAddrs.Load(addr)
 	return ok
 }
 
@@ -413,7 +406,7 @@ func (m *mirr) connectedOtherMirrorAddrs(ctx context.Context) (addrs []string) {
 
 // RangeMirrorAddr calls f sequentially for each key and value present in the connection map. If f returns false, range stops the iteration.
 func (m *mirr) RangeMirrorAddr(f func(addr string, _ any) bool) {
-	m.addrl.Range(func(addr string, value any) bool {
+	m.addrs.Range(func(addr string, value any) bool {
 		if !m.isGatewayAddr(addr) && !m.isSelfMirrorAddr(addr) {
 			if !f(addr, value) {
 				return false

@@ -95,6 +95,7 @@ const (
 	UpdateObjectRPCName       = "UpdateObject"
 	StreamUpdateObjectRPCName = "StreamUpdateObject"
 	MultiUpdateObjectRPCName  = "MultiUpdateObject"
+	UpdateTimestampRPCName    = "UpdateTimestamp"
 
 	UpsertRPCName             = "Upsert"
 	StreamUpsertRPCName       = "StreamUpsert"

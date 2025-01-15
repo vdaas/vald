@@ -68,7 +68,7 @@ func main() {
 	// Creates Vald clients for connecting to Vald clusters.
 	clients := make([]vald.Client, 0, len(grpcServerAddrs))
 	for _, addr := range grpcServerAddrs {
-		conn, err := grpc.DialContext(ctx, addr, grpc.WithInsecure())
+		conn, err := grpc.NewClient(addr, grpc.WithInsecure())
 		if err != nil {
 			glg.Fatal(err)
 		}

@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"context"
 	"net/http"
-	"os"
 
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
@@ -28,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/http/dump"
 	"github.com/vdaas/vald/internal/net/http/rest"
+	"github.com/vdaas/vald/internal/os"
 )
 
 // RFC7807Error represents RFC 7807 error.

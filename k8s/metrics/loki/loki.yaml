@@ -31,7 +31,7 @@ spec:
         - args:
             - -config.file=/etc/loki/loki.yaml
           image: grafana/loki:2.0.0
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           livenessProbe:
             httpGet:
               path: /ready

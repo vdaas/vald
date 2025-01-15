@@ -15,11 +15,12 @@
 #
 [workspace]
 members = [
-	"bin/agent",
-	"bin/meta",
-	"libs/algorithm",
-	"libs/algorithms/ngt",
-	"libs/algorithms/faiss",
 	"libs/observability",
 	"libs/proto",
+	"bin/meta",
+	"bin/agent",
+	"libs/algorithm",
+	"libs/algorithms/ngt",
+	"libs/algorithms/qbg",
+	"libs/algorithms/faiss",
 ]

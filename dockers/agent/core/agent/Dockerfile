@@ -1,4 +1,5 @@
 # syntax = docker/dockerfile:latest
+# check=error=true
 #
 # Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
@@ -36,7 +37,7 @@ ENV LC_ALL=en_US.UTF-8
 ENV ORG=vdaas
 ENV PKG=agent/core/agent
 ENV REPO=vald
-ENV RUST_HOME=/usr/loacl/lib/rust
+ENV RUST_HOME=/usr/local/lib/rust
 ENV TZ=Etc/UTC
 ENV USER=root
 ENV CARGO_HOME=${RUST_HOME}/cargo
@@ -47,9 +48,10 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
 RUN --mount=type=bind,target=.,rw \
     --mount=type=tmpfs,target=/tmp \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    --mount=type=cache,target=/var/cache/apt,sharing=locked\
-    echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked,id=${APP_NAME} \
+    --mount=type=cache,target=/var/cache/apt,sharing=locked,id=${APP_NAME} \
+    set -ex \
+    && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
     && apt-get clean \
     && apt-get update -y \
@@ -62,14 +64,15 @@ RUN --mount=type=bind,target=.,rw \
     locales \
     git \
     cmake \
-    gcc \
     g++ \
-    unzip \
+    gcc \
     libssl-dev \
+    unzip \
     liblapack-dev \
     libomp-dev \
     libopenblas-dev \
     gfortran \
+    pkg-config \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \

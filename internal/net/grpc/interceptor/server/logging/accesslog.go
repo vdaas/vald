@@ -19,11 +19,14 @@ package logging
 
 import (
 	"context"
+	"fmt"
 	"path"
 	"time"
 
+	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 )
 
@@ -32,6 +35,7 @@ const (
 	grpcKindStream = "stream"
 
 	rpcCompletedMessage = "rpc completed"
+	rpcFailedMessage    = "rpc failed"
 )
 
 type AccessLogEntity struct {
@@ -47,6 +51,29 @@ type AccessLogGRPCEntity struct {
 	Kind    string `json:"kind,omitempty"    yaml:"kind"`
 	Service string `json:"service,omitempty" yaml:"service"`
 	Method  string `json:"method,omitempty"  yaml:"method"`
+}
+
+func (e AccessLogEntity) String() (str string) {
+	var emsg string
+	if e.Error != nil {
+		st, ok := status.FromError(e.Error)
+		if ok && st != nil {
+			emsg = st.String()
+		} else {
+			emsg = e.Error.Error()
+		}
+	}
+	eb, err := json.Marshal(e)
+	if err != nil {
+		str = fmt.Sprintf("%#v,\tfailed to json.Marshal(AccessLogEntity) error: %v", e, err)
+	} else {
+		str = string(eb)
+	}
+
+	if emsg != "" {
+		return str + ",\terror message: " + emsg
+	}
+	return str
 }
 
 func AccessLogInterceptor() grpc.UnaryServerInterceptor {
@@ -88,9 +115,9 @@ func AccessLogInterceptor() grpc.UnaryServerInterceptor {
 
 		if err != nil {
 			entity.Error = err
-			log.Warn(rpcCompletedMessage, entity)
+			log.Warn(rpcFailedMessage, entity.String())
 		} else {
-			log.Debug(rpcCompletedMessage, entity)
+			log.Debug(rpcCompletedMessage, entity.String())
 		}
 
 		return resp, err
@@ -136,9 +163,9 @@ func AccessLogStreamInterceptor() grpc.StreamServerInterceptor {
 
 		if err != nil {
 			entity.Error = err
-			log.Warn(rpcCompletedMessage, entity)
+			log.Warn(rpcFailedMessage, entity.String())
 		} else {
-			log.Debug(rpcCompletedMessage, entity)
+			log.Debug(rpcCompletedMessage, entity.String())
 		}
 
 		return err

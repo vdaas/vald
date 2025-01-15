@@ -190,7 +190,7 @@ func TestE2EUpdateOnly(t *testing.T) {
 			t.Helper()
 
 			if status != int32(codes.NotFound) {
-				return errors.Errorf("the returned status is not NotFound on Update #1: %s", err)
+				return errors.Errorf("the returned status is not NotFound on Update #1: %s,\tcode: %s", msg, status)
 			}
 
 			t.Logf("received a NotFound error on #1: %s", msg)
@@ -300,7 +300,7 @@ func TestE2EStandardCRUD(t *testing.T) {
 			t.Helper()
 
 			if status != int32(codes.NotFound) {
-				return errors.Errorf("the returned status is not NotFound on Update #1: %s", err)
+				return errors.Errorf("the returned status is not NotFound on Update #1: %s,\tcode: %s", msg, status)
 			}
 
 			t.Logf("received a NotFound error on #1: %s", msg)

@@ -35,7 +35,9 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/singleflight"
 )
 
 type (
@@ -85,7 +87,7 @@ type (
 		// GetVector returns vector stored in NGT index.
 		GetVector(id uint) ([]float32, error)
 
-		GetGraphStatistics(m statisticsType) (stats *GraphStatistics, err error)
+		GetGraphStatistics(ctx context.Context, m statisticsType) (stats *GraphStatistics, err error)
 
 		// GetProperty returns NGT Index Property.
 		GetProperty() (*Property, error)
@@ -114,8 +116,10 @@ type (
 		epl                 uint64        // NGT error buffer pool size limit
 		index               C.NGTIndex
 		ospace              C.NGTObjectSpace
+		group               singleflight.Group[*GraphStatistics]
 		mu                  *sync.RWMutex
 		cmu                 *sync.RWMutex
+		smu                 *sync.Mutex
 	}
 
 	ngtError struct {
@@ -479,7 +483,8 @@ func gen(isLoad bool, opts ...Option) (NGT, error) {
 	)
 	n.mu = new(sync.RWMutex)
 	n.cmu = new(sync.RWMutex)
-
+	n.smu = new(sync.Mutex)
+	n.group = singleflight.New[*GraphStatistics]()
 	defer func() {
 		if err != nil {
 			n.Close()
@@ -568,6 +573,8 @@ func (n *ngt) create() (err error) {
 	path := C.CString(n.idxPath)
 	defer C.free(unsafe.Pointer(path))
 
+	n.smu.Lock()
+	defer n.smu.Unlock()
 	ne := n.GetErrorBuffer()
 	if !n.inMemory {
 		n.index = C.ngt_create_graph_and_tree(path, n.prop, ne.err)
@@ -596,6 +603,8 @@ func (n *ngt) open() error {
 	path := C.CString(n.idxPath)
 	defer C.free(unsafe.Pointer(path))
 
+	n.smu.Lock()
+	defer n.smu.Unlock()
 	ne := n.GetErrorBuffer()
 	n.index = C.ngt_open_index(path, ne.err)
 	if n.index == nil {
@@ -884,6 +893,8 @@ func (n *ngt) CreateIndex(poolSize uint32) error {
 	if poolSize == 0 {
 		poolSize = n.poolSize
 	}
+	n.smu.Lock()
+	defer n.smu.Unlock()
 	ne := n.GetErrorBuffer()
 	n.lock(true)
 	ret := C.ngt_create_index(n.index, C.uint32_t(poolSize), ne.err)
@@ -901,6 +912,8 @@ func (n *ngt) SaveIndex() error {
 	if !n.inMemory {
 		path := C.CString(n.idxPath)
 		defer C.free(unsafe.Pointer(path))
+		n.smu.Lock()
+		defer n.smu.Unlock()
 		ne := n.GetErrorBuffer()
 		n.rLock(true)
 		ret := C.ngt_save_index(n.index, path, ne.err)
@@ -919,6 +932,8 @@ func (n *ngt) SaveIndexWithPath(idxPath string) error {
 	if !n.inMemory && len(idxPath) != 0 {
 		path := C.CString(idxPath)
 		defer C.free(unsafe.Pointer(path))
+		n.smu.Lock()
+		defer n.smu.Unlock()
 		ne := n.GetErrorBuffer()
 		n.rLock(true)
 		ret := C.ngt_save_index(n.index, path, ne.err)
@@ -1071,6 +1086,8 @@ func (n *ngt) rUnlock(cLock bool) {
 // Close NGT index.
 func (n *ngt) Close() {
 	if n.index != nil {
+		n.smu.Lock()
+		defer n.smu.Unlock()
 		C.ngt_close_index(n.index)
 		n.index = nil
 		n.prop = nil
@@ -1079,36 +1096,39 @@ func (n *ngt) Close() {
 }
 
 func fromCGraphStatistics(cstats *C.NGTGraphStatistics) *GraphStatistics {
+	if cstats == nil {
+		return nil
+	}
 	goStats := &GraphStatistics{
-		NumberOfObjects:                  uint64(cstats.numberOfObjects),
-		NumberOfIndexedObjects:           uint64(cstats.numberOfIndexedObjects),
-		SizeOfObjectRepository:           uint64(cstats.sizeOfObjectRepository),
-		SizeOfRefinementObjectRepository: uint64(cstats.sizeOfRefinementObjectRepository),
-		NumberOfRemovedObjects:           uint64(cstats.numberOfRemovedObjects),
-		NumberOfNodes:                    uint64(cstats.numberOfNodes),
-		NumberOfEdges:                    uint64(cstats.numberOfEdges),
-		MeanEdgeLength:                   float64(cstats.meanEdgeLength),
-		MeanNumberOfEdgesPerNode:         float64(cstats.meanNumberOfEdgesPerNode),
-		NumberOfNodesWithoutEdges:        uint64(cstats.numberOfNodesWithoutEdges),
-		MaxNumberOfOutdegree:             uint64(cstats.maxNumberOfOutdegree),
-		MinNumberOfOutdegree:             uint64(cstats.minNumberOfOutdegree),
-		NumberOfNodesWithoutIndegree:     uint64(cstats.numberOfNodesWithoutIndegree),
-		MaxNumberOfIndegree:              uint64(cstats.maxNumberOfIndegree),
-		MinNumberOfIndegree:              uint64(cstats.minNumberOfIndegree),
-		MeanEdgeLengthFor10Edges:         float64(cstats.meanEdgeLengthFor10Edges),
-		NodesSkippedFor10Edges:           uint64(cstats.nodesSkippedFor10Edges),
-		MeanIndegreeDistanceFor10Edges:   float64(cstats.meanIndegreeDistanceFor10Edges),
-		NodesSkippedForIndegreeDistance:  uint64(cstats.nodesSkippedForIndegreeDistance),
-		VarianceOfOutdegree:              float64(cstats.varianceOfOutdegree),
-		VarianceOfIndegree:               float64(cstats.varianceOfIndegree),
-		MedianOutdegree:                  int32(cstats.medianOutdegree),
-		ModeOutdegree:                    uint64(cstats.modeOutdegree),
+		C1Indegree:                       float64(cstats.c1Indegree),
+		C5Indegree:                       float64(cstats.c5Indegree),
 		C95Outdegree:                     float64(cstats.c95Outdegree),
 		C99Outdegree:                     float64(cstats.c99Outdegree),
+		MaxNumberOfIndegree:              uint64(cstats.maxNumberOfIndegree),
+		MaxNumberOfOutdegree:             uint64(cstats.maxNumberOfOutdegree),
+		MeanEdgeLength:                   float64(cstats.meanEdgeLength),
+		MeanEdgeLengthFor10Edges:         float64(cstats.meanEdgeLengthFor10Edges),
+		MeanIndegreeDistanceFor10Edges:   float64(cstats.meanIndegreeDistanceFor10Edges),
+		MeanNumberOfEdgesPerNode:         float64(cstats.meanNumberOfEdgesPerNode),
 		MedianIndegree:                   int32(cstats.medianIndegree),
+		MedianOutdegree:                  int32(cstats.medianOutdegree),
+		MinNumberOfIndegree:              uint64(cstats.minNumberOfIndegree),
+		MinNumberOfOutdegree:             uint64(cstats.minNumberOfOutdegree),
 		ModeIndegree:                     uint64(cstats.modeIndegree),
-		C5Indegree:                       float64(cstats.c5Indegree),
-		C1Indegree:                       float64(cstats.c1Indegree),
+		ModeOutdegree:                    uint64(cstats.modeOutdegree),
+		NodesSkippedFor10Edges:           uint64(cstats.nodesSkippedFor10Edges),
+		NodesSkippedForIndegreeDistance:  uint64(cstats.nodesSkippedForIndegreeDistance),
+		NumberOfEdges:                    uint64(cstats.numberOfEdges),
+		NumberOfIndexedObjects:           uint64(cstats.numberOfIndexedObjects),
+		NumberOfNodes:                    uint64(cstats.numberOfNodes),
+		NumberOfNodesWithoutEdges:        uint64(cstats.numberOfNodesWithoutEdges),
+		NumberOfNodesWithoutIndegree:     uint64(cstats.numberOfNodesWithoutIndegree),
+		NumberOfObjects:                  uint64(cstats.numberOfObjects),
+		NumberOfRemovedObjects:           uint64(cstats.numberOfRemovedObjects),
+		SizeOfObjectRepository:           uint64(cstats.sizeOfObjectRepository),
+		SizeOfRefinementObjectRepository: uint64(cstats.sizeOfRefinementObjectRepository),
+		VarianceOfIndegree:               float64(cstats.varianceOfIndegree),
+		VarianceOfOutdegree:              float64(cstats.varianceOfOutdegree),
 		Valid:                            bool(cstats.valid),
 	}
 
@@ -1139,22 +1159,53 @@ func fromCGraphStatistics(cstats *C.NGTGraphStatistics) *GraphStatistics {
 	return goStats
 }
 
-func (n *ngt) GetGraphStatistics(m statisticsType) (stats *GraphStatistics, err error) {
-	var mode rune
-	switch m {
-	case NormalStatistics:
-		mode = '-'
-	case AdditionalStatistics:
-		mode = 'a'
+func (n *ngt) GetGraphStatistics(
+	ctx context.Context, m statisticsType,
+) (stats *GraphStatistics, err error) {
+	return n.getGraphStatistics(ctx, m, 10)
+}
+
+func (n *ngt) getGraphStatistics(
+	ctx context.Context, m statisticsType, cnt int,
+) (stats *GraphStatistics, err error) {
+	var shared bool
+	stats, shared, err = n.group.Do(ctx, "GetGraphStatistics", func(context.Context) (stats *GraphStatistics, err error) {
+		n.smu.Lock()
+		defer n.smu.Unlock()
+		var mode rune
+		switch m {
+		case NormalStatistics:
+			mode = '-'
+		case AdditionalStatistics:
+			mode = 'a'
+		}
+		err = safety.RecoverFunc(func() (err error) {
+			ne := n.GetErrorBuffer()
+			cstats := C.ngt_get_graph_statistics(n.index, C.char(mode), C.size_t(n.ces), ne.err)
+			if !cstats.valid {
+				return n.newGoError(ne)
+			}
+			n.PutErrorBuffer(ne)
+			defer C.ngt_free_graph_statistics(&cstats)
+			stats = fromCGraphStatistics(&cstats)
+			if stats == nil {
+				return errors.ErrNGTIndexStatisticsNotReady
+			}
+			return nil
+		})()
+		if err != nil {
+			return nil, err
+		}
+		return stats, nil
+	})
+	if err != nil {
+		if shared && cnt > 0 && !errors.Is(err, errors.ErrNGTIndexStatisticsNotReady) {
+			cnt--
+			return n.getGraphStatistics(ctx, m, cnt)
+		}
+		return nil, err
 	}
-	ne := n.GetErrorBuffer()
-	cstats := C.ngt_get_graph_statistics(n.index, C.char(mode), C.size_t(n.ces), ne.err)
-	if !cstats.valid {
-		return nil, n.newGoError(ne)
-	}
-	n.PutErrorBuffer(ne)
-	defer C.ngt_free_graph_statistics(&cstats)
-	return fromCGraphStatistics(&cstats), nil
+	return stats, nil
 }
 
 func (n *ngt) GetProperty() (prop *Property, err error) {

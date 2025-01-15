@@ -21,7 +21,7 @@ var (
 
 	// ErrRedisInvalidKVVKPrefix represents a function to generate an error that kv index and vk prefix are invalid.
 	ErrRedisInvalidKVVKPrefix = func(kv, vk string) error {
-		return Errorf("kv index and vk prefix must be defferent.\t(kv: %s,\tvk: %s)", kv, vk)
+		return Errorf("kv index and vk prefix must be different.\t(kv: %s,\tvk: %s)", kv, vk)
 	}
 
 	// ErrRedisNotFoundIdentity generates an RedisNotFoundIdentityError error.

@@ -53,7 +53,7 @@ func Test_index_Start(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			return errors.Errorf("got_error: \"%s\",\n\t\t\t\twant: \"%s\"", err.Error(), w.err.Error())
 		}
 		return nil
 	}

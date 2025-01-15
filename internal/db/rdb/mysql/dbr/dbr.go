@@ -18,7 +18,7 @@ package dbr
 
 import dbr "github.com/gocraft/dbr/v2"
 
-// DBR repreesnts the interface to create connection to MySQL.
+// DBR represents the interface to create connection to MySQL.
 type DBR interface {
 	Open(driver, dsn string, log EventReceiver) (Connection, error)
 	Eq(col string, val any) Builder
@@ -57,4 +57,12 @@ func (*db) Open(driver, dsn string, log EventReceiver) (Connection, error) {
 // Eq returns the built SQL statement made from col name and the value.
 func (*db) Eq(col string, val any) Builder {
 	return dbr.Eq(col, val)
+}
+
+func prepareSelect[T any](a ...T) (b []any) {
+	b = make([]any, len(a))
+	for i := range a {
+		b[i] = a[i]
+	}
+	return b
 }

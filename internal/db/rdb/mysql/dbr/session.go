@@ -39,10 +39,10 @@ func NewSession(conn Connection, event EventReceiver) Session {
 	return conn.NewSession(event)
 }
 
-// SeleSelect creates and returns the SelectStmt.
+// Select creates and returns the SelectStmt.
 func (sess *session) Select(column ...string) SelectStmt {
 	return &selectStmt{
-		sess.Session.Select(column...),
+		sess.Session.Select(prepareSelect(column...)...),
 	}
 }
 
@@ -56,7 +56,7 @@ func (sess *session) Begin() (Tx, error) {
 
 // Close closes the database and prevents new queries from starting.
 // Close then waits for all queries that have started processing on the server to finish.
-// Close returns the errro if something goes worng during close.
+// Close returns the error if something goes wrong during close.
 func (sess *session) Close() error {
 	return sess.Session.Close()
 }

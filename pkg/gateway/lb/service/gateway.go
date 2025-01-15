@@ -24,6 +24,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
+	vc "github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -94,7 +95,7 @@ func (g *gateway) BroadCast(
 		case <-ictx.Done():
 			return nil
 		default:
-			err = f(ictx, addr, vald.NewValdClient(conn), copts...)
+			err = f(ictx, addr, vc.NewValdClient(conn), copts...)
 			if err != nil {
 				return err
 			}
@@ -129,7 +130,7 @@ func (g *gateway) DoMulti(
 		copts ...grpc.CallOption,
 	) (err error) {
 		if atomic.LoadUint32(&cur) < limit {
-			err = f(ictx, addr, vald.NewValdClient(conn), copts...)
+			err = f(ictx, addr, vc.NewValdClient(conn), copts...)
 			if err != nil {
 				return err
 			}
@@ -147,7 +148,7 @@ func (g *gateway) DoMulti(
 			if atomic.LoadUint32(&cur) < limit {
 				_, ok := visited.Load(addr)
 				if !ok {
-					err = f(ictx, addr, vald.NewValdClient(conn), copts...)
+					err = f(ictx, addr, vc.NewValdClient(conn), copts...)
 					if err != nil {
 						return err
 					}

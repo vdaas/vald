@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 name: "Build Docker images"
-description: "A action to build Docker images and publish them"
+description: "An action to build Docker images and publish them"
 inputs:
   target:
     description: "Build target"

@@ -22,10 +22,10 @@ metadata:
     name: vald-lb-gateway-ingress
     app: vald-lb-gateway-ingress
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.13
+    helm.sh/chart: vald-v1.7.16
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.13
+    app.kubernetes.io/version: v1.7.16
     app.kubernetes.io/component: gateway-lb
   name: release-name-ingress
 spec:
@@ -38,7 +38,22 @@ spec:
     - host: lb.gateway.vald.vdaas.org
       http:
         paths:
-          - backend:
+          - path: "/"
+            backend:
+              service:
+                name: vald-lb-gateway
+                port:
+                  name: grpc
+            pathType: ImplementationSpecific
+          - path: "/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo"
+            backend:
+              service:
+                name: vald-lb-gateway
+                port:
+                  name: grpc
+            pathType: ImplementationSpecific
+          - path: "/grpc.reflection.v1.ServerReflection/ServerReflectionInfo"
+            backend:
               service:
                 name: vald-lb-gateway
                 port:

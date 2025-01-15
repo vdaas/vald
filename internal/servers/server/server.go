@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/credentials"
+	"github.com/vdaas/vald/internal/net/grpc/health"
 	"github.com/vdaas/vald/internal/net/grpc/keepalive"
 	glog "github.com/vdaas/vald/internal/net/grpc/logger"
 	"github.com/vdaas/vald/internal/safety"
@@ -243,8 +244,8 @@ func New(opts ...Option) (Server, error) {
 		for _, reg := range srv.grpc.regs {
 			reg(srv.grpc.srv)
 		}
+		health.Register(srv.grpc.srv)
 	}
-
 	if srv.lc == nil {
 		srv.ctrl = control.New(srv.sockFlg, int(keepAlive))
 		srv.lc = &net.ListenConfig{
@@ -287,12 +288,13 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 			}
 		}
 
-		l, err := s.lc.Listen(ctx, func() string {
+		network := func() string {
 			if s.network == 0 || s.network == net.Unknown || strings.EqualFold(s.network.String(), net.Unknown.String()) {
 				return net.TCP.String()
 			}
 			return s.network.String()
-		}(), func() string {
+		}()
+		addr := func() string {
 			if s.network == net.UNIX {
 				if s.socketPath == "" {
 					sockFile := strings.Join([]string{s.name, strconv.Itoa(os.Getpid()), "sock"}, ".")
@@ -301,17 +303,47 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 				return s.socketPath
 			}
 			return net.JoinHostPort(s.host, s.port)
-		}())
-		if err != nil {
-			log.Errorf("failed to listen socket %v", err)
-			return err
-		}
-
-		if s.tcfg != nil &&
-			(len(s.tcfg.Certificates) != 0 ||
-				s.tcfg.GetCertificate != nil ||
-				s.tcfg.GetConfigForClient != nil) {
-			l = tls.NewListener(l, s.tcfg)
+		}()
+		var l net.Listener
+		if s.tcfg != nil && net.IsUDP(network) {
+			log.Error("QUIC protocol is not supported yet")
+			return errors.ErrUnsupportedClientMethod
+		} else {
+			if net.IsUDP(network) {
+				network = net.TCP.String()
+			}
+			l, err = s.lc.Listen(ctx, network, addr)
+			if err != nil {
+				log.Errorf("failed to listen socket %v", err)
+				return err
+			}
+			var file *os.File
+			switch lt := l.(type) {
+			case *net.TCPListener:
+				file, err = lt.File()
+				if err != nil {
+					log.Errorf("failed to listen tcp socket %v", err)
+					return err
+				}
+			case *net.UnixListener:
+				file, err = lt.File()
+				if err != nil {
+					log.Errorf("failed to listen unix socket %v", err)
+					return err
+				}
+			}
+			if file != nil {
+				err = syscall.SetNonblock(int(file.Fd()), true)
+				if err != nil {
+					return err
+				}
+			}
+			if s.tcfg != nil &&
+				(len(s.tcfg.Certificates) != 0 ||
+					s.tcfg.GetCertificate != nil ||
+					s.tcfg.GetConfigForClient != nil) {
+				l = tls.NewListener(l, s.tcfg)
+			}
 		}
 
 		if l == nil {
@@ -426,9 +458,18 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		if err != nil && err != http.ErrServerClosed && err != grpc.ErrServerStopped {
 			rerr = errors.Join(rerr, err)
 		}
+		if err != nil &&
+			!errors.Is(err, http.ErrServerClosed) &&
+			!errors.Is(err, grpc.ErrServerStopped) &&
+			!errors.Is(err, context.Canceled) &&
+			!errors.Is(err, context.DeadlineExceeded) {
+			rerr = errors.Join(rerr, err)
+		}
 
 		err = sctx.Err()
-		if err != nil && err != context.Canceled {
+		if err != nil &&
+			!errors.Is(err, context.Canceled) &&
+			!errors.Is(err, context.DeadlineExceeded) {
 			rerr = errors.Join(rerr, err)
 		}
 

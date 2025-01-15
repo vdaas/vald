@@ -389,7 +389,7 @@ func Test_client_Close(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "retursn nil",
+			name: "returns nil",
 			want: want{
 				err: nil,
 			},

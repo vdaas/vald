@@ -1,6 +1,6 @@
 # Get Started
 
-This tutorial is for those who have already completed [Get Started](https://github.com/vdaas/vald/blob/main/docs/tutorial/get-started.md).
+This tutorial is for those who have already completed [Get Started](../tutorial/get-started.md).
 Please refer to Prepare the Kubernetes Cluster and others there.
 
 ## Deploy Vald on Kubernetes Cluster
@@ -278,7 +278,7 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
         ```go
         ctx := context.Background()
 
-        conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
+        conn, err := grpc.NewClient(grpcServerAddr, grpc.WithInsecure())
         if err != nil {
             glg.Fatal(err)
         }

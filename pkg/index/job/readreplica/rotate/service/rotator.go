@@ -17,7 +17,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"strings"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -27,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"k8s.io/utils/ptr"
 )
@@ -198,7 +198,7 @@ func (s *subProcess) createSnapshot(
 	oldSnap = cur.DeepCopy()
 	newNameBase := getNewBaseName(cur.GetObjectMeta().GetName())
 	if newNameBase == "" {
-		return nil, nil, fmt.Errorf("the name(%s) doesn't seem to have replicaid", cur.GetObjectMeta().GetName())
+		return nil, nil, fmt.Errorf("the name(%s) doesn't seem to have replica id", cur.GetObjectMeta().GetName())
 	}
 	newSnap = &k8s.VolumeSnapshot{
 		ObjectMeta: k8s.ObjectMeta{
@@ -244,7 +244,7 @@ func (s *subProcess) createPVC(
 	oldPvc = cur.DeepCopy()
 	newNameBase := getNewBaseName(cur.GetObjectMeta().GetName())
 	if newNameBase == "" {
-		return nil, nil, fmt.Errorf("the name(%s) doesn't seem to have replicaid", cur.GetObjectMeta().GetName())
+		return nil, nil, fmt.Errorf("the name(%s) doesn't seem to have replica id", cur.GetObjectMeta().GetName())
 	}
 
 	// remove timestamp from old pvc name

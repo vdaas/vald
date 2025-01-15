@@ -22,7 +22,7 @@ use proto::{
 impl remove_server::Remove for super::Agent {
     async fn remove(
         &self,
-        request: tonic::Request<remove::Request>,
+        _request: tonic::Request<remove::Request>,
     ) -> std::result::Result<tonic::Response<object::Location>, tonic::Status> {
         todo!()
     }
@@ -30,7 +30,7 @@ impl remove_server::Remove for super::Agent {
     #[doc = " A method to remove an indexed vector based on timestamp.\n"]
     async fn remove_by_timestamp(
         &self,
-        request: tonic::Request<remove::TimestampRequest>,
+        _request: tonic::Request<remove::TimestampRequest>,
     ) -> std::result::Result<tonic::Response<object::Locations>, tonic::Status> {
         todo!()
     }
@@ -41,7 +41,7 @@ impl remove_server::Remove for super::Agent {
     #[doc = " A method to remove multiple indexed vectors by bidirectional streaming.\n"]
     async fn stream_remove(
         &self,
-        request: tonic::Request<tonic::Streaming<remove::Request>>,
+        _request: tonic::Request<tonic::Streaming<remove::Request>>,
     ) -> std::result::Result<tonic::Response<Self::StreamRemoveStream>, tonic::Status> {
         todo!()
     }
@@ -49,7 +49,7 @@ impl remove_server::Remove for super::Agent {
     #[doc = " A method to remove multiple indexed vectors in a single request.\n"]
     async fn multi_remove(
         &self,
-        request: tonic::Request<remove::MultiRequest>,
+        _request: tonic::Request<remove::MultiRequest>,
     ) -> std::result::Result<tonic::Response<object::Locations>, tonic::Status> {
         todo!()
     }

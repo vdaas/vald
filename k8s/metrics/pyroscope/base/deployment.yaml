@@ -48,7 +48,7 @@ spec:
             - "/tmp/config.yaml"
           securityContext: {}
           image: "pyroscope/pyroscope:latest"
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - name: api
               containerPort: 4040

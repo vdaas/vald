@@ -32,12 +32,9 @@ var ErrNoAvailableAgentToRemove = New("no available agent to remove replica")
 // ErrFailedToCorrectReplicaNum represents an error that failed to correct replica number after correction process.
 var ErrFailedToCorrectReplicaNum = New("failed to correct replica number after correction process")
 
-// ErrFailedToReceiveVectorFromStream represents an error that failed to receive vector from stream while index correction process.
-var ErrFailedToReceiveVectorFromStream = New("failed to receive vector from stream")
-
 // ErrFailedToCheckConsistency represents an error that failed to check consistency process while index correction process.
 var ErrFailedToCheckConsistency = func(err error) error {
-	return Wrap(err, "failed to check consistency while index correctioin process")
+	return Wrap(err, "failed to check consistency while index correction process")
 }
 
 // ErrStreamListObjectStreamFinishedUnexpectedly represents an error that StreamListObject finished not because of io.EOF.

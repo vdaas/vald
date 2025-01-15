@@ -309,11 +309,11 @@ func (o *operator) ensureJobConcurrency(
 	}
 
 	for _, job := range jobList.Items {
-		annotaions := job.Spec.Template.Annotations
-		if annotaions == nil {
+		annotations := job.Spec.Template.Annotations
+		if annotations == nil {
 			continue
 		}
-		id, ok := annotaions[o.targetReadReplicaIDAnnotationsKey]
+		id, ok := annotations[o.targetReadReplicaIDAnnotationsKey]
 		if !ok {
 			continue
 		}

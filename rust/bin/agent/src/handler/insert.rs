@@ -21,7 +21,7 @@ use proto::{
 impl insert_server::Insert for super::Agent {
     async fn insert(
         &self,
-        request: tonic::Request<insert::Request>,
+        _request: tonic::Request<insert::Request>,
     ) -> std::result::Result<tonic::Response<object::Location>, tonic::Status> {
         todo!()
     }
@@ -32,7 +32,7 @@ impl insert_server::Insert for super::Agent {
     #[doc = " A method to add new multiple vectors by bidirectional streaming.\n"]
     async fn stream_insert(
         &self,
-        request: tonic::Request<tonic::Streaming<insert::Request>>,
+        _request: tonic::Request<tonic::Streaming<insert::Request>>,
     ) -> std::result::Result<tonic::Response<Self::StreamInsertStream>, tonic::Status> {
         todo!()
     }
@@ -40,7 +40,7 @@ impl insert_server::Insert for super::Agent {
     #[doc = " A method to add new multiple vectors in a single request.\n"]
     async fn multi_insert(
         &self,
-        request: tonic::Request<insert::MultiRequest>,
+        _request: tonic::Request<insert::MultiRequest>,
     ) -> std::result::Result<tonic::Response<object::Locations>, tonic::Status> {
         todo!()
     }

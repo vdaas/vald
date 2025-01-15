@@ -160,12 +160,21 @@
               "type": "string",
               "description": "a factor of load index timeout. timeout duration will be calculated by (index count to be loaded) * (factor)."
             },
-            "m": { "type": "integer" },
+            "m": { "type": "integer", "description": "m" },
             "max_load_index_timeout": {
               "type": "string",
               "description": "maximum duration of load index timeout"
             },
-            "metric_type": { "type": "string", "enum": ["innerproduct", "l2"] },
+            "method_type": {
+              "type": "string",
+              "description": "method type it should be `ivfpq` or `binaryindex`",
+              "enum": ["ivfpq", "binaryindex"]
+            },
+            "metric_type": {
+              "type": "string",
+              "description": "metric type it should be `innerproduct` or `l2`",
+              "enum": ["innerproduct", "l2"]
+            },
             "min_load_index_timeout": {
               "type": "string",
               "description": "minimum duration of load index timeout"
@@ -174,8 +183,11 @@
               "type": "string",
               "description": "namespace of myself"
             },
-            "nbits_per_idx": { "type": "integer" },
-            "nlist": { "type": "integer" },
+            "nbits_per_idx": {
+              "type": "integer",
+              "description": "nbits_per_idx"
+            },
+            "nlist": { "type": "integer", "description": "nlist" },
             "pod_name": {
               "type": "string",
               "description": "pod name of myself"
@@ -1404,6 +1416,10 @@
                               "type": "boolean",
                               "description": "gRPC server admin option"
                             },
+                            "enable_channelz": {
+                              "type": "boolean",
+                              "description": "gRPC server channelz option"
+                            },
                             "enable_reflection": {
                               "type": "boolean",
                               "description": "gRPC server reflection option"
@@ -1466,6 +1482,10 @@
                                 }
                               }
                             },
+                            "max_concurrent_streams": {
+                              "type": "integer",
+                              "description": "gRPC server max concurrent stream size"
+                            },
                             "max_header_list_size": {
                               "type": "integer",
                               "description": "gRPC server max header list size"
@@ -1478,9 +1498,21 @@
                               "type": "integer",
                               "description": "gRPC server max send message size"
                             },
+                            "num_stream_workers": {
+                              "type": "integer",
+                              "description": "gRPC server number of stream workers"
+                            },
                             "read_buffer_size": {
                               "type": "integer",
                               "description": "gRPC server read buffer size"
+                            },
+                            "shared_write_buffer": {
+                              "type": "boolean",
+                              "description": "gRPC server write buffer sharing option"
+                            },
+                            "wait_for_handlers": {
+                              "type": "boolean",
+                              "description": "gRPC server wait for handlers when stop"
                             },
                             "write_buffer_size": {
                               "type": "integer",
@@ -1965,17 +1997,22 @@
                           "properties": {
                             "cache_enabled": {
                               "type": "boolean",
-                              "description": "gRPC client TCP DNS cache enabled"
+                              "description": "gRPC client DNS cache enabled"
                             },
                             "cache_expiration": {
                               "type": "string",
-                              "description": "gRPC client TCP DNS cache expiration"
+                              "description": "gRPC client DNS cache expiration"
                             },
                             "refresh_duration": {
                               "type": "string",
-                              "description": "gRPC client TCP DNS cache refresh duration"
+                              "description": "gRPC client DNS cache refresh duration"
                             }
                           }
+                        },
+                        "network": {
+                          "type": "string",
+                          "description": "gRPC client dialer network type",
+                          "enum": ["tcp", "udp", "unix"]
                         },
                         "socket_option": {
                           "type": "object",
@@ -3079,6 +3116,10 @@
                                   "type": "boolean",
                                   "description": "gRPC server admin option"
                                 },
+                                "enable_channelz": {
+                                  "type": "boolean",
+                                  "description": "gRPC server channelz option"
+                                },
                                 "enable_reflection": {
                                   "type": "boolean",
                                   "description": "gRPC server reflection option"
@@ -3141,6 +3182,10 @@
                                     }
                                   }
                                 },
+                                "max_concurrent_streams": {
+                                  "type": "integer",
+                                  "description": "gRPC server max concurrent stream size"
+                                },
                                 "max_header_list_size": {
                                   "type": "integer",
                                   "description": "gRPC server max header list size"
@@ -3153,9 +3198,21 @@
                                   "type": "integer",
                                   "description": "gRPC server max send message size"
                                 },
+                                "num_stream_workers": {
+                                  "type": "integer",
+                                  "description": "gRPC server number of stream workers"
+                                },
                                 "read_buffer_size": {
                                   "type": "integer",
                                   "description": "gRPC server read buffer size"
+                                },
+                                "shared_write_buffer": {
+                                  "type": "boolean",
+                                  "description": "gRPC server write buffer sharing option"
+                                },
+                                "wait_for_handlers": {
+                                  "type": "boolean",
+                                  "description": "gRPC server wait for handlers when stop"
                                 },
                                 "write_buffer_size": {
                                   "type": "integer",
@@ -3487,6 +3544,11 @@
           "description": "topology spread constraints of gateway pods",
           "items": { "type": "object" }
         },
+        "unhealthyPodEvictionPolicy": {
+          "type": "string",
+          "description": "controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.",
+          "enum": ["AlwaysAllow", "IfHealthyBudget"]
+        },
         "version": {
           "type": "string",
           "description": "version of gateway config",
@@ -3602,9 +3664,14 @@
                     }
                   }
                 },
+                "content_subtype": { "type": "string" },
                 "dial_option": {
                   "type": "object",
                   "properties": {
+                    "authority": {
+                      "type": "string",
+                      "description": "gRPC client dial option authority"
+                    },
                     "backoff_base_delay": {
                       "type": "string",
                       "description": "gRPC client dial option base backoff delay"
@@ -3621,9 +3688,17 @@
                       "type": "number",
                       "description": "gRPC client dial option base backoff delay"
                     },
+                    "disable_retry": {
+                      "type": "boolean",
+                      "description": "gRPC client dial option disables retry"
+                    },
                     "enable_backoff": {
                       "type": "boolean",
                       "description": "gRPC client dial option backoff enabled"
+                    },
+                    "idle_timeout": {
+                      "type": "string",
+                      "description": "gRPC client dial option idle_timeout"
                     },
                     "initial_connection_window_size": {
                       "type": "integer",
@@ -3642,7 +3717,7 @@
                       "description": "gRPC client interceptors",
                       "items": {
                         "type": "string",
-                        "enum": ["TraceInterceptor"]
+                        "enum": ["TraceInterceptor", "MetricInterceptor"]
                       }
                     },
                     "keepalive": {
@@ -3661,6 +3736,14 @@
                           "description": "gRPC client keep alive timeout"
                         }
                       }
+                    },
+                    "max_call_attempts": {
+                      "type": "integer",
+                      "description": "gRPC client dial option number of max call attempts"
+                    },
+                    "max_header_list_size": {
+                      "type": "integer",
+                      "description": "gRPC client dial option max header list size"
                     },
                     "max_msg_size": {
                       "type": "integer",
@@ -3695,17 +3778,22 @@
                           "properties": {
                             "cache_enabled": {
                               "type": "boolean",
-                              "description": "gRPC client TCP DNS cache enabled"
+                              "description": "gRPC client DNS cache enabled"
                             },
                             "cache_expiration": {
                               "type": "string",
-                              "description": "gRPC client TCP DNS cache expiration"
+                              "description": "gRPC client DNS cache expiration"
                             },
                             "refresh_duration": {
                               "type": "string",
-                              "description": "gRPC client TCP DNS cache refresh duration"
+                              "description": "gRPC client DNS cache refresh duration"
                             }
                           }
+                        },
+                        "network": {
+                          "type": "string",
+                          "description": "gRPC client dialer network type",
+                          "enum": ["tcp", "udp", "unix"]
                         },
                         "socket_option": {
                           "type": "object",
@@ -3779,9 +3867,17 @@
                       "type": "integer",
                       "description": "gRPC client dial option read buffer size"
                     },
+                    "shared_write_buffer": {
+                      "type": "boolean",
+                      "description": "gRPC client dial option sharing write buffer"
+                    },
                     "timeout": {
                       "type": "string",
                       "description": "gRPC client dial option timeout"
+                    },
+                    "user_agent": {
+                      "type": "string",
+                      "description": "gRPC client dial option user_agent"
                     },
                     "write_buffer_size": {
                       "type": "integer",
@@ -4681,6 +4777,10 @@
                               "type": "boolean",
                               "description": "gRPC server admin option"
                             },
+                            "enable_channelz": {
+                              "type": "boolean",
+                              "description": "gRPC server channelz option"
+                            },
                             "enable_reflection": {
                               "type": "boolean",
                               "description": "gRPC server reflection option"
@@ -4743,6 +4843,10 @@
                                 }
                               }
                             },
+                            "max_concurrent_streams": {
+                              "type": "integer",
+                              "description": "gRPC server max concurrent stream size"
+                            },
                             "max_header_list_size": {
                               "type": "integer",
                               "description": "gRPC server max header list size"
@@ -4755,9 +4859,21 @@
                               "type": "integer",
                               "description": "gRPC server max send message size"
                             },
+                            "num_stream_workers": {
+                              "type": "integer",
+                              "description": "gRPC server number of stream workers"
+                            },
                             "read_buffer_size": {
                               "type": "integer",
                               "description": "gRPC server read buffer size"
+                            },
+                            "shared_write_buffer": {
+                              "type": "boolean",
+                              "description": "gRPC server write buffer sharing option"
+                            },
+                            "wait_for_handlers": {
+                              "type": "boolean",
+                              "description": "gRPC server wait for handlers when stop"
                             },
                             "write_buffer_size": {
                               "type": "integer",
@@ -5158,17 +5274,22 @@
                   "properties": {
                     "cache_enabled": {
                       "type": "boolean",
-                      "description": "gRPC client TCP DNS cache enabled"
+                      "description": "gRPC client DNS cache enabled"
                     },
                     "cache_expiration": {
                       "type": "string",
-                      "description": "gRPC client TCP DNS cache expiration"
+                      "description": "gRPC client DNS cache expiration"
                     },
                     "refresh_duration": {
                       "type": "string",
-                      "description": "gRPC client TCP DNS cache refresh duration"
+                      "description": "gRPC client DNS cache refresh duration"
                     }
                   }
+                },
+                "network": {
+                  "type": "string",
+                  "description": "gRPC client dialer network type",
+                  "enum": ["tcp", "udp", "unix"]
                 },
                 "socket_option": {
                   "type": "object",
@@ -6267,6 +6388,10 @@
                               "type": "boolean",
                               "description": "gRPC server admin option"
                             },
+                            "enable_channelz": {
+                              "type": "boolean",
+                              "description": "gRPC server channelz option"
+                            },
                             "enable_reflection": {
                               "type": "boolean",
                               "description": "gRPC server reflection option"
@@ -6329,6 +6454,10 @@
                                 }
                               }
                             },
+                            "max_concurrent_streams": {
+                              "type": "integer",
+                              "description": "gRPC server max concurrent stream size"
+                            },
                             "max_header_list_size": {
                               "type": "integer",
                               "description": "gRPC server max header list size"
@@ -6341,9 +6470,21 @@
                               "type": "integer",
                               "description": "gRPC server max send message size"
                             },
+                            "num_stream_workers": {
+                              "type": "integer",
+                              "description": "gRPC server number of stream workers"
+                            },
                             "read_buffer_size": {
                               "type": "integer",
                               "description": "gRPC server read buffer size"
+                            },
+                            "shared_write_buffer": {
+                              "type": "boolean",
+                              "description": "gRPC server write buffer sharing option"
+                            },
+                            "wait_for_handlers": {
+                              "type": "boolean",
+                              "description": "gRPC server wait for handlers when stop"
                             },
                             "write_buffer_size": {
                               "type": "integer",
@@ -6663,6 +6804,11 @@
           "description": "topology spread constraints of gateway pods",
           "items": { "type": "object" }
         },
+        "unhealthyPodEvictionPolicy": {
+          "type": "string",
+          "description": "controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.",
+          "enum": ["AlwaysAllow", "IfHealthyBudget"]
+        },
         "version": {
           "type": "string",
           "description": "version of gateway config",
@@ -6854,9 +7000,14 @@
                             }
                           }
                         },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
+                            "authority": {
+                              "type": "string",
+                              "description": "gRPC client dial option authority"
+                            },
                             "backoff_base_delay": {
                               "type": "string",
                               "description": "gRPC client dial option base backoff delay"
@@ -6873,9 +7024,17 @@
                               "type": "number",
                               "description": "gRPC client dial option base backoff delay"
                             },
+                            "disable_retry": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option disables retry"
+                            },
                             "enable_backoff": {
                               "type": "boolean",
                               "description": "gRPC client dial option backoff enabled"
+                            },
+                            "idle_timeout": {
+                              "type": "string",
+                              "description": "gRPC client dial option idle_timeout"
                             },
                             "initial_connection_window_size": {
                               "type": "integer",
@@ -6894,7 +7053,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -6913,6 +7075,14 @@
                                   "description": "gRPC client keep alive timeout"
                                 }
                               }
+                            },
+                            "max_call_attempts": {
+                              "type": "integer",
+                              "description": "gRPC client dial option number of max call attempts"
+                            },
+                            "max_header_list_size": {
+                              "type": "integer",
+                              "description": "gRPC client dial option max header list size"
                             },
                             "max_msg_size": {
                               "type": "integer",
@@ -6947,17 +7117,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -7031,9 +7206,17 @@
                               "type": "integer",
                               "description": "gRPC client dial option read buffer size"
                             },
+                            "shared_write_buffer": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option sharing write buffer"
+                            },
                             "timeout": {
                               "type": "string",
                               "description": "gRPC client dial option timeout"
+                            },
+                            "user_agent": {
+                              "type": "string",
+                              "description": "gRPC client dial option user_agent"
                             },
                             "write_buffer_size": {
                               "type": "integer",
@@ -7180,9 +7363,14 @@
                         }
                       }
                     },
+                    "content_subtype": { "type": "string" },
                     "dial_option": {
                       "type": "object",
                       "properties": {
+                        "authority": {
+                          "type": "string",
+                          "description": "gRPC client dial option authority"
+                        },
                         "backoff_base_delay": {
                           "type": "string",
                           "description": "gRPC client dial option base backoff delay"
@@ -7199,9 +7387,17 @@
                           "type": "number",
                           "description": "gRPC client dial option base backoff delay"
                         },
+                        "disable_retry": {
+                          "type": "boolean",
+                          "description": "gRPC client dial option disables retry"
+                        },
                         "enable_backoff": {
                           "type": "boolean",
                           "description": "gRPC client dial option backoff enabled"
+                        },
+                        "idle_timeout": {
+                          "type": "string",
+                          "description": "gRPC client dial option idle_timeout"
                         },
                         "initial_connection_window_size": {
                           "type": "integer",
@@ -7220,7 +7416,7 @@
                           "description": "gRPC client interceptors",
                           "items": {
                             "type": "string",
-                            "enum": ["TraceInterceptor"]
+                            "enum": ["TraceInterceptor", "MetricInterceptor"]
                           }
                         },
                         "keepalive": {
@@ -7239,6 +7435,14 @@
                               "description": "gRPC client keep alive timeout"
                             }
                           }
+                        },
+                        "max_call_attempts": {
+                          "type": "integer",
+                          "description": "gRPC client dial option number of max call attempts"
+                        },
+                        "max_header_list_size": {
+                          "type": "integer",
+                          "description": "gRPC client dial option max header list size"
                         },
                         "max_msg_size": {
                           "type": "integer",
@@ -7273,17 +7477,22 @@
                               "properties": {
                                 "cache_enabled": {
                                   "type": "boolean",
-                                  "description": "gRPC client TCP DNS cache enabled"
+                                  "description": "gRPC client DNS cache enabled"
                                 },
                                 "cache_expiration": {
                                   "type": "string",
-                                  "description": "gRPC client TCP DNS cache expiration"
+                                  "description": "gRPC client DNS cache expiration"
                                 },
                                 "refresh_duration": {
                                   "type": "string",
-                                  "description": "gRPC client TCP DNS cache refresh duration"
+                                  "description": "gRPC client DNS cache refresh duration"
                                 }
                               }
+                            },
+                            "network": {
+                              "type": "string",
+                              "description": "gRPC client dialer network type",
+                              "enum": ["tcp", "udp", "unix"]
                             },
                             "socket_option": {
                               "type": "object",
@@ -7357,9 +7566,17 @@
                           "type": "integer",
                           "description": "gRPC client dial option read buffer size"
                         },
+                        "shared_write_buffer": {
+                          "type": "boolean",
+                          "description": "gRPC client dial option sharing write buffer"
+                        },
                         "timeout": {
                           "type": "string",
                           "description": "gRPC client dial option timeout"
+                        },
+                        "user_agent": {
+                          "type": "string",
+                          "description": "gRPC client dial option user_agent"
                         },
                         "write_buffer_size": {
                           "type": "integer",
@@ -7498,9 +7715,14 @@
                             }
                           }
                         },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
+                            "authority": {
+                              "type": "string",
+                              "description": "gRPC client dial option authority"
+                            },
                             "backoff_base_delay": {
                               "type": "string",
                               "description": "gRPC client dial option base backoff delay"
@@ -7517,9 +7739,17 @@
                               "type": "number",
                               "description": "gRPC client dial option base backoff delay"
                             },
+                            "disable_retry": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option disables retry"
+                            },
                             "enable_backoff": {
                               "type": "boolean",
                               "description": "gRPC client dial option backoff enabled"
+                            },
+                            "idle_timeout": {
+                              "type": "string",
+                              "description": "gRPC client dial option idle_timeout"
                             },
                             "initial_connection_window_size": {
                               "type": "integer",
@@ -7538,7 +7768,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -7557,6 +7790,14 @@
                                   "description": "gRPC client keep alive timeout"
                                 }
                               }
+                            },
+                            "max_call_attempts": {
+                              "type": "integer",
+                              "description": "gRPC client dial option number of max call attempts"
+                            },
+                            "max_header_list_size": {
+                              "type": "integer",
+                              "description": "gRPC client dial option max header list size"
                             },
                             "max_msg_size": {
                               "type": "integer",
@@ -7591,17 +7832,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -7675,9 +7921,17 @@
                               "type": "integer",
                               "description": "gRPC client dial option read buffer size"
                             },
+                            "shared_write_buffer": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option sharing write buffer"
+                            },
                             "timeout": {
                               "type": "string",
                               "description": "gRPC client dial option timeout"
+                            },
+                            "user_agent": {
+                              "type": "string",
+                              "description": "gRPC client dial option user_agent"
                             },
                             "write_buffer_size": {
                               "type": "integer",
@@ -8736,6 +8990,10 @@
                                   "type": "boolean",
                                   "description": "gRPC server admin option"
                                 },
+                                "enable_channelz": {
+                                  "type": "boolean",
+                                  "description": "gRPC server channelz option"
+                                },
                                 "enable_reflection": {
                                   "type": "boolean",
                                   "description": "gRPC server reflection option"
@@ -8798,6 +9056,10 @@
                                     }
                                   }
                                 },
+                                "max_concurrent_streams": {
+                                  "type": "integer",
+                                  "description": "gRPC server max concurrent stream size"
+                                },
                                 "max_header_list_size": {
                                   "type": "integer",
                                   "description": "gRPC server max header list size"
@@ -8810,9 +9072,21 @@
                                   "type": "integer",
                                   "description": "gRPC server max send message size"
                                 },
+                                "num_stream_workers": {
+                                  "type": "integer",
+                                  "description": "gRPC server number of stream workers"
+                                },
                                 "read_buffer_size": {
                                   "type": "integer",
                                   "description": "gRPC server read buffer size"
+                                },
+                                "shared_write_buffer": {
+                                  "type": "boolean",
+                                  "description": "gRPC server write buffer sharing option"
+                                },
+                                "wait_for_handlers": {
+                                  "type": "boolean",
+                                  "description": "gRPC server wait for handlers when stop"
                                 },
                                 "write_buffer_size": {
                                   "type": "integer",
@@ -9125,6 +9399,11 @@
               "description": "topology spread constraints of gateway pods",
               "items": { "type": "object" }
             },
+            "unhealthyPodEvictionPolicy": {
+              "type": "string",
+              "description": "controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.",
+              "enum": ["AlwaysAllow", "IfHealthyBudget"]
+            },
             "version": {
               "type": "string",
               "description": "version of gateway config",
@@ -9316,9 +9595,14 @@
                             }
                           }
                         },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
+                            "authority": {
+                              "type": "string",
+                              "description": "gRPC client dial option authority"
+                            },
                             "backoff_base_delay": {
                               "type": "string",
                               "description": "gRPC client dial option base backoff delay"
@@ -9335,9 +9619,17 @@
                               "type": "number",
                               "description": "gRPC client dial option base backoff delay"
                             },
+                            "disable_retry": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option disables retry"
+                            },
                             "enable_backoff": {
                               "type": "boolean",
                               "description": "gRPC client dial option backoff enabled"
+                            },
+                            "idle_timeout": {
+                              "type": "string",
+                              "description": "gRPC client dial option idle_timeout"
                             },
                             "initial_connection_window_size": {
                               "type": "integer",
@@ -9356,7 +9648,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -9375,6 +9670,14 @@
                                   "description": "gRPC client keep alive timeout"
                                 }
                               }
+                            },
+                            "max_call_attempts": {
+                              "type": "integer",
+                              "description": "gRPC client dial option number of max call attempts"
+                            },
+                            "max_header_list_size": {
+                              "type": "integer",
+                              "description": "gRPC client dial option max header list size"
                             },
                             "max_msg_size": {
                               "type": "integer",
@@ -9409,17 +9712,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -9493,9 +9801,17 @@
                               "type": "integer",
                               "description": "gRPC client dial option read buffer size"
                             },
+                            "shared_write_buffer": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option sharing write buffer"
+                            },
                             "timeout": {
                               "type": "string",
                               "description": "gRPC client dial option timeout"
+                            },
+                            "user_agent": {
+                              "type": "string",
+                              "description": "gRPC client dial option user_agent"
                             },
                             "write_buffer_size": {
                               "type": "integer",
@@ -9630,9 +9946,14 @@
                             }
                           }
                         },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
+                            "authority": {
+                              "type": "string",
+                              "description": "gRPC client dial option authority"
+                            },
                             "backoff_base_delay": {
                               "type": "string",
                               "description": "gRPC client dial option base backoff delay"
@@ -9649,9 +9970,17 @@
                               "type": "number",
                               "description": "gRPC client dial option base backoff delay"
                             },
+                            "disable_retry": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option disables retry"
+                            },
                             "enable_backoff": {
                               "type": "boolean",
                               "description": "gRPC client dial option backoff enabled"
+                            },
+                            "idle_timeout": {
+                              "type": "string",
+                              "description": "gRPC client dial option idle_timeout"
                             },
                             "initial_connection_window_size": {
                               "type": "integer",
@@ -9670,7 +9999,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -9689,6 +10021,14 @@
                                   "description": "gRPC client keep alive timeout"
                                 }
                               }
+                            },
+                            "max_call_attempts": {
+                              "type": "integer",
+                              "description": "gRPC client dial option number of max call attempts"
+                            },
+                            "max_header_list_size": {
+                              "type": "integer",
+                              "description": "gRPC client dial option max header list size"
                             },
                             "max_msg_size": {
                               "type": "integer",
@@ -9723,17 +10063,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -9807,9 +10152,17 @@
                               "type": "integer",
                               "description": "gRPC client dial option read buffer size"
                             },
+                            "shared_write_buffer": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option sharing write buffer"
+                            },
                             "timeout": {
                               "type": "string",
                               "description": "gRPC client dial option timeout"
+                            },
+                            "user_agent": {
+                              "type": "string",
+                              "description": "gRPC client dial option user_agent"
                             },
                             "write_buffer_size": {
                               "type": "integer",
@@ -9945,9 +10298,14 @@
                             }
                           }
                         },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
+                            "authority": {
+                              "type": "string",
+                              "description": "gRPC client dial option authority"
+                            },
                             "backoff_base_delay": {
                               "type": "string",
                               "description": "gRPC client dial option base backoff delay"
@@ -9964,9 +10322,17 @@
                               "type": "number",
                               "description": "gRPC client dial option base backoff delay"
                             },
+                            "disable_retry": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option disables retry"
+                            },
                             "enable_backoff": {
                               "type": "boolean",
                               "description": "gRPC client dial option backoff enabled"
+                            },
+                            "idle_timeout": {
+                              "type": "string",
+                              "description": "gRPC client dial option idle_timeout"
                             },
                             "initial_connection_window_size": {
                               "type": "integer",
@@ -9985,7 +10351,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -10004,6 +10373,14 @@
                                   "description": "gRPC client keep alive timeout"
                                 }
                               }
+                            },
+                            "max_call_attempts": {
+                              "type": "integer",
+                              "description": "gRPC client dial option number of max call attempts"
+                            },
+                            "max_header_list_size": {
+                              "type": "integer",
+                              "description": "gRPC client dial option max header list size"
                             },
                             "max_msg_size": {
                               "type": "integer",
@@ -10038,17 +10415,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -10122,9 +10504,17 @@
                               "type": "integer",
                               "description": "gRPC client dial option read buffer size"
                             },
+                            "shared_write_buffer": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option sharing write buffer"
+                            },
                             "timeout": {
                               "type": "string",
                               "description": "gRPC client dial option timeout"
+                            },
+                            "user_agent": {
+                              "type": "string",
+                              "description": "gRPC client dial option user_agent"
                             },
                             "write_buffer_size": {
                               "type": "integer",
@@ -11170,6 +11560,10 @@
                                   "type": "boolean",
                                   "description": "gRPC server admin option"
                                 },
+                                "enable_channelz": {
+                                  "type": "boolean",
+                                  "description": "gRPC server channelz option"
+                                },
                                 "enable_reflection": {
                                   "type": "boolean",
                                   "description": "gRPC server reflection option"
@@ -11232,6 +11626,10 @@
                                     }
                                   }
                                 },
+                                "max_concurrent_streams": {
+                                  "type": "integer",
+                                  "description": "gRPC server max concurrent stream size"
+                                },
                                 "max_header_list_size": {
                                   "type": "integer",
                                   "description": "gRPC server max header list size"
@@ -11244,9 +11642,21 @@
                                   "type": "integer",
                                   "description": "gRPC server max send message size"
                                 },
+                                "num_stream_workers": {
+                                  "type": "integer",
+                                  "description": "gRPC server number of stream workers"
+                                },
                                 "read_buffer_size": {
                                   "type": "integer",
                                   "description": "gRPC server read buffer size"
+                                },
+                                "shared_write_buffer": {
+                                  "type": "boolean",
+                                  "description": "gRPC server write buffer sharing option"
+                                },
+                                "wait_for_handlers": {
+                                  "type": "boolean",
+                                  "description": "gRPC server wait for handlers when stop"
                                 },
                                 "write_buffer_size": {
                                   "type": "integer",
@@ -11559,6 +11969,11 @@
               "description": "topology spread constraints of gateway pods",
               "items": { "type": "object" }
             },
+            "unhealthyPodEvictionPolicy": {
+              "type": "string",
+              "description": "controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.",
+              "enum": ["AlwaysAllow", "IfHealthyBudget"]
+            },
             "version": {
               "type": "string",
               "description": "version of gateway config",
@@ -11769,9 +12184,14 @@
                         }
                       }
                     },
+                    "content_subtype": { "type": "string" },
                     "dial_option": {
                       "type": "object",
                       "properties": {
+                        "authority": {
+                          "type": "string",
+                          "description": "gRPC client dial option authority"
+                        },
                         "backoff_base_delay": {
                           "type": "string",
                           "description": "gRPC client dial option base backoff delay"
@@ -11788,9 +12208,17 @@
                           "type": "number",
                           "description": "gRPC client dial option base backoff delay"
                         },
+                        "disable_retry": {
+                          "type": "boolean",
+                          "description": "gRPC client dial option disables retry"
+                        },
                         "enable_backoff": {
                           "type": "boolean",
                           "description": "gRPC client dial option backoff enabled"
+                        },
+                        "idle_timeout": {
+                          "type": "string",
+                          "description": "gRPC client dial option idle_timeout"
                         },
                         "initial_connection_window_size": {
                           "type": "integer",
@@ -11809,7 +12237,7 @@
                           "description": "gRPC client interceptors",
                           "items": {
                             "type": "string",
-                            "enum": ["TraceInterceptor"]
+                            "enum": ["TraceInterceptor", "MetricInterceptor"]
                           }
                         },
                         "keepalive": {
@@ -11828,6 +12256,14 @@
                               "description": "gRPC client keep alive timeout"
                             }
                           }
+                        },
+                        "max_call_attempts": {
+                          "type": "integer",
+                          "description": "gRPC client dial option number of max call attempts"
+                        },
+                        "max_header_list_size": {
+                          "type": "integer",
+                          "description": "gRPC client dial option max header list size"
                         },
                         "max_msg_size": {
                           "type": "integer",
@@ -11862,17 +12298,22 @@
                               "properties": {
                                 "cache_enabled": {
                                   "type": "boolean",
-                                  "description": "gRPC client TCP DNS cache enabled"
+                                  "description": "gRPC client DNS cache enabled"
                                 },
                                 "cache_expiration": {
                                   "type": "string",
-                                  "description": "gRPC client TCP DNS cache expiration"
+                                  "description": "gRPC client DNS cache expiration"
                                 },
                                 "refresh_duration": {
                                   "type": "string",
-                                  "description": "gRPC client TCP DNS cache refresh duration"
+                                  "description": "gRPC client DNS cache refresh duration"
                                 }
                               }
+                            },
+                            "network": {
+                              "type": "string",
+                              "description": "gRPC client dialer network type",
+                              "enum": ["tcp", "udp", "unix"]
                             },
                             "socket_option": {
                               "type": "object",
@@ -11946,9 +12387,17 @@
                           "type": "integer",
                           "description": "gRPC client dial option read buffer size"
                         },
+                        "shared_write_buffer": {
+                          "type": "boolean",
+                          "description": "gRPC client dial option sharing write buffer"
+                        },
                         "timeout": {
                           "type": "string",
                           "description": "gRPC client dial option timeout"
+                        },
+                        "user_agent": {
+                          "type": "string",
+                          "description": "gRPC client dial option user_agent"
                         },
                         "write_buffer_size": {
                           "type": "integer",
@@ -12036,17 +12485,22 @@
                       "properties": {
                         "cache_enabled": {
                           "type": "boolean",
-                          "description": "gRPC client TCP DNS cache enabled"
+                          "description": "gRPC client DNS cache enabled"
                         },
                         "cache_expiration": {
                           "type": "string",
-                          "description": "gRPC client TCP DNS cache expiration"
+                          "description": "gRPC client DNS cache expiration"
                         },
                         "refresh_duration": {
                           "type": "string",
-                          "description": "gRPC client TCP DNS cache refresh duration"
+                          "description": "gRPC client DNS cache refresh duration"
                         }
                       }
+                    },
+                    "network": {
+                      "type": "string",
+                      "description": "gRPC client dialer network type",
+                      "enum": ["tcp", "udp", "unix"]
                     },
                     "socket_option": {
                       "type": "object",
@@ -13118,6 +13572,10 @@
                                   "type": "boolean",
                                   "description": "gRPC server admin option"
                                 },
+                                "enable_channelz": {
+                                  "type": "boolean",
+                                  "description": "gRPC server channelz option"
+                                },
                                 "enable_reflection": {
                                   "type": "boolean",
                                   "description": "gRPC server reflection option"
@@ -13180,6 +13638,10 @@
                                     }
                                   }
                                 },
+                                "max_concurrent_streams": {
+                                  "type": "integer",
+                                  "description": "gRPC server max concurrent stream size"
+                                },
                                 "max_header_list_size": {
                                   "type": "integer",
                                   "description": "gRPC server max header list size"
@@ -13192,9 +13654,21 @@
                                   "type": "integer",
                                   "description": "gRPC server max send message size"
                                 },
+                                "num_stream_workers": {
+                                  "type": "integer",
+                                  "description": "gRPC server number of stream workers"
+                                },
                                 "read_buffer_size": {
                                   "type": "integer",
                                   "description": "gRPC server read buffer size"
+                                },
+                                "shared_write_buffer": {
+                                  "type": "boolean",
+                                  "description": "gRPC server write buffer sharing option"
+                                },
+                                "wait_for_handlers": {
+                                  "type": "boolean",
+                                  "description": "gRPC server wait for handlers when stop"
                                 },
                                 "write_buffer_size": {
                                   "type": "integer",
@@ -13520,6 +13994,11 @@
               "description": "topology spread constraints of gateway pods",
               "items": { "type": "object" }
             },
+            "unhealthyPodEvictionPolicy": {
+              "type": "string",
+              "description": "controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.",
+              "enum": ["AlwaysAllow", "IfHealthyBudget"]
+            },
             "version": {
               "type": "string",
               "description": "version of gateway config",
@@ -13607,6 +14086,61 @@
             "corrector": {
               "type": "object",
               "properties": {
+                "affinity": {
+                  "type": "object",
+                  "properties": {
+                    "nodeAffinity": {
+                      "type": "object",
+                      "properties": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "node affinity preferred scheduling terms",
+                          "items": { "type": "object" }
+                        },
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "object",
+                          "properties": {
+                            "nodeSelectorTerms": {
+                              "type": "array",
+                              "description": "node affinity required node selectors",
+                              "items": { "type": "object" }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "podAffinity": {
+                      "type": "object",
+                      "properties": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod affinity preferred scheduling terms",
+                          "items": { "type": "object" }
+                        },
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod affinity required scheduling terms",
+                          "items": { "type": "object" }
+                        }
+                      }
+                    },
+                    "podAntiAffinity": {
+                      "type": "object",
+                      "properties": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod anti-affinity preferred scheduling terms",
+                          "items": { "type": "object" }
+                        },
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod anti-affinity required scheduling terms",
+                          "items": { "type": "object" }
+                        }
+                      }
+                    }
+                  }
+                },
                 "agent_namespace": {
                   "type": "string",
                   "description": "namespace of agent pods to manage"
@@ -13706,9 +14240,14 @@
                             }
                           }
                         },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
+                            "authority": {
+                              "type": "string",
+                              "description": "gRPC client dial option authority"
+                            },
                             "backoff_base_delay": {
                               "type": "string",
                               "description": "gRPC client dial option base backoff delay"
@@ -13725,9 +14264,17 @@
                               "type": "number",
                               "description": "gRPC client dial option base backoff delay"
                             },
+                            "disable_retry": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option disables retry"
+                            },
                             "enable_backoff": {
                               "type": "boolean",
                               "description": "gRPC client dial option backoff enabled"
+                            },
+                            "idle_timeout": {
+                              "type": "string",
+                              "description": "gRPC client dial option idle_timeout"
                             },
                             "initial_connection_window_size": {
                               "type": "integer",
@@ -13746,7 +14293,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -13765,6 +14315,14 @@
                                   "description": "gRPC client keep alive timeout"
                                 }
                               }
+                            },
+                            "max_call_attempts": {
+                              "type": "integer",
+                              "description": "gRPC client dial option number of max call attempts"
+                            },
+                            "max_header_list_size": {
+                              "type": "integer",
+                              "description": "gRPC client dial option max header list size"
                             },
                             "max_msg_size": {
                               "type": "integer",
@@ -13799,17 +14357,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -13883,9 +14446,17 @@
                               "type": "integer",
                               "description": "gRPC client dial option read buffer size"
                             },
+                            "shared_write_buffer": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option sharing write buffer"
+                            },
                             "timeout": {
                               "type": "string",
                               "description": "gRPC client dial option timeout"
+                            },
+                            "user_agent": {
+                              "type": "string",
+                              "description": "gRPC client dial option user_agent"
                             },
                             "write_buffer_size": {
                               "type": "integer",
@@ -14020,9 +14591,14 @@
                             }
                           }
                         },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
+                            "authority": {
+                              "type": "string",
+                              "description": "gRPC client dial option authority"
+                            },
                             "backoff_base_delay": {
                               "type": "string",
                               "description": "gRPC client dial option base backoff delay"
@@ -14039,9 +14615,17 @@
                               "type": "number",
                               "description": "gRPC client dial option base backoff delay"
                             },
+                            "disable_retry": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option disables retry"
+                            },
                             "enable_backoff": {
                               "type": "boolean",
                               "description": "gRPC client dial option backoff enabled"
+                            },
+                            "idle_timeout": {
+                              "type": "string",
+                              "description": "gRPC client dial option idle_timeout"
                             },
                             "initial_connection_window_size": {
                               "type": "integer",
@@ -14060,7 +14644,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -14079,6 +14666,14 @@
                                   "description": "gRPC client keep alive timeout"
                                 }
                               }
+                            },
+                            "max_call_attempts": {
+                              "type": "integer",
+                              "description": "gRPC client dial option number of max call attempts"
+                            },
+                            "max_header_list_size": {
+                              "type": "integer",
+                              "description": "gRPC client dial option max header list size"
                             },
                             "max_msg_size": {
                               "type": "integer",
@@ -14113,17 +14708,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -14197,9 +14797,17 @@
                               "type": "integer",
                               "description": "gRPC client dial option read buffer size"
                             },
+                            "shared_write_buffer": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option sharing write buffer"
+                            },
                             "timeout": {
                               "type": "string",
                               "description": "gRPC client dial option timeout"
+                            },
+                            "user_agent": {
+                              "type": "string",
+                              "description": "gRPC client dial option user_agent"
                             },
                             "write_buffer_size": {
                               "type": "integer",
@@ -14349,9 +14957,14 @@
                         }
                       }
                     },
+                    "content_subtype": { "type": "string" },
                     "dial_option": {
                       "type": "object",
                       "properties": {
+                        "authority": {
+                          "type": "string",
+                          "description": "gRPC client dial option authority"
+                        },
                         "backoff_base_delay": {
                           "type": "string",
                           "description": "gRPC client dial option base backoff delay"
@@ -14368,9 +14981,17 @@
                           "type": "number",
                           "description": "gRPC client dial option base backoff delay"
                         },
+                        "disable_retry": {
+                          "type": "boolean",
+                          "description": "gRPC client dial option disables retry"
+                        },
                         "enable_backoff": {
                           "type": "boolean",
                           "description": "gRPC client dial option backoff enabled"
+                        },
+                        "idle_timeout": {
+                          "type": "string",
+                          "description": "gRPC client dial option idle_timeout"
                         },
                         "initial_connection_window_size": {
                           "type": "integer",
@@ -14389,7 +15010,7 @@
                           "description": "gRPC client interceptors",
                           "items": {
                             "type": "string",
-                            "enum": ["TraceInterceptor"]
+                            "enum": ["TraceInterceptor", "MetricInterceptor"]
                           }
                         },
                         "keepalive": {
@@ -14408,6 +15029,14 @@
                               "description": "gRPC client keep alive timeout"
                             }
                           }
+                        },
+                        "max_call_attempts": {
+                          "type": "integer",
+                          "description": "gRPC client dial option number of max call attempts"
+                        },
+                        "max_header_list_size": {
+                          "type": "integer",
+                          "description": "gRPC client dial option max header list size"
                         },
                         "max_msg_size": {
                           "type": "integer",
@@ -14442,17 +15071,22 @@
                               "properties": {
                                 "cache_enabled": {
                                   "type": "boolean",
-                                  "description": "gRPC client TCP DNS cache enabled"
+                                  "description": "gRPC client DNS cache enabled"
                                 },
                                 "cache_expiration": {
                                   "type": "string",
-                                  "description": "gRPC client TCP DNS cache expiration"
+                                  "description": "gRPC client DNS cache expiration"
                                 },
                                 "refresh_duration": {
                                   "type": "string",
-                                  "description": "gRPC client TCP DNS cache refresh duration"
+                                  "description": "gRPC client DNS cache refresh duration"
                                 }
                               }
+                            },
+                            "network": {
+                              "type": "string",
+                              "description": "gRPC client dialer network type",
+                              "enum": ["tcp", "udp", "unix"]
                             },
                             "socket_option": {
                               "type": "object",
@@ -14526,9 +15160,17 @@
                           "type": "integer",
                           "description": "gRPC client dial option read buffer size"
                         },
+                        "shared_write_buffer": {
+                          "type": "boolean",
+                          "description": "gRPC client dial option sharing write buffer"
+                        },
                         "timeout": {
                           "type": "string",
                           "description": "gRPC client dial option timeout"
+                        },
+                        "user_agent": {
+                          "type": "string",
+                          "description": "gRPC client dial option user_agent"
                         },
                         "write_buffer_size": {
                           "type": "integer",
@@ -14605,6 +15247,10 @@
                 "name": {
                   "type": "string",
                   "description": "name of index correction job"
+                },
+                "nodeSelector": {
+                  "type": "object",
+                  "description": "node selector"
                 },
                 "node_name": { "type": "string", "description": "node name" },
                 "observability": {
@@ -15427,6 +16073,10 @@
                                       "type": "boolean",
                                       "description": "gRPC server admin option"
                                     },
+                                    "enable_channelz": {
+                                      "type": "boolean",
+                                      "description": "gRPC server channelz option"
+                                    },
                                     "enable_reflection": {
                                       "type": "boolean",
                                       "description": "gRPC server reflection option"
@@ -15489,6 +16139,10 @@
                                         }
                                       }
                                     },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "gRPC server max concurrent stream size"
+                                    },
                                     "max_header_list_size": {
                                       "type": "integer",
                                       "description": "gRPC server max header list size"
@@ -15501,9 +16155,21 @@
                                       "type": "integer",
                                       "description": "gRPC server max send message size"
                                     },
+                                    "num_stream_workers": {
+                                      "type": "integer",
+                                      "description": "gRPC server number of stream workers"
+                                    },
                                     "read_buffer_size": {
                                       "type": "integer",
                                       "description": "gRPC server read buffer size"
+                                    },
+                                    "shared_write_buffer": {
+                                      "type": "boolean",
+                                      "description": "gRPC server write buffer sharing option"
+                                    },
+                                    "wait_for_handlers": {
+                                      "type": "boolean",
+                                      "description": "gRPC server wait for handlers when stop"
                                     },
                                     "write_buffer_size": {
                                       "type": "integer",
@@ -15804,6 +16470,11 @@
                   "type": "boolean",
                   "description": "CronJob suspend setting for index correction"
                 },
+                "tolerations": {
+                  "type": "array",
+                  "description": "tolerations",
+                  "items": { "type": "object" }
+                },
                 "ttlSecondsAfterFinished": {
                   "type": "integer",
                   "description": "ttl setting for K8s completed jobs"
@@ -15818,6 +16489,61 @@
             "creator": {
               "type": "object",
               "properties": {
+                "affinity": {
+                  "type": "object",
+                  "properties": {
+                    "nodeAffinity": {
+                      "type": "object",
+                      "properties": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "node affinity preferred scheduling terms",
+                          "items": { "type": "object" }
+                        },
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "object",
+                          "properties": {
+                            "nodeSelectorTerms": {
+                              "type": "array",
+                              "description": "node affinity required node selectors",
+                              "items": { "type": "object" }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "podAffinity": {
+                      "type": "object",
+                      "properties": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod affinity preferred scheduling terms",
+                          "items": { "type": "object" }
+                        },
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod affinity required scheduling terms",
+                          "items": { "type": "object" }
+                        }
+                      }
+                    },
+                    "podAntiAffinity": {
+                      "type": "object",
+                      "properties": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod anti-affinity preferred scheduling terms",
+                          "items": { "type": "object" }
+                        },
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod anti-affinity required scheduling terms",
+                          "items": { "type": "object" }
+                        }
+                      }
+                    }
+                  }
+                },
                 "agent_namespace": {
                   "type": "string",
                   "description": "namespace of agent pods to manage"
@@ -15926,9 +16652,14 @@
                             }
                           }
                         },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
+                            "authority": {
+                              "type": "string",
+                              "description": "gRPC client dial option authority"
+                            },
                             "backoff_base_delay": {
                               "type": "string",
                               "description": "gRPC client dial option base backoff delay"
@@ -15945,9 +16676,17 @@
                               "type": "number",
                               "description": "gRPC client dial option base backoff delay"
                             },
+                            "disable_retry": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option disables retry"
+                            },
                             "enable_backoff": {
                               "type": "boolean",
                               "description": "gRPC client dial option backoff enabled"
+                            },
+                            "idle_timeout": {
+                              "type": "string",
+                              "description": "gRPC client dial option idle_timeout"
                             },
                             "initial_connection_window_size": {
                               "type": "integer",
@@ -15966,7 +16705,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -15985,6 +16727,14 @@
                                   "description": "gRPC client keep alive timeout"
                                 }
                               }
+                            },
+                            "max_call_attempts": {
+                              "type": "integer",
+                              "description": "gRPC client dial option number of max call attempts"
+                            },
+                            "max_header_list_size": {
+                              "type": "integer",
+                              "description": "gRPC client dial option max header list size"
                             },
                             "max_msg_size": {
                               "type": "integer",
@@ -16019,17 +16769,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -16103,9 +16858,17 @@
                               "type": "integer",
                               "description": "gRPC client dial option read buffer size"
                             },
+                            "shared_write_buffer": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option sharing write buffer"
+                            },
                             "timeout": {
                               "type": "string",
                               "description": "gRPC client dial option timeout"
+                            },
+                            "user_agent": {
+                              "type": "string",
+                              "description": "gRPC client dial option user_agent"
                             },
                             "write_buffer_size": {
                               "type": "integer",
@@ -16240,9 +17003,14 @@
                             }
                           }
                         },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
+                            "authority": {
+                              "type": "string",
+                              "description": "gRPC client dial option authority"
+                            },
                             "backoff_base_delay": {
                               "type": "string",
                               "description": "gRPC client dial option base backoff delay"
@@ -16259,9 +17027,17 @@
                               "type": "number",
                               "description": "gRPC client dial option base backoff delay"
                             },
+                            "disable_retry": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option disables retry"
+                            },
                             "enable_backoff": {
                               "type": "boolean",
                               "description": "gRPC client dial option backoff enabled"
+                            },
+                            "idle_timeout": {
+                              "type": "string",
+                              "description": "gRPC client dial option idle_timeout"
                             },
                             "initial_connection_window_size": {
                               "type": "integer",
@@ -16280,7 +17056,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -16299,6 +17078,14 @@
                                   "description": "gRPC client keep alive timeout"
                                 }
                               }
+                            },
+                            "max_call_attempts": {
+                              "type": "integer",
+                              "description": "gRPC client dial option number of max call attempts"
+                            },
+                            "max_header_list_size": {
+                              "type": "integer",
+                              "description": "gRPC client dial option max header list size"
                             },
                             "max_msg_size": {
                               "type": "integer",
@@ -16333,17 +17120,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -16417,9 +17209,17 @@
                               "type": "integer",
                               "description": "gRPC client dial option read buffer size"
                             },
+                            "shared_write_buffer": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option sharing write buffer"
+                            },
                             "timeout": {
                               "type": "string",
                               "description": "gRPC client dial option timeout"
+                            },
+                            "user_agent": {
+                              "type": "string",
+                              "description": "gRPC client dial option user_agent"
                             },
                             "write_buffer_size": {
                               "type": "integer",
@@ -16503,6 +17303,10 @@
                 "name": {
                   "type": "string",
                   "description": "name of index creation job"
+                },
+                "nodeSelector": {
+                  "type": "object",
+                  "description": "node selector"
                 },
                 "node_name": { "type": "string", "description": "node name" },
                 "observability": {
@@ -17325,6 +18129,10 @@
                                       "type": "boolean",
                                       "description": "gRPC server admin option"
                                     },
+                                    "enable_channelz": {
+                                      "type": "boolean",
+                                      "description": "gRPC server channelz option"
+                                    },
                                     "enable_reflection": {
                                       "type": "boolean",
                                       "description": "gRPC server reflection option"
@@ -17387,6 +18195,10 @@
                                         }
                                       }
                                     },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "gRPC server max concurrent stream size"
+                                    },
                                     "max_header_list_size": {
                                       "type": "integer",
                                       "description": "gRPC server max header list size"
@@ -17399,9 +18211,21 @@
                                       "type": "integer",
                                       "description": "gRPC server max send message size"
                                     },
+                                    "num_stream_workers": {
+                                      "type": "integer",
+                                      "description": "gRPC server number of stream workers"
+                                    },
                                     "read_buffer_size": {
                                       "type": "integer",
                                       "description": "gRPC server read buffer size"
+                                    },
+                                    "shared_write_buffer": {
+                                      "type": "boolean",
+                                      "description": "gRPC server write buffer sharing option"
+                                    },
+                                    "wait_for_handlers": {
+                                      "type": "boolean",
+                                      "description": "gRPC server wait for handlers when stop"
                                     },
                                     "write_buffer_size": {
                                       "type": "integer",
@@ -17702,6 +18526,11 @@
                   "description": "indexing target addresses",
                   "items": { "type": "string" }
                 },
+                "tolerations": {
+                  "type": "array",
+                  "description": "tolerations",
+                  "items": { "type": "object" }
+                },
                 "ttlSecondsAfterFinished": {
                   "type": "integer",
                   "description": "ttl setting for K8s completed jobs"
@@ -17875,9 +18704,14 @@
                             }
                           }
                         },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
+                            "authority": {
+                              "type": "string",
+                              "description": "gRPC client dial option authority"
+                            },
                             "backoff_base_delay": {
                               "type": "string",
                               "description": "gRPC client dial option base backoff delay"
@@ -17894,9 +18728,17 @@
                               "type": "number",
                               "description": "gRPC client dial option base backoff delay"
                             },
+                            "disable_retry": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option disables retry"
+                            },
                             "enable_backoff": {
                               "type": "boolean",
                               "description": "gRPC client dial option backoff enabled"
+                            },
+                            "idle_timeout": {
+                              "type": "string",
+                              "description": "gRPC client dial option idle_timeout"
                             },
                             "initial_connection_window_size": {
                               "type": "integer",
@@ -17915,7 +18757,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -17934,6 +18779,14 @@
                                   "description": "gRPC client keep alive timeout"
                                 }
                               }
+                            },
+                            "max_call_attempts": {
+                              "type": "integer",
+                              "description": "gRPC client dial option number of max call attempts"
+                            },
+                            "max_header_list_size": {
+                              "type": "integer",
+                              "description": "gRPC client dial option max header list size"
                             },
                             "max_msg_size": {
                               "type": "integer",
@@ -17968,17 +18821,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -18052,9 +18910,17 @@
                               "type": "integer",
                               "description": "gRPC client dial option read buffer size"
                             },
+                            "shared_write_buffer": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option sharing write buffer"
+                            },
                             "timeout": {
                               "type": "string",
                               "description": "gRPC client dial option timeout"
+                            },
+                            "user_agent": {
+                              "type": "string",
+                              "description": "gRPC client dial option user_agent"
                             },
                             "write_buffer_size": {
                               "type": "integer",
@@ -18189,9 +19055,14 @@
                             }
                           }
                         },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
+                            "authority": {
+                              "type": "string",
+                              "description": "gRPC client dial option authority"
+                            },
                             "backoff_base_delay": {
                               "type": "string",
                               "description": "gRPC client dial option base backoff delay"
@@ -18208,9 +19079,17 @@
                               "type": "number",
                               "description": "gRPC client dial option base backoff delay"
                             },
+                            "disable_retry": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option disables retry"
+                            },
                             "enable_backoff": {
                               "type": "boolean",
                               "description": "gRPC client dial option backoff enabled"
+                            },
+                            "idle_timeout": {
+                              "type": "string",
+                              "description": "gRPC client dial option idle_timeout"
                             },
                             "initial_connection_window_size": {
                               "type": "integer",
@@ -18229,7 +19108,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -18248,6 +19130,14 @@
                                   "description": "gRPC client keep alive timeout"
                                 }
                               }
+                            },
+                            "max_call_attempts": {
+                              "type": "integer",
+                              "description": "gRPC client dial option number of max call attempts"
+                            },
+                            "max_header_list_size": {
+                              "type": "integer",
+                              "description": "gRPC client dial option max header list size"
                             },
                             "max_msg_size": {
                               "type": "integer",
@@ -18282,17 +19172,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -18366,9 +19261,17 @@
                               "type": "integer",
                               "description": "gRPC client dial option read buffer size"
                             },
+                            "shared_write_buffer": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option sharing write buffer"
+                            },
                             "timeout": {
                               "type": "string",
                               "description": "gRPC client dial option timeout"
+                            },
+                            "user_agent": {
+                              "type": "string",
+                              "description": "gRPC client dial option user_agent"
                             },
                             "write_buffer_size": {
                               "type": "integer",
@@ -19590,6 +20493,10 @@
                                       "type": "boolean",
                                       "description": "gRPC server admin option"
                                     },
+                                    "enable_channelz": {
+                                      "type": "boolean",
+                                      "description": "gRPC server channelz option"
+                                    },
                                     "enable_reflection": {
                                       "type": "boolean",
                                       "description": "gRPC server reflection option"
@@ -19652,6 +20559,10 @@
                                         }
                                       }
                                     },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "gRPC server max concurrent stream size"
+                                    },
                                     "max_header_list_size": {
                                       "type": "integer",
                                       "description": "gRPC server max header list size"
@@ -19664,9 +20575,21 @@
                                       "type": "integer",
                                       "description": "gRPC server max send message size"
                                     },
+                                    "num_stream_workers": {
+                                      "type": "integer",
+                                      "description": "gRPC server number of stream workers"
+                                    },
                                     "read_buffer_size": {
                                       "type": "integer",
                                       "description": "gRPC server read buffer size"
+                                    },
+                                    "shared_write_buffer": {
+                                      "type": "boolean",
+                                      "description": "gRPC server write buffer sharing option"
+                                    },
+                                    "wait_for_handlers": {
+                                      "type": "boolean",
+                                      "description": "gRPC server wait for handlers when stop"
                                     },
                                     "write_buffer_size": {
                                       "type": "integer",
@@ -20905,6 +21828,10 @@
                                           "type": "boolean",
                                           "description": "gRPC server admin option"
                                         },
+                                        "enable_channelz": {
+                                          "type": "boolean",
+                                          "description": "gRPC server channelz option"
+                                        },
                                         "enable_reflection": {
                                           "type": "boolean",
                                           "description": "gRPC server reflection option"
@@ -20967,6 +21894,10 @@
                                             }
                                           }
                                         },
+                                        "max_concurrent_streams": {
+                                          "type": "integer",
+                                          "description": "gRPC server max concurrent stream size"
+                                        },
                                         "max_header_list_size": {
                                           "type": "integer",
                                           "description": "gRPC server max header list size"
@@ -20979,9 +21910,21 @@
                                           "type": "integer",
                                           "description": "gRPC server max send message size"
                                         },
+                                        "num_stream_workers": {
+                                          "type": "integer",
+                                          "description": "gRPC server number of stream workers"
+                                        },
                                         "read_buffer_size": {
                                           "type": "integer",
                                           "description": "gRPC server read buffer size"
+                                        },
+                                        "shared_write_buffer": {
+                                          "type": "boolean",
+                                          "description": "gRPC server write buffer sharing option"
+                                        },
+                                        "wait_for_handlers": {
+                                          "type": "boolean",
+                                          "description": "gRPC server wait for handlers when stop"
                                         },
                                         "write_buffer_size": {
                                           "type": "integer",
@@ -21333,6 +22276,61 @@
             "saver": {
               "type": "object",
               "properties": {
+                "affinity": {
+                  "type": "object",
+                  "properties": {
+                    "nodeAffinity": {
+                      "type": "object",
+                      "properties": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "node affinity preferred scheduling terms",
+                          "items": { "type": "object" }
+                        },
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "object",
+                          "properties": {
+                            "nodeSelectorTerms": {
+                              "type": "array",
+                              "description": "node affinity required node selectors",
+                              "items": { "type": "object" }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "podAffinity": {
+                      "type": "object",
+                      "properties": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod affinity preferred scheduling terms",
+                          "items": { "type": "object" }
+                        },
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod affinity required scheduling terms",
+                          "items": { "type": "object" }
+                        }
+                      }
+                    },
+                    "podAntiAffinity": {
+                      "type": "object",
+                      "properties": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod anti-affinity preferred scheduling terms",
+                          "items": { "type": "object" }
+                        },
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod anti-affinity required scheduling terms",
+                          "items": { "type": "object" }
+                        }
+                      }
+                    }
+                  }
+                },
                 "agent_namespace": {
                   "type": "string",
                   "description": "namespace of agent pods to manage"
@@ -21437,9 +22435,14 @@
                             }
                           }
                         },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
+                            "authority": {
+                              "type": "string",
+                              "description": "gRPC client dial option authority"
+                            },
                             "backoff_base_delay": {
                               "type": "string",
                               "description": "gRPC client dial option base backoff delay"
@@ -21456,9 +22459,17 @@
                               "type": "number",
                               "description": "gRPC client dial option base backoff delay"
                             },
+                            "disable_retry": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option disables retry"
+                            },
                             "enable_backoff": {
                               "type": "boolean",
                               "description": "gRPC client dial option backoff enabled"
+                            },
+                            "idle_timeout": {
+                              "type": "string",
+                              "description": "gRPC client dial option idle_timeout"
                             },
                             "initial_connection_window_size": {
                               "type": "integer",
@@ -21477,7 +22488,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -21496,6 +22510,14 @@
                                   "description": "gRPC client keep alive timeout"
                                 }
                               }
+                            },
+                            "max_call_attempts": {
+                              "type": "integer",
+                              "description": "gRPC client dial option number of max call attempts"
+                            },
+                            "max_header_list_size": {
+                              "type": "integer",
+                              "description": "gRPC client dial option max header list size"
                             },
                             "max_msg_size": {
                               "type": "integer",
@@ -21530,17 +22552,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -21614,9 +22641,17 @@
                               "type": "integer",
                               "description": "gRPC client dial option read buffer size"
                             },
+                            "shared_write_buffer": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option sharing write buffer"
+                            },
                             "timeout": {
                               "type": "string",
                               "description": "gRPC client dial option timeout"
+                            },
+                            "user_agent": {
+                              "type": "string",
+                              "description": "gRPC client dial option user_agent"
                             },
                             "write_buffer_size": {
                               "type": "integer",
@@ -21751,9 +22786,14 @@
                             }
                           }
                         },
+                        "content_subtype": { "type": "string" },
                         "dial_option": {
                           "type": "object",
                           "properties": {
+                            "authority": {
+                              "type": "string",
+                              "description": "gRPC client dial option authority"
+                            },
                             "backoff_base_delay": {
                               "type": "string",
                               "description": "gRPC client dial option base backoff delay"
@@ -21770,9 +22810,17 @@
                               "type": "number",
                               "description": "gRPC client dial option base backoff delay"
                             },
+                            "disable_retry": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option disables retry"
+                            },
                             "enable_backoff": {
                               "type": "boolean",
                               "description": "gRPC client dial option backoff enabled"
+                            },
+                            "idle_timeout": {
+                              "type": "string",
+                              "description": "gRPC client dial option idle_timeout"
                             },
                             "initial_connection_window_size": {
                               "type": "integer",
@@ -21791,7 +22839,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -21810,6 +22861,14 @@
                                   "description": "gRPC client keep alive timeout"
                                 }
                               }
+                            },
+                            "max_call_attempts": {
+                              "type": "integer",
+                              "description": "gRPC client dial option number of max call attempts"
+                            },
+                            "max_header_list_size": {
+                              "type": "integer",
+                              "description": "gRPC client dial option max header list size"
                             },
                             "max_msg_size": {
                               "type": "integer",
@@ -21844,17 +22903,22 @@
                                   "properties": {
                                     "cache_enabled": {
                                       "type": "boolean",
-                                      "description": "gRPC client TCP DNS cache enabled"
+                                      "description": "gRPC client DNS cache enabled"
                                     },
                                     "cache_expiration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache expiration"
+                                      "description": "gRPC client DNS cache expiration"
                                     },
                                     "refresh_duration": {
                                       "type": "string",
-                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                      "description": "gRPC client DNS cache refresh duration"
                                     }
                                   }
+                                },
+                                "network": {
+                                  "type": "string",
+                                  "description": "gRPC client dialer network type",
+                                  "enum": ["tcp", "udp", "unix"]
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -21928,9 +22992,17 @@
                               "type": "integer",
                               "description": "gRPC client dial option read buffer size"
                             },
+                            "shared_write_buffer": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option sharing write buffer"
+                            },
                             "timeout": {
                               "type": "string",
                               "description": "gRPC client dial option timeout"
+                            },
+                            "user_agent": {
+                              "type": "string",
+                              "description": "gRPC client dial option user_agent"
                             },
                             "write_buffer_size": {
                               "type": "integer",
@@ -22014,6 +23086,10 @@
                 "name": {
                   "type": "string",
                   "description": "name of index save job"
+                },
+                "nodeSelector": {
+                  "type": "object",
+                  "description": "node selector"
                 },
                 "node_name": { "type": "string", "description": "node name" },
                 "observability": {
@@ -22836,6 +23912,10 @@
                                       "type": "boolean",
                                       "description": "gRPC server admin option"
                                     },
+                                    "enable_channelz": {
+                                      "type": "boolean",
+                                      "description": "gRPC server channelz option"
+                                    },
                                     "enable_reflection": {
                                       "type": "boolean",
                                       "description": "gRPC server reflection option"
@@ -22898,6 +23978,10 @@
                                         }
                                       }
                                     },
+                                    "max_concurrent_streams": {
+                                      "type": "integer",
+                                      "description": "gRPC server max concurrent stream size"
+                                    },
                                     "max_header_list_size": {
                                       "type": "integer",
                                       "description": "gRPC server max header list size"
@@ -22910,9 +23994,21 @@
                                       "type": "integer",
                                       "description": "gRPC server max send message size"
                                     },
+                                    "num_stream_workers": {
+                                      "type": "integer",
+                                      "description": "gRPC server number of stream workers"
+                                    },
                                     "read_buffer_size": {
                                       "type": "integer",
                                       "description": "gRPC server read buffer size"
+                                    },
+                                    "shared_write_buffer": {
+                                      "type": "boolean",
+                                      "description": "gRPC server write buffer sharing option"
+                                    },
+                                    "wait_for_handlers": {
+                                      "type": "boolean",
+                                      "description": "gRPC server wait for handlers when stop"
                                     },
                                     "write_buffer_size": {
                                       "type": "integer",
@@ -23212,6 +24308,11 @@
                   "type": "array",
                   "description": "index saving target addresses",
                   "items": { "type": "string" }
+                },
+                "tolerations": {
+                  "type": "array",
+                  "description": "tolerations",
+                  "items": { "type": "object" }
                 },
                 "ttlSecondsAfterFinished": {
                   "type": "integer",
@@ -23931,6 +25032,10 @@
                                   "type": "boolean",
                                   "description": "gRPC server admin option"
                                 },
+                                "enable_channelz": {
+                                  "type": "boolean",
+                                  "description": "gRPC server channelz option"
+                                },
                                 "enable_reflection": {
                                   "type": "boolean",
                                   "description": "gRPC server reflection option"
@@ -23993,6 +25098,10 @@
                                     }
                                   }
                                 },
+                                "max_concurrent_streams": {
+                                  "type": "integer",
+                                  "description": "gRPC server max concurrent stream size"
+                                },
                                 "max_header_list_size": {
                                   "type": "integer",
                                   "description": "gRPC server max header list size"
@@ -24005,9 +25114,21 @@
                                   "type": "integer",
                                   "description": "gRPC server max send message size"
                                 },
+                                "num_stream_workers": {
+                                  "type": "integer",
+                                  "description": "gRPC server number of stream workers"
+                                },
                                 "read_buffer_size": {
                                   "type": "integer",
                                   "description": "gRPC server read buffer size"
+                                },
+                                "shared_write_buffer": {
+                                  "type": "boolean",
+                                  "description": "gRPC server write buffer sharing option"
+                                },
+                                "wait_for_handlers": {
+                                  "type": "boolean",
+                                  "description": "gRPC server wait for handlers when stop"
                                 },
                                 "write_buffer_size": {
                                   "type": "integer",
@@ -24319,6 +25440,11 @@
               "type": "array",
               "description": "topology spread constraints of gateway pods",
               "items": { "type": "object" }
+            },
+            "unhealthyPodEvictionPolicy": {
+              "type": "string",
+              "description": "controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.",
+              "enum": ["AlwaysAllow", "IfHealthyBudget"]
             },
             "version": {
               "type": "string",

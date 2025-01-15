@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 name: "Setup Helm environment"
-description: "A action to set up Helm environment"
+description: "An action to set up Helm environment"
 inputs:
   helm_version:
     description: "The Helm version to use. The default version is `versions/HELM_VERSION`"
@@ -28,14 +28,25 @@ runs:
       shell: bash
       run: |
         HELM_VERSION=${HELM_VERSION:-`make version/helm`}
-
         echo "version=${HELM_VERSION}" >> $GITHUB_OUTPUT
       env:
         HELM_VERSION: ${{ inputs.helm_version }}
-    - uses: azure/setup-helm@v4
-      with:
-        version: ${{ steps.helm_version.outputs.version }}
-    - name: Check Helm version
+    - name: Check if Helm is installed
+      id: check_helm
       shell: bash
       run: |
-        helm version
+        if command -v helm &> /dev/null; then
+          echo "helm_installed=true" >> $GITHUB_OUTPUT
+          echo "installed_version=$(helm version --short --client | awk '{print $2}' | sed 's/^v//')" >> $GITHUB_OUTPUT
+        else
+          echo "helm_installed=false" >> $GITHUB_OUTPUT
+        fi
+    - name: Setup Helm (if not installed or version mismatch)
+      if: steps.check_helm.outputs.helm_installed == 'false' || steps.check_helm.outputs.installed_version != steps.helm_version.outputs.version
+      uses: azure/setup-helm@v4
+      with:
+        version: ${{ steps.helm_version.outputs.version }}
+    - name: Verify Helm version
+      shell: bash
+      run: |
+        helm version --short --client

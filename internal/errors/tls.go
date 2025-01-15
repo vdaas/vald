@@ -20,10 +20,10 @@ package errors
 var (
 	// TLS.
 
-	// ErrTLSDisabled is error variable, it's replesents config error that tls is disabled by config.
+	// ErrTLSDisabled is error variable, it's represents config error that tls is disabled by config.
 	ErrTLSDisabled = New("tls feature is disabled")
 
-	// ErrTLSCertOrKeyNotFound is error variable, it's replesents tls cert or key not found error.
+	// ErrTLSCertOrKeyNotFound is error variable, it's represents tls cert or key not found error.
 	ErrTLSCertOrKeyNotFound = New("cert or key file path not found")
 
 	ErrCertificationFailed = New("certification failed")

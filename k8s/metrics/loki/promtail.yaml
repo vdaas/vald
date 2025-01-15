@@ -33,14 +33,14 @@ spec:
     spec:
       containers:
         - args:
-            - -config.file=/etc/promtail/promtail.yml
+            - -config.file=/etc/promtail/promtail.yaml
           env:
             - name: HOSTNAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
           image: grafana/promtail:1.5.0
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           name: promtail
           ports:
             - containerPort: 80
@@ -120,7 +120,7 @@ kind: ConfigMap
 metadata:
   name: promtail
 data:
-  promtail.yml: |
+  promtail.yaml: |
     clients:
       - external_labels:
             cluster: vald

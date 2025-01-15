@@ -23,22 +23,128 @@ import (
 	"io/fs"
 	"os"
 	"os/signal"
-	"regexp"
 	"slices"
 	"syscall"
 	"text/template"
 	"time"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+	"golang.org/x/tools/go/packages"
+	"gopkg.in/yaml.v2"
 )
 
-var tmpl = fmt.Sprintf(`# syntax = docker/dockerfile:latest
-#
+const (
+	agent               = "agent"
+	agentFaiss          = agent + "-faiss"
+	agentNGT            = agent + "-ngt"
+	agentSidecar        = agent + "-sidecar"
+	benchJob            = "benchmark-job"
+	benchOperator       = "benchmark-operator"
+	binfmt              = "binfmt"
+	buildbase           = "buildbase"
+	buildkit            = "buildkit"
+	buildkitSyftScanner = buildkit + "-syft-scanner"
+	ciContainer         = "ci-container"
+	devContainer        = "dev-container"
+	exampleContainer    = "example-client"
+	discovererK8s       = "discoverer-k8s"
+	gateway             = "gateway"
+	gatewayFilter       = gateway + "-filter"
+	gatewayLb           = gateway + "-lb"
+	gatewayMirror       = gateway + "-mirror"
+	helmOperator        = "helm-operator"
+	indexCorrection     = "index-correction"
+	indexCreation       = "index-creation"
+	indexDeletion       = "index-deletion"
+	indexOperator       = "index-operator"
+	indexSave           = "index-save"
+	loadtest            = "loadtest"
+	managerIndex        = "manager-index"
+	readreplicaRotate   = "readreplica-rotate"
+
+	organization          = "vdaas"
+	repository            = "vald"
+	defaultBinaryDir      = "/usr/bin"
+	usrLocal              = "/usr/local"
+	usrLocalBinaryDir     = usrLocal + "/bin"
+	usrLocalLibDir        = usrLocal + "/lib"
+	defaultBuilderImage   = "ghcr.io/" + organization + "/" + repository + "/" + repository + "-" + buildbase
+	defaultBuilderTag     = "nightly"
+	defaultLanguage       = "en_US.UTF-8"
+	defaultMaintainer     = organization + ".org " + repository + " team <" + repository + "@" + organization + ".org>"
+	defaultRuntimeImage   = "gcr.io/distroless/static"
+	nonrootUser           = "nonroot"
+	rootUser              = "root"
+	defaultRuntimeTag     = nonrootUser
+	defaultRuntimeUser    = nonrootUser + ":" + nonrootUser
+	defaultBuildUser      = rootUser + ":" + rootUser
+	defaultBuildStageName = "builder"
+	maintainerKey         = "MAINTAINER"
+	minimumArgumentLength = 2
+	ubuntuVersion         = "24.04"
+
+	goWorkdir   = "${GOPATH}/src/github.com"
+	rustWorkdir = "${HOME}/rust/src/github.com"
+
+	agentInernalPackage = "pkg/agent/internal"
+
+	ngtPreprocess     = "make ngt/install"
+	faissPreprocess   = "make faiss/install"
+	usearchPreprocess = "make usearch/install"
+
+	helmOperatorRootdir   = "/opt/helm"
+	helmOperatorWatchFile = helmOperatorRootdir + "/watches.yaml"
+	helmOperatorChartsDir = helmOperatorRootdir + "/charts"
+
+	apisProtoPath = "apis/proto/**"
+
+	hackPath = "hack/**"
+
+	chartsValdPath            = "charts/vald"
+	helmOperatorPath          = chartsValdPath + "-helm-operator"
+	chartPath                 = chartsValdPath + "/Chart.yaml"
+	valuesPath                = chartsValdPath + "/values.yaml"
+	templatesPath             = chartsValdPath + "/templates/**"
+	helmOperatorChartPath     = helmOperatorPath + "/Chart.yaml"
+	helmOperatorValuesPath    = helmOperatorPath + "/values.yaml"
+	helmOperatorTemplatesPath = helmOperatorPath + "/templates/**"
+
+	goModPath = "go.mod"
+	goSumPath = "go.sum"
+
+	cargoLockPath       = "rust/Cargo.lock"
+	cargoTomlPath       = "rust/Cargo.toml"
+	rustBinAgentDirPath = "rust/bin/agent"
+	rustNgtRsPath       = "rust/libs/ngt-rs/**"
+	rustNgtPath         = "rust/libs/ngt/**"
+	rustProtoPath       = "rust/libs/proto/**"
+
+	excludeTestFilesPath = "!**/*_test.go"
+	excludeMockFilesPath = "!**/*_mock.go"
+
+	versionsPath           = "versions"
+	operatorSDKVersionPath = versionsPath + "/OPERATOR_SDK_VERSION"
+	goVersionPath          = versionsPath + "/GO_VERSION"
+	rustVersionPath        = versionsPath + "/RUST_VERSION"
+	faissVersionPath       = versionsPath + "/FAISS_VERSION"
+	ngtVersionPath         = versionsPath + "/NGT_VERSION"
+	usearchVersionPath     = versionsPath + "/USEARCH_VERSION"
+
+	makefilePath    = "Makefile"
+	makefileDirPath = makefilePath + ".d/**"
+
+	amd64Platform  = "linux/amd64"
+	arm64Platform  = "linux/arm64"
+	multiPlatforms = amd64Platform + "," + arm64Platform
+
+	header = `#
 # Copyright (C) 2019-{{.Year}} {{.Maintainer}}
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,101 +158,14 @@ var tmpl = fmt.Sprintf(`# syntax = docker/dockerfile:latest
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+#`
+)
 
-# DO_NOT_EDIT this Dockerfile is generated by https://github.com/vdaas/vald/blob/main/hack/docker/gen/main.go
+var license = template.Must(template.New("license").Parse(header + `
 
-{{- if .AliasImage }}
-FROM {{.BuilderImage}}:{{.BuilderTag}} AS {{.BuildStageName}}
-{{- else}}
-ARG UPX_OPTIONS=-9
+# DO_NOT_EDIT this workflow file is generated by https://github.com/vdaas/vald/blob/main/hack/docker/gen/main.go
 
-{{- range $key, $value := .Arguments }}
-ARG {{$key}}={{$value}}
-{{- end}}
-{{- range $image := .ExtraImages }}
-# skipcq: DOK-DL3026,DOK-DL3007
-FROM {{$image}}
-{{- end}}
-# skipcq: DOK-DL3026,DOK-DL3007
-FROM {{.BuilderImage}}:{{.BuilderTag}}{{if and (not (eq (ContainerName .ContainerType) "%s")) (not (eq (ContainerName .ContainerType) "%s"))}} AS {{.BuildStageName}} {{- end}}
-LABEL maintainer="{{.Maintainer}}"
-# skipcq: DOK-DL3002
-USER {{.BuildUser}}
-ARG TARGETARCH
-ARG TARGETOS
-ARG GO_VERSION
-ARG RUST_VERSION
-{{- range $keyValue := .EnvironmentsSlice }}
-ENV {{$keyValue}}
-{{- end}}
-WORKDIR {{.RootDir}}/${ORG}/${REPO}
-{{- range $files := .ExtraCopies }}
-COPY {{$files}}
-{{- end}}
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
-RUN {{RunMounts .RunMounts}}\
-    echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
-    && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
-    && apt-get clean \
-    && apt-get update -y \
-    && apt-get upgrade -y \
-{{- if eq (ContainerName .ContainerType) "%s"}}
-    && apt-get install -y --no-install-recommends --fix-missing \
-    curl \
-    gnupg \
-    software-properties-common \
-    && add-apt-repository ppa:ubuntu-toolchain-r/test -y \
-    && apt-get update -y \
-    && apt-get upgrade -y \
-{{- end}}
-    && apt-get install -y --no-install-recommends --fix-missing \
-    build-essential \
-    ca-certificates \
-{{- if not (eq (ContainerName .ContainerType) "%s")}}
-    curl \
-{{- end}}
-    tzdata \
-    locales \
-    git \
-{{- range $epkg := .ExtraPackages }}
-    {{$epkg}} \
-{{- end}}
-    && ldconfig \
-    && echo "${LANG} UTF-8" > /etc/locale.gen \
-    && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
-    && locale-gen ${LANGUAGE} \
-    && update-locale LANG=${LANGUAGE} \
-    && dpkg-reconfigure -f noninteractive tzdata \
-    && apt-get clean \
-    && apt-get autoclean -y \
-    && apt-get autoremove -y \
-    && {{RunCommands .RunCommands}}
-{{- if and (not (eq (ContainerName .ContainerType) "%s")) (not (eq (ContainerName .ContainerType) "%s"))}}
-# skipcq: DOK-DL3026,DOK-DL3007
-FROM {{.RuntimeImage}}:{{.RuntimeTag}}
-LABEL maintainer="{{.Maintainer}}"
-COPY --from=builder {{.BinDir}}/{{.AppName}} {{.BinDir}}/{{.AppName}}
-{{- if .ConfigExists }}
-COPY cmd/{{.PackageDir}}/sample.yaml /etc/server/config.yaml
-{{- end}}
-{{- range $from, $file := .StageFiles }}
-COPY --from=builder {{$file}} {{$file}}
-{{- end}}
-{{- end}}
-# skipcq: DOK-DL3002
-USER {{.RuntimeUser}}
-{{- if .Entrypoints}}
-ENTRYPOINT [{{Entrypoint .Entrypoints}}]
-{{- else if and (not (eq (ContainerName .ContainerType) "%s")) (not (eq (ContainerName .ContainerType) "%s"))}}
-ENTRYPOINT ["{{.BinDir}}/{{.AppName}}"]
-{{- end}}
-{{- end}}`, DevContainer.String(), CIContainer.String(),
-	DevContainer.String(),
-	DevContainer.String(),
-	DevContainer.String(), CIContainer.String(),
-	DevContainer.String(), CIContainer.String())
+`))
 
 var docker = template.Must(template.New("Dockerfile").Funcs(template.FuncMap{
 	"RunCommands": func(commands []string) string {
@@ -185,68 +204,173 @@ var docker = template.Must(template.New("Dockerfile").Funcs(template.FuncMap{
 	"ContainerName": func(c ContainerType) string {
 		return c.String()
 	},
-}).Parse(tmpl))
+}).Parse(fmt.Sprintf(`# syntax = docker/dockerfile:latest
+# check=error=true
+%s
 
-type Data struct {
-	AliasImage        bool
-	ConfigExists      bool
-	Year              int
-	ContainerType     ContainerType
-	AppName           string
-	BinDir            string
-	BuildUser         string
-	BuilderImage      string
-	BuilderTag        string
-	BuildStageName    string
-	Maintainer        string
-	PackageDir        string
-	RootDir           string
-	RuntimeImage      string
-	RuntimeTag        string
-	RuntimeUser       string
-	Arguments         map[string]string
-	Environments      map[string]string
-	Entrypoints       []string
-	EnvironmentsSlice []string
-	ExtraCopies       []string
-	ExtraImages       []string
-	ExtraPackages     []string
-	Preprocess        []string
-	RunCommands       []string
-	RunMounts         []string
-	StageFiles        []string
-}
+# DO_NOT_EDIT this Dockerfile is generated by https://github.com/vdaas/vald/blob/main/hack/docker/gen/main.go
 
-type ContainerType int
+{{- if .AliasImage }}
+FROM {{.BuilderImage}}:{{.BuilderTag}} AS {{.BuildStageName}}
+{{- else}}
+ARG UPX_OPTIONS=-9
 
-const (
-	organization          = "vdaas"
-	repository            = "vald"
-	defaultBinaryDir      = "/usr/bin"
-	defaultBuilderImage   = "ghcr.io/vdaas/vald/vald-buildbase"
-	defaultBuilderTag     = "nightly"
-	defaultLanguage       = "en_US.UTF-8"
-	defaultMaintainer     = organization + ".org " + repository + " team <" + repository + "@" + organization + ".org>"
-	defaultRuntimeImage   = "gcr.io/distroless/static"
-	defaultRuntimeTag     = "nonroot"
-	defaultRuntimeUser    = "nonroot:nonroot"
-	defaultBuildUser      = "root:root"
-	defaultBuildStageName = "builder"
-	maintainerKey         = "MAINTAINER"
-	minimumArgumentLength = 2
-	ubuntuVersion         = "22.04"
+{{- range $key, $value := .Arguments }}
+ARG {{$key}}={{$value}}
+{{- end}}
+{{- range $image := .ExtraImages }}
+# skipcq: DOK-DL3026,DOK-DL3007
+FROM {{$image}}
+{{- end}}
+# skipcq: DOK-DL3026,DOK-DL3007
+FROM {{.BuilderImage}}:{{.BuilderTag}}{{if and (not (eq (ContainerName .ContainerType) "%s")) (not (eq (ContainerName .ContainerType) "%s"))}} AS {{.BuildStageName}} {{- end}}
+LABEL maintainer="{{.Maintainer}}"
+# skipcq: DOK-DL3002
+USER {{.BuildUser}}
+ARG TARGETARCH
+ARG TARGETOS
+ARG GO_VERSION
+ARG RUST_VERSION
+{{- range $keyValue := .EnvironmentsSlice }}
+ENV {{$keyValue}}
+{{- end}}
+WORKDIR {{.RootDir}}/${ORG}/${REPO}
+{{- range $files := .ExtraCopies }}
+COPY {{$files}}
+{{- end}}
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
+RUN {{RunMounts .RunMounts}} \
+    set -ex \
+    && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
+    && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
+    && apt-get clean \
+    && apt-get update -y \
+    && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends --fix-missing \
+    build-essential \
+    ca-certificates \
+    curl \
+{{- if eq (ContainerName .ContainerType) "%s"}}
+    gnupg \
+{{- end}}
+    tzdata \
+    locales \
+    git \
+{{- range $epkg := .ExtraPackages }}
+    {{$epkg}} \
+{{- end}}
+    && ldconfig \
+    && echo "${LANG} UTF-8" > /etc/locale.gen \
+    && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
+    && locale-gen ${LANGUAGE} \
+    && update-locale LANG=${LANGUAGE} \
+    && dpkg-reconfigure -f noninteractive tzdata \
+    && apt-get clean \
+    && apt-get autoclean -y \
+    && apt-get autoremove -y \
+    && {{RunCommands .RunCommands}}
+{{- if and (not (eq (ContainerName .ContainerType) "%s")) (not (eq (ContainerName .ContainerType) "%s"))}}
+# skipcq: DOK-DL3026,DOK-DL3007
+FROM {{.RuntimeImage}}:{{.RuntimeTag}}
+LABEL maintainer="{{.Maintainer}}"
+COPY --from=builder {{.BinDir}}/{{.AppName}} {{.BinDir}}/{{.AppName}}
+{{- if .ConfigExists }}
+COPY cmd/{{.PackageDir}}/sample.yaml /etc/server/config.yaml
+{{- end}}
+{{- range $from, $file := .StageFiles }}
+COPY --from=builder {{$file}} {{$file}}
+{{- end}}
+{{- end}}
+# skipcq: DOK-DL3002
+USER {{.RuntimeUser}}
+{{- if .Entrypoints}}
+ENTRYPOINT [{{Entrypoint .Entrypoints}}]
+{{- else if and (not (eq (ContainerName .ContainerType) "%s")) (not (eq (ContainerName .ContainerType) "%s"))}}
+ENTRYPOINT ["{{.BinDir}}/{{.AppName}}"]
+{{- end}}
+{{- end}}`, header, DevContainer.String(), CIContainer.String(),
+	DevContainer.String(),
+	DevContainer.String(), CIContainer.String(),
+	DevContainer.String(), CIContainer.String())))
 
-	goWorkdir   = "${GOPATH}/src/github.com"
-	rustWorkdir = "${HOME}/rust/src/github.com"
+type (
+	Workflow struct {
+		Name string `yaml:"name"`
+		On   On     `yaml:"on"`
+		Jobs Jobs   `yaml:"jobs"`
+	}
 
-	agentInernalPackage = "pkg/agent/internal"
+	On struct {
+		Schedule          Schedule    `yaml:"schedule,omitempty"`
+		Push              Push        `yaml:"push"`
+		PullRequest       PullRequest `yaml:"pull_request"`
+		PullRequestTarget PullRequest `yaml:"pull_request_target"`
+	}
 
-	ngtPreprocess   = "make ngt/install"
-	faissPreprocess = "make faiss/install"
+	Schedule []struct {
+		Cron string `yaml:"cron,omitempty"`
+	}
 
-	helmOperatorRootdir   = "/opt/helm"
-	helmOperatorWatchFile = helmOperatorRootdir + "/watches.yaml"
-	helmOperatorChartsDir = helmOperatorRootdir + "/charts"
+	Push struct {
+		Branches []string `yaml:"branches"`
+		Tags     []string `yaml:"tags"`
+	}
+
+	PullRequest struct {
+		Paths Paths `yaml:"paths"`
+	}
+
+	Jobs struct {
+		Build Build `yaml:"build"`
+	}
+
+	Build struct {
+		Uses    string `yaml:"uses"`
+		With    With   `yaml:"with"`
+		Secrets string `yaml:"secrets"`
+	}
+
+	With struct {
+		Target    string `yaml:"target"`
+		Platforms string `yaml:"platforms,omitempty"`
+	}
+
+	Paths []string
+
+	Data struct {
+		AliasImage        bool
+		ConfigExists      bool
+		Year              int
+		ContainerType     ContainerType
+		AppName           string
+		BinDir            string
+		BuildPlatforms    string
+		BuildStageName    string
+		BuildUser         string
+		BuilderImage      string
+		BuilderTag        string
+		Maintainer        string
+		Name              string
+		PackageDir        string
+		RootDir           string
+		RuntimeImage      string
+		RuntimeTag        string
+		RuntimeUser       string
+		Arguments         map[string]string
+		Environments      map[string]string
+		Entrypoints       []string
+		EnvironmentsSlice []string
+		ExtraCopies       []string
+		ExtraImages       []string
+		ExtraPackages     []string
+		Preprocess        []string
+		PullRequestPaths  []string
+		RunCommands       []string
+		RunMounts         []string
+		StageFiles        []string
+	}
+	ContainerType int
 )
 
 const (
@@ -274,28 +398,28 @@ var (
 
 	defaultEnvironments = map[string]string{
 		"DEBIAN_FRONTEND": "noninteractive",
-		"HOME":            "/root",
-		"USER":            "root",
+		"HOME":            "/" + rootUser,
+		"USER":            rootUser,
 		"INITRD":          "No",
 		"LANG":            defaultLanguage,
 		"LANGUAGE":        defaultLanguage,
 		"LC_ALL":          defaultLanguage,
 		"ORG":             organization,
 		"TZ":              "Etc/UTC",
-		"PATH":            "${PATH}:/usr/local/bin",
+		"PATH":            "${PATH}:" + usrLocalBinaryDir,
 		"REPO":            repository,
 	}
 	goDefaultEnvironments = map[string]string{
 		"GOROOT":      "/opt/go",
 		"GOPATH":      "/go",
 		"GO111MODULE": "on",
-		"PATH":        "${PATH}:${GOROOT}/bin:${GOPATH}/bin:/usr/local/bin",
+		"PATH":        "${PATH}:${GOROOT}/bin:${GOPATH}/bin:" + usrLocalBinaryDir,
 	}
 	rustDefaultEnvironments = map[string]string{
-		"RUST_HOME":   "/usr/loacl/lib/rust",
+		"RUST_HOME":   usrLocalLibDir + "/rust",
 		"RUSTUP_HOME": "${RUST_HOME}/rustup",
 		"CARGO_HOME":  "${RUST_HOME}/cargo",
-		"PATH":        "${PATH}:${RUSTUP_HOME}/bin:${CARGO_HOME}/bin:/usr/local/bin",
+		"PATH":        "${PATH}:${RUSTUP_HOME}/bin:${CARGO_HOME}/bin:" + usrLocalBinaryDir,
 	}
 	clangDefaultEnvironments = map[string]string{
 		"CC":  "gcc",
@@ -312,6 +436,10 @@ var (
 		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}\" NAME=\"${REPO}\" cmd/${PKG}/${APP_NAME}",
 		"mv \"cmd/${PKG}/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
 	}
+	goExampleBuildCommands = []string{
+		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}\" NAME=\"${REPO}\" ${PKG}/${APP_NAME}",
+		"mv \"${PKG}/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
+	}
 	rustBuildCommands = []string{
 		"make rust/target/release/${APP_NAME}",
 		"mv \"rust/target/release/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
@@ -321,21 +449,21 @@ var (
 	defaultMounts = []string{
 		"--mount=type=bind,target=.,rw",
 		"--mount=type=tmpfs,target=/tmp",
-		"--mount=type=cache,target=/var/lib/apt,sharing=locked",
-		"--mount=type=cache,target=/var/cache/apt,sharing=locked",
+		"--mount=type=cache,target=/var/lib/apt,sharing=locked,id=${APP_NAME}",
+		"--mount=type=cache,target=/var/cache/apt,sharing=locked,id=${APP_NAME}",
 	}
-
 	goDefaultMounts = []string{
 		"--mount=type=cache,target=\"${GOPATH}/pkg\",id=\"go-build-${TARGETARCH}\"",
 		"--mount=type=cache,target=\"${HOME}/.cache/go-build\",id=\"go-build-${TARGETARCH}\"",
+		"--mount=type=tmpfs,target=\"${GOPATH}/src\"",
 	}
 
 	clangBuildDeps = []string{
 		"cmake",
-		"gcc",
 		"g++",
-		"unzip",
+		"gcc",
 		"libssl-dev",
+		"unzip",
 	}
 	ngtBuildDeps = []string{
 		"liblapack-dev",
@@ -345,13 +473,17 @@ var (
 	faissBuildDeps = []string{
 		"gfortran",
 	}
+	rustBuildDeps = []string{
+		"pkg-config",
+	}
 	devContainerDeps = []string{
+		"file",
 		"gawk",
 		"gnupg2",
 		"graphviz",
 		"jq",
-		"libhdf5-dev",
 		"libaec-dev",
+		"libhdf5-dev",
 		"sed",
 		"zip",
 	}
@@ -370,13 +502,12 @@ var (
 		"make kind/install",
 		"make kubectl/install",
 		"make kubelinter/install",
-		"make reviewdog/install",
-		"make tparse/install",
-		"make valdcli/install",
-		"make yq/install",
 		"make minikube/install",
+		"make reviewdog/install",
 		"make stern/install",
 		"make telepresence/install",
+		"make tparse/install",
+		"make yq/install",
 	}
 
 	devContainerPreprocess = []string{
@@ -406,7 +537,7 @@ func appendM[K comparable](maps ...map[K]string) map[K]string {
 	for _, m := range maps[1:] {
 		for k, v := range m {
 			ev, ok := result[k]
-			if ok {
+			if ok && !strings.Contains(v, ev) {
 				v += ":" + ev
 			}
 			result[k] = v
@@ -428,33 +559,51 @@ func appendM[K comparable](maps ...map[K]string) map[K]string {
 	return result
 }
 
-var re = regexp.MustCompile(`\$\{?(\w+)\}?`)
-
+// extractVariables efficiently extracts variables from strings
 func extractVariables(value string) []string {
-	matches := re.FindAllStringSubmatch(value, -1)
-	vars := make([]string, 0, len(matches))
-	for _, match := range matches {
-		vars = append(vars, match[1])
+	var vars []string
+	start := -1
+	for i := 0; i < len(value); i++ {
+		if value[i] == '$' && i+1 < len(value) && value[i+1] == '{' {
+			start = i + 2
+		} else if start != -1 && value[i] == '}' {
+			vars = append(vars, value[start:i])
+			start = -1
+		} else if value[i] == '$' && start == -1 {
+			start = i + 1
+			for start < len(value) && (('a' <= value[start] && value[start] <= 'z') || ('A' <= value[start] && value[start] <= 'Z') || ('0' <= value[start] && value[start] <= '9') || value[start] == '_') {
+				start++
+			}
+			vars = append(vars, value[i+1:start])
+			i = start - 1
+			start = -1
+		}
 	}
 	return vars
 }
 
+// topologicalSort sorts the elements topologically and ensures that equal-level nodes are sorted by name
 func topologicalSort(envMap map[string]string) []string {
-	// Graph structures
-	inDegree := make(map[string]int)
-	graph := make(map[string][]string)
+	inDegree := make(map[string]int)         // Tracks the in-degree of each node
+	graph := make(map[string][]string)       // Tracks the edges between nodes
+	result := make([]string, 0, len(envMap)) // Result slice pre-allocated for efficiency
 
-	// Initialize the graph
+	gl := 0
+	// Initialize the graph structure and in-degrees
 	for key, value := range envMap {
 		vars := extractVariables(value)
 		for _, refKey := range vars {
-			if refKey != key {
+			if refKey != key { // Prevent self-dependency
 				graph[refKey] = append(graph[refKey], key)
+				if len(graph[refKey]) > gl {
+					gl = len(graph[refKey])
+				}
 				inDegree[key]++
 			}
 		}
 	}
 
+	// Initialize the queue with nodes having in-degree 0 (no dependencies)
 	queue := make([]string, 0, len(envMap)-len(graph))
 	for key := range envMap {
 		if inDegree[key] == 0 {
@@ -462,21 +611,34 @@ func topologicalSort(envMap map[string]string) []string {
 		}
 	}
 
+	// Sort the initial queue to maintain lexicographical order for nodes with no dependencies
 	slices.Sort(queue)
 
-	// Topological sort
-	result := make([]string, 0, len(envMap))
+	// Preallocate a reusable slice for collecting new nodes
+	newNodes := make([]string, 0, gl)
+	// Topological sort process
 	for len(queue) > 0 {
 		node := queue[0]
 		queue = queue[1:]
+
+		// Append the result as `node=value`
 		if value, exists := envMap[node]; exists {
 			result = append(result, node+"="+value)
 		}
+
+		// Process all neighbors and decrement their in-degrees
 		for _, neighbor := range graph[node] {
 			inDegree[neighbor]--
 			if inDegree[neighbor] == 0 {
-				queue = append(queue, neighbor)
+				newNodes = append(newNodes, neighbor)
 			}
+		}
+
+		// If new nodes were found, sort them and append to the queue
+		if len(newNodes) > 0 {
+			slices.Sort(newNodes) // Sort new nodes only once
+			queue = append(queue, newNodes...)
+			newNodes = newNodes[:0] // Reuse the slice by resetting it
 		}
 	}
 
@@ -497,7 +659,6 @@ func main() {
 		syscall.SIGKILL,
 		syscall.SIGTERM)
 	defer cancel()
-	log.Debug(tmpl)
 
 	maintainer := os.Getenv(maintainerKey)
 	if maintainer == "" {
@@ -506,34 +667,35 @@ func main() {
 	year := time.Now().Year()
 	eg, egctx := errgroup.New(ctx)
 	for n, d := range map[string]Data{
-		"vald-agent-ngt": {
+		"vald-" + agentNGT: {
 			AppName:       "ngt",
-			PackageDir:    "agent/core/ngt",
+			PackageDir:    agent + "/core/ngt",
 			ExtraPackages: append(clangBuildDeps, ngtBuildDeps...),
 			Preprocess:    []string{ngtPreprocess},
 		},
-		"vald-agent-faiss": {
+		"vald-" + agentFaiss: {
 			AppName:    "faiss",
-			PackageDir: "agent/core/faiss",
+			PackageDir: agent + "/core/faiss",
 			ExtraPackages: append(clangBuildDeps,
 				append(ngtBuildDeps,
 					faissBuildDeps...)...),
 			Preprocess: []string{faissPreprocess},
 		},
-		"vald-agent": {
-			AppName:       "agent",
-			PackageDir:    "agent/core/agent",
+		"vald-" + agent: {
+			AppName:       agent,
+			PackageDir:    agent + "/core/" + agent,
 			ContainerType: Rust,
 			RuntimeImage:  "gcr.io/distroless/cc-debian12",
 			ExtraPackages: append(clangBuildDeps,
 				append(ngtBuildDeps,
-					faissBuildDeps...)...),
+					append(faissBuildDeps,
+						rustBuildDeps...)...)...),
 			Preprocess: []string{
 				ngtPreprocess,
 				faissPreprocess,
 			},
 		},
-		"vald-agent-sidecar": {
+		"vald-" + agentSidecar: {
 			AppName:    "sidecar",
 			PackageDir: "agent/sidecar",
 		},
@@ -569,6 +731,10 @@ func main() {
 			AppName:    "index-save",
 			PackageDir: "index/job/save",
 		},
+		"vald-index-deletion": {
+			AppName:    "index-deletion",
+			PackageDir: "index/job/deletion",
+		},
 		"vald-readreplica-rotate": {
 			AppName:    "readreplica-rotate",
 			PackageDir: "index/job/readreplica/rotate",
@@ -597,7 +763,7 @@ func main() {
 				"OPERATOR_SDK_VERSION": "latest",
 			},
 			ExtraCopies: []string{
-				"--from=operator /usr/local/bin/${APP_NAME} {{$.BinDir}}/${APP_NAME}",
+				"--from=operator " + usrLocalBinaryDir + "/${APP_NAME} {{$.BinDir}}/${APP_NAME}",
 			},
 			ExtraImages: []string{
 				"quay.io/operator-framework/helm-operator:${OPERATOR_SDK_VERSION} AS operator",
@@ -628,7 +794,7 @@ func main() {
 			},
 			Entrypoints: []string{"{{$.BinDir}}/{{.AppName}}", "run", "--watches-file=" + helmOperatorWatchFile},
 		},
-		"vald-cli-loadtest": {
+		"vald-loadtest": {
 			AppName:       "loadtest",
 			PackageDir:    "tools/cli/loadtest",
 			ExtraPackages: append(clangBuildDeps, "libhdf5-dev", "libaec-dev"),
@@ -644,8 +810,9 @@ func main() {
 			ExtraPackages: append([]string{"npm"}, append(clangBuildDeps,
 				append(ngtBuildDeps,
 					append(faissBuildDeps,
-						devContainerDeps...)...)...)...),
-			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess),
+						append(rustBuildDeps,
+							devContainerDeps...)...)...)...)...),
+			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess, usearchPreprocess),
 			Entrypoints: []string{"/bin/bash"},
 		},
 		"vald-dev-container": {
@@ -659,11 +826,20 @@ func main() {
 			ExtraPackages: append(clangBuildDeps,
 				append(ngtBuildDeps,
 					append(faissBuildDeps,
-						devContainerDeps...)...)...),
+						append(rustBuildDeps,
+							devContainerDeps...)...)...)...),
 			Preprocess: append(devContainerPreprocess,
 				append(ciContainerPreprocess,
 					ngtPreprocess,
 					faissPreprocess)...),
+		},
+		"vald-example-client": {
+			AppName:       "client",
+			PackageDir:    "example/client",
+			ExtraPackages: append(clangBuildDeps, "libhdf5-dev", "libaec-dev"),
+			Preprocess: []string{
+				"make hdf5/install",
+			},
 		},
 		"vald-buildbase": {
 			AppName:      "buildbase",
@@ -697,6 +873,186 @@ func main() {
 	} {
 		name := n
 		data := d
+
+		eg.Go(safety.RecoverFunc(func() error {
+			data.Name = strings.TrimPrefix(name, "vald-")
+			switch data.ContainerType {
+			case HelmOperator:
+				data.PullRequestPaths = append(data.PullRequestPaths,
+					chartPath,
+					valuesPath,
+					templatesPath,
+					helmOperatorChartPath,
+					helmOperatorValuesPath,
+					helmOperatorTemplatesPath,
+					operatorSDKVersionPath,
+				)
+			case DevContainer, CIContainer:
+				data.PullRequestPaths = append(data.PullRequestPaths,
+					apisProtoPath,
+					hackPath,
+				)
+			case Go:
+				data.PullRequestPaths = append(data.PullRequestPaths,
+					apisProtoPath,
+					goModPath,
+					goSumPath,
+					goVersionPath,
+					excludeTestFilesPath,
+					excludeMockFilesPath,
+				)
+				mainFile := file.Join(os.Args[1], "cmd", data.PackageDir, "main.go")
+				if file.Exists(mainFile) {
+					ns, err := buildDependencyTree(os.Args[1], mainFile)
+					if err != nil {
+						log.Error(err)
+					}
+					pkgs := make([]string, 0, len(ns)+1)
+					pkgs = append(pkgs, file.Join("cmd", data.PackageDir))
+					for _, pnode := range ns {
+						pkgs = append(pkgs, pnode.ToSlice()...)
+					}
+					slices.Sort(pkgs)
+					pkgs = slices.Compact(pkgs)
+					root, err := os.Getwd()
+					if err != nil {
+						root = os.Getenv("HOME")
+					}
+					if root != "" && !strings.HasSuffix(root, string(os.PathSeparator)) {
+						root += string(os.PathSeparator)
+					}
+					for i, pkg := range pkgs {
+						const splitWord = "/vdaas/vald/"
+						pkg = file.Join(pkg, "*.go")
+						index := strings.LastIndex(pkg, splitWord)
+						if index != -1 {
+							pkg = pkg[index+len(splitWord):]
+						}
+						if root != "" {
+							pkg = strings.TrimPrefix(pkg, root)
+						}
+						pkgs[i] = pkg
+					}
+					data.PullRequestPaths = append(data.PullRequestPaths, pkgs...)
+				}
+			case Rust:
+				data.PullRequestPaths = append(data.PullRequestPaths,
+					apisProtoPath,
+					cargoLockPath,
+					cargoTomlPath,
+					rustBinAgentDirPath,
+					rustNgtRsPath,
+					rustNgtPath,
+					rustProtoPath,
+					rustVersionPath,
+				)
+			}
+			if strings.EqualFold(data.Name, agentFaiss) || data.ContainerType == Rust {
+				data.PullRequestPaths = append(data.PullRequestPaths, faissVersionPath)
+			}
+			if strings.EqualFold(data.Name, agentNGT) || data.ContainerType == Rust {
+				data.PullRequestPaths = append(data.PullRequestPaths, ngtVersionPath)
+			}
+
+			if !data.AliasImage {
+				data.PullRequestPaths = append(data.PullRequestPaths, makefilePath, makefileDirPath)
+			}
+
+			if data.AliasImage {
+				data.BuildPlatforms = multiPlatforms
+			}
+			if data.ContainerType == CIContainer || data.Name == loadtest {
+				data.BuildPlatforms = amd64Platform
+			}
+
+			data.Year = time.Now().Year()
+			if maintainer := os.Getenv(maintainerKey); maintainer != "" {
+				data.Maintainer = maintainer
+			} else {
+				data.Maintainer = defaultMaintainer
+			}
+
+			log.Infof("Generating %s's workflow", data.Name)
+			workflow := new(Workflow)
+			err := yaml.Unmarshal(conv.Atob(`name: "Build docker image: `+data.Name+`"
+on:
+  schedule:
+    - cron: "0 * * * *"
+  push:
+    branches:
+      - "main"
+      - "release/v*.*"
+      - "!release/v*.*.*"
+    tags:
+      - "*.*.*"
+      - "*.*.*-*"
+      - "v*.*.*"
+      - "v*.*.*-*"
+  pull_request:
+    paths:
+      - ".github/actions/docker-build/action.yaml"
+      - ".github/workflows/_docker-image.yaml"
+      - ".github/workflows/dockers-`+data.Name+`-image.yaml"
+      - "dockers/`+data.PackageDir+`/Dockerfile"
+      - "hack/docker/gen/main.go"
+  pull_request_target:
+    paths: []
+
+jobs:
+  build:
+    uses: "./.github/workflows/_docker-image.yaml"
+    with:
+      target: "`+data.Name+`"
+      platforms: ""
+    secrets: "inherit"
+`), &workflow)
+			if err != nil {
+				return fmt.Errorf("Error decoding YAML: %v", err)
+			}
+
+			if !data.AliasImage {
+				workflow.On.Schedule = nil
+			}
+			workflow.On.PullRequest.Paths = append(workflow.On.PullRequest.Paths, data.PullRequestPaths...)
+			if strings.EqualFold(data.Name, exampleContainer) {
+				workflow.On.PullRequest.Paths = slices.DeleteFunc(workflow.On.PullRequest.Paths, func(path string) bool {
+					return strings.HasPrefix(path, "cmd") || strings.HasPrefix(path, "pkg")
+				})
+				workflow.On.PullRequest.Paths = append(workflow.On.PullRequest.Paths, data.PackageDir+"/**")
+			}
+			slices.Sort(workflow.On.PullRequest.Paths)
+			workflow.On.PullRequest.Paths = slices.Compact(workflow.On.PullRequest.Paths)
+
+			workflow.On.PullRequestTarget.Paths = workflow.On.PullRequest.Paths
+			workflow.Jobs.Build.With.Platforms = data.BuildPlatforms
+
+			workflowYamlTmp, err := yaml.Marshal(workflow)
+			if err != nil {
+				return fmt.Errorf("error marshaling workflowStruct to YAML: %w", err)
+			}
+
+			// remove the double quotation marks from the generated key "on": (note that the word "on" is a reserved word in sigs.k8s.io/yaml)
+			workflowYaml := strings.Replace(string(workflowYamlTmp), "\"on\":", "on:", 1)
+
+			if len(header) > (int(^uint(0)>>1) - len(workflowYaml)) {
+				return fmt.Errorf("size computation for allocation may overflow")
+			}
+			totalLen := len(header) + len(workflowYaml)
+
+			buf := bytes.NewBuffer(make([]byte, 0, totalLen))
+			err = license.Execute(buf, data)
+			if err != nil {
+				return fmt.Errorf("error executing template: %w", err)
+			}
+			buf.WriteString("\r\n")
+			buf.WriteString(workflowYaml)
+			fileName := file.Join(os.Args[1], ".github/workflows", "dockers-"+data.Name+"-image.yaml")
+			_, err = file.OverWriteFile(egctx, fileName, buf, fs.ModePerm)
+			if err != nil {
+				return fmt.Errorf("error writing workflow file for %s error: %w", fileName, err)
+			}
+			return nil
+		}))
 
 		eg.Go(safety.RecoverFunc(func() error {
 			data.Maintainer = maintainer
@@ -742,6 +1098,8 @@ func main() {
 				}
 				if file.Exists(file.Join(os.Args[1], "cmd", data.PackageDir)) {
 					commands = append(commands, goBuildCommands...)
+				} else if strings.HasPrefix(data.PackageDir, "example") && file.Exists(file.Join(os.Args[1], data.PackageDir)) {
+					commands = append(commands, goExampleBuildCommands...)
 				}
 				data.RunCommands = commands
 				mounts := make([]string, 0, len(defaultMounts)+len(goDefaultMounts))
@@ -790,14 +1148,11 @@ func main() {
 				data.RootDir = "${HOME}"
 				data.Environments["ROOTDIR"] = os.Args[1]
 			}
-			if strings.Contains(data.BuildUser, "root") {
-				data.Environments["HOME"] = "/root"
-				data.Environments["USER"] = "root"
+			if strings.Contains(data.BuildUser, rootUser) {
+				data.Environments["HOME"] = "/" + rootUser
+				data.Environments["USER"] = rootUser
 			} else {
-				user := data.BuildUser
-				if strings.Contains(user, ":") {
-					user = strings.SplitN(user, ":", 2)[0]
-				}
+				user, _, _ := strings.Cut(data.BuildUser, ":")
 				data.Environments["HOME"] = "/home/" + user
 				data.Environments["USER"] = user
 			}
@@ -807,15 +1162,116 @@ func main() {
 			data.EnvironmentsSlice = topologicalSort(data.Environments)
 			data.ConfigExists = file.Exists(file.Join(os.Args[1], "cmd", data.PackageDir, "sample.yaml"))
 
-			buf := bytes.NewBuffer(make([]byte, 0, len(tmpl)))
+			buf := bytes.NewBuffer(make([]byte, 0, 1024))
 			log.Infof("Generating %s's Dockerfile", name)
 			docker.Execute(buf, data)
 			tpl := buf.String()
 			buf.Reset()
 			template.Must(template.New("Dockerfile").Parse(tpl)).Execute(buf, data)
-			file.OverWriteFile(egctx, file.Join(os.Args[1], "dockers", data.PackageDir, "Dockerfile"), buf, fs.ModePerm)
+			fileName := file.Join(os.Args[1], "dockers", data.PackageDir, "Dockerfile")
+			_, err := file.OverWriteFile(egctx, fileName, buf, fs.ModePerm)
+			if err != nil {
+				return fmt.Errorf("error writing Dockerfile for %s error: %w", fileName, err)
+			}
 			return nil
 		}))
 	}
 	eg.Wait()
+}
+
+// PackageNode represents a node in the dependency tree.
+type PackageNode struct {
+	Name    string
+	Imports []*PackageNode
+}
+
+// ToSlice traverses the dependency tree and returns all dependencies as a slice.
+func (n PackageNode) ToSlice() (pkgs []string) {
+	pkgs = make([]string, 0, len(n.Imports)+1)
+	if n.Name != "command-line-arguments" {
+		pkgs = append(pkgs, n.Name)
+	}
+	for _, node := range n.Imports {
+		pkgs = append(pkgs, node.ToSlice()...)
+	}
+	return pkgs
+}
+
+// String returns string of the dependency tree in a readable format.
+func (n PackageNode) String() string {
+	return n.string(0)
+}
+
+func (n PackageNode) string(depth int) (tree string) {
+	tree = fmt.Sprintf("%s- %s\n", strings.Repeat("  ", depth), n.Name)
+	for _, node := range n.Imports {
+		tree += node.string(depth + 1)
+	}
+	return tree
+}
+
+// processDependencies processes package dependencies while avoiding duplicate processing.
+func processDependencies(
+	pkg *packages.Package,
+	nodes map[string]*PackageNode,
+	mu *sync.Mutex,
+	checkList map[string]*PackageNode,
+	wg *sync.WaitGroup,
+) *PackageNode {
+	if !strings.Contains(pkg.PkgPath, "vdaas/vald") && pkg.Name != "main" {
+		return nil
+	}
+	if node, exists := checkList[pkg.PkgPath]; exists {
+		return node
+	}
+
+	node := &PackageNode{Name: pkg.PkgPath}
+	nodes[pkg.PkgPath] = node
+	checkList[pkg.PkgPath] = node
+	for _, imp := range pkg.Imports {
+		if !strings.Contains(imp.PkgPath, "vdaas/vald") {
+			continue
+		}
+		if child, exists := checkList[imp.PkgPath]; exists {
+			node.Imports = append(node.Imports, child)
+			continue
+		}
+		child := processDependencies(imp, nodes, mu, checkList, wg)
+		if child != nil {
+			node.Imports = append(node.Imports, child)
+		}
+	}
+
+	return node
+}
+
+// buildDependencyTree constructs a dependency tree for multiple entry packages.
+func buildDependencyTree(rootDir, entryFile string) ([]*PackageNode, error) {
+	cfg := &packages.Config{
+		Mode: packages.NeedName | packages.NeedImports | packages.NeedDeps,
+		Dir:  rootDir,
+	}
+
+	// Use entry file (e.g., main.go) as the root for analysis.
+	pkgs, err := packages.Load(cfg, entryFile)
+	if err != nil {
+		return nil, err
+	}
+
+	nodes := make(map[string]*PackageNode)
+	checkList := make(map[string]*PackageNode, len(pkgs)) // Tracks processed packages
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+
+	// Process all entry packages
+	var roots []*PackageNode
+	for _, pkg := range pkgs {
+		root := processDependencies(pkg, nodes, &mu, checkList, &wg)
+		if root != nil {
+			roots = append(roots, root)
+		}
+	}
+	wg.Wait()
+
+	return roots, nil
 }

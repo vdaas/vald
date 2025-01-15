@@ -200,7 +200,7 @@ package service
 // 	}
 // }
 //
-// func Test_gateway_ForwardedContext(t *testing.T) {
+// func Test_gateway_forwardedContext(t *testing.T) {
 // 	type args struct {
 // 		ctx     context.Context
 // 		podName string
@@ -301,7 +301,7 @@ package service
 // 				podName: test.fields.podName,
 // 			}
 //
-// 			got := g.ForwardedContext(test.args.ctx, test.args.podName)
+// 			got := g.forwardedContext(test.args.ctx, test.args.podName)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

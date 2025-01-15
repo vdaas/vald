@@ -51,6 +51,7 @@ var (
 {{.Escape}}
 `))
 	docker = template.Must(template.New("Apache License").Parse(`{{.Escape}} syntax = docker/dockerfile:latest
+{{.Escape}} check=error=true
 {{.Escape}}
 {{.Escape}} Copyright (C) 2019-{{.Year}} {{.Maintainer}}
 {{.Escape}}
@@ -132,6 +133,7 @@ const (
 	minimumArgumentLength = 2
 	defaultMaintainer     = "vdaas.org vald team <vald@vdaas.org>"
 	maintainerKey         = "MAINTAINER"
+	yearKey               = "YEAR"
 )
 
 func main() {
@@ -160,7 +162,8 @@ func dirwalk(dir string) []string {
 		if f.IsDir() {
 			if !strings.Contains(f.Name(), "vendor") &&
 				!strings.Contains(f.Name(), "versions") &&
-				!strings.Contains(f.Name(), ".git") ||
+				!strings.Contains(f.Name(), ".git") &&
+				!strings.Contains(f.Name(), "target") ||
 				strings.HasPrefix(f.Name(), ".github") {
 				paths = append(paths, dirwalk(file.Join(dir, f.Name()))...)
 			}
@@ -264,9 +267,20 @@ func readAndRewrite(path string) error {
 	if maintainer == "" {
 		maintainer = defaultMaintainer
 	}
+	var year int
+	if yearString := os.Getenv(yearKey); yearString == "" {
+		year = time.Now().Year()
+	} else {
+		y, err := time.Parse("2006", yearString)
+		if err != nil {
+			// skipcq: RVV-A0003
+			log.Fatal(err)
+		}
+		year = y.Year()
+	}
 	d := Data{
 		Maintainer: maintainer,
-		Year:       time.Now().Year(),
+		Year:       year,
 		Escape:     sharpEscape,
 	}
 	if fi.Name() == "LICENSE" {

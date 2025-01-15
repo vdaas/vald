@@ -16,7 +16,6 @@ package usecase
 import (
 	"context"
 	"os"
-	"slices"
 	"syscall"
 	"time"
 
@@ -86,10 +85,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		discoverer.WithDiscoverDuration(cfg.Corrector.Discoverer.Duration),
 		discoverer.WithOptions(acOpts...),
 		discoverer.WithNodeName(cfg.Corrector.NodeName),
-		discoverer.WithOnDiscoverFunc(func(_ context.Context, _ discoverer.Client, addrs []string) error {
-			slices.Reverse(addrs)
-			return nil
-		}),
 	)
 	if err != nil {
 		return nil, err
@@ -185,10 +180,10 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		}
 	}))
 
-	// main groutine to run the job
+	// main goroutine to run the job
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer func() {
-			log.Info("fiding my pid to kill myself")
+			log.Info("finding my pid to kill myself")
 			p, err := os.FindProcess(os.Getpid())
 			if err != nil {
 				// using Fatal to avoid this process to be zombie

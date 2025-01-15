@@ -193,8 +193,8 @@ func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]k8s.Jo
 	}
 	// benchmarkJobStatus is used for update benchmark job resource status
 	benchmarkJobStatus := make(map[string]v1.BenchmarkJobStatus)
-	// jobNames is used for check whether cjobs has delted job.
-	// If cjobs has the delted job, it will be remove the end of jobReconcile function.
+	// jobNames is used for check whether cjobs has deleted job.
+	// If cjobs has the deleted job, it will be remove the end of jobReconcile function.
 	jobNames := map[string]struct{}{}
 	for _, jobs := range jobList {
 		cnt := len(jobs)

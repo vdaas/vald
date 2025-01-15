@@ -23,6 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/test/goleak"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 func TestMain(m *testing.M) {
@@ -32,8 +33,7 @@ func TestMain(m *testing.M) {
 func TestRegister(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		name string
-		srv  *grpc.Server
+		srv *grpc.Server
 	}
 	type want struct{}
 	type test struct {
@@ -53,11 +53,10 @@ func TestRegister(t *testing.T) {
 			return test{
 				name: "success to register the health check server",
 				args: args{
-					name: "api health check",
-					srv:  srv,
+					srv: srv,
 				},
 				checkFunc: func(w want) error {
-					if _, ok := srv.GetServiceInfo()["grpc.health.v1.Health"]; !ok {
+					if _, ok := srv.GetServiceInfo()[healthpb.Health_ServiceDesc.ServiceName]; !ok {
 						return errors.New("health check server not registered")
 					}
 
@@ -81,7 +80,7 @@ func TestRegister(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			Register(test.args.name, test.args.srv)
+			Register(test.args.srv)
 			if err := test.checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}

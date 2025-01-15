@@ -34,6 +34,9 @@ import (
 )
 
 type (
+	// Addr is an alias of net.Addr.
+	Addr = net.Addr
+
 	// Conn is an alias of net.Conn.
 	Conn = net.Conn
 
@@ -45,6 +48,15 @@ type (
 
 	// Resolver is an alias of net.Resolver.
 	Resolver = net.Resolver
+
+	// UDPConn is an alias of net.UDPConn.
+	UDPConn = net.UDPConn
+
+	// TCPListener is an alias of net.TCPListener.
+	TCPListener = net.TCPListener
+
+	// UnixListener is an alias of net.UnixListener.
+	UnixListener = net.UnixListener
 
 	// NetworkType represents a network type such as TCP, TCP6, etc.
 	NetworkType uint
@@ -84,6 +96,9 @@ var (
 
 // NetworkTypeFromString returns the corresponding network type from string.
 func NetworkTypeFromString(str string) NetworkType {
+	if str == "" {
+		return Unknown
+	}
 	switch strings.ToLower(str) {
 	case UNIX.String():
 		return UNIX
@@ -151,13 +166,31 @@ func IsLocal(host string) bool {
 		host == localIPv6
 }
 
+// IsUDP returns if the network type is the udp or udp4 or udp6.
+func IsUDP(network string) bool {
+	rip := NetworkTypeFromString(network)
+	return rip == UDP ||
+		rip == UDP4 ||
+		rip == UDP6
+}
+
+// IsTCP returns if the network type is the tcp or tcp4 or tcp6.
+func IsTCP(network string) bool {
+	rip := NetworkTypeFromString(network)
+	return rip == TCP ||
+		rip == TCP4 ||
+		rip == TCP6
+}
+
 // Parse parses the hostname, IPv4 or IPv6 address and return the hostname/IP, port number,
 // whether the address is local IP and IPv4 or IPv6, and any parsing error occurred.
 // The address should contains the port number, otherwise an error will return.
 func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool, err error) {
 	host, port, err = SplitHostPort(addr)
 	if err != nil {
-		log.Warnf("failed to parse addr %s\terror: %v", addr, err)
+		if !errors.Is(err, errors.Errorf("address %s: missing port in address", addr)) {
+			log.Warnf("failed to parse addr %s\terror: %v", addr, err)
+		}
 		host = addr
 	}
 

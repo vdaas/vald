@@ -71,7 +71,8 @@ $(BINDIR)/reviewdog:
 kubectl/install: $(BINDIR)/kubectl
 
 $(BINDIR)/kubectl:
-	curl -fsSL "https://dl.k8s.io/release/$(KUBECTL_VERSION)/bin/$(OS)/$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))/kubectl" -o $(BINDIR)/kubectl
+	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
+	curl -fsSL "https://dl.k8s.io/release/$(KUBECTL_VERSION)/bin/$(OS)/$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]'))/kubectl" -o $(BINDIR)/kubectl
 	chmod a+x $(BINDIR)/kubectl
 
 .PHONY: textlint/install
@@ -89,7 +90,33 @@ textlint/ci/install:
 cspell/install: $(NPM_GLOBAL_PREFIX)/bin/cspell
 
 $(NPM_GLOBAL_PREFIX)/bin/cspell:
-	npm install -g cspell@latest
+	npm install -g cspell@latest \
+		@cspell/dict-cpp \
+		@cspell/dict-docker \
+		@cspell/dict-en_us \
+		@cspell/dict-fullstack \
+		@cspell/dict-git \
+		@cspell/dict-golang \
+		@cspell/dict-k8s \
+		@cspell/dict-makefile \
+		@cspell/dict-markdown \
+		@cspell/dict-npm \
+		@cspell/dict-public-licenses \
+		@cspell/dict-rust \
+		@cspell/dict-shell
+	cspell link add @cspell/dict-cpp
+	cspell link add @cspell/dict-docker
+	cspell link add @cspell/dict-en_us
+	cspell link add @cspell/dict-fullstack
+	cspell link add @cspell/dict-git
+	cspell link add @cspell/dict-golang
+	cspell link add @cspell/dict-k8s
+	cspell link add @cspell/dict-makefile
+	cspell link add @cspell/dict-markdown
+	cspell link add @cspell/dict-npm
+	cspell link add @cspell/dict-public-licenses
+	cspell link add @cspell/dict-rust
+	cspell link add @cspell/dict-shell
 
 .PHONY: buf/install
 buf/install: $(BINDIR)/buf
@@ -189,13 +216,15 @@ $(LIB_PATH)/libz.a: $(LIB_PATH)
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_STATIC_EXECS=ON \
 		-DBUILD_TESTING=OFF \
-		-DCMAKE_C_FLAGS="-fPIC" \
-		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
 		-DZLIB_BUILD_SHARED=OFF \
 		-DZLIB_BUILD_STATIC=ON \
-		-DZLIB_USE_STATIC_LIBS=ON \
 		-DZLIB_COMPAT=ON \
-		.. \
+		-DZLIB_USE_STATIC_LIBS=ON \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+		-DCMAKE_C_FLAGS="$(CFLAGS)" \
+		-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
+		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-B $(TEMP_DIR)/zlib/build $(TEMP_DIR)/zlib \
 	&& make -j$(CORES) \
 	&& make install \
 	&& cd $(ROOTDIR) \
@@ -207,24 +236,39 @@ hdf5/install: $(LIB_PATH)/libhdf5.a
 $(LIB_PATH)/libhdf5.a: $(LIB_PATH) \
 	zlib/install
 	mkdir -p $(TEMP_DIR)/hdf5 \
-	&& curl -fsSL https://github.com/HDFGroup/hdf5/releases/download/$(HDF5_VERSION)/hdf5.tar.gz -o $(TEMP_DIR)/hdf5.tar.gz \
-	&& tar -xzvf $(TEMP_DIR)/hdf5.tar.gz -C $(TEMP_DIR)/hdf5 --strip-components 2 \
+	&& curl -fsSL https://github.com/HDFGroup/hdf5/archive/refs/tags/$(HDF5_VERSION).tar.gz -o $(TEMP_DIR)/hdf5.tar.gz \
+	&& tar -xzvf $(TEMP_DIR)/hdf5.tar.gz -C $(TEMP_DIR)/hdf5 --strip-components 1 \
 	&& mkdir -p $(TEMP_DIR)/hdf5/build \
 	&& cd $(TEMP_DIR)/hdf5/build \
 	&& cmake -DCMAKE_BUILD_TYPE=Release \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_STATIC_EXECS=ON \
 		-DBUILD_TESTING=OFF \
-		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
-		-DH5_ZLIB_INCLUDE_DIR=$(USR_LOCAL)/include \
-		-DH5_ZLIB_LIBRARY=$(LIB_PATH)/libz.a \
 		-DHDF5_BUILD_CPP_LIB=OFF \
 		-DHDF5_BUILD_HL_LIB=ON \
 		-DHDF5_BUILD_STATIC_EXECS=ON \
 		-DHDF5_BUILD_TOOLS=OFF \
 		-DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
-		.. \
+		-DH5_ZLIB_INCLUDE_DIR=$(USR_LOCAL)/include \
+		-DH5_ZLIB_LIBRARY=$(LIB_PATH)/libz.a \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+		-DCMAKE_C_FLAGS="$(CFLAGS)" \
+		-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
+		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-B $(TEMP_DIR)/hdf5/build $(TEMP_DIR)/hdf5 \
 	&& make -j$(CORES) \
 	&& make install \
 	&& cd $(ROOTDIR) \
-	&& rm -rf $(TEMP_DIR)/hdf5.tar.gz $(TEMP_DIR)/HDF5_VERSION
+	&& rm -rf $(TEMP_DIR)/hdf5.tar.gz $(TEMP_DIR)/hdf5
+
+.PHONY: yq/install
+## install yq
+yq/install: $(BINDIR)/yq
+
+$(BINDIR)/yq:
+	mkdir -p $(BINDIR)
+	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
+	cd $(TEMP_DIR) \
+	    && curl -fsSL https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_$(OS)_$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/yq \
+	    && chmod a+x $(BINDIR)/yq
+

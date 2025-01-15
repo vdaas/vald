@@ -262,7 +262,7 @@ func TestParse(t *testing.T) {
 			return errors.Errorf("host got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotHost, w.wantHost)
 		}
 		if !reflect.DeepEqual(gotPort, w.wantPort) {
-			return errors.Errorf("port got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotPort, w.wantPort)
+			return errors.Errorf("port got: \"%d\",\n\t\t\t\twant: \"%d\"", gotPort, w.wantPort)
 		}
 		if !reflect.DeepEqual(gotIsLocal, w.isLocal) {
 			return errors.Errorf("isLocal got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIsLocal, w.isLocal)

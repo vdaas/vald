@@ -29,17 +29,48 @@ docker/build: \
 	docker/build/ci-container \
 	docker/build/dev-container \
 	docker/build/discoverer-k8s \
+	docker/build/example-client \
 	docker/build/gateway-filter \
 	docker/build/gateway-lb \
 	docker/build/gateway-mirror \
+	docker/build/helm-operator \
 	docker/build/index-correction \
 	docker/build/index-creation \
+	docker/build/index-deletion \
 	docker/build/index-operator \
 	docker/build/index-save \
 	docker/build/loadtest \
 	docker/build/manager-index \
-	docker/build/operator/helm \
 	docker/build/readreplica-rotate
+
+docker/xpanes/build:
+	@xpanes -s -c "make -f $(ROOTDIR)/Makefile {}" \
+		docker/build/agent \
+		docker/build/agent-faiss \
+		docker/build/agent-ngt \
+		docker/build/agent-sidecar \
+		docker/build/benchmark-job \
+		docker/build/benchmark-operator \
+		docker/build/binfmt \
+		docker/build/buildbase \
+		docker/build/buildkit \
+		docker/build/buildkit-syft-scanner \
+		docker/build/ci-container \
+		docker/build/dev-container \
+		docker/build/discoverer-k8s \
+		docker/build/example-client \
+		docker/build/gateway-filter \
+		docker/build/gateway-lb \
+		docker/build/gateway-mirror \
+		docker/build/index-correction \
+		docker/build/index-creation \
+		docker/build/index-deletion \
+		docker/build/index-operator \
+		docker/build/index-save \
+		docker/build/loadtest \
+		docker/build/manager-index \
+		docker/build/operator/helm \
+		docker/build/readreplica-rotate
 
 .PHONY: docker/name/org
 docker/name/org:
@@ -74,7 +105,7 @@ ifeq ($(REMOTE),true)
 		-t $(GHCRORG)/$(IMAGE):$(TAG) \
 		$(EXTRA_ARGS) \
 		--output type=registry,oci-mediatypes=true,compression=zstd,compression-level=5,force-compression=true,push=true \
-		-f $(DOCKERFILE) .
+		-f $(DOCKERFILE) $(ROOTDIR)
 else
 	@echo "starting local build for $(IMAGE):$(TAG)"
 	DOCKER_BUILDKIT=1 $(DOCKER) build \
@@ -86,7 +117,7 @@ else
 		$(EXTRA_ARGS) \
 		-t $(CRORG)/$(IMAGE):$(TAG) \
 		-t $(GHCRORG)/$(IMAGE):$(TAG) \
-		-f $(DOCKERFILE) .
+		-f $(DOCKERFILE) $(ROOTDIR)
 endif
 
 .PHONY: docker/name/agent-ngt
@@ -255,13 +286,13 @@ docker/build/dev-container:
 		IMAGE=$(DEV_CONTAINER_IMAGE) \
 		docker/build/image
 
-.PHONY: docker/name/operator/helm
-docker/name/operator/helm:
+.PHONY: docker/name/helm-operator
+docker/name/helm-operator:
 	@echo "$(ORG)/$(HELM_OPERATOR_IMAGE)"
 
-.PHONY: docker/build/operator/helm
+.PHONY: docker/build/helm-operator
 ## build helm-operator image
-docker/build/operator/helm:
+docker/build/helm-operator:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/operator/helm/Dockerfile" \
 		IMAGE=$(HELM_OPERATOR_IMAGE) \
 		EXTRA_ARGS="--build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION) --build-arg UPX_OPTIONS=$(UPX_OPTIONS) $(EXTRA_ARGS)" \
@@ -275,7 +306,7 @@ docker/name/loadtest:
 ## build loadtest image
 docker/build/loadtest:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/cli/loadtest/Dockerfile" \
-		DOCKER_OPTS="--build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
+		DOCKER_OPTS="$${DOCKER_OPTS:+$${DOCKER_OPTS}} --build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
 		IMAGE=$(LOADTEST_IMAGE) \
 		docker/build/image
 
@@ -312,6 +343,17 @@ docker/build/index-save:
 		IMAGE=$(INDEX_SAVE_IMAGE) \
 		docker/build/image
 
+.PHONY: docker/name/index-deletion
+docker/name/index-deletion:
+	@echo "$(ORG)/$(INDEX_DELETION_IMAGE)"
+
+.PHONY: docker/build/index-deletion
+## build index-deletion image
+docker/build/index-deletion:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/deletion/Dockerfile" \
+		IMAGE=$(INDEX_DELETION_IMAGE) \
+		docker/build/image
+
 .PHONY: docker/name/index-operator
 docker/name/index-operator:
 	@echo "$(ORG)/$(INDEX_OPERATOR_IMAGE)"
@@ -343,7 +385,7 @@ docker/name/benchmark-job:
 docker/build/benchmark-job:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/benchmark/job/Dockerfile" \
 		IMAGE=$(BENCHMARK_JOB_IMAGE) \
-		DOCKER_OPTS="--build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
+		DOCKER_OPTS="$${DOCKER_OPTS:+$${DOCKER_OPTS}} --build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
 		docker/build/image
 
 .PHONY: docker/name/benchmark-operator
@@ -355,4 +397,16 @@ docker/name/benchmark-operator:
 docker/build/benchmark-operator:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/benchmark/operator/Dockerfile" \
 		IMAGE=$(BENCHMARK_OPERATOR_IMAGE) \
+		docker/build/image
+
+.PHONY: docker/name/example-client
+docker/name/example-client:
+	@echo "$(ORG)/$(EXAMPLE_CLIENT_IMAGE)"
+
+.PHONY: docker/build/example-client
+## build example client docker image
+docker/build/example-client:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/example/client/Dockerfile" \
+		IMAGE=$(EXAMPLE_CLIENT_IMAGE) \
+		DOCKER_OPTS="$${DOCKER_OPTS:+$${DOCKER_OPTS}} --build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
 		docker/build/image

@@ -131,7 +131,7 @@ func WithClosedRefreshTimeout(timeout string) BreakerOption {
 		if err != nil {
 			return errors.NewErrInvalidOption("closedRefreshTimeout", timeout, err)
 		}
-		b.cloedRefreshTimeout = d
+		b.closedRefreshTimeout = d
 		return nil
 	}
 }

@@ -34,13 +34,13 @@ type insertStmt struct {
 	*dbr.InsertStmt
 }
 
-// Columns set colums to the insertStmt.
+// Columns set column to the insertStmt.
 func (stmt *insertStmt) Columns(column ...string) InsertStmt {
 	stmt.InsertStmt = stmt.InsertStmt.Columns(column...)
 	return stmt
 }
 
-// ExecContext execure inserting to the database.
+// ExecContext execute inserting to the database.
 func (stmt *insertStmt) ExecContext(ctx context.Context) (sql.Result, error) {
 	return stmt.InsertStmt.ExecContext(ctx)
 }

@@ -48,125 +48,129 @@ import (
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/agent/internal/kvs"
+	"github.com/vdaas/vald/pkg/agent/internal/memstore"
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 	"github.com/vdaas/vald/pkg/agent/internal/vqueue"
 )
 
-type contextSaveIndexTimeKey string
+type (
+	NGT interface {
+		Start(ctx context.Context) <-chan error
+		Search(ctx context.Context, vec []float32, size uint32, epsilon, radius float32) (*payload.Search_Response, error)
+		SearchByID(ctx context.Context, uuid string, size uint32, epsilon, radius float32) ([]float32, *payload.Search_Response, error)
+		LinearSearch(ctx context.Context, vec []float32, size uint32) (*payload.Search_Response, error)
+		LinearSearchByID(ctx context.Context, uuid string, size uint32) ([]float32, *payload.Search_Response, error)
+		Insert(uuid string, vec []float32) (err error)
+		InsertWithTime(uuid string, vec []float32, t int64) (err error)
+		InsertMultiple(vecs map[string][]float32) (err error)
+		InsertMultipleWithTime(vecs map[string][]float32, t int64) (err error)
+		Update(uuid string, vec []float32) (err error)
+		UpdateWithTime(uuid string, vec []float32, t int64) (err error)
+		UpdateMultiple(vecs map[string][]float32) (err error)
+		UpdateMultipleWithTime(vecs map[string][]float32, t int64) (err error)
+		UpdateTimestamp(uuid string, ts int64, force bool) (err error)
+		Delete(uuid string) (err error)
+		DeleteWithTime(uuid string, t int64) (err error)
+		DeleteMultiple(uuids ...string) (err error)
+		DeleteMultipleWithTime(uuids []string, t int64) (err error)
+		RegenerateIndexes(ctx context.Context) (err error)
+		GetObject(uuid string) (vec []float32, timestamp int64, err error)
+		ListObjectFunc(ctx context.Context, f func(uuid string, oid uint32, timestamp int64) bool)
+		Exists(uuid string) (uint32, bool)
+		CreateIndex(ctx context.Context, poolSize uint32) (err error)
+		SaveIndex(ctx context.Context) (err error)
+		CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err error)
+		IsIndexing() bool
+		IsFlushing() bool
+		IsSaving() bool
+		Len() uint64
+		NumberOfCreateIndexExecution() uint64
+		NumberOfProactiveGCExecution() uint64
+		UUIDs(context.Context) (uuids []string)
+		InsertVQueueBufferLen() uint64
+		DeleteVQueueBufferLen() uint64
+		GetDimensionSize() int
+		BrokenIndexCount() uint64
+		IndexStatistics() (*payload.Info_Index_Statistics, error)
+		IsStatisticsEnabled() bool
+		IndexProperty() (*payload.Info_Index_Property, error)
+		Close(ctx context.Context) error
+	}
 
-type NGT interface {
-	Start(ctx context.Context) <-chan error
-	Search(ctx context.Context, vec []float32, size uint32, epsilon, radius float32) (*payload.Search_Response, error)
-	SearchByID(ctx context.Context, uuid string, size uint32, epsilon, radius float32) ([]float32, *payload.Search_Response, error)
-	LinearSearch(ctx context.Context, vec []float32, size uint32) (*payload.Search_Response, error)
-	LinearSearchByID(ctx context.Context, uuid string, size uint32) ([]float32, *payload.Search_Response, error)
-	Insert(uuid string, vec []float32) (err error)
-	InsertWithTime(uuid string, vec []float32, t int64) (err error)
-	InsertMultiple(vecs map[string][]float32) (err error)
-	InsertMultipleWithTime(vecs map[string][]float32, t int64) (err error)
-	Update(uuid string, vec []float32) (err error)
-	UpdateWithTime(uuid string, vec []float32, t int64) (err error)
-	UpdateMultiple(vecs map[string][]float32) (err error)
-	UpdateMultipleWithTime(vecs map[string][]float32, t int64) (err error)
-	Delete(uuid string) (err error)
-	DeleteWithTime(uuid string, t int64) (err error)
-	DeleteMultiple(uuids ...string) (err error)
-	DeleteMultipleWithTime(uuids []string, t int64) (err error)
-	RegenerateIndexes(ctx context.Context) (err error)
-	GetObject(uuid string) (vec []float32, timestamp int64, err error)
-	ListObjectFunc(ctx context.Context, f func(uuid string, oid uint32, timestamp int64) bool)
-	CreateIndex(ctx context.Context, poolSize uint32) (err error)
-	SaveIndex(ctx context.Context) (err error)
-	Exists(string) (uint32, bool)
-	CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err error)
-	IsIndexing() bool
-	IsFlushing() bool
-	IsSaving() bool
-	Len() uint64
-	NumberOfCreateIndexExecution() uint64
-	NumberOfProactiveGCExecution() uint64
-	UUIDs(context.Context) (uuids []string)
-	DeleteVQueueBufferLen() uint64
-	InsertVQueueBufferLen() uint64
-	GetDimensionSize() int
-	BrokenIndexCount() uint64
-	IndexStatistics() (*payload.Info_Index_Statistics, error)
-	IsStatisticsEnabled() bool
-	IndexProperty() (*payload.Info_Index_Property, error)
-	Close(ctx context.Context) error
-}
+	ngt struct {
+		// instances
+		core core.NGT
+		eg   errgroup.Group
+		kvs  kvs.BidiMap
+		fmu  sync.Mutex
+		fmap map[string]int64 // failure map for index
+		vq   vqueue.Queue
 
-type ngt struct {
-	// instances
-	core core.NGT
-	eg   errgroup.Group
-	kvs  kvs.BidiMap
-	fmu  sync.Mutex
-	fmap map[string]int64 // failure map for index
-	vq   vqueue.Queue
+		// statuses
+		indexing  atomic.Value
+		flushing  atomic.Bool
+		saving    atomic.Value
+		cimu      sync.Mutex // create index mutex
+		lastNocie uint64     // last number of create index execution this value prevent unnecessary saveindex.
 
-	// statuses
-	indexing  atomic.Value
-	flushing  atomic.Bool
-	saving    atomic.Value
-	cimu      sync.Mutex // create index mutex
-	lastNocie uint64     // last number of create index execution this value prevent unnecessary saveindex.
+		// counters
+		nocie uint64        // number of create index execution
+		nogce uint64        // number of proactive GC execution
+		wfci  uint64        // wait for create indexing
+		nobic uint64        // number of broken index count
+		nopvq atomic.Uint64 // number of processed vq number
 
-	// counters
-	nocie uint64        // number of create index execution
-	nogce uint64        // number of proactive GC execution
-	wfci  uint64        // wait for create indexing
-	nobic uint64        // number of broken index count
-	nopvq atomic.Uint64 // number of processed vq number
+		// parameters
+		cfg  *config.NGT
+		opts []Option
 
-	// parameters
-	cfg  *config.NGT
-	opts []Option
+		// configurations
+		inMem bool // in-memory mode
+		dim   int  // dimension size
+		alen  int  // auto indexing length
 
-	// configurations
-	inMem bool // in-memory mode
-	dim   int  // dimension size
-	alen  int  // auto indexing length
+		lim  time.Duration // auto indexing time limit
+		dur  time.Duration // auto indexing check duration
+		sdur time.Duration // auto save index check duration
 
-	lim  time.Duration // auto indexing time limit
-	dur  time.Duration // auto indexing check duration
-	sdur time.Duration // auto save index check duration
+		minLit    time.Duration // minimum load index timeout
+		maxLit    time.Duration // maximum load index timeout
+		litFactor time.Duration // load index timeout factor
 
-	minLit    time.Duration // minimum load index timeout
-	maxLit    time.Duration // maximum load index timeout
-	litFactor time.Duration // load index timeout factor
+		enableProactiveGC bool // if this value is true, agent component will purge GC memory more proactive
+		enableCopyOnWrite bool // if this value is true, agent component will write backup file using Copy on Write and saves old files to the old directory
 
-	enableProactiveGC bool // if this value is true, agent component will purge GC memory more proactive
-	enableCopyOnWrite bool // if this value is true, agent component will write backup file using Copy on Write and saves old files to the old directory
+		podName      string
+		podNamespace string
+		path         string       // index path
+		smu          sync.Mutex   // save index lock
+		tmpPath      atomic.Value // temporary index path for Copy on Write
+		oldPath      string       // old volume path
+		basePath     string       // index base directory for CoW
+		brokenPath   string       // backup broken index path
+		cowmu        sync.Mutex   // copy on write move lock
 
-	podName      string
-	podNamespace string
-	path         string       // index path
-	smu          sync.Mutex   // save index lock
-	tmpPath      atomic.Value // temporary index path for Copy on Write
-	oldPath      string       // old volume path
-	basePath     string       // index base directory for CoW
-	brokenPath   string       // backup broken index path
-	cowmu        sync.Mutex   // copy on write move lock
+		poolSize uint32  // default pool size
+		radius   float32 // default radius
+		epsilon  float32 // default epsilon
 
-	poolSize uint32  // default pool size
-	radius   float32 // default radius
-	epsilon  float32 // default epsilon
+		idelay time.Duration // initial delay duration
+		dcd    bool          // disable commit daemon
 
-	idelay time.Duration // initial delay duration
-	dcd    bool          // disable commit daemon
+		kvsdbConcurrency int // kvsdb concurrency
+		historyLimit     int // the maximum generation number of broken index backup
 
-	kvsdbConcurrency int // kvsdb concurrency
-	historyLimit     int // the maximum generation number of broken index backup
+		isReadReplica           bool
+		enableExportIndexInfo   bool
+		exportIndexInfoDuration time.Duration
+		patcher                 client.Patcher
 
-	isReadReplica           bool
-	enableExportIndexInfo   bool
-	exportIndexInfoDuration time.Duration
-	patcher                 client.Patcher
+		enableStatistics bool
+		statisticsCache  atomic.Pointer[payload.Info_Index_Statistics]
+	}
 
-	enableStatistics bool
-	statisticsCache  atomic.Pointer[payload.Info_Index_Statistics]
-}
+	contextSaveIndexTimeKey string
+)
 
 const (
 	kvsFileName          = "ngt-meta.kvsdb"
@@ -258,6 +262,26 @@ func newNGT(cfg *config.NGT, opts ...Option) (n *ngt, err error) {
 	n.saving.Store(false)
 
 	return n, nil
+}
+
+func (n *ngt) copyNGT(src *ngt) {
+	// instances
+	n.core = src.core
+	n.kvs = src.kvs
+	n.fmap = src.fmap
+	n.vq = src.vq
+
+	// counters
+	n.wfci = src.wfci
+	n.nobic = src.nobic
+	n.nopvq = atomic.Uint64{}
+
+	// paths
+	n.path = src.path
+	n.tmpPath = src.tmpPath
+	n.oldPath = src.oldPath
+	n.basePath = src.basePath
+	n.brokenPath = src.brokenPath
 }
 
 // migrate migrates the index directory from old to new under the input path if necessary.
@@ -531,7 +555,7 @@ func (n *ngt) load(ctx context.Context, path string, opts ...core.Option) (err e
 
 // backupBroken backup index at originPath into brokenDir.
 // The name of the directory will be timestamp(UnixNano).
-// If it exeeds the limit, backupBroken removes the oldest backup directory.
+// If it exceeds the limit, backupBroken removes the oldest backup directory.
 func (n *ngt) backupBroken(ctx context.Context) error {
 	if n.historyLimit <= 0 {
 		return nil
@@ -908,7 +932,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				}
 				return ctx.Err()
 			case <-tick.C:
-				if n.vq.IVQLen() >= n.alen {
+				if n.vq != nil && !n.IsFlushing() && n.vq.IVQLen() >= n.alen {
 					err = n.CreateIndex(ctx, n.poolSize)
 				}
 			case <-limit.C:
@@ -1098,7 +1122,7 @@ func (n *ngt) UpdateWithTime(uuid string, vec []float32, t int64) (err error) {
 }
 
 func (n *ngt) update(uuid string, vec []float32, t int64) (err error) {
-	if err = n.readyForUpdate(uuid, vec); err != nil {
+	if err = n.readyForUpdate(uuid, vec, t); err != nil {
 		return err
 	}
 	err = n.delete(uuid, t, true) // `true` is to return NotFound error with non-existent ID
@@ -1129,7 +1153,7 @@ func (n *ngt) UpdateMultipleWithTime(vecs map[string][]float32, t int64) (err er
 func (n *ngt) updateMultiple(vecs map[string][]float32, t int64) (err error) {
 	uuids := make([]string, 0, len(vecs))
 	for uuid, vec := range vecs {
-		if err = n.readyForUpdate(uuid, vec); err != nil {
+		if err = n.readyForUpdate(uuid, vec, t); err != nil {
 			delete(vecs, uuid)
 		} else {
 			uuids = append(uuids, uuid)
@@ -1141,6 +1165,15 @@ func (n *ngt) updateMultiple(vecs map[string][]float32, t int64) (err error) {
 	}
 	t++
 	return n.insertMultiple(vecs, t, false)
+}
+
+func (n *ngt) UpdateTimestamp(uuid string, ts int64, force bool) (err error) {
+	if n.IsFlushing() {
+		return errors.ErrFlushingIsInProgress
+	}
+	return memstore.UpdateTimestamp(n.kvs, n.vq, uuid, ts, force, func(oid uint32) ([]float32, error) {
+		return n.core.GetVector(uint(oid))
+	})
 }
 
 func (n *ngt) Delete(uuid string) (err error) {
@@ -1167,7 +1200,10 @@ func (n *ngt) delete(uuid string, t int64, validation bool) (err error) {
 	}
 	if validation {
 		_, _, ok := n.kvs.Get(uuid)
-		if !ok && !n.vq.IVExists(uuid) {
+		if !ok && func() (ok bool) {
+			_, ok = n.vq.IVExists(uuid)
+			return !ok
+		}() {
 			return errors.ErrObjectIDNotFound(uuid)
 		}
 	}
@@ -1242,14 +1278,12 @@ func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 	if err != nil {
 		log.Errorf("failed to flushing vector to ngt index in delete kvs. error: %v", err)
 	}
-	n.kvs = nil
-	n.vq = nil
 
 	// gc
 	runtime.GC()
 	atomic.AddUint64(&n.nogce, 1)
 
-	if n.inMem {
+	if !n.inMem {
 		// delete file
 		err = file.DeleteDir(ctx, n.path)
 		if err != nil {
@@ -1265,30 +1299,14 @@ func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 		}
 	}
 
-	nkvs := kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
-
-	nvq, err := vqueue.New()
-	if err != nil {
-		log.Errorf("failed to create new vector vector queue. error: %v", err)
-	}
-
 	// renew instance
 	nn, err := newNGT(n.cfg, n.opts...)
 	if err != nil {
 		return err
 	}
-	nn.kvs = nkvs
-	nn.vq = nvq
+	n.copyNGT(nn)
 
-	// Regenerate with flags set
-	nn.flushing.Store(true)
-	nn.indexing.Store(true)
-	defer nn.flushing.Store(false)
-	defer nn.indexing.Store(false)
-
-	n = nn
-
-	return nil
+	return n.loadStatistics(ctx)
 }
 
 func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
@@ -1299,8 +1317,11 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		}
 	}()
 
-	if n.isReadReplica {
+	switch {
+	case n.isReadReplica:
 		return errors.ErrWriteOperationToReadReplica
+	case n.IsFlushing():
+		return errors.ErrFlushingIsInProgress
 	}
 
 	ic := n.vq.IVQLen() + n.vq.DVQLen()
@@ -1344,7 +1365,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	}
 	log.Infof("create index operation started, uncommitted indexes = %d", ic)
 	log.Debug("create index delete phase started")
-	// vqProcessedCnt is a tempral counter to store the number of processed vqueue items.
+	// vqProcessedCnt is a temporary counter to store the number of processed vqueue items.
 	// This will be added to nopvq after CreateIndex operation succeeds.
 	var vqProcessedCnt uint64
 	n.vq.RangePopDelete(ctx, now, func(uuid string) bool {
@@ -1355,7 +1376,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			return true
 		}
 		log.Debugf("start remove operation for ngt index id: %s, oid: %d", uuid, oid)
-		if err := n.core.Remove(uint(oid)); err != nil {
+		if err = n.core.Remove(uint(oid)); err != nil {
 			log.Errorf("failed to remove oid: %d from ngt index. error: %v", oid, err)
 			n.fmu.Lock()
 			n.fmap[uuid] = int64(oid)
@@ -1372,7 +1393,8 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	var icnt uint32
 	n.vq.RangePopInsert(ctx, now, func(uuid string, vector []float32, timestamp int64) bool {
 		log.Debugf("start insert operation for ngt index id: %s", uuid)
-		oid, err := n.core.Insert(vector)
+		var oid uint
+		oid, err = n.core.Insert(vector)
 		if err != nil {
 			log.Warnf("failed to insert vector uuid: %s vec: %v to ngt index. error: %v", uuid, vector, err)
 			if errors.Is(err, errors.ErrIncompatibleDimensionSize(len(vector), n.dim)) {
@@ -1428,9 +1450,24 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			return err
 		}
 	}
+	return n.loadStatistics(ctx)
+}
+
+func (n *ngt) loadStatistics(ctx context.Context) (err error) {
 	if n.IsStatisticsEnabled() {
 		log.Info("loading index statistics to cache")
-		stats, err := n.core.GetGraphStatistics(core.AdditionalStatistics)
+		var stats *core.GraphStatistics
+		done := make(chan struct{})
+		n.eg.Go(safety.RecoverFunc(func() error {
+			defer close(done)
+			stats, err = n.core.GetGraphStatistics(ctx, core.AdditionalStatistics)
+			return nil
+		}))
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-done:
+		}
 		if err != nil {
 			log.Errorf("failed to load index statistics to cache: %v", err)
 			return err
@@ -1471,8 +1508,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			IndegreeHistogram:                stats.IndegreeHistogram,
 		})
 	}
-
-	return err
+	return nil
 }
 
 func (n *ngt) removeInvalidIndex(ctx context.Context) {
@@ -1570,7 +1606,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	beforeNopvq := n.nopvq.Load()
 
 	defer n.gc()
-	// since defering here, atomic operations are guaranteed in this scope
+	// since deferring here, atomic operations are guaranteed in this scope
 	defer n.saving.Store(false)
 
 	log.Debug("cleanup invalid index started")
@@ -1578,7 +1614,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	log.Debug("cleanup invalid index finished")
 
 	eg, ectx := errgroup.New(ctx)
-	// we want to ensure the acutal kvs size between kvsdb and metadata,
+	// we want to ensure the actual kvs size between kvsdb and metadata,
 	// so we create this counter to count the actual kvs size instead of using kvs.Len()
 	var (
 		kvsLen uint64
@@ -1830,59 +1866,23 @@ func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
 			uuid, errors.ErrFlushingIsInProgress)
 		return 0, false
 	}
-	ok = n.vq.IVExists(uuid)
-	if !ok {
-		oid, _, ok = n.kvs.Get(uuid)
-		if !ok {
-			log.Debugf("Exists\tuuid: %s's data not found in kvsdb and insert vqueue\terror: %v", uuid, errors.ErrObjectIDNotFound(uuid))
-			return 0, false
-		}
-		if n.vq.DVExists(uuid) {
-			log.Debugf(
-				"Exists\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon\terror: %v",
-				uuid,
-				errors.ErrObjectIDNotFound(uuid),
-			)
-			return 0, false
-		}
-	}
-	return oid, ok
+	return memstore.Exists(n.kvs, n.vq, uuid)
 }
 
 func (n *ngt) GetObject(uuid string) (vec []float32, timestamp int64, err error) {
-	vec, ts, exists := n.vq.GetVector(uuid)
-	if exists {
-		return vec, ts, nil
-	}
-
-	oid, ts, ok := n.kvs.Get(uuid)
-	if !ok {
-		log.Debugf("GetObject\tuuid: %s's data not found in kvsdb and insert vqueue", uuid)
-		return nil, 0, errors.ErrObjectIDNotFound(uuid)
-	}
-
-	if n.vq.DVExists(uuid) {
-		log.Debugf("GetObject\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon", uuid)
-		return nil, 0, errors.ErrObjectIDNotFound(uuid)
-	}
-
-	vec, err = n.core.GetVector(uint(oid))
-	if err != nil {
-		log.Debugf("GetObject\tuuid: %s oid: %d's vector not found in ngt index", uuid, oid)
-		return nil, 0, errors.ErrObjectNotFound(err, uuid)
-	}
-
-	return vec, ts, nil
+	return memstore.GetObject(n.kvs, n.vq, uuid, func(oid uint32) ([]float32, error) {
+		return n.core.GetVector(uint(oid))
+	})
 }
 
-func (n *ngt) readyForUpdate(uuid string, vec []float32) (err error) {
+func (n *ngt) readyForUpdate(uuid string, vec []float32, ts int64) (err error) {
 	if len(uuid) == 0 {
 		return errors.ErrUUIDNotFound(0)
 	}
 	if len(vec) != n.GetDimensionSize() {
 		return errors.ErrInvalidDimensionSize(len(vec), n.GetDimensionSize())
 	}
-	ovec, _, err := n.GetObject(uuid)
+	ovec, ots, err := n.GetObject(uuid)
 	// if error (GetObject cannot find vector) return error
 	if err != nil {
 		return err
@@ -1891,6 +1891,14 @@ func (n *ngt) readyForUpdate(uuid string, vec []float32) (err error) {
 	if len(vec) != len(ovec) || conv.F32stos(vec) != conv.F32stos(ovec) {
 		return nil
 	}
+
+	if ots < ts {
+		err = n.UpdateTimestamp(uuid, ts, false)
+		if err != nil {
+			return err
+		}
+	}
+
 	// if no difference exists (same vector already exists) return error for skip update
 	return errors.ErrUUIDAlreadyExists(uuid)
 }
@@ -1910,15 +1918,7 @@ func (n *ngt) IsFlushing() bool {
 }
 
 func (n *ngt) UUIDs(ctx context.Context) (uuids []string) {
-	uuids = make([]string, 0, n.kvs.Len())
-	var mu sync.Mutex
-	n.kvs.Range(ctx, func(uuid string, oid uint32, _ int64) bool {
-		mu.Lock()
-		uuids = append(uuids, uuid)
-		mu.Unlock()
-		return true
-	})
-	return uuids
+	return memstore.UUIDs(ctx, n.kvs, n.vq)
 }
 
 func (n *ngt) NumberOfCreateIndexExecution() uint64 {
@@ -1941,15 +1941,24 @@ func (n *ngt) gc() {
 }
 
 func (n *ngt) Len() uint64 {
-	return n.kvs.Len()
+	if n.kvs != nil && !n.IsFlushing() {
+		return n.kvs.Len()
+	}
+	return 0
 }
 
 func (n *ngt) InsertVQueueBufferLen() uint64 {
-	return uint64(n.vq.IVQLen())
+	if n.vq != nil && !n.IsFlushing() {
+		return uint64(n.vq.IVQLen())
+	}
+	return 0
 }
 
 func (n *ngt) DeleteVQueueBufferLen() uint64 {
-	return uint64(n.vq.DVQLen())
+	if n.vq != nil && !n.IsFlushing() {
+		return uint64(n.vq.DVQLen())
+	}
+	return 0
 }
 
 func (n *ngt) GetDimensionSize() int {
@@ -2009,25 +2018,7 @@ func (n *ngt) BrokenIndexCount() uint64 {
 // Use this function for performing something on each object with caring about the memory usage.
 // If the vector exists in the vqueue, this vector is not indexed so the oid(object ID) is processed as 0.
 func (n *ngt) ListObjectFunc(ctx context.Context, f func(uuid string, oid uint32, ts int64) bool) {
-	dup := make(map[string]bool)
-	n.vq.Range(ctx, func(uuid string, vec []float32, ts int64) (ok bool) {
-		ok = f(uuid, 0, ts)
-		if !ok {
-			return false
-		}
-		var kts int64
-		_, kts, ok = n.kvs.Get(uuid)
-		if ok && ts > kts {
-			dup[uuid] = true
-		}
-		return true
-	})
-	n.kvs.Range(ctx, func(uuid string, oid uint32, ts int64) (ok bool) {
-		if dup[uuid] {
-			return true
-		}
-		return f(uuid, oid, ts)
-	})
+	memstore.ListObjectFunc(ctx, n.kvs, n.vq, f)
 }
 
 func (n *ngt) IndexStatistics() (stats *payload.Info_Index_Statistics, err error) {

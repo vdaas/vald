@@ -20,10 +20,10 @@ metadata:
   labels:
     app: vald-manager-index
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.13
+    helm.sh/chart: vald-v1.7.16
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.13
+    app.kubernetes.io/version: v1.7.16
     app.kubernetes.io/component: manager-index
 spec:
   progressDeadlineSeconds: 600
@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: manager-index
       annotations:
-        checksum/configmap: 876907cfbfbcab80cd72c01874d8651958d9dfe9e5a8e3474ecb3afd2e62dbda
+        checksum/configmap: 8aebb249a588793313c046dff60dc9a72a7fe00d3da7cf0575f2d35a2b788158
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-index
@@ -59,6 +59,7 @@ spec:
       initContainers:
         - name: wait-for-agent
           image: busybox:stable
+          imagePullPolicy: Always
           command:
             - /bin/sh
             - -e
@@ -70,6 +71,7 @@ spec:
               done
         - name: wait-for-discoverer
           image: busybox:stable
+          imagePullPolicy: Always
           command:
             - /bin/sh
             - -e

@@ -30,7 +30,7 @@ spec:
                 - --profefe-hostport
                 - http://profefe:10100
               image: profefe/kprofefe:latest
-              imagePullPolicy: IfNotPresent
+              imagePullPolicy: Always
               name: kprofefe
           restartPolicy: Never
           serviceAccount: kprofefe

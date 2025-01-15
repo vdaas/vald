@@ -22,7 +22,7 @@ edition = "2021"
 
 [dependencies]
 futures-core = "0.3.30"
-prost = "0.13.1"
+prost = "0.13.2"
 prost-types = "0.13.2"
-tonic = "0.12.1"
-tonic-types = "0.12.1"
+tonic = "0.12.2"
+tonic-types = "0.12.2"

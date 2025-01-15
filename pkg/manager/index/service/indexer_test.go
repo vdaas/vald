@@ -120,7 +120,7 @@ package service
 // 		indexDurationLimit     time.Duration
 // 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		shouldSaveList         sync.Map[string, struct{}]
+// 		shouldSaveList         sync.Map[string, bool]
 // 		createIndexConcurrency int
 // 		saveIndexConcurrency   int
 // 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
@@ -283,7 +283,7 @@ package service
 // 		indexDurationLimit     time.Duration
 // 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		shouldSaveList         sync.Map[string, struct{}]
+// 		shouldSaveList         sync.Map[string, bool]
 // 		createIndexConcurrency int
 // 		saveIndexConcurrency   int
 // 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
@@ -444,7 +444,7 @@ package service
 // 		indexDurationLimit     time.Duration
 // 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		shouldSaveList         sync.Map[string, struct{}]
+// 		shouldSaveList         sync.Map[string, bool]
 // 		createIndexConcurrency int
 // 		saveIndexConcurrency   int
 // 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
@@ -604,7 +604,7 @@ package service
 // 		indexDurationLimit     time.Duration
 // 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		shouldSaveList         sync.Map[string, struct{}]
+// 		shouldSaveList         sync.Map[string, bool]
 // 		createIndexConcurrency int
 // 		saveIndexConcurrency   int
 // 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
@@ -759,7 +759,7 @@ package service
 // 		indexDurationLimit     time.Duration
 // 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		shouldSaveList         sync.Map[string, struct{}]
+// 		shouldSaveList         sync.Map[string, bool]
 // 		createIndexConcurrency int
 // 		saveIndexConcurrency   int
 // 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
@@ -907,7 +907,7 @@ package service
 // 		indexDurationLimit     time.Duration
 // 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		shouldSaveList         sync.Map[string, struct{}]
+// 		shouldSaveList         sync.Map[string, bool]
 // 		createIndexConcurrency int
 // 		saveIndexConcurrency   int
 // 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
@@ -1055,7 +1055,7 @@ package service
 // 		indexDurationLimit     time.Duration
 // 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		shouldSaveList         sync.Map[string, struct{}]
+// 		shouldSaveList         sync.Map[string, bool]
 // 		createIndexConcurrency int
 // 		saveIndexConcurrency   int
 // 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
@@ -1203,7 +1203,7 @@ package service
 // 		indexDurationLimit     time.Duration
 // 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		shouldSaveList         sync.Map[string, struct{}]
+// 		shouldSaveList         sync.Map[string, bool]
 // 		createIndexConcurrency int
 // 		saveIndexConcurrency   int
 // 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
@@ -1351,7 +1351,7 @@ package service
 // 		indexDurationLimit     time.Duration
 // 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		shouldSaveList         sync.Map[string, struct{}]
+// 		shouldSaveList         sync.Map[string, bool]
 // 		createIndexConcurrency int
 // 		saveIndexConcurrency   int
 // 		indexInfos             sync.Map[string, *payload.Info_Index_Count]

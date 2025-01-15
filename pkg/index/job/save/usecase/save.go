@@ -207,7 +207,7 @@ func (r *run) Stop(ctx context.Context) (errs error) {
 	return errs
 }
 
-// PtopStop is a method called after execution of Stop.
+// PostStop is a method called after execution of Stop.
 func (*run) PostStop(_ context.Context) error {
 	return nil
 }

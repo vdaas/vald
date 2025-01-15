@@ -156,13 +156,16 @@ var (
 )
 
 // Is represents a function to check whether err and the target is the same or not.
-func Is(err, target error) bool {
+func Is(err, target error) (same bool) {
 	if target == nil || err == nil {
 		return err == target
 	}
-	isComparable := reflect.TypeOf(target).Comparable()
+	return is(err, target, reflect.TypeOf(target).Comparable())
+}
+
+func is(err, target error, targetComparable bool) (same bool) {
 	for {
-		if isComparable && (err == target ||
+		if targetComparable && (err == target ||
 			err.Error() == target.Error() ||
 			strings.EqualFold(err.Error(), target.Error())) {
 			return true
@@ -177,21 +180,19 @@ func Is(err, target error) bool {
 		case interface{ Unwrap() error }:
 			err = x.Unwrap()
 			if err == nil {
-				return isComparable && err == target ||
-					err.Error() == target.Error() ||
-					strings.EqualFold(err.Error(), target.Error())
+				return false
 			}
 		case interface{ Unwrap() []error }:
 			for _, err = range x.Unwrap() {
-				if Is(err, target) {
+				if is(err, target, targetComparable) {
 					return true
 				}
 			}
-			return isComparable && err == target ||
+			return targetComparable && err == target ||
 				err.Error() == target.Error() ||
 				strings.EqualFold(err.Error(), target.Error())
 		default:
-			return isComparable && err == target ||
+			return targetComparable && err == target ||
 				err.Error() == target.Error() ||
 				strings.EqualFold(err.Error(), target.Error())
 		}

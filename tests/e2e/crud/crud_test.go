@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"testing"
 	"time"
 
@@ -415,7 +416,7 @@ func TestE2EStandardCRUD(t *testing.T) {
 
 	err = op.Flush(t, ctx)
 	if err != nil {
-		// TODO: Remove code check afeter Flush API is available for agent-faiss and mirror-gateway
+		// TODO: Remove code check after Flush API is available for agent-faiss and mirror-gateway
 		st, _, _ := status.ParseError(err, codes.Unknown, "")
 		if st.Code() != codes.Unimplemented {
 			t.Fatalf("an error occurred: %s", err)
@@ -445,7 +446,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			t.Helper()
 
 			if status != int32(codes.NotFound) {
-				return errors.Errorf("the returned status is not NotFound on Update #1: %s", err)
+				return errors.Errorf("the returned status is not NotFound on Update #1: %s,\tcode: %s", msg, codes.ToString(status))
 			}
 
 			t.Logf("received a NotFound error on #1: %s", msg)
@@ -480,7 +481,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			t.Helper()
 
 			if status != int32(codes.NotFound) {
-				return errors.Errorf("the returned status is not NotFound on Update #2: %s", err)
+				return errors.Errorf("the returned status is not NotFound on Update #2: %s,\tcode: %s", msg, codes.ToString(status))
 			}
 
 			t.Logf("received a NotFound error on #2: %s", msg)
@@ -519,6 +520,8 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		t.Fatalf("an error occurred on #3: %s", err)
 	}
 
+	sleep(t, waitAfterInsertDuration)
+
 	// #4 run Update with SkipStrictExistCheck=false & a different vector, and check that it succeeds
 	err = op.UpdateWithParameters(
 		t,
@@ -535,6 +538,8 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		t.Fatalf("an error occurred on #4: %s", err)
 	}
 
+	sleep(t, waitAfterInsertDuration)
+
 	// #5 run Update with SkipStrictExistCheck=false & same vector as 4 and check that AlreadyExists returns
 	err = op.UpdateWithParameters(
 		t,
@@ -548,7 +553,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			t.Helper()
 
 			if status != int32(codes.AlreadyExists) {
-				return errors.Errorf("the returned status is not NotFound on Update #5: %s", err)
+				return errors.Errorf("the returned status is not AlreadyExists on Update #5: %s,\tcode: %s", msg, codes.ToString(status))
 			}
 
 			t.Logf("received an AlreadyExists error on #5: %s", msg)
@@ -569,7 +574,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		},
 	)
 	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
+		t.Fatalf("an error occurred on #5: %s", err)
 	}
 
 	// #6 run Update with the same vector as SkipStrictExistCheck=true & 4 and check that it succeeds
@@ -615,7 +620,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			t.Helper()
 
 			if status != int32(codes.NotFound) {
-				return errors.Errorf("the returned status is not NotFound on Remove #8: %s", err)
+				return errors.Errorf("the returned status is not NotFound on Remove #8: %s,\tcode: %s", msg, codes.ToString(status))
 			}
 
 			t.Logf("received a NotFound error on #8: %s", msg)
@@ -651,7 +656,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			t.Helper()
 
 			if status != int32(codes.NotFound) {
-				return errors.Errorf("the returned status is not NotFound on Remove #9: %s", err)
+				return errors.Errorf("the returned status is not NotFound on Remove #9: %s,\tcode: %s", msg, codes.ToString(status))
 			}
 
 			t.Logf("received a NotFound error on #9: %s", msg)
@@ -702,7 +707,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			t.Helper()
 
 			if status != int32(codes.AlreadyExists) {
-				return errors.Errorf("the returned status is not AlreadyExists on Upsert #11: %s", err)
+				return errors.Errorf("the returned status is not AlreadyExists on Upsert #11: %s,\tcode: %s", msg, codes.ToString(status))
 			}
 
 			t.Logf("received an AlreadyExists error on #11: %s", msg)
@@ -798,9 +803,42 @@ func TestE2EIndexJobCorrection(t *testing.T) {
 	}
 
 	t.Log("Test case 2: execute index correction after one agent removed")
-	t.Log("removing vald-agent-0...")
-	cmd := exec.CommandContext(ctx, "sh", "-c", "kubectl delete pod vald-agent-0 && kubectl wait --for=condition=Ready pod/vald-agent-0")
+	detail, err := op.IndexDetail(t, ctx)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+	if len(detail.Counts) == 0 {
+		t.Fatal("no pods found with index details")
+	}
+	var target string
+	for a, c := range detail.Counts {
+		if c.Stored > 0 {
+			parts := strings.Split(a, ":")
+			if len(parts) == 0 {
+				t.Fatalf("invalid address format: %s", a)
+			}
+			target = parts[0]
+			break
+		}
+	}
+	if target == "" {
+		t.Fatal("no pods found with stored count > 0")
+	}
+
+	cmd := exec.CommandContext(ctx, "sh", "-c", fmt.Sprintf("kubectl get pods -o custom-columns=:metadata.name --no-headers=true --field-selector=\"status.podIP=%s\"", target))
 	out, err := cmd.Output()
+	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			t.Fatalf("%s, %s, %v", string(out), string(exitErr.Stderr), err)
+		} else {
+			t.Fatalf("unexpected error on creating job: %v", err)
+		}
+	}
+	agent := strings.TrimRight(string(out), "\n")
+
+	t.Logf("removing %s...", agent)
+	cmd = exec.CommandContext(ctx, "sh", "-c", fmt.Sprintf("kubectl delete pod %s && kubectl wait --for=condition=Ready pod/%s", agent, agent))
+	out, err = cmd.Output()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
 			t.Fatalf("%s, %s, %v", string(out), string(exitErr.Stderr), err)
@@ -865,7 +903,7 @@ func TestE2EReadReplica(t *testing.T) {
 	t.Log("waiting for read replica rotator jobs to complete...")
 	if err := kubectl.WaitResources(ctx, t, "job", "app=vald-readreplica-rotate", "complete", "60s"); err != nil {
 		t.Log("wait failed. printing yaml of vald-readreplica-rotate")
-		kubectl.KubectlCmd(ctx, t, "get", "pod", "-l", "app=vald-readreplica-rotate", "-oyaml")
+		kubectl.KubectlCmd(ctx, t, "get", "pod", "-l", "app=vald-readreplica-rotate", "-o", "yaml")
 		t.Log("wait failed. printing log of vald-index-operator")
 		kubectl.DebugLog(ctx, t, "app=vald-index-operator")
 		t.Log("wait failed. printing log of vald-readreplica-rotate")

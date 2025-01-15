@@ -18,7 +18,6 @@
 package grpc
 
 import (
-	"os"
 	"runtime"
 
 	"github.com/vdaas/vald/internal/client/v1/client/filter/egress"
@@ -26,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 

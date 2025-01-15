@@ -95,7 +95,7 @@ jobs:
     if: ${{ needs.semver-auto.outputs.RELEASE == 'true' }}
     needs:
       - semver-auto
-    uses: ./.github/workflows/_release-pr.yml
+    uses: ./.github/workflows/_release-pr.yaml
     with:
       release_branch_name: ${{ needs.semver-auto.outputs.RELEASE_BRANCH_NAME }}
       release_tag: ${{ needs.semver-auto.outputs.RELEASE_TAG }}

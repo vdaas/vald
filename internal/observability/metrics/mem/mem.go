@@ -19,11 +19,11 @@ import (
 	"os"
 	"runtime"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/internal/strings"
 	api "go.opentelemetry.io/otel/metric"
 	view "go.opentelemetry.io/otel/sdk/metric"
 )

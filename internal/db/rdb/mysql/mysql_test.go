@@ -1818,7 +1818,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 							}
 							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
 								s := new(dbr.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+								s.ColumnsFunc = func(columns ...string) dbr.InsertStmt {
 									return s
 								}
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -1916,7 +1916,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 							}
 							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
 								s := new(dbr.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+								s.ColumnsFunc = func(columns ...string) dbr.InsertStmt {
 									return s
 								}
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -2013,7 +2013,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 							}
 							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
 								s := new(dbr.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+								s.ColumnsFunc = func(columns ...string) dbr.InsertStmt {
 									return s
 								}
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -2512,7 +2512,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 							}
 							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
 								s := new(dbr.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+								s.ColumnsFunc = func(columns ...string) dbr.InsertStmt {
 									return s
 								}
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -2612,7 +2612,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 							}
 							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
 								s := new(dbr.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+								s.ColumnsFunc = func(columns ...string) dbr.InsertStmt {
 									return s
 								}
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -2711,7 +2711,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 							}
 							tx.InsertIntoFunc = func(table string) dbr.InsertStmt {
 								s := new(dbr.MockInsert)
-								s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+								s.ColumnsFunc = func(columns ...string) dbr.InsertStmt {
 									return s
 								}
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -3022,7 +3022,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 		func() test {
 			err := errors.ErrMySQLTransactionNotCreated
 			return test{
-				name: "return error when transacton is nil",
+				name: "return error when transaction is nil",
 				args: args{
 					ctx:  context.Background(),
 					uuid: "vald-01",
@@ -3217,9 +3217,9 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 			}
 		}(),
 		func() test {
-			err := errors.New("podIPTableNmae error")
+			err := errors.New("podIPTableName error")
 			return test{
-				name: "return error when DeleteFromFunc(podIPTableNmae) returns error",
+				name: "return error when DeleteFromFunc(podIPTableName) returns error",
 				args: args{
 					ctx:  context.Background(),
 					uuid: "vald-01",
@@ -3813,7 +3813,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 								RollbackUnlessCommittedFunc: func() {},
 								InsertIntoFunc: func(table string) dbr.InsertStmt {
 									s := new(dbr.MockInsert)
-									s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									s.ColumnsFunc = func(columns ...string) dbr.InsertStmt {
 										return s
 									}
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
@@ -3885,7 +3885,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 								RollbackUnlessCommittedFunc: func() {},
 								InsertIntoFunc: func(table string) dbr.InsertStmt {
 									s := new(dbr.MockInsert)
-									s.ColumnsFunc = func(colum ...string) dbr.InsertStmt {
+									s.ColumnsFunc = func(columns ...string) dbr.InsertStmt {
 										return s
 									}
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {

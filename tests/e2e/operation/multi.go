@@ -24,7 +24,7 @@ import (
 )
 
 func (c *client) MultiSearch(t *testing.T, ctx context.Context, ds Dataset) error {
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func (c *client) MultiSearch(t *testing.T, ctx context.Context, ds Dataset) erro
 }
 
 func (c *client) MultiSearchByID(t *testing.T, ctx context.Context, ds Dataset) error {
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func (c *client) MultiSearchByID(t *testing.T, ctx context.Context, ds Dataset) 
 }
 
 func (c *client) MultiLinearSearch(t *testing.T, ctx context.Context, ds Dataset) error {
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -130,7 +130,7 @@ func (c *client) MultiLinearSearch(t *testing.T, ctx context.Context, ds Dataset
 }
 
 func (c *client) MultiLinearSearchByID(t *testing.T, ctx context.Context, ds Dataset) error {
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -164,7 +164,7 @@ func (c *client) MultiLinearSearchByID(t *testing.T, ctx context.Context, ds Dat
 }
 
 func (c *client) MultiInsert(t *testing.T, ctx context.Context, ds Dataset) error {
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -201,7 +201,7 @@ func (c *client) MultiInsert(t *testing.T, ctx context.Context, ds Dataset) erro
 }
 
 func (c *client) MultiUpdate(t *testing.T, ctx context.Context, ds Dataset) error {
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -241,7 +241,7 @@ func (c *client) MultiUpdate(t *testing.T, ctx context.Context, ds Dataset) erro
 }
 
 func (c *client) MultiUpsert(t *testing.T, ctx context.Context, ds Dataset) error {
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}
@@ -281,7 +281,7 @@ func (c *client) MultiUpsert(t *testing.T, ctx context.Context, ds Dataset) erro
 }
 
 func (c *client) MultiRemove(t *testing.T, ctx context.Context, ds Dataset) error {
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return err
 	}

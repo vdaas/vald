@@ -19,10 +19,10 @@ metadata:
   name: vald-lb-gateway-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.13
+    helm.sh/chart: vald-v1.7.16
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.13
+    app.kubernetes.io/version: v1.7.16
     app.kubernetes.io/component: gateway-lb
 data:
   config.yaml: |
@@ -42,6 +42,7 @@ data:
             bidirectional_stream_concurrency: 20
             connection_timeout: ""
             enable_admin: true
+            enable_channelz: true
             enable_reflection: true
             header_table_size: 0
             initial_conn_window_size: 2097152
@@ -56,10 +57,14 @@ data:
               permit_without_stream: false
               time: 3h
               timeout: 60s
+            max_concurrent_streams: 0
             max_header_list_size: 0
             max_receive_message_size: 0
             max_send_message_size: 0
+            num_stream_workers: 0
             read_buffer_size: 0
+            shared_write_buffer: false
+            wait_for_handlers: true
             write_buffer_size: 0
           mode: GRPC
           network: tcp
@@ -266,16 +271,20 @@ data:
             min_samples: 1000
             open_timeout: 1s
           call_option:
+            content_subtype: ""
             max_recv_msg_size: 0
             max_retry_rpc_buffer_size: 0
             max_send_msg_size: 0
             wait_for_ready: true
           dial_option:
+            authority: ""
             backoff_base_delay: 1s
             backoff_jitter: 0.2
             backoff_max_delay: 120s
             backoff_multiplier: 1.6
+            disable_retry: false
             enable_backoff: false
+            idle_timeout: 1h
             initial_connection_window_size: 2097152
             initial_window_size: 1048576
             insecure: true
@@ -284,6 +293,8 @@ data:
               permit_without_stream: false
               time: ""
               timeout: 30s
+            max_call_attempts: 0
+            max_header_list_size: 0
             max_msg_size: 0
             min_connection_timeout: 20s
             net:
@@ -295,6 +306,7 @@ data:
                 cache_enabled: true
                 cache_expiration: 1h
                 refresh_duration: 30m
+              network: tcp
               socket_option:
                 ip_recover_destination_addr: false
                 ip_transparent: false
@@ -312,7 +324,9 @@ data:
                 insecure_skip_verify: false
                 key: /path/to/key
             read_buffer_size: 0
+            shared_write_buffer: false
             timeout: ""
+            user_agent: Vald-gRPC
             write_buffer_size: 0
           tls:
             ca: /path/to/ca
@@ -344,16 +358,20 @@ data:
             min_samples: 1000
             open_timeout: 1s
           call_option:
+            content_subtype: ""
             max_recv_msg_size: 0
             max_retry_rpc_buffer_size: 0
             max_send_msg_size: 0
             wait_for_ready: true
           dial_option:
+            authority: ""
             backoff_base_delay: 1s
             backoff_jitter: 0.2
             backoff_max_delay: 120s
             backoff_multiplier: 1.6
+            disable_retry: false
             enable_backoff: false
+            idle_timeout: 1h
             initial_connection_window_size: 2097152
             initial_window_size: 1048576
             insecure: true
@@ -362,6 +380,8 @@ data:
               permit_without_stream: false
               time: ""
               timeout: 30s
+            max_call_attempts: 0
+            max_header_list_size: 0
             max_msg_size: 0
             min_connection_timeout: 20s
             net:
@@ -373,6 +393,7 @@ data:
                 cache_enabled: true
                 cache_expiration: 1h
                 refresh_duration: 30m
+              network: tcp
               socket_option:
                 ip_recover_destination_addr: false
                 ip_transparent: false
@@ -390,7 +411,9 @@ data:
                 insecure_skip_verify: false
                 key: /path/to/key
             read_buffer_size: 0
+            shared_write_buffer: false
             timeout: ""
+            user_agent: Vald-gRPC
             write_buffer_size: 0
           tls:
             ca: /path/to/ca

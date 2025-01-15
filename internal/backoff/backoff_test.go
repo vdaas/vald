@@ -288,7 +288,7 @@ func Test_backoff_Do(t *testing.T) {
 		}(),
 		func() test {
 			ctx := context.Background()
-			err := errors.New("erros is occurred")
+			err := errors.New("errors is occurred")
 			f := func(context.Context) (any, bool, error) {
 				return nil, false, err
 			}
@@ -317,7 +317,7 @@ func Test_backoff_Do(t *testing.T) {
 		}(),
 		func() test {
 			ctx := context.Background()
-			err := errors.New("erros is occurred")
+			err := errors.New("errors is occurred")
 			f := func(context.Context) (any, bool, error) {
 				return str, true, err
 			}
@@ -346,7 +346,7 @@ func Test_backoff_Do(t *testing.T) {
 		}(),
 		func() test {
 			ctx := context.Background()
-			err := errors.New("erros is occurred")
+			err := errors.New("errors is occurred")
 			cnt := 0
 			f := func(context.Context) (any, bool, error) {
 				cnt++
@@ -380,7 +380,7 @@ func Test_backoff_Do(t *testing.T) {
 		}(),
 		func() test {
 			ctx := context.Background()
-			err := errors.New("erros is occurred")
+			err := errors.New("errors is occurred")
 			cnt := 0
 			f := func(context.Context) (any, bool, error) {
 				cnt++
@@ -413,7 +413,7 @@ func Test_backoff_Do(t *testing.T) {
 		}(),
 		func() test {
 			ctx := context.Background()
-			err := errors.New("erros is occurred")
+			err := errors.New("errors is occurred")
 			f := func(context.Context) (any, bool, error) {
 				return str, true, err
 			}
@@ -442,7 +442,7 @@ func Test_backoff_Do(t *testing.T) {
 		}(),
 		func() test {
 			ctx := context.Background()
-			err := errors.New("erros is occurred")
+			err := errors.New("errors is occurred")
 			f := func(context.Context) (any, bool, error) {
 				return str, true, err
 			}
@@ -470,7 +470,7 @@ func Test_backoff_Do(t *testing.T) {
 		}(),
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
-			err := errors.New("erros is occurred")
+			err := errors.New("errors is occurred")
 			f := func(context.Context) (any, bool, error) {
 				cancel()
 				return str, true, err
@@ -499,7 +499,7 @@ func Test_backoff_Do(t *testing.T) {
 		}(),
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
-			err := errors.New("erros is occurred")
+			err := errors.New("errors is occurred")
 			cnt := 0
 			f := func(context.Context) (any, bool, error) {
 				cnt++
@@ -532,7 +532,7 @@ func Test_backoff_Do(t *testing.T) {
 		}(),
 		func() test {
 			ctx := context.Background()
-			err := errors.New("erros is occurred")
+			err := errors.New("errors is occurred")
 			cnt := 0
 			f := func(context.Context) (any, bool, error) {
 				cnt++

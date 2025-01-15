@@ -18,11 +18,10 @@
 package grpc
 
 import (
-	"os"
-
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
 )
 

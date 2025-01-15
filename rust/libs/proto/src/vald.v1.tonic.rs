@@ -5415,6 +5415,35 @@ pub mod update_client {
                 .insert(GrpcMethod::new("vald.v1.Update", "MultiUpdate"));
             self.inner.unary(req, path, codec).await
         }
+        /** A method to update timestamp an indexed vector.
+*/
+        pub async fn update_timestamp(
+            &mut self,
+            request: impl tonic::IntoRequest<
+                super::super::super::payload::v1::update::TimestampRequest,
+            >,
+        ) -> std::result::Result<
+            tonic::Response<super::super::super::payload::v1::object::Location>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/vald.v1.Update/UpdateTimestamp",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("vald.v1.Update", "UpdateTimestamp"));
+            self.inner.unary(req, path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -5460,6 +5489,17 @@ pub mod update_server {
             >,
         ) -> std::result::Result<
             tonic::Response<super::super::super::payload::v1::object::Locations>,
+            tonic::Status,
+        >;
+        /** A method to update timestamp an indexed vector.
+*/
+        async fn update_timestamp(
+            &self,
+            request: tonic::Request<
+                super::super::super::payload::v1::update::TimestampRequest,
+            >,
+        ) -> std::result::Result<
+            tonic::Response<super::super::super::payload::v1::object::Location>,
             tonic::Status,
         >;
     }
@@ -5671,6 +5711,54 @@ pub mod update_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let method = MultiUpdateSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/vald.v1.Update/UpdateTimestamp" => {
+                    #[allow(non_camel_case_types)]
+                    struct UpdateTimestampSvc<T: Update>(pub Arc<T>);
+                    impl<
+                        T: Update,
+                    > tonic::server::UnaryService<
+                        super::super::super::payload::v1::update::TimestampRequest,
+                    > for UpdateTimestampSvc<T> {
+                        type Response = super::super::super::payload::v1::object::Location;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<
+                                super::super::super::payload::v1::update::TimestampRequest,
+                            >,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Update>::update_timestamp(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = UpdateTimestampSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

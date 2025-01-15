@@ -608,19 +608,55 @@ func WithGRPCConnectionTimeout(to string) Option {
 	}
 }
 
-func WithGRPCMaxHeaderListSize(size int) Option {
+func WithGRPCMaxHeaderListSize(size uint32) Option {
 	return func(s *server) error {
 		if size > 0 {
-			s.grpc.opts = append(s.grpc.opts, grpc.MaxHeaderListSize(uint32(size)))
+			s.grpc.opts = append(s.grpc.opts, grpc.MaxHeaderListSize(size))
 		}
 		return nil
 	}
 }
 
-func WithGRPCHeaderTableSize(size int) Option {
+func WithGRPCHeaderTableSize(size uint32) Option {
 	return func(s *server) error {
 		if size > 0 {
-			s.grpc.opts = append(s.grpc.opts, grpc.HeaderTableSize(uint32(size)))
+			s.grpc.opts = append(s.grpc.opts, grpc.HeaderTableSize(size))
+		}
+		return nil
+	}
+}
+
+func WithGRPCMaxConcurrentStreams(size uint32) Option {
+	return func(s *server) error {
+		if size > 0 {
+			s.grpc.opts = append(s.grpc.opts, grpc.MaxConcurrentStreams(size))
+		}
+		return nil
+	}
+}
+
+func WithGRPCNumStreamWorkers(size uint32) Option {
+	return func(s *server) error {
+		if size > 0 {
+			s.grpc.opts = append(s.grpc.opts, grpc.NumStreamWorkers(size))
+		}
+		return nil
+	}
+}
+
+func WithGRPCSharedWriteBuffer(enable bool) Option {
+	return func(s *server) error {
+		if enable {
+			s.grpc.opts = append(s.grpc.opts, grpc.SharedWriteBuffer(enable))
+		}
+		return nil
+	}
+}
+
+func WithGRPCWaitForHandlers(wait bool) Option {
+	return func(s *server) error {
+		if wait {
+			s.grpc.opts = append(s.grpc.opts, grpc.WaitForHandlers(wait))
 		}
 		return nil
 	}

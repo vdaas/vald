@@ -3001,6 +3001,250 @@ package service
 // 	}
 // }
 //
+// func Test_faiss_UpdateTimestamp(t *testing.T) {
+// 	type args struct {
+// 		uuid  string
+// 		ts    int64
+// 		force bool
+// 	}
+// 	type fields struct {
+// 		core              core.Faiss
+// 		eg                errgroup.Group
+// 		kvs               kvs.BidiMap
+// 		fmap              map[string]int64
+// 		vq                vqueue.Queue
+// 		addVecs           []float32
+// 		addIds            []int64
+// 		isTrained         bool
+// 		trainSize         int
+// 		icnt              uint64
+// 		indexing          atomic.Value
+// 		saving            atomic.Value
+// 		lastNocie         uint64
+// 		nocie             uint64
+// 		nogce             uint64
+// 		wfci              uint64
+// 		inMem             bool
+// 		dim               int
+// 		nlist             int
+// 		m                 int
+// 		alen              int
+// 		dur               time.Duration
+// 		sdur              time.Duration
+// 		lim               time.Duration
+// 		minLit            time.Duration
+// 		maxLit            time.Duration
+// 		litFactor         time.Duration
+// 		enableProactiveGC bool
+// 		enableCopyOnWrite bool
+// 		path              string
+// 		tmpPath           atomic.Value
+// 		oldPath           string
+// 		basePath          string
+// 		dcd               bool
+// 		idelay            time.Duration
+// 		kvsdbConcurrency  int
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           uuid:"",
+// 		           ts:0,
+// 		           force:false,
+// 		       },
+// 		       fields: fields {
+// 		           core:nil,
+// 		           eg:nil,
+// 		           kvs:nil,
+// 		           fmap:nil,
+// 		           vq:nil,
+// 		           addVecs:nil,
+// 		           addIds:nil,
+// 		           isTrained:false,
+// 		           trainSize:0,
+// 		           icnt:0,
+// 		           indexing:nil,
+// 		           saving:nil,
+// 		           lastNocie:0,
+// 		           nocie:0,
+// 		           nogce:0,
+// 		           wfci:0,
+// 		           inMem:false,
+// 		           dim:0,
+// 		           nlist:0,
+// 		           m:0,
+// 		           alen:0,
+// 		           dur:nil,
+// 		           sdur:nil,
+// 		           lim:nil,
+// 		           minLit:nil,
+// 		           maxLit:nil,
+// 		           litFactor:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
+// 		           path:"",
+// 		           tmpPath:nil,
+// 		           oldPath:"",
+// 		           basePath:"",
+// 		           dcd:false,
+// 		           idelay:nil,
+// 		           kvsdbConcurrency:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           uuid:"",
+// 		           ts:0,
+// 		           force:false,
+// 		           },
+// 		           fields: fields {
+// 		           core:nil,
+// 		           eg:nil,
+// 		           kvs:nil,
+// 		           fmap:nil,
+// 		           vq:nil,
+// 		           addVecs:nil,
+// 		           addIds:nil,
+// 		           isTrained:false,
+// 		           trainSize:0,
+// 		           icnt:0,
+// 		           indexing:nil,
+// 		           saving:nil,
+// 		           lastNocie:0,
+// 		           nocie:0,
+// 		           nogce:0,
+// 		           wfci:0,
+// 		           inMem:false,
+// 		           dim:0,
+// 		           nlist:0,
+// 		           m:0,
+// 		           alen:0,
+// 		           dur:nil,
+// 		           sdur:nil,
+// 		           lim:nil,
+// 		           minLit:nil,
+// 		           maxLit:nil,
+// 		           litFactor:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
+// 		           path:"",
+// 		           tmpPath:nil,
+// 		           oldPath:"",
+// 		           basePath:"",
+// 		           dcd:false,
+// 		           idelay:nil,
+// 		           kvsdbConcurrency:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			f := &faiss{
+// 				core:              test.fields.core,
+// 				eg:                test.fields.eg,
+// 				kvs:               test.fields.kvs,
+// 				fmap:              test.fields.fmap,
+// 				vq:                test.fields.vq,
+// 				addVecs:           test.fields.addVecs,
+// 				addIds:            test.fields.addIds,
+// 				isTrained:         test.fields.isTrained,
+// 				trainSize:         test.fields.trainSize,
+// 				icnt:              test.fields.icnt,
+// 				indexing:          test.fields.indexing,
+// 				saving:            test.fields.saving,
+// 				lastNocie:         test.fields.lastNocie,
+// 				nocie:             test.fields.nocie,
+// 				nogce:             test.fields.nogce,
+// 				wfci:              test.fields.wfci,
+// 				inMem:             test.fields.inMem,
+// 				dim:               test.fields.dim,
+// 				nlist:             test.fields.nlist,
+// 				m:                 test.fields.m,
+// 				alen:              test.fields.alen,
+// 				dur:               test.fields.dur,
+// 				sdur:              test.fields.sdur,
+// 				lim:               test.fields.lim,
+// 				minLit:            test.fields.minLit,
+// 				maxLit:            test.fields.maxLit,
+// 				litFactor:         test.fields.litFactor,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				path:              test.fields.path,
+// 				tmpPath:           test.fields.tmpPath,
+// 				oldPath:           test.fields.oldPath,
+// 				basePath:          test.fields.basePath,
+// 				dcd:               test.fields.dcd,
+// 				idelay:            test.fields.idelay,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 			}
+//
+// 			err := f.UpdateTimestamp(test.args.uuid, test.args.ts, test.args.force)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
 // func Test_faiss_readyForUpdate(t *testing.T) {
 // 	type args struct {
 // 		uuid string
@@ -4434,9 +4678,10 @@ package service
 //
 // func Test_faiss_Search(t *testing.T) {
 // 	type args struct {
-// 		k  uint32
-// 		nq uint32
-// 		xq []float32
+// 		k      uint32
+// 		nprobe uint32
+// 		nq     uint32
+// 		xq     []float32
 // 	}
 // 	type fields struct {
 // 		core              core.Faiss
@@ -4505,6 +4750,7 @@ package service
 // 		       name: "test_case_1",
 // 		       args: args {
 // 		           k:0,
+// 		           nprobe:0,
 // 		           nq:0,
 // 		           xq:nil,
 // 		       },
@@ -4564,6 +4810,7 @@ package service
 // 		           name: "test_case_2",
 // 		           args: args {
 // 		           k:0,
+// 		           nprobe:0,
 // 		           nq:0,
 // 		           xq:nil,
 // 		           },
@@ -4672,7 +4919,7 @@ package service
 // 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 			}
 //
-// 			gotRes, err := f.Search(test.args.k, test.args.nq, test.args.xq)
+// 			gotRes, err := f.Search(test.args.k, test.args.nprobe, test.args.nq, test.args.xq)
 // 			if err := checkFunc(test.want, gotRes, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -5446,8 +5693,8 @@ package service
 // 		kvsdbConcurrency  int
 // 	}
 // 	type want struct {
-// 		want  uint32
-// 		want1 bool
+// 		wantOid uint32
+// 		wantOk  bool
 // 	}
 // 	type test struct {
 // 		name       string
@@ -5458,12 +5705,12 @@ package service
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got uint32, got1 bool) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 	defaultCheckFunc := func(w want, gotOid uint32, gotOk bool) error {
+// 		if !reflect.DeepEqual(gotOid, w.wantOid) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOid, w.wantOid)
 // 		}
-// 		if !reflect.DeepEqual(got1, w.want1) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
+// 		if !reflect.DeepEqual(gotOk, w.wantOk) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
 // 		}
 // 		return nil
 // 	}
@@ -5637,8 +5884,254 @@ package service
 // 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 // 			}
 //
-// 			got, got1 := f.Exists(test.args.uuid)
-// 			if err := checkFunc(test.want, got, got1); err != nil {
+// 			gotOid, gotOk := f.Exists(test.args.uuid)
+// 			if err := checkFunc(test.want, gotOid, gotOk); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_faiss_GetObject(t *testing.T) {
+// 	type args struct {
+// 		uuid string
+// 	}
+// 	type fields struct {
+// 		core              core.Faiss
+// 		eg                errgroup.Group
+// 		kvs               kvs.BidiMap
+// 		fmap              map[string]int64
+// 		vq                vqueue.Queue
+// 		addVecs           []float32
+// 		addIds            []int64
+// 		isTrained         bool
+// 		trainSize         int
+// 		icnt              uint64
+// 		indexing          atomic.Value
+// 		saving            atomic.Value
+// 		lastNocie         uint64
+// 		nocie             uint64
+// 		nogce             uint64
+// 		wfci              uint64
+// 		inMem             bool
+// 		dim               int
+// 		nlist             int
+// 		m                 int
+// 		alen              int
+// 		dur               time.Duration
+// 		sdur              time.Duration
+// 		lim               time.Duration
+// 		minLit            time.Duration
+// 		maxLit            time.Duration
+// 		litFactor         time.Duration
+// 		enableProactiveGC bool
+// 		enableCopyOnWrite bool
+// 		path              string
+// 		tmpPath           atomic.Value
+// 		oldPath           string
+// 		basePath          string
+// 		dcd               bool
+// 		idelay            time.Duration
+// 		kvsdbConcurrency  int
+// 	}
+// 	type want struct {
+// 		wantVec       []float32
+// 		wantTimestamp int64
+// 		err           error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, []float32, int64, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotVec []float32, gotTimestamp int64, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotVec, w.wantVec) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVec, w.wantVec)
+// 		}
+// 		if !reflect.DeepEqual(gotTimestamp, w.wantTimestamp) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotTimestamp, w.wantTimestamp)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           uuid:"",
+// 		       },
+// 		       fields: fields {
+// 		           core:nil,
+// 		           eg:nil,
+// 		           kvs:nil,
+// 		           fmap:nil,
+// 		           vq:nil,
+// 		           addVecs:nil,
+// 		           addIds:nil,
+// 		           isTrained:false,
+// 		           trainSize:0,
+// 		           icnt:0,
+// 		           indexing:nil,
+// 		           saving:nil,
+// 		           lastNocie:0,
+// 		           nocie:0,
+// 		           nogce:0,
+// 		           wfci:0,
+// 		           inMem:false,
+// 		           dim:0,
+// 		           nlist:0,
+// 		           m:0,
+// 		           alen:0,
+// 		           dur:nil,
+// 		           sdur:nil,
+// 		           lim:nil,
+// 		           minLit:nil,
+// 		           maxLit:nil,
+// 		           litFactor:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
+// 		           path:"",
+// 		           tmpPath:nil,
+// 		           oldPath:"",
+// 		           basePath:"",
+// 		           dcd:false,
+// 		           idelay:nil,
+// 		           kvsdbConcurrency:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           uuid:"",
+// 		           },
+// 		           fields: fields {
+// 		           core:nil,
+// 		           eg:nil,
+// 		           kvs:nil,
+// 		           fmap:nil,
+// 		           vq:nil,
+// 		           addVecs:nil,
+// 		           addIds:nil,
+// 		           isTrained:false,
+// 		           trainSize:0,
+// 		           icnt:0,
+// 		           indexing:nil,
+// 		           saving:nil,
+// 		           lastNocie:0,
+// 		           nocie:0,
+// 		           nogce:0,
+// 		           wfci:0,
+// 		           inMem:false,
+// 		           dim:0,
+// 		           nlist:0,
+// 		           m:0,
+// 		           alen:0,
+// 		           dur:nil,
+// 		           sdur:nil,
+// 		           lim:nil,
+// 		           minLit:nil,
+// 		           maxLit:nil,
+// 		           litFactor:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
+// 		           path:"",
+// 		           tmpPath:nil,
+// 		           oldPath:"",
+// 		           basePath:"",
+// 		           dcd:false,
+// 		           idelay:nil,
+// 		           kvsdbConcurrency:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			f := &faiss{
+// 				core:              test.fields.core,
+// 				eg:                test.fields.eg,
+// 				kvs:               test.fields.kvs,
+// 				fmap:              test.fields.fmap,
+// 				vq:                test.fields.vq,
+// 				addVecs:           test.fields.addVecs,
+// 				addIds:            test.fields.addIds,
+// 				isTrained:         test.fields.isTrained,
+// 				trainSize:         test.fields.trainSize,
+// 				icnt:              test.fields.icnt,
+// 				indexing:          test.fields.indexing,
+// 				saving:            test.fields.saving,
+// 				lastNocie:         test.fields.lastNocie,
+// 				nocie:             test.fields.nocie,
+// 				nogce:             test.fields.nogce,
+// 				wfci:              test.fields.wfci,
+// 				inMem:             test.fields.inMem,
+// 				dim:               test.fields.dim,
+// 				nlist:             test.fields.nlist,
+// 				m:                 test.fields.m,
+// 				alen:              test.fields.alen,
+// 				dur:               test.fields.dur,
+// 				sdur:              test.fields.sdur,
+// 				lim:               test.fields.lim,
+// 				minLit:            test.fields.minLit,
+// 				maxLit:            test.fields.maxLit,
+// 				litFactor:         test.fields.litFactor,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				path:              test.fields.path,
+// 				tmpPath:           test.fields.tmpPath,
+// 				oldPath:           test.fields.oldPath,
+// 				basePath:          test.fields.basePath,
+// 				dcd:               test.fields.dcd,
+// 				idelay:            test.fields.idelay,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 			}
+//
+// 			gotVec, gotTimestamp, err := f.GetObject(test.args.uuid)
+// 			if err := checkFunc(test.want, gotVec, gotTimestamp, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})
@@ -6095,6 +6588,244 @@ package service
 //
 // 			got := f.IsSaving()
 // 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_faiss_UUIDs(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 	}
+// 	type fields struct {
+// 		core              core.Faiss
+// 		eg                errgroup.Group
+// 		kvs               kvs.BidiMap
+// 		fmap              map[string]int64
+// 		vq                vqueue.Queue
+// 		addVecs           []float32
+// 		addIds            []int64
+// 		isTrained         bool
+// 		trainSize         int
+// 		icnt              uint64
+// 		indexing          atomic.Value
+// 		saving            atomic.Value
+// 		lastNocie         uint64
+// 		nocie             uint64
+// 		nogce             uint64
+// 		wfci              uint64
+// 		inMem             bool
+// 		dim               int
+// 		nlist             int
+// 		m                 int
+// 		alen              int
+// 		dur               time.Duration
+// 		sdur              time.Duration
+// 		lim               time.Duration
+// 		minLit            time.Duration
+// 		maxLit            time.Duration
+// 		litFactor         time.Duration
+// 		enableProactiveGC bool
+// 		enableCopyOnWrite bool
+// 		path              string
+// 		tmpPath           atomic.Value
+// 		oldPath           string
+// 		basePath          string
+// 		dcd               bool
+// 		idelay            time.Duration
+// 		kvsdbConcurrency  int
+// 	}
+// 	type want struct {
+// 		wantUuids []string
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, []string) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotUuids []string) error {
+// 		if !reflect.DeepEqual(gotUuids, w.wantUuids) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotUuids, w.wantUuids)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		       },
+// 		       fields: fields {
+// 		           core:nil,
+// 		           eg:nil,
+// 		           kvs:nil,
+// 		           fmap:nil,
+// 		           vq:nil,
+// 		           addVecs:nil,
+// 		           addIds:nil,
+// 		           isTrained:false,
+// 		           trainSize:0,
+// 		           icnt:0,
+// 		           indexing:nil,
+// 		           saving:nil,
+// 		           lastNocie:0,
+// 		           nocie:0,
+// 		           nogce:0,
+// 		           wfci:0,
+// 		           inMem:false,
+// 		           dim:0,
+// 		           nlist:0,
+// 		           m:0,
+// 		           alen:0,
+// 		           dur:nil,
+// 		           sdur:nil,
+// 		           lim:nil,
+// 		           minLit:nil,
+// 		           maxLit:nil,
+// 		           litFactor:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
+// 		           path:"",
+// 		           tmpPath:nil,
+// 		           oldPath:"",
+// 		           basePath:"",
+// 		           dcd:false,
+// 		           idelay:nil,
+// 		           kvsdbConcurrency:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           },
+// 		           fields: fields {
+// 		           core:nil,
+// 		           eg:nil,
+// 		           kvs:nil,
+// 		           fmap:nil,
+// 		           vq:nil,
+// 		           addVecs:nil,
+// 		           addIds:nil,
+// 		           isTrained:false,
+// 		           trainSize:0,
+// 		           icnt:0,
+// 		           indexing:nil,
+// 		           saving:nil,
+// 		           lastNocie:0,
+// 		           nocie:0,
+// 		           nogce:0,
+// 		           wfci:0,
+// 		           inMem:false,
+// 		           dim:0,
+// 		           nlist:0,
+// 		           m:0,
+// 		           alen:0,
+// 		           dur:nil,
+// 		           sdur:nil,
+// 		           lim:nil,
+// 		           minLit:nil,
+// 		           maxLit:nil,
+// 		           litFactor:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
+// 		           path:"",
+// 		           tmpPath:nil,
+// 		           oldPath:"",
+// 		           basePath:"",
+// 		           dcd:false,
+// 		           idelay:nil,
+// 		           kvsdbConcurrency:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			f := &faiss{
+// 				core:              test.fields.core,
+// 				eg:                test.fields.eg,
+// 				kvs:               test.fields.kvs,
+// 				fmap:              test.fields.fmap,
+// 				vq:                test.fields.vq,
+// 				addVecs:           test.fields.addVecs,
+// 				addIds:            test.fields.addIds,
+// 				isTrained:         test.fields.isTrained,
+// 				trainSize:         test.fields.trainSize,
+// 				icnt:              test.fields.icnt,
+// 				indexing:          test.fields.indexing,
+// 				saving:            test.fields.saving,
+// 				lastNocie:         test.fields.lastNocie,
+// 				nocie:             test.fields.nocie,
+// 				nogce:             test.fields.nogce,
+// 				wfci:              test.fields.wfci,
+// 				inMem:             test.fields.inMem,
+// 				dim:               test.fields.dim,
+// 				nlist:             test.fields.nlist,
+// 				m:                 test.fields.m,
+// 				alen:              test.fields.alen,
+// 				dur:               test.fields.dur,
+// 				sdur:              test.fields.sdur,
+// 				lim:               test.fields.lim,
+// 				minLit:            test.fields.minLit,
+// 				maxLit:            test.fields.maxLit,
+// 				litFactor:         test.fields.litFactor,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				path:              test.fields.path,
+// 				tmpPath:           test.fields.tmpPath,
+// 				oldPath:           test.fields.oldPath,
+// 				basePath:          test.fields.basePath,
+// 				dcd:               test.fields.dcd,
+// 				idelay:            test.fields.idelay,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 			}
+//
+// 			gotUuids := f.UUIDs(test.args.ctx)
+// 			if err := checkFunc(test.want, gotUuids); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})
@@ -8152,6 +8883,242 @@ package service
 //
 // 			err := f.Close(test.args.ctx)
 // 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_faiss_ListObjectFunc(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		fn  func(uuid string, oid uint32, ts int64) bool
+// 	}
+// 	type fields struct {
+// 		core              core.Faiss
+// 		eg                errgroup.Group
+// 		kvs               kvs.BidiMap
+// 		fmap              map[string]int64
+// 		vq                vqueue.Queue
+// 		addVecs           []float32
+// 		addIds            []int64
+// 		isTrained         bool
+// 		trainSize         int
+// 		icnt              uint64
+// 		indexing          atomic.Value
+// 		saving            atomic.Value
+// 		lastNocie         uint64
+// 		nocie             uint64
+// 		nogce             uint64
+// 		wfci              uint64
+// 		inMem             bool
+// 		dim               int
+// 		nlist             int
+// 		m                 int
+// 		alen              int
+// 		dur               time.Duration
+// 		sdur              time.Duration
+// 		lim               time.Duration
+// 		minLit            time.Duration
+// 		maxLit            time.Duration
+// 		litFactor         time.Duration
+// 		enableProactiveGC bool
+// 		enableCopyOnWrite bool
+// 		path              string
+// 		tmpPath           atomic.Value
+// 		oldPath           string
+// 		basePath          string
+// 		dcd               bool
+// 		idelay            time.Duration
+// 		kvsdbConcurrency  int
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           fn:nil,
+// 		       },
+// 		       fields: fields {
+// 		           core:nil,
+// 		           eg:nil,
+// 		           kvs:nil,
+// 		           fmap:nil,
+// 		           vq:nil,
+// 		           addVecs:nil,
+// 		           addIds:nil,
+// 		           isTrained:false,
+// 		           trainSize:0,
+// 		           icnt:0,
+// 		           indexing:nil,
+// 		           saving:nil,
+// 		           lastNocie:0,
+// 		           nocie:0,
+// 		           nogce:0,
+// 		           wfci:0,
+// 		           inMem:false,
+// 		           dim:0,
+// 		           nlist:0,
+// 		           m:0,
+// 		           alen:0,
+// 		           dur:nil,
+// 		           sdur:nil,
+// 		           lim:nil,
+// 		           minLit:nil,
+// 		           maxLit:nil,
+// 		           litFactor:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
+// 		           path:"",
+// 		           tmpPath:nil,
+// 		           oldPath:"",
+// 		           basePath:"",
+// 		           dcd:false,
+// 		           idelay:nil,
+// 		           kvsdbConcurrency:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           fn:nil,
+// 		           },
+// 		           fields: fields {
+// 		           core:nil,
+// 		           eg:nil,
+// 		           kvs:nil,
+// 		           fmap:nil,
+// 		           vq:nil,
+// 		           addVecs:nil,
+// 		           addIds:nil,
+// 		           isTrained:false,
+// 		           trainSize:0,
+// 		           icnt:0,
+// 		           indexing:nil,
+// 		           saving:nil,
+// 		           lastNocie:0,
+// 		           nocie:0,
+// 		           nogce:0,
+// 		           wfci:0,
+// 		           inMem:false,
+// 		           dim:0,
+// 		           nlist:0,
+// 		           m:0,
+// 		           alen:0,
+// 		           dur:nil,
+// 		           sdur:nil,
+// 		           lim:nil,
+// 		           minLit:nil,
+// 		           maxLit:nil,
+// 		           litFactor:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
+// 		           path:"",
+// 		           tmpPath:nil,
+// 		           oldPath:"",
+// 		           basePath:"",
+// 		           dcd:false,
+// 		           idelay:nil,
+// 		           kvsdbConcurrency:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			f := &faiss{
+// 				core:              test.fields.core,
+// 				eg:                test.fields.eg,
+// 				kvs:               test.fields.kvs,
+// 				fmap:              test.fields.fmap,
+// 				vq:                test.fields.vq,
+// 				addVecs:           test.fields.addVecs,
+// 				addIds:            test.fields.addIds,
+// 				isTrained:         test.fields.isTrained,
+// 				trainSize:         test.fields.trainSize,
+// 				icnt:              test.fields.icnt,
+// 				indexing:          test.fields.indexing,
+// 				saving:            test.fields.saving,
+// 				lastNocie:         test.fields.lastNocie,
+// 				nocie:             test.fields.nocie,
+// 				nogce:             test.fields.nogce,
+// 				wfci:              test.fields.wfci,
+// 				inMem:             test.fields.inMem,
+// 				dim:               test.fields.dim,
+// 				nlist:             test.fields.nlist,
+// 				m:                 test.fields.m,
+// 				alen:              test.fields.alen,
+// 				dur:               test.fields.dur,
+// 				sdur:              test.fields.sdur,
+// 				lim:               test.fields.lim,
+// 				minLit:            test.fields.minLit,
+// 				maxLit:            test.fields.maxLit,
+// 				litFactor:         test.fields.litFactor,
+// 				enableProactiveGC: test.fields.enableProactiveGC,
+// 				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+// 				path:              test.fields.path,
+// 				tmpPath:           test.fields.tmpPath,
+// 				oldPath:           test.fields.oldPath,
+// 				basePath:          test.fields.basePath,
+// 				dcd:               test.fields.dcd,
+// 				idelay:            test.fields.idelay,
+// 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+// 			}
+//
+// 			f.ListObjectFunc(test.args.ctx, test.args.fn)
+// 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})

@@ -1163,7 +1163,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 						// check the connection made on the same port
 						_, p, _ := net.SplitHostPort(gotConn.RemoteAddr().String())
 						if p != strconv.Itoa(int(port)) {
-							return errors.Errorf("unexcepted port number, except: %d, got: %s", port, p)
+							return errors.Errorf("unexpected port number, except: %d, got: %s", port, p)
 						}
 
 						// read the output from the server and check if it is equals to the count
@@ -1425,7 +1425,7 @@ func Test_dialer_dial(t *testing.T) {
 				return nil
 			},
 			want: want{
-				err: errors.New("missing address"),
+				err: errors.ErrInvalidAddress(TCP.String(), ""),
 			},
 		},
 		{
@@ -1452,7 +1452,7 @@ func Test_dialer_dial(t *testing.T) {
 				return nil
 			},
 			want: want{
-				err: net.UnknownNetworkError("invalid"),
+				err: errors.ErrInvalidAddress(TCP.String(), ""),
 			},
 		},
 		{
@@ -1477,7 +1477,7 @@ func Test_dialer_dial(t *testing.T) {
 				return nil
 			},
 			want: want{
-				err: net.UnknownNetworkError(""),
+				err: errors.ErrInvalidAddress(TCP.String(), ""),
 			},
 		},
 	}
@@ -1516,7 +1516,8 @@ func Test_dialer_dial(t *testing.T) {
 func Test_dialer_cacheExpireHook(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		addr string
+		addr  string
+		cache *dialerCache
 	}
 	type want struct{}
 	type test struct {
@@ -1585,7 +1586,7 @@ func Test_dialer_cacheExpireHook(t *testing.T) {
 				test.beforeFunc(d)
 			}
 
-			d.cacheExpireHook(ctx, test.args.addr)
+			d.cacheExpireHook(ctx, test.args.addr, test.args.cache)
 			if err := checkFunc(d); err != nil {
 				tt.Errorf("error = %v", err)
 			}

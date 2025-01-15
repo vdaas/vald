@@ -55,11 +55,11 @@ type discoverer struct {
 	pods            sync.Map[string, *[]pod.Pod]
 	podMetrics      sync.Map[string, mpod.Pod]
 	services        sync.Map[string, *service.Service]
-	podsByNode      atomic.Value
-	podsByNamespace atomic.Value
-	podsByName      atomic.Value
-	nodeByName      atomic.Value
-	svcsByName      atomic.Value
+	podsByNode      atomic.Pointer[map[string]map[string]map[string][]*payload.Info_Pod]
+	podsByNamespace atomic.Pointer[map[string]map[string][]*payload.Info_Pod]
+	podsByName      atomic.Pointer[map[string][]*payload.Info_Pod]
+	nodeByName      atomic.Pointer[map[string]*payload.Info_Node]
+	svcsByName      atomic.Pointer[map[string]*payload.Info_Service]
 	ctrl            k8s.Controller
 	namespace       string
 	name            string
@@ -77,11 +77,18 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
-
-	d.podsByNode.Store(make(map[string]map[string]map[string][]*payload.Info_Pod))
-	d.podsByNamespace.Store(make(map[string]map[string][]*payload.Info_Pod))
-	d.podsByName.Store(make(map[string][]*payload.Info_Pod))
-	d.nodeByName.Store(make(map[string]*payload.Info_Node))
+	var (
+		podsByNode      = make(map[string]map[string]map[string][]*payload.Info_Pod) // map[node][namespace][name][]pod
+		podsByNamespace = make(map[string]map[string][]*payload.Info_Pod)            // map[namespace][name][]pod
+		podsByName      = make(map[string][]*payload.Info_Pod)                       // map[name][]pod
+		nodeByName      = make(map[string]*payload.Info_Node)                        // map[name]node
+		svcsByName      = make(map[string]*payload.Info_Service)                     // map[name]svc
+	)
+	d.podsByNode.Store(&podsByNode)
+	d.podsByNamespace.Store(&podsByNamespace)
+	d.podsByName.Store(&podsByName)
+	d.nodeByName.Store(&nodeByName)
+	d.svcsByName.Store(&svcsByName)
 
 	var k8sOpts []k8s.Option
 	k8sOpts = append(k8sOpts,
@@ -365,7 +372,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						return true
 					}
 				})
-				d.svcsByName.Store(svcsByName)
+				d.svcsByName.Store(&svcsByName)
 
 				var wg sync.WaitGroup
 				wg.Add(1)
@@ -407,8 +414,8 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 							nodeByName[nodeName].GetPods().Pods = p
 						}
 					}
-					d.nodeByName.Store(nodeByName)
-					d.podsByNode.Store(podsByNode)
+					d.nodeByName.Store(&nodeByName)
+					d.podsByNode.Store(&podsByNode)
 					return nil
 				}))
 				wg.Add(1)
@@ -422,7 +429,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 							podsByNamespace[namespace][appName] = p
 						}
 					}
-					d.podsByNamespace.Store(podsByNamespace)
+					d.podsByNamespace.Store(&podsByNamespace)
 					return nil
 				}))
 				wg.Add(1)
@@ -434,7 +441,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						})
 						podsByName[appName] = p
 					}
-					d.podsByName.Store(podsByName)
+					d.podsByName.Store(&podsByName)
 					return nil
 				}))
 				wg.Wait()
@@ -456,8 +463,8 @@ func (d *discoverer) GetPods(req *payload.Discoverer_Request) (pods *payload.Inf
 	)
 	pods = new(payload.Info_Pods)
 	if req.GetNode() != "" && req.GetNode() != "*" {
-		pbn, ok := d.podsByNode.Load().(map[string]map[string]map[string][]*payload.Info_Pod)
-		if !ok {
+		pbn := *d.podsByNode.Load()
+		if pbn == nil {
 			return nil, errors.ErrInvalidDiscoveryCache
 		}
 		podsByNamespace, ok = pbn[req.GetNode()]
@@ -467,8 +474,8 @@ func (d *discoverer) GetPods(req *payload.Discoverer_Request) (pods *payload.Inf
 	}
 	if req.GetNamespace() != "" && req.GetNamespace() != "*" {
 		if podsByNamespace == nil {
-			podsByNamespace, ok = d.podsByNamespace.Load().(map[string]map[string][]*payload.Info_Pod)
-			if !ok {
+			podsByNamespace = *d.podsByNamespace.Load()
+			if podsByNamespace == nil {
 				return nil, errors.ErrInvalidDiscoveryCache
 			}
 		}
@@ -486,8 +493,8 @@ func (d *discoverer) GetPods(req *payload.Discoverer_Request) (pods *payload.Inf
 				}
 			}
 		} else {
-			podsByName, ok = d.podsByName.Load().(map[string][]*payload.Info_Pod)
-			if !ok {
+			podsByName = *d.podsByName.Load()
+			if podsByName == nil {
 				return nil, errors.ErrInvalidDiscoveryCache
 			}
 		}
@@ -507,15 +514,17 @@ func (d *discoverer) GetPods(req *payload.Discoverer_Request) (pods *payload.Inf
 			pods.GetPods()[i].GetNode().Pods = nil
 		}
 	}
+	slices.SortFunc(pods.Pods, func(left, right *payload.Info_Pod) int {
+		return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
+	})
 	return pods, nil
 }
 
 func (d *discoverer) GetNodes(
 	req *payload.Discoverer_Request,
 ) (nodes *payload.Info_Nodes, err error) {
-	nodes = new(payload.Info_Nodes)
-	nbn, ok := d.nodeByName.Load().(map[string]*payload.Info_Node)
-	if !ok {
+	nbn := *d.nodeByName.Load()
+	if nbn == nil {
 		return nil, errors.ErrInvalidDiscoveryCache
 	}
 	if req.GetNode() != "" && req.GetNode() != "*" {
@@ -527,10 +536,15 @@ func (d *discoverer) GetNodes(
 		if err == nil {
 			n.Pods = ps
 		}
-		nodes.Nodes = append(nodes.GetNodes(), n)
-		return nodes, nil
+		return &payload.Info_Nodes{
+			Nodes: []*payload.Info_Node{
+				n,
+			},
+		}, nil
 	}
-	ns := nodes.Nodes
+	nodes = &payload.Info_Nodes{
+		Nodes: make([]*payload.Info_Node, 0, len(nbn)),
+	}
 	for name, n := range nbn {
 		req.Node = name
 		if n.GetPods() != nil {
@@ -546,13 +560,11 @@ func (d *discoverer) GetNodes(
 				n.Pods = ps
 			}
 		}
-		ns = append(ns, n)
+		nodes.Nodes = append(nodes.Nodes, n)
 	}
-	slices.SortFunc(ns, func(left, right *payload.Info_Node) int {
+	slices.SortFunc(nodes.Nodes, func(left, right *payload.Info_Node) int {
 		return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
 	})
-
-	nodes.Nodes = ns
 	return nodes, nil
 }
 
@@ -561,8 +573,8 @@ func (d *discoverer) GetServices(
 	req *payload.Discoverer_Request,
 ) (svcs *payload.Info_Services, err error) {
 	svcs = new(payload.Info_Services)
-	sbn, ok := d.svcsByName.Load().(map[string]*payload.Info_Service)
-	if !ok {
+	sbn := *d.svcsByName.Load()
+	if sbn == nil {
 		return nil, errors.ErrInvalidDiscoveryCache
 	}
 

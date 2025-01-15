@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.7.13
+    tag: v1.7.16
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -238,16 +238,31 @@ defaults:
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.header_table_size", "type": "integer"}
             # defaults.server_config.servers.grpc.server.grpc.header_table_size -- gRPC server header table size
             header_table_size: 0
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.max_concurrent_streams", "type": "integer"}
+            # defaults.server_config.servers.grpc.server.grpc.max_concurrent_streams -- gRPC server max concurrent stream size
+            max_concurrent_streams: 0
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.num_stream_workers", "type": "integer"}
+            # defaults.server_config.servers.grpc.server.grpc.num_stream_workers -- gRPC server number of stream workers
+            num_stream_workers: 0
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.interceptors", "type": "array", "items": {"type": "string", "enum": ["RecoverInterceptor", "AccessLogInterceptor", "TraceInterceptor", "MetricInterceptor"]}}
             # defaults.server_config.servers.grpc.server.grpc.interceptors -- gRPC server interceptors
             interceptors:
               - "RecoverInterceptor"
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.shared_write_buffer", "type": "boolean"}
+            # defaults.server_config.servers.grpc.server.grpc.shared_write_buffer -- gRPC server write buffer sharing option
+            shared_write_buffer: false
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.wait_for_handlers", "type": "boolean"}
+            # defaults.server_config.servers.grpc.server.grpc.wait_for_handlers -- gRPC server wait for handlers when stop
+            wait_for_handlers: true
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_reflection", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.enable_reflection -- gRPC server reflection option
             enable_reflection: true
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_admin", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.enable_admin -- gRPC server admin option
             enable_admin: true
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_channelz", "type": "boolean"}
+            # defaults.server_config.servers.grpc.server.grpc.enable_channelz -- gRPC server channelz option
+            enable_channelz: true
           # @schema {"name": "defaults.server_config.servers.grpc.server.socket_option", "alias": "socket_option"}
           socket_option:
             # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -530,7 +545,7 @@ defaults:
             reuse_port: true
             # defaults.server_config.healths.readiness.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
             reuse_addr: true
-            # defaults.server_config.healths.readiness.server.socket_option.tcp_fast_oepn -- server listen socket option for tcp_fast_open functionality
+            # defaults.server_config.healths.readiness.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: true
             # defaults.server_config.healths.readiness.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
             tcp_no_delay: true
@@ -738,6 +753,9 @@ defaults:
         # @schema {"name": "defaults.grpc.client.max_send_msg_size", "type": "integer"}
         # defaults.grpc.client.call_option.max_send_msg_size -- gRPC client call option max send message size
         max_send_msg_size: 0
+        # @schema {"name": "defaults.grpc.client.content_subtype", "type": "string"}
+        # defaults.grpc.client.call_option.content_subtype -- gRPC client call option content subtype
+        content_subtype: ""
       # @schema {"name": "defaults.grpc.client.dial_option", "type": "object"}
       dial_option:
         # @schema {"name": "defaults.grpc.client.dial_option.write_buffer_size", "type": "integer"}
@@ -755,6 +773,12 @@ defaults:
         # @schema {"name": "defaults.grpc.client.dial_option.max_msg_size", "type": "integer"}
         # defaults.grpc.client.dial_option.max_msg_size -- gRPC client dial option max message size
         max_msg_size: 0
+        # @schema {"name": "defaults.grpc.client.dial_option.max_header_list_size", "type": "integer"}
+        # defaults.grpc.client.dial_option.max_header_list_size -- gRPC client dial option max header list size
+        max_header_list_size: 0
+        # @schema {"name": "defaults.grpc.client.dial_option.max_call_attempts", "type": "integer"}
+        # defaults.grpc.client.dial_option.max_call_attempts -- gRPC client dial option number of max call attempts
+        max_call_attempts: 0
         # @schema {"name": "defaults.grpc.client.dial_option.backoff_max_delay", "type": "string"}
         # defaults.grpc.client.dial_option.backoff_max_delay -- gRPC client dial option max backoff delay
         backoff_max_delay: "120s"
@@ -773,27 +797,45 @@ defaults:
         # @schema {"name": "defaults.grpc.client.dial_option.enable_backoff", "type": "boolean"}
         # defaults.grpc.client.dial_option.enable_backoff -- gRPC client dial option backoff enabled
         enable_backoff: false
+        # @schema {"name": "defaults.grpc.client.dial_option.disable_retry", "type": "boolean"}
+        # defaults.grpc.client.dial_option.disable_retry -- gRPC client dial option disables retry
+        disable_retry: false
         # @schema {"name": "defaults.grpc.client.dial_option.insecure", "type": "boolean"}
         # defaults.grpc.client.dial_option.insecure -- gRPC client dial option insecure enabled
         insecure: true
+        # @schema {"name": "defaults.grpc.client.dial_option.shared_write_buffer", "type": "boolean"}
+        # defaults.grpc.client.dial_option.shared_write_buffer -- gRPC client dial option sharing write buffer
+        shared_write_buffer: false
+        # @schema {"name": "defaults.grpc.client.dial_option.authority", "type": "string"}
+        # defaults.grpc.client.dial_option.authority -- gRPC client dial option authority
+        authority: ""
+        # @schema {"name": "defaults.grpc.client.dial_option.idle_timeout", "type": "string"}
+        # defaults.grpc.client.dial_option.idle_timeout -- gRPC client dial option idle_timeout
+        idle_timeout: "1h"
+        # @schema {"name": "defaults.grpc.client.dial_option.user_agent", "type": "string"}
+        # defaults.grpc.client.dial_option.user_agent -- gRPC client dial option user_agent
+        user_agent: "Vald-gRPC"
         # @schema {"name": "defaults.grpc.client.dial_option.timeout", "type": "string"}
         # defaults.grpc.client.dial_option.timeout -- gRPC client dial option timeout
         timeout: ""
-        # @schema {"name": "defaults.grpc.client.dial_option.interceptors", "type": "array", "items": {"type": "string", "enum": ["TraceInterceptor"]}}
+        # @schema {"name": "defaults.grpc.client.dial_option.interceptors", "type": "array", "items": {"type": "string", "enum": ["TraceInterceptor", "MetricInterceptor"]}}
         # defaults.grpc.client.dial_option.interceptors -- gRPC client interceptors
         interceptors: []
         # @schema {"name": "defaults.grpc.client.dial_option.net", "type": "object", "anchor": "net"}
         net:
+          # @schema {"name": "defaults.grpc.client.dial_option.net.network", "type": "string", "enum": ["tcp", "udp", "unix"]}
+          # defaults.grpc.client.dial_option.net.network -- gRPC client dialer network type
+          network: tcp
           # @schema {"name": "defaults.grpc.client.dial_option.net.dns", "type": "object"}
           dns:
             # @schema {"name": "defaults.grpc.client.dial_option.net.dns.cache_enabled", "type": "boolean"}
-            # defaults.grpc.client.dial_option.net.dns.cache_enabled -- gRPC client TCP DNS cache enabled
+            # defaults.grpc.client.dial_option.net.dns.cache_enabled -- gRPC client DNS cache enabled
             cache_enabled: true
             # @schema {"name": "defaults.grpc.client.dial_option.net.dns.refresh_duration", "type": "string"}
-            # defaults.grpc.client.dial_option.net.dns.refresh_duration -- gRPC client TCP DNS cache refresh duration
+            # defaults.grpc.client.dial_option.net.dns.refresh_duration -- gRPC client DNS cache refresh duration
             refresh_duration: 30m
             # @schema {"name": "defaults.grpc.client.dial_option.net.dns.cache_expiration", "type": "string"}
-            # defaults.grpc.client.dial_option.net.dns.cache_expiration -- gRPC client TCP DNS cache expiration
+            # defaults.grpc.client.dial_option.net.dns.cache_expiration -- gRPC client DNS cache expiration
             cache_expiration: 1h
           # @schema {"name": "defaults.grpc.client.dial_option.net.dialer", "type": "object"}
           dialer:
@@ -993,6 +1035,9 @@ gateway:
     # @schema {"name": "gateway.lb.maxUnavailable", "type": "string"}
     # gateway.lb.maxUnavailable -- maximum number of unavailable replicas
     maxUnavailable: 50%
+    # @schema {"name": "gateway.lb.unhealthyPodEvictionPolicy", "type": "string", "enum": ["AlwaysAllow", "IfHealthyBudget"]}
+    # gateway.lb.unhealthyPodEvictionPolicy -- controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.
+    unhealthyPodEvictionPolicy: "AlwaysAllow"
     # @schema {"name": "gateway.lb.revisionHistoryLimit", "type": "integer", "minimum": 0}
     # gateway.lb.revisionHistoryLimit -- number of old history to retain to allow rollback
     revisionHistoryLimit: 2
@@ -1075,11 +1120,13 @@ gateway:
         name: wait-for-discoverer
         target: discoverer
         image: busybox:stable
+        imagePullPolicy: Always
         sleepDuration: 2
       - type: wait-for
         name: wait-for-agent
         target: agent
         image: busybox:stable
+        imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "gateway.lb.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
     # gateway.lb.env -- environment variables
@@ -1275,6 +1322,9 @@ gateway:
     # @schema {"name": "gateway.filter.maxUnavailable", "type": "string"}
     # gateway.filter.maxUnavailable -- maximum number of unavailable replicas
     maxUnavailable: 50%
+    # @schema {"name": "gateway.filter.unhealthyPodEvictionPolicy", "type": "string", "enum": ["AlwaysAllow", "IfHealthyBudget"]}
+    # gateway.filter.unhealthyPodEvictionPolicy -- controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.
+    unhealthyPodEvictionPolicy: "AlwaysAllow"
     # @schema {"name": "gateway.filter.revisionHistoryLimit", "type": "integer", "minimum": 0}
     # gateway.filter.revisionHistoryLimit -- number of old history to retain to allow rollback
     revisionHistoryLimit: 2
@@ -1357,6 +1407,7 @@ gateway:
         name: wait-for-gateway-lb
         target: gateway-lb
         image: busybox:stable
+        imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "gateway.filter.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
     # gateway.filter.env -- environment variables
@@ -1562,6 +1613,9 @@ gateway:
     # @schema {"name": "gateway.mirror.maxUnavailable", "type": "string"}
     # gateway.mirror.maxUnavailable -- maximum number of unavailable replicas
     maxUnavailable: 50%
+    # @schema {"name": "gateway.mirror.unhealthyPodEvictionPolicy", "type": "string", "enum": ["AlwaysAllow", "IfHealthyBudget"]}
+    # gateway.mirror.unhealthyPodEvictionPolicy -- controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.
+    unhealthyPodEvictionPolicy: "AlwaysAllow"
     # @schema {"name": "gateway.mirror.revisionHistoryLimit", "type": "integer", "minimum": 0}
     # gateway.mirror.revisionHistoryLimit -- number of old history to retain to allow rollback
     revisionHistoryLimit: 2
@@ -1644,6 +1698,7 @@ gateway:
         name: wait-for-gateway-lb
         target: gateway-lb
         image: busybox:stable
+        imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "gateway.mirror.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
     # gateway.mirror.env -- environment variables
@@ -1772,12 +1827,14 @@ gateway:
     gateway_config:
       # @schema {"name": "gateway.mirror.gateway_config.net", "alias": "net"}
       net:
+        # gateway.mirror.gateway_config.net.network.cache_enabled -- gRPC client dialer network type
+        network: tcp
         dns:
-          # gateway.mirror.gateway_config.net.dns.cache_enabled -- TCP DNS cache enabled
+          # gateway.mirror.gateway_config.net.dns.cache_enabled -- DNS cache enabled
           cache_enabled: true
-          # gateway.mirror.gateway_config.net.dns.refresh_duration -- TCP DNS cache refresh duration
+          # gateway.mirror.gateway_config.net.dns.refresh_duration -- DNS cache refresh duration
           refresh_duration: 5m
-          # gateway.mirror.gateway_config.net.dns.cache_expiration -- TCP DNS cache expiration
+          # gateway.mirror.gateway_config.net.dns.cache_expiration -- DNS cache expiration
           cache_expiration: 24h
         dialer:
           # gateway.mirror.gateway_config.net.dialer.timeout -- TCP dialer timeout
@@ -1912,6 +1969,9 @@ agent:
   # @schema {"name": "agent.maxUnavailable", "type": "string"}
   # agent.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: "1"
+  # @schema {"name": "agent.unhealthyPodEvictionPolicy", "type": "string", "enum": ["AlwaysAllow", "IfHealthyBudget"]}
+  # agent.unhealthyPodEvictionPolicy -- controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.
+  unhealthyPodEvictionPolicy: "IfHealthyBudget"
   # @schema {"name": "agent.revisionHistoryLimit", "type": "integer", "minimum": 0}
   # agent.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
@@ -2587,12 +2647,14 @@ agent:
       client:
         # @schema {"name": "agent.sidecar.config.client.net", "alias": "net"}
         net:
+          # agent.sidecar.config.client.net.network -- gRPC client dialer network type
+          network: tcp
           dns:
-            # agent.sidecar.config.client.net.dns.cache_enabled -- HTTP client TCP DNS cache enabled
+            # agent.sidecar.config.client.net.dns.cache_enabled -- HTTP client DNS cache enabled
             cache_enabled: true
-            # agent.sidecar.config.client.net.dns.refresh_duration -- HTTP client TCP DNS cache refresh duration
+            # agent.sidecar.config.client.net.dns.refresh_duration -- HTTP client DNS cache refresh duration
             refresh_duration: 1h
-            # agent.sidecar.config.client.net.dns.refresh_duration -- HTTP client TCP DNS cache expiration
+            # agent.sidecar.config.client.net.dns.refresh_duration -- HTTP client DNS cache expiration
             cache_expiration: 24h
           dialer:
             # agent.sidecar.config.client.net.dialer.timeout -- HTTP client TCP dialer connect timeout
@@ -2747,6 +2809,9 @@ discoverer:
   # @schema {"name": "discoverer.maxUnavailable", "type": "string"}
   # discoverer.maxUnavailable -- maximum number of unavailable replicas
   maxUnavailable: 50%
+  # @schema {"name": "discoverer.unhealthyPodEvictionPolicy", "type": "string", "enum": ["AlwaysAllow", "IfHealthyBudget"]}
+  # discoverer.unhealthyPodEvictionPolicy -- controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.
+  unhealthyPodEvictionPolicy: "AlwaysAllow"
   # @schema {"name": "discoverer.revisionHistoryLimit", "type": "integer", "minimum": 0}
   # discoverer.revisionHistoryLimit -- number of old history to retain to allow rollback
   revisionHistoryLimit: 2
@@ -2962,12 +3027,14 @@ discoverer:
         fields: {}
     # @schema {"name": "discoverer.discoverer.net", "alias": "net"}
     net:
+      # discoverer.discoverer.net.network -- gRPC client dialer network type
+      network: tcp
       dns:
-        # discoverer.discoverer.net.dns.cache_enabled -- TCP DNS cache enabled
+        # discoverer.discoverer.net.dns.cache_enabled -- DNS cache enabled
         cache_enabled: true
-        # discoverer.discoverer.net.dns.refresh_duration -- TCP DNS cache refresh duration
+        # discoverer.discoverer.net.dns.refresh_duration -- DNS cache refresh duration
         refresh_duration: 5m
-        # discoverer.discoverer.net.dns.cache_expiration -- TCP DNS cache expiration
+        # discoverer.discoverer.net.dns.cache_expiration -- DNS cache expiration
         cache_expiration: 24h
       dialer:
         # discoverer.discoverer.net.dialer.timeout -- TCP dialer timeout
@@ -3068,6 +3135,9 @@ manager:
     # @schema {"name": "manager.index.maxUnavailable", "type": "string"}
     # manager.index.maxUnavailable -- maximum number of unavailable replicas
     maxUnavailable: 50%
+    # @schema {"name": "manager.index.unhealthyPodEvictionPolicy", "type": "string", "enum": ["AlwaysAllow", "IfHealthyBudget"]}
+    # manager.index.unhealthyPodEvictionPolicy -- controls whether unhealthy pods can be evicted based on the application's healthy pod count, supporting either cautious or permissive eviction.
+    unhealthyPodEvictionPolicy: "AlwaysAllow"
     # @schema {"name": "manager.index.revisionHistoryLimit", "type": "integer", "minimum": 0}
     # manager.index.revisionHistoryLimit -- number of old history to retain to allow rollback
     revisionHistoryLimit: 2
@@ -3133,11 +3203,13 @@ manager:
         name: wait-for-agent
         target: agent
         image: busybox:stable
+        imagePullPolicy: Always
         sleepDuration: 2
       - type: wait-for
         name: wait-for-discoverer
         target: discoverer
         image: busybox:stable
+        imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "manager.index.env", "alias": "env"}
     # manager.index.env -- environment variables
@@ -3293,11 +3365,13 @@ manager:
           name: wait-for-agent
           target: agent
           image: busybox:stable
+          imagePullPolicy: Always
           sleepDuration: 2
         - type: wait-for
           name: wait-for-discoverer
           target: discoverer
           image: busybox:stable
+          imagePullPolicy: Always
           sleepDuration: 2
       # @schema {"name": "manager.index.corrector.env", "alias": "env"}
       # manager.index.corrector.env -- environment variables
@@ -3353,6 +3427,30 @@ manager:
       # @schema {"name": "manager.index.corrector.node_name", "type": "string"}
       # manager.index.corrector.node_name -- node name
       node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.corrector.nodeSelector", "alias": "nodeSelector"}
+      # manager.index.corrector.nodeSelector -- node selector
+      nodeSelector: {}
+      # @schema {"name": "manager.index.corrector.tolerations", "alias": "tolerations"}
+      # manager.index.corrector.tolerations -- tolerations
+      tolerations: []
+      # @schema {"name": "manager.index.corrector.affinity", "alias": "affinity"}
+      affinity:
+        nodeAffinity:
+          # manager.index.corrector.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          requiredDuringSchedulingIgnoredDuringExecution:
+            # manager.index.corrector.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+            nodeSelectorTerms: []
+        podAffinity:
+          # manager.index.corrector.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          # manager.index.corrector.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+          requiredDuringSchedulingIgnoredDuringExecution: []
+        podAntiAffinity:
+          # manager.index.corrector.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          # manager.index.corrector.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+          requiredDuringSchedulingIgnoredDuringExecution: []
       # @schema {"name": "manager.index.corrector.gateway", "alias": "grpc.client"}
       # manager.index.corrector.gateway -- gRPC client for gateway (overrides defaults.grpc.client)
       gateway: {}
@@ -3403,11 +3501,13 @@ manager:
           name: wait-for-agent
           target: agent
           image: busybox:stable
+          imagePullPolicy: Always
           sleepDuration: 2
         - type: wait-for
           name: wait-for-discoverer
           target: discoverer
           image: busybox:stable
+          imagePullPolicy: Always
           sleepDuration: 2
       # @schema {"name": "manager.index.creator.env", "alias": "env"}
       # manager.index.creator.env -- environment variables
@@ -3463,6 +3563,30 @@ manager:
       # @schema {"name": "manager.index.creator.node_name", "type": "string"}
       # manager.index.creator.node_name -- node name
       node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.creator.nodeSelector", "alias": "nodeSelector"}
+      # manager.index.creator.nodeSelector -- node selector
+      nodeSelector: {}
+      # @schema {"name": "manager.index.creator.tolerations", "alias": "tolerations"}
+      # manager.index.creator.tolerations -- tolerations
+      tolerations: []
+      # @schema {"name": "manager.index.creator.affinity", "alias": "affinity"}
+      affinity:
+        nodeAffinity:
+          # manager.index.creator.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          requiredDuringSchedulingIgnoredDuringExecution:
+            # manager.index.creator.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+            nodeSelectorTerms: []
+        podAffinity:
+          # manager.index.creator.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          # manager.index.creator.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+          requiredDuringSchedulingIgnoredDuringExecution: []
+        podAntiAffinity:
+          # manager.index.creator.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          # manager.index.creator.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+          requiredDuringSchedulingIgnoredDuringExecution: []
       # @schema {"name": "manager.index.creator.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "manager.index.creator.discoverer.duration", "type": "string"}
@@ -3510,11 +3634,13 @@ manager:
           name: wait-for-agent
           target: agent
           image: busybox:stable
+          imagePullPolicy: Always
           sleepDuration: 2
         - type: wait-for
           name: wait-for-discoverer
           target: discoverer
           image: busybox:stable
+          imagePullPolicy: Always
           sleepDuration: 2
       # @schema {"name": "manager.index.saver.env", "alias": "env"}
       # manager.index.saver.env -- environment variables
@@ -3567,6 +3693,30 @@ manager:
       # @schema {"name": "manager.index.saver.node_name", "type": "string"}
       # manager.index.saver.node_name -- node name
       node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.saver.nodeSelector", "alias": "nodeSelector"}
+      # manager.index.saver.nodeSelector -- node selector
+      nodeSelector: {}
+      # @schema {"name": "manager.index.saver.tolerations", "alias": "tolerations"}
+      # manager.index.saver.tolerations -- tolerations
+      tolerations: []
+      # @schema {"name": "manager.index.saver.affinity", "alias": "affinity"}
+      affinity:
+        nodeAffinity:
+          # manager.index.saver.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          requiredDuringSchedulingIgnoredDuringExecution:
+            # manager.index.saver.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+            nodeSelectorTerms: []
+        podAffinity:
+          # manager.index.saver.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          # manager.index.saver.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+          requiredDuringSchedulingIgnoredDuringExecution: []
+        podAntiAffinity:
+          # manager.index.saver.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          # manager.index.saver.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+          requiredDuringSchedulingIgnoredDuringExecution: []
       # @schema {"name": "manager.index.saver.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "manager.index.saver.discoverer.duration", "type": "string"}

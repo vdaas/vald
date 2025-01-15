@@ -18,14 +18,19 @@
 package health
 
 import (
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"google.golang.org/grpc/health"
-	"google.golang.org/grpc/health/grpc_health_v1"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 // Register register the generic gRPC health check server implementation to the srv.
-func Register(name string, srv *grpc.Server) {
-	server := health.NewServer()
-	grpc_health_v1.RegisterHealthServer(srv, server)
-	server.SetServingStatus(name, grpc_health_v1.HealthCheckResponse_SERVING)
+func Register(srv *grpc.Server) {
+	hsrv := health.NewServer()
+	healthpb.RegisterHealthServer(srv, hsrv)
+	for api := range srv.GetServiceInfo() {
+		hsrv.SetServingStatus(api, healthpb.HealthCheckResponse_SERVING)
+		log.Debug("gRPC health check server registered for service:\t" + api)
+	}
+	hsrv.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
 }

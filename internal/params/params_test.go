@@ -285,7 +285,7 @@ func Test_parser_Parse(t *testing.T) {
 			beforeFunc: func(t *testing.T) {
 				t.Helper()
 				os.Args = []string{
-					"test", "--path=config.yml",
+					"test", "--path=config.yaml",
 				}
 			},
 			afterFunc: func(t *testing.T) {
@@ -296,7 +296,7 @@ func Test_parser_Parse(t *testing.T) {
 				want1: true,
 				err: &os.PathError{
 					Op:   "stat",
-					Path: "config.yml",
+					Path: "config.yaml",
 					Err:  syscall.Errno(0x2),
 				},
 			},

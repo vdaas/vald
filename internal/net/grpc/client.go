@@ -19,7 +19,9 @@ package grpc
 
 import (
 	"context"
+	"maps"
 	"math"
+	"slices"
 	"sync/atomic"
 	"time"
 
@@ -87,30 +89,32 @@ type Client interface {
 	GetDialOption() []DialOption
 	GetCallOption() []CallOption
 	GetBackoff() backoff.Backoff
+	SetDisableResolveDNSAddr(addr string, disabled bool)
 	ConnectedAddrs() []string
 	Close(ctx context.Context) error
 }
 
 type gRPCClient struct {
-	addrs               map[string]struct{}
-	poolSize            uint64
-	clientCount         uint64
-	conns               sync.Map[string, pool.Conn]
-	hcDur               time.Duration
-	prDur               time.Duration
-	dialer              net.Dialer
-	enablePoolRebalance bool
-	resolveDNS          bool
-	dopts               []DialOption
-	copts               []CallOption
-	roccd               string // reconnection old connection closing duration
-	eg                  errgroup.Group
-	bo                  backoff.Backoff
-	cb                  circuitbreaker.CircuitBreaker
-	gbo                 gbackoff.Config // grpc's original backoff configuration
-	mcd                 time.Duration   // minimum connection timeout duration
-	group               singleflight.Group[pool.Conn]
-	crl                 sync.Map[string, bool] // connection request list
+	addrs                  map[string]struct{}
+	poolSize               uint64
+	clientCount            uint64
+	conns                  sync.Map[string, pool.Conn]
+	hcDur                  time.Duration
+	prDur                  time.Duration
+	dialer                 net.Dialer
+	enablePoolRebalance    bool
+	disableResolveDNSAddrs sync.Map[string, bool]
+	resolveDNS             bool
+	dopts                  []DialOption
+	copts                  []CallOption
+	roccd                  string // reconnection old connection closing duration
+	eg                     errgroup.Group
+	bo                     backoff.Backoff
+	cb                     circuitbreaker.CircuitBreaker
+	gbo                    gbackoff.Config // grpc's original backoff configuration
+	mcd                    time.Duration   // minimum connection timeout duration
+	group                  singleflight.Group[pool.Conn]
+	crl                    sync.Map[string, bool] // connection request list
 
 	ech            <-chan error
 	monitorRunning atomic.Bool
@@ -142,6 +146,9 @@ func New(opts ...Option) (c Client) {
 			MinConnectTimeout: g.mcd,
 		},
 	))
+	if g.copts != nil && len(g.copts) != 0 {
+		g.dopts = append(g.dopts, grpc.WithDefaultCallOptions(g.copts...))
+	}
 	g.monitorRunning.Store(false)
 	return g
 }
@@ -153,11 +160,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 	}
 	g.monitorRunning.Store(true)
 
-	addrs := make([]string, len(g.addrs))
-	for addr := range g.addrs {
-		addrs = append(addrs, addr)
-	}
-
+	addrs := slices.Collect(maps.Keys(g.addrs))
 	if g.dialer != nil {
 		g.dialer.StartDialerCache(ctx)
 	}
@@ -165,7 +168,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 	ech := make(chan error, len(addrs))
 	for _, addr := range addrs {
 		if addr != "" {
-			_, err := g.Connect(ctx, addr, grpc.WithBlock())
+			_, err := g.Connect(ctx, addr)
 			if err != nil {
 				if !errors.Is(err, context.Canceled) &&
 					!errors.Is(err, context.DeadlineExceeded) &&
@@ -946,6 +949,12 @@ func (g *gRPCClient) GetBackoff() backoff.Backoff {
 	return g.bo
 }
 
+func (g *gRPCClient) SetDisableResolveDNSAddr(addr string, disabled bool) {
+	// NOTE: When connecting to multiple locations, it was necessary to switch dynamically, so implementation was added.
+	// There is no setting for disable on the helm chart side, so I used this implementation.
+	g.disableResolveDNSAddrs.Store(addr, disabled)
+}
+
 func (g *gRPCClient) Connect(
 	ctx context.Context, addr string, dopts ...DialOption,
 ) (conn pool.Conn, err error) {
@@ -975,7 +984,13 @@ func (g *gRPCClient) Connect(
 			pool.WithAddr(addr),
 			pool.WithSize(g.poolSize),
 			pool.WithDialOptions(append(g.dopts, dopts...)...),
-			pool.WithResolveDNS(g.resolveDNS),
+			pool.WithResolveDNS(func() bool {
+				disabled, ok := g.disableResolveDNSAddrs.Load(addr)
+				if ok && disabled {
+					return false
+				}
+				return g.resolveDNS
+			}()),
 		}
 		if g.bo != nil {
 			opts = append(opts, pool.WithBackoff(g.bo))

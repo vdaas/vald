@@ -133,6 +133,7 @@ type Client interface {
 	CreateIndex(t *testing.T, ctx context.Context) error
 	SaveIndex(t *testing.T, ctx context.Context) error
 	IndexInfo(t *testing.T, ctx context.Context) (*payload.Info_Index_Count, error)
+	IndexDetail(t *testing.T, ctx context.Context) (*payload.Info_Index_Detail, error)
 }
 
 type client struct {
@@ -150,7 +151,7 @@ func New(host string, port int) (Client, error) {
 }
 
 func (c *client) CreateIndex(t *testing.T, ctx context.Context) error {
-	client, err := c.getAgentClient(ctx)
+	client, err := c.getAgentClient()
 	if err != nil {
 		return err
 	}
@@ -163,7 +164,7 @@ func (c *client) CreateIndex(t *testing.T, ctx context.Context) error {
 }
 
 func (c *client) SaveIndex(t *testing.T, ctx context.Context) error {
-	client, err := c.getAgentClient(ctx)
+	client, err := c.getAgentClient()
 	if err != nil {
 		return err
 	}
@@ -174,7 +175,7 @@ func (c *client) SaveIndex(t *testing.T, ctx context.Context) error {
 }
 
 func (c *client) IndexInfo(t *testing.T, ctx context.Context) (*payload.Info_Index_Count, error) {
-	client, err := c.getClient(ctx)
+	client, err := c.getClient()
 	if err != nil {
 		return nil, err
 	}
@@ -182,9 +183,19 @@ func (c *client) IndexInfo(t *testing.T, ctx context.Context) (*payload.Info_Ind
 	return client.IndexInfo(ctx, &payload.Empty{})
 }
 
-func (c *client) getGRPCConn(ctx context.Context) (*grpc.ClientConn, error) {
-	return grpc.DialContext(
-		ctx,
+func (c *client) IndexDetail(
+	t *testing.T, ctx context.Context,
+) (*payload.Info_Index_Detail, error) {
+	client, err := c.getClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return client.IndexDetail(ctx, &payload.Empty{})
+}
+
+func (c *client) getGRPCConn() (*grpc.ClientConn, error) {
+	return grpc.NewClient(
 		c.host+":"+strconv.Itoa(c.port),
 		grpc.WithInsecure(),
 		grpc.WithKeepaliveParams(
@@ -197,8 +208,8 @@ func (c *client) getGRPCConn(ctx context.Context) (*grpc.ClientConn, error) {
 	)
 }
 
-func (c *client) getClient(ctx context.Context) (vald.Client, error) {
-	conn, err := c.getGRPCConn(ctx)
+func (c *client) getClient() (vald.Client, error) {
+	conn, err := c.getGRPCConn()
 	if err != nil {
 		return nil, err
 	}
@@ -206,8 +217,8 @@ func (c *client) getClient(ctx context.Context) (vald.Client, error) {
 	return vald.NewValdClient(conn), nil
 }
 
-func (c *client) getAgentClient(ctx context.Context) (core.AgentClient, error) {
-	conn, err := c.getGRPCConn(ctx)
+func (c *client) getAgentClient() (core.AgentClient, error) {
+	conn, err := c.getGRPCConn()
 	if err != nil {
 		return nil, err
 	}

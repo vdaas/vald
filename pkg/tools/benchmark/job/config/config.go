@@ -112,7 +112,7 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 		if jobResource.Spec.ServerConfig != nil {
 			overrideCfg.Server = (*jobResource.Spec.ServerConfig).Bind()
 		}
-		// jobResource.Spec has another field comparering Config.Job, so json.Marshal and Unmarshal are used for embedding field value of Config.Job from jobResource.Spec
+		// jobResource.Spec has another field comparing Config.Job, so json.Marshal and Unmarshal are used for embedding field value of Config.Job from jobResource.Spec
 		var overrideJobCfg config.BenchmarkJob
 		b, err := json.Marshal(*jobResource.Spec.DeepCopy())
 		if err == nil {

@@ -33,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/singleflight"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -43,8 +44,9 @@ var (
 		// !!! These fields will not be verified in the entire test
 		// Do not validate C dependencies
 		comparator.IgnoreFields(ngt{},
-			"dimension", "prop", "epool", "index", "ospace", "eps"),
+			"dimension", "prop", "epool", "index", "ospace", "eps", "group"),
 		comparator.RWMutexComparer,
+		comparator.MutexComparer,
 		comparator.ErrorComparer,
 		comparator.AtomicUint64Comparator,
 	}
@@ -103,7 +105,7 @@ func TestNew(t *testing.T) {
 		beforeFunc  func(args)
 		afterFunc   func(*testing.T, NGT) error
 	}
-	defaultComprators := append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
+	defaultComparators := append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
 		return s1 == s2
 	})))
 	defaultCheckFunc := func(w want, got NGT, err error, comparators ...comparator.Option) error {
@@ -140,8 +142,10 @@ func TestNew(t *testing.T) {
 						bulkInsertChunkSize: 100,
 						ces:                 10,
 						objectType:          Float,
-						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
+						mu:                  new(sync.RWMutex),
+						cmu:                 new(sync.RWMutex),
+						smu:                 new(sync.Mutex),
+						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
 					},
 				},
@@ -168,8 +172,10 @@ func TestNew(t *testing.T) {
 						poolSize:            DefaultPoolSize,
 						bulkInsertChunkSize: 100,
 						objectType:          Float,
-						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
+						mu:                  new(sync.RWMutex),
+						cmu:                 new(sync.RWMutex),
+						smu:                 new(sync.Mutex),
+						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
 					},
 				},
@@ -195,8 +201,10 @@ func TestNew(t *testing.T) {
 						poolSize:            100,
 						bulkInsertChunkSize: 100,
 						objectType:          Uint8,
-						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
+						mu:                  new(sync.RWMutex),
+						cmu:                 new(sync.RWMutex),
+						smu:                 new(sync.Mutex),
+						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
 					},
 				},
@@ -234,7 +242,7 @@ func TestNew(t *testing.T) {
 			}
 			comparators := test.comparators
 			if test.comparators == nil || len(test.comparators) == 0 {
-				comparators = defaultComprators
+				comparators = defaultComparators
 			}
 
 			got, err := New(test.args.opts...)
@@ -326,8 +334,10 @@ func TestLoad(t *testing.T) {
 						poolSize:            DefaultPoolSize,
 						bulkInsertChunkSize: 100,
 						objectType:          Uint8,
-						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
+						mu:                  new(sync.RWMutex),
+						cmu:                 new(sync.RWMutex),
+						smu:                 new(sync.Mutex),
+						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
 					},
 				},
@@ -394,8 +404,10 @@ func TestLoad(t *testing.T) {
 						poolSize:            DefaultPoolSize,
 						bulkInsertChunkSize: 100,
 						objectType:          Uint8,
-						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
+						mu:                  new(sync.RWMutex),
+						cmu:                 new(sync.RWMutex),
+						smu:                 new(sync.Mutex),
+						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
 					},
 				},
@@ -462,8 +474,10 @@ func TestLoad(t *testing.T) {
 						poolSize:            DefaultPoolSize,
 						bulkInsertChunkSize: 100,
 						objectType:          Float,
-						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
+						mu:                  new(sync.RWMutex),
+						cmu:                 new(sync.RWMutex),
+						smu:                 new(sync.Mutex),
+						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
 					},
 				},
@@ -530,8 +544,10 @@ func TestLoad(t *testing.T) {
 						poolSize:            DefaultPoolSize,
 						bulkInsertChunkSize: 100,
 						objectType:          Float,
-						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
+						mu:                  new(sync.RWMutex),
+						cmu:                 new(sync.RWMutex),
+						smu:                 new(sync.Mutex),
+						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
 					},
 				},
@@ -692,7 +708,7 @@ func Test_gen(t *testing.T) {
 		beforeFunc  func(*testing.T, args)
 		afterFunc   func(*testing.T, NGT) error
 	}
-	defaultComprators := append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
+	defaultComparators := append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
 		return s1 == s2
 	})))
 	defaultCheckFunc := func(_ context.Context, w want, got NGT, err error, comparators ...comparator.Option) error {
@@ -728,8 +744,10 @@ func Test_gen(t *testing.T) {
 					poolSize:            DefaultPoolSize,
 					bulkInsertChunkSize: 100,
 					objectType:          Float,
-					mu:                  &sync.RWMutex{},
-					cmu:                 &sync.RWMutex{},
+					mu:                  new(sync.RWMutex),
+					cmu:                 new(sync.RWMutex),
+					smu:                 new(sync.Mutex),
+					group:               singleflight.New[*GraphStatistics](),
 					epl:                 DefaultErrorBufferLimit,
 				},
 			},
@@ -777,8 +795,10 @@ func Test_gen(t *testing.T) {
 						poolSize:            DefaultPoolSize,
 						bulkInsertChunkSize: 100,
 						objectType:          Uint8,
-						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
+						mu:                  new(sync.RWMutex),
+						cmu:                 new(sync.RWMutex),
+						smu:                 new(sync.Mutex),
+						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
 					},
 				},
@@ -839,7 +859,7 @@ func Test_gen(t *testing.T) {
 			}
 			comparators := test.comparators
 			if test.comparators == nil || len(test.comparators) == 0 {
-				comparators = defaultComprators
+				comparators = defaultComparators
 			}
 
 			got, err := gen(test.args.isLoad, test.args.opts...)
@@ -1049,7 +1069,7 @@ func Test_ngt_loadOptions(t *testing.T) {
 			},
 		},
 		{
-			name: "load option failed with Ignoreable error",
+			name: "load option failed with Ignorable error",
 			args: args{
 				opts: []Option{
 					func(n *ngt) error {
@@ -1107,7 +1127,7 @@ func Test_ngt_loadOptions(t *testing.T) {
 func Test_ngt_create(t *testing.T) {
 	// This test is skipped because it requires ngt.prop to be set probably.
 	// We cannot initialize ngt.prop since it is C dependencies.
-	// This function is called by New(), and the ngt.prop is destoried in New(), so we cannot test this function individually.
+	// This function is called by New(), and the ngt.prop is destroyed in New(), so we cannot test this function individually.
 	t.SkipNow()
 }
 
@@ -1123,6 +1143,7 @@ func Test_ngt_open(t *testing.T) {
 		poolSize            uint32
 		mu                  *sync.RWMutex
 		cmu                 *sync.RWMutex
+		smu                 *sync.Mutex
 	}
 	type want struct {
 		err error
@@ -1148,6 +1169,7 @@ func Test_ngt_open(t *testing.T) {
 			epsilon:             fields.epsilon,
 			poolSize:            fields.poolSize,
 			mu:                  fields.mu,
+			smu:                 fields.smu,
 		}
 		if err := n.setup(); err != nil {
 			t.Error(err)
@@ -1171,6 +1193,7 @@ func Test_ngt_open(t *testing.T) {
 				objectType: Float,
 				mu:         &sync.RWMutex{},
 				cmu:        &sync.RWMutex{},
+				smu:        &sync.Mutex{},
 			},
 			beforeFunc: func(t *testing.T, fields fields) {
 				t.Helper()
@@ -1206,6 +1229,7 @@ func Test_ngt_open(t *testing.T) {
 				objectType: Float,
 				mu:         &sync.RWMutex{},
 				cmu:        &sync.RWMutex{},
+				smu:        &sync.Mutex{},
 			},
 			want: want{
 				err: errors.ErrIndexFileNotFound,
@@ -1220,6 +1244,7 @@ func Test_ngt_open(t *testing.T) {
 				objectType: Float,
 				mu:         &sync.RWMutex{},
 				cmu:        &sync.RWMutex{},
+				smu:        &sync.Mutex{},
 			},
 			beforeFunc: func(t *testing.T, fields fields) {
 				t.Helper()
@@ -1476,7 +1501,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "resturn vector id after the nearby vector inserted (uint8)",
+			name: "return vector id after the nearby vector inserted (uint8)",
 			args: args{
 				ctx:  context.Background(),
 				vec:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9},
@@ -1653,7 +1678,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "resturn vector id after the nearby vector inserted (float)",
+			name: "return vector id after the nearby vector inserted (float)",
 			args: args{
 				ctx:  context.Background(),
 				vec:  []float32{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.91},
@@ -2281,7 +2306,8 @@ func Test_ngt_InsertCommit(t *testing.T) {
 		{
 			name: "return object id when object type is uint8",
 			args: args{
-				vec: []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
+				vec:      []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:    idxTempDir(t),
@@ -2296,7 +2322,8 @@ func Test_ngt_InsertCommit(t *testing.T) {
 		{
 			name: "return object id when object type is uint8 and all vector elem are 0",
 			args: args{
-				vec: []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
+				vec:      []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:    idxTempDir(t),
@@ -2315,6 +2342,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 					math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8,
 					math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8,
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:    idxTempDir(t),
@@ -2333,6 +2361,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 					math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8,
 					math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8,
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:    idxTempDir(t),
@@ -2347,7 +2376,8 @@ func Test_ngt_InsertCommit(t *testing.T) {
 		{
 			name: "return object id when object type is float",
 			args: args{
-				vec: []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
+				vec:      []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:    idxTempDir(t),
@@ -2362,7 +2392,8 @@ func Test_ngt_InsertCommit(t *testing.T) {
 		{
 			name: "return object id when object type is float and all vector elem are 0",
 			args: args{
-				vec: []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
+				vec:      []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:    idxTempDir(t),
@@ -2381,6 +2412,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 					math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32,
 					math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32,
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:    idxTempDir(t),
@@ -2399,6 +2431,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 					math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32,
 					math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32,
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:    idxTempDir(t),
@@ -2413,7 +2446,8 @@ func Test_ngt_InsertCommit(t *testing.T) {
 		{
 			name: "return error if dimension is not the same as insert vector",
 			args: args{
-				vec: []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
+				vec:      []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:    idxTempDir(t),
@@ -2865,6 +2899,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				vecs: [][]float32{
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:             idxTempDir(t),
@@ -2888,6 +2923,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 					{3, 4, 5, 6, 7, 8, 9, 10, 11},
 					{4, 5, 6, 7, 8, 9, 10, 11, 12},
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:             idxTempDir(t),
@@ -2908,6 +2944,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:             idxTempDir(t),
@@ -2930,6 +2967,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 					{0, 1, 2, 3, 4, 5, 6, 7},
 					{0, 1, 2, 3, 4, 5, 6, 7, 8, 10},
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:             idxTempDir(t),
@@ -2953,6 +2991,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				vecs: [][]float32{
 					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:             idxTempDir(t),
@@ -2976,6 +3015,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 					{0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 0.11},
 					{0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 0.11, 0.12},
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:             idxTempDir(t),
@@ -2996,6 +3036,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
 					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:             idxTempDir(t),
@@ -3018,6 +3059,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7},
 					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.10},
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:             idxTempDir(t),
@@ -3147,6 +3189,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
+				poolSize:            uint32(1),
 			},
 		},
 		{
@@ -3187,6 +3230,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 					bulkInsertChunkSize: 100,
 					dimension:           9,
 					objectType:          Float,
+					poolSize:            uint32(1),
 				},
 				createFunc: func(t *testing.T, f fields) (NGT, error) {
 					t.Helper()
@@ -3246,6 +3290,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 					bulkInsertChunkSize: 5,
 					dimension:           9,
 					objectType:          Float,
+					poolSize:            uint32(1),
 				},
 				createFunc: func(t *testing.T, f fields) (NGT, error) {
 					t.Helper()
@@ -3291,6 +3336,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
+				poolSize:            uint32(1),
 			},
 		},
 	}
@@ -3406,6 +3452,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
+				poolSize:            uint32(1),
 			},
 		},
 		{

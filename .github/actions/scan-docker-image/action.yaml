@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 name: "Scan the Docker image"
-description: "A action to scan the Docker image"
+description: "An action to scan the Docker image"
 inputs:
   image_ref:
     description: "Docker image reference"

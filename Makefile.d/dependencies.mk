@@ -17,6 +17,7 @@
 .PHONY: update/libs
 ## update vald libraries including tools
 update/libs: \
+	update/buf \
 	update/chaos-mesh \
 	update/cmake \
 	update/docker \
@@ -38,8 +39,8 @@ update/libs: \
 	update/reviewdog \
 	update/rust \
 	update/telepresence \
+	update/usearch \
 	update/vald \
-	update/valdcli \
 	update/yq \
 	update/zlib
 
@@ -52,6 +53,7 @@ go/download:
 ## install Go package dependencies
 go/deps: \
 	update/go
+	head -n -1 $(ROOTDIR)/hack/go.mod.default | awk 'NR>=6 && $$0 !~ /(upgrade|latest|master|main)/' | sort
 	sed -i "3s/go [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?/go $(GO_VERSION)/g" $(ROOTDIR)/hack/go.mod.default
 	if $(GO_CLEAN_DEPS); then \
         	rm -rf $(ROOTDIR)/vendor \
@@ -152,6 +154,11 @@ update/helm-docs:
 update/protobuf:
 	curl -fsSL https://api.github.com/repos/protocolbuffers/protobuf/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/PROTOBUF_VERSION
 
+.PHONY: update/buf
+## update buf version
+update/buf:
+	curl -fsSL https://api.github.com/repos/bufbuild/buf/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/BUF_VERSION
+
 .PHONY: update/kind
 ## update kind (kubernetes in docker) version
 update/kind:
@@ -192,6 +199,11 @@ update/ngt:
 update/faiss:
 	curl -fsSL https://api.github.com/repos/facebookresearch/faiss/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/FAISS_VERSION
 
+.PHONY: update/usearch
+## update usearch version
+update/usearch:
+	curl -fsSL https://api.github.com/repos/unum-cloud/usearch/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/USEARCH_VERSION
+
 .PHONY: update/cmake
 ## update CMAKE version
 update/cmake:
@@ -226,11 +238,6 @@ update/hdf5:
 ## update vald it's self version
 update/vald:
 	curl -fsSL https://api.github.com/repos/$(REPO)/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/VALD_VERSION
-
-.PHONY: update/valdcli
-## update vald client library made by clojure self version
-update/valdcli:
-	curl -fsSL https://api.github.com/repos/$(REPO)-client-clj/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/VALDCLI_VERSION
 
 .PHONY: update/template
 ## update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE

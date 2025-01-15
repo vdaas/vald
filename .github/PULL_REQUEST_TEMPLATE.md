@@ -3,7 +3,7 @@
 ### Description
 
 <!-- Describe your changes in detail -->
-<!-- It would be better to describe the details especially What changed and Why you changed -->
+<!-- It would be better to describe the details, especially What changed and Why you changed -->
 
 ### Related Issue
 
@@ -15,14 +15,14 @@
 ### Versions
 
 <!--- Please change the versions below along with your environment -->
-- Vald Version: v1.7.13
-- Go Version: v1.23.0
-- Rust Version: v1.80.0
-- Docker Version: v27.1.1
-- Kubernetes Version: v1.30.3
-- Helm Version: v3.15.3
-- NGT Version: v2.2.4
-- Faiss Version: v1.8.0
+- Vald Version: v1.7.15
+- Go Version: v1.23.4
+- Rust Version: v1.83.0
+- Docker Version: v27.4.0
+- Kubernetes Version: v1.32.0
+- Helm Version: v3.16.3
+- NGT Version: v2.3.5
+- Faiss Version: v1.9.0
 
 ### Checklist
 
@@ -34,4 +34,4 @@
 
 ### Special notes for your reviewer
 
-<!-- Please tell us anything you would like to share to reviewers related this PR -->
+<!-- Please tell us anything you would like to share with reviewers related to this PR. Your thoughts and feedback are highly valued -->

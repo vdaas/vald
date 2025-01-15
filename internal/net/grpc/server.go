@@ -112,3 +112,67 @@ func MaxHeaderListSize(size uint32) ServerOption {
 func HeaderTableSize(size uint32) ServerOption {
 	return grpc.HeaderTableSize(size)
 }
+
+// MaxConcurrentStreams returns a ServerOption that will apply a limit on the number of concurrent streams to each ServerTransport.
+func MaxConcurrentStreams(n uint32) ServerOption {
+	return grpc.MaxConcurrentStreams(n)
+}
+
+// NumStreamWorkers returns a ServerOption that sets the number of worker goroutines that should be used to process incoming streams. Setting this to zero
+// (default) will disable workers and spawn a new goroutine for each stream.
+func NumStreamWorkers(n uint32) ServerOption {
+	return grpc.NumStreamWorkers(n)
+}
+
+// SharedWriteBuffer allows reusing per-connection transport write buffer. If this option is set to true every connection will release the buffer after flushing
+// the data on the wire.
+func SharedWriteBuffer(val bool) ServerOption {
+	return grpc.SharedWriteBuffer(val)
+}
+
+// WaitForHandlers cause Stop to wait until all outstanding method handlers have exited before returning. If false, Stop will return as soon as all connections
+// have closed, but method handlers may still be running. By default, Stop does not wait for method handlers to return.
+func WaitForHandlers(val bool) ServerOption {
+	return grpc.WaitForHandlers(val)
+}
+
+/*
+API References https://pkg.go.dev/google.golang.org/grpc#ServerOption
+
+1. Already Implemented APIs
+- func ConnectionTimeout(d time.Duration) ServerOption
+- func Creds(c credentials.TransportCredentials) ServerOption
+- func HeaderTableSize(s uint32) ServerOption
+- func InitialConnWindowSize(s int32) ServerOption
+- func InitialWindowSize(s int32) ServerOption
+- func KeepaliveEnforcementPolicy(kep keepalive.EnforcementPolicy) ServerOption
+- func KeepaliveParams(kp keepalive.ServerParameters) ServerOption
+- func MaxConcurrentStreams(n uint32) ServerOption
+- func MaxHeaderListSize(s uint32) ServerOption
+- func MaxRecvMsgSize(m int) ServerOption
+- func MaxSendMsgSize(m int) ServerOption
+- func NumStreamWorkers(numServerWorkers uint32) ServerOption
+- func ReadBufferSize(s int) ServerOption
+- func SharedWriteBuffer(val bool) ServerOption
+- func WaitForHandlers(w bool) ServerOption
+- func WriteBufferSize(s int) ServerOption
+
+2. Unnecessary for this package APIs
+- func ChainStreamInterceptor(interceptors ...StreamServerInterceptor) ServerOption
+- func ChainUnaryInterceptor(interceptors ...UnaryServerInterceptor) ServerOption
+- func StreamInterceptor(i StreamServerInterceptor) ServerOption
+- func UnaryInterceptor(i UnaryServerInterceptor) ServerOption
+
+3. Experimental APIs
+- func ForceServerCodec(codec encoding.Codec) ServerOption
+- func ForceServerCodecV2(codecV2 encoding.CodecV2) ServerOption
+- func InTapHandle(h tap.ServerInHandle) ServerOption
+- func StatsHandler(h stats.Handler) ServerOption
+- func UnknownServiceHandler(streamHandler StreamHandler) ServerOption
+
+4. Deprecated APIs
+- func CustomCodec(codec Codec) ServerOption
+- func MaxMsgSize(m int) ServerOption
+- func RPCCompressor(cp Compressor) ServerOption
+- func RPCDecompressor(dc Decompressor) ServerOption
+*/

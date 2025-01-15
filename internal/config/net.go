@@ -25,6 +25,7 @@ import (
 
 // Net represents the network configuration tcp, udp, unix domain socket.
 type Net struct {
+	Network      string        `json:"network,omitempty"       yaml:"network"`
 	DNS          *DNS          `json:"dns,omitempty"           yaml:"dns"`
 	Dialer       *Dialer       `json:"dialer,omitempty"        yaml:"dialer"`
 	SocketOption *SocketOption `json:"socket_option,omitempty" yaml:"socket_option"`
@@ -117,6 +118,7 @@ func (s *SocketOption) ToSocketFlag() control.SocketFlag {
 
 // Bind binds the actual data from the Net fields.
 func (t *Net) Bind() *Net {
+	t.Network = GetActualValue(t.Network)
 	if t.TLS != nil {
 		t.TLS = t.TLS.Bind()
 	}

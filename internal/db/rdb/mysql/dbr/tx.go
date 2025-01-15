@@ -43,7 +43,7 @@ func (t *tx) Rollback() error {
 	return t.Tx.Rollback()
 }
 
-// RollbackUnlessCommitted rollsback the transaction unless it has already been committed or rolled back.
+// RollbackUnlessCommitted rollbacks the transaction unless it has already been committed or rolled back.
 func (t *tx) RollbackUnlessCommitted() {
 	t.Tx.RollbackUnlessCommitted()
 }
@@ -65,7 +65,7 @@ func (t *tx) InsertInto(table string) InsertStmt {
 // Select creates a SelectStmt.
 func (t *tx) Select(column ...string) SelectStmt {
 	return &selectStmt{
-		t.Tx.Select(column...),
+		t.Tx.Select(prepareSelect(column...)...),
 	}
 }
 

@@ -33,7 +33,7 @@ image:
   repository: vdaas/vald-benchmark-operator
   # @schema {"name": "image.tag", "type": "string"}
   # image.tag -- image tag
-  tag: v1.7.13
+  tag: v1.7.16
   # @schema {"name": "image.pullPolicy", "type": "string", "enum": ["Always", "Never", "IfNotPresent"]}
   # image.pullPolicy -- image pull policy
   pullPolicy: Always
@@ -46,7 +46,7 @@ job:
     repository: vdaas/vald-benchmark-job
     # @schema {"name": "job.image.tag", "type": "string"}
     # image.tag -- image tag for job docker image
-    tag: v1.7.13
+    tag: v1.7.16
     # @schema {"name": "job.image.pullPolicy", "type": "string", "enum": ["Always", "Never", "IfNotPresent"]}
     # image.pullPolicy -- image pull policy
     pullPolicy: Always
@@ -171,7 +171,7 @@ job:
       # @schema {"name": "job.client_config.dial_option.timeout", "type": "string"}
       # job.client_config.dial_option.timeout -- gRPC client dial option timeout
       timeout: ""
-      # @schema {"name": "job.client_config.dial_option.interceptors", "type": "array", "items": {"type": "string", "enum": ["TraceInterceptor"]}}
+      # @schema {"name": "job.client_config.dial_option.interceptors", "type": "array", "items": {"type": "string", "enum": ["TraceInterceptor", "MetricInterceptor"]}}
       # job.client_config.dial_option.interceptors -- gRPC client interceptors
       interceptors: []
       # @schema {"name": "job.client_config.dial_option.net", "type": "object", "anchor": "net"}
@@ -384,7 +384,7 @@ server_config:
       # @schema {"name": "server_config.servers.grpc.port", "type": "integer"}
       port: 8081
       # @schema {"name": "server_config.servers.grpc.servicePort", "type": "integer"}
-      serviecPort: 8081
+      servicePort: 8081
       # @schema {"name": "server_config.servers.grpc.server", "type": "object"}
       server:
         # @schema {"name": "server_config.servers.grpc.server.mode", "type": "string"}
@@ -407,7 +407,7 @@ server_config:
           initial_conn_window_size: 0
           # @schema {"name": "server_config.servers.grpc.server.grpc.initial_window_size", "type": "integer"}
           initial_window_size: 0
-          # @schema {"name": "server_config.servers.grpc.server.grpc.interceptors", "type": "array", "items": {"type": "string"}}
+          # @schema {"name": "server_config.servers.grpc.server.grpc.interceptors", "type": "array", "items": {"type": "string", "enum": ["RecoverInterceptor", "AccessLogInterceptor", "TraceInterceptor", "MetricInterceptor"]}}
           interceptors: []
           # @schema {"name": "server_config.servers.grpc.server.grpc.keepalive", "type": "object"}
           keepalive:

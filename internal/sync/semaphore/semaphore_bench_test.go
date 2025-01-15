@@ -29,9 +29,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-//go:build go1.7
-// +build go1.7
-
 package semaphore_test
 
 import (

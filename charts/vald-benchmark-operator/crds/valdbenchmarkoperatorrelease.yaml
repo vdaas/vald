@@ -60,7 +60,6 @@ spec:
                 - Healthy
               type: string
             spec:
-              type: object
               properties:
                 affinity:
                   type: object
@@ -69,35 +68,32 @@ spec:
                   type: object
                   x-kubernetes-preserve-unknown-fields: true
                 env:
-                  type: array
                   items:
                     type: object
                     x-kubernetes-preserve-unknown-fields: true
+                  type: array
                 image:
-                  type: object
                   properties:
                     pullPolicy:
-                      type: string
                       enum:
                         - Always
                         - Never
                         - IfNotPresent
+                      type: string
                     repository:
                       type: string
                     tag:
                       type: string
-                job:
                   type: object
+                job:
                   properties:
                     client_config:
-                      type: object
                       properties:
                         addrs:
-                          type: array
                           items:
                             type: string
+                          type: array
                         backoff:
-                          type: object
                           properties:
                             backoff_factor:
                               type: number
@@ -113,11 +109,11 @@ spec:
                               type: string
                             retry_count:
                               type: integer
+                          type: object
                         call_option:
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
                         circuit_breaker:
-                          type: object
                           properties:
                             closed_error_rate:
                               type: number
@@ -129,8 +125,8 @@ spec:
                               type: integer
                             open_timeout:
                               type: string
-                        connection_pool:
                           type: object
+                        connection_pool:
                           properties:
                             enable_dns_resolver:
                               type: boolean
@@ -142,8 +138,8 @@ spec:
                               type: string
                             size:
                               type: integer
-                        dial_option:
                           type: object
+                        dial_option:
                           properties:
                             backoff_base_delay:
                               type: string
@@ -162,13 +158,13 @@ spec:
                             insecure:
                               type: boolean
                             interceptors:
-                              type: array
                               items:
-                                type: string
                                 enum:
                                   - TraceInterceptor
+                                  - MetricInterceptor
+                                type: string
+                              type: array
                             keepalive:
-                              type: object
                               properties:
                                 permit_without_stream:
                                   type: boolean
@@ -176,15 +172,14 @@ spec:
                                   type: string
                                 timeout:
                                   type: string
+                              type: object
                             max_msg_size:
                               type: integer
                             min_connection_timeout:
                               type: string
                             net:
-                              type: object
                               properties:
                                 dialer:
-                                  type: object
                                   properties:
                                     dual_stack_enabled:
                                       type: boolean
@@ -192,8 +187,8 @@ spec:
                                       type: string
                                     timeout:
                                       type: string
-                                dns:
                                   type: object
+                                dns:
                                   properties:
                                     cache_enabled:
                                       type: boolean
@@ -201,8 +196,8 @@ spec:
                                       type: string
                                     refresh_duration:
                                       type: string
-                                socket_option:
                                   type: object
+                                socket_option:
                                   properties:
                                     ip_recover_destination_addr:
                                       type: boolean
@@ -222,8 +217,8 @@ spec:
                                       type: boolean
                                     tcp_quick_ack:
                                       type: boolean
-                                tls:
                                   type: object
+                                tls:
                                   properties:
                                     ca:
                                       type: string
@@ -235,12 +230,15 @@ spec:
                                       type: boolean
                                     key:
                                       type: string
+                                  type: object
+                              type: object
                             read_buffer_size:
                               type: integer
                             timeout:
                               type: string
                             write_buffer_size:
                               type: integer
+                          type: object
                         health_check_duration:
                           type: string
                         max_recv_msg_size:
@@ -250,7 +248,6 @@ spec:
                         max_send_msg_size:
                           type: integer
                         tls:
-                          type: object
                           properties:
                             ca:
                               type: string
@@ -262,60 +259,59 @@ spec:
                               type: boolean
                             key:
                               type: string
+                          type: object
                         wait_for_ready:
                           type: boolean
-                    image:
                       type: object
+                    image:
                       properties:
                         pullPolicy:
-                          type: string
                           enum:
                             - Always
                             - Never
                             - IfNotPresent
+                          type: string
                         repository:
                           type: string
                         tag:
                           type: string
-                logging:
+                      type: object
                   type: object
+                logging:
                   properties:
                     format:
-                      type: string
                       enum:
                         - raw
                         - json
-                    level:
                       type: string
+                    level:
                       enum:
                         - debug
                         - info
                         - warn
                         - error
                         - fatal
-                    logger:
                       type: string
+                    logger:
                       enum:
                         - glg
                         - zap
+                      type: string
+                  type: object
                 name:
                   type: string
                 nodeSelector:
                   type: object
                   x-kubernetes-preserve-unknown-fields: true
                 observability:
-                  type: object
                   properties:
                     enabled:
                       type: boolean
                     otlp:
-                      type: object
                       properties:
                         attribute:
-                          type: object
                           properties:
                             metrics:
-                              type: object
                               properties:
                                 enable_cgo:
                                   type: boolean
@@ -326,9 +322,10 @@ spec:
                                 enable_version_info:
                                   type: boolean
                                 version_info_labels:
-                                  type: array
                                   items:
                                     type: string
+                                  type: array
+                              type: object
                             namespace:
                               type: string
                             node_name:
@@ -337,6 +334,7 @@ spec:
                               type: string
                             service_name:
                               type: string
+                          type: object
                         collector_endpoint:
                           type: string
                         metrics_export_interval:
@@ -351,13 +349,15 @@ spec:
                           type: integer
                         trace_max_queue_size:
                           type: integer
-                    trace:
                       type: object
+                    trace:
                       properties:
                         enabled:
                           type: boolean
                         sampling_rate:
                           type: integer
+                      type: object
+                  type: object
                 podAnnotations:
                   type: object
                   x-kubernetes-preserve-unknown-fields: true
@@ -365,16 +365,15 @@ spec:
                   type: object
                   x-kubernetes-preserve-unknown-fields: true
                 rbac:
-                  type: object
                   properties:
                     create:
                       type: boolean
                     name:
                       type: string
+                  type: object
                 replicas:
                   type: integer
                 resources:
-                  type: object
                   properties:
                     limits:
                       type: object
@@ -382,31 +381,27 @@ spec:
                     requests:
                       type: object
                       x-kubernetes-preserve-unknown-fields: true
+                  type: object
                 securityContext:
                   type: object
                   x-kubernetes-preserve-unknown-fields: true
                 server_config:
-                  type: object
                   properties:
                     full_shutdown_duration:
                       type: string
                     healths:
-                      type: object
                       properties:
                         liveness:
-                          type: object
                           properties:
                             enabled:
                               type: boolean
                             host:
                               type: string
                             livenessProbe:
-                              type: object
                               properties:
                                 failureThreshold:
                                   type: integer
                                 httpGet:
-                                  type: object
                                   properties:
                                     path:
                                       type: string
@@ -414,6 +409,7 @@ spec:
                                       type: string
                                     scheme:
                                       type: string
+                                  type: object
                                 initialDelaySeconds:
                                   type: integer
                                 periodSeconds:
@@ -422,13 +418,12 @@ spec:
                                   type: integer
                                 timeoutSeconds:
                                   type: integer
+                              type: object
                             port:
                               type: integer
                             server:
-                              type: object
                               properties:
                                 http:
-                                  type: object
                                   properties:
                                     idle_timeout:
                                       type: string
@@ -442,6 +437,7 @@ spec:
                                       type: string
                                     write_timeout:
                                       type: string
+                                  type: object
                                 mode:
                                   type: string
                                 network:
@@ -450,10 +446,11 @@ spec:
                                   type: string
                                 socket_path:
                                   type: string
+                              type: object
                             servicePort:
                               type: integer
-                        readiness:
                           type: object
+                        readiness:
                           properties:
                             enabled:
                               type: boolean
@@ -462,12 +459,10 @@ spec:
                             port:
                               type: integer
                             readinessProbe:
-                              type: object
                               properties:
                                 failureThreshold:
                                   type: integer
                                 httpGet:
-                                  type: object
                                   properties:
                                     path:
                                       type: string
@@ -475,6 +470,7 @@ spec:
                                       type: string
                                     scheme:
                                       type: string
+                                  type: object
                                 initialDelaySeconds:
                                   type: integer
                                 periodSeconds:
@@ -483,11 +479,10 @@ spec:
                                   type: integer
                                 timeoutSeconds:
                                   type: integer
-                            server:
                               type: object
+                            server:
                               properties:
                                 http:
-                                  type: object
                                   properties:
                                     handler_timeout:
                                       type: string
@@ -501,6 +496,7 @@ spec:
                                       type: string
                                     write_timeout:
                                       type: string
+                                  type: object
                                 mode:
                                   type: string
                                 network:
@@ -509,20 +505,20 @@ spec:
                                   type: string
                                 socket_path:
                                   type: string
+                              type: object
                             servicePort:
                               type: integer
-                        startup:
                           type: object
+                        startup:
                           properties:
                             enabled:
                               type: boolean
-                        startupProbe:
                           type: object
+                        startupProbe:
                           properties:
                             failureThreshold:
                               type: integer
                             httpGet:
-                              type: object
                               properties:
                                 path:
                                   type: string
@@ -530,6 +526,7 @@ spec:
                                   type: string
                                 scheme:
                                   type: string
+                              type: object
                             initialDelaySeconds:
                               type: integer
                             periodSeconds:
@@ -538,11 +535,11 @@ spec:
                               type: integer
                             timeoutSeconds:
                               type: integer
-                    metrics:
+                          type: object
                       type: object
+                    metrics:
                       properties:
                         pprof:
-                          type: object
                           properties:
                             enabled:
                               type: boolean
@@ -551,10 +548,8 @@ spec:
                             port:
                               type: integer
                             server:
-                              type: object
                               properties:
                                 http:
-                                  type: object
                                   properties:
                                     handler_timeout:
                                       type: string
@@ -568,6 +563,7 @@ spec:
                                       type: string
                                     write_timeout:
                                       type: string
+                                  type: object
                                 mode:
                                   type: string
                                 network:
@@ -576,11 +572,12 @@ spec:
                                   type: string
                                 socket_path:
                                   type: string
-                    servers:
+                              type: object
+                          type: object
                       type: object
+                    servers:
                       properties:
                         grpc:
-                          type: object
                           properties:
                             enabled:
                               type: boolean
@@ -591,10 +588,8 @@ spec:
                             port:
                               type: integer
                             server:
-                              type: object
                               properties:
                                 grpc:
-                                  type: object
                                   properties:
                                     bidirectional_stream_concurrency:
                                       type: integer
@@ -609,11 +604,15 @@ spec:
                                     initial_window_size:
                                       type: integer
                                     interceptors:
-                                      type: array
                                       items:
+                                        enum:
+                                          - RecoverInterceptor
+                                          - AccessLogInterceptor
+                                          - TraceInterceptor
+                                          - MetricInterceptor
                                         type: string
+                                      type: array
                                     keepalive:
-                                      type: object
                                       properties:
                                         max_conn_age:
                                           type: string
@@ -629,6 +628,7 @@ spec:
                                           type: string
                                         timeout:
                                           type: string
+                                      type: object
                                     max_header_list_size:
                                       type: integer
                                     max_receive_message_size:
@@ -639,6 +639,7 @@ spec:
                                       type: integer
                                     write_buffer_size:
                                       type: integer
+                                  type: object
                                 mode:
                                   type: string
                                 network:
@@ -649,15 +650,17 @@ spec:
                                   type: boolean
                                 socket_path:
                                   type: string
+                              type: object
                             servicePort:
                               type: integer
-                        rest:
                           type: object
+                        rest:
                           properties:
                             enabled:
                               type: boolean
-                    tls:
+                          type: object
                       type: object
+                    tls:
                       properties:
                         ca:
                           type: string
@@ -669,8 +672,9 @@ spec:
                           type: boolean
                         key:
                           type: string
-                service:
+                      type: object
                   type: object
+                service:
                   properties:
                     annotations:
                       type: object
@@ -683,24 +687,26 @@ spec:
                       type: object
                       x-kubernetes-preserve-unknown-fields: true
                     type:
-                      type: string
                       enum:
                         - ClusterIP
                         - LoadBalancer
                         - NodePort
-                serviceAccount:
+                      type: string
                   type: object
+                serviceAccount:
                   properties:
                     create:
                       type: boolean
                     name:
                       type: string
+                  type: object
                 time_zone:
                   type: string
                 tolerations:
-                  type: array
                   items:
                     type: object
                     x-kubernetes-preserve-unknown-fields: true
+                  type: array
                 version:
                   type: string
+              type: object

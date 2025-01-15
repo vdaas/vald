@@ -19,7 +19,9 @@ package safety
 
 import (
 	"runtime"
+	"runtime/debug"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
@@ -35,16 +37,19 @@ func RecoverWithoutPanicFunc(fn func() error) func() error {
 
 func recoverFn(fn func() error, withPanic bool) func() error {
 	return func() (err error) {
+		if fn == nil {
+			return nil
+		}
 		defer func() {
 			if r := recover(); r != nil {
-				infoStr := info.Get().String()
+				ds := debug.Stack()
+				infoStr := info.Get().String() + "\r\n" + conv.Btoa(ds)
 				log.Warnf("function %#v panic recovered: %#v\ninfo:\n%s", fn, r, infoStr)
 				switch x := r.(type) {
 				case runtime.Error:
 					err = errors.ErrRuntimeError(err, x)
 					if withPanic {
 						log.Errorf("recovered but this thread is going to panic: the reason is runtimer.Error\nerror:\t%v\ninfo:\n%s\nrecovered:\t%#v", err, infoStr, r)
-
 						panic(err)
 					}
 				case *string:

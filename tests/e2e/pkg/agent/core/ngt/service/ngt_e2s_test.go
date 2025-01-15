@@ -147,7 +147,7 @@ func Test_ngt_parallel_delete_and_insert(t *testing.T) {
 	wg.Wait()
 
 	if n.Len() != maxIDNum {
-		t.Errorf("inerted id num = %d, want = %d", n.Len(), maxIDNum)
+		t.Errorf("inserted id num = %d, want = %d", n.Len(), maxIDNum)
 	}
 
 	for i := int64(0); i < maxIDNum; i++ {
@@ -230,7 +230,7 @@ func Test_ngt_parallel_insert_and_delete(t *testing.T) {
 	wg.Wait()
 
 	if want, got := n.Len(), uint64(0); want != got {
-		t.Errorf("inerted id num = %d, want = %d", got, want)
+		t.Errorf("inserted id num = %d, want = %d", got, want)
 	}
 
 	for i := int64(0); i < maxIDNum; i++ {

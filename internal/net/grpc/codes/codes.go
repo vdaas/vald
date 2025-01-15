@@ -40,3 +40,48 @@ var (
 	DataLoss           = codes.DataLoss
 	Unauthenticated    = codes.Unauthenticated
 )
+
+type CodeType interface {
+	int | int8 | int32 | int64 | uint | uint8 | uint32 | uint64 | Code
+}
+
+func ToString[T CodeType](c T) string {
+	switch Code(c) {
+	case OK:
+		return "OK"
+	case Canceled:
+		return "Canceled"
+	case Unknown:
+		return "Unknown"
+	case InvalidArgument:
+		return "InvalidArgument"
+	case DeadlineExceeded:
+		return "DeadlineExceeded"
+	case NotFound:
+		return "NotFound"
+	case AlreadyExists:
+		return "AlreadyExists"
+	case PermissionDenied:
+		return "PermissionDenied"
+	case ResourceExhausted:
+		return "ResourceExhausted"
+	case FailedPrecondition:
+		return "FailedPrecondition"
+	case Aborted:
+		return "Aborted"
+	case OutOfRange:
+		return "OutOfRange"
+	case Unimplemented:
+		return "Unimplemented"
+	case Internal:
+		return "Internal"
+	case Unavailable:
+		return "Unavailable"
+	case DataLoss:
+		return "DataLoss"
+	case Unauthenticated:
+		return "Unauthenticated"
+	default:
+		return "InvalidStatus"
+	}
+}

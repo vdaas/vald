@@ -76,7 +76,7 @@ func TestNew(t *testing.T) {
 			}
 		}(),
 		func() test {
-			expiredHook := func(context.Context, string) {}
+			expiredHook := func(context.Context, string, any) {}
 			c := new(cache[any])
 			for _, opt := range append(defaultOptions[any](), WithExpiredHook[any](expiredHook)) {
 				opt(c)
@@ -129,7 +129,7 @@ func Test_cache_Start(t *testing.T) {
 		gache          gache.Gache[any]
 		expireDur      time.Duration
 		expireCheckDur time.Duration
-		expiredHook    func(context.Context, string)
+		expiredHook    func(context.Context, string, any)
 	}
 	type want struct{}
 	type test struct {
@@ -199,7 +199,7 @@ func Test_cache_Get(t *testing.T) {
 		gache          gache.Gache[any]
 		expireDur      time.Duration
 		expireCheckDur time.Duration
-		expiredHook    func(context.Context, string)
+		expiredHook    func(context.Context, string, any)
 	}
 	type want struct {
 		want  any
@@ -299,7 +299,7 @@ func Test_cache_Set(t *testing.T) {
 		gache          gache.Gache[any]
 		expireDur      time.Duration
 		expireCheckDur time.Duration
-		expiredHook    func(context.Context, string)
+		expiredHook    func(context.Context, string, any)
 	}
 	type want struct {
 		key   string
@@ -383,7 +383,7 @@ func Test_cache_Delete(t *testing.T) {
 		gache          gache.Gache[any]
 		expireDur      time.Duration
 		expireCheckDur time.Duration
-		expiredHook    func(context.Context, string)
+		expiredHook    func(context.Context, string, any)
 	}
 	type want struct {
 		key   string
@@ -487,7 +487,7 @@ func Test_cache_GetAndDelete(t *testing.T) {
 		gache          gache.Gache[any]
 		expireDur      time.Duration
 		expireCheckDur time.Duration
-		expiredHook    func(context.Context, string)
+		expiredHook    func(context.Context, string, any)
 	}
 	type want struct {
 		want  any
