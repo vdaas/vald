@@ -1016,7 +1016,7 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	err = op.Insert(t, ctx, operation.Dataset{
+	err = op.Upsert(t, ctx, operation.Dataset{
 		Train: ds.Train[insertFrom : insertFrom+insertNum],
 	})
 	if err != nil {

@@ -660,6 +660,7 @@ func (c *client) InsertWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
+					mu.Lock()
 					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
@@ -667,6 +668,7 @@ func (c *client) InsertWithParameters(
 							err.Error(),
 						),
 					)
+					mu.Unlock()
 				}
 				return
 			}
@@ -858,23 +860,26 @@ func (c *client) UpsertWithParameters(
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		var ierr error
 
 		for {
 			res, err := sc.Recv()
 			if err == io.EOF {
+				rerr = ierr
 				return
 			}
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Join(
-						rerr,
+					ierr = errors.Join(
+						ierr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
 						),
 					)
 				}
+				rerr = ierr
 				return
 			}
 
@@ -887,7 +892,7 @@ func (c *client) UpsertWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Join(rerr, e)
+						ierr = errors.Join(ierr, e)
 					}
 					continue
 				}
