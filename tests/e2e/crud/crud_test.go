@@ -1025,14 +1025,16 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 
 	sleep(t, waitAfterInsertDuration)
 
-	searchFunc := func() {
-		_ = op.Search(t, ctx, operation.Dataset{
+	searchFunc := func() error {
+		return op.Search(t, ctx, operation.Dataset{
 			Test:      ds.Test[searchFrom : searchFrom+searchNum],
 			Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
 		})
 	}
 
 	wg := sync.WaitGroup{}
+	mu := sync.Mutex{}
+	var serr error
 	wg.Add(1)
 	done := make(chan struct{})
 	go func() {
@@ -1042,7 +1044,16 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 			case <-done:
 				return
 			default:
-				searchFunc()
+				err = searchFunc()
+				if err != nil {
+					st, ok := status.FromError(err)
+					if ok && st.Code() == codes.DeadlineExceeded {
+						_, _, rerr := status.ParseError(err, codes.DeadlineExceeded, "an error occurred")
+						mu.Lock()
+						serr = errors.Join(serr, rerr)
+						mu.Unlock()
+					}
+				}
 				time.Sleep(10 * time.Second)
 			}
 		}
@@ -1086,4 +1097,7 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 	}
 	close(done)
 	wg.Wait()
+	if serr != nil {
+		t.Fatalf("an error occurred: %s", serr)
+	}
 }
