@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2024 Google LLC
+// Copyright (C) 2025 Google LLC
 // Modified by vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,9 +20,7 @@
 
 package errdetails
 
-import (
-	"google.golang.org/protobuf/encoding/protojson"
-)
+import "google.golang.org/protobuf/encoding/protojson"
 
 // MarshalJSON implements json.Marshaler
 func (msg *ErrorInfo) MarshalJSON() ([]byte, error) {
