@@ -671,6 +671,7 @@ func main() {
 			PackageDir:    agent + "/core/ngt",
 			ExtraPackages: append(clangBuildDeps, ngtBuildDeps...),
 			Preprocess:    []string{ngtPreprocess},
+			BuildPlatforms: multiPlatforms,
 		},
 		"vald-" + agentFaiss: {
 			AppName:    "faiss",
