@@ -1039,16 +1039,18 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 	done := make(chan struct{})
 	go func() {
 		defer wg.Done()
+		var ierr error
+
 		for {
 			select {
 			case <-done:
 				return
 			default:
-				err = searchFunc()
-				if err != nil {
-					st, ok := status.FromError(err)
+				ierr = searchFunc()
+				if ierr != nil {
+					st, ok := status.FromError(ierr)
 					if ok && st.Code() == codes.DeadlineExceeded {
-						_, _, rerr := status.ParseError(err, codes.DeadlineExceeded, "an error occurred")
+						_, _, rerr := status.ParseError(ierr, codes.DeadlineExceeded, "an error occurred")
 						mu.Lock()
 						serr = errors.Join(serr, rerr)
 						mu.Unlock()

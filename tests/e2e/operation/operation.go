@@ -200,7 +200,7 @@ func (c *client) getGRPCConn() (*grpc.ClientConn, error) {
 		grpc.WithInsecure(),
 		grpc.WithKeepaliveParams(
 			keepalive.ClientParameters{
-				Time:                time.Second,
+				Time:                10 * time.Minute,
 				Timeout:             60 * time.Second,
 				PermitWithoutStream: true,
 			},
