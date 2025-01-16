@@ -71,4 +71,5 @@ jobs:
     uses: ./.github/workflows/_docker-image.yaml
     with:
       target: agent
+      platforms: linux/amd64,linux/arm64
     secrets: inherit
