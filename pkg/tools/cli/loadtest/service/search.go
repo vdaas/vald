@@ -23,23 +23,25 @@ import (
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 )
 
-func searchRequestProvider(dataset assets.Dataset) (func() any, int, error) {
+func searchRequestProvider(dataset assets.Dataset) (func() *any, int, error) {
 	size := dataset.QuerySize()
 	idx := int32(-1)
-	return func() (ret any) {
+	return func() (ret *any) {
 		if i := int(atomic.AddInt32(&idx, 1)); i < size {
 			v, err := dataset.Query(i)
 			if err != nil {
 				return nil
 			}
-			ret = &payload.Search_Request{
+			obj := any(&payload.Search_Request{
 				Vector: v.([]float32),
 				Config: &payload.Search_Config{
 					Num:     10,
 					Radius:  -1,
 					Epsilon: 0.1,
 				},
-			}
+			})
+			tmp := any(obj)
+			return &tmp
 		}
 		return ret
 	}, size, nil

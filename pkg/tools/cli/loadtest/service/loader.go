@@ -21,7 +21,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -50,7 +49,7 @@ type loader struct {
 	dataset          string
 	progressDuration time.Duration
 	loaderFunc       loadFunc
-	dataProvider     func() any
+	sendDataProvider func() *any
 	dataSize         int
 	operation        config.Operation
 }
@@ -97,9 +96,9 @@ func (l *loader) Prepare(context.Context) (err error) {
 
 	switch l.operation {
 	case config.Insert, config.StreamInsert:
-		l.dataProvider, l.dataSize, err = insertRequestProvider(dataset, l.batchSize)
+		l.sendDataProvider, l.dataSize, err = insertRequestProvider(dataset, l.batchSize)
 	case config.Search, config.StreamSearch:
-		l.dataProvider, l.dataSize, err = searchRequestProvider(dataset)
+		l.sendDataProvider, l.dataSize, err = searchRequestProvider(dataset)
 	}
 	if err != nil {
 		return err
@@ -135,7 +134,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 		log.Infof("progress %d requests, %f[vps], error: %d", pgCnt, vps(int(pgCnt)*l.batchSize, start, time.Now()), errCnt)
 	}
 
-	f := func(i any, err error) {
+	f := func(i *any, err error) {
 		atomic.AddInt32(&pgCnt, 1)
 		if err != nil {
 			atomic.AddInt32(&errCnt, 1)
@@ -184,23 +183,12 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 }
 
 func (l *loader) do(
-	ctx context.Context, f func(any, error), notify func(context.Context, error),
+	ctx context.Context, f func(*any, error), notify func(context.Context, error),
 ) (err error) {
 	eg, egctx := errgroup.New(ctx)
 
 	switch l.operation {
 	case config.StreamInsert, config.StreamSearch:
-		var newData func() any
-		switch l.operation {
-		case config.StreamInsert:
-			newData = func() any {
-				return new(payload.Empty)
-			}
-		case config.StreamSearch:
-			newData = func() any {
-				return new(payload.Search_Response)
-			}
-		}
 		eg.Go(safety.RecoverFunc(func() (err error) {
 			defer func() {
 				if err != nil {
@@ -213,7 +201,7 @@ func (l *loader) do(
 				if err != nil {
 					return nil, err
 				}
-				return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.dataProvider, newData, f)
+				return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.sendDataProvider, f)
 			})
 			return err
 		}))
@@ -222,7 +210,7 @@ func (l *loader) do(
 		eg.SetLimit(l.concurrency)
 
 		for {
-			r := l.dataProvider()
+			r := l.sendDataProvider()
 			if r == nil {
 				break
 			}
@@ -234,7 +222,7 @@ func (l *loader) do(
 				}()
 				_, err = l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
 					res, err := l.loaderFunc(egctx, conn, r)
-					f(res, err)
+					f(&res, err)
 					return res, err
 				})
 
