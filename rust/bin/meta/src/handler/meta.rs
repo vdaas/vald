@@ -17,7 +17,7 @@
 use kv::*;
 use defer::defer;
 use opentelemetry::{trace::{Tracer, TraceContextExt}, KeyValue, Context};
-use observability::{ctx_span, tracer};
+use observability::{ctx_span, instrument, tracer, meter};
 use proto::{meta::v1::meta_server, payload::v1::{meta, Empty}};
 
 #[tonic::async_trait]
