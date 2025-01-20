@@ -30,7 +30,7 @@ fn inject_trace_context<T>(request: &mut Request<T>) {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut client = MetaClient::connect("http://[::1]:8081").await?;
+    let mut client = MetaClient::connect("http://[::1]:8095").await?;
 
     // 1. set key: aaa, value: 1
     let any_value = Any {

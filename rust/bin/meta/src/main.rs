@@ -16,9 +16,10 @@
 
 mod handler;
 
+use std::time::Duration;
+
 use observability::{
-    config::{Config, Tracer},
-    observability::{Observability, ObservabilityImpl, SERVICE_NAME},
+    config::{Config, Meter, Tracer}, observability::{Observability, ObservabilityImpl, SERVICE_NAME}
 };
 use opentelemetry::global;
 use opentelemetry::propagation::Extractor;
@@ -81,8 +82,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .tracer(Tracer::new().enabled(true));
     let mut observability = ObservabilityImpl::new(observability_cfg)?;
 
-    let addr = "[::1]:8081".parse()?;
-    let cfg_path = "/var/lib/meta/database"; // TODO: set the appropriate path
+    let addr = "[::1]:8095".parse()?;
+    let cfg_path = "/tmp/meta/database"; // TODO: set the appropriate path
     let meta = handler::Meta::new(cfg_path)?;
 
     // the interceptor given here is implicitly executed for each request
