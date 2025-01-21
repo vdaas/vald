@@ -221,7 +221,7 @@ func (l *loader) do(
 					err = nil
 				}()
 				_, err = l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
-					res, err := l.loaderFunc(egctx, conn, r)
+					res, err := l.loaderFunc(egctx, conn, *r)
 					f(&res, err)
 					return res, err
 				})
