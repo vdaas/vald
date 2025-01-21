@@ -204,12 +204,14 @@ func (l *loader) do(
 				}
 
 				if l.operation == config.StreamInsert {
-					return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.sendDataProvider, func(i *payload.Empty, err error) {
+					return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.sendDataProvider, func(i *payload.Empty, err error) bool {
 						f(nil, err)
+						return true
 					})
 				} else {
-					return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.sendDataProvider, func(i *payload.Search_Response, err error) {
+					return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.sendDataProvider, func(i *payload.Search_Response, err error) bool {
 						f(nil, err)
+						return true
 					})
 				}
 			})

@@ -168,7 +168,7 @@ func BidirectionalStream[Q, R any](
 
 // BidirectionalStreamClient is gRPC client stream.
 func BidirectionalStreamClient[S, R any](
-	stream ClientStream, sendDataProvider func() *S, callBack func(*R, error),
+	stream ClientStream, sendDataProvider func() *S, callBack func(*R, error) bool,
 ) (err error) {
 	if stream == nil {
 		return errors.ErrGRPCClientStreamNotFound
@@ -189,7 +189,10 @@ func BidirectionalStreamClient[S, R any](
 					cancel()
 					return nil
 				}
-				callBack(res, err)
+				if !callBack(res, err) {
+					cancel()
+					return nil
+				}
 			}
 		}
 	}))
