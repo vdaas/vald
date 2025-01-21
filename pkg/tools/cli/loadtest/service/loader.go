@@ -21,6 +21,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -201,7 +202,16 @@ func (l *loader) do(
 				if err != nil {
 					return nil, err
 				}
-				return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.sendDataProvider, f)
+
+				if l.operation == config.StreamInsert {
+					return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.sendDataProvider, func(i *payload.Empty, err error) {
+						f(nil, err)
+					})
+				} else {
+					return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.sendDataProvider, func(i *payload.Search_Response, err error) {
+						f(nil, err)
+					})
+				}
 			})
 			return err
 		}))

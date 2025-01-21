@@ -218,7 +218,7 @@ func BidirectionalStreamClient[S, R any](
 					return eg.Wait()
 				}
 
-				err = stream.SendMsg(data)
+				err = stream.SendMsg(*data)
 				if err != nil {
 					return err
 				}

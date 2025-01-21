@@ -57,8 +57,7 @@ func objectVectorProvider(dataset assets.Dataset) (func() *any, int) {
 					Vector: v.([]float32),
 				},
 			})
-			tmp := any(obj)
-			return &tmp
+			ret = &obj
 		}
 		return ret
 	}, size
@@ -77,11 +76,7 @@ func objectVectorsProvider(dataset assets.Dataset, n int) (func() *any, int) {
 			if d == nil {
 				break
 			}
-			insertRequest, ok := (*d).(*payload.Insert_Request)
-			if !ok {
-				return nil
-			}
-			r = append(r, insertRequest)
+			r = append(r, (*d).(*payload.Insert_Request))
 		}
 		if len(r) == 0 {
 			return nil
@@ -89,8 +84,7 @@ func objectVectorsProvider(dataset assets.Dataset, n int) (func() *any, int) {
 		obj := any(&payload.Insert_MultiRequest{
 			Requests: r,
 		})
-		tmp := any(obj)
-		return &tmp
+		return &obj
 	}, size
 }
 
