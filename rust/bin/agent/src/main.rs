@@ -131,8 +131,8 @@ impl algorithm::ANN for QBGService {
     }
 
     fn update(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error> {
-        self.remove(uuid.clone(), ts).unwrap();
-        self.insert(uuid, vector, ts).unwrap();
+        self.remove(uuid.clone(), ts)?;
+        self.insert(uuid, vector, ts)?;
         Ok(())
     }
 
@@ -178,7 +178,7 @@ impl algorithm::ANN for QBGService {
     }
 
     fn get_dimension_size(&self) -> usize {
-        self.index.get_dimension().unwrap()
+        self.index.get_dimension().unwrap_or_default()
     }
 
     fn len(&self) -> u32 {

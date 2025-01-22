@@ -31,8 +31,14 @@ impl remove_server::Remove for super::Agent {
     ) -> std::result::Result<tonic::Response<object::Location>, tonic::Status> {
         println!("Recieved a request from {:?}", request.remote_addr());
         let req = request.get_ref();
-        let config = req.config.clone().unwrap();
-        let id = req.id.clone().unwrap();
+        let config = match req.config.clone() {
+            Some(cfg) => cfg,
+            None => return Err(Status::invalid_argument("Missing configuration in request")),
+        };
+        let id = match req.id.clone() {
+            Some(id) => id,
+            None => return Err(Status::invalid_argument("Missing ID in request")),
+        };
         let uuid = id.id;
         let hostname = cargo::util::hostname()?;
         let domain = hostname.to_str().unwrap();
@@ -47,7 +53,8 @@ impl remove_server::Remove for super::Agent {
                 err_details.set_error_info(err.to_string(), domain, metadata);
                 err_details.set_request_info(
                     uuid.clone(),
-                    String::from_utf8(req.encode_to_vec()).unwrap(),
+                    String::from_utf8(req.encode_to_vec())
+                        .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                 );
                 err_details.set_bad_request(vec![FieldViolation::new("uuid", err.to_string())]);
                 err_details.set_resource_info(resource_type, resource_name, "", "");
@@ -70,7 +77,8 @@ impl remove_server::Remove for super::Agent {
                             err_details.set_error_info(err.to_string(), domain, metadata);
                             err_details.set_request_info(
                                 uuid,
-                                String::from_utf8(req.encode_to_vec()).unwrap(),
+                                String::from_utf8(req.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
                             Status::with_error_details(Code::Aborted, "Remove API aborted to process remove request due to flushing indices is in progress", err_details)
@@ -80,7 +88,8 @@ impl remove_server::Remove for super::Agent {
                             err_details.set_error_info(err.to_string(), domain, metadata);
                             err_details.set_request_info(
                                 uuid.clone(),
-                                String::from_utf8(req.encode_to_vec()).unwrap(),
+                                String::from_utf8(req.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
                             Status::with_error_details(
@@ -94,7 +103,8 @@ impl remove_server::Remove for super::Agent {
                             err_details.set_error_info(err.to_string(), domain, metadata);
                             err_details.set_request_info(
                                 uuid.clone(),
-                                String::from_utf8(req.encode_to_vec()).unwrap(),
+                                String::from_utf8(req.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_bad_request(vec![FieldViolation::new(
                                 "uuid",
@@ -115,7 +125,8 @@ impl remove_server::Remove for super::Agent {
                             err_details.set_error_info(err.to_string(), domain, metadata);
                             err_details.set_request_info(
                                 uuid,
-                                String::from_utf8(req.encode_to_vec()).unwrap(),
+                                String::from_utf8(req.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
                             Status::with_error_details(

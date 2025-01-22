@@ -23,7 +23,7 @@ pub enum Error {
     FlushingIsInProgress {},
     EmptySearchResult {},
     IncompatibleDimensionSize { got: usize, want: usize },
-    UUIDAlreadyExists { id: usize },
+    UUIDAlreadyExists { uuid: String },
     UUIDNotFound { id: usize },
     UncommittedIndexNotFound {},
     InvalidUUID { uuid: String },
@@ -44,7 +44,7 @@ impl fmt::Display for Error {
                 "incompatible dimension size detected\trequested: {},\tconfigured: {}",
                 got, want
             ),
-            Error::UUIDAlreadyExists { id } => write!(f, "uuid {} index already exists", id),
+            Error::UUIDAlreadyExists { uuid } => write!(f, "uuid {} index already exists", uuid),
             Error::UUIDNotFound { id } => {
                 if *id == (0 as usize) {
                     write!(f, "object uuid not found")

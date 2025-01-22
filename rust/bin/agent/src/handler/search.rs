@@ -28,7 +28,10 @@ impl search_server::Search for super::Agent {
     ) -> Result<tonic::Response<search::Response>, Status> {
         println!("Recieved a request from {:?}", request.remote_addr());
         let req = request.get_ref();
-        let config = req.config.clone().unwrap();
+        let config = match req.config.clone() {
+            Some(cfg) => cfg,
+            None => return Err(Status::invalid_argument("Missing configuration in request")),
+        };
         let hostname = cargo::util::hostname()?;
         let domain = hostname.to_str().unwrap();
         {
@@ -45,7 +48,8 @@ impl search_server::Search for super::Agent {
                 err_details.set_error_info(err.to_string(), domain, metadata);
                 err_details.set_request_info(
                     config.request_id,
-                    String::from_utf8(req.encode_to_vec()).unwrap(),
+                    String::from_utf8(req.encode_to_vec())
+                        .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                 );
                 err_details.set_bad_request(vec![FieldViolation::new(
                     "vector dimension size",
@@ -76,7 +80,8 @@ impl search_server::Search for super::Agent {
                             err_details.set_error_info(err.to_string(), domain, metadata);
                             err_details.set_request_info(
                                 config.request_id,
-                                String::from_utf8(req.encode_to_vec()).unwrap(),
+                                String::from_utf8(req.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
                             Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to creating indices is in progress", err_details)
@@ -86,7 +91,8 @@ impl search_server::Search for super::Agent {
                             err_details.set_error_info(err.to_string(), domain, metadata);
                             err_details.set_request_info(
                                 config.request_id,
-                                String::from_utf8(req.encode_to_vec()).unwrap(),
+                                String::from_utf8(req.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
                             Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to flushing indices is in progress", err_details)
@@ -97,7 +103,8 @@ impl search_server::Search for super::Agent {
                             err_details.set_error_info(err.to_string(), domain, metadata);
                             err_details.set_request_info(
                                 &request_id,
-                                String::from_utf8(req.encode_to_vec()).unwrap(),
+                                String::from_utf8(req.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
                             Status::with_error_details(
@@ -114,7 +121,8 @@ impl search_server::Search for super::Agent {
                             err_details.set_error_info(err.to_string(), domain, metadata);
                             err_details.set_request_info(
                                 config.request_id,
-                                String::from_utf8(req.encode_to_vec()).unwrap(),
+                                String::from_utf8(req.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
                             err_details.set_bad_request(vec![FieldViolation::new(
@@ -132,7 +140,8 @@ impl search_server::Search for super::Agent {
                             err_details.set_error_info(err.to_string(), domain, metadata);
                             err_details.set_request_info(
                                 config.request_id,
-                                String::from_utf8(req.encode_to_vec()).unwrap(),
+                                String::from_utf8(req.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
                             Status::with_error_details(

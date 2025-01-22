@@ -31,12 +31,18 @@ impl upsert_server::Upsert for super::Agent {
     ) -> std::result::Result<tonic::Response<object::Location>, tonic::Status> {
         println!("Recieved a request from {:?}", request.remote_addr());
         let req = request.get_ref();
-        let config = req.config.clone().unwrap();
+        let config = match req.config.clone() {
+            Some(cfg) => cfg,
+            None => return Err(Status::invalid_argument("Missing configuration in request")),
+        };
         let hostname = cargo::util::hostname()?;
         let domain = hostname.to_str().unwrap();
         {
             let s = self.s.read().await;
-            let vec = req.vector.clone().unwrap();
+            let vec = match req.vector.clone() {
+                Some(v) => v,
+                None => return Err(Status::invalid_argument("Missing vector in request")),
+            };
             let uuid = vec.id.clone();
             if vec.vector.len() != s.get_dimension_size() {
                 let err = Error::IncompatibleDimensionSize {
@@ -48,7 +54,11 @@ impl upsert_server::Upsert for super::Agent {
                 let resource_type = self.resource_type.clone() + "/qbg.Upsert";
                 let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
                 err_details.set_error_info(err.to_string(), domain, metadata);
-                err_details.set_request_info(uuid, String::from_utf8(req.encode_to_vec()).unwrap());
+                err_details.set_request_info(
+                    uuid,
+                    String::from_utf8(req.encode_to_vec())
+                        .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
+                );
                 err_details.set_bad_request(vec![FieldViolation::new(
                     "vector dimension size",
                     err.to_string(),
@@ -70,7 +80,8 @@ impl upsert_server::Upsert for super::Agent {
                 err_details.set_error_info(err.to_string(), domain, metadata);
                 err_details.set_request_info(
                     uuid.clone(),
-                    String::from_utf8(req.encode_to_vec()).unwrap(),
+                    String::from_utf8(req.encode_to_vec())
+                        .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                 );
                 err_details.set_bad_request(vec![FieldViolation::new("uuid", err.to_string())]);
                 err_details.set_resource_info(resource_type, resource_name, "", "");
@@ -134,7 +145,8 @@ impl upsert_server::Upsert for super::Agent {
                             );
                             err_details.set_request_info(
                                 uuid,
-                                String::from_utf8(req.encode_to_vec()).unwrap(),
+                                String::from_utf8(req.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
                             Status::with_error_details(st.code(), st.message(), err_details)
