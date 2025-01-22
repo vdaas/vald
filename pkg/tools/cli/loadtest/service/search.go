@@ -40,8 +40,7 @@ func searchRequestProvider(dataset assets.Dataset) (func() *any, int, error) {
 					Epsilon: 0.1,
 				},
 			})
-			tmp := any(obj)
-			return &tmp
+			ret = &obj
 		}
 		return ret
 	}, size, nil
