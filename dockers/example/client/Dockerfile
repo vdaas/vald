@@ -85,7 +85,7 @@ RUN --mount=type=bind,target=.,rw \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
     && make hdf5/install \
-    && make GOARCH="${TARGETARCH}" GOOS="${TARGETOS}" REPO="${ORG}" NAME="${REPO}" ${PKG}/${APP_NAME} \
+    && make GOARCH="${TARGETARCH}" GOOS="${TARGETOS}" REPO="${ORG}/${REPO}" NAME="${REPO}" ${PKG}/${APP_NAME} \
     && mv "${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 # skipcq: DOK-DL3026,DOK-DL3007
 FROM gcr.io/distroless/static:nonroot

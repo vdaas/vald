@@ -433,11 +433,11 @@ var (
 		"make RUST_VERSION=\"${RUST_VERSION}\" rust/install",
 	}
 	goBuildCommands = []string{
-		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}\" NAME=\"${REPO}\" cmd/${PKG}/${APP_NAME}",
+		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}/${REPO}\" NAME=\"${REPO}\" cmd/${PKG}/${APP_NAME}",
 		"mv \"cmd/${PKG}/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
 	}
 	goExampleBuildCommands = []string{
-		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}\" NAME=\"${REPO}\" ${PKG}/${APP_NAME}",
+		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}/${REPO}\" NAME=\"${REPO}\" ${PKG}/${APP_NAME}",
 		"mv \"${PKG}/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
 	}
 	rustBuildCommands = []string{
