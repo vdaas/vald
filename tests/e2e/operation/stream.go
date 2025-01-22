@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
@@ -268,13 +269,14 @@ func (c *client) SearchWithParameters(
 }
 
 func (c *client) SearchByID(t *testing.T, ctx context.Context, ds Dataset) error {
+	to := time.Second * 3
 	return c.SearchByIDWithParameters(t,
 		ctx,
 		ds,
 		100,
 		-1.0,
 		0.1,
-		3000000000,
+		to.Nanoseconds(),
 		DefaultStatusValidator,
 		ParseAndLogError,
 	)

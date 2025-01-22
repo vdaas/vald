@@ -704,7 +704,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	var current uint64
 	if err != nil {
 		if !n.enableCopyOnWrite {
-			log.Debug("failed to load vald index from %s\t error: %v", n.path, err)
+			log.Debugf("failed to load vald index from %s\t error: %v", n.path, err)
 			if n.kvs == nil {
 				n.kvs = kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
 			} else if n.kvs.Len() > 0 {

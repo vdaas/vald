@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/tests/e2e/hdf5"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/client"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/kubectl"
@@ -55,13 +56,14 @@ var (
 	upsertNum           int
 	removeNum           int
 
-	insertFrom     int
-	searchFrom     int
-	searchByIDFrom int
-	getObjectFrom  int
-	updateFrom     int
-	upsertFrom     int
-	removeFrom     int
+	insertFrom        int
+	searchFrom        int
+	searchByIDFrom    int
+	searchConcurrency int
+	getObjectFrom     int
+	updateFrom        int
+	upsertFrom        int
+	removeFrom        int
 
 	waitAfterInsertDuration   time.Duration
 	waitResourceReadyDuration time.Duration
@@ -83,6 +85,7 @@ func init() {
 	flag.IntVar(&correctionInsertNum, "correction-insert-num", 10000, "number of id-vector pairs used for insert")
 	flag.IntVar(&searchNum, "search-num", 10000, "number of id-vector pairs used for search")
 	flag.IntVar(&searchByIDNum, "search-by-id-num", 100, "number of id-vector pairs used for search-by-id")
+	flag.IntVar(&searchConcurrency, "search-conn", 100, "number of search concurrency")
 	flag.IntVar(&getObjectNum, "get-object-num", 100, "number of id-vector pairs used for get-object")
 	flag.IntVar(&updateNum, "update-num", 10000, "number of id-vector pairs used for update")
 	flag.IntVar(&upsertNum, "upsert-num", 10000, "number of id-vector pairs used for upsert")
@@ -1025,7 +1028,7 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 
 	sleep(t, waitAfterInsertDuration)
 
-	searchFunc := func() error {
+	searchFunc := func(ctx context.Context) error {
 		return op.Search(t, ctx, operation.Dataset{
 			Test:      ds.Test[searchFrom : searchFrom+searchNum],
 			Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
@@ -1039,23 +1042,32 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 	done := make(chan struct{})
 	go func() {
 		defer wg.Done()
-		var ierr error
 
 		for {
 			select {
 			case <-done:
 				return
 			default:
-				ierr = searchFunc()
-				if ierr != nil {
-					st, ok := status.FromError(ierr)
-					if ok && st.Code() == codes.DeadlineExceeded {
-						_, _, rerr := status.ParseError(ierr, codes.DeadlineExceeded, "an error occurred")
-						mu.Lock()
-						serr = errors.Join(serr, rerr)
-						mu.Unlock()
-					}
+				eg, egctx := errgroup.New(ctx)
+				for i := 0; i < searchConcurrency; i++ {
+					eg.Go(func() (e error) {
+						ierr := searchFunc(egctx)
+						if ierr != nil {
+							st, ok := status.FromError(ierr)
+							if ok && st.Code() == codes.DeadlineExceeded {
+								_, _, rerr := status.ParseError(ierr, codes.DeadlineExceeded, "an error occurred")
+								mu.Lock()
+								e = errors.Join(e, rerr)
+								mu.Unlock()
+							}
+						}
+						return
+					})
 				}
+				egerr := eg.Wait()
+				mu.Lock()
+				serr = errors.Join(serr, egerr)
+				mu.Unlock()
 				time.Sleep(10 * time.Second)
 			}
 		}
@@ -1070,6 +1082,9 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 
 	cnt, err := op.IndexInfo(t, ctx)
 	if err != nil {
+		if cnt == nil {
+			t.Fatalf("an error occurred: err = %s", err)
+		}
 		t.Fatalf("an error occurred: count = %d, err = %s", cnt.Stored, err)
 	}
 
@@ -1093,13 +1108,14 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 	}
 
 	// Remove all vector data after the current - 1 hour.
+	// err = op.Flush(t, ctx)
 	err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
 	close(done)
 	wg.Wait()
 	if serr != nil {
 		t.Fatalf("an error occurred: %s", serr)
+	}
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
 	}
 }

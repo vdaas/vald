@@ -15,22 +15,75 @@
 #
 
 defaults:
+  image:
+    tag: pr-2798
   logging:
     level: debug
+  server_config:
+    metrics:
+      pprof:
+        enabled: true # enable Pyroscope
+    healths:
+      liveness:
+        livenessProbe:
+          initialDelaySeconds: 60
+      readiness:
+        readinessProbe:
+          initialDelaySeconds: 60
+    servers:
+      grpc:
+        server:
+          grpc:
+            interceptors:
+              - RecoverInterceptor
+              - TraceInterceptor
+              - MetricInterceptor
+  grpc:
+    client:
+      dial_option:
+        interceptors:
+          - TraceInterceptor
+  observability:
+    enabled: true
+    otlp:
+      collector_endpoint: "opentelemetry-collector-collector.default.svc.cluster.local:4317"
+    trace:
+      enabled: true
   networkPolicy:
     enabled: true
+    custom:
+      ingress:
+        - from:
+            - podSelector:
+                matchLabels:
+                  app.kubernetes.io/name: pyroscope
+      egress:
+        - to:
+            - podSelector:
+                matchLabels:
+                  app.kubernetes.io/name: opentelemetry-collector-collector
 gateway:
   lb:
     enabled: true
+    maxReplicas: 1
     minReplicas: 1
     hpa:
       enabled: false
     resources:
       requests:
-        cpu: 100m
-        memory: 50Mi
+        cpu: 200m
+        memory: 150Mi
     gateway_config:
       index_replica: 2
+      # ingress:
+      #   # if enabled is true, vald-lb-gateway can be connected through Kubernetes ingress from the external network.
+      #   enabled: true
+      #   # TODO: Set your ingress host.
+      #   host: localhost
+      # service:
+      #   # NOTE: https://doc.traefik.io/traefik/routing/providers/kubernetes-ingress/#on-service
+      #   annotations:
+      #     traefik.ingress.kubernetes.io/service.serversscheme: h2c
 agent:
   minReplicas: 3
   maxReplicas: 3
