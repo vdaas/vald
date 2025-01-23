@@ -94,6 +94,11 @@ e2e/readreplica:
 e2e/rollout/restart/agent:
 	$(call run-e2e-crud-test,-run TestE2EAgentRolloutRestart)
 
+.PHONY: e2e/large/search
+## run big multisearch agent e2e
+e2e/large/search:
+	$(call run-e2e-crud-test,-run TestE2EHighConcurrencyMultiSearch)
+
 .PHONY: e2e/maxdim
 ## run e2e/maxdim
 e2e/maxdim:

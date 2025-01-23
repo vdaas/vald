@@ -30,7 +30,7 @@ func (c *client) MultiSearch(t *testing.T, ctx context.Context, ds Dataset) erro
 	}
 
 	cfg := &payload.Search_Config{
-		Num:     3,
+		Num:     10,
 		Radius:  -1.0,
 		Epsilon: 0.1,
 	}
@@ -55,6 +55,7 @@ func (c *client) MultiSearch(t *testing.T, ctx context.Context, ds Dataset) erro
 	if len(res.GetResponses()) != len(ds.Test) {
 		t.Error("number of responses does not match with sent requests")
 	}
+	t.Logf("res: %d", len(res.Responses))
 
 	return nil
 }

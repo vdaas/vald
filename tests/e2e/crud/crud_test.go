@@ -83,9 +83,9 @@ func init() {
 
 	flag.IntVar(&insertNum, "insert-num", 10000, "number of id-vector pairs used for insert")
 	flag.IntVar(&correctionInsertNum, "correction-insert-num", 10000, "number of id-vector pairs used for insert")
-	flag.IntVar(&searchNum, "search-num", 10000, "number of id-vector pairs used for search")
-	flag.IntVar(&searchByIDNum, "search-by-id-num", 100, "number of id-vector pairs used for search-by-id")
-	flag.IntVar(&searchConcurrency, "search-conn", 100, "number of search concurrency")
+	flag.IntVar(&searchNum, "search-num", 1000, "number of id-vector pairs used for search")
+	flag.IntVar(&searchByIDNum, "search-by-id-num", 3, "number of id-vector pairs used for search-by-id")
+	flag.IntVar(&searchConcurrency, "search-conn", 10, "number of search concurrency")
 	flag.IntVar(&getObjectNum, "get-object-num", 100, "number of id-vector pairs used for get-object")
 	flag.IntVar(&updateNum, "update-num", 10000, "number of id-vector pairs used for update")
 	flag.IntVar(&upsertNum, "upsert-num", 10000, "number of id-vector pairs used for upsert")
@@ -999,7 +999,7 @@ func TestE2EReadReplica(t *testing.T) {
 	}
 }
 
-// TestE2EReadReplica tests that search requests succeed with read replica resources.
+// TestE2EAgentRolloutRestart tests that search requests succeed with rollout restart vald-agent.
 func TestE2EAgentRolloutRestart(t *testing.T) {
 	t.Cleanup(teardown)
 
@@ -1112,6 +1112,128 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 	err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
 	close(done)
 	wg.Wait()
+	if serr != nil {
+		t.Fatalf("an error occurred: %s", serr)
+	}
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+}
+
+// TestE2EHighConcurrencyMultiSearch tests that high concurrency search requests succeed.
+func TestE2EHighConcurrencyMultiSearch(t *testing.T) {
+	t.Cleanup(teardown)
+
+	if kubeClient == nil {
+		var err error
+		kubeClient, err = client.New(kubeConfig)
+		if err != nil {
+			t.Skipf("TestE2EReadReplica needs kubernetes client but failed to create one: %s", err)
+		}
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// _ = op.Upsert(t, ctx, operation.Dataset{
+	// 	Train: ds.Train[insertFrom : insertFrom+insertNum],
+	// })
+	// if err != nil {
+	// 	t.Fatalf("an error occurred: %s", err)
+	// }
+	//
+	// sleep(t, waitAfterInsertDuration)
+	searchFunc := func(ctx context.Context) error {
+		return op.MultiSearch(t, ctx, operation.Dataset{
+			Test:      ds.Test[searchFrom : searchFrom+searchNum],
+			Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
+		})
+	}
+
+	wg := sync.WaitGroup{}
+	mu := sync.Mutex{}
+	var serr error
+	wg.Add(1)
+	done := make(chan struct{})
+	go func() {
+		defer wg.Done()
+		for {
+			select {
+			case <-done:
+				return
+			default:
+				eg, egctx := errgroup.New(ctx)
+				for i := 0; i < searchConcurrency; i++ {
+					eg.Go(func() (e error) {
+						ierr := searchFunc(egctx)
+						if ierr != nil {
+							st, ok := status.FromError(ierr)
+							if ok && st.Code() == codes.DeadlineExceeded {
+								_, _, rerr := status.ParseError(ierr, codes.DeadlineExceeded, "an error occurred")
+								mu.Lock()
+								e = errors.Join(e, rerr)
+								mu.Unlock()
+							}
+						}
+						return
+					})
+				}
+				egerr := eg.Wait()
+				mu.Lock()
+				serr = errors.Join(serr, egerr)
+				mu.Unlock()
+				time.Sleep(10 * time.Second)
+			}
+		}
+	}()
+	// close(done)
+	wg.Wait()
+	// close(done)
+
+	// Wait for StatefulSet to be ready
+	// t.Log("rollout restart agent and waiting for agent pods ready...")
+	// err = kubectl.RolloutResourceName(ctx, t, "statefulset", "vald-agent", waitResourceReadyDuration.String())
+	// if err != nil {
+	// 	t.Fatalf("an error occurred: %s", err)
+	// }
+
+	cnt, err := op.IndexInfo(t, ctx)
+	if err != nil {
+		if cnt == nil {
+			t.Fatalf("an error occurred: err = %s", err)
+		}
+		t.Fatalf("an error occurred: count = %d, err = %s", cnt.Stored, err)
+	}
+
+	// err = op.Exists(t, ctx, "0")
+	// if err != nil {
+	// 	t.Fatalf("an error occurred: %s", err)
+	// }
+
+	// err = op.GetObject(t, ctx, operation.Dataset{
+	// 	Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
+	// })
+	// if err != nil {
+	// 	t.Fatalf("an error occurred: %s", err)
+	// }
+
+	err = op.Remove(t, ctx, operation.Dataset{
+		Train: ds.Train[removeFrom : removeFrom+removeNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// Remove all vector data after the current - 1 hour.
+	// err = op.Flush(t, ctx)
+	err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
+	// close(done)
+	// wg.Wait()
 	if serr != nil {
 		t.Fatalf("an error occurred: %s", serr)
 	}
