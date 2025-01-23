@@ -65,6 +65,10 @@ func (s *server) aggregationSearch(
 		}
 	}()
 
+	if bcfg == nil {
+		return nil, nil, errors.ErrNilSearch_Config
+	}
+
 	num := aggr.GetNum()
 	min := int(bcfg.GetMinNum())
 
