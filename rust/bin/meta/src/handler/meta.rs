@@ -62,8 +62,8 @@ impl meta_server::Meta for super::Meta {
         &self,
         request: tonic::Request<meta::KeyValue>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
-        let parent_cx = request.extensions().get::<Context>().cloned().unwrap_or_else(Context::new);
-        let ctx = ctx_span!(&parent_cx, "Meta::set");
+        let parent_ctx = request.extensions().get::<Context>().cloned().unwrap_or_else(Context::new);
+        let ctx = ctx_span!(&parent_ctx, "Meta::set");
         defer!(ctx.span().end());
 
         let key_value = request.into_inner();
