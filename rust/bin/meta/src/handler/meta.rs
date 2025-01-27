@@ -109,8 +109,8 @@ impl meta_server::Meta for super::Meta {
         &self,
         request: tonic::Request<meta::Key>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
-        let parent_cx = request.extensions().get::<Context>().cloned().unwrap_or_else(Context::new);
-        let ctx = ctx_span!(&parent_cx, "Meta::delete");
+        let parent_ctx = request.extensions().get::<Context>().cloned().unwrap_or_else(Context::new);
+        let ctx = ctx_span!(&parent_ctx, "Meta::delete");
         defer!(ctx.span().end());
 
         let key = request.into_inner().key;
