@@ -26,6 +26,8 @@ var (
 	// ErrIndexNotFound represents an error that the index not found.
 	ErrIndexNotFound = New("index not found")
 
-	// ErrNilSearch_Config represents an error that the Search_Config is nil.
-	ErrNilSearch_Config = New("Search_Config is nil")
+	// ErrInvalidSearchConfig represents an error that the invalid Search Configuration.
+	ErrInvalidSearchConfig = func(msg string) error {
+		return Errorf("Invalid Search_Config: %s", msg)
+	}
 )

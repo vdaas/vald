@@ -66,7 +66,7 @@ func (s *server) aggregationSearch(
 	}()
 
 	if bcfg == nil {
-		return nil, nil, errors.ErrNilSearch_Config
+		return nil, nil, errors.ErrInvalidSearchConfig("bcfg is nil in aggregationSearch")
 	}
 
 	num := aggr.GetNum()
