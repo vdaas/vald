@@ -20,7 +20,7 @@ use kv::*;
 
 pub struct Meta {
     store: Arc<Store>,
-    bucket: Bucket<'static, Raw, Raw>,
+    bucket: Bucket<"static", Raw, Raw>,
 }
 
 impl Meta {
