@@ -19,6 +19,7 @@ import (
 	"context"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 )
@@ -29,10 +30,12 @@ func (c *client) MultiSearch(t *testing.T, ctx context.Context, ds Dataset) erro
 		return err
 	}
 
+	to := time.Second * 3
 	cfg := &payload.Search_Config{
 		Num:     10,
 		Radius:  -1.0,
 		Epsilon: 0.1,
+		Timeout: to.Nanoseconds(),
 	}
 
 	reqs := make([]*payload.Search_Request, 0, len(ds.Test))

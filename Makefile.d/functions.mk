@@ -150,6 +150,7 @@ define run-e2e-crud-test
 	    -correction-insert-num=$(E2E_INSERT_COUNT) \
 	    -insert-num=$(E2E_INSERT_COUNT) \
 	    -search-num=$(E2E_SEARCH_COUNT) \
+	    -search-conn=$(E2E_SEARCH_CONCURRENCY) \
 	    -search-by-id-num=$(E2E_SEARCH_BY_ID_COUNT) \
 	    -get-object-num=$(E2E_GET_OBJECT_COUNT) \
 	    -update-num=$(E2E_UPDATE_COUNT) \

@@ -83,9 +83,9 @@ func init() {
 
 	flag.IntVar(&insertNum, "insert-num", 10000, "number of id-vector pairs used for insert")
 	flag.IntVar(&correctionInsertNum, "correction-insert-num", 10000, "number of id-vector pairs used for insert")
-	flag.IntVar(&searchNum, "search-num", 1000, "number of id-vector pairs used for search")
+	flag.IntVar(&searchNum, "search-num", 10000, "number of id-vector pairs used for search")
 	flag.IntVar(&searchByIDNum, "search-by-id-num", 3, "number of id-vector pairs used for search-by-id")
-	flag.IntVar(&searchConcurrency, "search-conn", 10, "number of search concurrency")
+	flag.IntVar(&searchConcurrency, "search-conn", 100, "number of search concurrency")
 	flag.IntVar(&getObjectNum, "get-object-num", 100, "number of id-vector pairs used for get-object")
 	flag.IntVar(&updateNum, "update-num", 10000, "number of id-vector pairs used for update")
 	flag.IntVar(&upsertNum, "upsert-num", 10000, "number of id-vector pairs used for upsert")
@@ -1019,7 +1019,7 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	err = op.Upsert(t, ctx, operation.Dataset{
+	_ = op.Upsert(t, ctx, operation.Dataset{
 		Train: ds.Train[insertFrom : insertFrom+insertNum],
 	})
 	if err != nil {
@@ -1037,12 +1037,12 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 
 	wg := sync.WaitGroup{}
 	mu := sync.Mutex{}
-	var serr error
-	wg.Add(1)
 	done := make(chan struct{})
+	var serr error
+
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
-
 		for {
 			select {
 			case <-done:
@@ -1108,15 +1108,15 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 	}
 
 	// Remove all vector data after the current - 1 hour.
-	// err = op.Flush(t, ctx)
 	err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
 	close(done)
 	wg.Wait()
 	if serr != nil {
 		t.Fatalf("an error occurred: %s", serr)
-	}
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
 	}
 }
 
@@ -1140,14 +1140,15 @@ func TestE2EHighConcurrencyMultiSearch(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	// _ = op.Upsert(t, ctx, operation.Dataset{
-	// 	Train: ds.Train[insertFrom : insertFrom+insertNum],
-	// })
-	// if err != nil {
-	// 	t.Fatalf("an error occurred: %s", err)
-	// }
-	//
-	// sleep(t, waitAfterInsertDuration)
+	_ = op.Upsert(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	sleep(t, waitAfterInsertDuration)
+
 	searchFunc := func(ctx context.Context) error {
 		return op.MultiSearch(t, ctx, operation.Dataset{
 			Test:      ds.Test[searchFrom : searchFrom+searchNum],
@@ -1187,20 +1188,17 @@ func TestE2EHighConcurrencyMultiSearch(t *testing.T) {
 				mu.Lock()
 				serr = errors.Join(serr, egerr)
 				mu.Unlock()
-				time.Sleep(10 * time.Second)
+				time.Sleep(5 * time.Second)
 			}
 		}
 	}()
-	// close(done)
-	wg.Wait()
-	// close(done)
 
 	// Wait for StatefulSet to be ready
-	// t.Log("rollout restart agent and waiting for agent pods ready...")
-	// err = kubectl.RolloutResourceName(ctx, t, "statefulset", "vald-agent", waitResourceReadyDuration.String())
-	// if err != nil {
-	// 	t.Fatalf("an error occurred: %s", err)
-	// }
+	t.Log("rollout restart agent and waiting for agent pods ready...")
+	err = kubectl.RolloutResourceName(ctx, t, "statefulset", "vald-agent", waitResourceReadyDuration.String())
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
 
 	cnt, err := op.IndexInfo(t, ctx)
 	if err != nil {
@@ -1210,17 +1208,17 @@ func TestE2EHighConcurrencyMultiSearch(t *testing.T) {
 		t.Fatalf("an error occurred: count = %d, err = %s", cnt.Stored, err)
 	}
 
-	// err = op.Exists(t, ctx, "0")
-	// if err != nil {
-	// 	t.Fatalf("an error occurred: %s", err)
-	// }
+	err = op.Exists(t, ctx, "0")
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
 
-	// err = op.GetObject(t, ctx, operation.Dataset{
-	// 	Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
-	// })
-	// if err != nil {
-	// 	t.Fatalf("an error occurred: %s", err)
-	// }
+	err = op.GetObject(t, ctx, operation.Dataset{
+		Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
 
 	err = op.Remove(t, ctx, operation.Dataset{
 		Train: ds.Train[removeFrom : removeFrom+removeNum],
@@ -1230,14 +1228,14 @@ func TestE2EHighConcurrencyMultiSearch(t *testing.T) {
 	}
 
 	// Remove all vector data after the current - 1 hour.
-	// err = op.Flush(t, ctx)
 	err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
-	// close(done)
-	// wg.Wait()
-	if serr != nil {
-		t.Fatalf("an error occurred: %s", serr)
-	}
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
+	}
+
+	close(done)
+	wg.Wait()
+	if serr != nil {
+		t.Fatalf("an error occurred: %s", serr.Error())
 	}
 }

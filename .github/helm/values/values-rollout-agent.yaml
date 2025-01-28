@@ -120,6 +120,7 @@ discoverer:
       memory: 50Mi
 manager:
   index:
+    enabled: true
     replicas: 1
     resources:
       requests:
@@ -130,7 +131,7 @@ manager:
       auto_index_check_duration: 30s
       auto_index_length: 1000
     corrector:
-      enabled: true
+      enabled: false
       # suspend because you do not want corrector to start automatically in CI
       # instead run it manually
       suspend: true

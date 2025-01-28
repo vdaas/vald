@@ -68,6 +68,7 @@ func ParseAndLogError(t *testing.T, err error) error {
 }
 
 func (c *client) Search(t *testing.T, ctx context.Context, ds Dataset) error {
+	to := time.Second * 3
 	return c.SearchWithParameters(
 		t,
 		ctx,
@@ -75,7 +76,7 @@ func (c *client) Search(t *testing.T, ctx context.Context, ds Dataset) error {
 		100,
 		-1.0,
 		0.1,
-		3000000000,
+		to.Nanoseconds(),
 		DefaultStatusValidator,
 		ParseAndLogError,
 	)
