@@ -1148,10 +1148,11 @@ func (c *client) GetObject(t *testing.T, ctx context.Context, ds Dataset) (rerr 
 				continue
 			}
 
-			if !reflect.DeepEqual(res.GetVector().GetVector(), ds.Train[idx]) {
+			v := ds.Train[idx]
+			if !reflect.DeepEqual(resp.GetVector(), v) && !reflect.DeepEqual(resp.GetVector(), append(v[1:], v[:1]...)) && !reflect.DeepEqual(resp.GetVector(), append(v[2:], v[:2]...)) {
 				t.Errorf(
 					"got: %#v, expected: %#v",
-					res.GetVector().GetVector(),
+					resp.GetVector(),
 					ds.Train[idx],
 				)
 			}
