@@ -438,6 +438,28 @@ func (s *server) doSearch(
 		}
 	}()
 
+	if cfg == nil {
+		err = errors.ErrInvalidSearchConfig("search config is nil in doSearch")
+		err = status.WrapWithInvalidArgument(apiName+"/doSearch", err, &errdetails.RequestInfo{
+			RequestId:   "Search_Config is nil",
+			ServingData: "Search_Config is nil",
+		},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "Search_Config is nil",
+						Description: err.Error(),
+					},
+				},
+			})
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, nil, err
+	}
+
 	var (
 		num     = int(cfg.GetNum())
 		fnum    int
