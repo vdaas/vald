@@ -34,6 +34,11 @@ func searchRequestProvider(dataset assets.Dataset) (func() any, int, error) {
 			}
 			ret = &payload.Search_Request{
 				Vector: v.([]float32),
+				Config: &payload.Search_Config{
+					Num:     10,
+					Radius:  -1,
+					Epsilon: 0.1,
+				},
 			}
 		}
 		return ret
