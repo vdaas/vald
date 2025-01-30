@@ -16,10 +16,8 @@
 
 mod handler;
 
-use std::time::Duration;
-
 use observability::{
-    config::{Config, Meter, Tracer}, observability::{Observability, ObservabilityImpl, SERVICE_NAME}
+    config::{Config, Tracer}, observability::{Observability, ObservabilityImpl, SERVICE_NAME}
 };
 use opentelemetry::global;
 use opentelemetry::propagation::Extractor;

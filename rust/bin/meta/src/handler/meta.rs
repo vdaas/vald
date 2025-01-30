@@ -17,17 +17,17 @@
 use kv::*;
 use defer::defer;
 use opentelemetry::{trace::{Tracer, TraceContextExt}, KeyValue, Context};
-use observability::{ctx_span, instrument, tracer, meter};
+use observability::{ctx_span, tracer};
 use proto::{meta::v1::meta_server, payload::v1::{meta, Empty}};
 
 #[tonic::async_trait]
 impl meta_server::Meta for super::Meta {
     async fn get(
         &self,
-        _request: tonic::Request<meta::Key>,
+        request: tonic::Request<meta::Key>,
     ) -> std::result::Result<tonic::Response<meta::Value>, tonic::Status> {
-        let parent_cx = request.extensions().get::<Context>().cloned().unwrap_or_else(Context::new);
-        let ctx = ctx_span!(&parent_cx, "Meta::get");
+        let parent_ctx = request.extensions().get::<Context>().cloned().unwrap_or_else(Context::new);
+        let ctx = ctx_span!(&parent_ctx, "Meta::get");
         defer!(ctx.span().end());
 
         let key = request.into_inner().key;
@@ -60,10 +60,10 @@ impl meta_server::Meta for super::Meta {
 
     async fn set(
         &self,
-        _request: tonic::Request<meta::KeyValue>,
+        request: tonic::Request<meta::KeyValue>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
-        let parent_cx = request.extensions().get::<Context>().cloned().unwrap_or_else(Context::new);
-        let ctx = ctx_span!(&parent_cx, "Meta::set");
+        let parent_ctx = request.extensions().get::<Context>().cloned().unwrap_or_else(Context::new);
+        let ctx = ctx_span!(&parent_ctx, "Meta::set");
         defer!(ctx.span().end());
 
         let key_value = request.into_inner();
@@ -107,10 +107,10 @@ impl meta_server::Meta for super::Meta {
 
     async fn delete(
         &self,
-        _request: tonic::Request<meta::Key>,
+        request: tonic::Request<meta::Key>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
-        let parent_cx = request.extensions().get::<Context>().cloned().unwrap_or_else(Context::new);
-        let ctx = ctx_span!(&parent_cx, "Meta::delete");
+        let parent_ctx = request.extensions().get::<Context>().cloned().unwrap_or_else(Context::new);
+        let ctx = ctx_span!(&parent_ctx, "Meta::delete");
         defer!(ctx.span().end());
 
         let key = request.into_inner().key;
