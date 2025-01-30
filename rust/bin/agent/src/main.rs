@@ -16,6 +16,7 @@
 
 use algorithm::Error;
 use anyhow::Result;
+use config::Config;
 use proto::payload::v1::object::Distance;
 use proto::payload::v1::search;
 use qbg::index::Index;
@@ -26,12 +27,6 @@ mod handler;
 #[derive(Debug)]
 struct _MockService {
     dim: usize,
-}
-
-struct QBGService {
-    path: String,
-    index: Index,
-    property: Property,
 }
 
 impl algorithm::ANN for _MockService {
@@ -99,6 +94,76 @@ impl algorithm::ANN for _MockService {
 
     fn is_saving(&self) -> bool {
         todo!()
+    }
+}
+
+struct QBGService {
+    path: String,
+    index: Index,
+    property: Property,
+}
+
+impl QBGService {
+    fn new(settings: Config) -> Self {
+        let path = settings.get::<String>("qbg.index_path").unwrap();
+        let mut property = Property::new();
+        property.init_qbg_construction_parameters();
+        property.set_qbg_construction_parameters(
+            settings.get::<usize>("qbg.extended_dimension").unwrap_or(0),
+            settings.get::<usize>("qbg.dimension").unwrap_or(0),
+            settings
+                .get::<usize>("qbg.number_of_subvectors")
+                .unwrap_or(1),
+            settings.get::<usize>("qbg.number_of_blobs").unwrap_or(0),
+            settings.get::<i32>("qbg.internal_data_type").unwrap_or(1),
+            settings.get::<i32>("qbg.data_type").unwrap_or(1),
+            settings.get::<i32>("qbg.distance_type").unwrap_or(1),
+        );
+        property.init_qbg_build_parameters();
+        property.set_qbg_build_parameters(
+            settings
+                .get::<i32>("qbg.hierarchical_clustering_init_mode")
+                .unwrap_or(2),
+            settings
+                .get::<usize>("qbg.number_of_first_objects")
+                .unwrap_or(0),
+            settings
+                .get::<usize>("qbg.number_of_first_clusters")
+                .unwrap_or(0),
+            settings
+                .get::<usize>("qbg.number_of_second_objects")
+                .unwrap_or(0),
+            settings
+                .get::<usize>("qbg.number_of_second_clusters")
+                .unwrap_or(0),
+            settings
+                .get::<usize>("qbg.number_of_third_clusters")
+                .unwrap_or(0),
+            settings
+                .get::<usize>("qbg.number_of_objects")
+                .unwrap_or(1000),
+            settings
+                .get::<usize>("qbg.number_of_subvectors")
+                .unwrap_or(1),
+            settings
+                .get::<i32>("qbg.optimization_clustering_init_mode")
+                .unwrap_or(2),
+            settings
+                .get::<usize>("qbg.rotation_iteration")
+                .unwrap_or(2000),
+            settings
+                .get::<usize>("qbg.subvector_iteration")
+                .unwrap_or(400),
+            settings.get::<usize>("qbg.number_of_matrices").unwrap_or(3),
+            settings.get::<bool>("qbg.rotation").unwrap_or(true),
+            settings.get::<bool>("qbg.repositioning").unwrap_or(false),
+        );
+        let index = Index::new(&path, &mut property).unwrap();
+        QBGService {
+            path,
+            index,
+            property,
+        }
     }
 }
 
@@ -205,20 +270,11 @@ impl algorithm::ANN for QBGService {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = "0.0.0.0:8081".parse()?;
-    let path: String = "index".to_string();
-    let mut p = Property::new();
-    p.init_qbg_construction_parameters();
-    p.set_dimension(128);
-    p.set_number_of_subvectors(64);
-    p.set_number_of_blobs(0);
-    p.init_qbg_build_parameters();
-    p.set_number_of_objects(500);
-    let index = Index::new(&path, &mut p).unwrap();
-    let service = QBGService {
-        path: path,
-        index: index,
-        property: p,
-    };
+    let settings = Config::builder()
+        .add_source(config::File::with_name("/etc/server/config.yaml"))
+        .build()
+        .unwrap();
+    let service = QBGService::new(settings);
     let agent = handler::Agent::new(
         service,
         "agent-qbg",
