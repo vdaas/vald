@@ -483,7 +483,6 @@ var (
 		"graphviz",
 		"jq",
 		"libaec-dev",
-		"libhdf5-dev",
 		"sed",
 		"zip",
 	}
