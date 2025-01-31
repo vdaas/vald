@@ -259,7 +259,8 @@ $(LIB_PATH)/libhdf5.a: $(LIB_PATH) \
 	&& make -j$(CORES) \
 	&& make install \
 	&& cd $(ROOTDIR) \
-	&& rm -rf $(TEMP_DIR)/hdf5.tar.gz $(TEMP_DIR)/hdf5
+	&& rm -rf $(TEMP_DIR)/hdf5.tar.gz $(TEMP_DIR)/hdf5 \
+	&& ldconfig
 
 .PHONY: yq/install
 ## install yq
