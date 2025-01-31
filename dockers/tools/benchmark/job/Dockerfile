@@ -71,7 +71,6 @@ RUN --mount=type=bind,target=.,rw \
     gcc \
     libssl-dev \
     unzip \
-    libhdf5-dev \
     libaec-dev \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
