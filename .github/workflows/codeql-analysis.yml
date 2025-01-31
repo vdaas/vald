@@ -63,7 +63,7 @@ jobs:
         uses: github/codeql-action/init@v2
         with:
           languages: go
-          config-file: ./.github/codeql/codeql-config.yaml
+          # config-file: ./.github/codeql/codeql-config.yaml
       - name: Autobuild
         uses: github/codeql-action/autobuild@v2
       - name: Perform CodeQL Analysis
