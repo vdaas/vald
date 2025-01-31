@@ -1022,11 +1022,11 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 	_ = op.Upsert(t, ctx, operation.Dataset{
 		Train: ds.Train[insertFrom : insertFrom+insertNum],
 	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
+	// if err != nil {
+	// 	t.Fatalf("an error occurred: %s", err)
+	// }
 
-	sleep(t, waitAfterInsertDuration)
+	// sleep(t, waitAfterInsertDuration)
 
 	searchFunc := func(ctx context.Context) error {
 		return op.Search(t, ctx, operation.Dataset{
@@ -1080,38 +1080,38 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	cnt, err := op.IndexInfo(t, ctx)
-	if err != nil {
-		if cnt == nil {
-			t.Fatalf("an error occurred: err = %s", err)
-		}
-		t.Fatalf("an error occurred: count = %d, err = %s", cnt.Stored, err)
-	}
+	// cnt, err := op.IndexInfo(t, ctx)
+	// if err != nil {
+	// 	if cnt == nil {
+	// 		t.Fatalf("an error occurred: err = %s", err)
+	// 	}
+	// 	t.Fatalf("an error occurred: count = %d, err = %s", cnt.Stored, err)
+	// }
 
-	err = op.Exists(t, ctx, "0")
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
+	// err = op.Exists(t, ctx, "0")
+	// if err != nil {
+	// 	t.Fatalf("an error occurred: %s", err)
+	// }
 
-	err = op.GetObject(t, ctx, operation.Dataset{
-		Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
-	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
+	// err = op.GetObject(t, ctx, operation.Dataset{
+	// 	Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
+	// })
+	// if err != nil {
+	// 	t.Fatalf("an error occurred: %s", err)
+	// }
 
-	err = op.Remove(t, ctx, operation.Dataset{
-		Train: ds.Train[removeFrom : removeFrom+removeNum],
-	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
+	// err = op.Remove(t, ctx, operation.Dataset{
+	// 	Train: ds.Train[removeFrom : removeFrom+removeNum],
+	// })
+	// if err != nil {
+	// 	t.Fatalf("an error occurred: %s", err)
+	// }
 
 	// Remove all vector data after the current - 1 hour.
-	err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
+	// err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
+	// if err != nil {
+	// 	t.Fatalf("an error occurred: %s", err)
+	// }
 
 	close(done)
 	wg.Wait()

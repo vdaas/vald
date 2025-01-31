@@ -16,7 +16,7 @@
 
 defaults:
   image:
-    tag: pr-2798
+    tag: v1.7.16
   logging:
     level: debug
   server_config:

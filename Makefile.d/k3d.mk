@@ -40,6 +40,7 @@ k3d/start:
 	  --image docker.io/rancher/k3s:$(K3S_VERSION) \
 	  --host-pid-mode=$(K3D_HOST_PID_MODE) \
 	  --api-port $(K3D_HOST):$(K3D_PORT) \
+	  --registry-create local-registry:0.0.0.0:5000 \
 	  -v "/lib/modules:/lib/modules" \
 	  $(K3D_OPTIONS)
 	@make k3d/config

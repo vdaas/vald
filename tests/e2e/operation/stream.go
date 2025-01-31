@@ -68,7 +68,7 @@ func ParseAndLogError(t *testing.T, err error) error {
 }
 
 func (c *client) Search(t *testing.T, ctx context.Context, ds Dataset) error {
-	to := time.Second * 3
+	to := time.Second * 1
 	return c.SearchWithParameters(
 		t,
 		ctx,
@@ -161,19 +161,20 @@ func (c *client) SearchWithParameters(
 				t.Errorf("empty result is returned for test ID %s: %#v", resp.GetRequestId(), topKIDs)
 				continue
 			}
-			left, right, ok := strings.Cut(resp.GetRequestId(), "-")
+			left, _, ok := strings.Cut(resp.GetRequestId(), "-")
 			if !ok {
 				sid := strings.SplitN(resp.GetRequestId(), "-", 2)
-				left, right = sid[0], sid[1]
+				left = sid[0]
 			}
 
-			idx, err := strconv.Atoi(left)
+			// idx, err := strconv.Atoi(left)
+			_, err = strconv.Atoi(left)
 			if err != nil {
 				t.Errorf("an error occurred while converting RequestId into int: %s", err)
 				continue
 			}
 
-			t.Logf("algo: %s, id: %d, results: %d, recall: %f", right, idx, len(topKIDs), c.recall(topKIDs, ds.Neighbors[idx][:len(topKIDs)]))
+			// t.Logf("algo: %s, id: %d, results: %d, recall: %f", right, idx, len(topKIDs), c.recall(topKIDs, ds.Neighbors[idx][:len(topKIDs)]))
 		}
 	}()
 
