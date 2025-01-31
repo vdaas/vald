@@ -108,9 +108,9 @@ public:
     rust::i32 append(rust::Slice<const rust::f32>);
     rust::i32 insert(rust::Slice<const rust::f32>);
     void remove(rust::usize);
-    std::unique_ptr<std::vector<SearchResult>> search(rust::Slice<const rust::f32>, rust::usize, rust::f32, rust::f32);
-    rust::f32 *get_object(rust::usize);
-    rust::usize get_dimension();
+    std::unique_ptr<std::vector<SearchResult>> search(rust::Slice<const rust::f32>, rust::usize, rust::f32, rust::f32) const;
+    rust::f32 *get_object(rust::usize) const;
+    rust::usize get_dimension() const;
 };
 
 std::unique_ptr<Property> new_property();
