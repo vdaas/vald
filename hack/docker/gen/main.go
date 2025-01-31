@@ -483,7 +483,6 @@ var (
 		"graphviz",
 		"jq",
 		"libaec-dev",
-		"libhdf5-dev",
 		"sed",
 		"zip",
 	}
@@ -746,7 +745,7 @@ func main() {
 		"vald-benchmark-job": {
 			AppName:       "job",
 			PackageDir:    "tools/benchmark/job",
-			ExtraPackages: append(clangBuildDeps, "libhdf5-dev", "libaec-dev"),
+			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
 			Preprocess: []string{
 				"make hdf5/install",
 			},
@@ -797,7 +796,7 @@ func main() {
 		"vald-loadtest": {
 			AppName:       "loadtest",
 			PackageDir:    "tools/cli/loadtest",
-			ExtraPackages: append(clangBuildDeps, "libhdf5-dev", "libaec-dev"),
+			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
 			Preprocess: []string{
 				"make hdf5/install",
 			},
@@ -836,7 +835,7 @@ func main() {
 		"vald-example-client": {
 			AppName:       "client",
 			PackageDir:    "example/client",
-			ExtraPackages: append(clangBuildDeps, "libhdf5-dev", "libaec-dev"),
+			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
 			Preprocess: []string{
 				"make hdf5/install",
 			},
