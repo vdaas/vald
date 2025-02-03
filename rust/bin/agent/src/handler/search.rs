@@ -13,12 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-use std::{collections::HashMap, string::String};
-
 use algorithm::Error;
-use anyhow::Result;
-use proto::{payload::v1::search, vald::v1::search_server};
 use prost::Message;
+use proto::{payload::v1::search, vald::v1::search_server};
+use std::{collections::HashMap, string::String};
 use tonic::{Code, Status};
 use tonic_types::{ErrorDetails, FieldViolation, StatusExt};
 
@@ -30,70 +28,135 @@ impl search_server::Search for super::Agent {
     ) -> Result<tonic::Response<search::Response>, Status> {
         println!("Recieved a request from {:?}", request.remote_addr());
         let req = request.get_ref();
-        let config = req.config.clone().unwrap();
+        let config = match req.config.clone() {
+            Some(cfg) => cfg,
+            None => return Err(Status::invalid_argument("Missing configuration in request")),
+        };
         let hostname = cargo::util::hostname()?;
         let domain = hostname.to_str().unwrap();
-        if req.vector.len() != self.s.get_dimension_size() {
-            let err = Error::IncompatibleDimensionSize{ got: req.vector.len(), want: self.s.get_dimension_size()};
-            let mut err_details = ErrorDetails::new();
-            err_details.set_error_info(err.to_string(), domain, HashMap::new());
-            err_details.set_request_info(config.request_id, String::from_utf8(req.encode_to_vec()).unwrap());
-            err_details.set_bad_request(vec![FieldViolation::new("vector dimension size", err.to_string())]);
-            err_details.set_resource_info(self.resource_type.clone() + "/ngt.Search", "", "", "");
-            let status = Status::with_error_details(Code::InvalidArgument, "Search API Incombatible Dimension Size detedted", err_details);
-            return Err(status);
-        }
-
-        let result = self.s.search(req.vector.clone(), config.num, config.epsilon, config.radius);
-        match result {
-            Err(err) => {
-                let metadata = HashMap::new();
-                let resource_type = self.resource_type.clone() + "/ngt.Search";
-                let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
-                let status = match err {
-                    Error::CreateIndexingIsInProgress{} => {
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(config.request_id, String::from_utf8(req.encode_to_vec()).unwrap());
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
-                        Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to creating indices is in progress", err_details)
-                    }
-                    Error::FlushingIsInProgress{} => {
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(config.request_id, String::from_utf8(req.encode_to_vec()).unwrap());
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
-                        Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to flushing indices is in progress", err_details)
-                    }
-                    Error::EmptySearchResult{} => {
-                        let request_id = config.request_id;
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(&request_id, String::from_utf8(req.encode_to_vec()).unwrap());
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
-                        Status::with_error_details(Code::NotFound, format!("Search API requestID {}'s search result not found", &request_id), err_details)
-                    }
-                    Error::IncompatibleDimensionSize{ got: _, want: _ } => {
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(config.request_id, String::from_utf8(req.encode_to_vec()).unwrap());
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
-                        err_details.set_bad_request(vec![FieldViolation::new("vector dimension size", err.to_string())]);
-                        Status::with_error_details(Code::InvalidArgument, "Search API Incompatible Dimension Size detected", err_details)
-                    }
-                    _ => {
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(config.request_id, String::from_utf8(req.encode_to_vec()).unwrap());
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
-                        Status::with_error_details(Code::Internal, "Search API failed to process search request", err_details)
-                    }
+        {
+            let s = self.s.read().await;
+            if req.vector.len() != s.get_dimension_size() {
+                let err = Error::IncompatibleDimensionSize {
+                    got: req.vector.len(),
+                    want: s.get_dimension_size(),
                 };
-                Err(status)
+                let metadata = HashMap::new();
+                let resource_type = self.resource_type.clone() + "/qbg.Search";
+                let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
+                let mut err_details = ErrorDetails::new();
+                err_details.set_error_info(err.to_string(), domain, metadata);
+                err_details.set_request_info(
+                    config.request_id,
+                    String::from_utf8(req.encode_to_vec())
+                        .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
+                );
+                err_details.set_bad_request(vec![FieldViolation::new(
+                    "vector dimension size",
+                    err.to_string(),
+                )]);
+                err_details.set_resource_info(resource_type, resource_name, "", "");
+                let status = Status::with_error_details(
+                    Code::InvalidArgument,
+                    "Search API Incombatible Dimension Size detedted",
+                    err_details,
+                );
+                return Err(status);
             }
-            Ok(mut response) => {
-                response.get_mut().request_id = config.request_id;
-                Ok(response)
+            let result = s.search(
+                req.vector.clone(),
+                config.num,
+                config.epsilon,
+                config.radius,
+            );
+            match result {
+                Err(err) => {
+                    let metadata = HashMap::new();
+                    let resource_type = self.resource_type.clone() + "/qbg.Search";
+                    let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
+                    let status = match err {
+                        Error::CreateIndexingIsInProgress {} => {
+                            let mut err_details = ErrorDetails::new();
+                            err_details.set_error_info(err.to_string(), domain, metadata);
+                            err_details.set_request_info(
+                                config.request_id,
+                                String::from_utf8(req.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
+                            );
+                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to creating indices is in progress", err_details)
+                        }
+                        Error::FlushingIsInProgress {} => {
+                            let mut err_details = ErrorDetails::new();
+                            err_details.set_error_info(err.to_string(), domain, metadata);
+                            err_details.set_request_info(
+                                config.request_id,
+                                String::from_utf8(req.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
+                            );
+                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to flushing indices is in progress", err_details)
+                        }
+                        Error::EmptySearchResult {} => {
+                            let request_id = config.request_id;
+                            let mut err_details = ErrorDetails::new();
+                            err_details.set_error_info(err.to_string(), domain, metadata);
+                            err_details.set_request_info(
+                                &request_id,
+                                String::from_utf8(req.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
+                            );
+                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            Status::with_error_details(
+                                Code::NotFound,
+                                format!(
+                                    "Search API requestID {}'s search result not found",
+                                    &request_id
+                                ),
+                                err_details,
+                            )
+                        }
+                        Error::IncompatibleDimensionSize { got: _, want: _ } => {
+                            let mut err_details = ErrorDetails::new();
+                            err_details.set_error_info(err.to_string(), domain, metadata);
+                            err_details.set_request_info(
+                                config.request_id,
+                                String::from_utf8(req.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
+                            );
+                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            err_details.set_bad_request(vec![FieldViolation::new(
+                                "vector dimension size",
+                                err.to_string(),
+                            )]);
+                            Status::with_error_details(
+                                Code::InvalidArgument,
+                                "Search API Incompatible Dimension Size detected",
+                                err_details,
+                            )
+                        }
+                        _ => {
+                            let mut err_details = ErrorDetails::new();
+                            err_details.set_error_info(err.to_string(), domain, metadata);
+                            err_details.set_request_info(
+                                config.request_id,
+                                String::from_utf8(req.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
+                            );
+                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            Status::with_error_details(
+                                Code::Internal,
+                                "Search API failed to process search request",
+                                err_details,
+                            )
+                        }
+                    };
+                    Err(status)
+                }
+                Ok(mut response) => {
+                    response.request_id = config.request_id;
+                    Ok(tonic::Response::new(response))
+                }
             }
         }
     }

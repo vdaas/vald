@@ -16,13 +16,16 @@
 mod common;
 pub mod index;
 pub mod insert;
+pub mod object;
 pub mod remove;
 pub mod search;
 pub mod update;
 pub mod upsert;
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 pub struct Agent {
-    s: Box<dyn algorithm::ANN>,
+    s: Arc<RwLock<dyn algorithm::ANN>>,
     name: String,
     ip: String,
     resource_type: String,
@@ -30,9 +33,15 @@ pub struct Agent {
 }
 
 impl Agent {
-    pub fn new(s: impl algorithm::ANN + 'static, name: &str, ip: &str, resource_type: &str, api_name: &str) -> Self {
+    pub fn new(
+        s: impl algorithm::ANN + 'static,
+        name: &str,
+        ip: &str,
+        resource_type: &str,
+        api_name: &str,
+    ) -> Self {
         Self {
-            s: Box::new(s),
+            s: Arc::new(RwLock::new(s)),
             name: name.to_string(),
             ip: ip.to_string(),
             resource_type: resource_type.to_string(),

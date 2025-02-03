@@ -333,7 +333,7 @@ void Index::remove(rust::usize id)
     ngt_destroy_error_object(err);
 }
 
-std::unique_ptr<std::vector<SearchResult>> Index::search(rust::Slice<const rust::f32> v, rust::usize k, rust::f32 radius, rust::f32 epsilon)
+std::unique_ptr<std::vector<SearchResult>> Index::search(rust::Slice<const rust::f32> v, rust::usize k, rust::f32 radius, rust::f32 epsilon) const
 {
     QBGQuery query;
     qbg_initialize_query(&query);
@@ -387,7 +387,7 @@ std::unique_ptr<std::vector<SearchResult>> Index::search(rust::Slice<const rust:
     return std::make_unique<std::vector<SearchResult>>(searchResults);
 }
 
-rust::f32 *Index::get_object(rust::usize id)
+rust::f32 *Index::get_object(rust::usize id) const
 {
     NGTError err = ngt_create_error_object();
     float *vec = qbg_get_object(index, id, err);
@@ -403,7 +403,7 @@ rust::f32 *Index::get_object(rust::usize id)
     return vec;
 }
 
-rust::usize Index::get_dimension()
+rust::usize Index::get_dimension() const
 {
     NGTError err = ngt_create_error_object();
     size_t dim = qbg_get_dimension(index, err);
