@@ -162,7 +162,7 @@ LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto
 
 NGT_LDFLAGS = -fopenmp -lopenblas -llapack
 FAISS_LDFLAGS = $(NGT_LDFLAGS) -lgfortran
-HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl
+HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl -lm
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 
 ifeq ($(GOARCH),amd64)
