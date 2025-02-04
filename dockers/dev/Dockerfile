@@ -88,7 +88,6 @@ RUN --mount=type=bind,target=.,rw \
     graphviz \
     jq \
     libaec-dev \
-    libhdf5-dev \
     sed \
     zip \
     && ldconfig \
