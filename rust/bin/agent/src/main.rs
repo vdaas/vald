@@ -105,7 +105,9 @@ struct QBGService {
 
 impl QBGService {
     fn new(settings: Config) -> Self {
-        let path = settings.get::<String>("qbg.index_path").unwrap();
+        let path = settings
+            .get::<String>("qbg.index_path")
+            .unwrap_or("index".to_string());
         let mut property = Property::new();
         property.init_qbg_construction_parameters();
         property.set_qbg_construction_parameters(
