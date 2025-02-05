@@ -388,8 +388,10 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 					log.Warnf("failed to parse addr %s for disconnection checking, will disconnect soon: host: %s, port %d, err: %v", addr, host, port, err)
 					disconnectFlag = true // Disconnect if the address connected to is not parseable.
 				}
+				log.Debugf("disconnection target is addr: %s, host: %s, port: %d, disconnectFlag: %t, disconnected: %v", addr, host, port, disconnectFlag, disconnected)
 				if disconnectFlag &&
 					!disconnected[addr] {
+					log.Debugf("bulk part addr %s disconnecting", addr)
 					err = g.Disconnect(ctx, addr)
 					if err != nil {
 						if !errors.Is(err, context.Canceled) &&
