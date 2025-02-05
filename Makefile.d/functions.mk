@@ -405,7 +405,8 @@ define update-github-actions
 					VERSION="master"; \
 				else \
 					REPO_NAME=`echo $$ACTION_NAME | cut -d'/' -f1-2`; \
-					VERSION=`curl -fsSL https://api.github.com/repos/$$REPO_NAME/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`;\
+					echo "$$ACTION_NAME to $$REPO_NAME"; \
+					VERSION=`curl -fsSL https://api.github.com/repos/$$REPO_NAME/tags | grep -Po '"name": "\K.*?(?=")' | head -n1 | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`;\
 				fi; \
 				if [ -n "$$VERSION" ]; then \
 					OLD_VERSION=`cat $(ROOTDIR)/versions/actions/$$FILE_NAME`; \
