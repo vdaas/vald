@@ -170,7 +170,7 @@ TEST_LDFLAGS = $(LDFLAGS) $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 COMMON_FLAGS = -O3 -ffast-math -march=native -mtune=native -flto=auto -fno-plt -fvisibility=hidden \
                -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants \
                -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
-CFLAGS   = -std=gnu23  $(COMMON_FLAGS)
+CFLAGS   = -std=gnu17  $(COMMON_FLAGS)
 CXXFLAGS = -std=gnu++23 $(COMMON_FLAGS)
 FFLAGS   = -std=f2018  $(COMMON_FLAGS)
 
