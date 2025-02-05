@@ -59,12 +59,10 @@ define go-build
 	echo $(shell find $(ROOTDIR)/pkg/$1 -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
-	FFLAGS="$(FFLAGS)" \
-	CGO_CFLAGS="$(CFLAGS)" \
-	CGO_CXXFLAGS="$(CXXFLAGS)" \
-	CGO_FFLAGS="$(FFLAGS)" \
-	CGO_LDFLAGS="$3" \
 	CGO_ENABLED=$(CGO_ENABLED) \
+	CGO_CXXFLAGS="$3" \
+	CGO_FFLAGS="$3" \
+	CGO_LDFLAGS="$3" \
 	GO111MODULE=on \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
@@ -100,12 +98,10 @@ define go-example-build
 	cd $(ROOTDIR)/$1 && \
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
-	FFLAGS="$(FFLAGS)" \
-	CGO_CFLAGS="$(CFLAGS)" \
-	CGO_CXXFLAGS="$(CXXFLAGS)" \
-	CGO_FFLAGS="$(FFLAGS)" \
-	CGO_LDFLAGS="$3" \
 	CGO_ENABLED=$(CGO_ENABLED) \
+	CGO_CXXFLAGS="$3" \
+	CGO_FFLAGS="$3" \
+	CGO_LDFLAGS="$3" \
 	GO111MODULE=on \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \

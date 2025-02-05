@@ -16,7 +16,7 @@ service Insert {
 
 ## Insert RPC
 
-Inset RPC is the method to add a new single vector.
+Insert RPC is the method to add a new single vector.
 
 ### Input
 

@@ -42,12 +42,12 @@ binary/build: \
 cmd/agent/core/ngt/ngt: \
 	ngt/install
 	$(eval CGO_ENABLED = 1)
-	$(call go-build,agent/core/ngt,-linkmode 'external',$(STATIC_LDFLAGS) $(NGT_LDFLAGS) $(EXTLDFLAGS), cgo,NGT-$(NGT_VERSION),$@)
+	$(call go-build,agent/core/ngt,-linkmode 'external',$(LDFLAGS) $(NGT_LDFLAGS) $(EXTLDFLAGS), cgo,NGT-$(NGT_VERSION),$@)
 
 cmd/agent/core/faiss/faiss: \
 	faiss/install
 	$(eval CGO_ENABLED = 1)
-	$(call go-build,agent/core/faiss,-linkmode 'external',$(STATIC_LDFLAGS) $(FAISS_LDFLAGS), cgo,FAISS-$(FAISS_VERSION),$@)
+	$(call go-build,agent/core/faiss,-linkmode 'external',$(LDFLAGS) $(FAISS_LDFLAGS), cgo,FAISS-$(FAISS_VERSION),$@)
 
 cmd/agent/sidecar/sidecar:
 	$(eval CGO_ENABLED = 0)
@@ -99,7 +99,7 @@ cmd/index/operator/index-operator:
 
 cmd/tools/benchmark/job/job:
 	$(eval CGO_ENABLED = 1)
-	$(call go-build,tools/benchmark/job,-linkmode 'external',$(STATIC_LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
+	$(call go-build,tools/benchmark/job,-linkmode 'external',$(LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
 
 cmd/tools/benchmark/operator/operator:
 	$(eval CGO_ENABLED = 0)
@@ -107,11 +107,11 @@ cmd/tools/benchmark/operator/operator:
 
 cmd/tools/cli/loadtest/loadtest:
 	$(eval CGO_ENABLED = 1)
-	$(call go-build,tools/cli/loadtest,-linkmode 'external',$(STATIC_LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
+	$(call go-build,tools/cli/loadtest,-linkmode 'external',$(LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
 
 example/client/client:
 	$(eval CGO_ENABLED = 1)
-	$(call go-example-build,example/client,-linkmode 'external',$(STATIC_LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
+	$(call go-example-build,example/client,-linkmode 'external',$(LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
 
 rust/target/release/agent:
 	pushd rust && cargo build -p agent --release && popd
