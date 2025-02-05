@@ -182,7 +182,7 @@ func TestE2ESearchOnly(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	err = op.Search(t, ctx, operation.Dataset{
+	err = op.StreamSearch(t, ctx, operation.Dataset{
 		Test:      ds.Test[searchFrom : searchFrom+searchNum],
 		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
 	})
@@ -200,7 +200,7 @@ func TestE2ELinearSearchOnly(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	err = op.LinearSearch(t, ctx, operation.Dataset{
+	err = op.StreamLinearSearch(t, ctx, operation.Dataset{
 		Test:      ds.Test[searchFrom : searchFrom+searchNum],
 		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
 	})
@@ -295,7 +295,7 @@ func TestE2EInsertAndSearch(t *testing.T) {
 
 	sleep(t, waitAfterInsertDuration)
 
-	err = op.Search(t, ctx, operation.Dataset{
+	err = op.StreamSearch(t, ctx, operation.Dataset{
 		Test:      ds.Test[searchFrom : searchFrom+searchNum],
 		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
 	})
@@ -322,7 +322,7 @@ func TestE2EInsertAndLinearSearch(t *testing.T) {
 
 	sleep(t, waitAfterInsertDuration)
 
-	err = op.LinearSearch(t, ctx, operation.Dataset{
+	err = op.StreamLinearSearch(t, ctx, operation.Dataset{
 		Test:      ds.Test[searchFrom : searchFrom+searchNum],
 		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
 	})
@@ -349,7 +349,7 @@ func TestE2EStandardCRUD(t *testing.T) {
 
 	sleep(t, waitAfterInsertDuration)
 
-	err = op.Search(t, ctx, operation.Dataset{
+	err = op.StreamSearch(t, ctx, operation.Dataset{
 		Test:      ds.Test[searchFrom : searchFrom+searchNum],
 		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
 	})
@@ -357,14 +357,14 @@ func TestE2EStandardCRUD(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	err = op.SearchByID(t, ctx, operation.Dataset{
+	op.StreamSearchByID(t, ctx, operation.Dataset{
 		Train: ds.Train[searchByIDFrom : searchByIDFrom+searchByIDNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	err = op.LinearSearch(t, ctx, operation.Dataset{
+	err = op.StreamLinearSearch(t, ctx, operation.Dataset{
 		Test:      ds.Test[searchFrom : searchFrom+searchNum],
 		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
 	})
@@ -372,7 +372,7 @@ func TestE2EStandardCRUD(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	err = op.LinearSearchByID(t, ctx, operation.Dataset{
+	err = op.StreamLinearSearchByID(t, ctx, operation.Dataset{
 		Train: ds.Train[searchByIDFrom : searchByIDFrom+searchByIDNum],
 	})
 	if err != nil {
@@ -922,7 +922,7 @@ func TestE2EReadReplica(t *testing.T) {
 		t.Fatalf("failed to wait for read replica rotator jobs to complete: %s", err)
 	}
 
-	err = op.Search(t, ctx, operation.Dataset{
+	err = op.StreamSearch(t, ctx, operation.Dataset{
 		Test:      ds.Test[searchFrom : searchFrom+searchNum],
 		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
 	})
@@ -930,14 +930,14 @@ func TestE2EReadReplica(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	err = op.SearchByID(t, ctx, operation.Dataset{
+	err = op.StreamSearch(t, ctx, operation.Dataset{
 		Train: ds.Train[searchByIDFrom : searchByIDFrom+searchByIDNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	err = op.LinearSearch(t, ctx, operation.Dataset{
+	err = op.StreamLinearSearch(t, ctx, operation.Dataset{
 		Test:      ds.Test[searchFrom : searchFrom+searchNum],
 		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
 	})
@@ -945,7 +945,7 @@ func TestE2EReadReplica(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	err = op.LinearSearchByID(t, ctx, operation.Dataset{
+	err = op.StreamLinearSearchByID(t, ctx, operation.Dataset{
 		Train: ds.Train[searchByIDFrom : searchByIDFrom+searchByIDNum],
 	})
 	if err != nil {
@@ -1019,17 +1019,17 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	_ = op.Upsert(t, ctx, operation.Dataset{
+	err = op.Upsert(t, ctx, operation.Dataset{
 		Train: ds.Train[insertFrom : insertFrom+insertNum],
 	})
-	// if err != nil {
-	// 	t.Fatalf("an error occurred: %s", err)
-	// }
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
 
-	// sleep(t, waitAfterInsertDuration)
+	sleep(t, waitAfterInsertDuration)
 
 	searchFunc := func(ctx context.Context) error {
-		return op.Search(t, ctx, operation.Dataset{
+		return op.StreamSearch(t, ctx, operation.Dataset{
 			Test:      ds.Test[searchFrom : searchFrom+searchNum],
 			Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
 		})
@@ -1080,38 +1080,38 @@ func TestE2EAgentRolloutRestart(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	// cnt, err := op.IndexInfo(t, ctx)
-	// if err != nil {
-	// 	if cnt == nil {
-	// 		t.Fatalf("an error occurred: err = %s", err)
-	// 	}
-	// 	t.Fatalf("an error occurred: count = %d, err = %s", cnt.Stored, err)
-	// }
+	cnt, err := op.IndexInfo(t, ctx)
+	if err != nil {
+		if cnt == nil {
+			t.Fatalf("an error occurred: err = %s", err)
+		}
+		t.Fatalf("an error occurred: count = %d, err = %s", cnt.Stored, err)
+	}
 
-	// err = op.Exists(t, ctx, "0")
-	// if err != nil {
-	// 	t.Fatalf("an error occurred: %s", err)
-	// }
+	err = op.Exists(t, ctx, "0")
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
 
-	// err = op.GetObject(t, ctx, operation.Dataset{
-	// 	Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
-	// })
-	// if err != nil {
-	// 	t.Fatalf("an error occurred: %s", err)
-	// }
+	err = op.GetObject(t, ctx, operation.Dataset{
+		Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
 
-	// err = op.Remove(t, ctx, operation.Dataset{
-	// 	Train: ds.Train[removeFrom : removeFrom+removeNum],
-	// })
-	// if err != nil {
-	// 	t.Fatalf("an error occurred: %s", err)
-	// }
+	err = op.Remove(t, ctx, operation.Dataset{
+		Train: ds.Train[removeFrom : removeFrom+removeNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
 
 	// Remove all vector data after the current - 1 hour.
-	// err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
-	// if err != nil {
-	// 	t.Fatalf("an error occurred: %s", err)
-	// }
+	err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
 
 	close(done)
 	wg.Wait()
@@ -1140,7 +1140,7 @@ func TestE2EHighConcurrencyMultiSearch(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	_ = op.Upsert(t, ctx, operation.Dataset{
+	err = op.Upsert(t, ctx, operation.Dataset{
 		Train: ds.Train[insertFrom : insertFrom+insertNum],
 	})
 	if err != nil {
@@ -1238,4 +1238,131 @@ func TestE2EHighConcurrencyMultiSearch(t *testing.T) {
 	if serr != nil {
 		t.Fatalf("an error occurred: %s", serr.Error())
 	}
+}
+
+// TestE2EStandardCRUDWithRolloutRestart tests that standard CRUD test with rollout restart agent
+func TestE2EStandardCRUDWithRolloutRestart(t *testing.T) {
+	t.Cleanup(teardown)
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Insert(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	sleep(t, waitAfterInsertDuration)
+
+	searchFunc := func(ctx context.Context) error {
+		return op.Search(t, ctx, operation.Dataset{
+			Test:      ds.Test[searchFrom : searchFrom+searchNum],
+			Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
+		})
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	mu := sync.Mutex{}
+	var serr error
+	wg.Add(1)
+	done := make(chan struct{})
+	go func() {
+		defer wg.Done()
+		for {
+			select {
+			case <-done:
+				return
+			default:
+				eg, egctx := errgroup.New(ctx)
+				for i := 0; i < searchConcurrency; i++ {
+					eg.Go(func() (e error) {
+						ierr := searchFunc(egctx)
+						if ierr != nil {
+							t.Log(ierr)
+							st, ok := status.FromError(ierr)
+							if ok && st.Code() == codes.DeadlineExceeded {
+								_, _, rerr := status.ParseError(ierr, codes.DeadlineExceeded, "an error occurred")
+								mu.Lock()
+								e = errors.Join(e, rerr)
+								mu.Unlock()
+							}
+						}
+						return
+					})
+				}
+				egerr := eg.Wait()
+				mu.Lock()
+				serr = errors.Join(serr, egerr)
+				mu.Unlock()
+				time.Sleep(5 * time.Second)
+			}
+		}
+	}()
+
+	// Wait for StatefulSet to be ready
+	t.Log("rollout restart agent and waiting for agent pods ready...")
+	err = kubectl.RolloutResourceName(ctx, t, "statefulset", "vald-agent", waitResourceReadyDuration.String())
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Exists(t, ctx, "0")
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.GetObject(t, ctx, operation.Dataset{
+		Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.StreamListObject(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Update(t, ctx, operation.Dataset{
+		Train: ds.Train[updateFrom : updateFrom+updateNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Upsert(t, ctx, operation.Dataset{
+		Train: ds.Train[upsertFrom : upsertFrom+upsertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Remove(t, ctx, operation.Dataset{
+		Train: ds.Train[removeFrom : removeFrom+removeNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// Remove all vector data after the current - 1 hour.
+	err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	close(done)
+	wg.Done()
+	mu.Lock()
+	if serr != nil {
+		t.Fatalf("an error occurred: %s", serr.Error())
+	}
+	mu.Unlock()
 }

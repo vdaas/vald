@@ -67,7 +67,7 @@ func ParseAndLogError(t *testing.T, err error) error {
 	return parsed
 }
 
-func (c *client) Search(t *testing.T, ctx context.Context, ds Dataset) error {
+func (c *client) StreamSearch(t *testing.T, ctx context.Context, ds Dataset) error {
 	to := time.Second * 1
 	return c.SearchWithParameters(
 		t,
@@ -161,20 +161,19 @@ func (c *client) SearchWithParameters(
 				t.Errorf("empty result is returned for test ID %s: %#v", resp.GetRequestId(), topKIDs)
 				continue
 			}
-			left, _, ok := strings.Cut(resp.GetRequestId(), "-")
+			left, right, ok := strings.Cut(resp.GetRequestId(), "-")
 			if !ok {
 				sid := strings.SplitN(resp.GetRequestId(), "-", 2)
 				left = sid[0]
 			}
 
-			// idx, err := strconv.Atoi(left)
-			_, err = strconv.Atoi(left)
+			idx, err := strconv.Atoi(left)
 			if err != nil {
 				t.Errorf("an error occurred while converting RequestId into int: %s", err)
 				continue
 			}
 
-			// t.Logf("algo: %s, id: %d, results: %d, recall: %f", right, idx, len(topKIDs), c.recall(topKIDs, ds.Neighbors[idx][:len(topKIDs)]))
+			t.Logf("algo: %s, id: %d, results: %d, recall: %f", right, idx, len(topKIDs), c.recall(topKIDs, ds.Neighbors[idx][:len(topKIDs)]))
 		}
 	}()
 
@@ -270,7 +269,7 @@ func (c *client) SearchWithParameters(
 	return rerr
 }
 
-func (c *client) SearchByID(t *testing.T, ctx context.Context, ds Dataset) error {
+func (c *client) StreamSearchByID(t *testing.T, ctx context.Context, ds Dataset) error {
 	to := time.Second * 3
 	return c.SearchByIDWithParameters(t,
 		ctx,
@@ -394,7 +393,7 @@ func (c *client) SearchByIDWithParameters(
 	return rerr
 }
 
-func (c *client) LinearSearch(t *testing.T, ctx context.Context, ds Dataset) error {
+func (c *client) StreamLinearSearch(t *testing.T, ctx context.Context, ds Dataset) error {
 	return c.LinearSearchWithParameters(
 		t,
 		ctx,
@@ -513,7 +512,7 @@ func (c *client) LinearSearchWithParameters(
 	return rerr
 }
 
-func (c *client) LinearSearchByID(t *testing.T, ctx context.Context, ds Dataset) error {
+func (c *client) StreamLinearSearchByID(t *testing.T, ctx context.Context, ds Dataset) error {
 	return c.LinearSearchByIDWithParameters(t,
 		ctx,
 		ds,

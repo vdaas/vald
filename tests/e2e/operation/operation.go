@@ -36,7 +36,9 @@ type Dataset struct {
 
 type Client interface {
 	Search(t *testing.T, ctx context.Context, ds Dataset) error
+	StreamSearch(t *testing.T, ctx context.Context, ds Dataset) error
 	SearchByID(t *testing.T, ctx context.Context, ds Dataset) error
+	StreamSearchByID(t *testing.T, ctx context.Context, ds Dataset) error
 	SearchWithParameters(
 		t *testing.T,
 		ctx context.Context,
@@ -60,7 +62,9 @@ type Client interface {
 		errorValidator ErrorValidator,
 	) error
 	LinearSearch(t *testing.T, ctx context.Context, ds Dataset) error
+	StreamLinearSearch(t *testing.T, ctx context.Context, ds Dataset) error
 	LinearSearchByID(t *testing.T, ctx context.Context, ds Dataset) error
+	StreamLinearSearchByID(t *testing.T, ctx context.Context, ds Dataset) error
 	LinearSearchWithParameters(
 		t *testing.T,
 		ctx context.Context,
