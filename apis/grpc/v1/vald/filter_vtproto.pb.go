@@ -42,29 +42,162 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FilterClient interface {
-	// A method to search object.
+	// Overview
+	// SearchObject RPC is the method to search object(s) similar to request object.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	SearchObject(ctx context.Context, in *payload.Search_ObjectRequest, opts ...grpc.CallOption) (*payload.Search_Response, error)
-	// A method to search multiple objects.
+	// Overview
+	// StreamSearchObject RPC is the method to search vectors with multi queries(objects) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+	// By using the bidirectional streaming RPC, the search request can be communicated in any order between client and server.
+	// Each Search request and response are independent.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	MultiSearchObject(ctx context.Context, in *payload.Search_MultiObjectRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error)
-	// A method to search object by bidirectional streaming.
+	// Overview
+	// MultiSearchObject RPC is the method to search objects with multiple objects in **1** request.
+	//
+	// <div class="notice">
+	// gRPC has a message size limitation.<br>
+	// Please be careful that the size of the request exceeds the limit.
+	// </div>
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	StreamSearchObject(ctx context.Context, opts ...grpc.CallOption) (Filter_StreamSearchObjectClient, error)
-	// A method insert object.
+	// Overview
+	// InsertObject RPC is the method to insert object through Vald Filter Gateway.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	InsertObject(ctx context.Context, in *payload.Insert_ObjectRequest, opts ...grpc.CallOption) (*payload.Object_Location, error)
-	// Represent the streaming RPC to insert object by bidirectional streaming.
+	// Overview
+	// StreamInsertObject RPC is the method to add new multiple object using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).
+	//
+	// By using the bidirectional streaming RPC, the insert request can be communicated in any order between client and server.
+	// Each Insert request and response are independent.
+	// It's the recommended method to insert a large number of objects.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	StreamInsertObject(ctx context.Context, opts ...grpc.CallOption) (Filter_StreamInsertObjectClient, error)
-	// A method to insert multiple objects.
+	// Overview
+	// MultiInsertObject RPC is the method to add multiple new objects in **1** request.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	MultiInsertObject(ctx context.Context, in *payload.Insert_MultiObjectRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error)
-	// A method to update object.
+	// Overview
+	// UpdateObject RPC is the method to update a single vector.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	UpdateObject(ctx context.Context, in *payload.Update_ObjectRequest, opts ...grpc.CallOption) (*payload.Object_Location, error)
-	// A method to update object by bidirectional streaming.
+	// Overview
+	// StreamUpdateObject RPC is the method to update multiple objects using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+	// By using the bidirectional streaming RPC, the update request can be communicated in any order between client and server.
+	// Each Update request and response are independent.
+	// It's the recommended method to update the large amount of objects.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	StreamUpdateObject(ctx context.Context, opts ...grpc.CallOption) (Filter_StreamUpdateObjectClient, error)
-	// A method to update multiple objects.
+	// Overview
+	// MultiUpdateObject is the method to update multiple objects in **1** request.
+	//
+	// <div class="notice">
+	// gRPC has the message size limitation.<br>
+	// Please be careful that the size of the request exceed the limit.
+	// </div>
+	// ---
+	// Status Code
+	//
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	MultiUpdateObject(ctx context.Context, in *payload.Update_MultiObjectRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error)
-	// A method to upsert object.
+	// Overview
+	// UpsertObject RPC is the method to update a single object and add a new single object.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	UpsertObject(ctx context.Context, in *payload.Upsert_ObjectRequest, opts ...grpc.CallOption) (*payload.Object_Location, error)
-	// A method to upsert object by bidirectional streaming.
+	// Overview
+	// UpsertObject RPC is the method to update a single object and add a new single object.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	StreamUpsertObject(ctx context.Context, opts ...grpc.CallOption) (Filter_StreamUpsertObjectClient, error)
-	// A method to upsert multiple objects.
+	// Overview
+	// MultiUpsertObject is the method to update existing multiple objects and add new multiple objects in **1** request.
+	//
+	// <div class="notice">
+	// gRPC has a message size limitation.<br>
+	// Please be careful that the size of the request exceeds the limit.
+	// </div>
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	MultiUpsertObject(ctx context.Context, in *payload.Upsert_MultiObjectRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error)
 }
 
@@ -300,29 +433,162 @@ func (c *filterClient) MultiUpsertObject(
 // All implementations must embed UnimplementedFilterServer
 // for forward compatibility
 type FilterServer interface {
-	// A method to search object.
+	// Overview
+	// SearchObject RPC is the method to search object(s) similar to request object.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	SearchObject(context.Context, *payload.Search_ObjectRequest) (*payload.Search_Response, error)
-	// A method to search multiple objects.
+	// Overview
+	// StreamSearchObject RPC is the method to search vectors with multi queries(objects) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+	// By using the bidirectional streaming RPC, the search request can be communicated in any order between client and server.
+	// Each Search request and response are independent.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	MultiSearchObject(context.Context, *payload.Search_MultiObjectRequest) (*payload.Search_Responses, error)
-	// A method to search object by bidirectional streaming.
+	// Overview
+	// MultiSearchObject RPC is the method to search objects with multiple objects in **1** request.
+	//
+	// <div class="notice">
+	// gRPC has a message size limitation.<br>
+	// Please be careful that the size of the request exceeds the limit.
+	// </div>
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	StreamSearchObject(Filter_StreamSearchObjectServer) error
-	// A method insert object.
+	// Overview
+	// InsertObject RPC is the method to insert object through Vald Filter Gateway.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	InsertObject(context.Context, *payload.Insert_ObjectRequest) (*payload.Object_Location, error)
-	// Represent the streaming RPC to insert object by bidirectional streaming.
+	// Overview
+	// StreamInsertObject RPC is the method to add new multiple object using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).
+	//
+	// By using the bidirectional streaming RPC, the insert request can be communicated in any order between client and server.
+	// Each Insert request and response are independent.
+	// It's the recommended method to insert a large number of objects.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	StreamInsertObject(Filter_StreamInsertObjectServer) error
-	// A method to insert multiple objects.
+	// Overview
+	// MultiInsertObject RPC is the method to add multiple new objects in **1** request.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	MultiInsertObject(context.Context, *payload.Insert_MultiObjectRequest) (*payload.Object_Locations, error)
-	// A method to update object.
+	// Overview
+	// UpdateObject RPC is the method to update a single vector.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	UpdateObject(context.Context, *payload.Update_ObjectRequest) (*payload.Object_Location, error)
-	// A method to update object by bidirectional streaming.
+	// Overview
+	// StreamUpdateObject RPC is the method to update multiple objects using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+	// By using the bidirectional streaming RPC, the update request can be communicated in any order between client and server.
+	// Each Update request and response are independent.
+	// It's the recommended method to update the large amount of objects.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	StreamUpdateObject(Filter_StreamUpdateObjectServer) error
-	// A method to update multiple objects.
+	// Overview
+	// MultiUpdateObject is the method to update multiple objects in **1** request.
+	//
+	// <div class="notice">
+	// gRPC has the message size limitation.<br>
+	// Please be careful that the size of the request exceed the limit.
+	// </div>
+	// ---
+	// Status Code
+	//
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	MultiUpdateObject(context.Context, *payload.Update_MultiObjectRequest) (*payload.Object_Locations, error)
-	// A method to upsert object.
+	// Overview
+	// UpsertObject RPC is the method to update a single object and add a new single object.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	UpsertObject(context.Context, *payload.Upsert_ObjectRequest) (*payload.Object_Location, error)
-	// A method to upsert object by bidirectional streaming.
+	// Overview
+	// UpsertObject RPC is the method to update a single object and add a new single object.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	StreamUpsertObject(Filter_StreamUpsertObjectServer) error
-	// A method to upsert multiple objects.
+	// Overview
+	// MultiUpsertObject is the method to update existing multiple objects and add new multiple objects in **1** request.
+	//
+	// <div class="notice">
+	// gRPC has a message size limitation.<br>
+	// Please be careful that the size of the request exceeds the limit.
+	// </div>
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  6   | ALREADY_EXISTS    |
+	// |  13  | INTERNAL          |
 	MultiUpsertObject(context.Context, *payload.Upsert_MultiObjectRequest) (*payload.Object_Locations, error)
 	mustEmbedUnimplementedFilterServer()
 }

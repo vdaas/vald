@@ -2344,7 +2344,7 @@ package pool
 // 				reconnectHash: test.fields.reconnectHash,
 // 			}
 //
-// 			err := p.Disconnect()
+// 			err := p.Disconnect(context.Background())
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

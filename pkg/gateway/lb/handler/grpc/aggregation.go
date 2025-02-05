@@ -105,6 +105,7 @@ func (s *server) aggregationSearch(
 							target + " canceled: " + err.Error())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
+				log.Debug(err)
 				return nil
 			case errors.Is(err, context.DeadlineExceeded),
 				errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
@@ -116,6 +117,7 @@ func (s *server) aggregationSearch(
 							target + " deadline_exceeded: " + err.Error())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
+				log.Debug(err)
 				return nil
 			default:
 				st, msg, err := status.ParseError(err, codes.Unknown, "failed to parse search gRPC error response",
@@ -172,6 +174,7 @@ func (s *server) aggregationSearch(
 									target + " canceled: " + err.Error())...)
 							sspan.SetStatus(trace.StatusError, err.Error())
 						}
+						log.Debug(err)
 						return nil
 					case errors.Is(err, context.DeadlineExceeded),
 						errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
@@ -183,6 +186,7 @@ func (s *server) aggregationSearch(
 									target + " deadline_exceeded: " + err.Error())...)
 							sspan.SetStatus(trace.StatusError, err.Error())
 						}
+						log.Debug(err)
 						return nil
 					default:
 						st, msg, err := status.ParseError(err, codes.Unknown, "failed to parse search gRPC error response",

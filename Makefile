@@ -158,7 +158,8 @@ PROTO_VALD_API_DOCS := $(PROTO_VALD_APIS:$(ROOTDIR)/apis/proto/v1/vald/%.proto=$
 PROTO_MIRROR_APIS := $(eval PROTO_MIRROR_APIS := $(filter $(ROOTDIR)/apis/proto/v1/mirror/%.proto,$(PROTOS)))$(PROTO_MIRROR_APIS)
 PROTO_MIRROR_API_DOCS := $(PROTO_MIRROR_APIS:$(ROOTDIR)/apis/proto/v1/mirror/%.proto=$(ROOTDIR)/apis/docs/v1/%.md)
 
-LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -Ofast -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
+LDFLAGS = -pthread -lstdc++ -lm -z relro -z now -flto=auto -Wl,--gc-sections -Wl,-O2
+STATIC_LDFLAGS = -static $(LDFLAGS)
 
 NGT_LDFLAGS = -fopenmp -lopenblas -llapack
 FAISS_LDFLAGS = $(NGT_LDFLAGS) -lgfortran
@@ -166,17 +167,25 @@ HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 TEST_LDFLAGS = $(LDFLAGS) $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 
+COMMON_FLAGS = -O3 -ffast-math -march=native -mtune=native -flto=auto -fno-plt -fvisibility=hidden \
+               -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants \
+               -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
+CFLAGS   = -std=gnu23  $(COMMON_FLAGS)
+CXXFLAGS = -std=gnu++23 $(COMMON_FLAGS)
+FFLAGS   = -std=f2018  $(COMMON_FLAGS)
+
 ifeq ($(GOARCH),amd64)
-CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
-CXXFLAGS ?= $(CFLAGS)
+NGT_FLAGS = -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
+CFLAGS ?= $(CFLAGS) $(NGT_FLAGS)
+CXXFLAGS ?= $(CXXFLAGS) $(NGT_FLAGS)
 EXTLDFLAGS ?= -m64
 else ifeq ($(GOARCH),arm64)
-CFLAGS ?=
-CXXFLAGS ?= $(CFLAGS)
+CFLAGS ?= $(CFLAGS)
+CXXFLAGS ?= $(CXXFLAGS)
 EXTLDFLAGS ?= -march=armv8-a
 else
-CFLAGS ?=
-CXXFLAGS ?= $(CFLAGS)
+CFLAGS ?= $(CFLAGS)
+CXXFLAGS ?= $(CXXFLAGS)
 EXTLDFLAGS ?=
 endif
 
@@ -684,7 +693,11 @@ $(USR_LOCAL)/include/NGT/Capi.h:
 		-DBUILD_TESTING=OFF \
 		-DCMAKE_C_FLAGS="$(CFLAGS)" \
 		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+		-DCMAKE_EXE_LINKER_FLAGS="$(STATIC_LDFLAGS) $(NGT_LDFLAGS)" \
+		-DCMAKE_SHARED_LINKER_FLAGS="$(LDFLAGS) $(NGT_LDFLAGS)" \
+		-DCMAKE_MODULE_LINKER_FLAGS="$(LDFLAGS) $(NGT_LDFLAGS)" \
 		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
 		-B $(TEMP_DIR)/NGT-$(NGT_VERSION)/build $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build -j$(CORES) ngt
 	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build install
@@ -706,9 +719,13 @@ $(LIB_PATH)/libfaiss.a:
 		-DFAISS_ENABLE_PYTHON=OFF \
 		-DFAISS_ENABLE_GPU=OFF \
 		-DBLA_VENDOR=OpenBLAS \
-		-DCMAKE_C_FLAGS="$(LDFLAGS)" \
-		-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_LDFLAGS)" \
+		-DCMAKE_C_FLAGS="$(CFLAGS)" \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+		-DCMAKE_EXE_LINKER_FLAGS="$(STATIC_LDFLAGS) $(FAISS_LDFLAGS)" \
+		-DCMAKE_SHARED_LINKER_FLAGS="$(LDFLAGS) $(FAISS_LDFLAGS)" \
+		-DCMAKE_MODULE_LINKER_FLAGS="$(LDFLAGS) $(FAISS_LDFLAGS)" \
 		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
 		-B $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build $(TEMP_DIR)/faiss-$(FAISS_VERSION)
 	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build -j$(CORES) faiss
 	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build install
@@ -732,6 +749,9 @@ $(USR_LOCAL)/include/usearch.h:
 		-DUSEARCH_USE_JEMALLOC=ON \
 		-DCMAKE_C_FLAGS="$(CFLAGS)" \
 		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+		-DCMAKE_EXE_LINKER_FLAGS="$(STATIC_LDFLAGS)" \
+		-DCMAKE_SHARED_LINKER_FLAGS="$(LDFLAGS)" \
+		-DCMAKE_MODULE_LINKER_FLAGS="$(LDFLAGS)" \
 		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
 		-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
 		-B $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
@@ -755,7 +775,11 @@ cmake/install:
 		-DBUILD_TESTING=OFF \
 		-DCMAKE_C_FLAGS="$(CFLAGS)" \
 		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+		-DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS)" \
+		-DCMAKE_SHARED_LINKER_FLAGS="$(LDFLAGS)" \
+		-DCMAKE_MODULE_LINKER_FLAGS="$(LDFLAGS)" \
 		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
 		-B $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
 	make -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build -j$(CORES) cmake
 	make -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build install
