@@ -1196,6 +1196,7 @@
           "description": "target cluster host",
           "minLength": 1
         },
+        "meta": { "type": "object", "description": "metadata for target host" },
         "port": {
           "type": "integer",
           "description": "target cluster port",

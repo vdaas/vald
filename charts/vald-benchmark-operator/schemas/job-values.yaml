@@ -22,6 +22,11 @@ target:
   # @schema {"name": "target.port", "type": "integer", "minimum": 0, "maximum": 65535}
   # target.port -- target cluster port
   port: 8081
+  # @schema {"name": "target.meta", "type": "object", "anchor": "meta"}
+  # target.meta -- metadata for target host
+  meta:
+    - key: "key"
+      value: "value"
 # @schema {"name": "dataset", "type": "object", "required": ["name", "indexes", "group", "range"]}
 # dataset -- dataset information
 dataset:
