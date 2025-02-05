@@ -276,6 +276,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_source(config::File::with_name("/etc/server/config.yaml"))
         .build()
         .unwrap();
+    let _logger =
+        flexi_logger::Logger::try_with_str(settings.get::<String>("logging.level")?)?.start()?;
     let service = QBGService::new(settings);
     let agent = handler::Agent::new(
         service,

@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 use algorithm::Error;
+use log::{info, warn};
 use prost::Message;
 use proto::{payload::v1::object, vald::v1::object_server};
 use std::collections::HashMap;
@@ -32,7 +33,7 @@ impl object_server::Object for super::Agent {
         &self,
         request: tonic::Request<object::VectorRequest>,
     ) -> std::result::Result<tonic::Response<object::Vector>, tonic::Status> {
-        println!("Recieved a request from {:?}", request.remote_addr());
+        info!("Recieved a request from {:?}", request.remote_addr());
         let req = request.get_ref();
         let id = match req.id.clone() {
             Some(id) => id,
@@ -65,6 +66,7 @@ impl object_server::Object for super::Agent {
                     ),
                     err_details,
                 );
+                warn!("{:?}", status);
                 return Err(status);
             }
             let result = s.get_object(uuid.clone());

@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 use algorithm::Error;
+use log::{info, warn};
 use prost::Message;
 use proto::{
     payload::v1::{insert, object},
@@ -29,7 +30,7 @@ impl insert_server::Insert for super::Agent {
         &self,
         request: tonic::Request<insert::Request>,
     ) -> std::result::Result<tonic::Response<object::Location>, tonic::Status> {
-        println!("Recieved a request from {:?}", request.remote_addr());
+        info!("Recieved a request from {:?}", request.remote_addr());
         let req = request.get_ref();
         let config = match req.config.clone() {
             Some(cfg) => cfg,
@@ -68,6 +69,7 @@ impl insert_server::Insert for super::Agent {
                     "Insert API Incombatible Dimension Size detedted",
                     err_details,
                 );
+                warn!("{:?}", status);
                 return Err(status);
             }
             let result = s.insert(vec.id.clone(), vec.vector.clone(), config.timestamp);
@@ -86,7 +88,9 @@ impl insert_server::Insert for super::Agent {
                                     .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
-                            Status::with_error_details(Code::Aborted, "Insert API aborted to process insert request due to flushing indices is in progress", err_details)
+                            let status = Status::with_error_details(Code::Aborted, "Insert API aborted to process insert request due to flushing indices is in progress", err_details);
+                            warn!("{:?}", status);
+                            status
                         }
                         Error::UUIDAlreadyExists { uuid: _ } => {
                             let mut err_details = ErrorDetails::new();
@@ -97,11 +101,13 @@ impl insert_server::Insert for super::Agent {
                                     .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
-                            Status::with_error_details(
+                            let status = Status::with_error_details(
                                 Code::AlreadyExists,
                                 format!("Insert API uuid {} already exists", vec.id),
                                 err_details,
-                            )
+                            );
+                            warn!("{:?}", status);
+                            status
                         }
                         Error::UUIDNotFound { id: _ } => {
                             let mut err_details = ErrorDetails::new();
@@ -116,14 +122,16 @@ impl insert_server::Insert for super::Agent {
                                 err.to_string(),
                             )]);
                             err_details.set_resource_info(resource_type, resource_name, "", "");
-                            Status::with_error_details(
+                            let status = Status::with_error_details(
                                 Code::InvalidArgument,
                                 format!(
                                     "Insert API invalid id: \"{}\" or vector: {:?} was given",
                                     vec.id, vec.vector
                                 ),
                                 err_details,
-                            )
+                            );
+                            warn!("{:?}", status);
+                            status
                         }
                         _ => {
                             let mut err_details = ErrorDetails::new();
