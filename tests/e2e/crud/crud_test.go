@@ -825,7 +825,12 @@ func TestE2EIndexJobCorrection(t *testing.T) {
 		t.Fatal("no pods found with stored count > 0")
 	}
 
-	cmd := exec.CommandContext(ctx, "sh", "-c", fmt.Sprintf("kubectl get pods -o custom-columns=:metadata.name --no-headers=true --field-selector=\"status.podIP=%s\" --kubeconfig=%s", target, kubeConfig))
+	cmd := exec.CommandContext(
+		ctx,
+		"sh",
+		"-c",
+		fmt.Sprintf("kubectl get pods -o custom-columns=:metadata.name --no-headers=true --field-selector=\"status.podIP=%s\" --kubeconfig=%s", target, kubeConfig),
+	)
 	out, err := cmd.Output()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
