@@ -47,8 +47,9 @@ type BenchmarkScenario struct {
 
 // BenchmarkTarget defines the desired state of BenchmarkTarget.
 type BenchmarkTarget struct {
-	Host string `json:"host,omitempty"`
-	Port int    `json:"port,omitempty"`
+	Host string            `json:"host,omitempty"`
+	Port int               `json:"port,omitempty"`
+	Meta map[string]string `json:"meta,omitempty"`
 }
 
 func (t *BenchmarkTarget) Bind() *BenchmarkTarget {

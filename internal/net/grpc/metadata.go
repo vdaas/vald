@@ -25,6 +25,10 @@ import (
 
 type MD = metadata.MD
 
+func NewMD(m map[string]string) MD {
+	return metadata.New(m)
+}
+
 func NewOutgoingContext(ctx context.Context, md MD) context.Context {
 	return metadata.NewOutgoingContext(ctx, md)
 }
