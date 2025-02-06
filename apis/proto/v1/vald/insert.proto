@@ -30,7 +30,7 @@ option java_package = "org.vdaas.vald.api.v1.vald";
 // Insert Service is responsible for inserting new vectors into the `vald-agent`.
 service Insert {
   // Overview
-  // Inset RPC is the method to add a new single vector.
+  // Insert RPC is the method to add a new single vector.
   // ---
   // Status Code
   // | 0    | OK                |

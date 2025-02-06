@@ -42,14 +42,19 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type IndexClient interface {
+	// Overview
 	// Represent the RPC to get the index information.
 	IndexInfo(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Count, error)
+	// Overview
 	// Represent the RPC to get the index information for each agents.
 	IndexDetail(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Detail, error)
+	// Overview
 	// Represent the RPC to get the index statistics.
 	IndexStatistics(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Statistics, error)
+	// Overview
 	// Represent the RPC to get the index statistics for each agents.
 	IndexStatisticsDetail(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_StatisticsDetail, error)
+	// Overview
 	// Represent the RPC to get the index property.
 	IndexProperty(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_PropertyDetail, error)
 }
@@ -121,14 +126,19 @@ func (c *indexClient) IndexProperty(
 // All implementations must embed UnimplementedIndexServer
 // for forward compatibility
 type IndexServer interface {
+	// Overview
 	// Represent the RPC to get the index information.
 	IndexInfo(context.Context, *payload.Empty) (*payload.Info_Index_Count, error)
+	// Overview
 	// Represent the RPC to get the index information for each agents.
 	IndexDetail(context.Context, *payload.Empty) (*payload.Info_Index_Detail, error)
+	// Overview
 	// Represent the RPC to get the index statistics.
 	IndexStatistics(context.Context, *payload.Empty) (*payload.Info_Index_Statistics, error)
+	// Overview
 	// Represent the RPC to get the index statistics for each agents.
 	IndexStatisticsDetail(context.Context, *payload.Empty) (*payload.Info_Index_StatisticsDetail, error)
+	// Overview
 	// Represent the RPC to get the index property.
 	IndexProperty(context.Context, *payload.Empty) (*payload.Info_Index_PropertyDetail, error)
 	mustEmbedUnimplementedIndexServer()
