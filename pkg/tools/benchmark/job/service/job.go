@@ -289,7 +289,7 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 		}()
 		jctx := ctx
 		if len(j.meta) > 0 {
-			log.Warn(j.meta)
+			log.Debugf("[benchmark job] add metadata: %#v", j.meta)
 			jctx = grpc.NewOutgoingContext(ctx, j.meta)
 		}
 		err = j.jobFunc(jctx, ech)

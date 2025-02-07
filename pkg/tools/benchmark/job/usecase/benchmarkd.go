@@ -125,7 +125,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		service.WithK8sClient(cfg.K8sClient),
 		service.WithRPS(cfg.Job.RPS),
 		service.WithConcurencyLimit(cfg.Job.ConcurrencyLimit),
-		service.WithMD(cfg.Job.Target.Meta),
+		service.WithMetadata(cfg.Job.Target.Meta),
 	)
 	if err != nil {
 		return nil, err

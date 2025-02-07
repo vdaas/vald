@@ -54,6 +54,8 @@ spec:
   target:
     host: "vald-lb-gateway.default.svc.cluster.local"
     port: 8081
+    meta:
+      token: "sample-token"
   global_config:
     version: v0.0.1
     time_zone: JST

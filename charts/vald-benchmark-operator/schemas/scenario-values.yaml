@@ -25,8 +25,8 @@ target:
   # @schema {"name": "target.meta", "type": "object", "anchor": "meta"}
   # target.meta -- metadata for target host
   meta:
-    - key: "key"
-      value: "value"
+    key: "key"
+    value: "value"
 # @schema {"name": "dataset", "type": "object", "required": ["name", "indexes", "group", "range"]}
 # dataset -- dataset information
 dataset:

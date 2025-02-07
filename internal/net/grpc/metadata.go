@@ -25,7 +25,7 @@ import (
 
 type MD = metadata.MD
 
-func NewMD(m map[string]string) MD {
+func NewMetadata(m map[string]string) MD {
 	return metadata.New(m)
 }
 

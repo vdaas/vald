@@ -257,11 +257,11 @@ func WithConcurencyLimit(limit int) Option {
 	}
 }
 
-// WithMD sets the metadata for sending metadata with request.
-func WithMD(m map[string]string) Option {
+// WithMetadata sets the metadata for sending metadata with request.
+func WithMetadata(m map[string]string) Option {
 	return func(j *job) error {
 		if len(m) > 0 {
-			j.meta = grpc.NewMD(m)
+			j.meta = grpc.NewMetadata(m)
 		}
 		return nil
 	}
