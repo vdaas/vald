@@ -207,7 +207,7 @@ test/hack/gotestfmt: \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=vendor -json -cover \
+	go test -short -shuffle=on -race -mod=vendor -json -cover -ldflags="-linkmode=external" \
 		$(ROOTDIR)/hack/gorules/... \
 		$(ROOTDIR)/hack/helm/... \
 		$(ROOTDIR)/hack/license/... \
@@ -226,7 +226,7 @@ test/all/gotestfmt: \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/... \
+	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
 
