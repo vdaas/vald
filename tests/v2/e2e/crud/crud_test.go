@@ -231,3 +231,348 @@ func indexStatus(t *testing.T, ctx context.Context) {
 		t.Logf("IndexStatisticsDetail: %v", res.String())
 	}
 }
+
+func TestE2EUnaryCRUD(t *testing.T) {
+	timestamp := time.Now().UnixNano()
+
+	{
+		res, err := client.IndexProperty(ctx, &payload.Empty{})
+		if err != nil {
+			st, ok := status.FromError(err)
+			if ok && st != nil {
+				t.Errorf("failed to get IndexProperty %v status: %s", err, st.String())
+			} else {
+				t.Errorf("failed to get IndexProperty %v", err)
+			}
+		}
+		t.Logf("IndexProperty: %v", res.String())
+	}
+
+	eg, _ := errgroup.New(ctx)
+	eg.SetLimit(int(cfg.Insert.Concurrency))
+	for i, vec := range ds.Train[cfg.Insert.Offset : cfg.Insert.Offset+cfg.Insert.Num] {
+		id := strconv.Itoa(i)
+		ts := cfg.Insert.Timestamp
+		if ts == 0 {
+			ts = timestamp
+		}
+		eg.Go(safety.RecoverFunc(func() error {
+			res, err := client.Insert(ctx, &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:        id,
+					Vector:    vec,
+					Timestamp: ts,
+				},
+				Config: &payload.Insert_Config{
+					Timestamp:            ts,
+					SkipStrictExistCheck: cfg.Insert.SkipStrictExistCheck,
+				},
+			})
+			if err != nil {
+				st, ok := status.FromError(err)
+				if ok && st != nil {
+					t.Errorf("failed to insert vector: %v, status: %s", err, st.String())
+				} else {
+					t.Errorf("failed to insert vector: %v", err)
+				}
+			}
+			t.Logf("vector %v id %s inserted to %s", vec, id, res.String())
+			return nil
+		}))
+	}
+	eg.Wait()
+
+	sleep(t, cfg.Index.WaitAfterInsert)
+
+	indexStatus(t, ctx)
+
+	eg, _ = errgroup.New(ctx)
+	eg.SetLimit(int(cfg.Search.Concurrency))
+	for i, vec := range ds.Test[cfg.Search.Offset : cfg.Search.Offset+cfg.Search.Num] {
+		for _, query := range cfg.Search.Queries {
+			id := strconv.Itoa(i)
+			rid := id + "-" + payload.Search_AggregationAlgorithm_name[int32(query.Algorithm)]
+			eg.Go(safety.RecoverFunc(func() error {
+				res, err := client.Search(ctx, &payload.Search_Request{
+					Vector: vec,
+					Config: &payload.Search_Config{
+						RequestId:            rid,
+						Num:                  query.K,
+						Radius:               query.Radius,
+						Epsilon:              query.Epsilon,
+						Timeout:              query.Timeout.Nanoseconds(),
+						AggregationAlgorithm: query.Algorithm,
+						MinNum:               query.MinNum,
+						Ratio:                wrapperspb.Float(query.Ratio),
+						Nprobe:               query.Nprobe,
+					},
+				})
+				if err != nil {
+					t.Errorf("failed to search vector: %v", err)
+				}
+				t.Logf("vector %v id %s searched recall: %f, payload %s", vec, rid, calculateRecall(t, res, i), res.String())
+				return nil
+			}))
+		}
+	}
+	eg.Wait()
+
+	eg, _ = errgroup.New(ctx)
+	eg.SetLimit(int(cfg.SearchByID.Concurrency))
+	for i, vec := range ds.Train[cfg.SearchByID.Offset : cfg.SearchByID.Offset+cfg.SearchByID.Num] {
+		for _, query := range cfg.SearchByID.Queries {
+			id := strconv.Itoa(i)
+			rid := id + "-" + payload.Search_AggregationAlgorithm_name[int32(query.Algorithm)]
+			eg.Go(safety.RecoverFunc(func() error {
+				res, err := client.SearchByID(ctx, &payload.Search_IDRequest{
+					Id: id,
+					Config: &payload.Search_Config{
+						RequestId:            rid,
+						Num:                  query.K,
+						Radius:               query.Radius,
+						Epsilon:              query.Epsilon,
+						Timeout:              query.Timeout.Nanoseconds(),
+						AggregationAlgorithm: query.Algorithm,
+						MinNum:               query.MinNum,
+						Ratio:                wrapperspb.Float(query.Ratio),
+						Nprobe:               query.Nprobe,
+					},
+				})
+				if err != nil {
+					t.Errorf("failed to search vector: %v", err)
+				}
+				t.Logf("vector %v id %s searched recall: %f, payload %s", vec, rid, calculateRecall(t, res, i), res.String())
+				return nil
+			}))
+		}
+	}
+	eg.Wait()
+
+	eg, _ = errgroup.New(ctx)
+	eg.SetLimit(int(cfg.LinearSearch.Concurrency))
+	for i, vec := range ds.Test[cfg.LinearSearch.Offset : cfg.LinearSearch.Offset+cfg.LinearSearch.Num] {
+		for _, query := range cfg.LinearSearch.Queries {
+			id := strconv.Itoa(i)
+			rid := id + "-" + payload.Search_AggregationAlgorithm_name[int32(query.Algorithm)]
+			eg.Go(safety.RecoverFunc(func() error {
+				res, err := client.LinearSearch(ctx, &payload.Search_Request{
+					Vector: vec,
+					Config: &payload.Search_Config{
+						RequestId:            rid,
+						Num:                  query.K,
+						Radius:               query.Radius,
+						Epsilon:              query.Epsilon,
+						Timeout:              query.Timeout.Nanoseconds(),
+						AggregationAlgorithm: query.Algorithm,
+						MinNum:               query.MinNum,
+						Ratio:                wrapperspb.Float(query.Ratio),
+						Nprobe:               query.Nprobe,
+					},
+				})
+				if err != nil {
+					t.Errorf("failed to search vector: %v", err)
+				}
+				t.Logf("vector %v id %s searched recall: %f, payload %s", vec, rid, calculateRecall(t, res, i), res.String())
+				return nil
+			}))
+		}
+	}
+	eg.Wait()
+
+	eg, _ = errgroup.New(ctx)
+	eg.SetLimit(int(cfg.LinearSearchByID.Concurrency))
+	for i, vec := range ds.Train[cfg.LinearSearchByID.Offset : cfg.LinearSearchByID.Offset+cfg.LinearSearchByID.Num] {
+		for _, query := range cfg.LinearSearchByID.Queries {
+			id := strconv.Itoa(i)
+			rid := id + "-" + payload.Search_AggregationAlgorithm_name[int32(query.Algorithm)]
+			eg.Go(safety.RecoverFunc(func() error {
+				res, err := client.LinearSearchByID(ctx, &payload.Search_IDRequest{
+					Id: id,
+					Config: &payload.Search_Config{
+						RequestId:            rid,
+						Num:                  query.K,
+						Radius:               query.Radius,
+						Epsilon:              query.Epsilon,
+						Timeout:              query.Timeout.Nanoseconds(),
+						AggregationAlgorithm: query.Algorithm,
+						MinNum:               query.MinNum,
+						Ratio:                wrapperspb.Float(query.Ratio),
+						Nprobe:               query.Nprobe,
+					},
+				})
+				if err != nil {
+					t.Errorf("failed to search vector: %v", err)
+				}
+				t.Logf("vector %v id %s searched recall: %f, payload %s", vec, rid, calculateRecall(t, res, i), res.String())
+				return nil
+			}))
+		}
+	}
+	eg.Wait()
+
+	eg, _ = errgroup.New(ctx)
+	eg.SetLimit(int(cfg.Object.Concurrency))
+	for i := range ds.Train[cfg.Object.Offset : cfg.Object.Offset+cfg.Object.Num] {
+		id := strconv.Itoa(i)
+		eg.Go(safety.RecoverFunc(func() error {
+			obj, err := client.GetObject(ctx, &payload.Object_VectorRequest{
+				Id: &payload.Object_ID{Id: id},
+			})
+			if err != nil {
+				t.Errorf("failed to get object: %v", err)
+			}
+			t.Logf("id %s got object: %v", id, obj.String())
+
+			exists, err := client.Exists(ctx, &payload.Object_ID{Id: id})
+			if err != nil {
+				t.Errorf("failed to check object exists: %v", err)
+			}
+			t.Logf("id %s exists: %v", id, exists.String())
+
+			res, err := client.GetTimestamp(ctx, &payload.Object_TimestampRequest{
+				Id: &payload.Object_ID{Id: id},
+			})
+			if err != nil {
+				t.Errorf("failed to get timestamp: %v", err)
+			}
+			t.Logf("id %s got timestamp: %v", id, res.String())
+			return nil
+		}))
+	}
+	eg.Wait()
+
+	eg, _ = errgroup.New(ctx)
+	eg.SetLimit(int(cfg.Update.Concurrency))
+	for i, vec := range ds.Train[cfg.Update.Offset : cfg.Update.Offset+cfg.Update.Num] {
+		id := strconv.Itoa(i)
+		ts := cfg.Update.Timestamp
+		if ts == 0 {
+			ts = timestamp
+		}
+		eg.Go(safety.RecoverFunc(func() error {
+			res, err := client.Update(ctx, &payload.Update_Request{
+				Vector: &payload.Object_Vector{
+					Id:        id,
+					Vector:    vec,
+					Timestamp: ts,
+				},
+				Config: &payload.Update_Config{
+					Timestamp:            ts,
+					SkipStrictExistCheck: cfg.Update.SkipStrictExistCheck,
+				},
+			})
+			if err != nil {
+				st, ok := status.FromError(err)
+				if ok && st != nil {
+					t.Errorf("failed to update vector: %v, status: %s", err, st.String())
+				} else {
+					t.Errorf("failed to update vector: %v", err)
+				}
+			}
+			t.Logf("vector %v id %s updated to %s", vec, id, res.String())
+			return nil
+		}))
+	}
+	eg.Wait()
+
+	eg, _ = errgroup.New(ctx)
+	eg.SetLimit(int(cfg.Remove.Concurrency))
+	for i := range ds.Train[cfg.Remove.Offset : cfg.Remove.Offset+cfg.Remove.Num] {
+		id := strconv.Itoa(i)
+		ts := cfg.Remove.Timestamp
+		if ts == 0 {
+			ts = timestamp
+		}
+		eg.Go(safety.RecoverFunc(func() error {
+			res, err := client.Remove(ctx, &payload.Remove_Request{
+				Id: &payload.Object_ID{Id: id},
+				Config: &payload.Remove_Config{
+					Timestamp:            ts,
+					SkipStrictExistCheck: cfg.Remove.SkipStrictExistCheck,
+				},
+			})
+			if err != nil {
+				st, ok := status.FromError(err)
+				if ok && st != nil {
+					t.Errorf("failed to remove vector: %v, status: %s", err, st.String())
+				} else {
+					t.Errorf("failed to remove vector: %v", err)
+				}
+			}
+			t.Logf("id %s'd vector removed to %s", id, res.String())
+			return nil
+		}))
+	}
+	eg.Wait()
+
+	eg, _ = errgroup.New(ctx)
+	eg.SetLimit(int(cfg.Upsert.Concurrency))
+	for i, vec := range ds.Train[cfg.Upsert.Offset : cfg.Upsert.Offset+cfg.Upsert.Num] {
+		id := strconv.Itoa(i)
+		ts := cfg.Upsert.Timestamp
+		if ts == 0 {
+			ts = timestamp
+		}
+		eg.Go(safety.RecoverFunc(func() error {
+			res, err := client.Upsert(ctx, &payload.Upsert_Request{
+				Vector: &payload.Object_Vector{
+					Id:        id,
+					Vector:    vec,
+					Timestamp: ts,
+				},
+				Config: &payload.Upsert_Config{
+					Timestamp:            ts,
+					SkipStrictExistCheck: cfg.Upsert.SkipStrictExistCheck,
+				},
+			})
+			if err != nil {
+				st, ok := status.FromError(err)
+				if ok && st != nil {
+					t.Errorf("failed to upsert vector: %v, status: %s", err, st.String())
+				} else {
+					t.Errorf("failed to upsert vector: %v", err)
+				}
+			}
+			t.Logf("vector %v id %s upserted to %s", vec, id, res.String())
+			return nil
+		}))
+	}
+	eg.Wait()
+
+	{
+		rts := time.Now().Add(-time.Hour).UnixNano()
+		res, err := client.RemoveByTimestamp(ctx, &payload.Remove_TimestampRequest{
+			Timestamps: []*payload.Remove_Timestamp{
+				{
+					Timestamp: rts,
+					Operator:  payload.Remove_Timestamp_Le,
+				},
+			},
+		})
+		if err != nil {
+			st, ok := status.FromError(err)
+			if ok && st != nil {
+				t.Errorf("failed to remove by timestamp vector: %v, status: %s", err, st.String())
+			} else {
+				t.Errorf("failed to remove by timestamp vector: %v", err)
+			}
+		}
+		t.Logf("removed by timestamp %s to %s", time.Unix(0, rts).String(), res.String())
+	}
+
+	{
+		res, err := client.Flush(ctx, &payload.Flush_Request{})
+		if err != nil {
+			st, ok := status.FromError(err)
+			if ok && st != nil {
+				t.Errorf("failed to flush %v, status: %s", err, st.String())
+			} else {
+				t.Errorf("failed to flush %v", err)
+			}
+		}
+		t.Logf("flushed %s", res.String())
+	}
+
+	indexStatus(t, ctx)
+}
+>>>>>>> d400d6723 (Refactor add V2 E2E testing for more maintainability)

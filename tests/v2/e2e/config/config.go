@@ -60,7 +60,10 @@ type Data struct {
 type SearchConfig struct {
 	Num         uint64         `yaml:"num"`         // Total number of items to be used for search.
 	Offset      uint64         `yaml:"offset"`      // Starting offset for the search operation.
+<<<<<<< HEAD
 	BulkSize    int            `yaml:"bulk_size"`   // Bulk size for multi-search operations.
+=======
+>>>>>>> d400d6723 (Refactor add V2 E2E testing for more maintainability)
 	Concurrency uint64         `yaml:"concurrency"` // Concurrency for search operations.
 	Queries     []*SearchQuery `yaml:"queries"`     // Slice of detailed search query configurations.
 }
@@ -462,7 +465,5 @@ func Load(path string) (cfg *Data, err error) {
 		return nil, errors.ErrInvalidConfig
 	}
 
-	// Log the entire configuration as raw YAML for debugging purposes.
-	log.Debug(config.ToRawYaml(cfg))
 	return cfg, nil
 }
