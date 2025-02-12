@@ -1,6 +1,6 @@
 module github.com/vdaas/vald/example/client
 
-go 1.23.5
+go 1.23.6
 
 replace (
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v1.2.1
@@ -8,14 +8,14 @@ replace (
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.4
 	github.com/kpango/glg => github.com/kpango/glg v1.6.15
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.7
-	golang.org/x/crypto => golang.org/x/crypto v0.32.0
+	golang.org/x/crypto => golang.org/x/crypto v0.33.0
 	golang.org/x/net => golang.org/x/net v0.34.0
 	golang.org/x/text => golang.org/x/text v0.22.0
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20250204164813-702378808489
-	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20250204164813-702378808489
-	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20250204164813-702378808489
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20250207221924-e9438ea467c6
+	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20250207221924-e9438ea467c6
+	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20250207221924-e9438ea467c6
 	google.golang.org/grpc => google.golang.org/grpc v1.70.0
-	google.golang.org/protobuf => google.golang.org/protobuf v1.36.4
+	google.golang.org/protobuf => google.golang.org/protobuf v1.36.5
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
 	sigs.k8s.io/yaml => sigs.k8s.io/yaml v1.4.0
 )
