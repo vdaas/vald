@@ -36,19 +36,34 @@ const (
 	rolloutAnnotationKey = "kubectl.kubernetes.io/restartedAt"
 )
 
-func (c *client) RolloutRestartDeployment(wait bool) (err error) {
+func (c *client) RolloutRestartDeployment(ctx context.Context, wait bool) (err error) {
 	res := Deployment{
 		Name:      "something",
 		Namespace: "default",
 	}
-	err = RolloutRestart(context.TODO(), c.clientset, res)
+	err = RolloutRestart(ctx, c.clientset, res)
 	if err != nil {
 		return err
 	}
 	if !wait {
 		return nil
 	}
-	return WaitForRestart(context.TODO(), c.clientset, res)
+	return WaitForRestart(ctx, c.clientset, res)
+}
+
+func (c *client) RolloutRestartStatefulSet(ctx context.Context, wait bool) (err error) {
+	res := StatefulSet{
+		Name:      "something",
+		Namespace: "default",
+	}
+	err = RolloutRestart(ctx, c.clientset, res)
+	if err != nil {
+		return err
+	}
+	if !wait {
+		return nil
+	}
+	return WaitForRestart(ctx, c.clientset, res)
 }
 
 func RolloutRestart[R metav1.Object, T ResourceType[R]](

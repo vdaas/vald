@@ -40,34 +40,11 @@ type Client interface {
 		namespace, podName string,
 		localPort, podPort int,
 	) *portforward.Portforward
-	GetPod(
-		ctx context.Context,
-		namespace,
-		name string,
-	) (*corev1.Pod, error)
-	GetPods(
-		ctx context.Context,
-		namespace string,
-		labelSelector string,
-	) ([]corev1.Pod, error)
-	DeletePod(
-		ctx context.Context,
-		namespace, name string,
-	) error
 	WaitForPodReady(
 		ctx context.Context,
 		namespace, name string,
 		timeout time.Duration,
 	) (ok bool, err error)
-	ListCronJob(
-		ctx context.Context,
-		namespace, labelSelector string,
-	) ([]v1.CronJob, error)
-	CreateJobFromCronJob(
-		ctx context.Context,
-		name, namespace string,
-		cronJob *v1.CronJob,
-	) error
 }
 
 type client struct {
@@ -107,41 +84,6 @@ func (cli *client) Portforward(
 	return portforward.New(cli.rest, namespace, podName, localPort, podPort)
 }
 
-func (cli *client) GetPod(ctx context.Context, namespace,
-	name string,
-) (*corev1.Pod, error) {
-	pod, err := cli.clientset.CoreV1().Pods(
-		namespace,
-	).Get(ctx, name, metav1.GetOptions{})
-	if err != nil {
-		return nil, err
-	}
-	return pod, nil
-}
-
-func (cli *client) GetPods(
-	ctx context.Context, namespace string, labelSelector string,
-) ([]corev1.Pod, error) {
-	pods, err := cli.clientset.CoreV1().Pods(
-		namespace,
-	).List(ctx, metav1.ListOptions{
-		LabelSelector: labelSelector,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return pods.Items, nil
-}
-
-func (cli *client) DeletePod(ctx context.Context, namespace, name string) error {
-	cli.clientset.CoreV1().Pods(
-		namespace,
-	).Delete(ctx, name, metav1.DeleteOptions{})
-
-	return nil
-}
-
 func (cli *client) WaitForPodReady(
 	ctx context.Context, namespace, name string, timeout time.Duration,
 ) (ok bool, err error) {
@@ -172,32 +114,4 @@ func (cli *client) WaitForPodReady(
 		case <-tick.C:
 		}
 	}
-}
-
-func (cli *client) ListCronJob(
-	ctx context.Context, namespace, labelSelector string,
-) ([]v1.CronJob, error) {
-	cronJobs, err := cli.clientset.BatchV1().CronJobs(namespace).List(ctx, metav1.ListOptions{
-		LabelSelector: labelSelector,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return cronJobs.Items, nil
-}
-
-func (cli *client) CreateJobFromCronJob(
-	ctx context.Context, name, namespace string, cronJob *v1.CronJob,
-) error {
-	job := &v1.Job{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: cronJob.Spec.JobTemplate.Spec,
-	}
-
-	_, err := cli.clientset.BatchV1().Jobs(namespace).Create(ctx, job, metav1.CreateOptions{})
-	return err
 }
