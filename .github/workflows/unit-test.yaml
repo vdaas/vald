@@ -27,6 +27,7 @@ on:
       - "internal/**"
       - "pkg/**"
       - "cmd/**"
+      - "Makefile.d/test.mk"
   pull_request:
     paths:
       - "go.mod"
@@ -35,6 +36,7 @@ on:
       - "internal/**"
       - "pkg/**"
       - "cmd/**"
+      - "Makefile.d/test.mk"
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
