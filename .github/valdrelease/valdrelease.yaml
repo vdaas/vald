@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 apiVersion: vald.vdaas.org/v1
 kind: ValdRelease
 metadata:
