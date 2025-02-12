@@ -45,7 +45,7 @@ type (
 // It receives messages from the stream, calls the function with the received message, and sends the returned message to the stream.
 // It limits the number of concurrent calls to the function with the concurrency integer.
 // It records errors and returns them as a single error.
-func BidirectionalStream[Q any, R any](
+func BidirectionalStream[Q, R any](
 	ctx context.Context,
 	stream ServerStream,
 	concurrency int,
@@ -167,8 +167,8 @@ func BidirectionalStream[Q any, R any](
 }
 
 // BidirectionalStreamClient is gRPC client stream.
-func BidirectionalStreamClient(
-	stream ClientStream, dataProvider, newData func() any, f func(any, error),
+func BidirectionalStreamClient[S, R any](
+	stream ClientStream, sendDataProvider func() *S, callBack func(*R, error) bool,
 ) (err error) {
 	if stream == nil {
 		return errors.ErrGRPCClientStreamNotFound
@@ -183,13 +183,16 @@ func BidirectionalStreamClient(
 			case <-ctx.Done():
 				return ctx.Err()
 			default:
-				res := newData()
+				res := new(R)
 				err = stream.RecvMsg(res)
 				if err == io.EOF || errors.Is(err, io.EOF) {
 					cancel()
 					return nil
 				}
-				f(res, err)
+				if !callBack(res, err) {
+					cancel()
+					return nil
+				}
 			}
 		}
 	}))
@@ -208,7 +211,7 @@ func BidirectionalStreamClient(
 			case <-ctx.Done():
 				return eg.Wait()
 			default:
-				data := dataProvider()
+				data := sendDataProvider()
 				if data == nil {
 					err = stream.CloseSend()
 					cancel()
@@ -218,7 +221,7 @@ func BidirectionalStreamClient(
 					return eg.Wait()
 				}
 
-				err = stream.SendMsg(data)
+				err = stream.SendMsg(*data)
 				if err != nil {
 					return err
 				}
