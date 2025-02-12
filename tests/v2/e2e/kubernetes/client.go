@@ -27,9 +27,6 @@ import (
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/portforward"
-	v1 "k8s.io/api/batch/v1"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -93,8 +90,13 @@ func (cli *client) WaitForPodReady(
 	tick := time.NewTicker(time.Second)
 	defer tick.Stop()
 
+	pod := Pod{
+		Name:      name,
+		Namespace: namespace,
+	}
+
 	for {
-		pod, err := cli.GetPod(ctx, namespace, name)
+		pod, err := pod.Get(ctx, cli.clientset)
 		if err != nil {
 			return false, err
 		}
