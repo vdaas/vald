@@ -33,8 +33,8 @@ import (
 	"github.com/vdaas/vald/internal/sync"
 )
 
-var (
-	apache = template.Must(template.New("Apache License").Parse(`{{.Escape}}
+const (
+	apacheTemplate = `{{.Escape}}
 {{.Escape}} Copyright (C) 2019-{{.Year}} {{.Maintainer}}
 {{.Escape}}
 {{.Escape}} Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,8 +49,9 @@ var (
 {{.Escape}} See the License for the specific language governing permissions and
 {{.Escape}} limitations under the License.
 {{.Escape}}
-`))
-	docker = template.Must(template.New("Apache License").Parse(`{{.Escape}} syntax = docker/dockerfile:latest
+`
+
+	dockerTemplate = `{{.Escape}} syntax = docker/dockerfile:latest
 {{.Escape}} check=error=true
 {{.Escape}}
 {{.Escape}} Copyright (C) 2019-{{.Year}} {{.Maintainer}}
@@ -67,9 +68,9 @@ var (
 {{.Escape}} See the License for the specific language governing permissions and
 {{.Escape}} limitations under the License.
 {{.Escape}}
-`))
+`
 
-	googleProtoApache = template.Must(template.New("Google Proto Apache License").Parse(`{{.Escape}}
+	googoleProtoApacheTemplate = `{{.Escape}}
 {{.Escape}} Copyright (C) {{.Year}} Google LLC
 {{.Escape}} Modified by {{.Maintainer}}
 {{.Escape}}
@@ -85,9 +86,9 @@ var (
 {{.Escape}} See the License for the specific language governing permissions and
 {{.Escape}} limitations under the License.
 {{.Escape}}
-`))
+`
 
-	goStandard = template.Must(template.New("Go License").Parse(`{{.Escape}}
+	goStandardTemplate = `{{.Escape}}
 {{.Escape}} Copyright (c) 2009-{{.Year}} The Go Authors. All rights resered.
 {{.Escape}} Modified by {{.Maintainer}}
 {{.Escape}}
@@ -117,7 +118,18 @@ var (
 {{.Escape}} (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 {{.Escape}} OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 {{.Escape}}
-`))
+`
+)
+
+var (
+	apache                     = template.Must(template.New("Apache License").Parse(apacheTemplate))
+	apacheLineCount            = strings.Count(apacheTemplate, "\n")
+	docker                     = template.Must(template.New("Apache License").Parse(dockerTemplate))
+	dockerLineCount            = strings.Count(dockerTemplate, "\n")
+	googleProtoApache          = template.Must(template.New("Google Proto Apache License").Parse(googoleProtoApacheTemplate))
+	googleProtoApacheLineCount = strings.Count(googoleProtoApacheTemplate, "\n")
+	goStandard                 = template.Must(template.New("Go License").Parse(goStandardTemplate))
+	goStandardLineCount        = strings.Count(goStandardTemplate, "\n")
 
 	slushEscape = "//"
 	sharpEscape = "#"
@@ -291,6 +303,7 @@ func readAndRewrite(path string) error {
 		}
 	} else {
 		tmpl := apache
+		count := apacheLineCount
 		switch filepath.Ext(path) {
 		case ".go", ".c", ".h", ".hpp", ".cpp":
 			d.Escape = slushEscape
@@ -302,15 +315,18 @@ func readAndRewrite(path string) error {
 				"semaphore_example_test.go",
 				"semaphore_test.go":
 				tmpl = goStandard
+				count = goStandardLineCount
 			case "error_details.pb.go",
 				"error_details.pb.json.go",
 				"error_details_vtproto.pb.go":
 				tmpl = googleProtoApache
+				count = googleProtoApacheLineCount
 			default:
 			}
 		case ".proto":
 			if fi.Name() == "error_details.proto" {
 				tmpl = googleProtoApache
+				count = googleProtoApacheLineCount
 			}
 			d.Escape = slushEscape
 		case ".rs":
@@ -318,9 +334,11 @@ func readAndRewrite(path string) error {
 		default:
 			if fi.Name() == "Dockerfile" {
 				tmpl = docker
+				count = dockerLineCount
 			}
 		}
 		lf := true
+		cnt := 0
 		bf := false
 		sc := bufio.NewScanner(f)
 		once := sync.Once{}
@@ -362,7 +380,8 @@ func readAndRewrite(path string) error {
 				}
 				continue
 			}
-			if lf && strings.HasPrefix(line, d.Escape) {
+			if lf && strings.HasPrefix(line, d.Escape) && cnt < count {
+				cnt++
 				continue
 			} else if !bf {
 				once.Do(func() {
