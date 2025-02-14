@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# @schema {"name": "defaults", "type": "object"}
-# The values in the defaults section will be used for common settings in each component if not specified in its sections.
 defaults:
   # @schema {"name": "defaults.time_zone", "type": "string"}
   # defaults.time_zone -- Time zone
