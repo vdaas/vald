@@ -16,3 +16,4 @@
 formatter:
   type: basic
   indentation: 2
+  retain_line_breaks: true
