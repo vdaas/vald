@@ -149,6 +149,7 @@ test/gotestfmt: \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
+	GODEBUG=$(GODEBUG) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
@@ -163,6 +164,7 @@ test/cmd/gotestfmt: \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
+	GODEBUG=$(GODEBUG) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/cmd/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
@@ -177,6 +179,7 @@ test/internal/gotestfmt: \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
+	GODEBUG=$(GODEBUG) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/internal/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
@@ -191,6 +194,7 @@ test/pkg/gotestfmt: \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
+	GODEBUG=$(GODEBUG) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
@@ -207,6 +211,7 @@ test/hack/gotestfmt: \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
+	GODEBUG=$(GODEBUG) \
 	go test -short -shuffle=on -race -mod=vendor -json -cover -ldflags="-linkmode=external" \
 		$(ROOTDIR)/hack/gorules/... \
 		$(ROOTDIR)/hack/helm/... \
@@ -226,6 +231,7 @@ test/all/gotestfmt: \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
+	GODEBUG=$(GODEBUG) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
