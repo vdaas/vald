@@ -82,6 +82,7 @@ GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
 GO_CLEAN_DEPS := true
 GOTEST_TIMEOUT = 30m
 CGO_ENABLED = 1
+GODEBUG := gotestjsonbuildtext=1
 
 RUST_HOME ?= $(LIB_PATH)/rust
 RUSTUP_HOME ?= $(RUST_HOME)/rustup
