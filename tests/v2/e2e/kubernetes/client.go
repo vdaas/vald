@@ -42,6 +42,7 @@ type Client interface {
 		namespace, name string,
 		timeout time.Duration,
 	) (ok bool, err error)
+	Clientset() *kubernetes.Clientset
 }
 
 type client struct {
@@ -116,4 +117,8 @@ func (cli *client) WaitForPodReady(
 		case <-tick.C:
 		}
 	}
+}
+
+func (cli *client) Clientset() *kubernetes.Clientset {
+	return cli.clientset
 }

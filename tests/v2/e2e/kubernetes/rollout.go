@@ -53,7 +53,7 @@ func (c *client) RolloutRestartDeployment(ctx context.Context, wait bool) (err e
 
 func (c *client) RolloutRestartStatefulSet(ctx context.Context, wait bool) (err error) {
 	res := StatefulSet{
-		Name:      "something",
+		Name:      "vald-agent",
 		Namespace: "default",
 	}
 	err = RolloutRestart(ctx, c.clientset, res)
