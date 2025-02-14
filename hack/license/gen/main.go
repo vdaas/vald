@@ -124,7 +124,7 @@ const (
 var (
 	apache                     = template.Must(template.New("Apache License").Parse(apacheTemplate))
 	apacheLineCount            = strings.Count(apacheTemplate, "\n")
-	docker                     = template.Must(template.New("Apache License").Parse(dockerTemplate))
+	docker                     = template.Must(template.New("Docker Apache License").Parse(dockerTemplate))
 	dockerLineCount            = strings.Count(dockerTemplate, "\n")
 	googleProtoApache          = template.Must(template.New("Google Proto Apache License").Parse(googoleProtoApacheTemplate))
 	googleProtoApacheLineCount = strings.Count(googoleProtoApacheTemplate, "\n")
