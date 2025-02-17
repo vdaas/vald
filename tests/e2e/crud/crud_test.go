@@ -375,7 +375,7 @@ func TestE2EStandardCRUD(t *testing.T) {
 
 	err = op.GetObject(t, ctx, operation.Dataset{
 		Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
-	})
+	}, []int{0, 1, 2})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
@@ -953,7 +953,7 @@ func TestE2EReadReplica(t *testing.T) {
 
 	err = op.GetObject(t, ctx, operation.Dataset{
 		Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
-	})
+	}, []int{0, 1, 2})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
