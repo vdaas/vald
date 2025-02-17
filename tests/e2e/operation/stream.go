@@ -1093,7 +1093,9 @@ func (c *client) Exists(t *testing.T, ctx context.Context, id string) error {
 	return nil
 }
 
-func (c *client) GetObject(t *testing.T, ctx context.Context, ds Dataset, offsets []int) (rerr error) {
+func (c *client) GetObject(
+	t *testing.T, ctx context.Context, ds Dataset, offsets []int,
+) (rerr error) {
 	t.Log("getObject operation started")
 
 	client, err := c.getClient()
