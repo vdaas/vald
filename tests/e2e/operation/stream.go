@@ -1093,7 +1093,9 @@ func (c *client) Exists(t *testing.T, ctx context.Context, id string) error {
 	return nil
 }
 
-func (c *client) GetObject(t *testing.T, ctx context.Context, ds Dataset) (rerr error) {
+func (c *client) GetObject(
+	t *testing.T, ctx context.Context, ds Dataset, offsets []int,
+) (rerr error) {
 	t.Log("getObject operation started")
 
 	client, err := c.getClient()
@@ -1148,11 +1150,19 @@ func (c *client) GetObject(t *testing.T, ctx context.Context, ds Dataset) (rerr 
 				continue
 			}
 
-			if !reflect.DeepEqual(res.GetVector().GetVector(), ds.Train[idx]) {
+			v := ds.Train[idx]
+			matched := false
+			for _, offset := range offsets {
+				if reflect.DeepEqual(resp.GetVector(), append(v[offset:], v[:offset]...)) {
+					matched = true
+					break
+				}
+			}
+			if !matched {
 				t.Errorf(
-					"got: %#v, expected: %#v",
-					res.GetVector().GetVector(),
-					ds.Train[idx],
+					"got: %#v, expected(or shifted): %#v",
+					resp.GetVector(),
+					v,
 				)
 			}
 
