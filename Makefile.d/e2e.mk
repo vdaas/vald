@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -18,6 +18,11 @@
 ## run e2e
 e2e:
 	$(call run-e2e-crud-test,-run TestE2EStandardCRUD)
+
+.PHONY: e2e/v2
+## run e2e
+e2e/v2:
+	$(call run-v2-e2e-crud-test,-run TestE2EStrategy)
 
 .PHONY: e2e/faiss
 ## run e2e/faiss

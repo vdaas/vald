@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,17 +14,16 @@
 // limitations under the License.
 //
 
-// Package redis provides implementation of Go API for redis interface
 package redis
 
 import (
 	"context"
-	"crypto/tls"
 	"time"
 
 	redis "github.com/go-redis/redis/v8"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/timeutil"
+	"github.com/vdaas/vald/internal/tls"
 )
 
 // Option represents the functional option for redisClient.

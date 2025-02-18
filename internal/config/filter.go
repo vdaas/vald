@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 // EgressFilter represents the EgressFilter configuration.
@@ -38,6 +37,8 @@ type IngressFilter struct {
 func (e *EgressFilter) Bind() *EgressFilter {
 	if e.Client != nil {
 		e.Client.Bind()
+	} else {
+		e.Client = newGRPCClientConfig() // newGRPCClientConfig calls Bind internally
 	}
 	if e.DistanceFilters != nil {
 		e.DistanceFilters = GetActualValues(e.DistanceFilters)
@@ -52,6 +53,8 @@ func (e *EgressFilter) Bind() *EgressFilter {
 func (i *IngressFilter) Bind() *IngressFilter {
 	if i.Client != nil {
 		i.Client.Bind()
+	} else {
+		i.Client = newGRPCClientConfig() // newGRPCClientConfig calls Bind internally
 	}
 
 	i.Vectorizer = GetActualValue(i.Vectorizer)

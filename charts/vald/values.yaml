@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.7.15
+    tag: v1.7.17
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -672,6 +672,12 @@ defaults:
       # @schema {"name": "defaults.server_config.tls.insecure_skip_verify", "type": "boolean"}
       # defaults.server_config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
       insecure_skip_verify: false
+      # @schema {"name": "defaults.server_config.tls.server_name", "type": "string"}
+      # defaults.server_config.tls.server_name -- SSL Server Name
+      server_name: ""
+      # @schema {"name": "defaults.server_config.tls.client_auth", "type": "string", "enum": ["Auto", "None", "Request", "RequireAny", "VerifyIfGiven", "RequireAndVerify"]}
+      # defaults.server_config.tls.client_auth -- client auth type
+      client_auth: None
   # @schema {"name": "defaults.grpc", "type": "object"}
   grpc:
     # @schema {"name": "defaults.grpc.client", "type": "object", "anchor": "grpc.client"}
@@ -860,6 +866,10 @@ defaults:
             ca: /path/to/ca
             # defaults.grpc.client.dial_option.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
             insecure_skip_verify: false
+            # defaults.grpc.client.dial_option.net.tls.server_name -- SSL Server Name
+            server_name: ""
+            # defaults.grpc.client.dial_option.net.tls.client_auth -- client auth type
+            client_auth: None
           # @schema {"name": "defaults.grpc.client.dial_option.net.socket_option", "alias": "socket_option"}
           socket_option:
             # defaults.grpc.client.dial_option.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -903,6 +913,10 @@ defaults:
         ca: /path/to/ca
         # defaults.grpc.client.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
         insecure_skip_verify: false
+        # defaults.grpc.client.tls.server_name -- SSL Server Name
+        server_name: ""
+        # defaults.grpc.client.tls.client_auth -- client auth type
+        client_auth: None
   # @schema {"name": "defaults.observability", "type": "object", "anchor": "observability"}
   observability:
     # @schema {"name": "defaults.observability.enabled", "type": "boolean"}
@@ -1854,6 +1868,10 @@ gateway:
           ca: /path/to/ca
           # gateway.mirror.gateway_config.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
           insecure_skip_verify: false
+          # gateway.mirror.gateway_config.net.tls.server_name -- SSL Server Name
+          server_name: ""
+          # gateway.mirror.gateway_config.net.tls.client_auth -- client auth type
+          client_auth: None
         # @schema {"name": "gateway.mirror.gateway_config.net.socket_option", "alias": "socket_option"}
         socket_option:
           # gateway.mirror.gateway_config.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -2674,6 +2692,10 @@ agent:
             ca: /path/to/ca
             # agent.sidecar.config.client.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
             insecure_skip_verify: false
+            # agent.sidecar.config.client.net.tls.server_name -- SSL Server Name
+            server_name: ""
+            # agent.sidecar.config.client.net.tls.client_auth -- client auth type
+            client_auth: None
           # @schema {"name": "agent.sidecar.config.client.net.socket_option", "alias": "socket_option"}
           socket_option:
             # agent.sidecar.config.client.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -3054,6 +3076,10 @@ discoverer:
         ca: /path/to/ca
         # discoverer.discoverer.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
         insecure_skip_verify: false
+        # discoverer.discoverer.net.tls.server_name -- SSL Server Name
+        server_name: ""
+        # discoverer.discoverer.net.tls.client_auth -- client auth type
+        client_auth: None
       # @schema {"name": "discoverer.discoverer.net.socket_option", "alias": "socket_option"}
       socket_option:
         # discoverer.discoverer.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -3597,6 +3623,139 @@ manager:
         client: {}
         # @schema {"name": "manager.index.creator.discoverer.agent_client_options", "alias": "grpc.client"}
         # manager.index.creator.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
+        agent_client_options:
+          dial_option:
+            net:
+              dialer:
+                keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual
+    # @schema {"name": "manager.index.deleter", "type": "object"}
+    deleter:
+      # @schema {"name": "manager.index.deleter.name", "type": "string"}
+      # manager.index.deleter.name -- name of index deletion job
+      name: vald-index-deletion
+      # @schema {"name": "manager.index.deleter.image", "alias": "image"}
+      image:
+        # manager.index.deleter.image.repository -- image repository
+        repository: vdaas/vald-index-deletion
+        # manager.index.deleter.image.tag -- image tag (overrides defaults.image.tag)
+        tag: ""
+        # manager.index.image.pullPolicy -- image pull policy
+        pullPolicy: Always
+      # @schema {"name": "manager.index.deleter.server_config", "alias": "server_config"}
+      # manager.index.deleter.server_config -- server config (overrides defaults.server_config)
+      server_config:
+        servers:
+          rest: {}
+          grpc: {}
+        healths:
+          liveness: {}
+          readiness: {}
+          startup: {}
+        metrics:
+          pprof: {}
+      # @schema {"name": "manager.index.deleter.initContainers", "alias": "initContainers"}
+      # manager.index.creator.initContainers -- init containers
+      initContainers:
+        - type: wait-for
+          name: wait-for-agent
+          target: agent
+          image: busybox:stable
+          imagePullPolicy: Always
+          sleepDuration: 2
+        - type: wait-for
+          name: wait-for-discoverer
+          target: discoverer
+          image: busybox:stable
+          imagePullPolicy: Always
+          sleepDuration: 2
+      # @schema {"name": "manager.index.deleter.env", "alias": "env"}
+      # manager.index.deleter.env -- environment variables
+      env:
+        - name: MY_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      # @schema {"name": "manager.index.deleter.observability", "alias": "observability"}
+      # manager.index.creator.observability -- observability config (overrides defaults.observability)
+      observability:
+        otlp:
+          attribute:
+            service_name: vald-index-deletion
+      # @schema {"name": "manager.index.deleter.enabled", "type": "boolean"}
+      # manager.index.deleter.enabled -- enable index deletion CronJob
+      enabled: false
+      # @schema {"name": "manager.index.deleter.schedule", "type": "string"}
+      # manager.index.deleter.schedule -- CronJob schedule setting for index deletion
+      schedule: "* * * * *"
+      # @schema {"name": "manager.index.deleter.suspend", "type": "boolean"}
+      # manager.index.deleter.suspend -- CronJob suspend setting for index deletion
+      suspend: false
+      # @schema {"name": "manager.index.deleter.ttlSecondsAfterFinished", "type": "integer"}
+      # manager.index.deleter.ttlSecondsAfterFinished -- ttl setting for K8s completed jobs
+      ttlSecondsAfterFinished: 86400
+      # @schema {"name": "manager.index.deleter.startingDeadlineSeconds", "type": "integer"}
+      # manager.index.deleter.startingDeadlineSeconds -- startingDeadlineSeconds setting for K8s completed jobs
+      startingDeadlineSeconds: 43200
+      # @schema {"name": "manager.index.deleter.version", "alias": "version"}
+      # manager.index.deleter.version -- version of index manager config
+      version: v0.0.0
+      # @schema {"name": "manager.index.deleter.concurrency", "type": "integer", "minimum": 1}
+      # manager.index.deleter.concurrency -- concurrency for indexing
+      concurrency: 1
+      # @schema {"name": "manager.index.deleter.target_addrs", "type": "array", "items": {"type": "string"}}
+      # manager.index.deleter.target_addrs -- indexing target addresses
+      target_addrs: []
+      # @schema {"name": "manager.index.deleter.index_id", "type": "string"}
+      # manager.index.deleter.index_id -- index id for deletion
+      index_id: ""
+      # @schema {"name": "manager.index.deleter.agent_namespace", "type": "string"}
+      # manager.index.deleter.agent_namespace -- namespace of agent pods to manage
+      agent_namespace: _MY_POD_NAMESPACE_
+      # @schema {"name": "manager.index.deleter.node_name", "type": "string"}
+      # manager.index.deleter.node_name -- node name
+      node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.deleter.nodeSelector", "alias": "nodeSelector"}
+      # manager.index.deleter.nodeSelector -- node selector
+      nodeSelector: {}
+      # @schema {"name": "manager.index.deleter.tolerations", "alias": "tolerations"}
+      # manager.index.deleter.tolerations -- tolerations
+      tolerations: []
+      # @schema {"name": "manager.index.deleter.affinity", "alias": "affinity"}
+      affinity:
+        nodeAffinity:
+          # manager.index.deleter.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          requiredDuringSchedulingIgnoredDuringExecution:
+            # manager.index.deleter.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+            nodeSelectorTerms: []
+        podAffinity:
+          # manager.index.deleter.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          # manager.index.deleter.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+          requiredDuringSchedulingIgnoredDuringExecution: []
+        podAntiAffinity:
+          # manager.index.deleter.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          # manager.index.deleter.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+          requiredDuringSchedulingIgnoredDuringExecution: []
+      # @schema {"name": "manager.index.deleter.discoverer", "type": "object"}
+      discoverer:
+        # @schema {"name": "manager.index.deleter.discoverer.duration", "type": "string"}
+        # manager.index.deleter.discoverer.duration -- refresh duration to discover
+        duration: 500ms
+        # @schema {"name": "manager.index.deleter.discoverer.client", "alias": "grpc.client"}
+        # manager.index.deleter.discoverer.client -- gRPC client for discoverer (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "manager.index.deleter.discoverer.agent_client_options", "alias": "grpc.client"}
+        # manager.index.deleter.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
         agent_client_options:
           dial_option:
             net:

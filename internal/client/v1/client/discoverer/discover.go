@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -109,6 +109,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 	var aech <-chan error
 	if c.client == nil {
 		c.client = grpc.New(
+			"Agent Client",
 			append(
 				c.opts,
 				grpc.WithAddrs(addrs...),
@@ -287,8 +288,7 @@ func (c *client) discover(ctx context.Context) (err error) {
 		_, err = bo.Do(ctx, func(ctx context.Context) (any, bool, error) {
 			connected, err = c.updateDiscoveryInfo(ctx)
 			if err != nil {
-				if !errors.Is(err, errors.ErrGRPCClientNotFound) &&
-					!errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+				if errors.IsNot(err, errors.ErrGRPCClientNotFound, errors.ErrGRPCClientConnNotFound("*")) {
 					return nil, true, err
 				}
 				return nil, false, err
@@ -340,19 +340,15 @@ func (c *client) updateDiscoveryInfo(ctx context.Context) (connected []string, e
 }
 
 func (c *client) discoverNodes(ctx context.Context) (nodes *payload.Info_Nodes, err error) {
-	_, err = c.dscClient.RoundRobin(grpc.WithGRPCMethod(ctx, "discoverer.v1.Discoverer/Nodes"), func(ctx context.Context,
+	nodes, err = grpc.RoundRobin(c.dscClient, grpc.WithGRPCMethod(ctx, "discoverer.v1.Discoverer/Nodes"), func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption,
-	) (any, error) {
-		nodes, err = discoverer.NewDiscovererClient(conn).
+	) (*payload.Info_Nodes, error) {
+		return discoverer.NewDiscovererClient(conn).
 			Nodes(ctx, &payload.Discoverer_Request{
 				Namespace: c.namespace,
 				Name:      c.name,
 				Node:      c.nodeName,
 			}, copts...)
-		if err != nil {
-			return nil, err
-		}
-		return nodes, nil
 	})
 	if err != nil {
 		return nil, err

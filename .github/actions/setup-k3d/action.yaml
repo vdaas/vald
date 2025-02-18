@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ name: "Setup k3d environment"
 description: "An action to set up k3d (k3s in Docker)"
 inputs:
   version:
-    description: "k3d version"
+    description: "The k3d to use. The default version is `versions/K3D_VERSION`"
     required: false
-    default: "latest"
+    default: ""
   k3s_version:
     description: "The k3s to use. The default version is `versions/K3S_VERSION`"
     required: false
@@ -47,10 +47,14 @@ runs:
       id: k3d_version
       shell: bash
       run: |
-        if [ "${K3D_VERSION}" != "latest" ]; then
-          TAG="TAG=v${K3D_VERSION}"
+        if [ -z "${K3D_VERSION}" ]; then
+          if [ -f "versions/K3D_VERSION" ]; then
+            K3D_VERSION=$(cat versions/K3D_VERSION)
+          else
+            K3D_VERSION=latest
+          fi
         fi
-        echo "tag=${TAG}" >> $GITHUB_OUTPUT
+        echo "tag=v${K3D_VERSION}" >> $GITHUB_OUTPUT
       env:
         K3D_VERSION: ${{ inputs.version }}
     - name: Detect k3s version
@@ -67,25 +71,14 @@ runs:
         echo "tag=${K3S_VERSION}" >> $GITHUB_OUTPUT
       env:
         K3S_VERSION: ${{ inputs.k3s_version }}
-    - name: Check if k3d is installed
+    - name: Check k3d version
       id: check_k3d
       shell: bash
       run: |
-        if command -v k3d &> /dev/null; then
-          echo "k3d_installed=true" >> $GITHUB_OUTPUT
-          echo "installed_version=$(k3d version --short | sed 's/^v//')" >> $GITHUB_OUTPUT
-        else
-          echo "k3d_installed=false" >> $GITHUB_OUTPUT
+        INSTALLED_K3D_VERSION=$(k3d version | tee $GITHUB_STEP_SUMMARY | grep k3d | sed 's/^k3d version //')
+        if [ "${INSTALLED_K3D_VERSION}" != ${{ steps.k3d_version.outputs.tag }} ]; then
+          echo "::warning::installed k3d version=${INSTALLED_K3D_VERSION}, detected k3d version=${{ steps.k3d_version.outputs.tag }}"
         fi
-    - name: Install k3d (if not installed or version mismatch)
-      if: steps.check_k3d.outputs.k3d_installed == 'false' || steps.check_k3d.outputs.installed_version != steps.k3d_version.outputs.tag
-      shell: bash
-      run: |
-        make k3d/install
-    - name: Check k3d version
-      shell: bash
-      run: |
-        k3d version
     - name: Create k8s cluster
       shell: bash
       id: start_k3d

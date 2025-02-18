@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package pool provides gRPC client connection pool
 package pool
 
 import (
@@ -117,7 +116,7 @@ func Benchmark_ConnPool(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	b.StartTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		conn, ok := pool.Get(ctx)
 		if ok {
 			do(b, conn)
@@ -141,7 +140,7 @@ func Benchmark_StaticDial(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	b.StartTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		val, ok := conns.Load(DefaultServerAddr)
 		if ok {
 			do(b, val)

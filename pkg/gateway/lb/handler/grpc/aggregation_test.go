@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -34,24 +34,28 @@ package grpc
 // 		UnimplementedValdServer vald.UnimplementedValdServer
 // 	}
 // 	type want struct {
-// 		wantRes *payload.Search_Response
-// 		err     error
+// 		wantRes   *payload.Search_Response
+// 		wantAttrs []attribute.KeyValue
+// 		err       error
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, *payload.Search_Response, error) error
+// 		checkFunc  func(want, *payload.Search_Response, []attribute.KeyValue, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
+// 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, gotAttrs []attribute.KeyValue, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
 // 		if !reflect.DeepEqual(gotRes, w.wantRes) {
 // 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+// 		}
+// 		if !reflect.DeepEqual(gotAttrs, w.wantAttrs) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotAttrs, w.wantAttrs)
 // 		}
 // 		return nil
 // 	}
@@ -150,8 +154,8 @@ package grpc
 // 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
 // 			}
 //
-// 			gotRes, err := s.aggregationSearch(test.args.ctx, test.args.aggr, test.args.bcfg, test.args.f)
-// 			if err := checkFunc(test.want, gotRes, err); err != nil {
+// 			gotRes, gotAttrs, err := s.aggregationSearch(test.args.ctx, test.args.aggr, test.args.bcfg, test.args.f)
+// 			if err := checkFunc(test.want, gotRes, gotAttrs, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})

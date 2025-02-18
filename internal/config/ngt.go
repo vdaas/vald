@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 // NGT represent the ngt core configuration for server.
@@ -120,6 +119,12 @@ type KVSDB struct {
 	Concurrency int `json:"concurrency,omitempty" yaml:"concurrency,omitempty"`
 }
 
+// Bind binds the actual data from the KVSDB receiver fields.
+func (k *KVSDB) Bind() *KVSDB {
+	// No string fields or nested structs to bind in KVSDB itself
+	return k
+}
+
 // VQueue represent the ngt vector queue buffer size.
 type VQueue struct {
 	// InsertBufferPoolSize represents insert time ordered slice buffer size
@@ -127,6 +132,12 @@ type VQueue struct {
 
 	// DeleteBufferPoolSize represents delete time ordered slice buffer size
 	DeleteBufferPoolSize int `json:"delete_buffer_pool_size,omitempty" yaml:"delete_buffer_pool_size"`
+}
+
+// Bind binds the actual data from the VQueue receiver fields.
+func (vq *VQueue) Bind() *VQueue {
+	// No string fields or nested structs to bind in VQueue itself
+	return vq
 }
 
 // Bind returns NGT object whose some string value is filed value or environment value.
@@ -143,13 +154,17 @@ func (n *NGT) Bind() *NGT {
 	n.MinLoadIndexTimeout = GetActualValue(n.MinLoadIndexTimeout)
 	n.MaxLoadIndexTimeout = GetActualValue(n.MaxLoadIndexTimeout)
 	n.LoadIndexTimeoutFactor = GetActualValue(n.LoadIndexTimeoutFactor)
+	n.ExportIndexInfoDuration = GetActualValue(n.ExportIndexInfoDuration)
 
 	if n.VQueue == nil {
 		n.VQueue = new(VQueue)
 	}
+	n.VQueue.Bind()
+
 	if n.KVSDB == nil {
 		n.KVSDB = new(KVSDB)
 	}
+	n.KVSDB.Bind()
 
 	return n
 }

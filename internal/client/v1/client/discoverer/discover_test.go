@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -1080,7 +1080,6 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // func Test_client_dnsDiscovery(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
-// 		ech chan<- error
 // 	}
 // 	type fields struct {
 // 		autoconn            bool
@@ -1131,7 +1130,6 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		       name: "test_case_1",
 // 		       args: args {
 // 		           ctx:nil,
-// 		           ech:nil,
 // 		       },
 // 		       fields: fields {
 // 		           autoconn:false,
@@ -1171,7 +1169,6 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           name: "test_case_2",
 // 		           args: args {
 // 		           ctx:nil,
-// 		           ech:nil,
 // 		           },
 // 		           fields: fields {
 // 		           autoconn:false,
@@ -1242,7 +1239,7 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 				roundRobin:          test.fields.roundRobin,
 // 			}
 //
-// 			gotAddrs, err := c.dnsDiscovery(test.args.ctx, test.args.ech)
+// 			gotAddrs, err := c.dnsDiscovery(test.args.ctx)
 // 			if err := checkFunc(test.want, gotAddrs, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -1253,7 +1250,6 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // func Test_client_discover(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
-// 		ech chan<- error
 // 	}
 // 	type fields struct {
 // 		autoconn            bool
@@ -1300,7 +1296,6 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		       name: "test_case_1",
 // 		       args: args {
 // 		           ctx:nil,
-// 		           ech:nil,
 // 		       },
 // 		       fields: fields {
 // 		           autoconn:false,
@@ -1340,7 +1335,6 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           name: "test_case_2",
 // 		           args: args {
 // 		           ctx:nil,
-// 		           ech:nil,
 // 		           },
 // 		           fields: fields {
 // 		           autoconn:false,
@@ -1411,7 +1405,7 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 				roundRobin:          test.fields.roundRobin,
 // 			}
 //
-// 			err := c.discover(test.args.ctx, test.args.ech)
+// 			err := c.discover(test.args.ctx)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -1422,7 +1416,6 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // func Test_client_updateDiscoveryInfo(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
-// 		ech chan<- error
 // 	}
 // 	type fields struct {
 // 		autoconn            bool
@@ -1473,7 +1466,6 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		       name: "test_case_1",
 // 		       args: args {
 // 		           ctx:nil,
-// 		           ech:nil,
 // 		       },
 // 		       fields: fields {
 // 		           autoconn:false,
@@ -1513,7 +1505,6 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           name: "test_case_2",
 // 		           args: args {
 // 		           ctx:nil,
-// 		           ech:nil,
 // 		           },
 // 		           fields: fields {
 // 		           autoconn:false,
@@ -1584,7 +1575,7 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 				roundRobin:          test.fields.roundRobin,
 // 			}
 //
-// 			gotConnected, err := c.updateDiscoveryInfo(test.args.ctx, test.args.ech)
+// 			gotConnected, err := c.updateDiscoveryInfo(test.args.ctx)
 // 			if err := checkFunc(test.want, gotConnected, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -1766,7 +1757,6 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 	type args struct {
 // 		ctx   context.Context
 // 		nodes *payload.Info_Nodes
-// 		ech   chan<- error
 // 	}
 // 	type fields struct {
 // 		autoconn            bool
@@ -1818,7 +1808,6 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		       args: args {
 // 		           ctx:nil,
 // 		           nodes:nil,
-// 		           ech:nil,
 // 		       },
 // 		       fields: fields {
 // 		           autoconn:false,
@@ -1859,7 +1848,6 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           args: args {
 // 		           ctx:nil,
 // 		           nodes:nil,
-// 		           ech:nil,
 // 		           },
 // 		           fields: fields {
 // 		           autoconn:false,
@@ -1930,7 +1918,7 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 				roundRobin:          test.fields.roundRobin,
 // 			}
 //
-// 			gotAddrs, err := c.discoverAddrs(test.args.ctx, test.args.nodes, test.args.ech)
+// 			gotAddrs, err := c.discoverAddrs(test.args.ctx, test.args.nodes)
 // 			if err := checkFunc(test.want, gotAddrs, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -1943,7 +1931,6 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		ctx            context.Context
 // 		oldAddrs       []string
 // 		connectedAddrs []string
-// 		ech            chan<- error
 // 	}
 // 	type fields struct {
 // 		autoconn            bool
@@ -1992,7 +1979,6 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           ctx:nil,
 // 		           oldAddrs:nil,
 // 		           connectedAddrs:nil,
-// 		           ech:nil,
 // 		       },
 // 		       fields: fields {
 // 		           autoconn:false,
@@ -2034,7 +2020,6 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		           ctx:nil,
 // 		           oldAddrs:nil,
 // 		           connectedAddrs:nil,
-// 		           ech:nil,
 // 		           },
 // 		           fields: fields {
 // 		           autoconn:false,
@@ -2105,7 +2090,7 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 				roundRobin:          test.fields.roundRobin,
 // 			}
 //
-// 			err := c.disconnectOldAddrs(test.args.ctx, test.args.oldAddrs, test.args.connectedAddrs, test.args.ech)
+// 			err := c.disconnectOldAddrs(test.args.ctx, test.args.oldAddrs, test.args.connectedAddrs)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

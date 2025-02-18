@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -996,13 +996,11 @@ func TestGetActualValue(t *testing.T) {
 		func() test {
 			fname := "version"
 			return test{
-				name: "return file contents when val is file://env",
+				name: "return empty when not exists file contents",
 				args: args{
 					val: "file://" + fname,
 				},
-				want: want{
-					wantRes: "file://" + fname,
-				},
+				want: want{},
 			}
 		}(),
 	}

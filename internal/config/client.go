@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 // Client represents the Client configurations.
@@ -25,10 +24,16 @@ type Client struct {
 
 // Bind binds the actual data from the Client receiver field.
 func (c *Client) Bind() *Client {
+	if c.Net == nil {
+		c.Net = new(Net)
+	}
 	if c.Net != nil {
 		c.Net.Bind()
 	}
 
+	if c.Transport == nil {
+		c.Transport = new(Transport)
+	}
 	if c.Transport != nil {
 		c.Transport.Bind()
 	}

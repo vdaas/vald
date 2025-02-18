@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -58,15 +58,16 @@ func (m *Mirror) Bind() *Mirror {
 	m.Colocation = GetActualValue(m.Colocation)
 	m.Group = GetActualValue(m.Group)
 
-	if m.Net != nil {
-		m.Net = m.Net.Bind()
-	} else {
-		m.Net = new(Net).Bind()
+	if m.Net == nil {
+		m.Net = new(Net)
 	}
-	if m.Client != nil {
-		m.Client = m.Client.Bind()
+	// Assuming Net.Bind() is compliant and m.Net is now non-nil
+	m.Net.Bind()
+
+	if m.Client == nil {
+		m.Client = newGRPCClientConfig() // newGRPCClientConfig calls Bind internally
 	} else {
-		m.Client = new(GRPCClient).Bind()
+		m.Client.Bind() // Call Bind on existing client
 	}
 	return m
 }

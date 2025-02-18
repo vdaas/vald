@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ type run struct {
 }
 
 const (
+	agentNGTInfo = config.AgentNGTInfo
 	fieldManager = "vald-agent-index-controller"
 )
 
@@ -118,7 +119,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
 			ngtmetrics.New(ngt),
-			infometrics.New("agent_core_ngt_info", "Agent NGT info", *cfg.NGT),
+			infometrics.New(agentNGTInfo, "Agent NGT info", *cfg.NGT),
 			memmetrics.New(),
 		)
 		if err != nil {

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ func Exists(kv kvs.BidiMap, vq vqueue.Queue, uuid string) (oid uint32, ok bool) 
 	if !ok {
 		oid, kts, ok = kv.Get(uuid)
 		if !ok {
-			log.Debugf("Exists\tuuid: %s's data not found in kvsdb and insert vqueue\terror: %v", uuid, errors.ErrObjectIDNotFound(uuid))
 			return 0, false
 		}
 		if kts < its {

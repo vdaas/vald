@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -83,10 +83,14 @@ $(ROOTDIR)/apis/docs/v1/mirror.md: $(ROOTDIR)/apis/proto/v1/mirror/mirror.proto 
 	@$(call green,"generating documents for API v1...")
 	@$(call gen-api-document,$@,$(subst $(ROOTDIR)/,,$<))
 
-proto/replace:
-	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs -P$(CORES) sed -i -E "s%google.golang.org/grpc/codes%$(GOPKG)/internal/net/grpc/codes%g"
-	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs -P$(CORES) sed -i -E "s%google.golang.org/grpc/status%$(GOPKG)/internal/net/grpc/status%g"
-	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs -P$(CORES) sed -i -E "s%\"io\"%\"$(GOPKG)/internal/io\"%g"
-	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs -P$(CORES) sed -i -E "s%\"sync\"%\"$(GOPKG)/internal/sync\"%g"
-	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs -P$(CORES) sed -i -E "s%interface\{\}%any%g"
-	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs -P$(CORES) sed -i -E "s%For_%For%g"
+proto/replace: \
+	files
+	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?apis/grpc/.*\.go$$' | xargs -I {} -P$(CORES) bash -c '\
+		echo "Replacing gRPC Go {}" && \
+		sed -i -E "s%google.golang.org/grpc/codes%$(GOPKG)/internal/net/grpc/codes%g" {} && \
+		sed -i -E "s%google.golang.org/grpc/status%$(GOPKG)/internal/net/grpc/status%g" {} && \
+		sed -i -E "s%\"io\"%\"$(GOPKG)/internal/io\"%g" {} && \
+		sed -i -E "s%\"sync\"%\"$(GOPKG)/internal/sync\"%g" {} && \
+		sed -i -E "s%interface\{\}%any%g" {} && \
+		sed -i -E "s%For_%For%g" {}'
+	@echo "Proto file Replace complete."

@@ -1,7 +1,7 @@
 //go:build wasm && js && !windows && !linux && !darwin
 
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 
-// Package control provides network socket option
 package control
 
 var SetsockoptInt = func(fd, level, opt int, value int) (err error) {

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 import "github.com/vdaas/vald/internal/strings"
@@ -108,22 +107,27 @@ type CloudStorageClient struct {
 	CredentialsJSON     string `json:"credentials_json"      yaml:"credentials_json"`
 }
 
+// Bind binds the actual data from the CloudStorageClient receiver fields.
+func (csc *CloudStorageClient) Bind() *CloudStorageClient {
+	csc.CredentialsFilePath = GetActualValue(csc.CredentialsFilePath)
+	csc.CredentialsJSON = GetActualValue(csc.CredentialsJSON)
+	return csc
+}
+
 // Bind binds the actual data from the Blob receiver field.
 func (b *Blob) Bind() *Blob {
 	b.StorageType = GetActualValue(b.StorageType)
 	b.Bucket = GetActualValue(b.Bucket)
 
-	if b.S3 != nil {
-		b.S3 = b.S3.Bind()
-	} else {
+	if b.S3 == nil {
 		b.S3 = new(S3Config)
 	}
+	b.S3.Bind()
 
-	if b.CloudStorage != nil {
-		b.CloudStorage = b.CloudStorage.Bind()
-	} else {
+	if b.CloudStorage == nil {
 		b.CloudStorage = new(CloudStorageConfig)
 	}
+	b.CloudStorage.Bind()
 
 	return b
 }
@@ -144,12 +148,10 @@ func (s *S3Config) Bind() *S3Config {
 func (c *CloudStorageConfig) Bind() *CloudStorageConfig {
 	c.URL = GetActualValue(c.URL)
 
-	if c.Client != nil {
-		c.Client.CredentialsFilePath = GetActualValue(c.Client.CredentialsFilePath)
-		c.Client.CredentialsJSON = GetActualValue(c.Client.CredentialsJSON)
-	} else {
+	if c.Client == nil {
 		c.Client = new(CloudStorageClient)
 	}
+	c.Client.Bind() // Call the new Bind method for CloudStorageClient
 
 	c.WriteCacheControl = GetActualValue(c.WriteCacheControl)
 	c.WriteContentDisposition = GetActualValue(c.WriteContentDisposition)

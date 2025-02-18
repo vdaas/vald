@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package cassandra
 
 import (
 	"context"
-	"crypto/tls"
 	"os"
 	"reflect"
 	"testing"
@@ -32,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"github.com/vdaas/vald/internal/tls"
 )
 
 // default comparator option for client.

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,12 +14,10 @@
 // limitations under the License.
 //
 
-// Package grpc provides generic functionality for grpc
 package grpc
 
 import (
 	"context"
-	"crypto/tls"
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/circuitbreaker"
@@ -31,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
+	"github.com/vdaas/vald/internal/tls"
 	"google.golang.org/grpc"
 	gbackoff "google.golang.org/grpc/backoff"
 	"google.golang.org/grpc/credentials"
@@ -634,8 +633,7 @@ func WithClientInterceptors(names ...string) Option {
 			switch strings.ToLower(name) {
 			case "traceinterceptor", "trace":
 				g.dopts = append(g.dopts,
-					grpc.WithUnaryInterceptor(trace.UnaryClientInterceptor()),
-					grpc.WithStreamInterceptor(trace.StreamClientInterceptor()),
+					WithStatsHandler(trace.NewStatsHandler()),
 				)
 			case "metricinterceptor", "metric":
 				uci, sci, err := metric.ClientMetricInterceptors()
@@ -653,7 +651,7 @@ func WithClientInterceptors(names ...string) Option {
 	}
 }
 
-func WithOldConnCloseDuration(dur string) Option {
+func WithOldConnCloseDelay(dur string) Option {
 	return func(g *gRPCClient) {
 		if len(dur) == 0 {
 			return

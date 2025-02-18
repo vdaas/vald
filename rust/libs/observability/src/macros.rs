@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
 #[macro_export]
 macro_rules! tracer {
     () => {{
@@ -64,18 +65,18 @@ pub enum InstrumentKind {
 macro_rules! instrument {
     (InstrumentKind::Counter, $typ:ty, $name:expr, $disc:expr, $unit:expr) => {{
         let meter = meter!();
-        paste::paste! {
+        $crate::paste::paste! {
           meter
             .[<$typ _counter>]($name) // typ = f64 or u64
             .with_description($disc)
             .with_unit($unit)
-            .init()
+            .build()
         }
     }};
 
     (InstrumentKind::Counter, $typ:ty, $name:expr, $disc:expr, $unit:expr, $measurement:expr, $key_value:expr) => {{
         let meter = meter!();
-        paste::paste! {
+        $crate::paste::paste! {
           meter
             .[<$typ _observable_counter>]($name) // typ = f64 or u64
             .with_description($disc)
@@ -83,24 +84,24 @@ macro_rules! instrument {
             .with_callback(|observe| {
                 observe.observe($measurement, $key_value);
             })
-            .init()
+            .build()
         }
     }};
 
     (InstrumentKind::UpdownCounter, $typ:ty, $name:expr, $disc:expr, $unit:expr) => {{
         let meter = meter!();
-        paste::paste! {
+        $crate::paste::paste! {
           meter
             .[<$typ _up_down_counter>]($name) // typ = f64 or i64
             .with_description($disc)
             .with_unit($unit)
-            .init()
+            .build()
         }
     }};
 
     (InstrumentKind::UpdownCounter, $typ:ty, $name:expr, $disc:expr, $unit:expr, $measurement:expr, $key_value:expr) => {{
         let meter = meter!();
-        paste::paste! {
+        $crate::paste::paste! {
           meter
             .[<$typ _observable_up_down_counter>]($name) // typ = f64 or i64
             .with_description($disc)
@@ -108,35 +109,35 @@ macro_rules! instrument {
             .with_callback(|observe| {
                 observe.observe($measurement, $key_value);
             })
-            .init()
+            .build()
         }
     }};
 
     (InstrumentKind::Histogram, $typ:ty, $name:expr, $disc:expr, $unit:expr) => {{
         let meter = meter!();
-        paste::paste! {
+        $crate::paste::paste! {
           meter
             .[<$typ _histogram>]($name) // typ = f64 or i64
             .with_description($disc)
             .with_unit($unit)
-            .init()
+            .build()
         }
     }};
 
     (InstrumentKind::Gauge, $typ:ty, $name:expr, $disc:expr, $unit:expr) => {{
         let meter = meter!();
-        paste::paste! {
+        $crate::paste::paste! {
           meter
             .[<$typ _gauge>]($name) // typ = f64 or i64 or u64
             .with_description($disc)
             .with_unit($unit)
-            .init()
+            .build()
         }
     }};
 
     (InstrumentKind::Gauge, $typ:ty, $name:expr, $disc:expr, $unit:expr, $measurement:expr, $key_value:expr) => {{
         let meter = meter!();
-        paste::paste! {
+        $crate::paste::paste! {
           meter
             .[<$typ _observable_gauge>]($name) // typ = f64 or u64 or u64
             .with_description($disc)
@@ -144,7 +145,7 @@ macro_rules! instrument {
             .with_callback(|observe| {
                 observe.observe($measurement, $key_value);
             })
-            .init()
+            .build()
         }
     }};
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package core provides agent ngt gRPC client functions
 package core
 
 import (
@@ -67,7 +66,7 @@ func New(opts ...Option) (Client, error) {
 			if c.addrs == nil {
 				return nil, errors.ErrGRPCTargetAddrNotFound
 			}
-			c.c = grpc.New(grpc.WithAddrs(c.addrs...))
+			c.c = grpc.New("Agent Client", grpc.WithAddrs(c.addrs...))
 		}
 	}
 	if c.Client == nil {
@@ -102,7 +101,7 @@ func (c *agentClient) CreateIndex(
 			span.End()
 		}
 	}()
-	_, err := c.c.RoundRobin(ctx, func(ctx context.Context,
+	_, err := grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (any, error) {
 		return NewAgentClient(conn).CreateIndex(ctx, req, copts...)
@@ -136,7 +135,7 @@ func (c *agentClient) CreateAndSaveIndex(
 			span.End()
 		}
 	}()
-	_, err := c.c.RoundRobin(ctx, func(ctx context.Context,
+	_, err := grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (any, error) {
 		return NewAgentClient(conn).CreateAndSaveIndex(ctx, req, copts...)

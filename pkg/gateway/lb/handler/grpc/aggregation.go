@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -65,6 +65,10 @@ func (s *server) aggregationSearch(
 		}
 	}()
 
+	if bcfg == nil {
+		return nil, nil, errors.ErrInvalidSearchConfig("bcfg is nil in aggregationSearch")
+	}
+
 	num := aggr.GetNum()
 	min := int(bcfg.GetMinNum())
 
@@ -114,14 +118,14 @@ func (s *server) aggregationSearch(
 				}
 				return nil
 			default:
-				st, msg, err := status.ParseError(err, codes.Unknown, "failed to parse search gRPC error response",
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-					})
+				st, ok := status.FromError(err)
+				if !ok {
+					log.Debug(err)
+					return nil
+				}
 				if sspan != nil {
 					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				switch st.Code() {
@@ -135,14 +139,15 @@ func (s *server) aggregationSearch(
 					codes.InvalidArgument:
 					return nil
 				}
+				log.Debug(err)
 			}
-			log.Debug(err)
 			return nil
 		}
 		if r == nil || len(r.GetResults()) == 0 {
 			select {
 			case <-sctx.Done():
-				err = status.WrapWithNotFound("failed to process search request", errors.ErrEmptySearchResult,
+				err = status.WrapWithNotFound(fmt.Sprintf("failed to process search request from %s", target),
+					errors.ErrEmptySearchResult,
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
@@ -152,7 +157,6 @@ func (s *server) aggregationSearch(
 					sspan.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
-				log.Debug(err)
 				return nil
 			default:
 				r, err = f(sctx, fcfg, vc, copts...)
@@ -181,14 +185,14 @@ func (s *server) aggregationSearch(
 						}
 						return nil
 					default:
-						st, msg, err := status.ParseError(err, codes.Unknown, "failed to parse search gRPC error response",
-							&errdetails.ResourceInfo{
-								ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-								ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-							})
+						st, ok := status.FromError(err)
+						if !ok {
+							log.Debug(err)
+							return nil
+						}
 						if sspan != nil {
 							sspan.RecordError(err)
-							sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+							sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 							sspan.SetStatus(trace.StatusError, err.Error())
 						}
 						switch st.Code() {
@@ -202,12 +206,13 @@ func (s *server) aggregationSearch(
 							codes.InvalidArgument:
 							return nil
 						}
+						log.Debug(err)
 					}
-					log.Debug(err)
 					return nil
 				}
 				if r == nil || len(r.GetResults()) == 0 {
-					err = status.WrapWithNotFound("failed to process search request", errors.ErrEmptySearchResult,
+					err = status.WrapWithNotFound(fmt.Sprintf("failed to process search request from %s", target),
+						errors.ErrEmptySearchResult,
 						&errdetails.ResourceInfo{
 							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
 							ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
@@ -217,7 +222,6 @@ func (s *server) aggregationSearch(
 						sspan.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
 						sspan.SetStatus(trace.StatusError, err.Error())
 					}
-					log.Debug(err)
 					return nil
 				}
 			}

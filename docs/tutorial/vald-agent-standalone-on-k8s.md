@@ -100,10 +100,10 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
    ```bash
    NAME               READY   STATUS    RESTARTS   AGE
-   vald-agent-ngt-0   1/1     Running   0          20m
-   vald-agent-ngt-1   1/1     Running   0          20m
-   vald-agent-ngt-2   1/1     Running   0          20m
-   vald-agent-ngt-3   1/1     Running   0          20m
+   vald-agent-0   1/1     Running   0          20m
+   vald-agent-1   1/1     Running   0          20m
+   vald-agent-2   1/1     Running   0          20m
+   vald-agent-3   1/1     Running   0          20m
    ```
 
    </details>
@@ -115,7 +115,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
     At first, port-forward the vald-lb-gateway is required to make request from your local environment possible.
 
     ```bash
-    kubectl port-forward service/vald-agent-ngt 8081:8081
+    kubectl port-forward service/vald-agent 8081:8081
     ```
 
 1.  Download dataset

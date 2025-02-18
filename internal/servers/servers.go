@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package servers provides implementation of Go API for managing server flow
 package servers
 
 import (
@@ -97,9 +96,7 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 		defer close(ech)
 		<-ctx.Done()
 		err = ctx.Err()
-		if err != nil &&
-			!errors.Is(err, context.Canceled) &&
-			!errors.Is(err, context.DeadlineExceeded) {
+		if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
 			return err
 		}
 		return nil
@@ -122,7 +119,7 @@ func (l *listener) Shutdown(ctx context.Context) (err error) {
 
 		if l.servers[name].IsRunning() {
 			err = l.servers[name].Shutdown(ctx)
-			if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			if errors.IsNot(err, http.ErrServerClosed) {
 				emap[err.Error()] = struct{}{}
 			}
 		}
@@ -131,7 +128,7 @@ func (l *listener) Shutdown(ctx context.Context) (err error) {
 	for name := range l.servers {
 		if l.servers[name].IsRunning() {
 			err = l.servers[name].Shutdown(ctx)
-			if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			if errors.IsNot(err, http.ErrServerClosed) {
 				emap[err.Error()] = struct{}{}
 			}
 		}

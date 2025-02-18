@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -213,6 +213,7 @@ $(LIB_PATH)/libz.a: $(LIB_PATH)
 	&& mkdir -p build \
 	&& cd build \
 	&& cmake  -DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_STATIC_EXECS=ON \
 		-DBUILD_TESTING=OFF \
@@ -241,6 +242,7 @@ $(LIB_PATH)/libhdf5.a: $(LIB_PATH) \
 	&& mkdir -p $(TEMP_DIR)/hdf5/build \
 	&& cd $(TEMP_DIR)/hdf5/build \
 	&& cmake -DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_STATIC_EXECS=ON \
 		-DBUILD_TESTING=OFF \
@@ -259,7 +261,8 @@ $(LIB_PATH)/libhdf5.a: $(LIB_PATH) \
 	&& make -j$(CORES) \
 	&& make install \
 	&& cd $(ROOTDIR) \
-	&& rm -rf $(TEMP_DIR)/hdf5.tar.gz $(TEMP_DIR)/hdf5
+	&& rm -rf $(TEMP_DIR)/hdf5.tar.gz $(TEMP_DIR)/hdf5 \
+	&& ldconfig
 
 .PHONY: yq/install
 ## install yq

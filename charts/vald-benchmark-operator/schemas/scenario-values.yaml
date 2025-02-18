@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -23,6 +23,11 @@ target:
   # @schema {"name": "target.port", "type": "integer", "minimum": 0, "maximum": 65535}
   # target.port -- target cluster port
   port: 8081
+  # @schema {"name": "target.meta", "type": "object", "anchor": "meta"}
+  # target.meta -- metadata for target host
+  meta:
+    key: "key"
+    value: "value"
 # @schema {"name": "dataset", "type": "object", "required": ["name", "indexes", "group", "range"]}
 # dataset -- dataset information
 dataset:

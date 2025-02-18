@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package service manages the main logic of server.
 package service
 
 import (
@@ -1123,10 +1122,7 @@ func (f *faiss) CreateAndSaveIndex(ctx context.Context) error {
 	}()
 
 	err := f.CreateIndex(ctx)
-	if err != nil &&
-		!errors.Is(err, errors.ErrUncommittedIndexNotFound) &&
-		!errors.Is(err, context.Canceled) &&
-		!errors.Is(err, context.DeadlineExceeded) {
+	if errors.IsNot(err, errors.ErrUncommittedIndexNotFound, context.Canceled, context.DeadlineExceeded) {
 		return err
 	}
 
@@ -1246,10 +1242,11 @@ func (f *faiss) GetTrainSize() int {
 func (f *faiss) Close(ctx context.Context) (err error) {
 	defer f.core.Close()
 	defer func() {
+		if !errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
+			err = nil
+		}
 		kerr := f.kvs.Close()
-		if kerr != nil &&
-			!errors.Is(err, context.Canceled) &&
-			!errors.Is(err, context.DeadlineExceeded) {
+		if kerr != nil {
 			if err != nil {
 				err = errors.Join(kerr, err)
 			} else {
@@ -1259,10 +1256,7 @@ func (f *faiss) Close(ctx context.Context) (err error) {
 	}()
 	if len(f.path) != 0 {
 		cerr := f.CreateIndex(ctx)
-		if cerr != nil &&
-			!errors.Is(err, errors.ErrUncommittedIndexNotFound) &&
-			!errors.Is(err, context.Canceled) &&
-			!errors.Is(err, context.DeadlineExceeded) {
+		if errors.IsNot(cerr, errors.ErrUncommittedIndexNotFound, context.Canceled, context.DeadlineExceeded) {
 			if err != nil {
 				err = errors.Join(cerr, err)
 			} else {
@@ -1270,10 +1264,7 @@ func (f *faiss) Close(ctx context.Context) (err error) {
 			}
 		}
 		serr := f.SaveIndex(ctx)
-		if serr != nil &&
-			!errors.Is(err, errors.ErrUncommittedIndexNotFound) &&
-			!errors.Is(err, context.Canceled) &&
-			!errors.Is(err, context.DeadlineExceeded) {
+		if errors.IsNot(serr, errors.ErrUncommittedIndexNotFound, context.Canceled, context.DeadlineExceeded) {
 			if err != nil {
 				err = errors.Join(serr, err)
 			} else {

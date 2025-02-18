@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ jobs:
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
           branch_name=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.head.ref"`
-          type_labels=($(curl -s "https://api.github.com/repos/${REPOSITORY}/labels?per_page=5000" | jq -r ".[].name" | grep -e "^type/"))
+          type_labels=($(gh api "repos/${REPOSITORY}/labels?per_page=5000" | jq -r ".[].name" | grep -e "^type/"))
           send_labels=()
 
           git fetch origin main
@@ -81,6 +81,11 @@ jobs:
           if [ ${#send_labels[@]} -gt 0 ]; then
             str="$(IFS=,; echo "${send_labels[*]}")"
             data="{\"labels\": [$str]}"
+            # If target branch is main, add "actions/backport/release/v1.7" label
+            base_name=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.base.ref"`
+            if [[ "${base_name}" == "main" && "${branch_name}" != backport/* ]]; then
+              data="{\"labels\": [$str, \"actions/backport/release/v1.7\"]}"
+            fi
             echo "send data: " $data
             curl --request POST \
                  --url "https://api.github.com/repos/${REPOSITORY}/issues/${pr_num}/labels" \
@@ -116,7 +121,7 @@ jobs:
           )
 
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-          existing_labels=($(curl -s "https://api.github.com/repos/${REPOSITORY}/issues/${pr_num}/labels" | jq -r ".[].name"))
+          existing_labels=($(gh api "repos/${REPOSITORY}/issues/${pr_num}/labels" | jq -r ".[].name"))
           send_labels=()
           size_label="size/S"
           priority_label="priority/low"

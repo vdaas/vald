@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -13,18 +13,152 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+use algorithm::Error;
+use log::{info, warn};
+use prost::Message;
 use proto::{
-    payload::v1::{object, upsert},
-    vald::v1::upsert_server,
+    payload::v1::{insert, object, update, upsert},
+    vald::v1::{insert_server::Insert, update_server::Update, upsert_server},
 };
+use tokio::sync::RwLock;
+use std::sync::Arc;
+use tonic::{Code, Status};
+use tonic_types::StatusExt;
+
+use super::update::update as update_fn;
+use super::insert::insert as insert_fn;
+use super::common::{bidirectional_stream, build_error_details};
+
+async fn upsert(
+    s: Arc<RwLock<dyn algorithm::ANN>>,
+    resource_type: &str,
+    api_name: &str,
+    name: &str,
+    ip: &str,
+    request: &upsert::Request
+) -> Result<object::Location, Status> {
+    let config = match request.config.clone() {
+        Some(cfg) => cfg,
+        None => return Err(Status::invalid_argument("Missing configuration in request")),
+    };
+    let hostname = cargo::util::hostname()?;
+    let domain = hostname.to_str().unwrap();
+    {
+        let vec = match request.vector.clone() {
+            Some(v) => v,
+            None => return Err(Status::invalid_argument("Missing vector in request")),
+        };
+        let s_inner = s.read().await;
+        let uuid = vec.id.clone();
+        if vec.vector.len() != s_inner.get_dimension_size() {
+            let err = Error::IncompatibleDimensionSize {
+                got: vec.vector.len(),
+                want: s_inner.get_dimension_size(),
+            };
+            let resource_type = format!("{}/qbg.Upsert", resource_type);
+            let resource_name = format!("{}: {}({})", api_name, name, ip);
+            let err_details = build_error_details(err, domain, &vec.id, request.encode_to_vec(), &resource_type, &resource_name, Some("vector dimension size"));
+            let status = Status::with_error_details(
+                Code::InvalidArgument,
+                "Upsert API Incompatible Dimension Size detected",
+                err_details,
+            );
+            warn!("{:?}", status);
+            return Err(status);
+        }
+        if uuid.len() == 0 {
+            let err = Error::InvalidUUID { uuid: uuid.clone() };
+            let resource_type = format!("{}/qbg.Upsert", resource_type);
+            let resource_name = format!("{}: {}({})", api_name, name, ip);
+            let err_details = build_error_details(err, domain, &uuid, request.encode_to_vec(), &resource_type, &resource_name, Some("uuid"));
+            let status = Status::with_error_details(
+                Code::InvalidArgument,
+                format!("Upsert API invalid argument for uuid \"{}\" detected", uuid),
+                err_details,
+            );
+            warn!("{:?}", status);
+            return Err(status);
+        }
+        let rt_name;
+        let result;
+        let exists = s_inner.exists(uuid.clone());
+        if exists {
+            result = update_fn(
+                s.clone(),
+                resource_type,
+                api_name,
+                name,
+                ip,
+                &update::Request {
+                    vector: Some(vec),
+                    config: Some(update::Config {
+                        skip_strict_exist_check: true,
+                        filters: config.filters,
+                        timestamp: config.timestamp,
+                        disable_balanced_update: config.disable_balanced_update,
+                    }),
+                }).await;
+            rt_name = format!("{}{}", "/qbg.Upsert", "/qbg.Update");
+        } else {
+            result = insert_fn(
+                s.clone(),
+                resource_type,
+                api_name,
+                name,
+                ip,
+                &insert::Request {
+                    vector: Some(vec),
+                    config: Some(insert::Config {
+                        skip_strict_exist_check: true,
+                        filters: config.filters,
+                        timestamp: config.timestamp,
+                    }),
+            }).await;
+            rt_name = format!("{}{}", "/qbg.Upsert", "/qbg.Insert");
+        }
+        match result {
+            Err(st) => {
+                let status = match st.code() {
+                    Code::Aborted
+                    | Code::Cancelled
+                    | Code::DeadlineExceeded
+                    | Code::AlreadyExists
+                    | Code::NotFound
+                    | Code::Ok
+                    | Code::Unimplemented => return Err(st),
+                    _ => {
+                        let resource_type =
+                            format!("{}{}", resource_type, rt_name);
+                        let resource_name =
+                            format!("{}: {}({})", api_name, name, ip);
+                        let err_details = build_error_details(st.get_details_error_info().unwrap().reason, domain, &uuid, request.encode_to_vec(), &resource_type, &resource_name, None);
+                        Status::with_error_details(st.code(), st.message(), err_details)
+                    }
+                };
+                Err(status)
+            }
+            Ok(res) => Ok(res),
+        }
+    }
+}
 
 #[tonic::async_trait]
 impl upsert_server::Upsert for super::Agent {
     async fn upsert(
         &self,
-        _request: tonic::Request<upsert::Request>,
+        request: tonic::Request<upsert::Request>,
     ) -> std::result::Result<tonic::Response<object::Location>, tonic::Status> {
-        todo!()
+        info!("Recieved a request from {:?}", request.remote_addr());
+        let request = request.get_ref();
+        let s = self.s.clone();
+        let resource_type = self.resource_type.clone();
+        let name = self.name.clone();
+        let ip = self.ip.clone();
+        let api_name = self.api_name.clone();
+        match upsert(s, &resource_type, &api_name, &name, &ip, request).await {
+            Ok(location) => Ok(tonic::Response::new(location)),
+            Err(e) => Err(e),
+        }
     }
 
     #[doc = " Server streaming response type for the StreamUpsert method."]
@@ -33,16 +167,121 @@ impl upsert_server::Upsert for super::Agent {
     #[doc = " A method to insert/update multiple vectors by bidirectional streaming.\n"]
     async fn stream_upsert(
         &self,
-        _request: tonic::Request<tonic::Streaming<upsert::Request>>,
+        request: tonic::Request<tonic::Streaming<upsert::Request>>,
     ) -> std::result::Result<tonic::Response<Self::StreamUpsertStream>, tonic::Status> {
-        todo!()
+        info!("Received stream upsert request from {:?}", request.remote_addr());
+        let s = self.s.clone();
+        let resource_type = self.resource_type.clone() + "/qbg.StreamUpsert";
+        let name = self.name.clone();
+        let ip = self.ip.clone();
+        let api_name = self.api_name.clone();
+
+        let process_fn = move |req: upsert::Request| {
+            let s = s.clone();
+            let resource_type = resource_type.clone();
+            let name = name.clone();
+            let ip = ip.clone();
+            let api_name = api_name.clone();
+            async move {
+                match upsert(s, &resource_type, &api_name, &name, &ip, &req).await {
+                    Ok(location) => {
+                        Ok(object::StreamLocation {
+                            payload: Some(object::stream_location::Payload::Location(location)),
+                        })
+                    }
+                    Err(status) => Err(status),
+                }
+            }
+        };
+
+        bidirectional_stream(request, self.stream_concurrency, process_fn).await
     }
 
     #[doc = " A method to insert/update multiple vectors in a single request.\n"]
     async fn multi_upsert(
         &self,
-        _request: tonic::Request<upsert::MultiRequest>,
+        request: tonic::Request<upsert::MultiRequest>,
     ) -> std::result::Result<tonic::Response<object::Locations>, tonic::Status> {
-        todo!()
+        info!("Recieved a request from {:?}", request.remote_addr());
+        let mreq = request.get_ref();
+        let hostname = cargo::util::hostname()?;
+        let domain = hostname.to_str().unwrap();
+        {
+            let s = self.s.read().await;
+            let mut ireqs = insert::MultiRequest { requests: vec![] };
+            let mut ureqs = update::MultiRequest { requests: vec![] };
+            let mut ids = vec![];
+            for req in mreq.requests.clone() {
+                let vec = match req.vector.clone() {
+                    Some(v) => v,
+                    None => return Err(Status::invalid_argument("Missing vector in request")),
+                };
+                let config = match req.config.clone() {
+                    Some(c) => c,
+                    None => return Err(Status::invalid_argument("Missing config in request")),
+                };
+                if vec.vector.len() != s.get_dimension_size() {
+                    let err = Error::IncompatibleDimensionSize {
+                        got: vec.vector.len(),
+                        want: s.get_dimension_size(),
+                    };
+                    let resource_type = self.resource_type.clone() + "/qbg.MultiUpsert";
+                    let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
+                    let err_details = build_error_details(err, domain, &vec.id, req.encode_to_vec(), &resource_type, &resource_name, Some("vector dimension size"));
+                    let status = Status::with_error_details(
+                        Code::InvalidArgument,
+                        "Upsert API Incompatible Dimension Size detected",
+                        err_details,
+                    );
+                    warn!("{:?}", status);
+                    return Err(status);
+                }
+                ids.push(vec.id.clone());
+                let exists = s.exists(vec.id.clone());
+                if exists {
+                    ureqs.requests.push(update::Request {
+                        vector: Some(vec),
+                        config: Some(update::Config {
+                            skip_strict_exist_check: true,
+                            filters: config.filters,
+                            timestamp: config.timestamp,
+                            disable_balanced_update: config.disable_balanced_update,
+                        }),
+                    });
+                } else {
+                    ireqs.requests.push(insert::Request {
+                        vector: Some(vec),
+                        config: Some(insert::Config {
+                            skip_strict_exist_check: true,
+                            filters: config.filters,
+                            timestamp: config.timestamp,
+                        }),
+                    });
+                }
+            }
+
+            if ireqs.requests.len() <= 0 {
+                let res = self.multi_update(tonic::Request::new(ureqs)).await?;
+                return Ok(res);
+            } else if ureqs.requests.len() <= 0 {
+                let res = self.multi_insert(tonic::Request::new(ireqs)).await?;
+                return Ok(res);
+            } else {
+                let ures = self.multi_update(tonic::Request::new(ureqs)).await?;
+                let ires = self.multi_insert(tonic::Request::new(ireqs)).await?;
+
+                let mut locs = object::Locations { locations: vec![] };
+                let ilocs = ires.into_inner().locations;
+                let ulocs = ures.into_inner().locations;
+                if ulocs.len() == 0 {
+                    locs.locations = ilocs;
+                } else if ilocs.len() == 0 {
+                    locs.locations = ulocs;
+                } else {
+                    locs.locations = [ilocs, ulocs].concat();
+                }
+                return Ok(tonic::Response::new(locs));
+            }
+        }
     }
 }

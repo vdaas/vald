@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package backoff provides backoff function controller
 package backoff
 
 import (
@@ -33,7 +32,6 @@ var defaultOptions = []Option{
 	WithJitterLimit("1m"),
 	WithBackOffFactor(1.5),
 	WithRetryCount(50),
-	WithEnableErrorLog(),
 }
 
 // WithInitialDuration returns the option to set the initial duration of backoff.

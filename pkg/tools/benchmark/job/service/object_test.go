@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ package service
 // 	type fields struct {
 // 		eg                 errgroup.Group
 // 		dataset            *config.BenchmarkDataset
+// 		meta               grpc.MD
 // 		jobType            jobType
 // 		jobFunc            func(context.Context, chan error) error
 // 		insertConfig       *config.InsertConfig
@@ -73,6 +74,7 @@ package service
 // 		       fields: fields {
 // 		           eg:nil,
 // 		           dataset:nil,
+// 		           meta:nil,
 // 		           jobType:nil,
 // 		           jobFunc:nil,
 // 		           insertConfig:nil,
@@ -116,6 +118,7 @@ package service
 // 		           fields: fields {
 // 		           eg:nil,
 // 		           dataset:nil,
+// 		           meta:nil,
 // 		           jobType:nil,
 // 		           jobFunc:nil,
 // 		           insertConfig:nil,
@@ -167,6 +170,7 @@ package service
 // 			j := &job{
 // 				eg:                 test.fields.eg,
 // 				dataset:            test.fields.dataset,
+// 				meta:               test.fields.meta,
 // 				jobType:            test.fields.jobType,
 // 				jobFunc:            test.fields.jobFunc,
 // 				insertConfig:       test.fields.insertConfig,
@@ -204,6 +208,7 @@ package service
 // 	type fields struct {
 // 		eg                 errgroup.Group
 // 		dataset            *config.BenchmarkDataset
+// 		meta               grpc.MD
 // 		jobType            jobType
 // 		jobFunc            func(context.Context, chan error) error
 // 		insertConfig       *config.InsertConfig
@@ -254,6 +259,7 @@ package service
 // 		       fields: fields {
 // 		           eg:nil,
 // 		           dataset:nil,
+// 		           meta:nil,
 // 		           jobType:nil,
 // 		           jobFunc:nil,
 // 		           insertConfig:nil,
@@ -297,6 +303,7 @@ package service
 // 		           fields: fields {
 // 		           eg:nil,
 // 		           dataset:nil,
+// 		           meta:nil,
 // 		           jobType:nil,
 // 		           jobFunc:nil,
 // 		           insertConfig:nil,
@@ -348,6 +355,7 @@ package service
 // 			j := &job{
 // 				eg:                 test.fields.eg,
 // 				dataset:            test.fields.dataset,
+// 				meta:               test.fields.meta,
 // 				jobType:            test.fields.jobType,
 // 				jobFunc:            test.fields.jobFunc,
 // 				insertConfig:       test.fields.insertConfig,

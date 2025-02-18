@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -13,26 +13,114 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+use algorithm::Error;
+use log::{error, info};
 use proto::{
     core::v1::agent_server,
     payload::v1::{control, info, Empty},
     vald::v1::index_server,
 };
+use std::collections::HashMap;
+use tonic::{Code, Status};
+use tonic_types::{ErrorDetails, PreconditionViolation, StatusExt};
 
 #[tonic::async_trait]
 impl agent_server::Agent for super::Agent {
     async fn create_index(
         &self,
-        _request: tonic::Request<control::CreateIndexRequest>,
+        request: tonic::Request<control::CreateIndexRequest>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
-        todo!()
+        info!("Recieved a request from {:?}", request.remote_addr());
+        let req = request.get_ref();
+        let pool_size = req.pool_size;
+        let hostname = cargo::util::hostname()?;
+        let domain = hostname.to_str().unwrap();
+        let res = Empty {};
+        {
+            let mut s = self.s.write().await;
+            let result = s.create_index();
+            match result {
+                Err(err) => {
+                    let metadata = HashMap::new();
+                    let resource_type = self.resource_type.clone() + "/qbg.CreateIndex";
+                    let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
+                    let status = match err {
+                        Error::UncommittedIndexNotFound {} => {
+                            let mut err_details = ErrorDetails::new();
+                            err_details.set_error_info(err.to_string(), domain, metadata);
+                            err_details.set_precondition_failure(vec![PreconditionViolation::new(
+                                "uncommitted index is empty",
+                                "failed to CreateIndex operation caused by empty uncommitted indices",
+                                err.to_string(),
+                            )]);
+                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            Status::with_error_details(
+                                Code::FailedPrecondition,
+                                format!("CreateIndex API failed to create indexes pool_size = {} due to the precondition failure, error: {}", pool_size, err.to_string()),
+                                err_details,
+                            )
+                        }
+                        Error::FlushingIsInProgress {} => {
+                            let mut err_details = ErrorDetails::new();
+                            err_details.set_error_info(err.to_string(), domain, metadata);
+                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            Status::with_error_details(
+                                Code::Aborted,
+                                "CreateIndex API aborted to process create indexes request due to flushing indices is in progress",
+                                err_details,
+                            )
+                        }
+                        _ => {
+                            let mut err_details = ErrorDetails::new();
+                            err_details.set_error_info(err.to_string(), domain, metadata);
+                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            let status = Status::with_error_details(
+                                Code::Internal,
+                                format!("CreateIndex API failed to create indexes pool_size = {}, error: {}", pool_size, err.to_string()),
+                                err_details,
+                            );
+                            error!("{:?}", status);
+                            status
+                        }
+                    };
+                    Err(status)
+                }
+                Ok(()) => Ok(tonic::Response::new(res)),
+            }
+        }
     }
 
     async fn save_index(
         &self,
-        _request: tonic::Request<Empty>,
+        request: tonic::Request<Empty>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
-        todo!()
+        info!("Recieved a request from {:?}", request.remote_addr());
+        let hostname = cargo::util::hostname()?;
+        let domain = hostname.to_str().unwrap();
+        let res = Empty {};
+        {
+            let mut s = self.s.write().await;
+            let result = s.save_index();
+            match result {
+                Err(err) => {
+                    error!("{:?}", err);
+                    let metadata = HashMap::new();
+                    let resource_type = self.resource_type.clone() + "/qbg.SaveIndex";
+                    let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
+                    let mut err_details = ErrorDetails::new();
+                    err_details.set_error_info(err.to_string(), domain, metadata);
+                    err_details.set_resource_info(resource_type, resource_name, "", "");
+                    let status = Status::with_error_details(
+                        Code::Internal,
+                        "SaveIndex API failed to save indices",
+                        err_details,
+                    );
+                    error!("{:?}", status);
+                    Err(status)
+                }
+                Ok(()) => Ok(tonic::Response::new(res)),
+            }
+        }
     }
 
     #[doc = " Represent the creating and saving index RPC.\n"]
@@ -49,9 +137,18 @@ impl index_server::Index for super::Agent {
     #[doc = " Represent the RPC to get the agent index information.\n"]
     async fn index_info(
         &self,
-        _request: tonic::Request<Empty>,
+        request: tonic::Request<Empty>,
     ) -> std::result::Result<tonic::Response<info::index::Count>, tonic::Status> {
-        todo!()
+        info!("Recieved a request from {:?}", request.remote_addr());
+        {
+            let s = self.s.read().await;
+            Ok(tonic::Response::new(info::index::Count {
+                stored: s.len(),
+                uncommitted: s.insert_vqueue_buffer_len() + s.delete_vqueue_buffer_len(),
+                indexing: s.is_indexing(),
+                saving: s.is_saving(),
+            }))
+        }
     }
 
     #[doc = " Represent the RPC to get the agent index detailed information.\n"]

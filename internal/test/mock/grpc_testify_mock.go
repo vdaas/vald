@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -199,8 +199,8 @@ func (c *ClientInternal) GetBackoff() backoff.Backoff {
 	return v
 }
 
-func (c *ClientInternal) ConnectedAddrs() []string {
-	args := c.Called()
+func (c *ClientInternal) ConnectedAddrs(ctx context.Context) []string {
+	args := c.Called(ctx)
 	v, ok := args.Get(0).([]string)
 	if !ok {
 		// panic here like testify mock does

@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -23,14 +23,14 @@ import (
 )
 
 const (
-	uuidCountMetricsName        = "indexer_uuid_count"
-	uuidCountMetricsDescription = "UUID count"
+	UuidCountMetricsName        = "indexer_uuid_count"
+	UuidCountMetricsDescription = "UUID count"
 
-	uncommittedUUIDCountMetricsName        = "indexer_uncommitted_uuid_count"
-	uncommittedUUIDCountMetricsDescription = "Uncommitted UUID count"
+	UncommittedUUIDCountMetricsName        = "indexer_uncommitted_uuid_count"
+	UncommittedUUIDCountMetricsDescription = "Uncommitted UUID count"
 
-	isIndexingMetricsName        = "indexer_is_indexing"
-	isIndexingMetricsDescription = "Currently indexing or not"
+	IsIndexingMetricsName        = "indexer_is_indexing"
+	IsIndexingMetricsDescription = "Currently indexing or not"
 )
 
 type indexerMetrics struct {
@@ -47,8 +47,8 @@ func (*indexerMetrics) View() ([]metrics.View, error) {
 	return []metrics.View{
 		view.NewView(
 			view.Instrument{
-				Name:        uuidCountMetricsName,
-				Description: uuidCountMetricsDescription,
+				Name:        UuidCountMetricsName,
+				Description: UuidCountMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -56,8 +56,8 @@ func (*indexerMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        uncommittedUUIDCountMetricsName,
-				Description: uncommittedUUIDCountMetricsDescription,
+				Name:        UncommittedUUIDCountMetricsName,
+				Description: UncommittedUUIDCountMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -65,8 +65,8 @@ func (*indexerMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        isIndexingMetricsName,
-				Description: isIndexingMetricsDescription,
+				Name:        IsIndexingMetricsName,
+				Description: IsIndexingMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -77,8 +77,8 @@ func (*indexerMetrics) View() ([]metrics.View, error) {
 
 func (im *indexerMetrics) Register(m metrics.Meter) error {
 	uuidCount, err := m.Int64ObservableGauge(
-		uuidCountMetricsName,
-		metrics.WithDescription(uuidCountMetricsDescription),
+		UuidCountMetricsName,
+		metrics.WithDescription(UuidCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -86,8 +86,8 @@ func (im *indexerMetrics) Register(m metrics.Meter) error {
 	}
 
 	uncommittedUUIDCount, err := m.Int64ObservableGauge(
-		uncommittedUUIDCountMetricsName,
-		metrics.WithDescription(uncommittedUUIDCountMetricsDescription),
+		UncommittedUUIDCountMetricsName,
+		metrics.WithDescription(UncommittedUUIDCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -95,8 +95,8 @@ func (im *indexerMetrics) Register(m metrics.Meter) error {
 	}
 
 	isIndexing, err := m.Int64ObservableGauge(
-		isIndexingMetricsName,
-		metrics.WithDescription(isIndexingMetricsDescription),
+		IsIndexingMetricsName,
+		metrics.WithDescription(IsIndexingMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {

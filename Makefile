@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -42,10 +42,10 @@ HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 INDEX_CORRECTION_IMAGE          = $(NAME)-index-correction
 INDEX_CREATION_IMAGE            = $(NAME)-index-creation
 INDEX_DELETION_IMAGE            = $(NAME)-index-deletion
+INDEX_EXPORTATION_IMAGE         = $(NAME)-index-exportation
 INDEX_OPERATOR_IMAGE            = $(NAME)-index-operator
 INDEX_SAVE_IMAGE                = $(NAME)-index-save
 LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
-LOADTEST_IMAGE                  = $(NAME)-loadtest
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 MIRROR_GATEWAY_IMAGE            = $(NAME)-mirror-gateway
 READREPLICA_ROTATE_IMAGE        = $(NAME)-readreplica-rotate
@@ -82,6 +82,7 @@ GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
 GO_CLEAN_DEPS := true
 GOTEST_TIMEOUT = 30m
 CGO_ENABLED = 1
+GODEBUG := gotestjsonbuildtext=1
 
 RUST_HOME ?= $(LIB_PATH)/rust
 RUSTUP_HOME ?= $(RUST_HOME)/rustup
@@ -94,10 +95,12 @@ FAISS_VERSION             := $(eval FAISS_VERSION := $(shell cat versions/FAISS_
 USEARCH_VERSION           := $(eval USEARCH_VERSION := $(shell cat versions/USEARCH_VERSION))$(USEARCH_VERSION)
 GOLANGCILINT_VERSION      := $(eval GOLANGCILINT_VERSION := $(shell cat versions/GOLANGCILINT_VERSION))$(GOLANGCILINT_VERSION)
 GO_VERSION                := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
+GRAFANA_VERSION           := $(eval GRAFANA_VERSION := $(shell cat versions/GRAFANA_VERSION))$(GRAFANA_VERSION)
 HDF5_VERSION              := $(eval HDF5_VERSION := $(shell cat versions/HDF5_VERSION))$(HDF5_VERSION)
 HELM_DOCS_VERSION         := $(eval HELM_DOCS_VERSION := $(shell cat versions/HELM_DOCS_VERSION))$(HELM_DOCS_VERSION)
 HELM_VERSION              := $(eval HELM_VERSION := $(shell cat versions/HELM_VERSION))$(HELM_VERSION)
 JAEGER_OPERATOR_VERSION   := $(eval JAEGER_OPERATOR_VERSION := $(shell cat versions/JAEGER_OPERATOR_VERSION))$(JAEGER_OPERATOR_VERSION)
+K3D_VERSION               := $(eval K3D_VERSION := $(shell cat versions/K3D_VERSION))$(K3D_VERSION)
 K3S_VERSION               := $(eval K3S_VERSION := $(shell cat versions/K3S_VERSION))$(K3S_VERSION)
 KIND_VERSION              := $(eval KIND_VERSION := $(shell cat versions/KIND_VERSION))$(KIND_VERSION)
 KUBECTL_VERSION           := $(eval KUBECTL_VERSION := $(shell cat versions/KUBECTL_VERSION))$(KUBECTL_VERSION)
@@ -138,9 +141,8 @@ endif
 
 GIT_COMMIT := $(eval GIT_COMMIT := $(shell git rev-list -1 HEAD))$(GIT_COMMIT)
 
-MAKELISTS := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
-
 ROOTDIR = $(eval ROOTDIR := $(or $(shell git rev-parse --show-toplevel), $(PWD)))$(ROOTDIR)
+MAKELISTS := Makefile $(shell find $(ROOTDIR)/Makefile.d -type f -regex ".*\.mk")
 PROTODIRS := $(eval PROTODIRS := $(shell find $(ROOTDIR)/apis/proto -type d | sed -e "s%apis/proto/%%g" | grep -v "apis/proto"))$(PROTODIRS)
 BENCH_DATASET_BASE_DIR = hack/benchmark/assets
 BENCH_DATASET_MD5_DIR_NAME = checksum
@@ -158,12 +160,13 @@ PROTO_VALD_API_DOCS := $(PROTO_VALD_APIS:$(ROOTDIR)/apis/proto/v1/vald/%.proto=$
 PROTO_MIRROR_APIS := $(eval PROTO_MIRROR_APIS := $(filter $(ROOTDIR)/apis/proto/v1/mirror/%.proto,$(PROTOS)))$(PROTO_MIRROR_APIS)
 PROTO_MIRROR_API_DOCS := $(PROTO_MIRROR_APIS:$(ROOTDIR)/apis/proto/v1/mirror/%.proto=$(ROOTDIR)/apis/docs/v1/%.md)
 
-LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -Ofast -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
+LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
 
-NGT_LDFLAGS = -fopenmp -lopenblas -llapack
-FAISS_LDFLAGS = $(NGT_LDFLAGS) -lgfortran
-HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl
+NGT_LDFLAGS = -fopenmp -lopenblas -llapack -lgfortran
+FAISS_LDFLAGS = $(NGT_LDFLAGS)
+HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl -lm
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
+TEST_LDFLAGS = $(LDFLAGS) $(CGO_LDFLAGS)
 
 ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
@@ -171,6 +174,12 @@ CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?= -m64
 else ifeq ($(GOARCH),arm64)
 CFLAGS ?=
+ifeq ($(GOOS),darwin)
+HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lz -ldl -lm
+CFLAGS = -I $(shell brew --prefix hdf5)/include
+CGO_CFLAGS ?= $(CFLAGS)
+CGO_LDFLAGS = -L $(shell brew --prefix hdf5)/lib -L $(shell brew --prefix zlib)/lib $(HDF5_LDFLAGS)
+endif
 CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?= -march=armv8-a
 else
@@ -349,6 +358,8 @@ CSPELL_EXTRA_OPTIONS ?=
 COMMA := ,
 SHELL = bash
 
+E2E_CONFIG                         ?= $(ROOTDIR)/tests/v2/e2e/assets/unary_crud.yaml
+E2E_ADDR                           ?= $(E2E_BIND_HOST):$(E2E_BIND_PORT)
 E2E_BIND_HOST                      ?= 127.0.0.1
 E2E_BIND_PORT                      ?= 8082
 E2E_DATASET_NAME                   ?= fashion-mnist-784-euclidean.hdf5
@@ -404,7 +415,7 @@ help:
 ## set correct permissions for dirs and files
 perm:
 	find $(ROOTDIR) -type d -not -path "$(ROOTDIR)/.git*" -exec chmod 755 {} \;
-	find $(ROOTDIR) -type f -not -path "$(ROOTDIR)/.git*" -not -name ".gitignore" -exec chmod 644 {} \;
+	@cat $(ROOTDIR)/.gitfiles | grep -vE '^\s*#' | grep -v gitignore | xargs -I {} -P$(CORES) chmod 644 {}
 	if [ -d "$(ROOTDIR)/.git" ]; then \
 		chmod 750 "$(ROOTDIR)/.git"; \
 		if [ -f "$(ROOTDIR)/.git/config" ]; then \
@@ -441,6 +452,8 @@ clean-generated:
 	mv $(ROOTDIR)/apis/grpc/v1/agent/core/agent.go $(TEMP_DIR)/agent.go
 	mv $(ROOTDIR)/apis/grpc/v1/payload/interface.go $(TEMP_DIR)/interface.go
 	mv $(ROOTDIR)/apis/grpc/v1/mirror/mirror.go $(TEMP_DIR)/mirror.go
+	mv $(ROOTDIR)/apis/docs/buf.gen.*.yaml $(TEMP_DIR)/
+	mv $(ROOTDIR)/apis/docs/v1/*.tmpl $(TEMP_DIR)/
 	rm -rf \
 		$(ROOTDIR)/*.log \
 		$(ROOTDIR)/*.svg \
@@ -458,11 +471,20 @@ clean-generated:
 	mv $(TEMP_DIR)/interface.go $(ROOTDIR)/apis/grpc/v1/payload/interface.go
 	mkdir -p $(ROOTDIR)/apis/grpc/v1/mirror
 	mv $(TEMP_DIR)/mirror.go $(ROOTDIR)/apis/grpc/v1/mirror/mirror.go
+	mkdir -p $(ROOTDIR)/apis/docs/v1
+	mv $(TEMP_DIR)/buf.gen.*.yaml $(ROOTDIR)/apis/docs
+	mv $(TEMP_DIR)/*.tmpl $(ROOTDIR)/apis/docs/v1
 
 .PHONY: files
 ## add current repository file list to .gitfiles
 files:
-	git ls-files > $(ROOTDIR)/.gitfiles
+	@if [ ! -f $(ROOTDIR)/.gitfiles ]; then \
+		printf '\n%.0s' {1..15} > $(ROOTDIR)/.gitfiles; \
+	else \
+		head -n 15 $(ROOTDIR)/.gitfiles > $(ROOTDIR)/.gitfiles.tmp; \
+		git ls-files | uniq >> $(ROOTDIR)/.gitfiles.tmp; \
+		mv $(ROOTDIR)/.gitfiles.tmp $(ROOTDIR)/.gitfiles; \
+	fi
 
 .PHONY: license
 ## add license to files
@@ -473,6 +495,14 @@ license:
 ## generate dockerfiles
 dockerfile:
 	$(call gen-dockerfile,$(ROOTDIR),$(MAINTAINER))
+
+.PHONY: dashboard
+## generate dashboards
+dashboard: k8s/metrics/grafana/dashboards/00-vald-cluster-overview.yaml
+
+# To cache the generated dashboards, making a generated file target
+k8s/metrics/grafana/dashboards/00-vald-cluster-overview.yaml: $(shell find hack/grafana/gen -type f) versions/GRAFANA_VERSION
+	$(call gen-dashboard,$(ROOTDIR),$(MAINTAINER))
 
 .PHONY: workflow
 ## generate workflows
@@ -517,19 +547,25 @@ update: \
 .PHONY: format
 ## format go codes
 format: \
-	dockerfile \
-	license \
 	format/proto \
-	format/go \
 	format/json \
 	format/md \
-	format/yaml \
-	remove/empty/file
+	remove/empty/file \
+	license
+	@$(MAKE) dockerfile format/go format/go/test
+	@$(MAKE) format/yaml
+
+.PHONY: format/diff
+## format diff
+format/diff:
+	@$(MAKE) format/go/diff
+	@$(MAKE) format/yaml/diff
 
 .PHONY: remove/empty/file
 ## removes empty file such as just includes \r \n space tab
-remove/empty/file:
-	find $(ROOTDIR)/ -type f ! -name ".gitkeep" -print0 | xargs -0 -P$(CORES) -n 1 sh -c 'grep -qvE "^[ \t\n]*$$" "$$1" || rm "$$1"' sh
+remove/empty/file: \
+	files
+	@cat $(ROOTDIR)/.gitfiles | grep -vE '^\s*#' | grep -v gitkeep | xargs -I {} -P$(CORES) -n1 sh -c 'if [ -f "{}" ] && [ -z "$$(tr -d '\''[:space:]'\'' < "{}")" ]; then rm "{}"; fi'
 
 .PHONY: format/go
 ## run golines, gofumpt, goimports for all go files
@@ -538,12 +574,17 @@ format/go: \
 	golines/install \
 	gofumpt/install \
 	strictgoimports/install \
-	goimports/install
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/strictgoimports -w
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/goimports -w
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/crlfmt -w -diff=false
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/gofumpt -w
+	goimports/install \
+	files
+	@echo "Formatting Go files..."
+	@cat $(ROOTDIR)/.gitfiles | grep -e "\.go$$" | grep -v "_test\.go$$" | xargs -I {} -P$(CORES) bash -c '\
+	        echo "Formatting Go file {}" && \
+		$(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH) {} && \
+		$(GOBIN)/strictgoimports -w {} && \
+		$(GOBIN)/goimports -w {} && \
+		$(GOBIN)/crlfmt -w -diff=false {} && \
+		$(GOBIN)/gofumpt -w {}'
+	@echo "Go formatting complete."
 
 .PHONY: format/go/test
 ## run golines, gofumpt, goimports for go test files
@@ -552,21 +593,60 @@ format/go/test: \
 	golines/install \
 	gofumpt/install \
 	strictgoimports/install \
-	goimports/install
-	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
-	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/strictgoimports -w
-	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/goimports -w
-	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/crlfmt -w -diff=false
-	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/gofumpt -w
+	goimports/install \
+	files
+	@echo "Formatting Go Test files..."
+	@cat $(ROOTDIR)/.gitfiles | grep -e "_test\.go$$" | xargs -I {} -P$(CORES) bash -c '\
+	        echo "Formatting Go Test file {}" && \
+		$(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH) {} && \
+		$(GOBIN)/strictgoimports -w {} && \
+		$(GOBIN)/goimports -w {} && \
+		$(GOBIN)/crlfmt -w -diff=false {} && \
+		$(GOBIN)/gofumpt -w {}'
+	@echo "Go test file formatting complete."
+
+.PHONY: format/go/diff
+## run golines, gofumpt, goimports for go diff files
+format/go/diff: \
+	crlfmt/install \
+	golines/install \
+	gofumpt/install \
+	strictgoimports/install \
+	goimports/install \
+	files
+	@echo "Formatting Go Test files..."
+	@git diff --name-only --diff-filter=ACM HEAD | grep -e ".go$$" | xargs -I {} -P$(CORES) bash -c '\
+	        echo "Formatting Go file {}" && \
+		$(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH) {} && \
+		$(GOBIN)/strictgoimports -w {} && \
+		$(GOBIN)/goimports -w {} && \
+		$(GOBIN)/crlfmt -w -diff=false {} && \
+		$(GOBIN)/gofumpt -w {}'
+	@echo "Go file formatting complete."
 
 .PHONY: format/yaml
 format/yaml: \
 	prettier/install\
-	yamlfmt/install
-	-find $(ROOTDIR) -name "*.yaml" -type f | grep -v templates | grep -v s3 | xargs -P$(CORES) -I {} prettier --write {}
-	-find $(ROOTDIR) -name "*.yml" -type f | grep -v templates | grep -v s3 | xargs -P$(CORES) -I {} prettier --write {}
-	-find $(ROOTDIR) -name "*.yaml" -type f | grep -v templates | grep -v s3 | xargs -P$(CORES) -I {} yamlfmt {}
-	-find $(ROOTDIR) -name "*.yml" -type f | grep -v templates | grep -v s3 | xargs -P$(CORES) -I {} yamlfmt {}
+	yamlfmt/install \
+	files
+	@echo "Formatting YAML files..."
+	- @cat $(ROOTDIR)/.gitfiles | grep -E '\.ya?ml\b' | grep -Ev '(templates|s3)' | xargs -I {} -P$(CORES) bash -c '\
+		echo "Formatting YAML file {}" && \
+		yamlfmt {} && \
+		prettier --write {}'
+	@echo "YAML file formatting complete."
+
+.PHONY: format/yaml/diff
+format/yaml/diff: \
+	prettier/install\
+	yamlfmt/install \
+	files
+	@echo "Formatting YAML files..."
+	- @git diff --name-only --diff-filter=ACM HEAD | grep -E '\.ya?ml\b' | grep -Ev '(templates|s3)' | xargs -I {} -P$(CORES) bash -c '\
+		echo "Formatting YAML file {}" && \
+		yamlfmt {} && \
+		prettier --write {}'
+	@echo "YAML file formatting complete."
 
 .PHONY: format/md
 format/md: \
@@ -678,9 +758,11 @@ $(USR_LOCAL)/include/NGT/Capi.h:
 	git clone --depth 1 --branch v$(NGT_VERSION) https://github.com/yahoojapan/NGT $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \
 	cmake -DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_STATIC_EXECS=ON \
 		-DBUILD_TESTING=OFF \
+		-DNGT_LARGE_DATASET=ON \
 		-DCMAKE_C_FLAGS="$(CFLAGS)" \
 		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
 		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
@@ -699,6 +781,7 @@ $(LIB_PATH)/libfaiss.a:
 	tar zxf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz -C $(TEMP_DIR)/
 	cd $(TEMP_DIR)/faiss-$(FAISS_VERSION) && \
 	cmake -DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_STATIC_EXECS=ON \
 		-DBUILD_TESTING=OFF \
@@ -722,6 +805,7 @@ $(USR_LOCAL)/include/usearch.h:
 	git clone --depth 1 --recursive --branch v$(USEARCH_VERSION) https://github.com/unum-cloud/usearch $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
 	cd $(TEMP_DIR)/usearch-$(USEARCH_VERSION) && \
 	cmake -DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_TESTING=OFF \
 		-DUSEARCH_BUILD_LIB_C=ON \
@@ -849,3 +933,4 @@ include Makefile.d/minikube.mk
 include Makefile.d/proto.mk
 include Makefile.d/test.mk
 include Makefile.d/tools.mk
+include Makefile.d/tls.mk

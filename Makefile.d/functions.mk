@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ define profile-web
 endef
 
 define go-lint
-	golangci-lint run --config .golangci.yaml --fix
+	golangci-lint run --config $(ROOTDIR)/.golangci.json --fix
 endef
 
 define go-vet
@@ -131,11 +131,34 @@ define telepresence
 	    ## --deployment-type "$(SWAP_DEPLOYMENT_TYPE)"
 endef
 
+define run-v2-e2e-crud-test
+	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	CGO_CFLAGS="$(CGO_CFLAGS)" \
+	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	E2E_ADDR="$(E2E_BIND_HOST):$(E2E_BIND_PORT)" \
+	E2E_BIND_HOST="$(E2E_BIND_HOST)" \
+	E2E_BIND_PORT="$(E2E_BIND_PORT)" \
+	E2E_TARGET_NAMESPACE="$(E2E_TARGET_NAMESPACE)" \
+	E2E_TARGET_NAME="$(E2E_TARGET_NAME)" \
+	E2E_DATASET_PATH="$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME)" \
+	go test \
+	    -race \
+	    -v \
+	    -mod=readonly \
+	    $1 \
+	    $(ROOTDIR)/tests/v2/e2e/crud \
+	    -tags "e2e" \
+	    -timeout $(E2E_TIMEOUT) \
+	    -config $(E2E_CONFIG)
+endef
+
 define run-e2e-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -174,7 +197,7 @@ define run-e2e-crud-faiss-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -200,7 +223,7 @@ define run-e2e-multi-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -230,7 +253,7 @@ define run-e2e-max-dim-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -252,7 +275,7 @@ define run-e2e-sidecar-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -355,6 +378,10 @@ define gen-dockerfile
 	rm -rf $$BIN_PATH
 endef
 
+define gen-dashboard
+	go run $(ROOTDIR)/hack/grafana/gen/src
+endef
+
 define gen-vald-helm-schema
 	BIN_PATH="$(TEMP_DIR)/vald-helm-schema-gen"; \
 	rm -rf $$BIN_PATH; \
@@ -397,12 +424,14 @@ define update-github-actions
 		if [ -n "$$ACTION_NAME" ] && [ "$$ACTION_NAME" != "security-and-quality" ]; then \
 			FILE_NAME=`echo $$ACTION_NAME | tr '/' '_' | tr '-' '_' | tr '[:lower:]' '[:upper:]'`; \
 			if [ -n "$$FILE_NAME" ]; then \
-				if [ "$$ACTION_NAME" = "aquasecurity/trivy-action" ] || [ "$$ACTION_NAME" = "machine-learning-apps/actions-chatops" ]; then \
-					VERSION="master"; \
-				else \
-					REPO_NAME=`echo $$ACTION_NAME | cut -d'/' -f1-2`; \
-					VERSION=`curl -fsSL https://api.github.com/repos/$$REPO_NAME/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`;\
-				fi; \
+				case "$$ACTION_NAME" in \
+					"aquasecurity/trivy-action" | "machine-learning-apps/actions-chatops" ) VERSION="master";; \
+					* ) \
+						REPO_NAME=`echo $$ACTION_NAME | cut -d'/' -f1-2`; \
+						echo "$$ACTION_NAME to $$REPO_NAME"; \
+						VERSION=`curl -fsSL https://api.github.com/repos/$$REPO_NAME/tags?per_page=1 | grep -Po '"name": "\K.*?(?=")' | head -n1 | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`; \
+						;; \
+				esac; \
 				if [ -n "$$VERSION" ]; then \
 					OLD_VERSION=`cat $(ROOTDIR)/versions/actions/$$FILE_NAME`; \
 					echo "updating $$ACTION_NAME version file $$FILE_NAME from $$OLD_VERSION to $$VERSION"; \

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -177,9 +177,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 			err = safety.RecoverFunc(func() error {
 				return run.PreStop(ctx)
 			})()
-			if err != nil &&
-				!errors.Is(err, context.DeadlineExceeded) &&
-				!errors.Is(err, context.Canceled) {
+			if errors.IsNot(err, context.DeadlineExceeded, context.Canceled) {
 				log.Error(errors.ErrPreStopFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
 					errs = append(errs, err)
@@ -191,9 +189,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 			err = safety.RecoverFunc(func() error {
 				return run.Stop(ctx)
 			})()
-			if err != nil &&
-				!errors.Is(err, context.DeadlineExceeded) &&
-				!errors.Is(err, context.Canceled) {
+			if errors.IsNot(err, context.DeadlineExceeded, context.Canceled) {
 				log.Error(errors.ErrStopFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
 					errs = append(errs, err)
@@ -205,9 +201,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 			err = safety.RecoverFunc(func() error {
 				return run.PostStop(ctx)
 			})()
-			if err != nil &&
-				!errors.Is(err, context.DeadlineExceeded) &&
-				!errors.Is(err, context.Canceled) {
+			if errors.IsNot(err, context.DeadlineExceeded, context.Canceled) {
 				log.Error(errors.ErrPostStopFunc(name, err))
 				if _, ok := emap[err.Error()]; !ok {
 					errs = append(errs, err)
@@ -216,9 +210,7 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 			}
 
 			err = errgroup.Wait()
-			if err != nil &&
-				!errors.Is(err, context.DeadlineExceeded) &&
-				!errors.Is(err, context.Canceled) {
+			if errors.IsNot(err, context.DeadlineExceeded, context.Canceled) {
 				log.Error(errors.ErrRunnerWait(name, err))
 				if _, ok := emap[err.Error()]; !ok {
 					errs = append(errs, err)

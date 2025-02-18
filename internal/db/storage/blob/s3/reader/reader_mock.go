@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-// Package reader provides the reader functions for handling with s3.
-// This package is wrapping package of "https://github.com/aws/aws-sdk-go".
 package reader
 
 import (

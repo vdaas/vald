@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -47,11 +47,11 @@ func TestGetTestdataPath(t *testing.T) {
 		{
 			name: "returns the result of combining the given path and test directory",
 			args: args{
-				filename: "tls/dummyCa.pem",
+				filename: "tls/ca.pem",
 			},
 			want: want{
 				want: func() string {
-					return baseDir() + "/internal/test/data/tls/dummyCa.pem"
+					return baseDir() + "/internal/test/data/tls/ca.pem"
 				}(),
 			},
 		},

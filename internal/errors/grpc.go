@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package errors provides error types and function
 package errors
 
 var (
@@ -50,6 +49,9 @@ var (
 		return Errorf("gRPC client connection not found in %s", addr)
 	}
 
+	// ErrGRPCServerStreamNotFound represents an error that the vald internal gRPC server couldn't find any gRPC server stream connection.
+	ErrGRPCServerStreamNotFound = New("vald internal gRPC server gRPC server stream not found")
+
 	// ErrGRPCClientStreamNotFound represents an error that the vald internal gRPC client couldn't find any gRPC client stream connection.
 	ErrGRPCClientStreamNotFound = New("vald internal gRPC client gRPC client stream not found")
 
@@ -69,6 +71,11 @@ var (
 	// ErrInvalidProtoMessageType represents an error that the gRPC protocol buffers message type is invalid.
 	ErrInvalidProtoMessageType = func(v any) error {
 		return Errorf("failed to marshal/unmarshal proto message, message type is %T (missing vtprotobuf/protobuf helpers)", v)
+	}
+
+	// UnexpectedProtoMessageType represents an error that the gRPC protocol buffers message type is invalid.
+	UnexpectedProtoMessageType = func(e, a any) error {
+		return Errorf("unexpected proto message type, expected message type is %T, actual is %T", e, a)
 	}
 
 	// ErrServerStreamClientRecv represents a function to generate an error that the gRPC client couldn't receive from stream.

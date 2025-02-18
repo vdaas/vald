@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -130,7 +130,6 @@ on:
       - internal/sync/*.go
       - internal/sync/errgroup/*.go
       - internal/sync/semaphore/*.go
-      - internal/sync/singleflight/*.go
       - internal/timeutil/*.go
       - internal/timeutil/location/*.go
       - internal/tls/*.go
@@ -142,6 +141,11 @@ on:
       - pkg/gateway/filter/usecase/*.go
       - versions/GO_VERSION
   pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - labeled
     paths:
       - "!**/*_mock.go"
       - "!**/*_test.go"
@@ -243,7 +247,6 @@ on:
       - internal/sync/*.go
       - internal/sync/errgroup/*.go
       - internal/sync/semaphore/*.go
-      - internal/sync/singleflight/*.go
       - internal/timeutil/*.go
       - internal/timeutil/location/*.go
       - internal/tls/*.go

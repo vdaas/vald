@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -57,13 +57,13 @@ func (c *GlobalConfig) Bind() *GlobalConfig {
 	c.TZ = GetActualValue(c.TZ)
 
 	if c.Logging != nil {
-		c.Logging = c.Logging.Bind()
+		c.Logging.Bind()
 	}
 	return c
 }
 
 // Read returns config struct or error when decoding the configuration file to actually *Config struct.
-func Read(path string, cfg any) (err error) {
+func Read[T any](path string, cfg T) (err error) {
 	f, err := file.Open(path, os.O_RDONLY, fs.ModePerm)
 	if err != nil {
 		return err
@@ -96,28 +96,28 @@ func Read(path string, cfg any) (err error) {
 // GetActualValue returns the environment variable value if the val has prefix and suffix "_",
 // if actual value start with file://{path} the return value will read from file
 // otherwise the val will directly return.
-func GetActualValue(val string) (res string) {
+func GetActualValue[T ~string](val T) (res T) {
 	if checkPrefixAndSuffix(val, envSymbol, envSymbol) {
-		val = strings.TrimPrefix(strings.TrimSuffix(val, envSymbol), envSymbol)
-		if !strings.HasPrefix(val, "$") {
+		val = T(strings.TrimPrefix(strings.TrimSuffix(string(val), envSymbol), envSymbol))
+		if !strings.HasPrefix(string(val), "$") {
 			val = "$" + val
 		}
 	}
-	res = os.ExpandEnv(val)
-	if strings.HasPrefix(res, fileValuePrefix) {
-		body, err := file.ReadFile(strings.TrimPrefix(res, fileValuePrefix))
+	r := os.ExpandEnv(string(val))
+	if strings.HasPrefix(r, fileValuePrefix) {
+		body, err := file.ReadFile(strings.TrimPrefix(r, fileValuePrefix))
 		if err != nil || body == nil {
 			return
 		}
-		res = conv.Btoa(body)
+		r = conv.Btoa(body)
 	}
-	return
+	return T(r)
 }
 
 // GetActualValues returns the environment variable values if the vals has string slice that has prefix and suffix "_",
 // if actual value start with file://{path} the return value will read from file
 // otherwise the val will directly return.
-func GetActualValues(vals []string) []string {
+func GetActualValues[T ~string](vals []T) []T {
 	for i, val := range vals {
 		vals[i] = GetActualValue(val)
 	}
@@ -125,8 +125,8 @@ func GetActualValues(vals []string) []string {
 }
 
 // checkPrefixAndSuffix checks if the str has prefix and suffix.
-func checkPrefixAndSuffix(str, pref, suf string) bool {
-	return strings.HasPrefix(str, pref) && strings.HasSuffix(str, suf)
+func checkPrefixAndSuffix[T ~string](str, pref, suf T) bool {
+	return strings.HasPrefix(string(str), string(pref)) && strings.HasSuffix(string(str), string(suf))
 }
 
 // ToRawYaml writes the YAML encoding of v to the stream and returns the string written to stream.

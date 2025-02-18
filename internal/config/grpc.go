@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,10 +14,11 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 import (
+	"slices"
+
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/circuitbreaker"
 	"github.com/vdaas/vald/internal/net"
@@ -77,9 +78,16 @@ type DialOption struct {
 type ConnectionPool struct {
 	ResolveDNS           bool   `json:"enable_dns_resolver"     yaml:"enable_dns_resolver"`
 	EnableRebalance      bool   `json:"enable_rebalance"        yaml:"enable_rebalance"`
-	RebalanceDuration    string `json:"rebalance_duration"      yaml:"rebalance_duration"`
 	Size                 int    `json:"size"                    yaml:"size"`
+	RebalanceDuration    string `json:"rebalance_duration"      yaml:"rebalance_duration"`
 	OldConnCloseDuration string `json:"old_conn_close_duration" yaml:"old_conn_close_duration"`
+}
+
+// Bind binds the actual data from the ConnectionPool receiver fields.
+func (cp *ConnectionPool) Bind() *ConnectionPool {
+	cp.RebalanceDuration = GetActualValue(cp.RebalanceDuration)
+	cp.OldConnCloseDuration = GetActualValue(cp.OldConnCloseDuration)
+	return cp
 }
 
 // GRPCClientKeepalive represents the configurations for gRPC keep-alive.
@@ -91,23 +99,23 @@ type GRPCClientKeepalive struct {
 
 // newGRPCClientConfig returns the GRPCClient with DailOption with insecure is true.
 func newGRPCClientConfig() *GRPCClient {
-	return &GRPCClient{
+	return (&GRPCClient{
 		DialOption: &DialOption{
 			Insecure: true,
 		},
-	}
+	}).Bind()
 }
 
 // Bind binds the actual data from the GRPCClient receiver fields.
 func (g *GRPCClient) Bind() *GRPCClient {
 	g.Addrs = GetActualValues(g.Addrs)
+	slices.Sort(g.Addrs)
+	g.Addrs = slices.Compact(g.Addrs)
+
 	g.HealthCheckDuration = GetActualValue(g.HealthCheckDuration)
 
 	if g.ConnectionPool != nil {
-		g.ConnectionPool.RebalanceDuration = GetActualValue(g.ConnectionPool.RebalanceDuration)
-		g.ConnectionPool.OldConnCloseDuration = GetActualValue(g.ConnectionPool.OldConnCloseDuration)
-	} else {
-		g.ConnectionPool = new(ConnectionPool)
+		g.ConnectionPool.Bind()
 	}
 
 	if g.Backoff != nil {
@@ -122,22 +130,20 @@ func (g *GRPCClient) Bind() *GRPCClient {
 		g.CallOption.Bind()
 	}
 
-	if g.DialOption != nil {
+	if g.DialOption != nil { // This part is already compliant due to else clause
 		g.DialOption.Bind()
-	} else {
-		g.DialOption = new(DialOption)
 	}
 
-	if g.TLS != nil &&
-		g.TLS.Enabled &&
-		g.TLS.Cert != "" &&
-		g.TLS.Key != "" {
+	if g.TLS != nil && g.TLS.Enabled {
 		g.TLS.Bind()
 	} else {
-		g.TLS = &TLS{
-			Enabled: false,
+		g.TLS = (&TLS{
+			Enabled:            false,
+			InsecureSkipVerify: true,
+		}).Bind()
+		if g.DialOption != nil {
+			g.DialOption.Insecure = true
 		}
-		g.DialOption.Insecure = true
 	}
 
 	return g
@@ -166,6 +172,14 @@ func (d *DialOption) Bind() *DialOption {
 	d.MinimumConnectionTimeout = GetActualValue(d.MinimumConnectionTimeout)
 	d.Timeout = GetActualValue(d.Timeout)
 	d.UserAgent = GetActualValue(d.UserAgent)
+
+	if d.Net != nil {
+		d.Net.Bind()
+	}
+
+	if d.Keepalive != nil {
+		d.Keepalive.Bind()
+	}
 	return d
 }
 
@@ -183,7 +197,7 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 	if g.ConnectionPool != nil {
 		opts = append(opts,
 			grpc.WithConnectionPoolSize(g.ConnectionPool.Size),
-			grpc.WithOldConnCloseDuration(g.ConnectionPool.OldConnCloseDuration),
+			grpc.WithOldConnCloseDelay(g.ConnectionPool.OldConnCloseDuration),
 			grpc.WithResolveDNS(g.ConnectionPool.ResolveDNS),
 		)
 		if g.ConnectionPool.EnableRebalance {
@@ -257,7 +271,7 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 			grpc.WithWriteBufferSize(g.DialOption.WriteBufferSize),
 		)
 
-		if g.DialOption.Net != nil &&
+		if g.DialOption.Net != nil && g.DialOption.Net.Dialer != nil &&
 			len(g.DialOption.Net.Dialer.Timeout) != 0 {
 			if g.DialOption.Net.TLS != nil && g.DialOption.Net.TLS.Enabled {
 				opts = append(opts,

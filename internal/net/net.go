@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package net provides net functionality for vald's network connection
 package net
 
 import (
@@ -31,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+	"golang.org/x/net/idna"
 )
 
 type (
@@ -182,35 +182,75 @@ func IsTCP(network string) bool {
 		rip == TCP6
 }
 
-// Parse parses the hostname, IPv4 or IPv6 address and return the hostname/IP, port number,
-// whether the address is local IP and IPv4 or IPv6, and any parsing error occurred.
-// The address should contains the port number, otherwise an error will return.
-func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool, err error) {
+// Parse takes a network address string in various formats, such as hostname,
+// IP address, or A record, splits it into host and port, and analyzes its properties.
+//
+// The input addr can be in the following formats:
+// - "host:port" (e.g., "example.com:80", "192.0.2.1:443", "[2001:db8::1]:8080")
+// - "host" (e.g., "example.com", "192.0.2.1", "[2001:db8::1]")
+//
+// If the host part is not an IP address literal, DNS resolution is attempted.
+// During this process, the hostname is converted to Punycode to mitigate IDN homograph attacks.
+//
+// Returns:
+//   - host: The IP address literal or hostname.
+//   - port: The port number. Returns 0 if no port is specified.
+//   - isLocal: True if the address is local (loopback, private, or link-local).
+//   - isIPv4: True if the address is an IPv4 address.
+//   - isIPv6: True if the address is an IPv6 address.
+//   - err: Non-nil if an error occurs during parsing or resolution. The error is structured
+//     and can be inspected using errors.As.
+func Parse(
+	ctx context.Context, addr string,
+) (host string, port uint16, isLocal, isIPv4, isIPv6 bool, err error) {
+	// 1. Split host and port.
 	host, port, err = SplitHostPort(addr)
-	if err != nil {
-		if !errors.Is(err, errors.Errorf("address %s: missing port in address", addr)) {
-			log.Warnf("failed to parse addr %s\terror: %v", addr, err)
-		}
+	if err != nil && !errors.Is(err, errors.Errorf("address %s: missing port in address", addr)) {
+		log.Warnf("failed to parse addr %s\terror: %v", addr, err)
+	}
+	if host == "" {
 		host = addr
 	}
-
-	ip, nerr := netip.ParseAddr(host)
-	if nerr != nil {
-		log.Debugf("host: %s,\tport: %d,\tip: %#v,\terror: %v", host, port, ip, nerr)
+	if port == 0 {
+		port = defaultPort
 	}
 
-	// return host and port and flags
-	return host, port,
-		// check is local ip or not
-		IsLocal(host) || nerr == nil && ip.IsLoopback(),
-		// check is IPv4 or not
-		// ic < 2,
-		nerr == nil && ip.Is4(),
-		// check is IPv6 or not
-		// ic >= 2,
-		nerr == nil && (ip.Is6() || ip.Is4In6()),
-		// Split error
-		err
+	// 2. Resolve and analyze the host part.
+	// Try to parse it as an IP address literal.
+	ipAddr, err := netip.ParseAddr(host)
+	if err != nil {
+		// DNS resolution.
+		ips, err := lookupNetIP(ctx, DefaultResolver, host)
+		if err != nil || len(ips) == 0 {
+			return "", 0, false, false, false, errors.Wrapf(err, "failed to lookup ip for %s", host)
+		}
+		// If multiple IPs are returned, analyze the first one.
+		ipAddr = ips[0]
+	}
+
+	// 3. Classify the IP address.
+	// Normalize IPv4-mapped IPv6 addresses.
+	if ipAddr.Is4In6() {
+		ipAddr = ipAddr.Unmap()
+	}
+
+	isIPv4 = ipAddr.Is4()
+	isIPv6 = ipAddr.Is6()
+	isLocal = ipAddr.IsLoopback() || ipAddr.IsPrivate() || ipAddr.IsLinkLocalUnicast() || IsLocal(host)
+
+	return host, port, isLocal, isIPv4, isIPv6, nil
+}
+
+func lookupNetIP(ctx context.Context, rsv *net.Resolver, host string) ([]netip.Addr, error) {
+	// Mitigate IDN homograph attacks.
+	asciiHost, err := idna.Lookup.ToASCII(host)
+	if err != nil {
+		return nil, errors.Wrapf(err, "invalid idna request addr %s", host)
+	}
+	if rsv == nil {
+		rsv = DefaultResolver
+	}
+	return rsv.LookupNetIP(ctx, "ip", asciiHost)
 }
 
 // DialContext is a wrapper function of the net.Dial function.
@@ -229,15 +269,18 @@ func JoinHostPort(host string, port uint16) string {
 // SplitHostPort splits the address, and return the host/IP address and the port number,
 // and any error occurred.
 // If it is the loopback address, it will return the loopback address and corresponding port number.
-// IPv6 loopback address is not supported yet.
-// For more information, please read https://github.com/vdaas/vald/projects/3#card-43504189
+// Falls back to default port and local IP if not provided.
+// Example: ":8080" → "127.0.0.1", 8080
 func SplitHostPort(hostport string) (host string, port uint16, err error) {
 	if !strings.HasPrefix(hostport, "::") && strings.HasPrefix(hostport, ":") {
 		hostport = localIPv4 + hostport
 	}
-	host, portStr, err := net.SplitHostPort(hostport)
+	var portStr string
+	host, portStr, err = net.SplitHostPort(hostport)
 	if err != nil {
-		host = hostport
+		if host == "" {
+			host = hostport
+		}
 		port = defaultPort
 	}
 	if len(portStr) > 0 {
@@ -266,8 +309,13 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 	if err = syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rl); err != nil {
 		return nil, err
 	}
+
+	concurrency := int(rl.Max) / 2
+
+	log.Debugf("starting to scan available ports from %d to %d, concurrency %d", start, end, concurrency)
+
 	eg, egctx := errgroup.New(ctx)
-	eg.SetLimit(int(rl.Max) / 2)
+	eg.SetLimit(concurrency)
 
 	var mu sync.Mutex
 
@@ -304,6 +352,8 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 	if len(ports) == 0 {
 		return nil, errors.ErrNoPortAvailable(host, start, end)
 	}
+
+	log.Debugf("finished to scan available ports %v", ports)
 
 	return ports, nil
 }

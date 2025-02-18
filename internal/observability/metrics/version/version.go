@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -27,8 +27,8 @@ import (
 )
 
 const (
-	name        = "app_version_info"
-	description = "app version info"
+	Name        = "app_version_info"
+	Description = "app version info"
 )
 
 var reps = strings.NewReplacer("_", " ", ",omitempty", "")
@@ -80,8 +80,8 @@ func (*version) View() ([]metrics.View, error) {
 	return []metrics.View{
 		view.NewView(
 			view.Instrument{
-				Name:        name,
-				Description: description,
+				Name:        Name,
+				Description: Description,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -92,8 +92,8 @@ func (*version) View() ([]metrics.View, error) {
 
 func (v *version) Register(m metrics.Meter) (err error) {
 	info, err := m.Int64ObservableGauge(
-		name,
-		metrics.WithDescription(description),
+		Name,
+		metrics.WithDescription(Description),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {

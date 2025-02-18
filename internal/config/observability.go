@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 // Observability represents the configuration for the observability.
@@ -23,6 +22,32 @@ type Observability struct {
 	OTLP    *OTLP    `json:"otlp"    yaml:"otlp"`
 	Metrics *Metrics `json:"metrics" yaml:"metrics"`
 	Trace   *Trace   `json:"trace"   yaml:"trace"`
+}
+
+// Bind binds the actual data from the Observability receiver fields.
+func (o *Observability) Bind() *Observability {
+	if o.OTLP == nil {
+		o.OTLP = new(OTLP)
+	}
+	if o.OTLP != nil {
+		o.OTLP.Bind()
+	}
+
+	if o.Metrics == nil {
+		o.Metrics = new(Metrics)
+	}
+	if o.Metrics != nil {
+		o.Metrics.Bind()
+	}
+
+	if o.Trace == nil {
+		o.Trace = new(Trace)
+	}
+	if o.Trace != nil {
+		o.Trace.Bind()
+	}
+
+	return o
 }
 
 type OTLP struct {
@@ -36,25 +61,27 @@ type OTLP struct {
 	MetricsExportTimeout    string         `json:"metrics_export_timeout"      yaml:"metrics_export_timeout"`
 }
 
+// Bind binds the actual data from the OTLP receiver fields.
+func (o *OTLP) Bind() *OTLP {
+	o.CollectorEndpoint = GetActualValue(o.CollectorEndpoint)
+	o.TraceBatchTimeout = GetActualValue(o.TraceBatchTimeout)
+	o.TraceExportTimeout = GetActualValue(o.TraceExportTimeout)
+	o.MetricsExportInterval = GetActualValue(o.MetricsExportInterval)
+	o.MetricsExportTimeout = GetActualValue(o.MetricsExportTimeout)
+	if o.Attribute == nil {
+		o.Attribute = new(OTLPAttribute)
+	}
+	if o.Attribute != nil {
+		o.Attribute.Bind()
+	}
+	return o
+}
+
 type OTLPAttribute struct {
 	Namespace   string `json:"namespace"    yaml:"namespace"`
 	PodName     string `json:"pod_name"     yaml:"pod_name"`
 	NodeName    string `json:"node_name"    yaml:"node_name"`
 	ServiceName string `json:"service_name" yaml:"service_name"`
-}
-
-// Trace represents the configuration for the trace.
-type Trace struct {
-	Enabled bool `json:"enabled" yaml:"enabled"`
-}
-
-// Metrics represents the configuration for the metrics.
-type Metrics struct {
-	EnableVersionInfo bool     `json:"enable_version_info" yaml:"enable_version_info"`
-	VersionInfoLabels []string `json:"version_info_labels" yaml:"version_info_labels"`
-	EnableMemory      bool     `json:"enable_memory"       yaml:"enable_memory"`
-	EnableGoroutine   bool     `json:"enable_goroutine"    yaml:"enable_goroutine"`
-	EnableCGO         bool     `json:"enable_cgo"          yaml:"enable_cgo"`
 }
 
 // Bind binds the actual data from the OTLPAttribute receiver fields.
@@ -66,33 +93,28 @@ func (o *OTLPAttribute) Bind() *OTLPAttribute {
 	return o
 }
 
-// Bind binds the actual data from the Observability receiver fields.
-func (o *Observability) Bind() *Observability {
-	if o.OTLP != nil {
-		o.OTLP.CollectorEndpoint = GetActualValue(o.OTLP.CollectorEndpoint)
-		o.OTLP.TraceBatchTimeout = GetActualValue(o.OTLP.TraceBatchTimeout)
-		o.OTLP.TraceExportTimeout = GetActualValue(o.OTLP.TraceExportTimeout)
-		o.OTLP.MetricsExportInterval = GetActualValue(o.OTLP.MetricsExportInterval)
-		o.OTLP.MetricsExportTimeout = GetActualValue(o.OTLP.MetricsExportTimeout)
-	} else {
-		o.OTLP = new(OTLP)
-	}
+// Trace represents the configuration for the trace.
+type Trace struct {
+	Enabled bool `json:"enabled" yaml:"enabled"`
+}
 
-	if o.OTLP.Attribute != nil {
-		o.OTLP.Attribute.Bind()
-	} else {
-		o.OTLP.Attribute = new(OTLPAttribute)
-	}
+// Bind binds the actual data from the Trace receiver fields.
+func (t *Trace) Bind() *Trace {
+	// No fields to bind as per rules
+	return t
+}
 
-	if o.Metrics != nil {
-		o.Metrics.VersionInfoLabels = GetActualValues(o.Metrics.VersionInfoLabels)
-	} else {
-		o.Metrics = new(Metrics)
-	}
+// Metrics represents the configuration for the metrics.
+type Metrics struct {
+	EnableVersionInfo bool     `json:"enable_version_info" yaml:"enable_version_info"`
+	VersionInfoLabels []string `json:"version_info_labels" yaml:"version_info_labels"`
+	EnableMemory      bool     `json:"enable_memory"       yaml:"enable_memory"`
+	EnableGoroutine   bool     `json:"enable_goroutine"    yaml:"enable_goroutine"`
+	EnableCGO         bool     `json:"enable_cgo"          yaml:"enable_cgo"`
+}
 
-	if o.Trace == nil {
-		o.Trace = new(Trace)
-	}
-
-	return o
+// Bind binds the actual data from the Metrics receiver fields.
+func (m *Metrics) Bind() *Metrics {
+	m.VersionInfoLabels = GetActualValues(m.VersionInfoLabels)
+	return m
 }

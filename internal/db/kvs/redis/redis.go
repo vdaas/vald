@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package redis
 
 import (
 	"context"
-	"crypto/tls"
 	"reflect"
 	"time"
 
@@ -27,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/tls"
 )
 
 // Nil is a type alias of redis.Nil.

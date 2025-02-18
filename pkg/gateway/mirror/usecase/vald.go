@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	mClient, err := client.New(
 		client.WithAddrs(cfg.Mirror.Client.Addrs...),
-		client.WithClient(grpc.New(cOpts...)),
+		client.WithClient(grpc.New("Gateway Client", cOpts...)),
 	)
 	if err != nil {
 		return nil, err

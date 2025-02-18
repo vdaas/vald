@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/k8s/client"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
@@ -83,6 +84,7 @@ func (jt jobType) String() string {
 type job struct {
 	eg                 errgroup.Group
 	dataset            *config.BenchmarkDataset
+	meta               grpc.MD
 	jobType            jobType
 	jobFunc            func(context.Context, chan error) error
 	insertConfig       *config.InsertConfig
@@ -285,7 +287,12 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 				log.Error(err)
 			}
 		}()
-		err = j.jobFunc(ctx, ech)
+		jctx := ctx
+		if len(j.meta) > 0 {
+			log.Debugf("[benchmark job] add metadata: %#v", j.meta)
+			jctx = grpc.NewOutgoingContext(ctx, j.meta)
+		}
+		err = j.jobFunc(jctx, ech)
 		if err != nil {
 			log.Errorf("[benchmark job] failed to job: %v", err)
 		}

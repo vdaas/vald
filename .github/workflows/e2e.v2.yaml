@@ -1,0 +1,195 @@
+#
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Run E2E V2"
+on:
+  push:
+    tags:
+      - "*.*.*"
+      - "v*.*.*"
+      - "*.*.*-*"
+      - "v*.*.*-*"
+  pull_request:
+    types:
+      - "labeled"
+env:
+  DATASET: fashion-mnist-784-euclidean.hdf5
+jobs:
+  dump-contexts-to-log:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/dump-context
+  detect-ci-container:
+    if: startsWith(github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-v2'
+    uses: ./.github/workflows/_detect-ci-container.yaml
+  e2e:
+    needs: [detect-ci-container]
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario: [stream_crud, unary_crud, multi_crud]
+        deployment: [helm-chart, helm-operator]
+        environment: ["null"]
+        include:
+          - scenario: index_correction
+            deployment: helm-chart
+            environment: management
+          - scenario: stream_crud
+            deployment: helm-chart
+            environment: management
+          - scenario: stream_crud
+            deployment: helm-chart
+            environment: mirror
+          - scenario: stream_crud
+            deployment: helm-chart
+            environment: profile
+          - scenario: stream_crud
+            deployment: helm-chart
+            environment: failure
+          - scenario: stream_crud
+            deployment: helm-chart
+            environment: kill
+          - scenario: stream_crud
+            deployment: helm-chart
+            environment: partition
+          - scenario: stream_crud
+            deployment: helm-chart
+            environment: bandwidth
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      credentials:
+        username: ${{ secrets.PACKAGE_USER }}
+        password: ${{ secrets.PACKAGE_TOKEN }}
+      options: "--add-host host.docker.internal:host-gateway"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - name: Setup E2E environment
+        id: setup_e2e
+        uses: ./.github/actions/setup-e2e
+      - name: Set HELM_EXTRA_OPTIONS for index management jobs
+        if: ${{ matrix.environment == 'management' }}
+        run: |
+          echo "HELM_EXTRA_OPTIONS=\"--values .github/helm/values/values-index-management-jobs.yaml\"" >> $GITHUB_ENV
+      - name: Deploy Vald by Helm Chart
+        if: ${{ matrix.deployment == 'helm-chart' && matrix.environment != 'mirror' }}
+        uses: ./.github/actions/e2e-deploy-vald
+        with:
+          helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}"
+          values: .github/helm/values/values-${{ contains('profile', matrix.environment) && matrix.environment || 'lb' }}.yaml
+          wait_for_selector: "app=vald-lb-gateway"
+      - name: Deploy Vald-01
+        if: ${{ matrix.environment == 'mirror' }}
+        uses: ./.github/actions/e2e-deploy-vald
+        with:
+          namespace: vald-01
+          helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}"
+          values: .github/helm/values/values-mirror-01.yaml
+          wait_for_selector: app=vald-mirror-gateway
+      - name: Deploy Vald-02
+        if: ${{ matrix.environment == 'mirror' }}
+        uses: ./.github/actions/e2e-deploy-vald
+        with:
+          namespace: vald-02
+          helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}"
+          values: .github/helm/values/values-mirror-02.yaml
+          wait_for_selector: app=vald-mirror-gateway
+      - name: Deploy Mirror Target
+        if: ${{ matrix.environment == 'mirror' }}
+        run: |
+          kubectl apply -f .github/helm/values/vald-mirror-target.yaml -n vald-01
+          sleep 5s
+          kubectl get pods -A && kubectl get vmt -o wide -A
+
+      - name: Create Helm options for vald-helm-operator
+        if: ${{ matrix.deployment == 'helm-operator' }}
+        uses: ./.github/actions/setup-e2e
+        id: vald_helm_operator
+        with:
+          target_images: "vdaas/vald-helm-operator"
+          require_libhdf5: false
+          require_go: false
+          require_helm: false
+          require_k3d: false
+      - name: Merge Docker image tag
+        if: ${{ matrix.deployment == 'helm-operator' }}
+        shell: bash
+        run: |
+          IMAGE_TAGS=(${{ steps.setup_e2e.outputs.IMAGE_TAGS }})
+
+          for IMAGE_TAG in "${IMAGE_TAGS[@]}"
+          do
+            echo "IMAGE_TAG:${IMAGE_TAG}"
+
+            ARR=(${IMAGE_TAG//=/ })
+            FIELD=${ARR[0]}
+            TAG="\"${ARR[1]}\""
+            yq e ".spec.$FIELD=$TAG" -i ./.github/valdrelease/valdrelease.yaml
+          done
+      - name: Deploy Vald using Vald Helm Operator
+        if: ${{ matrix.deployment == 'helm-operator' }}
+        uses: ./.github/actions/e2e-deploy-vald-helm-operator
+        with:
+          helm_extra_options: "${{ steps.vald_helm_operator.outputs.HELM_EXTRA_OPTIONS }}"
+          valdrelease: ./.github/valdrelease/valdrelease.yaml
+          wait_for_selector: app=vald-lb-gateway
+
+      - name: Deploy Chaos Mesh
+        if: ${{ contains('failure kill partition bandwidth', matrix.environment) }}
+        uses: ./.github/actions/deploy-chaos-mesh
+        with:
+          helm_extra_options: "--set networkChaos.${{ matrix.environment }}.enabled=true"
+
+      - name: Deploy profefe
+        if: ${{ matrix.environment == 'profile' }}
+        shell: bash
+        run: |
+          make k8s/metrics/profefe/deploy
+          kubectl patch cronjob kprofefe -p '{"spec": {"schedule": "*/1 * * * *"}}'
+          kubectl wait --for=condition=ready pod -l app=profefe --timeout=300s
+
+      # TODO: correction & skip
+      - name: Run E2E CRUD
+        shell: bash
+        run: |
+          make hack/benchmark/assets/dataset/${{ env.DATASET }}
+          if [[ "${{ matrix.environment }}" == "mirror" ]]; then
+            export E2E_TARGET_NAMESPACE=vald-01
+          fi
+          make e2e/v2 E2E_CONFIG=$(pwd)/.github/e2e/${{ matrix.scenario }}.yaml
+
+      - uses: ./.github/actions/e2e-profile
+        if: ${{ matrix.environment == 'profile' }}
+        with:
+          dispatch_user: ${{ secrets.DISPATCH_USER }}
+          dispatch_token: ${{ secrets.DISPATCH_TOKEN }}
+
+  slack-notification:
+    name: "Slack notification"
+    if: startsWith( github.ref, 'refs/tags/')
+    needs:
+      - e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/notify-slack
+        with:
+          author_name: "E2E deploy test"
+          slack_notify_webhook_url: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}

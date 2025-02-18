@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -69,9 +69,6 @@ users:
     role:
       - author
       - admin
-  rinx:
-    role:
-      - contributor
   kmrmt:
     role:
       - author
@@ -81,17 +78,13 @@ users:
       - sig-lead
       - contributor
       - sig-set
-  hlts2:
-    role:
-      - contributor
-      - sig-sre
-      - sig-set
+      - author
   datelier:
     role:
       - contributor
       - sig-core
-  kevindiu:
+      - author
+  Matts966:
     role:
-      - sig-lead
       - contributor
-      - sig-set
+      - author

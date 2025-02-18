@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@ func (m *mirr) Start(ctx context.Context) <-chan error { // skipcq: GO-R1005
 
 				resTgts, err := m.registers(ctx, &payload.Mirror_Targets{Targets: tgt})
 				if err != nil || len(resTgts) == 0 {
-					if !errors.Is(err, errors.ErrTargetNotFound) && len(resTgts) == 0 {
+					if errors.IsNot(err, errors.ErrTargetNotFound) && len(resTgts) == 0 {
 						err = errors.Join(err, errors.ErrTargetNotFound)
 					} else if len(resTgts) == 0 {
 						err = errors.ErrTargetNotFound
@@ -160,7 +160,7 @@ func (m *mirr) Start(ctx context.Context) <-chan error { // skipcq: GO-R1005
 						}
 					}
 				}
-				log.Debugf("[mirror]: connected mirror gateway targets: %v", m.gateway.GRPCClient().ConnectedAddrs())
+				log.Debugf("[mirror]: connected mirror gateway targets: %v", m.gateway.GRPCClient().ConnectedAddrs(ctx))
 			}
 		}
 	})
@@ -341,7 +341,7 @@ func (m *mirr) Disconnect(ctx context.Context, targets ...*payload.Mirror_Target
 			_, ok := m.addrs.Load(addr)
 			if ok || m.IsConnected(ctx, addr) {
 				if err := m.gateway.GRPCClient().Disconnect(ctx, addr); err != nil &&
-					!errors.Is(err, errors.ErrGRPCClientConnNotFound(addr)) {
+					errors.IsNot(err, errors.ErrGRPCClientConnNotFound(addr)) {
 					return err
 				}
 				m.addrs.Delete(addr)

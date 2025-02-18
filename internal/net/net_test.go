@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package net provides net functionality for grpc
 package net
 
 import (
@@ -236,6 +235,7 @@ func TestDialContext(t *testing.T) {
 func TestParse(t *testing.T) {
 	t.Parallel()
 	type args struct {
+		ctx  context.Context
 		addr string
 	}
 	type want struct {
@@ -286,7 +286,7 @@ func TestParse(t *testing.T) {
 				wantPort: uint16(8080),
 				isV4:     true,
 				isV6:     false,
-				isLocal:  false,
+				isLocal:  true,
 			},
 		},
 		{
@@ -311,7 +311,7 @@ func TestParse(t *testing.T) {
 				wantHost: "localhost",
 				wantPort: uint16(8080),
 				isV4:     false,
-				isV6:     false,
+				isV6:     true,
 				isLocal:  true,
 			},
 		},
@@ -323,7 +323,7 @@ func TestParse(t *testing.T) {
 			want: want{
 				wantHost: "google.com",
 				wantPort: uint16(8080),
-				isV4:     false,
+				isV4:     true,
 				isV6:     false,
 				isLocal:  false,
 			},
@@ -336,10 +336,12 @@ func TestParse(t *testing.T) {
 			want: want{
 				wantHost: "dummy",
 				wantPort: uint16(80),
-				err: &net.AddrError{
-					Addr: "dummy",
-					Err:  "missing port in address",
-				},
+			},
+			checkFunc: func(w want, s string, u uint16, b1, b2, b3 bool, err error) error {
+				if strings.Contains(err.Error(), "failed to lookup ip for dummy") {
+					return nil
+				}
+				return err
 			},
 		},
 		{
@@ -352,11 +354,7 @@ func TestParse(t *testing.T) {
 				wantPort: uint16(80),
 				isV4:     true,
 				isV6:     false,
-				isLocal:  false,
-				err: &net.AddrError{
-					Addr: "192.168.1.1",
-					Err:  "missing port in address",
-				},
+				isLocal:  true,
 			},
 		},
 		{
@@ -370,10 +368,6 @@ func TestParse(t *testing.T) {
 				isV4:     false,
 				isV6:     true,
 				isLocal:  false,
-				err: &net.AddrError{
-					Addr: "2001:db8::1",
-					Err:  "too many colons in address",
-				},
 			},
 		},
 	}
@@ -393,7 +387,7 @@ func TestParse(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			gotHost, gotPort, gotIsLocal, gotIsV4, gotIsV6, err := Parse(test.args.addr)
+			gotHost, gotPort, gotIsLocal, gotIsV4, gotIsV6, err := Parse(tt.Context(), test.args.addr)
 			if err := checkFunc(test.want, gotHost, gotPort, gotIsLocal, gotIsV4, gotIsV6, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1197,3 +1191,173 @@ func TestJoinHostPort(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
+//
+// func TestIsUDP(t *testing.T) {
+// 	type args struct {
+// 		network string
+// 	}
+// 	type want struct {
+// 		want bool
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, bool) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got bool) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           network:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           network:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := IsUDP(test.args.network)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestIsTCP(t *testing.T) {
+// 	type args struct {
+// 		network string
+// 	}
+// 	type want struct {
+// 		want bool
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, bool) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got bool) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           network:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           network:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := IsTCP(test.args.network)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

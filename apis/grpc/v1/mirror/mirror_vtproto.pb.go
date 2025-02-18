@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -42,7 +42,15 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MirrorClient interface {
-	// Register is the RPC to register other mirror servers.
+	// Overview
+	// Register RPC is the method to register other Vald Mirror Gateway targets.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  13  | INTERNAL          |
 	Register(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (*payload.Mirror_Targets, error)
 }
 
@@ -69,7 +77,15 @@ func (c *mirrorClient) Register(
 // All implementations must embed UnimplementedMirrorServer
 // for forward compatibility
 type MirrorServer interface {
-	// Register is the RPC to register other mirror servers.
+	// Overview
+	// Register RPC is the method to register other Vald Mirror Gateway targets.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  13  | INTERNAL          |
 	Register(context.Context, *payload.Mirror_Targets) (*payload.Mirror_Targets, error)
 	mustEmbedUnimplementedMirrorServer()
 }

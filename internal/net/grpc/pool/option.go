@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,138 +14,144 @@
 // limitations under the License.
 //
 
-// Package pool provides gRPC connection pool client
 package pool
 
 import (
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
+// Option defines a functional option for configuring the pool.
 type Option func(*pool)
 
+// Default options.
 var defaultOptions = []Option{
 	WithSize(defaultPoolSize),
 	WithStartPort(80),
 	WithEndPort(65535),
 	WithErrGroup(errgroup.Get()),
 	WithDialTimeout("1s"),
-	WithOldConnCloseDuration("2m"),
+	WithOldConnCloseDelay("2m"),
 	WithResolveDNS(true),
 }
 
+// WithAddr sets the target address. It also extracts the host and port.
 func WithAddr(addr string) Option {
 	return func(p *pool) {
-		if len(addr) == 0 {
+		if addr == "" {
 			return
 		}
 		p.addr = addr
+		var err error
+		// Attempt to split host and port.
+		if p.host, p.port, err = net.SplitHostPort(addr); err != nil {
+			p.host = addr
+		}
 	}
 }
 
+// WithHost sets the target host.
 func WithHost(host string) Option {
 	return func(p *pool) {
-		if len(host) == 0 {
-			return
+		if host != "" {
+			p.host = host
 		}
-		p.host = host
 	}
 }
 
+// WithPort sets the target port.
 func WithPort(port int) Option {
 	return func(p *pool) {
 		if port > 0 {
-			return
+			p.port = uint16(port)
 		}
-		p.port = uint16(port)
 	}
 }
 
+// WithStartPort sets the starting port for scanning.
 func WithStartPort(port int) Option {
 	return func(p *pool) {
 		if port > 0 {
-			return
+			p.startPort = uint16(port)
 		}
-		p.startPort = uint16(port)
 	}
 }
 
+// WithEndPort sets the ending port for scanning.
 func WithEndPort(port int) Option {
 	return func(p *pool) {
 		if port > 0 {
-			return
+			p.endPort = uint16(port)
 		}
-		p.endPort = uint16(port)
 	}
 }
 
-func WithResolveDNS(flg bool) Option {
+// WithResolveDNS enables or disables DNS resolution.
+func WithResolveDNS(enable bool) Option {
 	return func(p *pool) {
-		p.resolveDNS = flg
+		p.enableDNSLookup = enable
 	}
 }
 
+// WithBackoff sets the backoff strategy.
 func WithBackoff(bo backoff.Backoff) Option {
 	return func(p *pool) {
 		if bo != nil {
-			return
+			p.bo = bo
 		}
-		p.bo = bo
 	}
 }
 
+// WithSize sets the pool size.
 func WithSize(size uint64) Option {
 	return func(p *pool) {
 		if size < 1 {
 			return
 		}
-		p.size.Store(size)
+		p.poolSize.Store(size)
 	}
 }
 
+// WithDialOptions appends gRPC dial options.
 func WithDialOptions(opts ...DialOption) Option {
 	return func(p *pool) {
 		if len(opts) > 0 {
-			if len(p.dopts) > 0 {
-				p.dopts = append(p.dopts, opts...)
-			} else {
-				p.dopts = opts
-			}
+			p.dialOpts = append(p.dialOpts, opts...)
 		}
 	}
 }
 
+// WithDialTimeout sets the dial timeout duration.
 func WithDialTimeout(dur string) Option {
 	return func(p *pool) {
-		if len(dur) == 0 {
+		if dur == "" {
 			return
 		}
-		d, err := timeutil.Parse(dur)
-		if err != nil {
-			return
+		if t, err := timeutil.Parse(dur); err == nil {
+			p.dialTimeout = t
 		}
-		p.dialTimeout = d
 	}
 }
 
-func WithOldConnCloseDuration(dur string) Option {
+// WithOldConnCloseDelay sets the delay before closing old connections.
+func WithOldConnCloseDelay(dur string) Option {
 	return func(p *pool) {
-		if len(dur) == 0 {
+		if dur == "" {
 			return
 		}
-		d, err := timeutil.Parse(dur)
-		if err != nil {
-			return
+		if t, err := timeutil.Parse(dur); err == nil {
+			p.oldConnCloseDelay = t
 		}
-		p.roccd = d
 	}
 }
 
+// WithErrGroup sets the errgroup for goroutine management.
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(p *pool) {
 		if eg != nil {
-			p.eg = eg
+			p.errGroup = eg
 		}
 	}
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package status provides statuses and errors returned by grpc handler functions
 package status
 
 import (
@@ -43,6 +42,10 @@ type (
 
 func New(c codes.Code, msg string) *Status {
 	return status.New(c, msg)
+}
+
+func Is(err error, code codes.Code) bool {
+	return status.Code(err) == code
 }
 
 func newStatus(code codes.Code, msg string, err error, details ...any) (st *Status) {

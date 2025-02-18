@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import (
 )
 
 const (
-	metricsName        = "goroutine_count"
-	metricsDescription = "Number of goroutines"
+	MetricsName        = "goroutine_count"
+	MetricsDescription = "Number of goroutines"
 )
 
 type goroutine struct{}
@@ -37,8 +37,8 @@ func (*goroutine) View() ([]metrics.View, error) {
 	return []metrics.View{
 		view.NewView(
 			view.Instrument{
-				Name:        metricsName,
-				Description: metricsDescription,
+				Name:        MetricsName,
+				Description: MetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -49,8 +49,8 @@ func (*goroutine) View() ([]metrics.View, error) {
 
 func (*goroutine) Register(m metrics.Meter) (err error) {
 	counter, err := m.Int64ObservableGauge(
-		metricsName,
-		metrics.WithDescription(metricsDescription),
+		MetricsName,
+		metrics.WithDescription(MetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {

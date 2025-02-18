@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package egress provides egress filter client logic
 package egress
 
 import (
@@ -70,7 +69,7 @@ func New(opts ...Option) (Client, error) {
 		if c.addrs == nil {
 			return nil, errors.ErrGRPCTargetAddrNotFound
 		}
-		c.c = grpc.New(grpc.WithAddrs(c.addrs...))
+		c.c = grpc.New("Egress Filter Client", grpc.WithAddrs(c.addrs...))
 	}
 	return c, nil
 }
@@ -139,12 +138,11 @@ func (c *client) FilterDistance(
 			span.End()
 		}
 	}()
-	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (any, error) {
-		res, err = egress.NewFilterClient(conn).FilterDistance(ctx, in, append(copts, opts...)...)
-		return nil, err
+	) (*payload.Object_Distance, error) {
+		return egress.NewFilterClient(conn).FilterDistance(ctx, in, append(copts, opts...)...)
 	})
 	if err != nil {
 		return nil, err
@@ -213,12 +211,11 @@ func (c *client) FilterVector(
 			span.End()
 		}
 	}()
-	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (any, error) {
-		res, err = egress.NewFilterClient(conn).FilterVector(ctx, in, append(copts, opts...)...)
-		return nil, err
+	) (*payload.Object_Vector, error) {
+		return egress.NewFilterClient(conn).FilterVector(ctx, in, append(copts, opts...)...)
 	})
 	if err != nil {
 		return nil, err

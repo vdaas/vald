@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -63,6 +63,8 @@ func NewConfig(path string) (cfg *Config, err error) {
 	}
 	return cfg, nil
 }
+
+const BenchmarkOperatorInfo = "benchmark_operator_info"
 
 // func FakeData() {
 // 	d := Config{

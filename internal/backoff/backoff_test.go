@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package backoff provides backoff function controller
 package backoff
 
 import (
@@ -60,7 +59,7 @@ func TestNew(t *testing.T) {
 				jitterLimit:      float64(time.Minute),
 				backoffFactor:    1.1,
 				maxRetryCount:    50,
-				errLog:           true,
+				errLog:           false,
 				durationLimit:    float64(time.Hour) / 1.1,
 			},
 			checkFunc: func(got *backoff, want *backoff) error {

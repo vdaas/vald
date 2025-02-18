@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -52,9 +52,21 @@ type IndexJobTemplates struct {
 	Correction *k8s.Job `json:"correction" yaml:"correction"`
 }
 
+// Bind binds the actual data from the IndexJobTemplates receiver fields.
+func (ijt *IndexJobTemplates) Bind() *IndexJobTemplates {
+	return ijt
+}
+
 func (ic *IndexOperator) Bind() *IndexOperator {
 	ic.Namespace = GetActualValue(ic.Namespace)
 	ic.AgentName = GetActualValue(ic.AgentName)
 	ic.AgentNamespace = GetActualValue(ic.AgentNamespace)
+	ic.RotatorName = GetActualValue(ic.RotatorName)
+	ic.TargetReadReplicaIDAnnotationsKey = GetActualValue(ic.TargetReadReplicaIDAnnotationsKey)
+	ic.ReadReplicaLabelKey = GetActualValue(ic.ReadReplicaLabelKey)
+
+	// Bind for the value struct field. Its Bind method has a pointer receiver.
+	ic.JobTemplates.Bind()
+
 	return ic
 }

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -26,7 +26,8 @@ $(BINDIR)/minikube:
 # Only use this for development related to Volume Snapshots. Usually k3d is faster.
 .PHONY: minikube/start
 minikube/start:
-	minikube start
+	minikube config set driver docker
+	minikube start --driver=docker --force
 	minikube addons enable volumesnapshots
 	minikube addons enable csi-hostpath-driver
 	minikube addons disable storage-provisioner

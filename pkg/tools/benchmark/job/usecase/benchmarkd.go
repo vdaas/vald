@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package usecase provides usecases
 package usecase
 
 import (
@@ -93,7 +92,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 			grpc.WithClientInterceptors(clientInterceptors...),
 		)
 	}
-	gcli := grpc.New(copts...)
+	gcli := grpc.New("Benchmark Job Vald Client", copts...)
 	vcli, err := vald.New(
 		vald.WithAddrs(cfg.Job.ClientConfig.Addrs...),
 		vald.WithClient(gcli),
@@ -125,6 +124,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		service.WithK8sClient(cfg.K8sClient),
 		service.WithRPS(cfg.Job.RPS),
 		service.WithConcurencyLimit(cfg.Job.ConcurrencyLimit),
+		service.WithMetadata(cfg.Job.Target.Meta),
 	)
 	if err != nil {
 		return nil, err

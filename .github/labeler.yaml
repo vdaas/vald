@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -153,15 +153,6 @@ area/filter/ingress:
           - apis/grpc/v1/payload/**/*
           - apis/proto/v1/filter/ingress/*
           - apis/proto/v1/payload/**/*
-area/tools/cli/loadtest:
-  - changed-files:
-      - any-glob-to-any-file:
-          - apis/proto/v1/agent/core/**/*
-          - apis/proto/v1/vald/**/*
-          - apis/grpc/v1/agent/core/**/*
-          - apis/grpc/v1/vald/**/*
-          - cmd/tools/cli/loadtest/**/*
-          - pkg/tools/cli/loadtest/**/*
 area/internal:
   - changed-files:
       - any-glob-to-any-file:
