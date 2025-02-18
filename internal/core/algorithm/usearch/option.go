@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package usearch provides implementation of Go API for https://github.com/unum-cloud/usearch
 package usearch
 
 import (
@@ -87,8 +86,7 @@ func WithMetricType(metricType string) Option {
 			"tanimoto":   core.Tanimoto,
 			"sorensen":   core.Sorensen,
 		}
-		normalizedMetricType := strings.NewReplacer("-", "", "_", "", " ", "").Replace(strings.ToLower(metricType))
-		if metricType, ok := metricTypeMap[normalizedMetricType]; ok {
+		if metricType, ok := metricTypeMap[strings.TrimForCompare(metricType)]; ok {
 			u.metricType = metricType
 		} else {
 			err := errors.NewUsearchError("unsupported MetricType")

@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -24,128 +24,128 @@ import (
 )
 
 const (
-	indexCountMetricsName        = "agent_core_ngt_index_count"
-	indexCountMetricsDescription = "Agent NGT index count"
+	IndexCountMetricsName        = "agent_core_ngt_index_count"
+	IndexCountMetricsDescription = "Agent NGT index count"
 
-	uncommittedIndexCountMetricsName        = "agent_core_ngt_uncommitted_index_count"
-	uncommittedIndexCountMetricsDescription = "Agent NGT index count"
+	UncommittedIndexCountMetricsName        = "agent_core_ngt_uncommitted_index_count"
+	UncommittedIndexCountMetricsDescription = "Agent NGT uncommitted index count"
 
-	insertVQueueCountMetricsName        = "agent_core_ngt_insert_vqueue_count"
-	insertVQueueCountMetricsDescription = "Agent NGT insert vqueue count"
+	InsertVQueueCountMetricsName        = "agent_core_ngt_insert_vqueue_count"
+	InsertVQueueCountMetricsDescription = "Agent NGT insert vqueue count"
 
-	deleteVQueueCountMetricsName        = "agent_core_ngt_delete_vqueue_count"
-	deleteVQueueCountMetricsDescription = "Agent NGT delete vqueue count"
+	DeleteVQueueCountMetricsName        = "agent_core_ngt_delete_vqueue_count"
+	DeleteVQueueCountMetricsDescription = "Agent NGT delete vqueue count"
 
-	completedCreateIndexTotalMetricsName        = "agent_core_ngt_completed_create_index_total"
-	completedCreateIndexTotalMetricsDescription = "The cumulative count of completed create index execution"
+	CompletedCreateIndexTotalMetricsName        = "agent_core_ngt_completed_create_index_total"
+	CompletedCreateIndexTotalMetricsDescription = "The cumulative count of completed create index execution"
 
-	executedProactiveGCTotalMetricsName        = "agent_core_ngt_executed_proactive_gc_total"
-	executedProactiveGCTotalMetricsDescription = "The cumulative count of proactive GC execution"
+	ExecutedProactiveGCTotalMetricsName        = "agent_core_ngt_executed_proactive_gc_total"
+	ExecutedProactiveGCTotalMetricsDescription = "The cumulative count of proactive GC execution"
 
-	isIndexingMetricsName        = "agent_core_ngt_is_indexing"
-	isIndexingMetricsDescription = "Currently indexing or no"
+	IsIndexingMetricsName        = "agent_core_ngt_is_indexing"
+	IsIndexingMetricsDescription = "Currently indexing or no"
 
-	isSavingMetricsName        = "agent_core_ngt_is_saving"
-	isSavingMetricsDescription = "Currently saving or not"
+	IsSavingMetricsName        = "agent_core_ngt_is_saving"
+	IsSavingMetricsDescription = "Currently saving or not"
 
-	brokenIndexStoreCountMetricsName        = "agent_core_ngt_broken_index_store_count"
-	brokenIndexStoreCountMetricsDescription = "How many broken index generations have been stored"
+	BrokenIndexStoreCountMetricsName        = "agent_core_ngt_broken_index_store_count"
+	BrokenIndexStoreCountMetricsDescription = "How many broken index generations have been stored"
 
-	medianIndegreeMetricsName        = "agent_core_ngt_median_indegree"
-	medianIndegreeMetricsDescription = "Median indegree of nodes"
+	MedianIndegreeMetricsName        = "agent_core_ngt_median_indegree"
+	MedianIndegreeMetricsDescription = "Median indegree of nodes"
 
-	medianOutdegreeMetricsName        = "agent_core_ngt_median_outdegree"
-	medianOutdegreeMetricsDescription = "Median outdegree of nodes"
+	MedianOutdegreeMetricsName        = "agent_core_ngt_median_outdegree"
+	MedianOutdegreeMetricsDescription = "Median outdegree of nodes"
 
-	maxNumberOfIndegreeMetricsName        = "agent_core_ngt_max_number_of_indegree"
-	maxNumberOfIndegreeMetricsDescription = "Maximum number of indegree"
+	MaxNumberOfIndegreeMetricsName        = "agent_core_ngt_max_number_of_indegree"
+	MaxNumberOfIndegreeMetricsDescription = "Maximum number of indegree"
 
-	maxNumberOfOutdegreeMetricsName        = "agent_core_ngt_max_number_of_outdegree"
-	maxNumberOfOutdegreeMetricsDescription = "Maximum number of outdegree"
+	MaxNumberOfOutdegreeMetricsName        = "agent_core_ngt_max_number_of_outdegree"
+	MaxNumberOfOutdegreeMetricsDescription = "Maximum number of outdegree"
 
-	minNumberOfIndegreeMetricsName        = "agent_core_ngt_min_number_of_indegree"
-	minNumberOfIndegreeMetricsDescription = "Minimum number of indegree"
+	MinNumberOfIndegreeMetricsName        = "agent_core_ngt_min_number_of_indegree"
+	MinNumberOfIndegreeMetricsDescription = "Minimum number of indegree"
 
-	minNumberOfOutdegreeMetricsName        = "agent_core_ngt_min_number_of_outdegree"
-	minNumberOfOutdegreeMetricsDescription = "Minimum number of outdegree"
+	MinNumberOfOutdegreeMetricsName        = "agent_core_ngt_min_number_of_outdegree"
+	MinNumberOfOutdegreeMetricsDescription = "Minimum number of outdegree"
 
-	modeIndegreeMetricsName        = "agent_core_ngt_mode_indegree"
-	modeIndegreeMetricsDescription = "Mode of indegree"
+	ModeIndegreeMetricsName        = "agent_core_ngt_mode_indegree"
+	ModeIndegreeMetricsDescription = "Mode of indegree"
 
-	modeOutdegreeMetricsName        = "agent_core_ngt_mode_outdegree"
-	modeOutdegreeMetricsDescription = "Mode of outdegree"
+	ModeOutdegreeMetricsName        = "agent_core_ngt_mode_outdegree"
+	ModeOutdegreeMetricsDescription = "Mode of outdegree"
 
-	nodesSkippedFor10EdgesMetricsName        = "agent_core_ngt_nodes_skipped_for_10_edges"
-	nodesSkippedFor10EdgesMetricsDescription = "Nodes skipped for 10 edges"
+	NodesSkippedFor10EdgesMetricsName        = "agent_core_ngt_nodes_skipped_for_10_edges"
+	NodesSkippedFor10EdgesMetricsDescription = "Nodes skipped for 10 edges"
 
-	nodesSkippedForIndegreeDistanceMetricsName        = "agent_core_ngt_nodes_skipped_for_indegree_distance"
-	nodesSkippedForIndegreeDistanceMetricsDescription = "Nodes skipped for indegree distance"
+	NodesSkippedForIndegreeDistanceMetricsName        = "agent_core_ngt_nodes_skipped_for_indegree_distance"
+	NodesSkippedForIndegreeDistanceMetricsDescription = "Nodes skipped for indegree distance"
 
-	numberOfEdgesMetricsName        = "agent_core_ngt_number_of_edges"
-	numberOfEdgesMetricsDescription = "Number of edges"
+	NumberOfEdgesMetricsName        = "agent_core_ngt_number_of_edges"
+	NumberOfEdgesMetricsDescription = "Number of edges"
 
-	numberOfIndexedObjectsMetricsName        = "agent_core_ngt_number_of_indexed_objects"
-	numberOfIndexedObjectsMetricsDescription = "Number of indexed objects"
+	NumberOfIndexedObjectsMetricsName        = "agent_core_ngt_number_of_indexed_objects"
+	NumberOfIndexedObjectsMetricsDescription = "Number of indexed objects"
 
-	numberOfNodesMetricsName        = "agent_core_ngt_number_of_nodes"
-	numberOfNodesMetricsDescription = "Number of nodes"
+	NumberOfNodesMetricsName        = "agent_core_ngt_number_of_nodes"
+	NumberOfNodesMetricsDescription = "Number of nodes"
 
-	numberOfNodesWithoutEdgesMetricsName        = "agent_core_ngt_number_of_nodes_without_edges"
-	numberOfNodesWithoutEdgesMetricsDescription = "Number of nodes without edges"
+	NumberOfNodesWithoutEdgesMetricsName        = "agent_core_ngt_number_of_nodes_without_edges"
+	NumberOfNodesWithoutEdgesMetricsDescription = "Number of nodes without edges"
 
-	numberOfNodesWithoutIndegreeMetricsName        = "agent_core_ngt_number_of_nodes_without_indegree"
-	numberOfNodesWithoutIndegreeMetricsDescription = "Number of nodes without indegree"
+	NumberOfNodesWithoutIndegreeMetricsName        = "agent_core_ngt_number_of_nodes_without_indegree"
+	NumberOfNodesWithoutIndegreeMetricsDescription = "Number of nodes without indegree"
 
-	numberOfObjectsMetricsName        = "agent_core_ngt_number_of_objects"
-	numberOfObjectsMetricsDescription = "Number of objects"
+	NumberOfObjectsMetricsName        = "agent_core_ngt_number_of_objects"
+	NumberOfObjectsMetricsDescription = "Number of objects"
 
-	numberOfRemovedObjectsMetricsName        = "agent_core_ngt_number_of_removed_objects"
-	numberOfRemovedObjectsMetricsDescription = "Number of removed objects"
+	NumberOfRemovedObjectsMetricsName        = "agent_core_ngt_number_of_removed_objects"
+	NumberOfRemovedObjectsMetricsDescription = "Number of removed objects"
 
-	sizeOfObjectRepositoryMetricsName        = "agent_core_ngt_size_of_object_repository"
-	sizeOfObjectRepositoryMetricsDescription = "Size of object repository"
+	SizeOfObjectRepositoryMetricsName        = "agent_core_ngt_size_of_object_repository"
+	SizeOfObjectRepositoryMetricsDescription = "Size of object repository"
 
-	sizeOfRefinementObjectRepositoryMetricsName        = "agent_core_ngt_size_of_refinement_object_repository"
-	sizeOfRefinementObjectRepositoryMetricsDescription = "Size of refinement object repository"
+	SizeOfRefinementObjectRepositoryMetricsName        = "agent_core_ngt_size_of_refinement_object_repository"
+	SizeOfRefinementObjectRepositoryMetricsDescription = "Size of refinement object repository"
 
-	varianceOfIndegreeMetricsName        = "agent_core_ngt_variance_of_indegree"
-	varianceOfIndegreeMetricsDescription = "Variance of indegree"
+	VarianceOfIndegreeMetricsName        = "agent_core_ngt_variance_of_indegree"
+	VarianceOfIndegreeMetricsDescription = "Variance of indegree"
 
-	varianceOfOutdegreeMetricsName        = "agent_core_ngt_variance_of_outdegree"
-	varianceOfOutdegreeMetricsDescription = "Variance of outdegree"
+	VarianceOfOutdegreeMetricsName        = "agent_core_ngt_variance_of_outdegree"
+	VarianceOfOutdegreeMetricsDescription = "Variance of outdegree"
 
-	meanEdgeLengthMetricsName        = "agent_core_ngt_mean_edge_length"
-	meanEdgeLengthMetricsDescription = "Mean edge length"
+	MeanEdgeLengthMetricsName        = "agent_core_ngt_mean_edge_length"
+	MeanEdgeLengthMetricsDescription = "Mean edge length"
 
-	meanEdgeLengthFor10EdgesMetricsName        = "agent_core_ngt_mean_edge_length_for_10_edges"
-	meanEdgeLengthFor10EdgesMetricsDescription = "Mean edge length for 10 edges"
+	MeanEdgeLengthFor10EdgesMetricsName        = "agent_core_ngt_mean_edge_length_for_10_edges"
+	MeanEdgeLengthFor10EdgesMetricsDescription = "Mean edge length for 10 edges"
 
-	meanIndegreeDistanceFor10EdgesMetricsName        = "agent_core_ngt_mean_indegree_distance_for_10_edges"
-	meanIndegreeDistanceFor10EdgesMetricsDescription = "Mean indegree distance for 10 edges"
+	MeanIndegreeDistanceFor10EdgesMetricsName        = "agent_core_ngt_mean_indegree_distance_for_10_edges"
+	MeanIndegreeDistanceFor10EdgesMetricsDescription = "Mean indegree distance for 10 edges"
 
-	meanNumberOfEdgesPerNodeMetricsName        = "agent_core_ngt_mean_number_of_edges_per_node"
-	meanNumberOfEdgesPerNodeMetricsDescription = "Mean number of edges per node"
+	MeanNumberOfEdgesPerNodeMetricsName        = "agent_core_ngt_mean_number_of_edges_per_node"
+	MeanNumberOfEdgesPerNodeMetricsDescription = "Mean number of edges per node"
 
-	c1IndegreeMetricsName        = "agent_core_ngt_c1_indegree"
-	c1IndegreeMetricsDescription = "C1 indegree"
+	C1IndegreeMetricsName        = "agent_core_ngt_c1_indegree"
+	C1IndegreeMetricsDescription = "C1 indegree"
 
-	c5IndegreeMetricsName        = "agent_core_ngt_c5_indegree"
-	c5IndegreeMetricsDescription = "C5 indegree"
+	C5IndegreeMetricsName        = "agent_core_ngt_c5_indegree"
+	C5IndegreeMetricsDescription = "C5 indegree"
 
-	c95OutdegreeMetricsName        = "agent_core_ngt_c95_outdegree"
-	c95OutdegreeMetricsDescription = "C95 outdegree"
+	C95OutdegreeMetricsName        = "agent_core_ngt_c95_outdegree"
+	C95OutdegreeMetricsDescription = "C95 outdegree"
 
-	c99OutdegreeMetricsName        = "agent_core_ngt_c99_outdegree"
-	c99OutdegreeMetricsDescription = "C99 outdegree"
+	C99OutdegreeMetricsName        = "agent_core_ngt_c99_outdegree"
+	C99OutdegreeMetricsDescription = "C99 outdegree"
 
-	indegreeCountMetricsName        = "agent_core_ngt_indegree_count"
-	indegreeCountMetricsDescription = "Indegree count"
+	IndegreeCountMetricsName        = "agent_core_ngt_indegree_count"
+	IndegreeCountMetricsDescription = "Indegree count"
 
-	outdegreeHistogramMetricsName        = "agent_core_ngt_outdegree_histogram"
-	outdegreeHistogramMetricsDescription = "Outdegree histogram"
+	OutdegreeHistogramMetricsName        = "agent_core_ngt_outdegree_histogram"
+	OutdegreeHistogramMetricsDescription = "Outdegree histogram"
 
-	indegreeHistogramMetricsName        = "agent_core_ngt_indegree_histogram"
-	indegreeHistogramMetricsDescription = "Indegree histogram"
+	IndegreeHistogramMetricsName        = "agent_core_ngt_indegree_histogram"
+	IndegreeHistogramMetricsDescription = "Indegree histogram"
 )
 
 type ngtMetrics struct {
@@ -162,8 +162,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 	mv = []metrics.View{
 		view.NewView(
 			view.Instrument{
-				Name:        indexCountMetricsName,
-				Description: indexCountMetricsDescription,
+				Name:        IndexCountMetricsName,
+				Description: IndexCountMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -171,8 +171,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        uncommittedIndexCountMetricsName,
-				Description: uncommittedIndexCountMetricsDescription,
+				Name:        UncommittedIndexCountMetricsName,
+				Description: UncommittedIndexCountMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -180,8 +180,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        insertVQueueCountMetricsName,
-				Description: insertVQueueCountMetricsDescription,
+				Name:        InsertVQueueCountMetricsName,
+				Description: InsertVQueueCountMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -189,8 +189,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        deleteVQueueCountMetricsName,
-				Description: deleteVQueueCountMetricsDescription,
+				Name:        DeleteVQueueCountMetricsName,
+				Description: DeleteVQueueCountMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -198,8 +198,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        completedCreateIndexTotalMetricsName,
-				Description: completedCreateIndexTotalMetricsDescription,
+				Name:        CompletedCreateIndexTotalMetricsName,
+				Description: CompletedCreateIndexTotalMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -207,8 +207,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        executedProactiveGCTotalMetricsName,
-				Description: executedProactiveGCTotalMetricsDescription,
+				Name:        ExecutedProactiveGCTotalMetricsName,
+				Description: ExecutedProactiveGCTotalMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -216,8 +216,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        isIndexingMetricsName,
-				Description: isIndexingMetricsDescription,
+				Name:        IsIndexingMetricsName,
+				Description: IsIndexingMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -225,8 +225,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        isSavingMetricsName,
-				Description: isSavingMetricsDescription,
+				Name:        IsSavingMetricsName,
+				Description: IsSavingMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -234,8 +234,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        brokenIndexStoreCountMetricsName,
-				Description: brokenIndexStoreCountMetricsDescription,
+				Name:        BrokenIndexStoreCountMetricsName,
+				Description: BrokenIndexStoreCountMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -247,8 +247,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 		mv = append(mv,
 			view.NewView(
 				view.Instrument{
-					Name:        medianIndegreeMetricsName,
-					Description: medianIndegreeMetricsDescription,
+					Name:        MedianIndegreeMetricsName,
+					Description: MedianIndegreeMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -256,8 +256,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        medianOutdegreeMetricsName,
-					Description: medianOutdegreeMetricsDescription,
+					Name:        MedianOutdegreeMetricsName,
+					Description: MedianOutdegreeMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -265,8 +265,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        maxNumberOfIndegreeMetricsName,
-					Description: maxNumberOfIndegreeMetricsDescription,
+					Name:        MaxNumberOfIndegreeMetricsName,
+					Description: MaxNumberOfIndegreeMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -274,8 +274,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        maxNumberOfOutdegreeMetricsName,
-					Description: maxNumberOfOutdegreeMetricsDescription,
+					Name:        MaxNumberOfOutdegreeMetricsName,
+					Description: MaxNumberOfOutdegreeMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -283,8 +283,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        minNumberOfIndegreeMetricsName,
-					Description: minNumberOfIndegreeMetricsDescription,
+					Name:        MinNumberOfIndegreeMetricsName,
+					Description: MinNumberOfIndegreeMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -292,8 +292,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        minNumberOfOutdegreeMetricsName,
-					Description: minNumberOfOutdegreeMetricsDescription,
+					Name:        MinNumberOfOutdegreeMetricsName,
+					Description: MinNumberOfOutdegreeMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -301,8 +301,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        modeIndegreeMetricsName,
-					Description: modeIndegreeMetricsDescription,
+					Name:        ModeIndegreeMetricsName,
+					Description: ModeIndegreeMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -310,8 +310,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        modeOutdegreeMetricsName,
-					Description: modeOutdegreeMetricsDescription,
+					Name:        ModeOutdegreeMetricsName,
+					Description: ModeOutdegreeMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -319,8 +319,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        nodesSkippedFor10EdgesMetricsName,
-					Description: nodesSkippedFor10EdgesMetricsDescription,
+					Name:        NodesSkippedFor10EdgesMetricsName,
+					Description: NodesSkippedFor10EdgesMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -328,8 +328,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        nodesSkippedForIndegreeDistanceMetricsName,
-					Description: nodesSkippedForIndegreeDistanceMetricsDescription,
+					Name:        NodesSkippedForIndegreeDistanceMetricsName,
+					Description: NodesSkippedForIndegreeDistanceMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -337,8 +337,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        numberOfEdgesMetricsName,
-					Description: numberOfEdgesMetricsDescription,
+					Name:        NumberOfEdgesMetricsName,
+					Description: NumberOfEdgesMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -346,8 +346,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        numberOfIndexedObjectsMetricsName,
-					Description: numberOfIndexedObjectsMetricsDescription,
+					Name:        NumberOfIndexedObjectsMetricsName,
+					Description: NumberOfIndexedObjectsMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -355,8 +355,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        numberOfNodesMetricsName,
-					Description: numberOfNodesMetricsDescription,
+					Name:        NumberOfNodesMetricsName,
+					Description: NumberOfNodesMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -364,8 +364,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        numberOfNodesWithoutEdgesMetricsName,
-					Description: numberOfNodesWithoutEdgesMetricsDescription,
+					Name:        NumberOfNodesWithoutEdgesMetricsName,
+					Description: NumberOfNodesWithoutEdgesMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -373,8 +373,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        numberOfNodesWithoutIndegreeMetricsName,
-					Description: numberOfNodesWithoutIndegreeMetricsDescription,
+					Name:        NumberOfNodesWithoutIndegreeMetricsName,
+					Description: NumberOfNodesWithoutIndegreeMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -382,8 +382,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        numberOfObjectsMetricsName,
-					Description: numberOfObjectsMetricsDescription,
+					Name:        NumberOfObjectsMetricsName,
+					Description: NumberOfObjectsMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -391,8 +391,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        numberOfRemovedObjectsMetricsName,
-					Description: numberOfRemovedObjectsMetricsDescription,
+					Name:        NumberOfRemovedObjectsMetricsName,
+					Description: NumberOfRemovedObjectsMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -400,8 +400,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        sizeOfObjectRepositoryMetricsName,
-					Description: sizeOfObjectRepositoryMetricsDescription,
+					Name:        SizeOfObjectRepositoryMetricsName,
+					Description: SizeOfObjectRepositoryMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -409,8 +409,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        sizeOfRefinementObjectRepositoryMetricsName,
-					Description: sizeOfRefinementObjectRepositoryMetricsDescription,
+					Name:        SizeOfRefinementObjectRepositoryMetricsName,
+					Description: SizeOfRefinementObjectRepositoryMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -418,8 +418,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        varianceOfIndegreeMetricsName,
-					Description: varianceOfIndegreeMetricsDescription,
+					Name:        VarianceOfIndegreeMetricsName,
+					Description: VarianceOfIndegreeMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -427,8 +427,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        varianceOfOutdegreeMetricsName,
-					Description: varianceOfOutdegreeMetricsDescription,
+					Name:        VarianceOfOutdegreeMetricsName,
+					Description: VarianceOfOutdegreeMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -436,8 +436,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        meanEdgeLengthMetricsName,
-					Description: meanEdgeLengthMetricsDescription,
+					Name:        MeanEdgeLengthMetricsName,
+					Description: MeanEdgeLengthMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -445,8 +445,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        meanEdgeLengthFor10EdgesMetricsName,
-					Description: meanEdgeLengthFor10EdgesMetricsDescription,
+					Name:        MeanEdgeLengthFor10EdgesMetricsName,
+					Description: MeanEdgeLengthFor10EdgesMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -454,8 +454,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        meanIndegreeDistanceFor10EdgesMetricsName,
-					Description: meanIndegreeDistanceFor10EdgesMetricsDescription,
+					Name:        MeanIndegreeDistanceFor10EdgesMetricsName,
+					Description: MeanIndegreeDistanceFor10EdgesMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -463,8 +463,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        meanNumberOfEdgesPerNodeMetricsName,
-					Description: meanNumberOfEdgesPerNodeMetricsDescription,
+					Name:        MeanNumberOfEdgesPerNodeMetricsName,
+					Description: MeanNumberOfEdgesPerNodeMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -472,8 +472,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        c1IndegreeMetricsName,
-					Description: c1IndegreeMetricsDescription,
+					Name:        C1IndegreeMetricsName,
+					Description: C1IndegreeMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -481,8 +481,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        c5IndegreeMetricsName,
-					Description: c5IndegreeMetricsDescription,
+					Name:        C5IndegreeMetricsName,
+					Description: C5IndegreeMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -490,8 +490,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        c95OutdegreeMetricsName,
-					Description: c95OutdegreeMetricsDescription,
+					Name:        C95OutdegreeMetricsName,
+					Description: C95OutdegreeMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -499,8 +499,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        c99OutdegreeMetricsName,
-					Description: c99OutdegreeMetricsDescription,
+					Name:        C99OutdegreeMetricsName,
+					Description: C99OutdegreeMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -508,8 +508,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        indegreeCountMetricsName,
-					Description: indegreeCountMetricsDescription,
+					Name:        IndegreeCountMetricsName,
+					Description: IndegreeCountMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -517,8 +517,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        outdegreeHistogramMetricsName,
-					Description: outdegreeHistogramMetricsDescription,
+					Name:        OutdegreeHistogramMetricsName,
+					Description: OutdegreeHistogramMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -526,8 +526,8 @@ func (n *ngtMetrics) View() (mv []metrics.View, err error) {
 			),
 			view.NewView(
 				view.Instrument{
-					Name:        indegreeHistogramMetricsName,
-					Description: indegreeHistogramMetricsDescription,
+					Name:        IndegreeHistogramMetricsName,
+					Description: IndegreeHistogramMetricsDescription,
 				},
 				view.Stream{
 					Aggregation: view.AggregationLastValue{},
@@ -549,8 +549,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		brokenIndexCount metrics.Int64ObservableGauge
 
 	indexCount, err = m.Int64ObservableGauge(
-		indexCountMetricsName,
-		metrics.WithDescription(indexCountMetricsDescription),
+		IndexCountMetricsName,
+		metrics.WithDescription(IndexCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -558,8 +558,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 	}
 
 	uncommittedIndexCount, err = m.Int64ObservableGauge(
-		uncommittedIndexCountMetricsName,
-		metrics.WithDescription(uncommittedIndexCountMetricsDescription),
+		UncommittedIndexCountMetricsName,
+		metrics.WithDescription(UncommittedIndexCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -567,8 +567,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 	}
 
 	insertVQueueCount, err = m.Int64ObservableGauge(
-		insertVQueueCountMetricsName,
-		metrics.WithDescription(insertVQueueCountMetricsDescription),
+		InsertVQueueCountMetricsName,
+		metrics.WithDescription(InsertVQueueCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -576,8 +576,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 	}
 
 	deleteVQueueCount, err = m.Int64ObservableGauge(
-		deleteVQueueCountMetricsName,
-		metrics.WithDescription(deleteVQueueCountMetricsDescription),
+		DeleteVQueueCountMetricsName,
+		metrics.WithDescription(DeleteVQueueCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -585,8 +585,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 	}
 
 	completedCreateIndexTotal, err = m.Int64ObservableGauge(
-		completedCreateIndexTotalMetricsName,
-		metrics.WithDescription(completedCreateIndexTotalMetricsDescription),
+		CompletedCreateIndexTotalMetricsName,
+		metrics.WithDescription(CompletedCreateIndexTotalMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -594,8 +594,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 	}
 
 	executedProactiveGCTotal, err = m.Int64ObservableGauge(
-		executedProactiveGCTotalMetricsName,
-		metrics.WithDescription(executedProactiveGCTotalMetricsDescription),
+		ExecutedProactiveGCTotalMetricsName,
+		metrics.WithDescription(ExecutedProactiveGCTotalMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -603,8 +603,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 	}
 
 	isIndexing, err = m.Int64ObservableGauge(
-		isIndexingMetricsName,
-		metrics.WithDescription(isIndexingMetricsDescription),
+		IsIndexingMetricsName,
+		metrics.WithDescription(IsIndexingMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -612,8 +612,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 	}
 
 	isSaving, err = m.Int64ObservableGauge(
-		isSavingMetricsName,
-		metrics.WithDescription(isSavingMetricsDescription),
+		IsSavingMetricsName,
+		metrics.WithDescription(IsSavingMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -621,8 +621,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 	}
 
 	brokenIndexCount, err = m.Int64ObservableGauge(
-		brokenIndexStoreCountMetricsName,
-		metrics.WithDescription(brokenIndexStoreCountMetricsDescription),
+		BrokenIndexStoreCountMetricsName,
+		metrics.WithDescription(BrokenIndexStoreCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -678,8 +678,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 
 	if n.ngt.IsStatisticsEnabled() {
 		medianIndegree, err = m.Int64ObservableGauge(
-			medianIndegreeMetricsName,
-			metrics.WithDescription(medianIndegreeMetricsDescription),
+			MedianIndegreeMetricsName,
+			metrics.WithDescription(MedianIndegreeMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -687,8 +687,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		medianOutdegree, err = m.Int64ObservableGauge(
-			medianOutdegreeMetricsName,
-			metrics.WithDescription(medianOutdegreeMetricsDescription),
+			MedianOutdegreeMetricsName,
+			metrics.WithDescription(MedianOutdegreeMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -696,8 +696,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		maxNumberOfIndegree, err = m.Int64ObservableGauge(
-			maxNumberOfIndegreeMetricsName,
-			metrics.WithDescription(maxNumberOfIndegreeMetricsDescription),
+			MaxNumberOfIndegreeMetricsName,
+			metrics.WithDescription(MaxNumberOfIndegreeMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -705,8 +705,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		maxNumberOfOutdegree, err = m.Int64ObservableGauge(
-			maxNumberOfOutdegreeMetricsName,
-			metrics.WithDescription(maxNumberOfOutdegreeMetricsDescription),
+			MaxNumberOfOutdegreeMetricsName,
+			metrics.WithDescription(MaxNumberOfOutdegreeMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -714,8 +714,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		minNumberOfIndegree, err = m.Int64ObservableGauge(
-			minNumberOfIndegreeMetricsName,
-			metrics.WithDescription(minNumberOfIndegreeMetricsDescription),
+			MinNumberOfIndegreeMetricsName,
+			metrics.WithDescription(MinNumberOfIndegreeMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -723,8 +723,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		minNumberOfOutdegree, err = m.Int64ObservableGauge(
-			minNumberOfOutdegreeMetricsName,
-			metrics.WithDescription(minNumberOfOutdegreeMetricsDescription),
+			MinNumberOfOutdegreeMetricsName,
+			metrics.WithDescription(MinNumberOfOutdegreeMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -732,8 +732,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		modeIndegree, err = m.Int64ObservableGauge(
-			modeIndegreeMetricsName,
-			metrics.WithDescription(modeIndegreeMetricsDescription),
+			ModeIndegreeMetricsName,
+			metrics.WithDescription(ModeIndegreeMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -741,8 +741,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		modeOutdegree, err = m.Int64ObservableGauge(
-			modeOutdegreeMetricsName,
-			metrics.WithDescription(modeOutdegreeMetricsDescription),
+			ModeOutdegreeMetricsName,
+			metrics.WithDescription(ModeOutdegreeMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -750,8 +750,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		nodesSkippedFor10Edges, err = m.Int64ObservableGauge(
-			nodesSkippedFor10EdgesMetricsName,
-			metrics.WithDescription(nodesSkippedFor10EdgesMetricsDescription),
+			NodesSkippedFor10EdgesMetricsName,
+			metrics.WithDescription(NodesSkippedFor10EdgesMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -759,8 +759,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		nodesSkippedForIndegreeDistance, err = m.Int64ObservableGauge(
-			nodesSkippedForIndegreeDistanceMetricsName,
-			metrics.WithDescription(nodesSkippedForIndegreeDistanceMetricsDescription),
+			NodesSkippedForIndegreeDistanceMetricsName,
+			metrics.WithDescription(NodesSkippedForIndegreeDistanceMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -768,8 +768,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		numberOfEdges, err = m.Int64ObservableGauge(
-			numberOfEdgesMetricsName,
-			metrics.WithDescription(numberOfEdgesMetricsDescription),
+			NumberOfEdgesMetricsName,
+			metrics.WithDescription(NumberOfEdgesMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -777,8 +777,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		numberOfIndexedObjects, err = m.Int64ObservableGauge(
-			numberOfIndexedObjectsMetricsName,
-			metrics.WithDescription(numberOfIndexedObjectsMetricsDescription),
+			NumberOfIndexedObjectsMetricsName,
+			metrics.WithDescription(NumberOfIndexedObjectsMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -786,8 +786,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		numberOfNodes, err = m.Int64ObservableGauge(
-			numberOfNodesMetricsName,
-			metrics.WithDescription(numberOfNodesMetricsDescription),
+			NumberOfNodesMetricsName,
+			metrics.WithDescription(NumberOfNodesMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -795,8 +795,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		numberOfNodesWithoutEdges, err = m.Int64ObservableGauge(
-			numberOfNodesWithoutEdgesMetricsName,
-			metrics.WithDescription(numberOfNodesWithoutEdgesMetricsDescription),
+			NumberOfNodesWithoutEdgesMetricsName,
+			metrics.WithDescription(NumberOfNodesWithoutEdgesMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -804,8 +804,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		numberOfNodesWithoutIndegree, err = m.Int64ObservableGauge(
-			numberOfNodesWithoutIndegreeMetricsName,
-			metrics.WithDescription(numberOfNodesWithoutIndegreeMetricsDescription),
+			NumberOfNodesWithoutIndegreeMetricsName,
+			metrics.WithDescription(NumberOfNodesWithoutIndegreeMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -813,8 +813,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		numberOfObjects, err = m.Int64ObservableGauge(
-			numberOfObjectsMetricsName,
-			metrics.WithDescription(numberOfObjectsMetricsDescription),
+			NumberOfObjectsMetricsName,
+			metrics.WithDescription(NumberOfObjectsMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -822,8 +822,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		numberOfRemovedObjects, err = m.Int64ObservableGauge(
-			numberOfRemovedObjectsMetricsName,
-			metrics.WithDescription(numberOfRemovedObjectsMetricsDescription),
+			NumberOfRemovedObjectsMetricsName,
+			metrics.WithDescription(NumberOfRemovedObjectsMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -831,8 +831,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		sizeOfObjectRepository, err = m.Int64ObservableGauge(
-			sizeOfObjectRepositoryMetricsName,
-			metrics.WithDescription(sizeOfObjectRepositoryMetricsDescription),
+			SizeOfObjectRepositoryMetricsName,
+			metrics.WithDescription(SizeOfObjectRepositoryMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -840,8 +840,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		sizeOfRefinementObjectRepository, err = m.Int64ObservableGauge(
-			sizeOfRefinementObjectRepositoryMetricsName,
-			metrics.WithDescription(sizeOfRefinementObjectRepositoryMetricsDescription),
+			SizeOfRefinementObjectRepositoryMetricsName,
+			metrics.WithDescription(SizeOfRefinementObjectRepositoryMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -849,8 +849,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		varianceOfIndegree, err = m.Float64ObservableGauge(
-			varianceOfIndegreeMetricsName,
-			metrics.WithDescription(varianceOfIndegreeMetricsDescription),
+			VarianceOfIndegreeMetricsName,
+			metrics.WithDescription(VarianceOfIndegreeMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -858,8 +858,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		varianceOfOutdegree, err = m.Float64ObservableGauge(
-			varianceOfOutdegreeMetricsName,
-			metrics.WithDescription(varianceOfOutdegreeMetricsDescription),
+			VarianceOfOutdegreeMetricsName,
+			metrics.WithDescription(VarianceOfOutdegreeMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -867,8 +867,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		meanEdgeLength, err = m.Float64ObservableGauge(
-			meanEdgeLengthMetricsName,
-			metrics.WithDescription(meanEdgeLengthMetricsDescription),
+			MeanEdgeLengthMetricsName,
+			metrics.WithDescription(MeanEdgeLengthMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -876,8 +876,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		meanEdgeLengthFor10Edges, err = m.Float64ObservableGauge(
-			meanEdgeLengthFor10EdgesMetricsName,
-			metrics.WithDescription(meanEdgeLengthFor10EdgesMetricsDescription),
+			MeanEdgeLengthFor10EdgesMetricsName,
+			metrics.WithDescription(MeanEdgeLengthFor10EdgesMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -885,8 +885,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		meanIndegreeDistanceFor10Edges, err = m.Float64ObservableGauge(
-			meanIndegreeDistanceFor10EdgesMetricsName,
-			metrics.WithDescription(meanIndegreeDistanceFor10EdgesMetricsDescription),
+			MeanIndegreeDistanceFor10EdgesMetricsName,
+			metrics.WithDescription(MeanIndegreeDistanceFor10EdgesMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -894,8 +894,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		meanNumberOfEdgesPerNode, err = m.Float64ObservableGauge(
-			meanNumberOfEdgesPerNodeMetricsName,
-			metrics.WithDescription(meanNumberOfEdgesPerNodeMetricsDescription),
+			MeanNumberOfEdgesPerNodeMetricsName,
+			metrics.WithDescription(MeanNumberOfEdgesPerNodeMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -903,8 +903,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		c1Indegree, err = m.Float64ObservableGauge(
-			c1IndegreeMetricsName,
-			metrics.WithDescription(c1IndegreeMetricsDescription),
+			C1IndegreeMetricsName,
+			metrics.WithDescription(C1IndegreeMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -912,8 +912,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		c5Indegree, err = m.Float64ObservableGauge(
-			c5IndegreeMetricsName,
-			metrics.WithDescription(c5IndegreeMetricsDescription),
+			C5IndegreeMetricsName,
+			metrics.WithDescription(C5IndegreeMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -921,8 +921,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		c95Outdegree, err = m.Float64ObservableGauge(
-			c95OutdegreeMetricsName,
-			metrics.WithDescription(c95OutdegreeMetricsDescription),
+			C95OutdegreeMetricsName,
+			metrics.WithDescription(C95OutdegreeMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -930,8 +930,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		c99Outdegree, err = m.Float64ObservableGauge(
-			c99OutdegreeMetricsName,
-			metrics.WithDescription(c99OutdegreeMetricsDescription),
+			C99OutdegreeMetricsName,
+			metrics.WithDescription(C99OutdegreeMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -939,8 +939,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		indegreeCount, err = m.Float64ObservableGauge(
-			indegreeCountMetricsName,
-			metrics.WithDescription(indegreeCountMetricsDescription),
+			IndegreeCountMetricsName,
+			metrics.WithDescription(IndegreeCountMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -948,8 +948,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		outdegreeHistogram, err = m.Float64ObservableGauge(
-			outdegreeHistogramMetricsName,
-			metrics.WithDescription(outdegreeHistogramMetricsDescription),
+			OutdegreeHistogramMetricsName,
+			metrics.WithDescription(OutdegreeHistogramMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {
@@ -957,8 +957,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) (err error) {
 		}
 
 		indegreeHistogram, err = m.Float64ObservableGauge(
-			indegreeHistogramMetricsName,
-			metrics.WithDescription(indegreeHistogramMetricsDescription),
+			IndegreeHistogramMetricsName,
+			metrics.WithDescription(IndegreeHistogramMetricsDescription),
 			metrics.WithUnit(metrics.Dimensionless),
 		)
 		if err != nil {

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -929,7 +929,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			select {
 			case <-ctx.Done():
 				err = n.CreateIndex(ctx, n.poolSize)
-				if err != nil && !errors.Is(err, errors.ErrUncommittedIndexNotFound) {
+				if errors.IsNot(err, errors.ErrUncommittedIndexNotFound) {
 					ech <- err
 					return errors.Join(ctx.Err(), err)
 				}
@@ -1395,7 +1395,6 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	log.Debug("create index insert phase started")
 	var icnt uint32
 	n.vq.RangePopInsert(ctx, now, func(uuid string, vector []float32, timestamp int64) bool {
-		log.Debugf("start insert operation for ngt index id: %s", uuid)
 		var oid uint
 		oid, err = n.core.Insert(vector)
 		if err != nil {
@@ -1410,7 +1409,6 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 				return true
 			}
 		}
-		log.Debugf("start insert operation for kvsdb id: %s, oid: %d", uuid, oid)
 		n.kvs.Set(uuid, uint32(oid), timestamp)
 		atomic.AddUint32(&icnt, 1)
 
@@ -1420,8 +1418,6 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			delete(n.fmap, uuid)
 		}
 		n.fmu.Unlock()
-		log.Debugf("finished to insert ngt index and kvsdb id: %s, oid: %d", uuid, oid)
-
 		vqProcessedCnt++
 		return true
 	})
@@ -1474,6 +1470,10 @@ func (n *ngt) loadStatistics(ctx context.Context) (err error) {
 		if err != nil {
 			log.Errorf("failed to load index statistics to cache: %v", err)
 			return err
+		}
+		if stats == nil {
+			log.Warn("failed to load index statistics to cache: stats is nil")
+			return nil
 		}
 		n.statisticsCache.Store(&payload.Info_Index_Statistics{
 			Valid:                            stats.Valid,
@@ -1820,10 +1820,7 @@ func (n *ngt) CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err erro
 	}()
 
 	err = n.CreateIndex(ctx, poolSize)
-	if err != nil &&
-		!errors.Is(err, errors.ErrUncommittedIndexNotFound) &&
-		!errors.Is(err, context.Canceled) &&
-		!errors.Is(err, context.DeadlineExceeded) {
+	if errors.IsNot(err, errors.ErrUncommittedIndexNotFound, context.Canceled, context.DeadlineExceeded) {
 		return err
 	}
 	return n.SaveIndex(ctx)
@@ -1972,9 +1969,7 @@ func (n *ngt) Close(ctx context.Context) (err error) {
 	defer n.core.Close()
 	defer func() {
 		kerr := n.kvs.Close()
-		if kerr != nil &&
-			!errors.Is(err, context.Canceled) &&
-			!errors.Is(err, context.DeadlineExceeded) {
+		if errors.IsNot(kerr, context.Canceled, context.DeadlineExceeded) {
 			if err != nil {
 				err = errors.Join(kerr, err)
 			} else {
@@ -1988,10 +1983,7 @@ func (n *ngt) Close(ctx context.Context) (err error) {
 			return err
 		}
 		cerr := n.CreateIndex(ctx, n.poolSize)
-		if cerr != nil &&
-			!errors.Is(err, errors.ErrUncommittedIndexNotFound) &&
-			!errors.Is(err, context.Canceled) &&
-			!errors.Is(err, context.DeadlineExceeded) {
+		if errors.IsNot(cerr, errors.ErrUncommittedIndexNotFound, context.Canceled, context.DeadlineExceeded) {
 			if err != nil {
 				err = errors.Join(cerr, err)
 			} else {
@@ -1999,10 +1991,7 @@ func (n *ngt) Close(ctx context.Context) (err error) {
 			}
 		}
 		serr := n.SaveIndex(ctx)
-		if serr != nil &&
-			!errors.Is(err, errors.ErrUncommittedIndexNotFound) &&
-			!errors.Is(err, context.Canceled) &&
-			!errors.Is(err, context.DeadlineExceeded) {
+		if errors.IsNot(serr, errors.ErrUncommittedIndexNotFound, context.Canceled, context.DeadlineExceeded) {
 			if err != nil {
 				err = errors.Join(serr, err)
 			} else {

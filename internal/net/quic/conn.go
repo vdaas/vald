@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -24,24 +24,24 @@ import (
 )
 
 type Conn struct {
-	quic.Connection
-	quic.Stream
+	*quic.Conn
+	*quic.Stream
 }
 
 type qconn struct {
-	connectionCache sync.Map[string, quic.Connection]
+	connectionCache sync.Map[string, *quic.Conn]
 }
 
 var defaultQconn = new(qconn)
 
-func NewConn(ctx context.Context, conn quic.Connection) (net.Conn, error) {
+func NewConn(ctx context.Context, conn *quic.Conn) (net.Conn, error) {
 	stream, err := conn.OpenStreamSync(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return &Conn{
-		Connection: conn,
-		Stream:     stream,
+		conn,
+		stream,
 	}, nil
 }
 
@@ -62,11 +62,9 @@ func DialContext(ctx context.Context, addr string, tcfg *tls.Config) (net.Conn, 
 func (q *qconn) dialQuicContext(
 	ctx context.Context, addr string, tcfg *tls.Config,
 ) (net.Conn, error) {
-	si, ok := q.connectionCache.Load(addr)
+	conn, ok := q.connectionCache.Load(addr)
 	if ok {
-		if conn, ok := si.(quic.Connection); ok {
-			return NewConn(ctx, conn)
-		}
+		return NewConn(ctx, conn)
 	}
 	conn, err := quic.DialAddr(ctx, addr, tcfg, &quic.Config{
 		/*
@@ -159,7 +157,7 @@ func (q *qconn) dialQuicContext(
 }
 
 func (q *qconn) Close() (err error) {
-	q.connectionCache.Range(func(addr string, conn quic.Connection) bool {
+	q.connectionCache.Range(func(addr string, conn *quic.Conn) bool {
 		e := conn.CloseWithError(0, addr)
 		if e != nil {
 			err = errors.Wrap(err, e.Error())

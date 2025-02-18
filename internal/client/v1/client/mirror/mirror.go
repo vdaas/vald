@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ func New(opts ...Option) (Client, error) {
 		if len(c.addrs) == 0 {
 			return nil, errors.ErrGRPCTargetAddrNotFound
 		}
-		c.c = grpc.New(grpc.WithAddrs(c.addrs...))
+		c.c = grpc.New("Gateway Client", grpc.WithAddrs(c.addrs...))
 	}
 	return c, nil
 }
@@ -77,12 +77,8 @@ func (c *client) Register(
 		}
 	}()
 
-	_, err = c.c.RoundRobin(ctx, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
-		res, err = mirror.NewMirrorClient(conn).Register(ctx, in, append(copts, opts...)...)
-		if err != nil {
-			return nil, err
-		}
-		return res, nil
+	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*payload.Mirror_Targets, error) {
+		return mirror.NewMirrorClient(conn).Register(ctx, in, append(copts, opts...)...)
 	})
 	if err != nil {
 		return nil, err

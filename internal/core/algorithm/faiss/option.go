@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package faiss provides implementation of Go API for https://github.com/facebookresearch/faiss
 package faiss
 
 /*
@@ -97,7 +96,7 @@ func WithMethodType(methodType string) Option {
 			return errors.NewErrIgnoredOption("methodType")
 		}
 
-		switch strings.NewReplacer("-", "", "_", "", " ", "").Replace(strings.ToLower(methodType)) {
+		switch strings.TrimForCompare(methodType) {
 		case "ivfpq":
 			f.methodType = IVFPQ
 		case "binaryindex":
@@ -118,7 +117,7 @@ func WithMetricType(metricType string) Option {
 			return errors.NewErrIgnoredOption("metricType")
 		}
 
-		switch strings.NewReplacer("-", "", "_", "", " ", "").Replace(strings.ToLower(metricType)) {
+		switch strings.TrimForCompare(metricType) {
 		case "innerproduct":
 			f.metricType = InnerProduct
 		case "l2":

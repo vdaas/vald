@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -47,8 +47,11 @@ func (is *IndexSave) Bind() *IndexSave {
 	is.NodeName = GetActualValue(is.NodeName)
 	is.TargetAddrs = GetActualValues(is.TargetAddrs)
 
-	if is.Discoverer != nil {
-		is.Discoverer.Bind()
+	if is.Discoverer == nil {
+		is.Discoverer = new(DiscovererClient)
 	}
+	// Assuming DiscovererClient.Bind() is compliant and is.Discoverer is now non-nil
+	is.Discoverer.Bind()
+
 	return is
 }

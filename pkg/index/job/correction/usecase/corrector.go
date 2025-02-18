@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	// skipcq: CRT-D0001
 	gOpts = append(gOpts, grpc.WithErrGroup(eg))
 
-	gateway, err := vald.New(vald.WithClient(grpc.New(gOpts...)))
+	gateway, err := vald.New(vald.WithClient(grpc.New("Vald Client", gOpts...)))
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		discoverer.WithNamespace(cfg.Corrector.AgentNamespace),
 		discoverer.WithPort(cfg.Corrector.AgentPort),
 		discoverer.WithServiceDNSARecord(cfg.Corrector.AgentDNS),
-		discoverer.WithDiscovererClient(grpc.New(dOpts...)),
+		discoverer.WithDiscovererClient(grpc.New("Discoverer Client", dOpts...)),
 		discoverer.WithDiscoverDuration(cfg.Corrector.Discoverer.Duration),
 		discoverer.WithOptions(acOpts...),
 		discoverer.WithNodeName(cfg.Corrector.NodeName),

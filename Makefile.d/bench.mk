@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -130,7 +130,7 @@ pprof/core/ngt/sequential.bin: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -155,7 +155,7 @@ pprof/core/ngt/parallel.bin: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -187,7 +187,7 @@ pprof/agent/stream.bin: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -213,7 +213,7 @@ pprof/agent/sequential/grpc.bin: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -244,7 +244,7 @@ pprof/gateway/sequential.bin: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -293,7 +293,7 @@ $(ROOTDIR)/metrics.gob:
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -mod=readonly -v --timeout=1h $(ROOTDIR)/hack/benchmark/e2e/agent/core/ngt/... -output=$(ROOTDIR)/metrics.gob
 
 .PHONY: metrics/chart

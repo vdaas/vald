@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -103,6 +103,102 @@ func TestJoin(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestTrimForCompare(t *testing.T) {
+	type args struct {
+		origin string
+	}
+	type want struct {
+		wantStr string
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, string) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+	defaultCheckFunc := func(w want, gotStr string) error {
+		if !reflect.DeepEqual(gotStr, w.wantStr) {
+			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotStr, w.wantStr)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "convert chars",
+			args: args{
+				origin: "test string_is-kind-of|like/this\r\n\t=?",
+			},
+			want: want{
+				wantStr: "teststringiskindoflikethis?",
+			},
+			checkFunc: defaultCheckFunc,
+		},
+		{
+			name: "convert upper cases",
+			args: args{
+				origin: "test string_IS-kind-OF|like/THIS\r\n\t=?",
+			},
+			want: want{
+				wantStr: "teststringiskindoflikethis?",
+			},
+			checkFunc: defaultCheckFunc,
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			gotStr := TrimForCompare(test.args.origin)
+			if err := checkFunc(test.want, gotStr); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestReplacerForTrimForCompare(t *testing.T) {
+	algo := checkReplacerAlgorithm(t, oldnew...)
+	if algo != "ByteStringReplacer" {
+		t.Errorf("unexpected algorithm (ByteStringReplacer) for replacer detected %s", algo)
+	}
+	t.Log(algo)
+}
+
+func checkReplacerAlgorithm(t *testing.T, on ...string) string {
+	t.Helper()
+	if len(on) == 2 && len(on[0]) > 1 {
+		return "SingleStringReplacer"
+	}
+	allNewBytes := true
+	for i := 0; i < len(on); i += 2 {
+		if len(on[i]) != 1 {
+			return "GenericReplacer"
+		}
+		if len(on[i+1]) != 1 {
+			allNewBytes = false
+		}
+	}
+	if allNewBytes {
+		return "ByteReplacer"
+	}
+	return "ByteStringReplacer"
 }
 
 // NOT IMPLEMENTED BELOW

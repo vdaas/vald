@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package file provides file I/O functionality
 package file
 
 import (
@@ -256,7 +255,7 @@ func CopyFileWithPerm(ctx context.Context, src, dst string, perm fs.FileMode) (n
 		}
 	}()
 	n, err = OverWriteFile(ctx, dst, sf, perm)
-	if err != nil && !errors.Is(err, io.EOF) {
+	if errors.IsNot(err, io.EOF) {
 		err = errors.ErrFailedToCopyFile(err, src, dst, fi, nil)
 		return 0, err
 	}
@@ -369,6 +368,25 @@ func ReadFile(path string) (n []byte, err error) {
 		}
 	}()
 	return io.ReadAll(f)
+}
+
+func AbsolutePath(path string) string {
+	if path == "" {
+		return ""
+	}
+	if !filepath.IsAbs(path) {
+		root, err := os.Getwd()
+		if err == nil {
+			path = joinFilePaths(root, path)
+		}
+		if !filepath.IsAbs(path) {
+			absPath, err := filepath.Abs(path)
+			if err == nil {
+				path = absPath
+			}
+		}
+	}
+	return filepath.Clean(path)
 }
 
 // Exists returns file existence.
@@ -542,21 +560,7 @@ func Join(paths ...string) (path string) {
 	} else {
 		path = replacer.Replace(paths[0])
 	}
-	if filepath.IsAbs(path) || !Exists(path) {
-		return filepath.Clean(path)
-	}
-
-	root, err := os.Getwd()
-	if err != nil {
-		err = errors.ErrFailedToGetAbsPath(err, path)
-		log.Warn(err)
-		return filepath.Clean(path)
-	}
-	abs := joinFilePaths(root, path)
-	if !Exists(abs) {
-		return filepath.Clean(path)
-	}
-	return filepath.Clean(abs)
+	return AbsolutePath(path)
 }
 
 var replacer = strings.NewReplacer(

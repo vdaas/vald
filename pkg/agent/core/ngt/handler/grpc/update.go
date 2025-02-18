@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -350,13 +350,13 @@ func (s *server) MultiUpdate(
 			log.Warn(err)
 			attrs = trace.StatusCodeAlreadyExists(err.Error())
 		} else {
-			err = status.WrapWithInternal("Update API failed", err,
+			err = status.WrapWithInternal("MultiUpdate API failed", err,
 				&errdetails.RequestInfo{
 					RequestId:   strings.Join(uuids, ", "),
 					ServingData: errdetails.Serialize(reqs),
 				},
 				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Update",
+					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
 					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				}, info.Get())
 			log.Error(err)

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,12 +14,10 @@
 // limitations under the License.
 //
 
-// Package redis provides implementation of Go API for redis interface
 package cassandra
 
 import (
 	"context"
-	"crypto/tls"
 	"reflect"
 	"testing"
 	"time"
@@ -29,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"github.com/vdaas/vald/internal/tls"
 )
 
 type queryObserverImpl struct{}
@@ -535,7 +534,7 @@ func TestWithConnectTimeout(t *testing.T) {
 				dur: "dummy",
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("connectTimeout", "dummy", errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy"))),
+				err: errors.NewErrCriticalOption("connectTimeout", "dummy", errors.New("time: invalid duration \"dummy\"")),
 				obj: &T{},
 			},
 		},
@@ -1521,7 +1520,7 @@ func TestWithRetryPolicyMinDuration(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"retryPolicyMinDuration",
 					"dummy",
-					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+					errors.New("time: invalid duration \"dummy\""),
 				),
 				obj: &T{},
 			},
@@ -1613,7 +1612,7 @@ func TestWithRetryPolicyMaxDuration(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"retryPolicyMaxDuration",
 					"dummy",
-					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+					errors.New("time: invalid duration \"dummy\""),
 				),
 				obj: &T{},
 			},
@@ -1705,7 +1704,7 @@ func TestWithReconnectionPolicyInitialInterval(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"reconnectionPolicyInitialInterval",
 					"dummy",
-					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+					errors.New("time: invalid duration \"dummy\""),
 				),
 				obj: &T{},
 			},
@@ -1872,7 +1871,7 @@ func TestWithSocketKeepalive(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"socketKeepalive",
 					"dummy",
-					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+					errors.New("time: invalid duration \"dummy\""),
 				),
 				obj: &T{},
 			},
@@ -2977,7 +2976,7 @@ func TestWithMaxWaitSchemaAgreement(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"maxWaitSchemaAgreement",
 					"dummy",
-					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+					errors.New("time: invalid duration \"dummy\""),
 				),
 				obj: &T{},
 			},
@@ -3067,7 +3066,7 @@ func TestWithReconnectInterval(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"reconnectInterval",
 					"dummy",
-					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+					errors.New("time: invalid duration \"dummy\""),
 				),
 				obj: &T{},
 			},
@@ -3922,7 +3921,7 @@ func TestWithWriteCoalesceWaitTime(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"writeCoalesceWaitTime",
 					"dummy",
-					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+					errors.New("time: invalid duration \"dummy\""),
 				),
 				obj: &T{},
 			},

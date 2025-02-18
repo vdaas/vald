@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -42,31 +42,340 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SearchClient interface {
-	// A method to search indexed vectors by a raw vector.
+	// Overview
+	// Search RPC is the method to search vector(s) similar to the request vector.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                   | how to resolve                                                                           |
+	// | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 	Search(ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption) (*payload.Search_Response, error)
-	// A method to search indexed vectors by ID.
+	// Overview
+	// SearchByID RPC is the method to search similar vectors using a user-defined vector ID.<br>
+	// The vector with the same requested ID should be indexed into the `vald-agent` before searching.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                                    | how to resolve                                                                           |
+	// | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 	SearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (*payload.Search_Response, error)
-	// A method to search indexed vectors by multiple vectors.
+	// Overview
+	// StreamSearch RPC is the method to search vectors with multi queries(vectors) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+	// Using the bidirectional streaming RPC, the search request can be communicated in any order between the client and server.
+	// Each Search request and response are independent.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                   | how to resolve                                                                           |
+	// | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 	StreamSearch(ctx context.Context, opts ...grpc.CallOption) (Search_StreamSearchClient, error)
-	// A method to search indexed vectors by multiple IDs.
+	// Overview
+	// StreamSearchByID RPC is the method to search vectors with multi queries(IDs) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+	// Using the bidirectional streaming RPC, the search request can be communicated in any order between the client and server.
+	// Each SearchByID request and response are independent.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                                    | how to resolve                                                                           |
+	// | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 	StreamSearchByID(ctx context.Context, opts ...grpc.CallOption) (Search_StreamSearchByIDClient, error)
-	// A method to search indexed vectors by multiple vectors in a single request.
+	// Overview
+	// MultiSearch RPC is the method to search vectors with multiple vectors in **1** request.
+	//
+	// <div class="notice">
+	// gRPC has a message size limitation.<br>
+	// Please be careful that the size of the request exceeds the limit.
+	// </div>
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	//
+	//	The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                   | how to resolve                                                                           |
+	// | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 	MultiSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error)
-	// A method to search indexed vectors by multiple IDs in a single request.
+	// Overview
+	// MultiSearchByID RPC is the method to search vectors with multiple IDs in **1** request.
+	//
+	// <div class="notice">
+	// gRPC has a message size limitation.<br>
+	// Please be careful that the size of the request exceeds the limit.
+	// </div>
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                                    | how to resolve                                                                           |
+	// | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 	MultiSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error)
-	// A method to linear search indexed vectors by a raw vector.
+	// Overview
+	// LinearSearch RPC is the method to linear search vector(s) similar to the request vector.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                   | how to resolve                                                                           |
+	// | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 	LinearSearch(ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption) (*payload.Search_Response, error)
-	// A method to linear search indexed vectors by ID.
+	// Overview
+	// LinearSearchByID RPC is the method to linear search similar vectors using a user-defined vector ID.<br>
+	// The vector with the same requested ID should be indexed into the `vald-agent` before searching.
+	// You will get a `NOT_FOUND` error if the vector isn't stored.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                                    | how to resolve                                                                           |
+	// | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 	LinearSearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (*payload.Search_Response, error)
-	// A method to linear search indexed vectors by multiple vectors.
+	// Overview
+	// StreamLinearSearch RPC is the method to linear search vectors with multi queries(vectors) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+	// Using the bidirectional streaming RPC, the linear search request can be communicated in any order between the client and server.
+	// Each LinearSearch request and response are independent.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                   | how to resolve                                                                           |
+	// | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 	StreamLinearSearch(ctx context.Context, opts ...grpc.CallOption) (Search_StreamLinearSearchClient, error)
-	// A method to linear search indexed vectors by multiple IDs.
+	// Overview
+	//
+	//	StreamLinearSearchByID RPC is the method to linear search vectors with multi queries(IDs) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+	//
+	// Using the bidirectional streaming RPC, the linear search request can be communicated in any order between the client and server.
+	// Each LinearSearchByID request and response are independent.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                                    | how to resolve                                                                           |
+	// | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 	StreamLinearSearchByID(ctx context.Context, opts ...grpc.CallOption) (Search_StreamLinearSearchByIDClient, error)
-	// A method to linear search indexed vectors by multiple vectors in a single
-	// request.
+	// Overview
+	// MultiLinearSearch RPC is the method to linear search vectors with multiple vectors in **1** request.
+	//
+	// <div class="notice">
+	// gRPC has a message size limitation.<br>
+	// Please be careful that the size of the request exceeds the limit.
+	// </div>
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	//
+	//	The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                   | how to resolve                                                                           |
+	// | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 	MultiLinearSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error)
-	// A method to linear search indexed vectors by multiple IDs in a single
-	// request.
+	// Overview
+	// MultiLinearSearchByID RPC is the method to linear search vectors with multiple IDs in **1** request.
+	//
+	// <div class="notice">
+	// gRPC has a message size limitation.<br>
+	// Please be careful that the size of the request exceeds the limit.
+	// </div>
+	// // ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                                    | how to resolve                                                                           |
+	// | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 	MultiLinearSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error)
 }
 
@@ -302,31 +611,340 @@ func (c *searchClient) MultiLinearSearchByID(
 // All implementations must embed UnimplementedSearchServer
 // for forward compatibility
 type SearchServer interface {
-	// A method to search indexed vectors by a raw vector.
+	// Overview
+	// Search RPC is the method to search vector(s) similar to the request vector.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                   | how to resolve                                                                           |
+	// | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 	Search(context.Context, *payload.Search_Request) (*payload.Search_Response, error)
-	// A method to search indexed vectors by ID.
+	// Overview
+	// SearchByID RPC is the method to search similar vectors using a user-defined vector ID.<br>
+	// The vector with the same requested ID should be indexed into the `vald-agent` before searching.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                                    | how to resolve                                                                           |
+	// | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 	SearchByID(context.Context, *payload.Search_IDRequest) (*payload.Search_Response, error)
-	// A method to search indexed vectors by multiple vectors.
+	// Overview
+	// StreamSearch RPC is the method to search vectors with multi queries(vectors) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+	// Using the bidirectional streaming RPC, the search request can be communicated in any order between the client and server.
+	// Each Search request and response are independent.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                   | how to resolve                                                                           |
+	// | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 	StreamSearch(Search_StreamSearchServer) error
-	// A method to search indexed vectors by multiple IDs.
+	// Overview
+	// StreamSearchByID RPC is the method to search vectors with multi queries(IDs) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+	// Using the bidirectional streaming RPC, the search request can be communicated in any order between the client and server.
+	// Each SearchByID request and response are independent.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                                    | how to resolve                                                                           |
+	// | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 	StreamSearchByID(Search_StreamSearchByIDServer) error
-	// A method to search indexed vectors by multiple vectors in a single request.
+	// Overview
+	// MultiSearch RPC is the method to search vectors with multiple vectors in **1** request.
+	//
+	// <div class="notice">
+	// gRPC has a message size limitation.<br>
+	// Please be careful that the size of the request exceeds the limit.
+	// </div>
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	//
+	//	The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                   | how to resolve                                                                           |
+	// | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 	MultiSearch(context.Context, *payload.Search_MultiRequest) (*payload.Search_Responses, error)
-	// A method to search indexed vectors by multiple IDs in a single request.
+	// Overview
+	// MultiSearchByID RPC is the method to search vectors with multiple IDs in **1** request.
+	//
+	// <div class="notice">
+	// gRPC has a message size limitation.<br>
+	// Please be careful that the size of the request exceeds the limit.
+	// </div>
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                                    | how to resolve                                                                           |
+	// | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 	MultiSearchByID(context.Context, *payload.Search_MultiIDRequest) (*payload.Search_Responses, error)
-	// A method to linear search indexed vectors by a raw vector.
+	// Overview
+	// LinearSearch RPC is the method to linear search vector(s) similar to the request vector.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                   | how to resolve                                                                           |
+	// | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 	LinearSearch(context.Context, *payload.Search_Request) (*payload.Search_Response, error)
-	// A method to linear search indexed vectors by ID.
+	// Overview
+	// LinearSearchByID RPC is the method to linear search similar vectors using a user-defined vector ID.<br>
+	// The vector with the same requested ID should be indexed into the `vald-agent` before searching.
+	// You will get a `NOT_FOUND` error if the vector isn't stored.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                                    | how to resolve                                                                           |
+	// | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 	LinearSearchByID(context.Context, *payload.Search_IDRequest) (*payload.Search_Response, error)
-	// A method to linear search indexed vectors by multiple vectors.
+	// Overview
+	// StreamLinearSearch RPC is the method to linear search vectors with multi queries(vectors) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+	// Using the bidirectional streaming RPC, the linear search request can be communicated in any order between the client and server.
+	// Each LinearSearch request and response are independent.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                   | how to resolve                                                                           |
+	// | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 	StreamLinearSearch(Search_StreamLinearSearchServer) error
-	// A method to linear search indexed vectors by multiple IDs.
+	// Overview
+	//
+	//	StreamLinearSearchByID RPC is the method to linear search vectors with multi queries(IDs) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+	//
+	// Using the bidirectional streaming RPC, the linear search request can be communicated in any order between the client and server.
+	// Each LinearSearchByID request and response are independent.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                                    | how to resolve                                                                           |
+	// | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 	StreamLinearSearchByID(Search_StreamLinearSearchByIDServer) error
-	// A method to linear search indexed vectors by multiple vectors in a single
-	// request.
+	// Overview
+	// MultiLinearSearch RPC is the method to linear search vectors with multiple vectors in **1** request.
+	//
+	// <div class="notice">
+	// gRPC has a message size limitation.<br>
+	// Please be careful that the size of the request exceeds the limit.
+	// </div>
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	//
+	//	The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                   | how to resolve                                                                           |
+	// | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 	MultiLinearSearch(context.Context, *payload.Search_MultiRequest) (*payload.Search_Responses, error)
-	// A method to linear search indexed vectors by multiple IDs in a single
-	// request.
+	// Overview
+	// MultiLinearSearchByID RPC is the method to linear search vectors with multiple IDs in **1** request.
+	//
+	// <div class="notice">
+	// gRPC has a message size limitation.<br>
+	// Please be careful that the size of the request exceeds the limit.
+	// </div>
+	// // ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  10  | ABORTED           |
+	// |  13  | INTERNAL          |
+	// ---
+	// Troubleshooting
+	// The request process may not be completed when the response code is NOT `0 (OK)`.
+	//
+	// Here are some common reasons and how to resolve each error.
+	//
+	// | name              | common reason                                                                                                                    | how to resolve                                                                           |
+	// | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+	// | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+	// | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+	// | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+	// | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+	// | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 	MultiLinearSearchByID(context.Context, *payload.Search_MultiIDRequest) (*payload.Search_Responses, error)
 	mustEmbedUnimplementedSearchServer()
 }

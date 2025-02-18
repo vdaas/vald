@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 import (
@@ -183,7 +182,7 @@ func TestCassandra_Bind(t *testing.T) {
 					VectorBackupTable:        "backup_vector",
 				},
 				want: want{
-					want: &Cassandra{
+					want: (&Cassandra{
 						Hosts: []string{
 							"cassandra-0.cassandra.default.svc.cluster.local",
 							"cassandra-1.cassandra.default.svc.cluster.local",
@@ -275,7 +274,7 @@ func TestCassandra_Bind(t *testing.T) {
 						KVTable:                  "kv",
 						VKTable:                  "vk",
 						VectorBackupTable:        "backup_vector",
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -292,11 +291,11 @@ func TestCassandra_Bind(t *testing.T) {
 					t.Setenv(key, val)
 				},
 				want: want{
-					want: &Cassandra{
+					want: (&Cassandra{
 						Password: val,
 						TLS:      new(TLS),
 						Net:      new(Net),
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -305,10 +304,10 @@ func TestCassandra_Bind(t *testing.T) {
 				name:   "return Cassandra that is the default variables set when all parameters are empty or nil",
 				fields: fields{},
 				want: want{
-					want: &Cassandra{
+					want: (&Cassandra{
 						TLS: new(TLS),
 						Net: new(Net),
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -439,9 +438,9 @@ func TestCassandra_Opts(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			cert := testdata.GetTestdataPath("tls/dummyServer.crt")
-			key := testdata.GetTestdataPath("tls/dummyServer.key")
-			ca := testdata.GetTestdataPath("tls/dummyCa.pem")
+			cert := testdata.GetTestdataPath("tls/server.crt")
+			key := testdata.GetTestdataPath("tls/server.key")
+			ca := testdata.GetTestdataPath("tls/ca.pem")
 			return test{
 				name: "return 45 cassandra.Option when no error occurred",
 				fields: fields{
@@ -645,9 +644,9 @@ func TestCassandra_Opts(t *testing.T) {
 			}
 		}(),
 		func() test {
-			cert := testdata.GetTestdataPath("tls/dummyServer.crt")
-			key := testdata.GetTestdataPath("tls/dummyServer.key")
-			ca := testdata.GetTestdataPath("tls/dummyCa.pem")
+			cert := testdata.GetTestdataPath("tls/server.crt")
+			key := testdata.GetTestdataPath("tls/server.key")
+			ca := testdata.GetTestdataPath("tls/ca.pem")
 			return test{
 				name: "return nil and err when net.NewDialer returns error",
 				fields: fields{

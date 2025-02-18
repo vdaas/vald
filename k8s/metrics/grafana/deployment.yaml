@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -38,23 +38,23 @@ spec:
             - name: grafana-dashboard-provider
               mountPath: /etc/grafana/provisioning/dashboards
             - name: grafana-dashboards-vald-cluster-overview
-              mountPath: /var/lib/grafana/dashboards-vald/00
+              mountPath: /var/lib/grafana/dashboards/00
             - name: grafana-dashboards-vald-agent
-              mountPath: /var/lib/grafana/dashboards-vald/01
+              mountPath: /var/lib/grafana/dashboards/01
             - name: grafana-dashboards-vald-discoverer
-              mountPath: /var/lib/grafana/dashboards-vald/02
+              mountPath: /var/lib/grafana/dashboards/02
             - name: grafana-dashboards-vald-index-manager
-              mountPath: /var/lib/grafana/dashboards-vald/05
+              mountPath: /var/lib/grafana/dashboards/05
             - name: grafana-dashboards-vald-helm-operator
-              mountPath: /var/lib/grafana/dashboards-vald/07
+              mountPath: /var/lib/grafana/dashboards/07
             - name: grafana-dashboards-vald-lb-gateway
-              mountPath: /var/lib/grafana/dashboards-vald/08
+              mountPath: /var/lib/grafana/dashboards/08
             - name: grafana-dashboards-vald-index-correction
-              mountPath: /var/lib/grafana/dashboards-vald/09
+              mountPath: /var/lib/grafana/dashboards/09
             - name: grafana-dashboards-vald-benchmark-operator
-              mountPath: /var/lib/grafana/dashboards-vald/10
+              mountPath: /var/lib/grafana/dashboards/10
             - name: grafana-dashboards-vald-agent-memory
-              mountPath: /var/lib/grafana/dashboards-vald/99
+              mountPath: /var/lib/grafana/dashboards/99
       volumes:
         - name: grafana-datasource-provider
           configMap:

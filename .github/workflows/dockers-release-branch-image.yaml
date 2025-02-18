@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -99,13 +99,6 @@ jobs:
     uses: ./.github/workflows/_docker-image.yaml
     with:
       target: index-save
-    secrets: inherit
-  loadtest:
-    needs: [dump-contexts-to-log]
-    uses: ./.github/workflows/_docker-image.yaml
-    with:
-      target: loadtest
-      platforms: linux/amd64
     secrets: inherit
   manager-index:
     needs: [dump-contexts-to-log]

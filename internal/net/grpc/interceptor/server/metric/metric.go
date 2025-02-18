@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ const (
 	latencyMetricsName       = "server_latency"
 	completedRPCsMetricsName = "server_completed_rpcs"
 
-	gRPCMethodKeyName = "grpc_server_method"
-	gRPCStatus        = "grpc_server_status"
+	GRPCMethodKeyName = "grpc_server_method"
+	GRPCStatus        = "grpc_server_status"
 )
 
 func MetricInterceptors() (grpc.UnaryServerInterceptor, grpc.StreamServerInterceptor, error) {
@@ -83,7 +83,7 @@ func attributesFromError(method string, err error) []attribute.KeyValue {
 		}
 	}
 	return []attribute.KeyValue{
-		attribute.String(gRPCMethodKeyName, method),
-		attribute.String(gRPCStatus, code.String()),
+		attribute.String(GRPCMethodKeyName, method),
+		attribute.String(GRPCStatus, code.String()),
 	}
 }

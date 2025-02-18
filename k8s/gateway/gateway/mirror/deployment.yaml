@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ metadata:
   labels:
     app: vald-mirror-gateway
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.15
+    helm.sh/chart: vald-v1.7.17
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.15
+    app.kubernetes.io/version: v1.7.17
     app.kubernetes.io/component: gateway-mirror
 spec:
   progressDeadlineSeconds: 600
@@ -45,7 +45,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: gateway-mirror
       annotations:
-        checksum/configmap: 4525a8fc062a694dc2c9d424c60d6007518efd67863aa5817e202a3f47ffe4e6
+        checksum/configmap: 78828e66f92607381e229f10ef404adfb61bee34b60409b20b9ee23e718b5007
         pyroscope.io/scrape: "true"
         pyroscope.io/application-name: vald-mirror-gateway
         pyroscope.io/profile-cpu-enabled: "true"

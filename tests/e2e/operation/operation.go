@@ -1,6 +1,6 @@
 //go:build e2e
 
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -127,7 +127,7 @@ type Client interface {
 	MultiUpdate(t *testing.T, ctx context.Context, ds Dataset) error
 	MultiUpsert(t *testing.T, ctx context.Context, ds Dataset) error
 	MultiRemove(t *testing.T, ctx context.Context, ds Dataset) error
-	GetObject(t *testing.T, ctx context.Context, ds Dataset) error
+	GetObject(t *testing.T, ctx context.Context, ds Dataset, offset []int) error
 	StreamListObject(t *testing.T, ctx context.Context, ds Dataset) error
 	Exists(t *testing.T, ctx context.Context, id string) error
 	CreateIndex(t *testing.T, ctx context.Context) error

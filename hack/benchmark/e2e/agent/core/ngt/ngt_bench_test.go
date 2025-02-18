@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -51,12 +51,13 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 		b.Run(dname, func(b *testing.B) {
 			ctx := context.Background()
 
-			dataset := assets.Data(dname)(b)
+			dataset := assets.LoadData(dname)(b)
 
 			c, err := core.New(
 				core.WithAddrs(grpcAddr),
 				core.WithGRPCClient(
 					grpc.New(
+						"Agent Client for Benchmark",
 						grpc.WithAddrs(grpcAddr),
 						grpc.WithInsecure(true),
 					),
@@ -92,12 +93,13 @@ func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 		b.Run(dname, func(b *testing.B) {
 			ctx := context.Background()
 
-			dataset := assets.Data(dname)(b)
+			dataset := assets.LoadData(dname)(b)
 
 			c, err := core.New(
 				core.WithAddrs(grpcAddr),
 				core.WithGRPCClient(
 					grpc.New(
+						"Agent Stream Client for Benchmark",
 						grpc.WithAddrs(grpcAddr),
 						grpc.WithInsecure(true),
 					),

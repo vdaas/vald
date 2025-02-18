@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 import (
@@ -72,14 +71,14 @@ func TestLB_Bind(t *testing.T) {
 					IndexReplica:   indexReplica,
 				},
 				want: want{
-					want: &LB{
+					want: (&LB{
 						AgentPort:      agentPort,
 						AgentName:      agentName,
 						AgentNamespace: agentNamespace,
 						AgentDNS:       agentDNS,
 						NodeName:       nodeName,
 						IndexReplica:   indexReplica,
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -102,7 +101,7 @@ func TestLB_Bind(t *testing.T) {
 					Discoverer:     new(DiscovererClient),
 				},
 				want: want{
-					want: &LB{
+					want: (&LB{
 						AgentPort:      agentPort,
 						AgentName:      agentName,
 						AgentNamespace: agentNamespace,
@@ -121,7 +120,7 @@ func TestLB_Bind(t *testing.T) {
 								},
 							},
 						},
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -154,14 +153,14 @@ func TestLB_Bind(t *testing.T) {
 					}
 				},
 				want: want{
-					want: &LB{
+					want: (&LB{
 						AgentPort:      8081,
 						AgentName:      agentName,
 						AgentNamespace: agentNamespace,
 						AgentDNS:       agentDNS,
 						NodeName:       nodeName,
 						IndexReplica:   3,
-					},
+					}).Bind(),
 				},
 			}
 		}(),

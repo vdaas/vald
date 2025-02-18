@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -16,11 +16,7 @@
 
 package timeutil
 
-import (
-	"time"
-
-	"github.com/vdaas/vald/internal/errors"
-)
+import "time"
 
 // ParseTime parses string to time.Duration.
 func Parse(t string) (time.Duration, error) {
@@ -29,7 +25,7 @@ func Parse(t string) (time.Duration, error) {
 	}
 	dur, err := time.ParseDuration(t)
 	if err != nil {
-		return 0, errors.Join(err, errors.ErrTimeoutParseFailed(t))
+		return 0, err
 	}
 	return dur, nil
 }
@@ -46,4 +42,14 @@ func ParseWithDefault(t string, d time.Duration) time.Duration {
 	}
 
 	return parsed
+}
+
+type DurationString string
+
+func (d DurationString) Duration() (time.Duration, error) {
+	return Parse(string(d))
+}
+
+func (d DurationString) DurationWithDefault(def time.Duration) time.Duration {
+	return ParseWithDefault(string(d), def)
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2009-2024 The Go Authors. All rights resered.
+// Copyright (c) 2009-2025 The Go Authors. All rights resered.
 // Modified by vdaas.org vald team <vald@vdaas.org>
 //
 // Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-// Package singleflight provides a duplicate function call suppression
 // mechanism.
 package singleflight
 

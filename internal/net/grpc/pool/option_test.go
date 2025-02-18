@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package pool provides gRPC connection pool client
 package pool
 
 // NOT IMPLEMENTED BELOW
@@ -446,7 +445,7 @@ package pool
 //
 // func TestWithResolveDNS(t *testing.T) {
 // 	type args struct {
-// 		flg bool
+// 		enable bool
 // 	}
 // 	type want struct {
 // 		want Option
@@ -471,7 +470,7 @@ package pool
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           flg:false,
+// 		           enable:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -490,7 +489,7 @@ package pool
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           flg:false,
+// 		           enable:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -521,7 +520,7 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := WithResolveDNS(test.args.flg)
+// 			got := WithResolveDNS(test.args.enable)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -869,7 +868,7 @@ package pool
 // 	}
 // }
 //
-// func TestWithOldConnCloseDuration(t *testing.T) {
+// func TestWithOldConnCloseDelay(t *testing.T) {
 // 	type args struct {
 // 		dur string
 // 	}
@@ -946,7 +945,7 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := WithOldConnCloseDuration(test.args.dur)
+// 			got := WithOldConnCloseDelay(test.args.dur)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

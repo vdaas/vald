@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ metadata:
   name: vald-index-save-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.15
+    helm.sh/chart: vald-v1.7.17
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.15
+    app.kubernetes.io/version: v1.7.17
     app.kubernetes.io/component: vald-index-save
 data:
   config.yaml: |
@@ -202,9 +202,11 @@ data:
       tls:
         ca: /path/to/ca
         cert: /path/to/cert
+        client_auth: None
         enabled: false
         insecure_skip_verify: false
         key: /path/to/key
+        server_name: ""
     observability:
       enabled: false
       otlp:
@@ -320,9 +322,11 @@ data:
               tls:
                 ca: /path/to/ca
                 cert: /path/to/cert
+                client_auth: None
                 enabled: false
                 insecure_skip_verify: false
                 key: /path/to/key
+                server_name: ""
             read_buffer_size: 0
             shared_write_buffer: false
             timeout: ""
@@ -331,9 +335,11 @@ data:
           tls:
             ca: /path/to/ca
             cert: /path/to/cert
+            client_auth: None
             enabled: false
             insecure_skip_verify: false
             key: /path/to/key
+            server_name: ""
         agent_client_options:
           addrs: []
           health_check_duration: "1s"
@@ -390,9 +396,11 @@ data:
               tls:
                 ca: /path/to/ca
                 cert: /path/to/cert
+                client_auth: None
                 enabled: false
                 insecure_skip_verify: false
                 key: /path/to/key
+                server_name: ""
               socket_option:
                 ip_recover_destination_addr: false
                 ip_transparent: false
@@ -410,6 +418,8 @@ data:
           tls:
             ca: /path/to/ca
             cert: /path/to/cert
+            client_auth: None
             enabled: false
             insecure_skip_verify: false
             key: /path/to/key
+            server_name: ""

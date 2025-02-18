@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -25,6 +25,22 @@ env:
 jobs:
   detect:
     runs-on: ubuntu-latest
+    if: >-
+      ${{
+        (github.event_name == 'pull_request' &&
+         github.event.pull_request.head.repo.fork == false) ||
+        (github.event.pull_request.head.repo.fork == true &&
+         github.event_name == 'pull_request_target' &&
+         (
+           (github.event.action == 'labeled' && github.event.label.name == 'ci/approved') ||
+           contains(github.event.pull_request.labels.*.name, 'ci/approved')
+         )
+        ) ||
+        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+        (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/v')) ||
+        startsWith(github.ref, 'refs/tags/') ||
+        (github.event_name == 'schedule')
+      }}
     outputs:
       TAG: ${{ steps.get_tag_name.outputs.TAG }}
     steps:

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ k8s/manifest/update: \
 		--set manager.index.operator.enabled=true \
 		--set manager.index.saver.enabled=true \
 		--set manager.index.creator.enabled=true \
+		--set manager.index.deleter.enabled=true \
 		--set manager.index.corrector.enabled=true \
 		--set gateway.mirror.enabled=true \
 		--output-dir $(TEMP_DIR) \
@@ -55,9 +56,19 @@ k8s/manifest/update: \
 	mv $(TEMP_DIR)/vald/templates/index/operator $(ROOTDIR)/k8s/index/operator
 	mv $(TEMP_DIR)/vald/templates/index/job/correction $(ROOTDIR)/k8s/index/job/correction
 	mv $(TEMP_DIR)/vald/templates/index/job/creation $(ROOTDIR)/k8s/index/job/creation
+	mv $(TEMP_DIR)/vald/templates/index/job/deletion $(ROOTDIR)/k8s/index/job/deletion
 	mv $(TEMP_DIR)/vald/templates/index/job/save $(ROOTDIR)/k8s/index/job/save
 	mv $(TEMP_DIR)/vald/templates/index/job/readreplica/rotate $(ROOTDIR)/k8s/index/job/readreplica/rotate
 	rm -rf $(TEMP_DIR)
+
+.PHONY: clean-empty-yaml
+## cleanup empty yamls
+clean-empty-yaml:
+	@find . -type f \( -name "*.yaml" -o -name "*.yml" \) -print0 | \
+	xargs -0 -I{} sh -c '\
+	  if ! grep -qEv "^(\\s*#|---|\\s*)$$" "{}"; then \
+	    echo "Deleting {}"; rm "{}"; \
+	  fi'
 
 .PHONY: k8s/manifest/helm-operator/clean
 ## clean k8s manifests for helm-operator
@@ -399,13 +410,18 @@ k8s/metrics/prometheus/operator/delete:
 ## deploy grafana
 k8s/metrics/grafana/deploy:
 	kubectl apply -f $(ROOTDIR)/k8s/metrics/grafana/dashboards
-	kubectl apply -f $(ROOTDIR)/k8s/metrics/grafana
+	# Grafana does not support tags like 11.6. We need to fetch latest like 11.6.x.
+	yq -i '(.images[] | select(.name == "grafana/grafana")).newTag = "$(shell curl -s \
+	  https://registry.hub.docker.com/v2/repositories/grafana/grafana/tags \
+	  | jq -r '.results[].name' | grep '^${GRAFANA_VERSION}' | sort -V | tail -n1)"' \
+	  k8s/metrics/grafana/kustomization.yaml
+	kubectl apply -k $(ROOTDIR)/k8s/metrics/grafana
 
 .PHONY: k8s/metrics/grafana/delete
 ## delete grafana
 k8s/metrics/grafana/delete:
 	kubectl delete -f $(ROOTDIR)/k8s/metrics/grafana/dashboards
-	kubectl delete -f $(ROOTDIR)/k8s/metrics/grafana
+	kubectl delete -k $(ROOTDIR)/k8s/metrics/grafana
 
 .PHONY: k8s/metrics/jaeger/deploy
 ## deploy jaeger

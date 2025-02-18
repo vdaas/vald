@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -25,13 +25,13 @@ binary/build: \
 	cmd/index/job/correction/index-correction \
 	cmd/index/job/creation/index-creation \
 	cmd/index/job/deletion/index-deletion \
+	cmd/index/job/exportation/index-exportation \
 	cmd/index/job/readreplica/rotate/readreplica-rotate \
 	cmd/index/job/save/index-save \
 	cmd/index/operator/index-operator \
 	cmd/manager/index/index \
 	cmd/tools/benchmark/job/job \
 	cmd/tools/benchmark/operator/operator \
-	cmd/tools/cli/loadtest/loadtest \
 	example/client/client \
 	cmd/agent/core/ngt/ngt \
 	cmd/agent/core/faiss/faiss \
@@ -85,6 +85,10 @@ cmd/index/job/deletion/index-deletion:
 	$(eval CGO_ENABLED = 0)
 	$(call go-build,index/job/deletion,,-static,,,$@)
 
+cmd/index/job/exportation/index-exportation:
+	$(eval CGO_ENABLED = 0)
+	$(call go-build,index/job/exportation,,-static,,,$@)
+
 cmd/index/job/save/index-save:
 	$(eval CGO_ENABLED = 0)
 	$(call go-build,index/job/save,,-static,,,$@)
@@ -105,10 +109,6 @@ cmd/tools/benchmark/operator/operator:
 	$(eval CGO_ENABLED = 0)
 	$(call go-build,tools/benchmark/operator,,-static,,,$@)
 
-cmd/tools/cli/loadtest/loadtest:
-	$(eval CGO_ENABLED = 1)
-	$(call go-build,tools/cli/loadtest,-linkmode 'external',$(LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
-
 example/client/client:
 	$(eval CGO_ENABLED = 1)
 	$(call go-example-build,example/client,-linkmode 'external',$(LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
@@ -127,13 +127,13 @@ binary/build/zip: \
 	artifacts/vald-agent-sidecar-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-benchmark-job-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-benchmark-operator-$(GOOS)-$(GOARCH).zip \
-	artifacts/vald-cli-loadtest-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-discoverer-k8s-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-example-client-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-filter-gateway-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-index-correction-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-index-creation-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-index-deletion-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-index-exportation-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-index-operator-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-index-save-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-lb-gateway-$(GOOS)-$(GOARCH).zip \
@@ -177,10 +177,6 @@ artifacts/vald-benchmark-operator-$(GOOS)-$(GOARCH).zip: cmd/tools/benchmark/ope
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 
-artifacts/vald-cli-loadtest-$(GOOS)-$(GOARCH).zip: cmd/tools/cli/loadtest/loadtest
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
 artifacts/vald-mirror-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/mirror/mirror
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
@@ -194,6 +190,10 @@ artifacts/vald-index-creation-$(GOOS)-$(GOARCH).zip: cmd/index/job/creation/inde
 	zip --junk-paths $@ $<
 
 artifacts/vald-index-deletion-$(GOOS)-$(GOARCH).zip: cmd/index/job/deletion/index-deletion
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-index-exportation-$(GOOS)-$(GOARCH).zip: cmd/index/job/exportation/index-exportation
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 

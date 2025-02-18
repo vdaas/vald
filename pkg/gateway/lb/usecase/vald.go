@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package usecase represents gateways usecase layer
 package usecase
 
 import (
@@ -56,7 +55,7 @@ func discovererClient(
 		discoverer.WithNamespace(cfg.Gateway.AgentNamespace),
 		discoverer.WithPort(cfg.Gateway.AgentPort),
 		discoverer.WithServiceDNSARecord(cfg.Gateway.AgentDNS),
-		discoverer.WithDiscovererClient(grpc.New(dopts...)),
+		discoverer.WithDiscovererClient(grpc.New("Discoverer Client", dopts...)),
 		discoverer.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
 		discoverer.WithOptions(aopts...),
 		discoverer.WithNodeName(cfg.Gateway.NodeName),
@@ -73,7 +72,7 @@ func discovererClient(
 			grpc.WithErrGroup(eg),
 			grpc.WithConnectionPoolSize(int(cfg.Gateway.ReadReplicaReplicas)),
 		)
-		discovererOpts = append(discovererOpts, discoverer.WithReadReplicaClient(grpc.New(rrOpts...)))
+		discovererOpts = append(discovererOpts, discoverer.WithReadReplicaClient(grpc.New("Read Replica Client", rrOpts...)))
 	}
 
 	return discoverer.New(discovererOpts...)

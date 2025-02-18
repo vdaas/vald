@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package usecase provides usecases
 package usecase
 
 import (
@@ -99,7 +98,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
 			benchmarkmetrics.New(operator),
-			infometrics.New("benchmark_operator_info", "Benchmark Operator info", *cfg.Job.Image),
+			infometrics.New(config.BenchmarkOperatorInfo, "Benchmark Operator info", *cfg.Job.Image),
 			backoffmetrics.New(),
 		)
 		if err != nil {

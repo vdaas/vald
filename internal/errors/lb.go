@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package errors provides error types and function
 package errors
 
 var (
@@ -25,4 +24,9 @@ var (
 
 	// ErrIndexNotFound represents an error that the index not found.
 	ErrIndexNotFound = New("index not found")
+
+	// ErrInvalidSearchConfig represents an error that the invalid Search Configuration.
+	ErrInvalidSearchConfig = func(msg string) error {
+		return Errorf("Invalid Search_Config: %s", msg)
+	}
 )

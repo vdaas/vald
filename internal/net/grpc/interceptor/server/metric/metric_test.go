@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -59,8 +59,8 @@ func Test_attributesFromError(t *testing.T) {
 			},
 			want: want{
 				obj: []attribute.KeyValue{
-					attribute.String(gRPCMethodKeyName, "InsertRPC"),
-					attribute.String(gRPCStatus, codes.OK.String()),
+					attribute.String(GRPCMethodKeyName, "InsertRPC"),
+					attribute.String(GRPCStatus, codes.OK.String()),
 				},
 			},
 		},
@@ -72,8 +72,8 @@ func Test_attributesFromError(t *testing.T) {
 			},
 			want: want{
 				obj: []attribute.KeyValue{
-					attribute.String(gRPCMethodKeyName, "InsertRPC"),
-					attribute.String(gRPCStatus, codes.DeadlineExceeded.String()),
+					attribute.String(GRPCMethodKeyName, "InsertRPC"),
+					attribute.String(GRPCStatus, codes.DeadlineExceeded.String()),
 				},
 			},
 		},
@@ -85,8 +85,8 @@ func Test_attributesFromError(t *testing.T) {
 			},
 			want: want{
 				obj: []attribute.KeyValue{
-					attribute.String(gRPCMethodKeyName, "InsertRPC"),
-					attribute.String(gRPCStatus, codes.InvalidArgument.String()),
+					attribute.String(GRPCMethodKeyName, "InsertRPC"),
+					attribute.String(GRPCStatus, codes.InvalidArgument.String()),
 				},
 			},
 		},

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package usearch provides Go API implementation for USearch library. https://github.com/unum-cloud/usearch
 package usearch
 
 import (
@@ -667,7 +666,7 @@ func Test_usearch_Search(t *testing.T) {
 // 		           expansionSearch:0,
 // 		           multi:false,
 // 		           idxPath:"",
-// 		           mu:sync.RWMutex{},
+// 		           mu:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -695,7 +694,7 @@ func Test_usearch_Search(t *testing.T) {
 // 		           expansionSearch:0,
 // 		           multi:false,
 // 		           idxPath:"",
-// 		           mu:sync.RWMutex{},
+// 		           mu:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -798,7 +797,7 @@ func Test_usearch_Search(t *testing.T) {
 // 		           expansionSearch:0,
 // 		           multi:false,
 // 		           idxPath:"",
-// 		           mu:sync.RWMutex{},
+// 		           mu:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -829,7 +828,7 @@ func Test_usearch_Search(t *testing.T) {
 // 		           expansionSearch:0,
 // 		           multi:false,
 // 		           idxPath:"",
-// 		           mu:sync.RWMutex{},
+// 		           mu:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -929,7 +928,7 @@ func Test_usearch_Search(t *testing.T) {
 // 		           expansionSearch:0,
 // 		           multi:false,
 // 		           idxPath:"",
-// 		           mu:sync.RWMutex{},
+// 		           mu:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -957,7 +956,7 @@ func Test_usearch_Search(t *testing.T) {
 // 		           expansionSearch:0,
 // 		           multi:false,
 // 		           idxPath:"",
-// 		           mu:sync.RWMutex{},
+// 		           mu:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1062,7 +1061,7 @@ func Test_usearch_Search(t *testing.T) {
 // 		           expansionSearch:0,
 // 		           multi:false,
 // 		           idxPath:"",
-// 		           mu:sync.RWMutex{},
+// 		           mu:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1094,7 +1093,7 @@ func Test_usearch_Search(t *testing.T) {
 // 		           expansionSearch:0,
 // 		           multi:false,
 // 		           idxPath:"",
-// 		           mu:sync.RWMutex{},
+// 		           mu:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1197,7 +1196,7 @@ func Test_usearch_Search(t *testing.T) {
 // 		           expansionSearch:0,
 // 		           multi:false,
 // 		           idxPath:"",
-// 		           mu:sync.RWMutex{},
+// 		           mu:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1228,7 +1227,7 @@ func Test_usearch_Search(t *testing.T) {
 // 		           expansionSearch:0,
 // 		           multi:false,
 // 		           idxPath:"",
-// 		           mu:sync.RWMutex{},
+// 		           mu:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1337,7 +1336,7 @@ func Test_usearch_Search(t *testing.T) {
 // 		           expansionSearch:0,
 // 		           multi:false,
 // 		           idxPath:"",
-// 		           mu:sync.RWMutex{},
+// 		           mu:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1369,7 +1368,7 @@ func Test_usearch_Search(t *testing.T) {
 // 		           expansionSearch:0,
 // 		           multi:false,
 // 		           idxPath:"",
-// 		           mu:sync.RWMutex{},
+// 		           mu:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1472,7 +1471,7 @@ func Test_usearch_Search(t *testing.T) {
 // 		           expansionSearch:0,
 // 		           multi:false,
 // 		           idxPath:"",
-// 		           mu:sync.RWMutex{},
+// 		           mu:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1503,7 +1502,7 @@ func Test_usearch_Search(t *testing.T) {
 // 		           expansionSearch:0,
 // 		           multi:false,
 // 		           idxPath:"",
-// 		           mu:sync.RWMutex{},
+// 		           mu:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1599,7 +1598,7 @@ func Test_usearch_Search(t *testing.T) {
 // 		           expansionSearch:0,
 // 		           multi:false,
 // 		           idxPath:"",
-// 		           mu:sync.RWMutex{},
+// 		           mu:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1627,7 +1626,7 @@ func Test_usearch_Search(t *testing.T) {
 // 		           expansionSearch:0,
 // 		           multi:false,
 // 		           idxPath:"",
-// 		           mu:sync.RWMutex{},
+// 		           mu:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,

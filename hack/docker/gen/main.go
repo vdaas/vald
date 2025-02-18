@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -65,7 +65,6 @@ const (
 	indexDeletion       = "index-deletion"
 	indexOperator       = "index-operator"
 	indexSave           = "index-save"
-	loadtest            = "loadtest"
 	managerIndex        = "manager-index"
 	readreplicaRotate   = "readreplica-rotate"
 
@@ -318,6 +317,7 @@ type (
 	}
 
 	PullRequest struct {
+		Types Types `yaml:"types,omitempty"`
 		Paths Paths `yaml:"paths"`
 	}
 
@@ -336,6 +336,7 @@ type (
 		Platforms string `yaml:"platforms,omitempty"`
 	}
 
+	Types []string
 	Paths []string
 
 	Data struct {
@@ -433,11 +434,11 @@ var (
 		"make RUST_VERSION=\"${RUST_VERSION}\" rust/install",
 	}
 	goBuildCommands = []string{
-		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}\" NAME=\"${REPO}\" cmd/${PKG}/${APP_NAME}",
+		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}/${REPO}\" NAME=\"${REPO}\" cmd/${PKG}/${APP_NAME}",
 		"mv \"cmd/${PKG}/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
 	}
 	goExampleBuildCommands = []string{
-		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}\" NAME=\"${REPO}\" ${PKG}/${APP_NAME}",
+		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}/${REPO}\" NAME=\"${REPO}\" ${PKG}/${APP_NAME}",
 		"mv \"${PKG}/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
 	}
 	rustBuildCommands = []string{
@@ -469,8 +470,6 @@ var (
 		"liblapack-dev",
 		"libomp-dev",
 		"libopenblas-dev",
-	}
-	faissBuildDeps = []string{
 		"gfortran",
 	}
 	rustBuildDeps = []string{
@@ -479,11 +478,11 @@ var (
 	devContainerDeps = []string{
 		"file",
 		"gawk",
+		"git-lfs",
 		"gnupg2",
 		"graphviz",
 		"jq",
 		"libaec-dev",
-		"libhdf5-dev",
 		"sed",
 		"zip",
 	}
@@ -675,12 +674,10 @@ func main() {
 			Preprocess:    []string{ngtPreprocess},
 		},
 		"vald-" + agentFaiss: {
-			AppName:    "faiss",
-			PackageDir: agent + "/core/faiss",
-			ExtraPackages: append(clangBuildDeps,
-				append(ngtBuildDeps,
-					faissBuildDeps...)...),
-			Preprocess: []string{faissPreprocess},
+			AppName:       "faiss",
+			PackageDir:    agent + "/core/faiss",
+			ExtraPackages: append(clangBuildDeps, ngtBuildDeps...),
+			Preprocess:    []string{faissPreprocess},
 		},
 		"vald-" + agent: {
 			AppName:       agent,
@@ -688,9 +685,7 @@ func main() {
 			ContainerType: Rust,
 			RuntimeImage:  "gcr.io/distroless/cc-debian12",
 			ExtraPackages: append(clangBuildDeps,
-				append(ngtBuildDeps,
-					append(faissBuildDeps,
-						rustBuildDeps...)...)...),
+				append(ngtBuildDeps, rustBuildDeps...)...),
 			Preprocess: []string{
 				ngtPreprocess,
 				faissPreprocess,
@@ -736,6 +731,10 @@ func main() {
 			AppName:    "index-deletion",
 			PackageDir: "index/job/deletion",
 		},
+		"vald-index-exportation": {
+			AppName:    "index-exportation",
+			PackageDir: "index/job/exportation",
+		},
 		"vald-readreplica-rotate": {
 			AppName:    "readreplica-rotate",
 			PackageDir: "index/job/readreplica/rotate",
@@ -747,7 +746,7 @@ func main() {
 		"vald-benchmark-job": {
 			AppName:       "job",
 			PackageDir:    "tools/benchmark/job",
-			ExtraPackages: append(clangBuildDeps, "libhdf5-dev", "libaec-dev"),
+			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
 			Preprocess: []string{
 				"make hdf5/install",
 			},
@@ -795,14 +794,6 @@ func main() {
 			},
 			Entrypoints: []string{"{{$.BinDir}}/{{.AppName}}", "run", "--watches-file=" + helmOperatorWatchFile},
 		},
-		"vald-loadtest": {
-			AppName:       "loadtest",
-			PackageDir:    "tools/cli/loadtest",
-			ExtraPackages: append(clangBuildDeps, "libhdf5-dev", "libaec-dev"),
-			Preprocess: []string{
-				"make hdf5/install",
-			},
-		},
 		"vald-ci-container": {
 			AppName:       "ci-container",
 			ContainerType: CIContainer,
@@ -810,9 +801,8 @@ func main() {
 			RuntimeUser:   defaultBuildUser,
 			ExtraPackages: append([]string{"npm", "sudo"}, append(clangBuildDeps,
 				append(ngtBuildDeps,
-					append(faissBuildDeps,
-						append(rustBuildDeps,
-							devContainerDeps...)...)...)...)...),
+					append(rustBuildDeps,
+						devContainerDeps...)...)...)...),
 			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess, usearchPreprocess),
 			Entrypoints: []string{"/bin/bash"},
 		},
@@ -826,9 +816,8 @@ func main() {
 			PackageDir:    "dev",
 			ExtraPackages: append(clangBuildDeps,
 				append(ngtBuildDeps,
-					append(faissBuildDeps,
-						append(rustBuildDeps,
-							devContainerDeps...)...)...)...),
+					append(rustBuildDeps,
+						devContainerDeps...)...)...),
 			Preprocess: append(devContainerPreprocess,
 				append(ciContainerPreprocess,
 					ngtPreprocess,
@@ -837,7 +826,7 @@ func main() {
 		"vald-example-client": {
 			AppName:       "client",
 			PackageDir:    "example/client",
-			ExtraPackages: append(clangBuildDeps, "libhdf5-dev", "libaec-dev"),
+			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
 			Preprocess: []string{
 				"make hdf5/install",
 			},
@@ -962,7 +951,7 @@ func main() {
 			if data.AliasImage {
 				data.BuildPlatforms = multiPlatforms
 			}
-			if data.ContainerType == CIContainer || data.Name == loadtest {
+			if data.ContainerType == CIContainer {
 				data.BuildPlatforms = amd64Platform
 			}
 
@@ -997,6 +986,7 @@ on:
       - "dockers/`+data.PackageDir+`/Dockerfile"
       - "hack/docker/gen/main.go"
   pull_request_target:
+    types: [opened, reopened, synchronize, labeled]
     paths: []
 
 jobs:

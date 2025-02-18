@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package grpc provides generic functionality for grpc
 package grpc
 
 import (
@@ -28,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -39,17 +39,25 @@ import (
 type (
 	ClientStream = grpc.ClientStream
 	ServerStream = grpc.ServerStream
+
+	TypedClientStream[Q, R proto.Message] interface {
+		Send(Q) error
+		Recv() (R, error)
+		ClientStream
+	}
+	TypedServerStream[Q, R proto.Message] interface {
+		Send(R) error
+		Recv() (Q, error)
+		ServerStream
+	}
 )
 
 // BidirectionalStream represents gRPC bidirectional stream server handler.
 // It receives messages from the stream, calls the function with the received message, and sends the returned message to the stream.
 // It limits the number of concurrent calls to the function with the concurrency integer.
 // It records errors and returns them as a single error.
-func BidirectionalStream[Q any, R any](
-	ctx context.Context,
-	stream ServerStream,
-	concurrency int,
-	f func(context.Context, *Q) (*R, error),
+func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
+	ctx context.Context, stream S, concurrency int, handle func(context.Context, Q) (R, error),
 ) (err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/BidirectionalStream")
 	defer func() {
@@ -57,6 +65,9 @@ func BidirectionalStream[Q any, R any](
 			span.End()
 		}
 	}()
+	if any(stream) == nil {
+		return errors.ErrGRPCServerStreamNotFound
+	}
 	eg, ctx := errgroup.New(ctx)
 	if concurrency > 0 {
 		eg.SetLimit(concurrency)
@@ -94,11 +105,10 @@ func BidirectionalStream[Q any, R any](
 		case <-ctx.Done():
 			return finalize()
 		default:
-			data := new(Q)
-			err = stream.RecvMsg(data)
+			data, err := stream.Recv()
 			if err != nil {
 				if err != io.EOF && !errors.Is(err, io.EOF) {
-					err = errors.Wrap(err, "BidirectionalStream RecvMsg returned error")
+					err = errors.Wrap(err, "BidirectionalStream Recv returned error")
 					emu.Lock()
 					errs = append(errs, err)
 					emu.Unlock()
@@ -106,122 +116,145 @@ func BidirectionalStream[Q any, R any](
 				}
 				return finalize()
 			}
-			if data != nil {
-				eg.Go(safety.RecoverWithoutPanicFunc(func() (err error) {
-					id := atomic.AddUint64(&cnt, 1)
-					ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/BidirectionalStream/stream-%020d", apiName, id))
-					defer func() {
-						if sspan != nil {
-							sspan.End()
-						}
-					}()
-					var res *R
-					res, err = f(ctx, data)
-					if err != nil {
-						runtime.Gosched()
-						st, msg, err := status.ParseError(err, codes.Internal, fmt.Sprintf("failed to parse BidirectionalStream id= %020d gRPC error response", id))
-						if sspan != nil {
-							sspan.RecordError(err)
-							sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-							sspan.SetStatus(trace.StatusError, msg)
-						}
-						code := st.Code()
-						if err != nil && st != nil &&
-							code != codes.Canceled &&
-							code != codes.DeadlineExceeded &&
-							code != codes.InvalidArgument &&
-							code != codes.NotFound &&
-							code != codes.OK &&
-							code != codes.Unimplemented {
-							log.Error(err)
-						}
+			eg.Go(safety.RecoverWithoutPanicFunc(func() (err error) {
+				id := atomic.AddUint64(&cnt, 1)
+				ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/BidirectionalStream/stream-%020d", apiName, id))
+				defer func() {
+					if sspan != nil {
+						sspan.End()
 					}
-					if res != nil {
-						mu.Lock()
-						err = stream.SendMsg(res)
-						mu.Unlock()
-						if err != nil {
-							runtime.Gosched()
-							err = errors.Wrapf(err, "BidirectionalStream SendMsg returned error at stream-%020d", id)
-							emu.Lock()
-							errs = append(errs, err)
-							emu.Unlock()
-							st, msg, err := status.ParseError(err, codes.Internal, fmt.Sprintf("failed to parse BidirectionalStream.SendMsg id= %020d gRPC error response", id),
-								&errdetails.RequestInfo{
-									RequestId:   fmt.Sprintf("%s/BidirectionalStream/stream-%020d/SendMsg", apiName, id),
-									ServingData: errdetails.Serialize(res),
-								})
-							if sspan != nil {
-								sspan.RecordError(err)
-								sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-								sspan.SetStatus(trace.StatusError, msg)
-							}
-							return err
-						}
+				}()
+				res, err := handle(ctx, data)
+				if err != nil {
+					runtime.Gosched()
+					st, msg, err := status.ParseError(err, codes.Internal, fmt.Sprintf("failed to parse BidirectionalStream id= %020d gRPC error response", id))
+					if sspan != nil {
+						sspan.RecordError(err)
+						sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+						sspan.SetStatus(trace.StatusError, msg)
 					}
-					return nil
-				}))
-			}
+					code := st.Code()
+					if err != nil && st != nil &&
+						code != codes.Canceled &&
+						code != codes.DeadlineExceeded &&
+						code != codes.InvalidArgument &&
+						code != codes.NotFound &&
+						code != codes.OK &&
+						code != codes.Unimplemented {
+						log.Error(err)
+					}
+				}
+				mu.Lock()
+				err = stream.Send(res)
+				mu.Unlock()
+				if err != nil {
+					runtime.Gosched()
+					err = errors.Wrapf(err, "BidirectionalStream SendMsg returned error at stream-%020d", id)
+					emu.Lock()
+					errs = append(errs, err)
+					emu.Unlock()
+					st, msg, err := status.ParseError(err, codes.Internal, fmt.Sprintf("failed to parse BidirectionalStream.SendMsg id= %020d gRPC error response", id),
+						&errdetails.RequestInfo{
+							RequestId:   fmt.Sprintf("%s/BidirectionalStream/stream-%020d/SendMsg", apiName, id),
+							ServingData: errdetails.Serialize(res),
+						})
+					if sspan != nil {
+						sspan.RecordError(err)
+						sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+						sspan.SetStatus(trace.StatusError, msg)
+					}
+					return err
+				}
+				return nil
+			}))
 		}
 	}
 }
 
 // BidirectionalStreamClient is gRPC client stream.
-func BidirectionalStreamClient(
-	stream ClientStream, dataProvider, newData func() any, f func(any, error),
+func BidirectionalStreamClient[Q, R proto.Message, S TypedClientStream[Q, R]](
+	stream S, concurrency int, sendDataProvider func() (Q, bool), callBack func(R, error) bool,
 ) (err error) {
-	if stream == nil {
+	if any(stream) == nil {
 		return errors.ErrGRPCClientStreamNotFound
 	}
-
 	ctx, cancel := context.WithCancel(stream.Context())
 	eg, ctx := errgroup.New(ctx)
-
+	if concurrency > 0 {
+		eg.SetLimit(concurrency)
+	}
 	eg.Go(safety.RecoverFunc(func() (err error) {
 		for {
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				err = ctx.Err()
+				if errors.IsNot(err, io.EOF, context.Canceled, context.DeadlineExceeded) {
+					return err
+				}
+				return nil
 			default:
-				res := newData()
-				err = stream.RecvMsg(res)
-				if err == io.EOF || errors.Is(err, io.EOF) {
+				res, err := stream.Recv()
+				if errors.IsAny(err, io.EOF, context.Canceled, context.DeadlineExceeded) {
 					cancel()
 					return nil
 				}
-				f(res, err)
+				if !callBack(res, err) {
+					cancel()
+					return nil
+				}
 			}
 		}
 	}))
 
-	defer func() {
-		if err != nil {
-			err = errors.Join(stream.CloseSend(), err)
-		} else {
-			err = stream.CloseSend()
-		}
-	}()
-
 	return func() (err error) {
+		var mu sync.Mutex
+		ech := make(chan error, concurrency)
+		finalize := func(err error) (serr error) {
+			if errors.IsAny(err, io.EOF, context.Canceled, context.DeadlineExceeded) {
+				err = nil
+			}
+			cancel()
+			err = errors.Join(err, eg.Wait())
+			close(ech)
+			for e := range ech {
+				if errors.IsNot(e, io.EOF, context.Canceled, context.DeadlineExceeded) {
+					err = errors.Join(err, e)
+				}
+			}
+			mu.Lock()
+			serr = stream.CloseSend()
+			mu.Unlock()
+			if errors.IsAny(serr, io.EOF, context.Canceled, context.DeadlineExceeded) {
+				serr = nil
+			}
+			if err != nil {
+				return errors.Join(err, serr)
+			}
+			return serr
+		}
 		for {
 			select {
 			case <-ctx.Done():
-				return eg.Wait()
+				return finalize(ctx.Err())
+			case err = <-ech:
+				return finalize(err)
 			default:
-				data := dataProvider()
-				if data == nil {
-					err = stream.CloseSend()
-					cancel()
+				data, ok := sendDataProvider()
+				if !ok {
+					return finalize(nil)
+				}
+				eg.Go(safety.RecoverFunc(func() (err error) {
+					mu.Lock()
+					err = stream.Send(data)
+					mu.Unlock()
 					if err != nil {
-						return errors.Join(eg.Wait(), err)
+						select {
+						case <-ctx.Done():
+						case ech <- err:
+						}
 					}
-					return eg.Wait()
-				}
-
-				err = stream.SendMsg(data)
-				if err != nil {
-					return err
-				}
+					return nil
+				}))
 			}
 		}
 	}()

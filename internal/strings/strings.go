@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -84,6 +84,26 @@ var (
 			return bytes.NewBuffer(make([]byte, 0, syscall.Getpagesize()))
 		},
 	}
+
+	oldnew = []string{
+		" ", "",
+		",", "",
+		"-", "",
+		".", "",
+		"/", "",
+		":", "",
+		";", "",
+		"=", "",
+		"\\", "",
+		"_", "",
+		"|", "",
+		"~", "",
+		"\n", "",
+		"\r", "",
+		"\t", "",
+	}
+	reps = strings.NewReplacer(oldnew...)
+	_    = reps.Replace(" ")
 )
 
 func Join(elems []string, sep string) (str string) {
@@ -94,18 +114,26 @@ func Join(elems []string, sep string) (str string) {
 		return elems[0]
 	}
 	n := len(sep) * (len(elems) - 1)
-	for i := 0; i < len(elems); i++ {
+	for i := range elems {
 		n += len(elems[i])
 	}
 
-	b := bufferPool.Get().(*bytes.Buffer)
+	b, ok := bufferPool.Get().(*bytes.Buffer)
+	if !ok || b == nil {
+		b = bytes.NewBuffer(make([]byte, 0, n))
+	} else {
+		b.Grow(n)
+	}
 	defer bufferPool.Put(b)
 	defer b.Reset()
-	b.Grow(n)
 	b.WriteString(elems[0])
 	for _, s := range elems[1:] {
 		b.WriteString(sep)
 		b.WriteString(s)
 	}
 	return b.String()
+}
+
+func TrimForCompare[S ~string](str S) S {
+	return S(reps.Replace(ToLower(string(str))))
 }

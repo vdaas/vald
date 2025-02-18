@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -336,10 +336,11 @@ package info
 //
 // func Test_info_String(t *testing.T) {
 // 	type fields struct {
-// 		baseURL     string
-// 		detail      Detail
-// 		rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
-// 		rtFuncForPC func(pc uintptr) *runtime.Func
+// 		baseURL      string
+// 		detail       Detail
+// 		valdReplacer *strings.Replacer
+// 		rtCaller     func(skip int) (pc uintptr, file string, line int, ok bool)
+// 		rtFuncForPC  func(pc uintptr) *runtime.Func
 // 	}
 // 	type want struct {
 // 		want string
@@ -366,6 +367,7 @@ package info
 // 		       fields: fields {
 // 		           baseURL:"",
 // 		           detail:Detail{},
+// 		           valdReplacer:nil,
 // 		           rtCaller:nil,
 // 		           rtFuncForPC:nil,
 // 		       },
@@ -388,6 +390,7 @@ package info
 // 		           fields: fields {
 // 		           baseURL:"",
 // 		           detail:Detail{},
+// 		           valdReplacer:nil,
 // 		           rtCaller:nil,
 // 		           rtFuncForPC:nil,
 // 		           },
@@ -420,10 +423,11 @@ package info
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			i := &info{
-// 				baseURL:     test.fields.baseURL,
-// 				detail:      test.fields.detail,
-// 				rtCaller:    test.fields.rtCaller,
-// 				rtFuncForPC: test.fields.rtFuncForPC,
+// 				baseURL:      test.fields.baseURL,
+// 				detail:       test.fields.detail,
+// 				valdReplacer: test.fields.valdReplacer,
+// 				rtCaller:     test.fields.rtCaller,
+// 				rtFuncForPC:  test.fields.rtFuncForPC,
 // 			}
 //
 // 			got := i.String()
@@ -584,10 +588,11 @@ package info
 //
 // func Test_info_Get(t *testing.T) {
 // 	type fields struct {
-// 		baseURL     string
-// 		detail      Detail
-// 		rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
-// 		rtFuncForPC func(pc uintptr) *runtime.Func
+// 		baseURL      string
+// 		detail       Detail
+// 		valdReplacer *strings.Replacer
+// 		rtCaller     func(skip int) (pc uintptr, file string, line int, ok bool)
+// 		rtFuncForPC  func(pc uintptr) *runtime.Func
 // 	}
 // 	type want struct {
 // 		want Detail
@@ -614,6 +619,7 @@ package info
 // 		       fields: fields {
 // 		           baseURL:"",
 // 		           detail:Detail{},
+// 		           valdReplacer:nil,
 // 		           rtCaller:nil,
 // 		           rtFuncForPC:nil,
 // 		       },
@@ -636,6 +642,7 @@ package info
 // 		           fields: fields {
 // 		           baseURL:"",
 // 		           detail:Detail{},
+// 		           valdReplacer:nil,
 // 		           rtCaller:nil,
 // 		           rtFuncForPC:nil,
 // 		           },
@@ -668,10 +675,11 @@ package info
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			i := &info{
-// 				baseURL:     test.fields.baseURL,
-// 				detail:      test.fields.detail,
-// 				rtCaller:    test.fields.rtCaller,
-// 				rtFuncForPC: test.fields.rtFuncForPC,
+// 				baseURL:      test.fields.baseURL,
+// 				detail:       test.fields.detail,
+// 				valdReplacer: test.fields.valdReplacer,
+// 				rtCaller:     test.fields.rtCaller,
+// 				rtFuncForPC:  test.fields.rtFuncForPC,
 // 			}
 //
 // 			got := i.Get()
@@ -684,10 +692,11 @@ package info
 //
 // func Test_info_getDetail(t *testing.T) {
 // 	type fields struct {
-// 		baseURL     string
-// 		detail      Detail
-// 		rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
-// 		rtFuncForPC func(pc uintptr) *runtime.Func
+// 		baseURL      string
+// 		detail       Detail
+// 		valdReplacer *strings.Replacer
+// 		rtCaller     func(skip int) (pc uintptr, file string, line int, ok bool)
+// 		rtFuncForPC  func(pc uintptr) *runtime.Func
 // 	}
 // 	type want struct {
 // 		want Detail
@@ -714,6 +723,7 @@ package info
 // 		       fields: fields {
 // 		           baseURL:"",
 // 		           detail:Detail{},
+// 		           valdReplacer:nil,
 // 		           rtCaller:nil,
 // 		           rtFuncForPC:nil,
 // 		       },
@@ -736,6 +746,7 @@ package info
 // 		           fields: fields {
 // 		           baseURL:"",
 // 		           detail:Detail{},
+// 		           valdReplacer:nil,
 // 		           rtCaller:nil,
 // 		           rtFuncForPC:nil,
 // 		           },
@@ -768,10 +779,11 @@ package info
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			i := info{
-// 				baseURL:     test.fields.baseURL,
-// 				detail:      test.fields.detail,
-// 				rtCaller:    test.fields.rtCaller,
-// 				rtFuncForPC: test.fields.rtFuncForPC,
+// 				baseURL:      test.fields.baseURL,
+// 				detail:       test.fields.detail,
+// 				valdReplacer: test.fields.valdReplacer,
+// 				rtCaller:     test.fields.rtCaller,
+// 				rtFuncForPC:  test.fields.rtFuncForPC,
 // 			}
 //
 // 			got := i.getDetail()
@@ -784,10 +796,11 @@ package info
 //
 // func Test_info_prepare(t *testing.T) {
 // 	type fields struct {
-// 		baseURL     string
-// 		detail      Detail
-// 		rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
-// 		rtFuncForPC func(pc uintptr) *runtime.Func
+// 		baseURL      string
+// 		detail       Detail
+// 		valdReplacer *strings.Replacer
+// 		rtCaller     func(skip int) (pc uintptr, file string, line int, ok bool)
+// 		rtFuncForPC  func(pc uintptr) *runtime.Func
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -809,6 +822,7 @@ package info
 // 		       fields: fields {
 // 		           baseURL:"",
 // 		           detail:Detail{},
+// 		           valdReplacer:nil,
 // 		           rtCaller:nil,
 // 		           rtFuncForPC:nil,
 // 		       },
@@ -831,6 +845,7 @@ package info
 // 		           fields: fields {
 // 		           baseURL:"",
 // 		           detail:Detail{},
+// 		           valdReplacer:nil,
 // 		           rtCaller:nil,
 // 		           rtFuncForPC:nil,
 // 		           },
@@ -863,10 +878,11 @@ package info
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			i := &info{
-// 				baseURL:     test.fields.baseURL,
-// 				detail:      test.fields.detail,
-// 				rtCaller:    test.fields.rtCaller,
-// 				rtFuncForPC: test.fields.rtFuncForPC,
+// 				baseURL:      test.fields.baseURL,
+// 				detail:       test.fields.detail,
+// 				valdReplacer: test.fields.valdReplacer,
+// 				rtCaller:     test.fields.rtCaller,
+// 				rtFuncForPC:  test.fields.rtFuncForPC,
 // 			}
 //
 // 			i.prepare()
@@ -970,6 +986,106 @@ package info
 // 			}
 //
 // 			got := s.String()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestStackTrace_ShortString(t *testing.T) {
+// 	type fields struct {
+// 		URL      string
+// 		FuncName string
+// 		File     string
+// 		Line     int
+// 	}
+// 	type want struct {
+// 		want string
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, string) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got string) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           URL:"",
+// 		           FuncName:"",
+// 		           File:"",
+// 		           Line:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           URL:"",
+// 		           FuncName:"",
+// 		           File:"",
+// 		           Line:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := StackTrace{
+// 				URL:      test.fields.URL,
+// 				FuncName: test.fields.FuncName,
+// 				File:     test.fields.File,
+// 				Line:     test.fields.Line,
+// 			}
+//
+// 			got := s.ShortString()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

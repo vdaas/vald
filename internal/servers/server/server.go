@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,12 +14,10 @@
 // limitations under the License.
 //
 
-// Package server provides implementation of Go API for managing server flow
 package server
 
 import (
 	"context"
-	"crypto/tls"
 	"net/http"
 	"os"
 	"reflect"
@@ -41,6 +39,7 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/tls"
 	"golang.org/x/net/http2"
 )
 
@@ -455,21 +454,11 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		defer scancel()
 		s.http.srv.SetKeepAlivesEnabled(false)
 		err := s.http.srv.Shutdown(sctx)
-		if err != nil && err != http.ErrServerClosed && err != grpc.ErrServerStopped {
+		if errors.IsNot(err, http.ErrServerClosed, grpc.ErrServerStopped, context.Canceled, context.DeadlineExceeded) {
 			rerr = errors.Join(rerr, err)
 		}
-		if err != nil &&
-			!errors.Is(err, http.ErrServerClosed) &&
-			!errors.Is(err, grpc.ErrServerStopped) &&
-			!errors.Is(err, context.Canceled) &&
-			!errors.Is(err, context.DeadlineExceeded) {
-			rerr = errors.Join(rerr, err)
-		}
-
 		err = sctx.Err()
-		if err != nil &&
-			!errors.Is(err, context.Canceled) &&
-			!errors.Is(err, context.DeadlineExceeded) {
+		if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
 			rerr = errors.Join(rerr, err)
 		}
 
@@ -479,5 +468,5 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 
 	s.wg.Wait()
 
-	return
+	return nil
 }

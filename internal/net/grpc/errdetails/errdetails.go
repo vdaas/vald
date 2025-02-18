@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package errdetails provides error detail for gRPC status
 package errdetails
 
 import (
@@ -23,6 +22,7 @@ import (
 	"strconv"
 
 	"github.com/vdaas/vald/apis/grpc/v1/rpc/errdetails"
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
@@ -31,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 	spb "google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type (
@@ -75,6 +76,10 @@ var (
 	RetryInfoMessageName                    = string(new(RetryInfo).ProtoReflect().Descriptor().FullName().Name())
 )
 
+type Details struct {
+	Details []Detail `json:"details,omitempty" yaml:"details"`
+}
+
 type Detail struct {
 	TypeURL string        `json:"type_url,omitempty" yaml:"type_url"`
 	Message proto.Message `json:"message,omitempty"  yaml:"message"`
@@ -84,79 +89,86 @@ func (d *Detail) MarshalJSON() (body []byte, err error) {
 	if d == nil {
 		return nil, nil
 	}
-	switch strings.TrimPrefix(strings.TrimPrefix(d.TypeURL, typePrefix), typePrefixV1) {
+	typeName := strings.TrimPrefix(strings.TrimPrefix(d.TypeURL, typePrefix), typePrefixV1)
+	switch typeName {
 	case DebugInfoMessageName:
 		m, ok := d.Message.(*DebugInfo)
 		if ok {
-			return json.Marshal(m)
+			body, err = m.MarshalJSON()
 		}
 	case ErrorInfoMessageName:
 		m, ok := d.Message.(*ErrorInfo)
 		if ok {
-			return json.Marshal(m)
+			body, err = m.MarshalJSON()
 		}
 	case BadRequestFieldViolationMessageName:
 		m, ok := d.Message.(*BadRequestFieldViolation)
 		if ok {
-			return json.Marshal(m)
+			body, err = m.MarshalJSON()
 		}
 	case BadRequestMessageName:
 		m, ok := d.Message.(*BadRequest)
 		if ok {
-			return json.Marshal(m)
+			body, err = m.MarshalJSON()
 		}
 	case LocalizedMessageMessageName:
 		m, ok := d.Message.(*LocalizedMessage)
 		if ok {
-			return json.Marshal(m)
+			body, err = m.MarshalJSON()
 		}
 	case PreconditionFailureViolationMessageName:
 		m, ok := d.Message.(*PreconditionFailureViolation)
 		if ok {
-			return json.Marshal(m)
+			body, err = m.MarshalJSON()
 		}
 	case PreconditionFailureMessageName:
 		m, ok := d.Message.(*PreconditionFailure)
 		if ok {
-			return json.Marshal(m)
+			body, err = m.MarshalJSON()
 		}
 	case HelpLinkMessageName:
 		m, ok := d.Message.(*HelpLink)
 		if ok {
-			return json.Marshal(m)
+			body, err = m.MarshalJSON()
 		}
 	case HelpMessageName:
 		m, ok := d.Message.(*Help)
 		if ok {
-			return json.Marshal(m)
+			body, err = m.MarshalJSON()
 		}
 	case QuotaFailureViolationMessageName:
 		m, ok := d.Message.(*QuotaFailureViolation)
 		if ok {
-			return json.Marshal(m)
+			body, err = m.MarshalJSON()
 		}
 	case QuotaFailureMessageName:
 		m, ok := d.Message.(*QuotaFailure)
 		if ok {
-			return json.Marshal(m)
+			body, err = m.MarshalJSON()
 		}
 	case RequestInfoMessageName:
 		m, ok := d.Message.(*RequestInfo)
 		if ok {
-			return json.Marshal(m)
+			body, err = m.MarshalJSON()
 		}
 	case ResourceInfoMessageName:
 		m, ok := d.Message.(*ResourceInfo)
 		if ok {
-			return json.Marshal(m)
+			body, err = m.MarshalJSON()
 		}
 	case RetryInfoMessageName:
 		m, ok := d.Message.(*RetryInfo)
 		if ok {
-			return json.Marshal(m)
+			body, err = m.MarshalJSON()
 		}
+	default:
+		body, err = protojson.Marshal(d.Message)
 	}
-	return json.Marshal(d)
+	if err != nil || body == nil {
+		log.Warnf("failed to Marshal type: %s, object %#v to JSON body %v, error: %v", typeName, d, body, err)
+		return nil, err
+	}
+	return body, nil
 }
 
 func decodeDetails(objs ...any) (details []Detail) {
@@ -299,14 +311,14 @@ func Serialize(objs ...any) string {
 	case 0:
 		return fmt.Sprint(objs...)
 	case 1:
-		b, err = json.Marshal(msgs[0])
+		b, err = msgs[0].MarshalJSON()
 	default:
-		b, err = json.Marshal(msgs)
+		b, err = json.Marshal(&Details{Details: msgs})
 	}
-	if err != nil {
+	if err != nil || b == nil {
 		return fmt.Sprint(objs...)
 	}
-	return string(b)
+	return conv.Btoa(b)
 }
 
 func AnyToErrorDetail(a *types.Any) proto.Message {
@@ -314,7 +326,8 @@ func AnyToErrorDetail(a *types.Any) proto.Message {
 		return nil
 	}
 	var err error
-	switch strings.TrimPrefix(strings.TrimPrefix(a.GetTypeUrl(), typePrefix), typePrefixV1) {
+	typeName := strings.TrimPrefix(strings.TrimPrefix(a.GetTypeUrl(), typePrefix), typePrefixV1)
+	switch typeName {
 	case DebugInfoMessageName:
 		var m DebugInfo
 		err = types.UnmarshalAny(a, &m)
@@ -399,9 +412,15 @@ func AnyToErrorDetail(a *types.Any) proto.Message {
 		if err == nil {
 			return &m
 		}
+	default:
+		m, err := a.UnmarshalNew()
+		if err == nil {
+			return m
+		}
+
 	}
 	if err != nil {
-		log.Warn(err)
+		log.Warnf("failed to Unmarshal type: %s, object %#v to JSON error: %v", typeName, a, err)
 	}
 	return a.ProtoReflect().Interface()
 }

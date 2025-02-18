@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,11 +14,9 @@
 // limitations under the License.
 //
 
-// Package servers provides implementation of Go API for managing server flow
 package server
 
 import (
-	"crypto/tls"
 	"fmt"
 	"net/http"
 	"time"
@@ -37,6 +35,7 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
+	"github.com/vdaas/vald/internal/tls"
 	"golang.org/x/net/http2"
 )
 
@@ -681,8 +680,7 @@ func WithGRPCInterceptors(names ...string) Option {
 			case "traceinterceptor", "trace":
 				s.grpc.opts = append(
 					s.grpc.opts,
-					grpc.ChainUnaryInterceptor(trace.TraceInterceptor()),
-					grpc.ChainStreamInterceptor(trace.TraceStreamInterceptor()),
+					grpc.StatsHandler(trace.NewStatsHandler()),
 				)
 			case "metricinterceptor", "metric":
 				mi, msi, err := metric.MetricInterceptors()

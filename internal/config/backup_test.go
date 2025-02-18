@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 import (
@@ -117,7 +116,7 @@ func TestBackupManager_Bind(t *testing.T) {
 					},
 				},
 				want: want{
-					want: &BackupManager{
+					want: (&BackupManager{
 						Client: &GRPCClient{
 							Addrs:               addrs,
 							HealthCheckDuration: healthcheck,
@@ -127,7 +126,7 @@ func TestBackupManager_Bind(t *testing.T) {
 							DialOption:          dialOpts,
 							TLS:                 tls,
 						},
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -136,13 +135,13 @@ func TestBackupManager_Bind(t *testing.T) {
 				name:   "return BackupManager when the b.Client is nil",
 				fields: fields{},
 				want: want{
-					want: &BackupManager{
+					want: (&BackupManager{
 						Client: &GRPCClient{
 							DialOption: &DialOption{
 								Insecure: true,
 							},
 						},
-					},
+					}).Bind(),
 				},
 			}
 		}(),

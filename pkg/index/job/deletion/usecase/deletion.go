@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 		discoverer.WithNamespace(cfg.Deletion.AgentNamespace),
 		discoverer.WithPort(cfg.Deletion.AgentPort),
 		discoverer.WithServiceDNSARecord(cfg.Deletion.AgentDNS),
-		discoverer.WithDiscovererClient(grpc.New(dOpts...)),
+		discoverer.WithDiscovererClient(grpc.New("Discoverer Client", dOpts...)),
 		discoverer.WithDiscoverDuration(cfg.Deletion.Discoverer.Duration),
 		discoverer.WithOptions(acOpts...),
 		discoverer.WithNodeName(cfg.Deletion.NodeName),

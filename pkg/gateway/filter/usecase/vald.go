@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	c, err := client.New(
 		client.WithAddrs(cfg.Client.Addrs...),
-		client.WithClient(grpc.New(copts...)),
+		client.WithClient(grpc.New("Gateway Client", copts...)),
 	)
 	if err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	ic, err := ingress.New(
 		ingress.WithAddrs(iaddrs...),
-		ingress.WithClient(grpc.New(icopts...)),
+		ingress.WithClient(grpc.New("Ingress Filter Client", icopts...)),
 	)
 	if err != nil {
 		return nil, err
@@ -141,7 +141,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	ec, err := egress.New(
 		egress.WithAddrs(eaddrs...),
-		egress.WithClient(grpc.New(ecopts...)),
+		egress.WithClient(grpc.New("Egress Filter Client", ecopts...)),
 	)
 	if err != nil {
 		return nil, err

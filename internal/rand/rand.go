@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package rand provides random number algorithms
 package rand
 
 import (
@@ -67,7 +66,12 @@ func (r *rand) init() *rand {
 	if r.x == nil {
 		r.x = new(uint32)
 	}
-	x := fastime.UnixNanoNow()
-	atomic.StoreUint32(r.x, uint32((x>>32)^x))
+	for {
+		seed := uint32((fastime.UnixNanoNow() >> 32) ^ fastime.UnixNanoNow())
+		if seed != 0 {
+			atomic.StoreUint32(r.x, seed)
+			break
+		}
+	}
 	return r
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package ngt provides implementation of Go API for https://github.com/yahoojapan/NGT
 package ngt
 
 /*
@@ -110,7 +109,7 @@ func WithDimension(size int) Option {
 // WithDistanceTypeByString represents the option to set the distance type for NGT.
 func WithDistanceTypeByString(dt string) Option {
 	d := DistanceNone
-	switch strings.NewReplacer("-", "", "_", "", " ", "").Replace(strings.ToLower(dt)) {
+	switch strings.TrimForCompare(dt) {
 	case "l1":
 		d = L1
 	case "l2":
@@ -123,7 +122,7 @@ func WithDistanceTypeByString(dt string) Option {
 		d = Cosine
 	case "poincare", "poinc", "poi", "po", "pc":
 		d = Poincare
-	case "lorenz", "loren", "lor", "lo", "lz":
+	case "lorentz", "lorent", "lorenz", "loren", "lor", "lo", "lz":
 		d = Lorentz
 	case "jaccard", "jac":
 		d = Jaccard
@@ -224,10 +223,10 @@ func WithDistanceType(t distanceType) Option {
 // WithObjectTypeByString represents the option to set the object type by string for NGT.
 func WithObjectTypeByString(ot string) Option {
 	var o objectType
-	switch strings.NewReplacer("-", "", "_", "", " ", "", "double", "float").Replace(strings.ToLower(ot)) {
+	switch strings.TrimForCompare(ot) {
 	case "uint8", "ui8", "u8":
 		o = Uint8
-	case "float", "float32", "f", "f32", "fp32":
+	case "double", "float", "float32", "f", "f32", "fp32":
 		o = Float
 	case "float16", "halffloat", "hf", "f16", "fp16":
 		o = HalfFloat

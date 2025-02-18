@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -316,7 +316,7 @@ func TestWithAutoIndexCheckDuration(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
+				err: errors.New("time: unknown unit \"ss\" in duration \"5ss\""),
 			},
 		},
 	}
@@ -401,7 +401,7 @@ func TestWithAutoIndexDurationLimit(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
+				err: errors.New("time: unknown unit \"ss\" in duration \"5ss\""),
 			},
 		},
 	}
@@ -486,7 +486,7 @@ func TestWithAutoSaveIndexDuration(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
+				err: errors.New("time: unknown unit \"ss\" in duration \"5ss\""),
 			},
 		},
 	}
@@ -647,7 +647,7 @@ func TestWithInitialDelayMaxDuration(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
+				err: errors.New("time: unknown unit \"ss\" in duration \"5ss\""),
 			},
 		},
 	}
@@ -732,7 +732,7 @@ func TestWithMinLoadIndexTimeout(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
+				err: errors.New("time: unknown unit \"ss\" in duration \"5ss\""),
 			},
 		},
 	}
@@ -817,7 +817,7 @@ func TestWithMaxLoadIndexTimeout(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
+				err: errors.New("time: unknown unit \"ss\" in duration \"5ss\""),
 			},
 		},
 	}
@@ -902,7 +902,7 @@ func TestWithLoadIndexTimeoutFactor(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
+				err: errors.New("time: unknown unit \"ss\" in duration \"5ss\""),
 			},
 		},
 	}
@@ -1362,7 +1362,7 @@ func TestWithExportIndexInfoDuration(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
+				err: errors.New("time: unknown unit \"ss\" in duration \"5ss\""),
 			},
 		},
 	}

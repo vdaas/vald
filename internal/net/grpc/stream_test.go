@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package grpc provides generic functionality for grpc
 package grpc
 
 import (
@@ -203,10 +202,10 @@ func TestBidirectionalStream(t *testing.T) {
 //
 // func TestBidirectionalStreamClient(t *testing.T) {
 // 	type args struct {
-// 		stream       ClientStream
-// 		dataProvider func() any
-// 		newData      func() any
-// 		f            func(any, error)
+// 		stream           S
+// 		concurrency      int
+// 		sendDataProvider func() (Q, bool)
+// 		callBack         func(R, error) bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -232,9 +231,9 @@ func TestBidirectionalStream(t *testing.T) {
 // 		       name: "test_case_1",
 // 		       args: args {
 // 		           stream:nil,
-// 		           dataProvider:nil,
-// 		           newData:nil,
-// 		           f:nil,
+// 		           concurrency:0,
+// 		           sendDataProvider:nil,
+// 		           callBack:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -254,9 +253,9 @@ func TestBidirectionalStream(t *testing.T) {
 // 		           name: "test_case_2",
 // 		           args: args {
 // 		           stream:nil,
-// 		           dataProvider:nil,
-// 		           newData:nil,
-// 		           f:nil,
+// 		           concurrency:0,
+// 		           sendDataProvider:nil,
+// 		           callBack:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -287,7 +286,7 @@ func TestBidirectionalStream(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			err := BidirectionalStreamClient(test.args.stream, test.args.dataProvider, test.args.newData, test.args.f)
+// 			err := BidirectionalStreamClient(test.args.stream, test.args.concurrency, test.args.sendDataProvider, test.args.callBack)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

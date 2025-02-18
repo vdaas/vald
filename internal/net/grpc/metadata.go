@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package grpc provides generic functionality for grpc
 package grpc
 
 import (
@@ -24,6 +23,10 @@ import (
 )
 
 type MD = metadata.MD
+
+func NewMetadata(m map[string]string) MD {
+	return metadata.New(m)
+}
 
 func NewOutgoingContext(ctx context.Context, md MD) context.Context {
 	return metadata.NewOutgoingContext(ctx, md)

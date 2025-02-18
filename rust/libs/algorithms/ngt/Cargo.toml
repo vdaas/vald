@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0.88"
-cxx = { version = "1.0.128", features = ["c++20"] }
+anyhow = "1.0.95"
+cxx = { version = "1.0.136", features = ["c++20"] }
 
 [build-dependencies]
-cxx-build = "1.0.128"
-miette = { version = "7.2.0", features = ["fancy"] }
+cxx-build = "1.0.136"
+miette = { version = "7.4.0", features = ["fancy"] }
 
 [dev-dependencies]
 rand = "0.8.5"
