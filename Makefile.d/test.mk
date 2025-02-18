@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ test:
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/...
 
 .PHONY: test/tparse
@@ -57,7 +57,7 @@ test/tparse: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
@@ -71,7 +71,7 @@ test/cmd/tparse: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
@@ -85,7 +85,7 @@ test/internal/tparse: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/internal/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
@@ -99,7 +99,7 @@ test/pkg/tparse: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
@@ -115,7 +115,7 @@ test/hack/tparse: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=vendor -json -cover \
 		$(ROOTDIR)/hack/gorules/... \
 		$(ROOTDIR)/hack/helm/... \
@@ -134,7 +134,7 @@ test/all/tparse: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
@@ -148,7 +148,8 @@ test/gotestfmt: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
+	GODEBUG=$(GODEBUG) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
@@ -162,8 +163,9 @@ test/cmd/gotestfmt: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
+	GODEBUG=$(GODEBUG) \
+	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/cmd/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
 
@@ -176,8 +178,9 @@ test/internal/gotestfmt: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/internal/... \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
+	GODEBUG=$(GODEBUG) \
+	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/internal/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
 
@@ -190,8 +193,9 @@ test/pkg/gotestfmt: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/pkg/... \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
+	GODEBUG=$(GODEBUG) \
+	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
 
@@ -206,8 +210,9 @@ test/hack/gotestfmt: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=vendor -json -cover \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
+	GODEBUG=$(GODEBUG) \
+	go test -short -shuffle=on -race -mod=vendor -json -cover -ldflags="-linkmode=external" \
 		$(ROOTDIR)/hack/gorules/... \
 		$(ROOTDIR)/hack/helm/... \
 		$(ROOTDIR)/hack/license/... \
@@ -225,8 +230,9 @@ test/all/gotestfmt: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
-	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/... \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
+	GODEBUG=$(GODEBUG) \
+	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
 
@@ -263,7 +269,7 @@ test/pkg:
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/pkg/...
 
 .PHONY: test/internal
@@ -272,7 +278,7 @@ test/internal:
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/internal/...
 
 .PHONY: test/cmd
@@ -281,8 +287,18 @@ test/cmd:
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/cmd/...
+
+.PHONY: test/rust/qbg
+## run tests for qbg
+test/rust/qbg:
+	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_ffi_qbg --exact --show-output
+	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_ffi_qbg_prebuilt --exact --show-output
+	rm -rf rust/libs/algorithms/qbg/index/
+	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_property --exact --show-output
+	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_index --exact --show-output
+	rm -rf rust/libs/algorithms/qbg/index/
 
 .PHONY: test/hack
 ## run tests for hack
@@ -292,7 +308,7 @@ test/hack:
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=vendor -cover \
 		$(ROOTDIR)/hack/gorules... \
 		$(ROOTDIR)/hack/helm/... \
@@ -306,7 +322,7 @@ test/all:
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/...
 
 .PHONY: coverage
@@ -315,7 +331,7 @@ coverage:
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -v -race -covermode=atomic -timeout=$(GOTEST_TIMEOUT) -coverprofile=coverage.out $(ROOTDIR)/...
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \

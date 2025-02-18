@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -23,18 +23,24 @@ import (
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 )
 
-func searchRequestProvider(dataset assets.Dataset) (func() any, int, error) {
+func searchRequestProvider(dataset assets.Dataset) (func() *any, int, error) {
 	size := dataset.QuerySize()
 	idx := int32(-1)
-	return func() (ret any) {
+	return func() (ret *any) {
 		if i := int(atomic.AddInt32(&idx, 1)); i < size {
 			v, err := dataset.Query(i)
 			if err != nil {
 				return nil
 			}
-			ret = &payload.Search_Request{
+			obj := any(&payload.Search_Request{
 				Vector: v.([]float32),
-			}
+				Config: &payload.Search_Config{
+					Num:     10,
+					Radius:  -1,
+					Epsilon: 0.1,
+				},
+			})
+			ret = &obj
 		}
 		return ret
 	}, size, nil

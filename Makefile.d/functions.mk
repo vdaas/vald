@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -135,7 +135,7 @@ define run-e2e-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -174,7 +174,7 @@ define run-e2e-crud-faiss-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -200,7 +200,7 @@ define run-e2e-multi-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -230,7 +230,7 @@ define run-e2e-max-dim-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -252,7 +252,7 @@ define run-e2e-sidecar-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \

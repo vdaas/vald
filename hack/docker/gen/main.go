@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -433,11 +433,11 @@ var (
 		"make RUST_VERSION=\"${RUST_VERSION}\" rust/install",
 	}
 	goBuildCommands = []string{
-		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}\" NAME=\"${REPO}\" cmd/${PKG}/${APP_NAME}",
+		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}/${REPO}\" NAME=\"${REPO}\" cmd/${PKG}/${APP_NAME}",
 		"mv \"cmd/${PKG}/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
 	}
 	goExampleBuildCommands = []string{
-		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}\" NAME=\"${REPO}\" ${PKG}/${APP_NAME}",
+		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}/${REPO}\" NAME=\"${REPO}\" ${PKG}/${APP_NAME}",
 		"mv \"${PKG}/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
 	}
 	rustBuildCommands = []string{
@@ -483,7 +483,6 @@ var (
 		"graphviz",
 		"jq",
 		"libaec-dev",
-		"libhdf5-dev",
 		"sed",
 		"zip",
 	}
@@ -747,7 +746,7 @@ func main() {
 		"vald-benchmark-job": {
 			AppName:       "job",
 			PackageDir:    "tools/benchmark/job",
-			ExtraPackages: append(clangBuildDeps, "libhdf5-dev", "libaec-dev"),
+			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
 			Preprocess: []string{
 				"make hdf5/install",
 			},
@@ -798,7 +797,7 @@ func main() {
 		"vald-loadtest": {
 			AppName:       "loadtest",
 			PackageDir:    "tools/cli/loadtest",
-			ExtraPackages: append(clangBuildDeps, "libhdf5-dev", "libaec-dev"),
+			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
 			Preprocess: []string{
 				"make hdf5/install",
 			},
@@ -837,7 +836,7 @@ func main() {
 		"vald-example-client": {
 			AppName:       "client",
 			PackageDir:    "example/client",
-			ExtraPackages: append(clangBuildDeps, "libhdf5-dev", "libaec-dev"),
+			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
 			Preprocess: []string{
 				"make hdf5/install",
 			},

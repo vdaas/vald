@@ -1,7 +1,7 @@
 //go:build e2e
 
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -825,7 +825,12 @@ func TestE2EIndexJobCorrection(t *testing.T) {
 		t.Fatal("no pods found with stored count > 0")
 	}
 
-	cmd := exec.CommandContext(ctx, "sh", "-c", fmt.Sprintf("kubectl get pods -o custom-columns=:metadata.name --no-headers=true --field-selector=\"status.podIP=%s\"", target))
+	cmd := exec.CommandContext(
+		ctx,
+		"sh",
+		"-c",
+		fmt.Sprintf("kubectl get pods -o custom-columns=:metadata.name --no-headers=true --field-selector=\"status.podIP=%s\" --kubeconfig=%s", target, kubeConfig),
+	)
 	out, err := cmd.Output()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
@@ -837,7 +842,7 @@ func TestE2EIndexJobCorrection(t *testing.T) {
 	agent := strings.TrimRight(string(out), "\n")
 
 	t.Logf("removing %s...", agent)
-	cmd = exec.CommandContext(ctx, "sh", "-c", fmt.Sprintf("kubectl delete pod %s && kubectl wait --for=condition=Ready pod/%s", agent, agent))
+	cmd = exec.CommandContext(ctx, "sh", "-c", fmt.Sprintf("kubectl delete pod %s --kubeconfig=%s && kubectl wait --for=condition=Ready pod/%s --kubeconfig=%s", agent, kubeConfig, agent, kubeConfig))
 	out, err = cmd.Output()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
@@ -901,13 +906,13 @@ func TestE2EReadReplica(t *testing.T) {
 
 	t.Log("index operator should be creating read replica rotator jobs")
 	t.Log("waiting for read replica rotator jobs to complete...")
-	if err := kubectl.WaitResources(ctx, t, "job", "app=vald-readreplica-rotate", "complete", "60s"); err != nil {
+	if err := kubectl.WaitResources(ctx, t, "job", "app=vald-readreplica-rotate", "complete", "60s", kubeConfig); err != nil {
 		t.Log("wait failed. printing yaml of vald-readreplica-rotate")
-		kubectl.KubectlCmd(ctx, t, "get", "pod", "-l", "app=vald-readreplica-rotate", "-o", "yaml")
+		kubectl.KubectlCmd(ctx, t, kubeConfig, "get", "pod", "-l", "app=vald-readreplica-rotate", "-o", "yaml")
 		t.Log("wait failed. printing log of vald-index-operator")
-		kubectl.DebugLog(ctx, t, "app=vald-index-operator")
+		kubectl.DebugLog(ctx, t, "app=vald-index-operator", kubeConfig)
 		t.Log("wait failed. printing log of vald-readreplica-rotate")
-		kubectl.DebugLog(ctx, t, "app=vald-readreplica-rotate")
+		kubectl.DebugLog(ctx, t, "app=vald-readreplica-rotate", kubeConfig)
 		t.Fatalf("failed to wait for read replica rotator jobs to complete: %s", err)
 	}
 

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ metadata:
   labels:
     app: vald-manager-index
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.15
+    helm.sh/chart: vald-v1.7.16
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.15
+    app.kubernetes.io/version: v1.7.16
     app.kubernetes.io/component: manager-index
 spec:
   progressDeadlineSeconds: 600
@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: manager-index
       annotations:
-        checksum/configmap: b9a73b354c6a70dd900f847ddc460eb899032d44810e4b4bba2f9479d2513452
+        checksum/configmap: 8aebb249a588793313c046dff60dc9a72a7fe00d3da7cf0575f2d35a2b788158
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-index

@@ -1,7 +1,7 @@
 # syntax = docker/dockerfile:latest
 # check=error=true
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -87,7 +87,7 @@ RUN --mount=type=bind,target=.,rw \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
     && make faiss/install \
-    && make GOARCH="${TARGETARCH}" GOOS="${TARGETOS}" REPO="${ORG}" NAME="${REPO}" cmd/${PKG}/${APP_NAME} \
+    && make GOARCH="${TARGETARCH}" GOOS="${TARGETOS}" REPO="${ORG}/${REPO}" NAME="${REPO}" cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 # skipcq: DOK-DL3026,DOK-DL3007
 FROM gcr.io/distroless/static:nonroot

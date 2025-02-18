@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -82,6 +82,7 @@ GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
 GO_CLEAN_DEPS := true
 GOTEST_TIMEOUT = 30m
 CGO_ENABLED = 1
+GODEBUG := gotestjsonbuildtext=1
 
 RUST_HOME ?= $(LIB_PATH)/rust
 RUSTUP_HOME ?= $(RUST_HOME)/rustup
@@ -164,6 +165,7 @@ NGT_LDFLAGS = -fopenmp -lopenblas -llapack
 FAISS_LDFLAGS = $(NGT_LDFLAGS) -lgfortran
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
+TEST_LDFLAGS = $(LDFLAGS) $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 
 ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
