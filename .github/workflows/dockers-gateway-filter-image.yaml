@@ -142,6 +142,11 @@ on:
       - pkg/gateway/filter/usecase/*.go
       - versions/GO_VERSION
   pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - labeled
     paths:
       - "!**/*_mock.go"
       - "!**/*_test.go"
