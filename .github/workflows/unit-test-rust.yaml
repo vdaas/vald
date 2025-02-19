@@ -21,7 +21,7 @@ on:
       - "release/v*.*"
       - "!release/v*.*.*"
     paths:
-     - ".github/workflows/test.yaml"
+      - ".github/workflows/test.yaml"
       - "rust/**"
   pull_request:
     paths:
