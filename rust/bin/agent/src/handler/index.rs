@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 use algorithm::Error;
+use log::{error, info};
 use proto::{
     core::v1::agent_server,
     payload::v1::{control, info, Empty},
@@ -29,7 +30,7 @@ impl agent_server::Agent for super::Agent {
         &self,
         request: tonic::Request<control::CreateIndexRequest>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
-        println!("Recieved a request from {:?}", request.remote_addr());
+        info!("Recieved a request from {:?}", request.remote_addr());
         let req = request.get_ref();
         let pool_size = req.pool_size;
         let hostname = cargo::util::hostname()?;
@@ -73,11 +74,13 @@ impl agent_server::Agent for super::Agent {
                             let mut err_details = ErrorDetails::new();
                             err_details.set_error_info(err.to_string(), domain, metadata);
                             err_details.set_resource_info(resource_type, resource_name, "", "");
-                            Status::with_error_details(
+                            let status = Status::with_error_details(
                                 Code::Internal,
                                 format!("CreateIndex API failed to create indexes pool_size = {}, error: {}", pool_size, err.to_string()),
                                 err_details,
-                            )
+                            );
+                            error!("{:?}", status);
+                            status
                         }
                     };
                     Err(status)
@@ -91,7 +94,7 @@ impl agent_server::Agent for super::Agent {
         &self,
         request: tonic::Request<Empty>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
-        println!("Recieved a request from {:?}", request.remote_addr());
+        info!("Recieved a request from {:?}", request.remote_addr());
         let hostname = cargo::util::hostname()?;
         let domain = hostname.to_str().unwrap();
         let res = Empty {};
@@ -100,6 +103,7 @@ impl agent_server::Agent for super::Agent {
             let result = s.save_index();
             match result {
                 Err(err) => {
+                    error!("{:?}", err);
                     let metadata = HashMap::new();
                     let resource_type = self.resource_type.clone() + "/qbg.SaveIndex";
                     let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
@@ -111,6 +115,7 @@ impl agent_server::Agent for super::Agent {
                         "SaveIndex API failed to save indices",
                         err_details,
                     );
+                    error!("{:?}", status);
                     Err(status)
                 }
                 Ok(()) => Ok(tonic::Response::new(res)),
@@ -134,7 +139,7 @@ impl index_server::Index for super::Agent {
         &self,
         request: tonic::Request<Empty>,
     ) -> std::result::Result<tonic::Response<info::index::Count>, tonic::Status> {
-        println!("Recieved a request from {:?}", request.remote_addr());
+        info!("Recieved a request from {:?}", request.remote_addr());
         {
             let s = self.s.read().await;
             Ok(tonic::Response::new(info::index::Count {
