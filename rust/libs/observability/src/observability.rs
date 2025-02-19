@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-use anyhow::{Context, Ok, Result};
+use anyhow::{Ok, Result};
 use opentelemetry::global::{self, shutdown_tracer_provider};
-use opentelemetry_otlp::WithExportConfig;
-use opentelemetry_sdk::metrics::SdkMeterProvider;
+use opentelemetry_otlp::{MetricExporter, SpanExporter, WithExportConfig};
+use opentelemetry_sdk::metrics::{PeriodicReader, SdkMeterProvider};
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::trace::{self, TracerProvider};
 use opentelemetry_sdk::{runtime, Resource};
@@ -51,41 +51,33 @@ impl ObservabilityImpl {
         if obj.config.meter.enabled {
             // NOTE: Since the agent implementation does not use views, we will use the simplest implementation for the current phase.
             // If we want flexibility and customization, use SdkMeterProvider::builder.
-            let provider = opentelemetry_otlp::new_pipeline()
-                .metrics(runtime::Tokio)
-                .with_period(obj.config.meter.export_duration)
-                .with_resource(Resource::from(obj.config()))
+            let exporter = MetricExporter::builder()
+                .with_tonic()
+                .with_endpoint(Url::parse(obj.config.endpoint.as_str())?.join("/v1/metrics")?.as_str())
                 .with_timeout(obj.config.meter.export_timeout_duration)
-                .with_exporter(
-                    opentelemetry_otlp::new_exporter().tonic().with_endpoint(
-                        Url::parse(obj.config.endpoint.as_str())?
-                            .join("/v1/metrics")?
-                            .as_str(),
-                    ),
-                )
                 .build()?;
+            let reader = PeriodicReader::builder(exporter, runtime::Tokio)
+                .with_timeout(obj.config.meter.export_duration)
+                .build();
+            let provider = SdkMeterProvider::builder()
+                .with_reader(reader)
+                .with_resource(Resource::from(obj.config()))
+                .build();
             obj.meter_provider = Some(provider.clone());
             global::set_meter_provider(provider.clone());
         }
 
         if obj.config.tracer.enabled {
-            let tracer = opentelemetry_otlp::new_pipeline()
-                .tracing()
-                .with_exporter(
-                    opentelemetry_otlp::new_exporter().tonic().with_endpoint(
-                        Url::parse(obj.config.endpoint.as_str())?
-                            .join("/v1/traces")?
-                            .as_str(),
-                    ),
-                )
-                .with_trace_config(
-                    trace::config()
-                        .with_sampler(trace::Sampler::AlwaysOn)
-                        .with_resource(Resource::from(obj.config()))
-                        .with_id_generator(trace::RandomIdGenerator::default()),
-                )
-                .install_batch(runtime::Tokio)?;
-            let provider = tracer.provider().context("failed to get provider")?;
+            let exporter = SpanExporter::builder()
+                .with_tonic()
+                .with_endpoint(Url::parse(obj.config.endpoint.as_str())?.join("/v1/traces")?.as_str())
+                .build()?;
+            let provider = TracerProvider::builder()
+                .with_batch_exporter(exporter, runtime::Tokio)
+                .with_sampler(trace::Sampler::AlwaysOn)
+                .with_resource(Resource::from(obj.config()))
+                .with_id_generator(trace::RandomIdGenerator::default())
+                .build();
             obj.tracer_provider = Some(provider.clone());
             global::set_text_map_propagator(TraceContextPropagator::new());
             global::set_tracer_provider(provider.clone());

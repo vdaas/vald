@@ -15,7 +15,23 @@
 //
 mod meta;
 
-#[derive(Default, Debug)]
+use std::sync::Arc;
+use kv::*;
+
 pub struct Meta {
-    
+    store: Arc<Store>,
+    bucket: Bucket<'static, Raw, Raw>,
 }
+
+impl Meta {
+    pub fn new(cfg_path: &str) -> Result<Self, kv::Error> {
+        let cfg = Config::new(cfg_path);
+        let store = Arc::new(Store::new(cfg)?);
+        let bucket = store.bucket::<Raw, Raw>(Some("meta_bucket"))?;
+
+        Ok(Meta { store, bucket })
+    }
+}
+
+
+
