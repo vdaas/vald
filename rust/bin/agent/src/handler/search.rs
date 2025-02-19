@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 use algorithm::Error;
+use log::{debug, error, info, warn};
 use prost::Message;
 use proto::{payload::v1::search, vald::v1::search_server};
 use std::{collections::HashMap, string::String};
@@ -26,7 +27,7 @@ impl search_server::Search for super::Agent {
         &self,
         request: tonic::Request<search::Request>,
     ) -> Result<tonic::Response<search::Response>, Status> {
-        println!("Recieved a request from {:?}", request.remote_addr());
+        info!("Recieved a request from {:?}", request.remote_addr());
         let req = request.get_ref();
         let config = match req.config.clone() {
             Some(cfg) => cfg,
@@ -61,6 +62,7 @@ impl search_server::Search for super::Agent {
                     "Search API Incombatible Dimension Size detedted",
                     err_details,
                 );
+                warn!("{:?}", status);
                 return Err(status);
             }
             let result = s.search(
@@ -84,7 +86,9 @@ impl search_server::Search for super::Agent {
                                     .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
-                            Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to creating indices is in progress", err_details)
+                            let status = Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to creating indices is in progress", err_details);
+                            debug!("{:?}", status);
+                            status
                         }
                         Error::FlushingIsInProgress {} => {
                             let mut err_details = ErrorDetails::new();
@@ -95,7 +99,9 @@ impl search_server::Search for super::Agent {
                                     .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
-                            Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to flushing indices is in progress", err_details)
+                            let status = Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to flushing indices is in progress", err_details);
+                            debug!("{:?}", status);
+                            status
                         }
                         Error::EmptySearchResult {} => {
                             let request_id = config.request_id;
@@ -107,14 +113,16 @@ impl search_server::Search for super::Agent {
                                     .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
-                            Status::with_error_details(
+                            let status = Status::with_error_details(
                                 Code::NotFound,
                                 format!(
                                     "Search API requestID {}'s search result not found",
                                     &request_id
                                 ),
                                 err_details,
-                            )
+                            );
+                            debug!("{:?}", status);
+                            status
                         }
                         Error::IncompatibleDimensionSize { got: _, want: _ } => {
                             let mut err_details = ErrorDetails::new();
@@ -129,11 +137,13 @@ impl search_server::Search for super::Agent {
                                 "vector dimension size",
                                 err.to_string(),
                             )]);
-                            Status::with_error_details(
+                            let status = Status::with_error_details(
                                 Code::InvalidArgument,
                                 "Search API Incompatible Dimension Size detected",
                                 err_details,
-                            )
+                            );
+                            warn!("{:?}", status);
+                            status
                         }
                         _ => {
                             let mut err_details = ErrorDetails::new();
@@ -144,11 +154,13 @@ impl search_server::Search for super::Agent {
                                     .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
-                            Status::with_error_details(
+                            let status = Status::with_error_details(
                                 Code::Internal,
                                 "Search API failed to process search request",
                                 err_details,
-                            )
+                            );
+                            error!("{:?}", status);
+                            status
                         }
                     };
                     Err(status)
