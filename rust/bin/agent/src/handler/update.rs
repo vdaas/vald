@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 use algorithm::Error;
+use log::{error, info, warn};
 use prost::Message;
 use proto::{
     payload::v1::{object, update},
@@ -29,7 +30,7 @@ impl update_server::Update for super::Agent {
         &self,
         request: tonic::Request<update::Request>,
     ) -> std::result::Result<tonic::Response<object::Location>, tonic::Status> {
-        println!("Recieved a request from {:?}", request.remote_addr());
+        info!("Recieved a request from {:?}", request.remote_addr());
         let req = request.get_ref();
         let config = match req.config.clone() {
             Some(cfg) => cfg,
@@ -69,6 +70,7 @@ impl update_server::Update for super::Agent {
                     "Update API Incompatible Dimension Size detected",
                     err_details,
                 );
+                warn!("{:?}", status);
                 return Err(status);
             }
             if uuid.len() == 0 {
@@ -90,6 +92,7 @@ impl update_server::Update for super::Agent {
                     format!("Update API invalid argument for uuid \"{}\" detected", uuid),
                     err_details,
                 );
+                warn!("{:?}", status);
                 return Err(status);
             }
             let result = s.update(uuid.clone(), vec.vector.clone(), config.timestamp);
@@ -108,7 +111,9 @@ impl update_server::Update for super::Agent {
                                     .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
-                            Status::with_error_details(Code::Aborted, "Update API aborted to process update request due to flushing indices is in progress", err_details)
+                            let status = Status::with_error_details(Code::Aborted, "Update API aborted to process update request due to flushing indices is in progress", err_details);
+                            warn!("{:?}", status);
+                            status
                         }
                         Error::ObjectIDNotFound { uuid: _ } => {
                             let mut err_details = ErrorDetails::new();
@@ -119,11 +124,13 @@ impl update_server::Update for super::Agent {
                                     .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
-                            Status::with_error_details(
+                            let status = Status::with_error_details(
                                 Code::NotFound,
                                 format!("Update API uuid {} not found", uuid),
                                 err_details,
-                            )
+                            );
+                            warn!("{:?}", status);
+                            status
                         }
                         Error::UUIDNotFound { id: _ } => {
                             let mut err_details = ErrorDetails::new();
@@ -138,14 +145,16 @@ impl update_server::Update for super::Agent {
                                 "uuid or vector",
                                 err.to_string(),
                             )]);
-                            Status::with_error_details(
+                            let status= Status::with_error_details(
                                 Code::InvalidArgument,
                                 format!(
                                     "Update API invalid argument for uuid \"{}\" vec \"{:?}\" detected",
                                     uuid, vec.vector
                                 ),
                                 err_details,
-                            )
+                            );
+                            warn!("{:?}", status);
+                            status
                         }
                         Error::UUIDAlreadyExists { uuid: _ } => {
                             let mut err_details = ErrorDetails::new();
@@ -156,11 +165,13 @@ impl update_server::Update for super::Agent {
                                     .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
-                            Status::with_error_details(
+                            let status = Status::with_error_details(
                                 Code::AlreadyExists,
                                 format!("Update API uuid {}'s same data already exists", uuid),
                                 err_details,
-                            )
+                            );
+                            warn!("{:?}", status);
+                            status
                         }
                         _ => {
                             let mut err_details = ErrorDetails::new();
@@ -171,11 +182,13 @@ impl update_server::Update for super::Agent {
                                     .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
                             );
                             err_details.set_resource_info(resource_type, resource_name, "", "");
-                            Status::with_error_details(
+                            let status = Status::with_error_details(
                                 Code::Internal,
                                 "Update API failed",
                                 err_details,
-                            )
+                            );
+                            error!("{:?}", status);
+                            status
                         }
                     };
                     Err(status)

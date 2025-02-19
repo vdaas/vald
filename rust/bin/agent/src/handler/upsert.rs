@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 use algorithm::Error;
+use log::{info, warn};
 use prost::Message;
 use proto::{
     payload::v1::{insert, object, update, upsert},
@@ -29,7 +30,7 @@ impl upsert_server::Upsert for super::Agent {
         &self,
         request: tonic::Request<upsert::Request>,
     ) -> std::result::Result<tonic::Response<object::Location>, tonic::Status> {
-        println!("Recieved a request from {:?}", request.remote_addr());
+        info!("Recieved a request from {:?}", request.remote_addr());
         let req = request.get_ref();
         let config = match req.config.clone() {
             Some(cfg) => cfg,
@@ -69,6 +70,7 @@ impl upsert_server::Upsert for super::Agent {
                     "Upsert API Incompatible Dimension Size detected",
                     err_details,
                 );
+                warn!("{:?}", status);
                 return Err(status);
             }
             if uuid.len() == 0 {
@@ -90,6 +92,7 @@ impl upsert_server::Upsert for super::Agent {
                     format!("Upsert API invalid argument for uuid \"{}\" detected", uuid),
                     err_details,
                 );
+                warn!("{:?}", status);
                 return Err(status);
             }
             let rt_name;
