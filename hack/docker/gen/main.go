@@ -318,6 +318,7 @@ type (
 	}
 
 	PullRequest struct {
+		Types Types `yaml:"types,omitempty"`
 		Paths Paths `yaml:"paths"`
 	}
 
@@ -336,6 +337,7 @@ type (
 		Platforms string `yaml:"platforms,omitempty"`
 	}
 
+	Types []string
 	Paths []string
 
 	Data struct {
@@ -995,6 +997,7 @@ on:
       - "dockers/`+data.PackageDir+`/Dockerfile"
       - "hack/docker/gen/main.go"
   pull_request_target:
+    types: [opened, reopened, synchronize, labeled]
     paths: []
 
 jobs:
