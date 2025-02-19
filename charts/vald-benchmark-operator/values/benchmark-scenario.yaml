@@ -176,3 +176,5 @@ spec:
   target:
     host: "vald-lb-gateway.default.svc.cluster.local"
     port: 8081
+    meta:
+      token: "sample-token"
