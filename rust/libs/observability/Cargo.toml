@@ -21,13 +21,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-opentelemetry = { version = "0.23" }
-opentelemetry_sdk = { version = "0.23", features = ["rt-tokio"] }
-opentelemetry-otlp = { version = "0.16.0", features = ["http-proto", "reqwest-client", "logs"] }
-tokio = { version = "1.40.0", features = ["full"] }
-serde_json = { version="1.0.128" }
-opentelemetry-semantic-conventions = { version = "0.16.0"}
+opentelemetry = { version = "0.27.1" }
+opentelemetry_sdk = { version = "0.27.1", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.27.0", features = ["http-proto", "reqwest-client", "logs"] }
+tokio = { version = "1.43.0", features = ["full"] }
+serde_json = { version="1.0.135" }
+opentelemetry-semantic-conventions = { version = "0.27.0"}
 scopeguard = { version = "1.2.0"}
 paste = {version = "1.0.15"}
-anyhow = { version = "1.0.88"}
-url = { version = "2.5.2"}
+anyhow = { version = "1.0.95"}
+url = { version = "2.5.4"}

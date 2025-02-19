@@ -17,3 +17,6 @@
 pub mod config;
 pub mod macros;
 pub mod observability;
+
+#[doc(hidden)]
+pub use paste;
