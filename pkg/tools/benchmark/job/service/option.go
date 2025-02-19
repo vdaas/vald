@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/data/hdf5"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -251,6 +252,16 @@ func WithConcurencyLimit(limit int) Option {
 	return func(j *job) error {
 		if limit > 0 {
 			j.concurrencyLimit = limit
+		}
+		return nil
+	}
+}
+
+// WithMetadata sets the metadata for sending metadata with request.
+func WithMetadata(m map[string]string) Option {
+	return func(j *job) error {
+		if len(m) > 0 {
+			j.meta = grpc.NewMetadata(m)
 		}
 		return nil
 	}
