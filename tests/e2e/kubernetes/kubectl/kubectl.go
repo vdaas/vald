@@ -19,9 +19,11 @@
 package kubectl
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"os/exec"
+	"strings"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -38,6 +40,49 @@ func RolloutResource(ctx context.Context, t *testing.T, resource, kubeconfig str
 
 	cmd = exec.CommandContext(ctx, "kubectl", "rollout", "status", resource, "--kubeconfig", kubeconfig)
 	return runCmd(t, cmd)
+}
+
+func RolloutResourceName(
+	ctx context.Context, t *testing.T, resource string, name string, timeout string,
+) error {
+	t.Helper()
+	cmd := exec.CommandContext(ctx, "kubectl", "rollout", "restart", resource, name)
+	if err := runCmd(t, cmd); err != nil {
+		return err
+	}
+
+	r := strings.Join([]string{resource, name}, "/")
+	to := strings.Join([]string{"--timeout", timeout}, "=")
+	cmd = exec.CommandContext(ctx, "kubectl", "rollout", "status", r, "--watch", to)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+	defer stdout.Close()
+
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
+	defer stderr.Close()
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	go func() {
+		scanner := bufio.NewScanner(stdout)
+		for scanner.Scan() {
+			fmt.Println(scanner.Text())
+		}
+	}()
+	go func() {
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			fmt.Println("Error:", scanner.Text())
+		}
+	}()
+
+	return cmd.Wait()
 }
 
 // WaitResources waits for multiple resources to be ready.

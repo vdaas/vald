@@ -1026,6 +1026,9 @@ jobs:
 			workflow.On.PullRequest.Paths = slices.Compact(workflow.On.PullRequest.Paths)
 
 			workflow.On.PullRequestTarget.Paths = workflow.On.PullRequest.Paths
+			if data.BuildPlatforms == "" {
+				data.BuildPlatforms = multiPlatforms
+			}
 			workflow.Jobs.Build.With.Platforms = data.BuildPlatforms
 
 			workflowYamlTmp, err := yaml.Marshal(workflow)

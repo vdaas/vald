@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
@@ -66,7 +67,8 @@ func ParseAndLogError(t *testing.T, err error) error {
 	return parsed
 }
 
-func (c *client) Search(t *testing.T, ctx context.Context, ds Dataset) error {
+func (c *client) StreamSearch(t *testing.T, ctx context.Context, ds Dataset) error {
+	to := time.Second * 1
 	return c.SearchWithParameters(
 		t,
 		ctx,
@@ -74,7 +76,7 @@ func (c *client) Search(t *testing.T, ctx context.Context, ds Dataset) error {
 		100,
 		-1.0,
 		0.1,
-		3000000000,
+		to.Nanoseconds(),
 		DefaultStatusValidator,
 		ParseAndLogError,
 	)
@@ -162,7 +164,7 @@ func (c *client) SearchWithParameters(
 			left, right, ok := strings.Cut(resp.GetRequestId(), "-")
 			if !ok {
 				sid := strings.SplitN(resp.GetRequestId(), "-", 2)
-				left, right = sid[0], sid[1]
+				left = sid[0]
 			}
 
 			idx, err := strconv.Atoi(left)
@@ -267,14 +269,15 @@ func (c *client) SearchWithParameters(
 	return rerr
 }
 
-func (c *client) SearchByID(t *testing.T, ctx context.Context, ds Dataset) error {
+func (c *client) StreamSearchByID(t *testing.T, ctx context.Context, ds Dataset) error {
+	to := time.Second * 3
 	return c.SearchByIDWithParameters(t,
 		ctx,
 		ds,
 		100,
 		-1.0,
 		0.1,
-		3000000000,
+		to.Nanoseconds(),
 		DefaultStatusValidator,
 		ParseAndLogError,
 	)
@@ -390,7 +393,7 @@ func (c *client) SearchByIDWithParameters(
 	return rerr
 }
 
-func (c *client) LinearSearch(t *testing.T, ctx context.Context, ds Dataset) error {
+func (c *client) StreamLinearSearch(t *testing.T, ctx context.Context, ds Dataset) error {
 	return c.LinearSearchWithParameters(
 		t,
 		ctx,
@@ -509,7 +512,7 @@ func (c *client) LinearSearchWithParameters(
 	return rerr
 }
 
-func (c *client) LinearSearchByID(t *testing.T, ctx context.Context, ds Dataset) error {
+func (c *client) StreamLinearSearchByID(t *testing.T, ctx context.Context, ds Dataset) error {
 	return c.LinearSearchByIDWithParameters(t,
 		ctx,
 		ds,
@@ -647,27 +650,35 @@ func (c *client) InsertWithParameters(
 		return err
 	}
 
+	mu := sync.Mutex{}
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		var ierr error
 
 		for {
 			res, err := sc.Recv()
 			if err == io.EOF {
+				mu.Lock()
+				rerr = ierr
+				mu.Unlock()
 				return
 			}
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Join(
-						rerr,
+					ierr = errors.Join(
+						ierr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
 						),
 					)
 				}
+				mu.Lock()
+				rerr = ierr
+				mu.Unlock()
 				return
 			}
 
@@ -680,7 +691,7 @@ func (c *client) InsertWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Join(rerr, e)
+						ierr = errors.Join(ierr, e)
 					}
 					continue
 				}
@@ -705,7 +716,10 @@ func (c *client) InsertWithParameters(
 			},
 		})
 		if err != nil {
-			return err
+			mu.Lock()
+			rerr = errors.Join(err, err)
+			mu.Unlock()
+			return
 		}
 	}
 
@@ -750,27 +764,35 @@ func (c *client) UpdateWithParameters(
 		return err
 	}
 
+	mu := sync.Mutex{}
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		var ierr error
 
 		for {
 			res, err := sc.Recv()
 			if err == io.EOF {
+				mu.Lock()
+				rerr = ierr
+				mu.Unlock()
 				return
 			}
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Join(
-						rerr,
+					ierr = errors.Join(
+						ierr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
 						),
 					)
 				}
+				mu.Lock()
+				rerr = ierr
+				mu.Unlock()
 				return
 			}
 
@@ -783,7 +805,7 @@ func (c *client) UpdateWithParameters(
 							st.GetCode(),
 							st.GetMessage(),
 							errdetails.Serialize(st.GetDetails()))
-						rerr = errors.Join(rerr, e)
+						ierr = errors.Join(ierr, e)
 					}
 					continue
 				}
@@ -809,7 +831,10 @@ func (c *client) UpdateWithParameters(
 			},
 		})
 		if err != nil {
-			return err
+			mu.Lock()
+			rerr = errors.Join(rerr, err)
+			mu.Unlock()
+			return
 		}
 	}
 
@@ -855,26 +880,34 @@ func (c *client) UpsertWithParameters(
 	}
 
 	wg := sync.WaitGroup{}
+	mu := sync.Mutex{}
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		var ierr error
 
 		for {
 			res, err := sc.Recv()
 			if err == io.EOF {
+				mu.Lock()
+				rerr = ierr
+				mu.Unlock()
 				return
 			}
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Join(
-						rerr,
+					ierr = errors.Join(
+						ierr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
 						),
 					)
 				}
+				mu.Lock()
+				rerr = ierr
+				mu.Unlock()
 				return
 			}
 
@@ -887,7 +920,7 @@ func (c *client) UpsertWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Join(rerr, e)
+						ierr = errors.Join(ierr, e)
 					}
 					continue
 				}
@@ -913,7 +946,10 @@ func (c *client) UpsertWithParameters(
 			},
 		})
 		if err != nil {
-			return err
+			mu.Lock()
+			rerr = errors.Join(rerr, err)
+			mu.Unlock()
+			return
 		}
 	}
 
@@ -956,27 +992,35 @@ func (c *client) RemoveWithParameters(
 		return err
 	}
 
+	mu := sync.Mutex{}
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		var ierr error
 
 		for {
 			res, err := sc.Recv()
 			if err == io.EOF {
+				mu.Lock()
+				rerr = ierr
+				mu.Unlock()
 				return
 			}
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Join(
-						rerr,
+					ierr = errors.Join(
+						ierr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
 						),
 					)
 				}
+				mu.Lock()
+				rerr = ierr
+				mu.Unlock()
 				return
 			}
 
@@ -989,7 +1033,7 @@ func (c *client) RemoveWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Join(rerr, e)
+						ierr = errors.Join(ierr, e)
 					}
 					continue
 				}
@@ -1013,7 +1057,10 @@ func (c *client) RemoveWithParameters(
 			},
 		})
 		if err != nil {
-			return err
+			mu.Lock()
+			rerr = errors.Join(rerr, err)
+			mu.Unlock()
+			return
 		}
 	}
 
@@ -1108,26 +1155,34 @@ func (c *client) GetObject(
 		return err
 	}
 
+	mu := sync.Mutex{}
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		var ierr error
 
 		for {
 			res, err := sc.Recv()
 			if err == io.EOF {
+				mu.Lock()
+				rerr = ierr
+				mu.Unlock()
 				return
 			}
 
 			if err != nil {
 				err = ParseAndLogError(t, err)
-				rerr = errors.Join(
-					rerr,
+				ierr = errors.Join(
+					ierr,
 					errors.Errorf(
 						"stream finished by an error: %s",
 						err.Error(),
 					),
 				)
+				mu.Lock()
+				rerr = ierr
+				mu.Unlock()
 				return
 			}
 
@@ -1136,7 +1191,7 @@ func (c *client) GetObject(
 				err := res.GetStatus()
 				if err != nil {
 					t.Errorf("an error returned:\tcode: %d\tmessage: %s\tdetails: %s", err.GetCode(), err.GetMessage(), errdetails.Serialize(err.GetDetails()))
-					rerr = errors.Wrap(rerr, err.String())
+					ierr = errors.Wrap(ierr, err.String())
 					continue
 				}
 
@@ -1180,7 +1235,10 @@ func (c *client) GetObject(
 			},
 		})
 		if err != nil {
-			return err
+			mu.Lock()
+			rerr = errors.Join(rerr, err)
+			mu.Unlock()
+			return
 		}
 	}
 

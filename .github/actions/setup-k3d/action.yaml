@@ -36,6 +36,10 @@ inputs:
     description: "Number of agents"
     required: false
     default: "3"
+  storage:
+    description: "If true, the local-path-storage will be deployed"
+    required: false
+    default: "false"
   options:
     description: "Options for k3d cluster create command"
     required: false
@@ -124,6 +128,11 @@ runs:
         echo $KUBECONFIG
         cat $KUBECONFIG
         cat /etc/hosts
+    - name: Set local path storage
+      if: ${{ inputs.storage == 'true' }}
+      shell: bash
+      run: |
+        make k3d/storage
     - name: Show Kubernetes Cluster Info
       shell: bash
       run: |

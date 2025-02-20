@@ -36,7 +36,9 @@ type Dataset struct {
 
 type Client interface {
 	Search(t *testing.T, ctx context.Context, ds Dataset) error
+	StreamSearch(t *testing.T, ctx context.Context, ds Dataset) error
 	SearchByID(t *testing.T, ctx context.Context, ds Dataset) error
+	StreamSearchByID(t *testing.T, ctx context.Context, ds Dataset) error
 	SearchWithParameters(
 		t *testing.T,
 		ctx context.Context,
@@ -60,7 +62,9 @@ type Client interface {
 		errorValidator ErrorValidator,
 	) error
 	LinearSearch(t *testing.T, ctx context.Context, ds Dataset) error
+	StreamLinearSearch(t *testing.T, ctx context.Context, ds Dataset) error
 	LinearSearchByID(t *testing.T, ctx context.Context, ds Dataset) error
+	StreamLinearSearchByID(t *testing.T, ctx context.Context, ds Dataset) error
 	LinearSearchWithParameters(
 		t *testing.T,
 		ctx context.Context,
@@ -200,8 +204,8 @@ func (c *client) getGRPCConn() (*grpc.ClientConn, error) {
 		grpc.WithInsecure(),
 		grpc.WithKeepaliveParams(
 			keepalive.ClientParameters{
-				Time:                time.Second,
-				Timeout:             5 * time.Second,
+				Time:                10 * time.Minute,
+				Timeout:             60 * time.Second,
 				PermitWithoutStream: true,
 			},
 		),

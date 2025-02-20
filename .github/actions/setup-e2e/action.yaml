@@ -32,6 +32,10 @@ inputs:
     description: "If k3d is not required, set this to false"
     required: false
     default: "true"
+  require_k3d_storage:
+    description: "If local-path-storage is not required, set this to false"
+    required: false
+    default: "false"
   require_minikube:
     description: "If minikube is not required, set this to true and set require_k3d to false"
     required: false
@@ -85,6 +89,7 @@ runs:
       with:
         agents: 3
         ingress_port: ${{ inputs.ingress_port }}
+        storage: ${{ inputs.require_k3d_storage }}
     - name: Setup Minikube environment
       if: ${{ inputs.require_minikube == 'true' }}
       shell: bash

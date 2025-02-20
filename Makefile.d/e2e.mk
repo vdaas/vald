@@ -89,6 +89,21 @@ e2e/index/job/correction:
 e2e/readreplica:
 	$(call run-e2e-crud-test,-run TestE2EReadReplica)
 
+.PHONY: e2e/standard/rollaout/restart/agent
+## run rollout-restart agent e2e
+e2e/standard/rollout/restart/agent:
+	$(call run-e2e-crud-test,-run TestE2EStandardCRUDWithRolloutRestart)
+
+.PHONY: e2e/stream/rollaout/restart/agent
+## run rollout-restart agent e2e
+e2e/stream/rollout/restart/agent:
+	$(call run-e2e-crud-test,-run TestE2EAgentRolloutRestart)
+
+.PHONY: e2e/large/search
+## run big multisearch agent e2e
+e2e/large/search:
+	$(call run-e2e-crud-test,-run TestE2EHighConcurrencyMultiSearch)
+
 .PHONY: e2e/maxdim
 ## run e2e/maxdim
 e2e/maxdim:

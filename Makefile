@@ -360,6 +360,7 @@ E2E_PORTFORWARD_ENABLED            ?= true
 E2E_REMOVE_COUNT                   ?= 3
 E2E_SEARCH_BY_ID_COUNT             ?= 100
 E2E_SEARCH_COUNT                   ?= 1000
+E2E_SEARCH_CONCURRENCY             ?= 10
 E2E_TARGET_NAME                    ?= vald-lb-gateway
 E2E_TARGET_NAMESPACE               ?= default
 E2E_TARGET_POD_NAME                ?= $(eval E2E_TARGET_POD_NAME := $(shell kubectl get pods --selector=app=$(E2E_TARGET_NAME) -n $(E2E_TARGET_NAMESPACE) | tail -1 | cut -f1 -d " "))$(E2E_TARGET_POD_NAME)
@@ -369,6 +370,7 @@ E2E_UPDATE_COUNT                   ?= 10
 E2E_UPSERT_COUNT                   ?= 10
 E2E_WAIT_FOR_CREATE_INDEX_DURATION ?= 8m
 E2E_WAIT_FOR_START_TIMEOUT         ?= 10m
+E2E_WAIT_FOR_RESOURCE_READY        ?= 3m
 E2E_SEARCH_FROM                    ?= 0
 E2E_SEARCH_BY_ID_FROM              ?= 0
 E2E_INSERT_FROM                    ?= 0

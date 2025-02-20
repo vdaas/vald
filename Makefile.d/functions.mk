@@ -150,6 +150,7 @@ define run-e2e-crud-test
 	    -correction-insert-num=$(E2E_INSERT_COUNT) \
 	    -insert-num=$(E2E_INSERT_COUNT) \
 	    -search-num=$(E2E_SEARCH_COUNT) \
+	    -search-conn=$(E2E_SEARCH_CONCURRENCY) \
 	    -search-by-id-num=$(E2E_SEARCH_BY_ID_COUNT) \
 	    -get-object-num=$(E2E_GET_OBJECT_COUNT) \
 	    -update-num=$(E2E_UPDATE_COUNT) \
@@ -163,6 +164,7 @@ define run-e2e-crud-test
 	    -search-by-id-from=$(E2E_SEARCH_BY_ID_FROM) \
 	    -get-object-from=$(E2E_GET_OBJECT_FROM) \
 	    -wait-after-insert=$(E2E_WAIT_FOR_CREATE_INDEX_DURATION) \
+	    -wait-resource-ready=$(E2E_WAIT_FOR_RESOURCE_READY) \
 	    -portforward=$(E2E_PORTFORWARD_ENABLED) \
 	    -portforward-pod-name=$(E2E_TARGET_POD_NAME) \
 	    -portforward-pod-port=$(E2E_TARGET_PORT) \
