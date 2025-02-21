@@ -105,6 +105,9 @@ spec:
                     host:
                       minLength: 1
                       type: string
+                    meta:
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     port:
                       maximum: 65535
                       minimum: 0
