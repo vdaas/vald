@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-use futures::{Stream, StreamExt};
+use futures::StreamExt;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tonic::{Request, Response, Status, Streaming};
@@ -24,7 +24,7 @@ use tokio::sync::mpsc;
 #[macro_export]
 macro_rules! stream_type {
     ($t:ty) => {
-        std::pin::Pin<Box<dyn tokio_stream::Stream<Item = std::result::Result<$t, tonic::Status>> + Send>>
+        tokio_stream::wrappers::ReceiverStream<Result<$t, tonic::Status>>
     };
 }
 
@@ -32,10 +32,10 @@ pub async fn bidirectional_stream<Q, R, F, Fut>(
     request_stream: Request<Streaming<Q>>,
     concurrency: usize,
     f: F,
-) -> Result<Response<impl Stream<Item = Result<R, Status>>>, Status>
+) -> Result<Response<ReceiverStream<Result<R, Status>>>, Status>
 where
     Q: Send + 'static,
-    R: Send + 'static,
+    R: prost::Message + 'static,
     F: Fn(Q) -> Fut + Send + Sync + 'static,
     Fut: std::future::Future<Output = Result<R, Status>> + Send + 'static,
 {
@@ -54,7 +54,6 @@ where
                 Ok(req) => {
                     let tx = tx.clone();
                     let f = f.clone();
-                    
                     let handle = tokio::spawn(async move {
                         let result = f(req).await;
                         let tx = tx.lock().await;
