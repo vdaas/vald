@@ -21,7 +21,7 @@ e2e:
 
 .PHONY: e2e/v2/crud/unaly/rollout/restart
 e2e/v2/crud/unaly/rollout/restart:
-	$(call run-e2e-v2-test,-run TestE2ERolloutRestartAgentCRUD)
+	$(call run-e2e-v2-test,-run TestE2EUnaryRolloutRestartAgentCRUD)
 
 .PHONY: e2e/faiss
 ## run e2e/faiss

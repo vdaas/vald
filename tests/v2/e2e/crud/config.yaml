@@ -1,0 +1,8 @@
+target:
+  host: localhost
+  port: 80
+dataset:
+  name: "fashion-mnist-784-euclidean.hdf5"
+kubernetes:
+  portforward:
+    enabled: false

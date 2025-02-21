@@ -38,6 +38,8 @@ import (
 func TestE2EUnaryRolloutRestartAgentCRUD(t *testing.T) {
 	timestamp := time.Now().UnixNano()
 
+	t.Log(cfg, ctx)
+
 	{
 		res, err := client.IndexProperty(ctx, &payload.Empty{})
 		if err != nil {
@@ -169,7 +171,7 @@ func TestE2EUnaryRolloutRestartAgentCRUD(t *testing.T) {
 		err := eg.Wait()
 		close(done)
 		if err != nil {
-			t.Fatal("failed to rollout restart: %s", err.Error)
+			t.Fatalf("failed to rollout restart: %s", err.Error())
 		}
 	}
 

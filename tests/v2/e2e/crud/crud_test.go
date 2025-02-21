@@ -56,6 +56,7 @@ func TestMain(m *testing.M) {
 	p, fail, err := params.New().Parse()
 	flag.Parse()
 	log.Init()
+	log.Info("xxx")
 	if fail || err != nil || p.ConfigFilePath() == "" {
 		log.Fatalf("failed to parse the parameters: %v", err)
 	}
@@ -65,10 +66,12 @@ func TestMain(m *testing.M) {
 		os.Exit(0)
 	}
 
+	log.Info("xxx")
 	cfg, err := config.Load(p.ConfigFilePath())
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
+	log.Info("yyy")
 	if cfg.Kubernetes.PortForward.Enabled {
 		kclient, err = k8sclient.New(cfg.Kubernetes.KubeConfig)
 		if err != nil {
@@ -88,10 +91,12 @@ func TestMain(m *testing.M) {
 		defer forwarder.Close()
 	}
 
+	log.Info("hoge")
 	ds, err = hdf5.HDF5ToDataset(cfg.Dataset.Name)
 	if err != nil {
 		log.Fatalf("failed to load dataset: %v", err)
 	}
+	log.Info("fuga")
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithCancel(context.Background())
 	defer cancel()
@@ -121,6 +126,7 @@ func TestMain(m *testing.M) {
 		}
 	}()
 
+	log.Info("hoge")
 	m.Run()
 }
 

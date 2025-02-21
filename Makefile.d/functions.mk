@@ -139,9 +139,10 @@ define run-e2e-v2-test
 	go test \
 	    -race \
 	    -mod=readonly \
+	    $(ROOTDIR)/tests/v2/e2e/crud \
 	    $1 \
-	    -v $(ROOTDIR)/tests/v2/e2e/crud/crud_test.go \
-	    -tags "e2e"
+	    -tags "e2e" \
+	    -c $(E2E_CONFIG)
 endef
 
 define run-e2e-crud-test
