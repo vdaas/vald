@@ -206,9 +206,18 @@ impl search_server::Search for super::Agent {
     #[doc = " A method to search indexed vectors by multiple vectors in a single request.\n"]
     async fn multi_search(
         &self,
-        _request: tonic::Request<search::MultiRequest>,
+        request: tonic::Request<search::MultiRequest>,
     ) -> std::result::Result<tonic::Response<search::Responses>, tonic::Status> {
-        todo!()
+        info!("Recieved a request from {:?}", request.remote_addr());
+        let mreq = request.get_ref();
+        let hostname = cargo::util::hostname()?;
+        let _domain = hostname.to_str().unwrap();
+        let mut res = search::Responses { responses: vec![] };
+        for req in mreq.requests.clone() {
+            let response = self.search(tonic::Request::new(req)).await?;
+            res.responses.push(response.into_inner());
+        }
+        Ok(tonic::Response::new(res))
     }
 
     #[doc = " A method to search indexed vectors by multiple IDs in a single request.\n"]
