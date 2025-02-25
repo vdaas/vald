@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-use algorithm::Error;
+use algorithm::{Error, MultiError};
 use log::{error, info, warn};
 use prost::Message;
 use proto::{
@@ -104,7 +104,7 @@ impl remove_server::Remove for super::Agent {
                             warn!("{:?}", status);
                             status
                         }
-                        Error::UUIDNotFound { id: _ } => {
+                        Error::UUIDNotFound { uuid: _ } => {
                             let mut err_details = ErrorDetails::new();
                             err_details.set_error_info(err.to_string(), domain, metadata);
                             err_details.set_request_info(
@@ -179,8 +179,116 @@ impl remove_server::Remove for super::Agent {
     #[doc = " A method to remove multiple indexed vectors in a single request.\n"]
     async fn multi_remove(
         &self,
-        _request: tonic::Request<remove::MultiRequest>,
+        request: tonic::Request<remove::MultiRequest>,
     ) -> std::result::Result<tonic::Response<object::Locations>, tonic::Status> {
-        todo!()
+        info!("Recieved a request from {:?}", request.remote_addr());
+        let mreq = request.get_ref();
+        let hostname = cargo::util::hostname()?;
+        let domain = hostname.to_str().unwrap();
+        let uuids: Vec<String> = mreq
+            .requests
+            .clone()
+            .into_iter()
+            .filter_map(|x| match x.id {
+                Some(id) => Some(id.id),
+                None => None,
+            })
+            .collect();
+        {
+            let mut s = self.s.write().await;
+            let result = s.remove_multiple(uuids.clone());
+            match result {
+                Err(err) => {
+                    let metadata = HashMap::new();
+                    let resource_type = self.resource_type.clone() + "/qbg.MultiRemove";
+                    let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
+                    let status = match err {
+                        Error::FlushingIsInProgress {} => {
+                            let mut err_details = ErrorDetails::new();
+                            err_details.set_error_info(err.to_string(), domain, metadata);
+                            err_details.set_request_info(
+                                uuids.join(","),
+                                String::from_utf8(mreq.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
+                            );
+                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            let status = Status::with_error_details(Code::Aborted, "MultiRemove API aborted to process remove request due to flushing indices is in progress", err_details);
+                            warn!("{:?}", status);
+                            status
+                        }
+                        Error::ObjectIDNotFound { ref uuid } => {
+                            let mut err_details = ErrorDetails::new();
+                            err_details.set_error_info(err.to_string(), domain, metadata);
+                            err_details.set_request_info(
+                                uuid,
+                                String::from_utf8(mreq.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
+                            );
+                            let uuids = Error::split_uuids(uuid.to_string());
+                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            let status = Status::with_error_details(
+                                Code::NotFound,
+                                format!("MultiRemove API uuids {:?} not found", uuids),
+                                err_details,
+                            );
+                            warn!("{:?}", status);
+                            status
+                        }
+                        Error::UUIDNotFound { uuid: _ } => {
+                            let mut err_details = ErrorDetails::new();
+                            err_details.set_error_info(err.to_string(), domain, metadata);
+                            err_details.set_request_info(
+                                uuids.join(", "),
+                                String::from_utf8(mreq.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
+                            );
+                            err_details.set_bad_request(vec![FieldViolation::new(
+                                "uuid",
+                                err.to_string(),
+                            )]);
+                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            let status = Status::with_error_details(
+                                Code::InvalidArgument,
+                                format!(
+                                    "MultiRemove API invalid argument for uuids \"{:?}\" detected",
+                                    uuids
+                                ),
+                                err_details,
+                            );
+                            warn!("{:?}", status);
+                            status
+                        }
+                        _ => {
+                            let mut err_details = ErrorDetails::new();
+                            err_details.set_error_info(err.to_string(), domain, metadata);
+                            err_details.set_request_info(
+                                uuids.join(", "),
+                                String::from_utf8(mreq.encode_to_vec())
+                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
+                            );
+                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            let status = Status::with_error_details(
+                                Code::Internal,
+                                "MultiRemove API failed",
+                                err_details,
+                            );
+                            error!("{:?}", status);
+                            status
+                        }
+                    };
+                    Err(status)
+                }
+                Ok(()) => Ok(tonic::Response::new(object::Locations {
+                    locations: uuids
+                        .iter()
+                        .map(|x| object::Location {
+                            name: self.name.clone(),
+                            uuid: x.to_string(),
+                            ips: vec![self.ip.clone()],
+                        })
+                        .collect(),
+                })),
+            }
+        }
     }
 }
