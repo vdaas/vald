@@ -41,14 +41,14 @@ where
 {
     let (tx, rx) = mpsc::channel(concurrency);
     let tx = Arc::new(Mutex::new(tx));
-    
+
     let stream = request_stream.into_inner();
     let f = Arc::new(f);
 
     tokio::spawn(async move {
         let mut handles = Vec::new();
-        
         let mut stream = stream;
+
         while let Some(request) = stream.next().await {
             match request {
                 Ok(req) => {
@@ -89,6 +89,8 @@ mod tests {
 
     use bytes::{Buf, BufMut, Bytes, BytesMut};
     use prost::Message;
+    use proto::vald::v1::object_client;
+    use core::time;
     use std::{
         collections::VecDeque,
         marker::PhantomData,
@@ -195,20 +197,17 @@ mod tests {
 
     #[tokio::test]
     async fn test_bidirectional_stream() {
-        // テストデータの準備
         let decoder: ProstDecoder<i32> = ProstDecoder::new();
         let messages = vec![1, 2, 3, 4, 5];
         let body = MockBody::new(messages);
         let streaming = Streaming::new_request(decoder, body, None, None);
         let request = Request::new(streaming);
         
-        // テスト用の処理関数
         let process_fn = |n: i32| async move {
             sleep(Duration::from_millis(10)).await;
             Ok(n * 2)
         };
 
-        // bidirectional_streamの実行
         let response = bidirectional_stream(request, 3, process_fn).await.unwrap();
         let mut stream = response.into_inner();
 
@@ -253,5 +252,93 @@ mod tests {
 
         assert_eq!(results, vec![2, 4, 8, 10]);
         assert_eq!(errors, vec!["test error"]);
+    }
+
+    #[tokio::test]
+    async fn test_bidirectional_stream_over_network() {
+        use tonic::{transport::{Server, Channel}, Request, Response, Status};
+        use proto::payload::v1::object::{Id, StreamVector, Vector, VectorRequest, TimestampRequest, Timestamp, list};
+        use proto::vald::v1::object_server;
+        
+        #[derive(Default)]
+        struct EchoServer {}
+        
+        #[tonic::async_trait]
+        impl object_server::Object for EchoServer {
+            type StreamGetObjectStream = crate::stream_type!(StreamVector);
+            type StreamListObjectStream = crate::stream_type!(list::Response);
+
+            async fn stream_list_object(
+                &self,
+                _: Request<list::Request>,
+            ) -> Result<Response<Self::StreamListObjectStream>, Status> {
+                todo!()
+            }
+
+            async fn exists(&self, _: Request<Id>) -> Result<Response<Id>, Status> {
+                todo!()
+            }
+
+            async fn get_object(&self, _: Request<VectorRequest>) -> Result<Response<Vector>, Status> {
+                todo!()
+            }
+
+            async fn stream_get_object(
+                &self,
+                request: Request<tonic::Streaming<VectorRequest>>,
+            ) -> Result<Response<Self::StreamGetObjectStream>, Status> {
+                bidirectional_stream(request, 10, |_| async move {
+                    sleep(time::Duration::from_millis(10)).await;
+                    Ok(StreamVector::default())
+                }).await
+            }
+
+            async fn get_timestamp(&self, _: Request<TimestampRequest>) -> Result<Response<Timestamp>, Status> {
+                todo!()
+            }
+        }
+
+        let addr = "[::1]:50051".parse().unwrap();
+        let echo_server = EchoServer::default();
+        
+        tokio::spawn(async move {
+            Server::builder()
+                .add_service(object_server::ObjectServer::new(echo_server))
+                .serve(addr)
+                .await
+                .unwrap();
+        });
+        
+        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        
+        let channel = Channel::builder(format!("http://{}", addr).parse().unwrap())
+            .connect()
+            .await
+            .unwrap();
+        
+        let mut client = object_client::ObjectClient::new(channel);
+        
+        let (tx, rx) = mpsc::channel(10);
+        let request_stream = tokio_stream::wrappers::ReceiverStream::new(rx);
+        tokio::spawn(async move {
+            sleep(time::Duration::from_secs(3)).await;
+            for i in 0..10 {
+                tx.send(VectorRequest { id: Some(Id{id: format!("id-{}", i)}), filters: None }).await.unwrap();
+            }
+        });
+
+        let response = client.stream_get_object(Request::new(request_stream)).await.unwrap();
+        let mut response_stream = response.into_inner();
+        let mut received_vectors = Vec::new();
+        while let Some(res) = response_stream.next().await {
+            match res {
+                Ok(vector) => {
+                    received_vectors.push(vector);
+                }
+                Err(e) => panic!("Stream error: {}", e),
+            }
+        }
+        
+        assert_eq!(received_vectors.len(), 10);
     }
 }
