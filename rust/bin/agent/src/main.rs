@@ -14,13 +14,15 @@
 // limitations under the License.
 //
 
-use algorithm::Error;
+use algorithm::{Error, MultiError};
 use anyhow::Result;
+use chrono::{Local, Timelike};
 use config::Config;
 use proto::payload::v1::object::Distance;
 use proto::payload::v1::search;
 use qbg::index::Index;
 use qbg::property::Property;
+use std::collections::HashMap;
 
 mod handler;
 
@@ -43,6 +45,10 @@ impl algorithm::ANN for _MockService {
     }
 
     fn insert(&mut self, _uuid: String, _vector: Vec<f32>, _ts: i64) -> Result<(), Error> {
+        todo!()
+    }
+
+    fn insert_multiple(&mut self, _vectors: HashMap<String, Vec<f32>>) -> Result<(), Error> {
         todo!()
     }
 
@@ -194,6 +200,24 @@ impl algorithm::ANN for QBGService {
 
     fn insert(&mut self, _uuid: String, vector: Vec<f32>, _ts: i64) -> Result<(), Error> {
         let _i = self.index.append(vector.as_slice()).unwrap();
+        Ok(())
+    }
+
+    fn insert_multiple(&mut self, vectors: HashMap<String, Vec<f32>>) -> Result<(), Error> {
+        let mut uuids: Vec<String> = vec![];
+        for (uuid, vec) in vectors {
+            let result = self.insert(uuid, vec, Local::now().nanosecond().into());
+            match result {
+                Ok(()) => continue,
+                Err(err) => match err {
+                    Error::UUIDAlreadyExists { uuid } => uuids.push(uuid),
+                    _ => return Err(err),
+                },
+            }
+        }
+        if !uuids.is_empty() {
+            return Err(Error::new_uuid_already_exists(uuids));
+        }
         Ok(())
     }
 
