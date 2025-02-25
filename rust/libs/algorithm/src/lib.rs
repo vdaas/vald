@@ -15,7 +15,14 @@
 //
 use anyhow::Result;
 use proto::payload::v1::search;
-use std::{error, fmt, i64};
+use std::{collections::HashMap, error, fmt, i64};
+
+pub trait MultiError {
+    fn new_uuid_already_exists(uuids: Vec<String>) -> Error;
+    fn split_uuid_already_exists(uuids: String) -> Vec<String>;
+    fn new_object_id_not_found(uuids: Vec<String>) -> Error;
+    fn split_object_id_not_found(uuids: String) -> Vec<String>;
+}
 
 #[derive(Debug)]
 pub enum Error {
@@ -29,6 +36,28 @@ pub enum Error {
     InvalidUUID { uuid: String },
     ObjectIDNotFound { uuid: String },
     Unknown {},
+}
+
+impl MultiError for Error {
+    fn new_uuid_already_exists(uuids: Vec<String>) -> Error {
+        Error::UUIDAlreadyExists {
+            uuid: uuids.join(","),
+        }
+    }
+
+    fn split_uuid_already_exists(uuids: String) -> Vec<String> {
+        uuids.split(",").map(|x| x.to_string()).collect()
+    }
+
+    fn new_object_id_not_found(uuids: Vec<String>) -> Error {
+        Error::ObjectIDNotFound {
+            uuid: uuids.join(","),
+        }
+    }
+
+    fn split_object_id_not_found(uuids: String) -> Vec<String> {
+        uuids.split(",").map(|x| x.to_string()).collect()
+    }
 }
 
 impl error::Error for Error {}
@@ -65,8 +94,10 @@ pub trait ANN: Send + Sync {
     fn create_index(&mut self) -> Result<(), Error>;
     fn save_index(&mut self) -> Result<(), Error>;
     fn insert(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error>;
+    fn insert_multiple(&mut self, vectors: HashMap<String, Vec<f32>>) -> Result<(), Error>;
     fn update(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error>;
     fn remove(&mut self, uuid: String, ts: i64) -> Result<(), Error>;
+    fn remove_multiple(&mut self, uuids: Vec<String>) -> Result<(), Error>;
     fn search(
         &self,
         vector: Vec<f32>,
