@@ -1,0 +1,11 @@
+target:
+  addrs:
+    - localhost
+dataset:
+  name: "fashion-mnist-784-euclidean.hdf5"
+index:
+  wait_after_inesrt: "2m"
+kubernetes:
+  kubeconfig: ${HOME}/.kube/config
+  portforward:
+    enabled: false
