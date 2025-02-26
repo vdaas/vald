@@ -46,6 +46,9 @@ jobs:
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Run tests for Rust / gotestfmt
+      - name: Run tests for qbg / gotestfmt
         run: |
           TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/rust/qbg
+      - name: Run tests for agent / gotestfmt
+        run: |
+          TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/rust/agent

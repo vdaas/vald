@@ -27,6 +27,7 @@ anyhow = "1.0.95"
 cargo = "0.81.0"
 config = "0.14.0"
 flexi_logger = "0.29"
+futures = "0.3.31"
 log = "0.4"
 prost = "0.13.4"
 prost-types = "0.13.4"
@@ -35,3 +36,7 @@ tokio = { version = "1.43.0", features = ["full"] }
 tokio-stream = { version = "0.1.17", features = ["full"] }
 tonic = "0.12.3"
 tonic-types = "0.12.3"
+
+[dev-dependencies]
+bytes = "1.10.0"
+http-body = "1.0.1"
