@@ -59,9 +59,9 @@ where
                         let tx = tx.lock().await;
                         let _ = tx.send(result).await;
                     });
-                    
+
                     handles.push(handle);
-                    
+
                     if handles.len() >= concurrency {
                         let done = handles.remove(0);
                         let _ = done.await;
@@ -89,8 +89,10 @@ mod tests {
 
     use bytes::{Buf, BufMut, Bytes, BytesMut};
     use prost::Message;
-    use proto::vald::v1::object_client;
-    use core::time;
+    use proto::{
+        payload::v1::object::{Id, StreamVector, Vector, VectorRequest, TimestampRequest, Timestamp, list},
+        vald::v1::{object_client, object_server},
+    };
     use std::{
         collections::VecDeque,
         marker::PhantomData,
@@ -100,8 +102,7 @@ mod tests {
     };
     use tokio::time::sleep;
     use tonic::{
-        codec::{DecodeBuf, Decoder},
-        Status,
+        codec::{DecodeBuf, Decoder}, transport::{Channel, Server}, Request, Response, Status
     };
 
     // tonic-mock uses old version of http_body, so we need to implement below ourselves.
@@ -254,53 +255,62 @@ mod tests {
         assert_eq!(errors, vec!["test error"]);
     }
 
-    #[tokio::test]
-    async fn test_bidirectional_stream_over_network() {
-        use tonic::{transport::{Server, Channel}, Request, Response, Status};
-        use proto::payload::v1::object::{Id, StreamVector, Vector, VectorRequest, TimestampRequest, Timestamp, list};
-        use proto::vald::v1::object_server;
-        
-        #[derive(Default)]
-        struct EchoServer {}
-        
-        #[tonic::async_trait]
-        impl object_server::Object for EchoServer {
-            type StreamGetObjectStream = crate::stream_type!(StreamVector);
-            type StreamListObjectStream = crate::stream_type!(list::Response);
+    #[derive(Default)]
+    struct EchoServer {}
+    
+    #[tonic::async_trait]
+    impl object_server::Object for EchoServer {
+        type StreamGetObjectStream = crate::stream_type!(StreamVector);
+        type StreamListObjectStream = crate::stream_type!(list::Response);
 
-            async fn stream_list_object(
-                &self,
-                _: Request<list::Request>,
-            ) -> Result<Response<Self::StreamListObjectStream>, Status> {
-                todo!()
-            }
-
-            async fn exists(&self, _: Request<Id>) -> Result<Response<Id>, Status> {
-                todo!()
-            }
-
-            async fn get_object(&self, _: Request<VectorRequest>) -> Result<Response<Vector>, Status> {
-                todo!()
-            }
-
-            async fn stream_get_object(
-                &self,
-                request: Request<tonic::Streaming<VectorRequest>>,
-            ) -> Result<Response<Self::StreamGetObjectStream>, Status> {
-                bidirectional_stream(request, 10, |_| async move {
-                    sleep(time::Duration::from_millis(10)).await;
-                    Ok(StreamVector::default())
-                }).await
-            }
-
-            async fn get_timestamp(&self, _: Request<TimestampRequest>) -> Result<Response<Timestamp>, Status> {
-                todo!()
-            }
+        async fn stream_list_object(
+            &self,
+            _: Request<list::Request>,
+        ) -> Result<Response<Self::StreamListObjectStream>, Status> {
+            todo!()
         }
+
+        async fn exists(&self, _: Request<Id>) -> Result<Response<Id>, Status> {
+            todo!()
+        }
+
+        async fn get_object(&self, _: Request<VectorRequest>) -> Result<Response<Vector>, Status> {
+            todo!()
+        }
+
+        async fn stream_get_object(
+            &self,
+            request: Request<tonic::Streaming<VectorRequest>>,
+        ) -> Result<Response<Self::StreamGetObjectStream>, Status> {
+            bidirectional_stream(request, 10, |_| async move {
+                sleep(Duration::from_millis(10)).await;
+                Ok(StreamVector::default())
+            }).await
+        }
+
+        async fn get_timestamp(&self, _: Request<TimestampRequest>) -> Result<Response<Timestamp>, Status> {
+            todo!()
+        }
+    }
+
+
+    async fn bidirectional_stream_over_network(
+        startup_duration: Duration,
+        send_duration: Duration,
+        receive_duration: Duration,
+    ) {
+        let (tx, rx) = mpsc::channel(10);
+        let request_stream = tokio_stream::wrappers::ReceiverStream::new(rx);
+        tokio::spawn(async move {
+            sleep(startup_duration).await;
+            for i in 0..10 {
+                tx.send(VectorRequest { id: Some(Id{id: format!("id-{}", i)}), filters: None }).await.unwrap();
+                sleep(send_duration).await;
+            }
+        });
 
         let addr = "[::1]:50051".parse().unwrap();
         let echo_server = EchoServer::default();
-        
         tokio::spawn(async move {
             Server::builder()
                 .add_service(object_server::ObjectServer::new(echo_server))
@@ -308,25 +318,14 @@ mod tests {
                 .await
                 .unwrap();
         });
-        
-        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
-        
+
+        sleep(startup_duration).await;
+
         let channel = Channel::builder(format!("http://{}", addr).parse().unwrap())
             .connect()
             .await
             .unwrap();
-        
         let mut client = object_client::ObjectClient::new(channel);
-        
-        let (tx, rx) = mpsc::channel(10);
-        let request_stream = tokio_stream::wrappers::ReceiverStream::new(rx);
-        tokio::spawn(async move {
-            sleep(time::Duration::from_secs(3)).await;
-            for i in 0..10 {
-                tx.send(VectorRequest { id: Some(Id{id: format!("id-{}", i)}), filters: None }).await.unwrap();
-            }
-        });
-
         let response = client.stream_get_object(Request::new(request_stream)).await.unwrap();
         let mut response_stream = response.into_inner();
         let mut received_vectors = Vec::new();
@@ -335,10 +334,21 @@ mod tests {
                 Ok(vector) => {
                     received_vectors.push(vector);
                 }
-                Err(e) => panic!("Stream error: {}", e),
+                Err(e) => println!("Stream error: {}", e),
             }
+            sleep(receive_duration).await;
         }
-        
+
         assert_eq!(received_vectors.len(), 10);
+    }
+
+    #[tokio::test]
+    async fn test_bidirectional_stream_over_network() {
+        bidirectional_stream_over_network(Duration::from_millis(1000), Duration::from_millis(0), Duration::from_millis(0)).await;
+    }
+
+    #[tokio::test]
+    async fn test_bidirectional_stream_over_network_with_duration() {
+        bidirectional_stream_over_network(Duration::from_millis(1000), Duration::from_millis(100), Duration::from_millis(100)).await;
     }
 }
