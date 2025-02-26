@@ -298,6 +298,7 @@ mod tests {
         startup_duration: Duration,
         send_duration: Duration,
         receive_duration: Duration,
+        shutdown_duration: Duration,
     ) {
         let (tx, rx) = mpsc::channel(10);
         let request_stream = tokio_stream::wrappers::ReceiverStream::new(rx);
@@ -331,24 +332,24 @@ mod tests {
         let mut received_vectors = Vec::new();
         while let Some(res) = response_stream.next().await {
             match res {
-                Ok(vector) => {
-                    received_vectors.push(vector);
-                }
+                Ok(vector) => received_vectors.push(vector),
                 Err(e) => println!("Stream error: {}", e),
             }
             sleep(receive_duration).await;
         }
 
         assert_eq!(received_vectors.len(), 10);
+
+        sleep(shutdown_duration).await;
     }
 
     #[tokio::test]
     async fn test_bidirectional_stream_over_network() {
-        bidirectional_stream_over_network(Duration::from_millis(1000), Duration::from_millis(0), Duration::from_millis(0)).await;
+        bidirectional_stream_over_network(Duration::from_millis(1000), Duration::from_millis(0), Duration::from_millis(0), Duration::from_millis(1000)).await;
     }
 
     #[tokio::test]
     async fn test_bidirectional_stream_over_network_with_duration() {
-        bidirectional_stream_over_network(Duration::from_millis(1000), Duration::from_millis(100), Duration::from_millis(100)).await;
+        bidirectional_stream_over_network(Duration::from_millis(1000), Duration::from_millis(100), Duration::from_millis(100), Duration::from_millis(1000)).await;
     }
 }
