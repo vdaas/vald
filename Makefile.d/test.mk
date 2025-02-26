@@ -309,7 +309,7 @@ test/rust/qbg:
 .PHONY: test/rust/agent
 ## run tests for agent
 test/rust/agent:
-	cargo test --manifest-path rust/Cargo.toml --package agent -- handler::common::tests --exact --show-output
+	cargo test --manifest-path rust/Cargo.toml --package agent -- handler::common::tests --show-output
 
 .PHONY: test/hack
 ## run tests for hack
