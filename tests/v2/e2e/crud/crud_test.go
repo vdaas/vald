@@ -28,6 +28,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
+	iconfig "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/status"
@@ -40,7 +41,7 @@ import (
 )
 
 var (
-	cfg config.Data
+	cfg *config.Data
 
 	ctx     context.Context
 	client  vald.Client
@@ -51,6 +52,7 @@ var (
 
 func TestMain(m *testing.M) {
 	log.Init()
+	var err error
 	p, fail, err := params.New(
 		params.WithName("vald/e2e"),
 		params.WithOverrideDefault(true),
@@ -69,7 +71,7 @@ func TestMain(m *testing.M) {
 		os.Exit(0)
 	}
 
-	cfg, err := config.Load(p.ConfigFilePath())
+	cfg, err = config.Load(p.ConfigFilePath())
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
@@ -78,11 +80,12 @@ func TestMain(m *testing.M) {
 	ctx, cancel = context.WithCancel(context.Background())
 	defer cancel()
 
+	kclient, err = k8s.NewClient(cfg.Kubernetes.KubeConfig, "")
+	if err != nil {
+		log.Fatalf("failed to create kubernetes client: %v", err)
+	}
+
 	if cfg.Kubernetes.PortForward.Enabled {
-		kclient, err = k8s.NewClient(cfg.Kubernetes.KubeConfig, "")
-		if err != nil {
-			log.Fatalf("failed to create kubernetes client: %v", err)
-		}
 		stop, _, err := k8s.Portforward(ctx, kclient,
 			cfg.Kubernetes.PortForward.Namespace,
 			cfg.Kubernetes.PortForward.PodName,
@@ -101,7 +104,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("failed to load dataset: %v", err)
 	}
-	client, ctx, err = newClient(ctx, cfg.Metadata)
+	client, ctx, err = newClient(ctx, cfg.Target, cfg.Metadata)
 	if err != nil {
 		log.Fatalf("failed to create client: %v", err)
 	}
@@ -131,9 +134,9 @@ func TestMain(m *testing.M) {
 }
 
 func newClient(
-	ctx context.Context, meta map[string]string,
+	ctx context.Context, target *iconfig.GRPCClient, meta map[string]string,
 ) (client vald.Client, mctx context.Context, err error) {
-	gopts, err := cfg.Target.Opts()
+	gopts, err := target.Opts()
 	if err != nil {
 		return nil, nil, err
 	}
