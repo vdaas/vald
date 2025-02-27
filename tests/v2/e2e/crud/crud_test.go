@@ -78,11 +78,12 @@ func TestMain(m *testing.M) {
 	ctx, cancel = context.WithCancel(context.Background())
 	defer cancel()
 
+	kclient, err = k8s.NewClient(cfg.Kubernetes.KubeConfig, "")
+	if err != nil {
+		log.Fatalf("failed to create kubernetes client: %v", err)
+	}
+
 	if cfg.Kubernetes.PortForward.Enabled {
-		kclient, err = k8s.NewClient(cfg.Kubernetes.KubeConfig, "")
-		if err != nil {
-			log.Fatalf("failed to create kubernetes client: %v", err)
-		}
 		stop, _, err := k8s.Portforward(ctx, kclient,
 			cfg.Kubernetes.PortForward.Namespace,
 			cfg.Kubernetes.PortForward.PodName,
