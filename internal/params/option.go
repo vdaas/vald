@@ -17,15 +17,31 @@
 // Package params provides implementation of Go API for argument parser
 package params
 
+import (
+	"os"
+	"path/filepath"
+)
+
 type Option func(*parser)
 
 var defaultOptions = []Option{
+	WithName(filepath.Base(os.Args[0])),
 	WithConfigFilePathKeys("f", "file", "c", "config"),
 	WithConfigFilePathDefault("/etc/server/config.yaml"),
 	WithConfigFileDescription("config file path"),
 	WithVersionKeys("v", "ver", "version"),
 	WithVersionFlagDefault(false),
 	WithVersionDescription("show server version"),
+	WithOverrideDefault(false),
+}
+
+// WithName returns Option that sets name.
+func WithName(name string) Option {
+	return func(p *parser) {
+		if name != "" {
+			p.name = name
+		}
+	}
 }
 
 // WithConfigFilePathKeys returns Option that sets filePath.keys.
@@ -67,5 +83,27 @@ func WithVersionFlagDefault(flag bool) Option {
 func WithVersionDescription(desc string) Option {
 	return func(p *parser) {
 		p.version.description = desc
+	}
+}
+
+// WithOverrideDefault returns Option that overrides default flag.CommandLine.
+func WithOverrideDefault(flag bool) Option {
+	return func(p *parser) {
+		p.overrideDefault = flag
+	}
+}
+
+// WithArgumentFilters returns Option that sets filters.
+// filters is a slice of functions that takes a string and returns a bool.
+// If the string not matched all filters (means filter returns false), it will be added to the arguments.
+func WithArgumentFilters(filters ...func(string) bool) Option {
+	return func(p *parser) {
+		if len(filters) == 0 {
+			return
+		}
+		if p.filters == nil {
+			p.filters = make([]func(string) bool, 0, len(filters))
+		}
+		p.filters = append(p.filters, filters...)
 	}
 }
