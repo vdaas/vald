@@ -70,7 +70,7 @@ func TestE2EMultiCRUD(t *testing.T) {
 				SkipStrictExistCheck: cfg.Insert.SkipStrictExistCheck,
 			},
 		})
-		if len(mireq.GetRequests()) >= cfg.Insert.BulkSize {
+		if len(mireq.GetRequests()) >= int(cfg.Insert.BulkSize) {
 			req := mireq.CloneVT()
 			mireq.Reset()
 			eg.Go(safety.RecoverFunc(func() error {
@@ -136,7 +136,7 @@ func TestE2EMultiCRUD(t *testing.T) {
 					Nprobe:               query.Nprobe,
 				},
 			})
-			if len(msreq.GetRequests()) >= cfg.Search.BulkSize {
+			if len(msreq.GetRequests()) >= int(cfg.Search.BulkSize) {
 				req := msreq.CloneVT()
 				msreq.Reset()
 				eg.Go(safety.RecoverFunc(func() error {
@@ -213,7 +213,7 @@ func TestE2EMultiCRUD(t *testing.T) {
 					Nprobe:               query.Nprobe,
 				},
 			})
-			if len(msireq.GetRequests()) >= cfg.SearchByID.BulkSize {
+			if len(msireq.GetRequests()) >= int(cfg.SearchByID.BulkSize) {
 				req := msireq.CloneVT()
 				msireq.Reset()
 				eg.Go(safety.RecoverFunc(func() error {
@@ -290,7 +290,7 @@ func TestE2EMultiCRUD(t *testing.T) {
 					Nprobe:               query.Nprobe,
 				},
 			})
-			if len(msreq.GetRequests()) >= cfg.Search.BulkSize {
+			if len(msreq.GetRequests()) >= int(cfg.Search.BulkSize) {
 				req := msreq.CloneVT()
 				msreq.Reset()
 				eg.Go(safety.RecoverFunc(func() error {
@@ -367,7 +367,7 @@ func TestE2EMultiCRUD(t *testing.T) {
 					Nprobe:               query.Nprobe,
 				},
 			})
-			if len(msireq.GetRequests()) >= cfg.SearchByID.BulkSize {
+			if len(msireq.GetRequests()) >= int(cfg.SearchByID.BulkSize) {
 				req := msireq.CloneVT()
 				msireq.Reset()
 				eg.Go(safety.RecoverFunc(func() error {
@@ -468,7 +468,7 @@ func TestE2EMultiCRUD(t *testing.T) {
 				SkipStrictExistCheck: cfg.Update.SkipStrictExistCheck,
 			},
 		})
-		if len(mupreq.GetRequests()) >= cfg.Update.BulkSize {
+		if len(mupreq.GetRequests()) >= int(cfg.Update.BulkSize) {
 			req := mupreq.CloneVT()
 			mupreq.Reset()
 			eg.Go(safety.RecoverFunc(func() error {
@@ -519,7 +519,7 @@ func TestE2EMultiCRUD(t *testing.T) {
 				SkipStrictExistCheck: cfg.Remove.SkipStrictExistCheck,
 			},
 		})
-		if len(mrreq.GetRequests()) >= cfg.Remove.BulkSize {
+		if len(mrreq.GetRequests()) >= int(cfg.Remove.BulkSize) {
 			req := mrreq.CloneVT()
 			mrreq.Reset()
 			eg.Go(safety.RecoverFunc(func() error {
@@ -574,7 +574,7 @@ func TestE2EMultiCRUD(t *testing.T) {
 				SkipStrictExistCheck: cfg.Upsert.SkipStrictExistCheck,
 			},
 		})
-		if len(musreq.GetRequests()) >= cfg.Upsert.BulkSize {
+		if len(musreq.GetRequests()) >= int(cfg.Upsert.BulkSize) {
 			req := musreq.CloneVT()
 			musreq.Reset()
 			eg.Go(safety.RecoverFunc(func() error {

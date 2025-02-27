@@ -1,0 +1,97 @@
+#
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+target:
+  addrs:
+    - "localhost:8081"
+
+search:
+  num: 10000
+  offset: 0
+  concurrency: 10
+  bulk_size: 10
+  queries:
+    - k: 10
+      radius: -1
+      epsilon: 0.01
+      timeout_string: "3s"
+      min_num: 10
+
+search_by_id:
+  num: 1000
+  offset: 0
+  concurrency: 10
+  bulk_size: 10
+  queries: []
+
+linear_search:
+  num: 1000
+  offset: 0
+  concurrency: 10
+  bulk_size: 10
+  queries: []
+
+linear_search_by_id:
+  num: 1000
+  offset: 0
+  concurrency: 10
+  bulk_size: 10
+  queries: []
+
+insert:
+  num: 60000
+  offset: 0
+  bulk_size: 100
+  concurrency: 100
+  skip_strict_exist_check: false
+
+update:
+  num: 10000
+  offset: 100
+  bulk_size: 100
+  concurrency: 100
+  skip_strict_exist_check: false
+
+upsert:
+  num: 10000
+  offset: 2
+  bulk_size: 100
+  concurrency: 100
+  skip_strict_exist_check: false
+
+remove:
+  num: 60000
+  offset: 0
+  bulk_size: 100
+  concurrency: 100
+  skip_strict_exist_check: false
+
+object:
+  num: 1000
+  offset: 0
+  bulk_size: 100
+  concurrency: 100
+  skip_strict_exist_check: false
+
+index:
+  wait_after_inesrt: "3m"
+
+dataset:
+  name: ${GOPATH}/src/github.com/vdaas/vald/hack/benchmark/assets/dataset/fashion-mnist-784-euclidean.hdf5
+
+kubernetes:
+  kubeconfig: ${HOME}/.kube/config
+  portforward:
+    enabled: false

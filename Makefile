@@ -165,7 +165,7 @@ NGT_LDFLAGS = -fopenmp -lopenblas -llapack
 FAISS_LDFLAGS = $(NGT_LDFLAGS) -lgfortran
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
-TEST_LDFLAGS = $(LDFLAGS) $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
+TEST_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 
 ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
