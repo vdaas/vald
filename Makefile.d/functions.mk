@@ -131,6 +131,21 @@ define telepresence
 	    ## --deployment-type "$(SWAP_DEPLOYMENT_TYPE)"
 endef
 
+define run-e2e-v2-test
+	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
+	go test \
+	    -race \
+	    -mod=readonly \
+	    $(ROOTDIR)/tests/v2/e2e/crud \
+	    $1 \
+	    -tags "e2e" \
+	    -args \
+	    -config $(E2E_CONFIG)
+endef
+
 define run-e2e-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
