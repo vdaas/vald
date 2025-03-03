@@ -17,4 +17,22 @@
 // Package errors provides error types and function
 package errors
 
-var ErrInvalidReconcilerConfig = New("invalid reconciler config")
+var (
+	ErrInvalidReconcilerConfig = New("invalid reconciler config")
+
+	ErrPodIsNotRunning = func(namespace, name string) error {
+		return Errorf("pod %s/%s is not running", namespace, name)
+	}
+
+	ErrPortForwardAddressNotFound = New("port forward address not found")
+
+	ErrPortForwardPortPairNotFound = New("port forward port pair not found")
+
+	ErrKubernetesClientNotFound = New("kubernetes client not found")
+
+	ErrStatusPatternNeverMatched = New("status pattern never matched")
+
+	ErrUnsupportedKubernetesResourceType = func(obj any) error {
+		return Errorf("unsupported kubernetes resource type %T", obj)
+	}
+)

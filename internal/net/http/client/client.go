@@ -34,9 +34,15 @@ type transport struct {
 
 // New initializes the HTTP2 transport with exponential backoff and returns the HTTP client for it, or returns any error occurred.
 func New(opts ...Option) (*http.Client, error) {
-	tr := new(transport)
-	tr.Transport = new(http.Transport)
+	return NewWithTransport(http.DefaultTransport, opts...)
+}
 
+func NewWithTransport(rt http.RoundTripper, opts ...Option) (*http.Client, error) {
+	tr := new(transport)
+	t, ok := rt.(*http.Transport)
+	if ok {
+		tr.Transport = t.Clone()
+	}
 	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(tr); err != nil {
 			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))

@@ -73,7 +73,7 @@ runs:
       run: |
         if command -v k3d &> /dev/null; then
           echo "k3d_installed=true" >> $GITHUB_OUTPUT
-          echo "installed_version=$(k3d version --short | sed 's/^v//')" >> $GITHUB_OUTPUT
+          echo "installed_version=$(k3d version | sed 's/^v//')" >> $GITHUB_OUTPUT
         else
           echo "k3d_installed=false" >> $GITHUB_OUTPUT
         fi
