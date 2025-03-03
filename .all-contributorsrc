@@ -224,6 +224,16 @@
         "test",
         "code"
       ]
+    },
+    {
+      "login": "irokaru",
+      "name": "irokaru",
+      "avatar_url": "https://avatars.githubusercontent.com/u/23948752?v=4",
+      "profile": "https://nononotyaya.net/",
+      "contributions": [
+        "bug",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
