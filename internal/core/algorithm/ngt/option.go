@@ -123,7 +123,7 @@ func WithDistanceTypeByString(dt string) Option {
 		d = Cosine
 	case "poincare", "poinc", "poi", "po", "pc":
 		d = Poincare
-	case "lorentz", "loren", "lor", "lo", "lz":
+	case "lorentz", "lorent", "lorenz", "loren", "lor", "lo", "lz":
 		d = Lorentz
 	case "jaccard", "jac":
 		d = Jaccard
