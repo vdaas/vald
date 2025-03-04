@@ -54,24 +54,13 @@ const (
 //	}
 //
 // ```
-func RolloutRestart[T Object, L ObjectList, C NamedObject, I ObjectInterface[T, L, C]](
+func RolloutRestart[T Object, L ObjectList, C NamedObject, I WorkloadResourceClient[T, L, C]](
 	ctx context.Context, client I, name string,
 ) error {
-	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		obj, err := client.Get(ctx, name, metav1.GetOptions{})
-		if err != nil {
-			return err
-		}
-		annotations := obj.GetAnnotations()
-		if annotations == nil {
-			annotations = make(map[string]string, 1)
-		}
-
-		annotations[rolloutAnnotationKey] = time.Now().UTC().Format(time.RFC3339)
-
-		obj.SetAnnotations(annotations)
-
-		_, err = client.Update(ctx, obj, metav1.UpdateOptions{})
+	return retry.RetryOnConflict(retry.DefaultRetry, func() (err error) {
+		_, err = client.SetPodAnnotations(ctx, name, map[string]string{
+			rolloutAnnotationKey: time.Now().UTC().Format(time.RFC3339),
+		}, metav1.GetOptions{}, metav1.UpdateOptions{})
 		return err
 	})
 }

@@ -35,4 +35,6 @@ var (
 	ErrUnsupportedKubernetesResourceType = func(obj any) error {
 		return Errorf("unsupported kubernetes resource type %T", obj)
 	}
+
+	ErrPodTemplateNotFound = New("pod template not found")
 )

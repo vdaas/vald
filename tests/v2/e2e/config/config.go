@@ -22,7 +22,6 @@ package config
 
 import (
 	"os"
-	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
@@ -34,35 +33,117 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
+type OperationType string
+
+const (
+	OpSearch           OperationType = "search"
+	OpSearchByID       OperationType = "search_by_id"
+	OpLinearSearch     OperationType = "linear_search"
+	OpLinearSearchByID OperationType = "linear_search_by_id"
+	OpInsert           OperationType = "insert"
+	OpUpdate           OperationType = "update"
+	OpUpsert           OperationType = "upsert"
+	OpRemove           OperationType = "remove"
+	OpObject           OperationType = "object"
+	OpIndexInfo        OperationType = "index_info"
+	OpIndexProperty    OperationType = "index_property"
+	OpKubernetes       OperationType = "kubernetes"
+	OpClient           OperationType = "client"
+	OpWait             OperationType = "wait"
+)
+
+type OperationMode string
+
+const (
+	OperationUnary    OperationMode = "unary"
+	OperationStream   OperationMode = "stream"
+	OperationMultiple OperationMode = "multiple"
+	OperationOther    OperationMode = "other"
+)
+
 // Data represents the complete configuration for the application.
 // It encapsulates all configuration sections, including gRPC target, search settings, operation settings,
 // Kubernetes settings, dataset details, and additional metadata.
 type Data struct {
-	Target           *config.GRPCClient `yaml:"target"`              // gRPC target configuration.
-	Search           *SearchConfig      `yaml:"search"`              // Configuration for search operations.
-	SearchByID       *SearchConfig      `yaml:"search_by_id"`        // Configuration for search-by-id operations.
-	LinearSearch     *SearchConfig      `yaml:"linear_search"`       // Configuration for linear search operations.
-	LinearSearchByID *SearchConfig      `yaml:"linear_search_by_id"` // Configuration for linear search-by-id operations.
-	Insert           *Setting           `yaml:"insert"`              // Configuration for insert operations.
-	Update           *Setting           `yaml:"update"`              // Configuration for update operations.
-	Upsert           *Setting           `yaml:"upsert"`              // Configuration for upsert operations.
-	Remove           *Setting           `yaml:"remove"`              // Configuration for remove operations.
-	Object           *Setting           `yaml:"object"`              // Configuration for object retrieval.
-	Index            *WaitAfterInsert   `yaml:"index"`               // Configuration for waiting period after insert.
-	Dataset          *Dataset           `yaml:"dataset"`             // Dataset configuration.
-	Kubernetes       *Kubernetes        `yaml:"kubernetes"`          // Kubernetes-related configuration.
-	Metadata         map[string]string  `yaml:"metadata"`            // Additional metadata provided as key-value pairs.
-	MetaString       string             `yaml:"metadata_string"`     // Raw metadata string (e.g., "KEY1=VAL1,KEY2=VAL2") to be parsed.
+	Target     *config.GRPCClient `yaml:"target,omitempty"`     // gRPC target configuration.
+	Strategies []*Strategy        `yaml:"strategies,omitempty"` // test strategies
+	Dataset    *Dataset           `yaml:"dataset,omitempty"`    // Dataset configuration.
+	Kubernetes *Kubernetes        `yaml:"kubernetes,omitempty"` // Kubernetes-related configuration.
+	Metadata   map[string]string  `yaml:"metadata,omitempty"`   // Additional metadata provided as key-value pairs.
+	MetaString string             `yaml:"metadata_string"`      // Raw metadata string (e.g., "KEY1=VAL1,KEY2=VAL2") to be parsed.
 }
 
-// SearchConfig holds configuration parameters specific to search operations.
-// It defines the total number of items, an offset for pagination, and a slice of detailed search queries.
-type SearchConfig struct {
-	Num         uint64         `yaml:"num"`         // Total number of items to be used for search.
-	Offset      uint64         `yaml:"offset"`      // Starting offset for the search operation.
-	BulkSize    int            `yaml:"bulk_size"`   // Bulk size for multi-search operations.
-	Concurrency uint64         `yaml:"concurrency"` // Concurrency for search operations.
-	Queries     []*SearchQuery `yaml:"queries"`     // Slice of detailed search query configurations.
+// Strateguy represents a test strategy that includes a slice of operations to be executed
+// the operations are executed in concurrent goroutines with the specified delay between them.
+type Strategy struct {
+	Name        string                  `yaml:"name"` // Name of the strategy.
+	Delay       timeutil.DurationString `yaml:"delay"`
+	Timeout     timeutil.DurationString `yaml:"timeout"`
+	Concurrency uint64                  `yaml:"concurrency"`
+	Operations  []*Operation            `yaml:"operations,omitempty"`
+	Wait        timeutil.DurationString `yaml:"wait"`
+}
+
+type Operation struct {
+	Name       string                  `yaml:"name"` // Name of the operation.
+	Delay      timeutil.DurationString `yaml:"delay"`
+	Timeout    timeutil.DurationString `yaml:"timeout"`
+	Executions []*Execution            `yaml:"executions,omitempty"`
+	Wait       timeutil.DurationString `yaml:"wait"`
+}
+
+type (
+	StatusCode  string
+	StatusCodes []StatusCode
+)
+
+func (sc StatusCode) Bind() StatusCode {
+	return config.GetActualValue(sc)
+}
+
+func (sc StatusCode) Equals(c string) bool {
+	return strings.EqualFold(sc.String(), StatusCode(c).Bind().String())
+}
+
+func (sc StatusCode) String() string {
+	return string(sc)
+}
+
+func (sc StatusCodes) Bind() StatusCodes {
+	for i, c := range sc {
+		sc[i] = c.Bind()
+	}
+	return sc
+}
+
+func (sc StatusCodes) Equals(c string) bool {
+	for _, s := range sc {
+		if s.Equals(c) {
+			return true
+		}
+	}
+	return false
+}
+
+type Execution struct {
+	*BaseConfig         `yaml:",inline,omitempty"`
+	*ModificationConfig `yaml:",inline,omitempty"`
+	*KubernetesConfig   `yaml:",inline,omitempty"`
+	Name                string                  `yaml:"name"` // Name of the execution.
+	Delay               timeutil.DurationString `yaml:"delay"`
+	Wait                timeutil.DurationString `yaml:"wait"`
+	Timeout             timeutil.DurationString `yaml:"timeout"`
+	Type                OperationType           `yaml:"type"`
+	Mode                OperationMode           `yaml:"mode"`
+	ExpectedStatusCodes StatusCodes             `yaml:"expected_status_codes,omitempty"`
+	SearchConfig        []*SearchQuery          `yaml:"search_config,omitempty"`
+}
+
+type BaseConfig struct {
+	Num         uint64 `yaml:"num"`         // Number of items to process.
+	Offset      uint64 `yaml:"offset"`      // Starting offset for the operation.
+	BulkSize    uint64 `yaml:"bulk_size"`   // Bulk size for multi-xxx operations.
+	Concurrency uint64 `yaml:"concurrency"` // Concurrency for operations.
 }
 
 // SearchQuery represents the detailed parameters for a single search query.
@@ -70,37 +151,60 @@ type SearchQuery struct {
 	K               uint32                              `yaml:"k"`         // Number of top results to return.
 	Radius          float32                             `yaml:"radius"`    // Radius for search (if applicable).
 	Epsilon         float32                             `yaml:"epsilon"`   // Epsilon for approximate search algorithms.
-	TimeoutString   string                              `yaml:"timeout"`   // Timeout value as a string; will be parsed to time.Duration.
 	AlgorithmString string                              `yaml:"algorithm"` // Algorithm identifier as a string; will be normalized and mapped.
 	MinNum          uint32                              `yaml:"min_num"`   // Minimum number of items required for the operation.
 	Ratio           float32                             `yaml:"ratio"`     // Ratio parameter for search (algorithm dependent).
 	Nprobe          uint32                              `yaml:"nprobe"`    // Number of probes for the search algorithm.
-	Timeout         time.Duration                       // Parsed timeout value.
+	Timeout         timeutil.DurationString             `yaml:"timeout"`   // Timeout value as a time.Duration.
 	Algorithm       payload.Search_AggregationAlgorithm // Mapped algorithm constant based on AlgorithmString.
 }
 
 // Setting represents basic operation settings used across multiple operations (e.g., insert, update).
 // It includes numeric values such as the number of items to process, an offset, and a timestamp.
-type Setting struct {
-	Num                  uint64 `yaml:"num"`                     // Number of items to process.
-	Offset               uint64 `yaml:"offset"`                  // Starting offset for the operation.
-	BulkSize             int    `yaml:"bulk_size"`               // Bulk size for multi-xxx operations.
-	Concurrency          uint64 `yaml:"concurrency"`             // Concurrency for operations.
-	SkipStrictExistCheck bool   `yaml:"skip_strict_exist_check"` // Flag to indicate if strict existence checks should be skipped.
-	Timestamp            int64  `yaml:"timestamp"`               // Timestamp value for the operation; used for versioning.
+type ModificationConfig struct {
+	SkipStrictExistCheck bool  `yaml:"skip_strict_exist_check,omitempty"` // Flag to indicate if strict existence checks should be skipped.
+	Timestamp            int64 `yaml:"timestamp,omitempty"`               // Timestamp value for the operation; used for versioning.
 }
 
-// WaitAfterInsert holds configuration regarding the waiting period after an insert operation,
-// typically used before starting the indexing process.
-type WaitAfterInsert struct {
-	String          string        `yaml:"wait_after_insert"` // Wait duration as a string (e.g., "3m").
-	WaitAfterInsert time.Duration // Parsed wait duration value.
+type KubernetesAction string
+
+const (
+	KubernetesActionRollout KubernetesAction = "rollout"
+	KubernetesActionDelete  KubernetesAction = "delete"
+	KubernetesActionGet     KubernetesAction = "get"
+	KubernetesActionExec    KubernetesAction = "exec"
+	KubernetesActionApply   KubernetesAction = "apply"
+	KubernetesActionCreate  KubernetesAction = "create"
+	KubernetesActionPatch   KubernetesAction = "patch"
+	KubernetesActionScale   KubernetesAction = "scale"
+)
+
+type KubernetesResourceType string
+
+const (
+	KubernetesResourceTypeConfigMap   KubernetesResourceType = "configmap"
+	KubernetesResourceTypeCronJob     KubernetesResourceType = "cronjob"
+	KubernetesResourceTypeDaemonSet   KubernetesResourceType = "daemonset"
+	KubernetesResourceTypeDeployment  KubernetesResourceType = "deployment"
+	KubernetesResourceTypeJob         KubernetesResourceType = "job"
+	KubernetesResourceTypePod         KubernetesResourceType = "pod"
+	KubernetesResourceTypeSecret      KubernetesResourceType = "secret"
+	KubernetesResourceTypeService     KubernetesResourceType = "service"
+	KubernetesResourceTypeStatefulSet KubernetesResourceType = "statefulset"
+)
+
+type KubernetesConfig struct {
+	Action    KubernetesAction       `yaml:"action"`
+	Namespace string                 `yaml:"namespace"`
+	Name      string                 `yaml:"name"`
+	Args      map[any]any            `yaml:"args"`
+	Resource  KubernetesResourceType `yaml:"resource"`
 }
 
 // Kubernetes holds configuration settings specific to Kubernetes environments.
 type Kubernetes struct {
-	KubeConfig  string       `yaml:"kubeconfig"`  // File path to the kubeconfig.
-	PortForward *PortForward `yaml:"portforward"` // Port forwarding settings.
+	KubeConfig  string       `yaml:"kubeconfig"`            // File path to the kubeconfig.
+	PortForward *PortForward `yaml:"portforward,omitempty"` // Port forwarding settings.
 }
 
 // PortForward holds configuration for port forwarding when running in a Kubernetes environment.
@@ -126,40 +230,10 @@ func (d *Data) Bind() *Data {
 		d.Target.Bind()
 	}
 
-	// Process all search-related configurations.
-	if d.Search != nil {
-		d.Search.Bind()
-	}
-	if d.SearchByID != nil {
-		d.SearchByID.Bind()
-	}
-	if d.LinearSearch != nil {
-		d.LinearSearch.Bind()
-	}
-	if d.LinearSearchByID != nil {
-		d.LinearSearchByID.Bind()
-	}
-
-	// Process all operation settings configurations.
-	if d.Insert != nil {
-		d.Insert.Bind()
-	}
-	if d.Update != nil {
-		d.Update.Bind()
-	}
-	if d.Upsert != nil {
-		d.Upsert.Bind()
-	}
-	if d.Remove != nil {
-		d.Remove.Bind()
-	}
-	if d.Object != nil {
-		d.Object.Bind()
-	}
-
-	// Process the wait duration for index creation.
-	if d.Index != nil {
-		d.Index.Bind()
+	if d.Strategies != nil {
+		for i, strategy := range d.Strategies {
+			d.Strategies[i] = strategy.Bind()
+		}
 	}
 
 	// Process the dataset configuration.
@@ -199,26 +273,75 @@ func (d *Data) Bind() *Data {
 	return d
 }
 
-// Bind processes each SearchConfig by iterating through its Queries and binding them.
-func (sc *SearchConfig) Bind() *SearchConfig {
-	if sc == nil {
+func (s *Strategy) Bind() *Strategy {
+	if s == nil {
 		return nil
 	}
-	if sc.Num == 0 {
-		sc.Num = defaultNum
-	}
 
-	if sc.Concurrency == 0 {
-		sc.Concurrency = defaultConcurrency
-	}
+	s.Delay = config.GetActualValue(s.Delay)
+	s.Timeout = config.GetActualValue(s.Timeout)
+	s.Wait = config.GetActualValue(s.Wait)
 
-	// Iterate over all search queries and bind each one.
-	for i, query := range sc.Queries {
-		if query != nil {
-			sc.Queries[i] = query.Bind()
+	if s.Operations != nil {
+		for i, operation := range s.Operations {
+			s.Operations[i] = operation.Bind()
 		}
 	}
-	return sc
+
+	return s
+}
+
+func (o *Operation) Bind() *Operation {
+	if o == nil {
+		return nil
+	}
+
+	o.Delay = config.GetActualValue(o.Delay)
+	o.Timeout = config.GetActualValue(o.Timeout)
+	o.Wait = config.GetActualValue(o.Wait)
+
+	if o.Executions != nil {
+		for i := range o.Executions {
+			o.Executions[i].Bind()
+		}
+	}
+
+	return o
+}
+
+func (e *Execution) Bind() *Execution {
+	if e == nil {
+		return nil
+	}
+
+	e.Delay = config.GetActualValue(e.Delay)
+	e.Wait = config.GetActualValue(e.Wait)
+	e.Timeout = config.GetActualValue(e.Timeout)
+
+	if e.BaseConfig != nil {
+		e.BaseConfig.Bind()
+	}
+	if e.ModificationConfig != nil {
+		e.ModificationConfig.Bind()
+	}
+	if e.KubernetesConfig != nil {
+		e.KubernetesConfig.Bind()
+	}
+	if e.SearchConfig != nil {
+		for i := range e.SearchConfig {
+			e.SearchConfig[i].Bind()
+		}
+	}
+
+	return e
+}
+
+func (b *BaseConfig) Bind() *BaseConfig {
+	if b == nil {
+		return nil
+	}
+
+	return b
 }
 
 // Bind validates and processes the SearchQuery parameters.
@@ -227,10 +350,8 @@ func (sq *SearchQuery) Bind() *SearchQuery {
 	if sq == nil {
 		return nil
 	}
-	// Expand and parse the timeout value.
-	sq.TimeoutString = config.GetActualValue(sq.TimeoutString)
 	// Use a default timeout if parsing fails.
-	sq.Timeout = timeutil.ParseWithDefault(sq.TimeoutString, Default.Search.Queries[0].Timeout)
+	sq.Timeout = config.GetActualValue(sq.Timeout)
 
 	// Expand and normalize the algorithm string.
 	sq.AlgorithmString = config.GetActualValue(sq.AlgorithmString)
@@ -257,19 +378,6 @@ func (sq *SearchQuery) Bind() *SearchQuery {
 	return sq
 }
 
-// Bind converts the wait duration from string to time.Duration for WaitAfterInsert.
-// It uses a default duration (3 minutes) if parsing fails.
-func (w *WaitAfterInsert) Bind() *WaitAfterInsert {
-	if w == nil {
-		return nil
-	}
-	// Expand the wait duration string.
-	w.String = config.GetActualValue(w.String)
-	// Parse the duration string, defaulting to 3 minutes on failure.
-	w.WaitAfterInsert = timeutil.ParseWithDefault(w.String, Default.Index.WaitAfterInsert)
-	return w
-}
-
 // Bind processes and validates the Dataset configuration by expanding environment variables.
 func (d *Dataset) Bind() *Dataset {
 	if d == nil {
@@ -280,23 +388,28 @@ func (d *Dataset) Bind() *Dataset {
 	return d
 }
 
-// Bind validates and processes the Setting configuration for operations such as insert, update, etc.
+// Bind validates and processes the modification configuration for operations such as insert, update, etc.
 // It logs warnings if certain numeric values are zero or invalid.
-func (s *Setting) Bind() *Setting {
-	// Warn if the number of items is zero; this might disable the operation.
-	if s.Num == 0 {
-		s.Num = defaultNum
-	}
-
-	if s.Concurrency == 0 {
-		s.Concurrency = defaultConcurrency
-	}
+func (s *ModificationConfig) Bind() *ModificationConfig {
 	// If the timestamp is negative, reset it to zero and log a warning.
 	if s.Timestamp < 0 {
-		log.Warn("Setting.Timestamp is negative, resetting to 0")
+		log.Warn("ModificationConfig.Timestamp is negative, resetting to 0")
 		s.Timestamp = 0
 	}
 	return s
+}
+
+func (k *KubernetesConfig) Bind() *KubernetesConfig {
+	if k == nil {
+		return nil
+	}
+
+	k.Namespace = config.GetActualValue(k.Namespace)
+	k.Name = config.GetActualValue(k.Name)
+	k.Action = config.GetActualValue(k.Action)
+	k.Resource = config.GetActualValue(k.Resource)
+
+	return k
 }
 
 // Bind processes Kubernetes configuration by validating the kubeconfig file path,
@@ -351,6 +464,7 @@ const (
 	defaultTimestamp            int64  = 0
 	defaultSkipStrictExistCheck        = false
 	defaultConcurrency          uint64 = 10
+	defaultTimeout              string = "3s"
 )
 
 // Default holds the default configuration values.
@@ -359,69 +473,115 @@ var Default = &Data{
 	Target: &config.GRPCClient{
 		Addrs: []string{net.JoinHostPort(localhost, localPort)},
 	},
-	Search: &SearchConfig{
-		Num:         defaultNum,
-		Offset:      defaultOffset,
-		Concurrency: defaultConcurrency,
-		Queries: []*SearchQuery{
-			{
-				Timeout: time.Second * 3,
+	Strategies: []*Strategy{
+		{
+			Concurrency: 1,
+			Operations: []*Operation{
+				{
+					Delay: "",
+					Executions: []*Execution{
+						{
+							Type: OpInsert,
+							Mode: OperationUnary,
+							BaseConfig: &BaseConfig{
+								Num:         defaultNum,
+								Offset:      defaultOffset,
+								Concurrency: defaultConcurrency,
+							},
+							ModificationConfig: &ModificationConfig{
+								Timestamp:            defaultTimestamp,
+								SkipStrictExistCheck: defaultSkipStrictExistCheck,
+							},
+						},
+						{
+							Type: OpIndexInfo,
+							Mode: OperationUnary,
+						},
+					},
+				},
 			},
 		},
-	},
-	SearchByID: &SearchConfig{
-		Num:         defaultNum,
-		Offset:      defaultOffset,
-		Concurrency: defaultConcurrency,
-	},
-	LinearSearch: &SearchConfig{
-		Num:         defaultNum,
-		Offset:      defaultOffset,
-		Concurrency: defaultConcurrency,
-	},
-	LinearSearchByID: &SearchConfig{
-		Num:         defaultNum,
-		Offset:      defaultOffset,
-		Concurrency: defaultConcurrency,
-	},
-	Insert: &Setting{
-		Num:                  defaultNum,
-		Offset:               defaultOffset,
-		Concurrency:          defaultConcurrency,
-		SkipStrictExistCheck: defaultSkipStrictExistCheck,
-		Timestamp:            defaultTimestamp,
-	},
-	Update: &Setting{
-		Num:                  defaultNum,
-		Offset:               defaultOffset,
-		Concurrency:          defaultConcurrency,
-		SkipStrictExistCheck: defaultSkipStrictExistCheck,
-		Timestamp:            defaultTimestamp,
-	},
-	Upsert: &Setting{
-		Num:                  defaultNum,
-		Offset:               defaultOffset,
-		Concurrency:          defaultConcurrency,
-		SkipStrictExistCheck: defaultSkipStrictExistCheck,
-		Timestamp:            defaultTimestamp,
-	},
-	Remove: &Setting{
-		Num:                  defaultNum,
-		Offset:               defaultOffset,
-		Concurrency:          defaultConcurrency,
-		SkipStrictExistCheck: defaultSkipStrictExistCheck,
-		Timestamp:            defaultTimestamp,
-	},
-	Object: &Setting{
-		Num:                  defaultNum,
-		Offset:               defaultOffset,
-		Concurrency:          defaultConcurrency,
-		SkipStrictExistCheck: defaultSkipStrictExistCheck,
-		Timestamp:            defaultTimestamp,
-	},
-	Index: &WaitAfterInsert{
-		String:          "3m",
-		WaitAfterInsert: time.Minute * 3,
+		{
+			Concurrency: 4,
+			Operations: []*Operation{
+				{
+					Delay: "",
+					Executions: []*Execution{
+						{
+							Type: OpSearch,
+							Mode: OperationUnary,
+							BaseConfig: &BaseConfig{
+								Num:         defaultNum,
+								Offset:      defaultOffset,
+								Concurrency: defaultConcurrency,
+							},
+							SearchConfig: []*SearchQuery{
+								{
+									Timeout: "3s",
+								},
+							},
+						},
+					},
+				},
+				{
+					Delay: "",
+					Executions: []*Execution{
+						{
+							Type: OpSearchByID,
+							Mode: OperationUnary,
+							BaseConfig: &BaseConfig{
+								Num:         defaultNum,
+								Offset:      defaultOffset,
+								Concurrency: defaultConcurrency,
+							},
+							SearchConfig: []*SearchQuery{
+								{
+									Timeout: "3s",
+								},
+							},
+						},
+					},
+				},
+				{
+					Delay: "",
+					Executions: []*Execution{
+						{
+							Type: OpLinearSearch,
+							Mode: OperationUnary,
+							BaseConfig: &BaseConfig{
+								Num:         defaultNum,
+								Offset:      defaultOffset,
+								Concurrency: defaultConcurrency,
+							},
+							SearchConfig: []*SearchQuery{
+								{
+									Timeout: "3s",
+								},
+							},
+						},
+					},
+				},
+				{
+					Delay: "",
+					Executions: []*Execution{
+						{
+							Type: OpLinearSearchByID,
+							Mode: OperationUnary,
+							BaseConfig: &BaseConfig{
+								Num:         defaultNum,
+								Offset:      defaultOffset,
+								Concurrency: defaultConcurrency,
+							},
+							SearchConfig: []*SearchQuery{
+								{
+									Timeout: "3s",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	},
 	Dataset: &Dataset{
 		Name: "fashion-mnist-784-euclidean.hdf5",

@@ -20,6 +20,8 @@
 package crud
 
 import (
+	"context"
+	"slices"
 	"strconv"
 	"testing"
 	"time"
@@ -29,8 +31,25 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/tests/v2/e2e/config"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
+
+func IndexProperty(t *testing.T, ctx context.Context, plan config.Execution) {
+	t.Helper()
+	res, err := client.IndexProperty(ctx, &payload.Empty{})
+	if err != nil {
+		st, ok := status.FromError(err)
+		if ok && st != nil {
+			t.Errorf("failed to get IndexProperty %v status: %s", err, st.String())
+		} else {
+			t.Errorf("failed to get IndexProperty %v", err)
+		}
+		if !plan.ExpectedStatusCodes.Equals(st.Code().String()) {
+		}
+	}
+	t.Logf("IndexProperty: %v", res.String())
+}
 
 func TestE2EUnaryCRUD(t *testing.T) {
 	timestamp := time.Now().UnixNano()
@@ -749,4 +768,56 @@ func TestE2EUnarySkipStrictExistsCheckCRUD(t *testing.T) {
 	}
 
 	indexStatus(t, ctx)
+}
+
+func IndexStatus(t *testing.T, ctx context.Context) {
+	t.Helper()
+	{
+		res, err := client.IndexInfo(ctx, &payload.Empty{})
+		if err != nil {
+			st, ok := status.FromError(err)
+			if ok && st != nil {
+				t.Errorf("failed to get IndexInfo %v status: %s", err, st.String())
+			} else {
+				t.Errorf("failed to get IndexInfo %v", err)
+			}
+		}
+		t.Logf("IndexInfo: %v", res.String())
+	}
+	{
+		res, err := client.IndexDetail(ctx, &payload.Empty{})
+		if err != nil {
+			st, ok := status.FromError(err)
+			if ok && st != nil {
+				t.Errorf("failed to get IndexDetail %v status: %s", err, st.String())
+			} else {
+				t.Errorf("failed to get IndexDetail %v", err)
+			}
+		}
+		t.Logf("IndexDetail: %v", res.String())
+	}
+	{
+		res, err := client.IndexStatistics(ctx, &payload.Empty{})
+		if err != nil {
+			st, ok := status.FromError(err)
+			if ok && st != nil {
+				t.Errorf("failed to get IndexStatistics %v status: %s", err, st.String())
+			} else {
+				t.Errorf("failed to get IndexStatistics %v", err)
+			}
+		}
+		t.Logf("IndexStatistics: %v", res.String())
+	}
+	{
+		res, err := client.IndexStatisticsDetail(ctx, &payload.Empty{})
+		if err != nil {
+			st, ok := status.FromError(err)
+			if ok && st != nil {
+				t.Errorf("failed to get IndexStatisticsDetail %v status: %s", err, st.String())
+			} else {
+				t.Errorf("failed to get IndexStatisticsDetail %v", err)
+			}
+		}
+		t.Logf("IndexStatisticsDetail: %v", res.String())
+	}
 }

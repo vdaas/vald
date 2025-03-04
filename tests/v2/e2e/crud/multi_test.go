@@ -136,7 +136,7 @@ func TestE2EMultiCRUD(t *testing.T) {
 					Nprobe:               query.Nprobe,
 				},
 			})
-			if len(msreq.GetRequests()) >= cfg.Search.BulkSize {
+			if len(msreq.GetRequests()) >= int(cfg.Search.BulkSize) {
 				req := msreq.CloneVT()
 				msreq.Reset()
 				eg.Go(safety.RecoverFunc(func() error {
