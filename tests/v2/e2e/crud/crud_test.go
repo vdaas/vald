@@ -22,11 +22,9 @@ package crud
 import (
 	"context"
 	"os"
-	"strconv"
 	"testing"
 	"time"
 
-	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"

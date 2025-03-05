@@ -175,7 +175,9 @@ func (r *runner) processStrategy(t *testing.T, ctx context.Context, idx int, st 
 	})
 }
 
-func (r *runner) processOperation(t *testing.T, ctx context.Context, idx int, op *config.Operation) {
+func (r *runner) processOperation(
+	t *testing.T, ctx context.Context, idx int, op *config.Operation,
+) {
 	t.Helper()
 	if op == nil {
 		return
@@ -291,10 +293,8 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 				tt.Fatalf("neighbor data is not enough, offset: %d, num: %d, total: %d", e.Offset, e.Num, len(ds.Neighbors))
 			}
 			switch e.Type {
-			case config.OpSearch:
-			case config.OpSearchByID:
-			case config.OpLinearSearch:
-			case config.OpLinearSearchByID:
+			case config.OpSearch, config.OpSearchByID, config.OpLinearSearch, config.OpLinearSearchByID:
+				r.processSearch(t, ctx, test, train, neighbors, e)
 			case config.OpInsert:
 			case config.OpUpdate:
 			case config.OpUpsert:

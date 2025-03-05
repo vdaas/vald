@@ -22,6 +22,8 @@ package kubernetes
 import (
 	"context"
 
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -35,9 +37,6 @@ import (
 	applyconfigurationsbatchv1 "k8s.io/client-go/applyconfigurations/batch/v1"
 	applyconfigurationscorev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/sync"
 )
 
 type (
@@ -546,7 +545,9 @@ func (b *baseClient[T, L, C]) SetPodTemplate(obj T, pt *corev1.PodTemplateSpec) 
 	return b.setPodTemplate(obj, pt), nil
 }
 
-func (b *baseClient[T, L, C]) GetPodAnnotations(ctx context.Context, name string, opts metav1.GetOptions) (map[string]string, error) {
+func (b *baseClient[T, L, C]) GetPodAnnotations(
+	ctx context.Context, name string, opts metav1.GetOptions,
+) (map[string]string, error) {
 	obj, err := b.Get(ctx, name, opts)
 	if err != nil {
 		return nil, err
@@ -561,7 +562,13 @@ func (b *baseClient[T, L, C]) GetPodAnnotations(ctx context.Context, name string
 	return tmpl.Annotations, nil
 }
 
-func (b *baseClient[T, L, C]) SetPodAnnotations(ctx context.Context, name string, annotations map[string]string, gopts metav1.GetOptions, uopts metav1.UpdateOptions) (T, error) {
+func (b *baseClient[T, L, C]) SetPodAnnotations(
+	ctx context.Context,
+	name string,
+	annotations map[string]string,
+	gopts metav1.GetOptions,
+	uopts metav1.UpdateOptions,
+) (T, error) {
 	obj, err := b.Get(ctx, name, gopts)
 	if err != nil {
 		return obj, err

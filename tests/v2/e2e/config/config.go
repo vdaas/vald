@@ -65,72 +65,72 @@ const (
 // It encapsulates all configuration sections, including gRPC target, search settings, operation settings,
 // Kubernetes settings, dataset details, and additional metadata.
 type Data struct {
-	Target     *config.GRPCClient `yaml:"target,omitempty"`     // gRPC target configuration.
-	Strategies []*Strategy        `yaml:"strategies,omitempty"` // test strategies
-	Dataset    *Dataset           `yaml:"dataset,omitempty"`    // Dataset configuration.
-	Kubernetes *Kubernetes        `yaml:"kubernetes,omitempty"` // Kubernetes-related configuration.
-	Metadata   map[string]string  `yaml:"metadata,omitempty"`   // Additional metadata provided as key-value pairs.
-	MetaString string             `yaml:"metadata_string"`      // Raw metadata string (e.g., "KEY1=VAL1,KEY2=VAL2") to be parsed.
+	Target     *config.GRPCClient `json:"target,omitempty"          yaml:"target,omitempty"`          // gRPC target configuration.
+	Strategies []*Strategy        `json:"strategies,omitempty"      yaml:"strategies,omitempty"`      // test strategies
+	Dataset    *Dataset           `json:"dataset,omitempty"         yaml:"dataset,omitempty"`         // Dataset configuration.
+	Kubernetes *Kubernetes        `json:"kubernetes,omitempty"      yaml:"kubernetes,omitempty"`      // Kubernetes-related configuration.
+	Metadata   map[string]string  `json:"metadata,omitempty"        yaml:"metadata,omitempty"`        // Additional metadata provided as key-value pairs.
+	MetaString string             `json:"metadata_string,omitempty" yaml:"metadata_string,omitempty"` // Raw metadata string (e.g., "KEY1=VAL1,KEY2=VAL2") to be parsed.
 }
 
 // Strateguy represents a test strategy that includes a slice of operations to be executed
 // the operations are executed in concurrent goroutines with the specified delay between them.
 type Strategy struct {
-	Name        string                  `yaml:"name"` // Name of the strategy.
-	Delay       timeutil.DurationString `yaml:"delay"`
-	Timeout     timeutil.DurationString `yaml:"timeout"`
-	Concurrency uint64                  `yaml:"concurrency"`
-	Operations  []*Operation            `yaml:"operations,omitempty"`
-	Wait        timeutil.DurationString `yaml:"wait"`
+	Name        string                  `yaml:"name"                 json:"name,omitempty"` // Name of the strategy.
+	Delay       timeutil.DurationString `yaml:"delay"                json:"delay,omitempty"`
+	Timeout     timeutil.DurationString `yaml:"timeout"              json:"timeout,omitempty"`
+	Concurrency uint64                  `yaml:"concurrency"          json:"concurrency,omitempty"`
+	Operations  []*Operation            `yaml:"operations,omitempty" json:"operations,omitempty"`
+	Wait        timeutil.DurationString `yaml:"wait"                 json:"wait,omitempty"`
 }
 
 type Operation struct {
-	Name       string                  `yaml:"name"` // Name of the operation.
-	Delay      timeutil.DurationString `yaml:"delay"`
-	Timeout    timeutil.DurationString `yaml:"timeout"`
-	Executions []*Execution            `yaml:"executions,omitempty"`
-	Wait       timeutil.DurationString `yaml:"wait"`
+	Name       string                  `json:"name,omitempty"       yaml:"name,omitempty"`
+	Delay      timeutil.DurationString `json:"delay,omitempty"      yaml:"delay,omitempty"`
+	Timeout    timeutil.DurationString `json:"timeout,omitempty"    yaml:"timeout,omitempty"`
+	Executions []*Execution            `json:"executions,omitempty" yaml:"executions,omitempty"`
+	Wait       timeutil.DurationString `json:"wait,omitempty"       yaml:"wait,omitempty"`
 }
 
 type Execution struct {
-	*BaseConfig         `yaml:",inline,omitempty"`
-	*ModificationConfig `yaml:",inline,omitempty"`
-	*KubernetesConfig   `yaml:",inline,omitempty"`
-	Name                string                  `yaml:"name"` // Name of the execution.
-	Delay               timeutil.DurationString `yaml:"delay"`
-	Wait                timeutil.DurationString `yaml:"wait"`
-	Timeout             timeutil.DurationString `yaml:"timeout"`
-	Type                OperationType           `yaml:"type"`
-	Mode                OperationMode           `yaml:"mode"`
-	ExpectedStatusCodes StatusCodes             `yaml:"expected_status_codes,omitempty"`
-	SearchConfig        []*SearchQuery          `yaml:"search_config,omitempty"`
+	*BaseConfig         `yaml:",inline,omitempty" json:",inline,omitempty"`
+	*ModificationConfig `yaml:",inline,omitempty" json:",inline,omitempty"`
+	*KubernetesConfig   `yaml:",inline,omitempty" json:",inline,omitempty"`
+	Name                string                  `yaml:"name"                            json:"name,omitempty"` // Name of the execution.
+	Delay               timeutil.DurationString `yaml:"delay"                           json:"delay,omitempty"`
+	Wait                timeutil.DurationString `yaml:"wait"                            json:"wait,omitempty"`
+	Timeout             timeutil.DurationString `yaml:"timeout"                         json:"timeout,omitempty"`
+	Type                OperationType           `yaml:"type"                            json:"type,omitempty"`
+	Mode                OperationMode           `yaml:"mode"                            json:"mode,omitempty"`
+	ExpectedStatusCodes StatusCodes             `yaml:"expected_status_codes,omitempty" json:"expected_status_codes,omitempty"`
+	SearchConfig        []*SearchQuery          `yaml:"search_config,omitempty"         json:"search_config,omitempty"`
 }
 
 type BaseConfig struct {
-	Num         uint64 `yaml:"num"`         // Number of items to process.
-	Offset      uint64 `yaml:"offset"`      // Starting offset for the operation.
-	BulkSize    uint64 `yaml:"bulk_size"`   // Bulk size for multi-xxx operations.
-	Concurrency uint64 `yaml:"concurrency"` // Concurrency for operations.
+	Num         uint64 `yaml:"num,omitempty"         json:"num,omitempty"`         // Number of items to process.
+	Offset      uint64 `yaml:"offset,omitempty"      json:"offset,omitempty"`      // Starting offset for the operation.
+	BulkSize    uint64 `yaml:"bulk_size,omitempty"   json:"bulk_size,omitempty"`   // Bulk size for multi-xxx operations.
+	Concurrency uint64 `yaml:"concurrency,omitempty" json:"concurrency,omitempty"` // Concurrency for operations.
 }
 
 // SearchQuery represents the detailed parameters for a single search query.
 type SearchQuery struct {
-	K               uint32                              `yaml:"k"`         // Number of top results to return.
-	Radius          float32                             `yaml:"radius"`    // Radius for search (if applicable).
-	Epsilon         float32                             `yaml:"epsilon"`   // Epsilon for approximate search algorithms.
-	AlgorithmString string                              `yaml:"algorithm"` // Algorithm identifier as a string; will be normalized and mapped.
-	MinNum          uint32                              `yaml:"min_num"`   // Minimum number of items required for the operation.
-	Ratio           float32                             `yaml:"ratio"`     // Ratio parameter for search (algorithm dependent).
-	Nprobe          uint32                              `yaml:"nprobe"`    // Number of probes for the search algorithm.
-	Timeout         timeutil.DurationString             `yaml:"timeout"`   // Timeout value as a time.Duration.
-	Algorithm       payload.Search_AggregationAlgorithm // Mapped algorithm constant based on AlgorithmString.
+	K               uint32                              `yaml:"k,omitempty"         json:"k,omitempty"`                // Number of top results to return.
+	Radius          float32                             `yaml:"radius,omitempty"    json:"radius,omitempty"`           // Radius for search (if applicable).
+	Epsilon         float32                             `yaml:"epsilon,omitempty"   json:"epsilon,omitempty"`          // Epsilon for approximate search algorithms.
+	AlgorithmString string                              `yaml:"algorithm,omitempty" json:"algorithm_string,omitempty"` // Algorithm identifier as a string; will be normalized and mapped.
+	MinNum          uint32                              `yaml:"min_num,omitempty"   json:"min_num,omitempty"`          // Minimum number of items required for the operation.
+	Ratio           float32                             `yaml:"ratio,omitempty"     json:"ratio,omitempty"`            // Ratio parameter for search (algorithm dependent).
+	Nprobe          uint32                              `yaml:"nprobe,omitempty"    json:"nprobe,omitempty"`           // Number of probes for the search algorithm.
+	Timeout         timeutil.DurationString             `yaml:"timeout,omitempty"   json:"timeout,omitempty"`          // Timeout value as a time.Duration.
+	Algorithm       payload.Search_AggregationAlgorithm `yaml:"-"                   json:"-"`                          // Mapped algorithm constant based on AlgorithmString.
 }
 
 // Setting represents basic operation settings used across multiple operations (e.g., insert, update).
 // It includes numeric values such as the number of items to process, an offset, and a timestamp.
 type ModificationConfig struct {
-	SkipStrictExistCheck bool  `yaml:"skip_strict_exist_check,omitempty"` // Flag to indicate if strict existence checks should be skipped.
-	Timestamp            int64 `yaml:"timestamp,omitempty"`               // Timestamp value for the operation; used for versioning.
+	SkipStrictExistCheck bool  `yaml:"skip_strict_exist_check,omitempty" json:"skip_strict_exist_check,omitempty"` // Flag to indicate if strict existence checks should be skipped.
+	Timestamp            int64 `yaml:"timestamp,omitempty"               json:"timestamp,omitempty"`               // Timestamp value for the operation; used for versioning.
 }
 
 type (
@@ -194,26 +194,26 @@ const (
 )
 
 type KubernetesConfig struct {
-	Action    KubernetesAction       `yaml:"action"`
-	Namespace string                 `yaml:"namespace"`
-	Name      string                 `yaml:"name"`
-	Args      map[any]any            `yaml:"args"`
-	Resource  KubernetesResourceType `yaml:"resource"`
+	Action    KubernetesAction       `yaml:"action"    json:"action,omitempty"`
+	Namespace string                 `yaml:"namespace" json:"namespace,omitempty"`
+	Name      string                 `yaml:"name"      json:"name,omitempty"`
+	Args      map[any]any            `yaml:"args"      json:"args,omitempty"`
+	Resource  KubernetesResourceType `yaml:"resource"  json:"resource,omitempty"`
 }
 
 // Kubernetes holds configuration settings specific to Kubernetes environments.
 type Kubernetes struct {
-	KubeConfig  string       `yaml:"kubeconfig"`            // File path to the kubeconfig.
-	PortForward *PortForward `yaml:"portforward,omitempty"` // Port forwarding settings.
+	KubeConfig  string       `yaml:"kubeconfig"            json:"kube_config,omitempty"`  // File path to the kubeconfig.
+	PortForward *PortForward `yaml:"portforward,omitempty" json:"port_forward,omitempty"` // Port forwarding settings.
 }
 
 // PortForward holds configuration for port forwarding when running in a Kubernetes environment.
 type PortForward struct {
-	Enabled    bool   `yaml:"enabled"`     // Flag to enable or disable port forwarding.
-	PodName    string `yaml:"pod_name"`    // The name of the pod to forward from.
-	TargetPort uint16 `yaml:"target_port"` // The port forward target port number.
-	LocalPort  uint16 `yaml:"local_port"`  // The local port number; if not set, it defaults to TargetPort.
-	Namespace  string `yaml:"namespace"`   // The Kubernetes namespace of the pod.
+	Enabled    bool   `yaml:"enabled"     json:"enabled,omitempty"`     // Flag to enable or disable port forwarding.
+	PodName    string `yaml:"pod_name"    json:"pod_name,omitempty"`    // The name of the pod to forward from.
+	TargetPort uint16 `yaml:"target_port" json:"target_port,omitempty"` // The port forward target port number.
+	LocalPort  uint16 `yaml:"local_port"  json:"local_port,omitempty"`  // The local port number; if not set, it defaults to TargetPort.
+	Namespace  string `yaml:"namespace"   json:"namespace,omitempty"`   // The Kubernetes namespace of the pod.
 }
 
 // Dataset holds information about the dataset to be used, such as the filename.
@@ -459,12 +459,13 @@ const (
 	localhost        = "localhost"
 	localPort uint16 = 8081
 
-	defaultNum                  uint64 = 10000
-	defaultOffset               uint64 = 0
-	defaultTimestamp            int64  = 0
-	defaultSkipStrictExistCheck        = false
-	defaultConcurrency          uint64 = 10
-	defaultTimeout              string = "3s"
+	defaultNum                  uint64                  = 10000
+	defaultOffset               uint64                  = 0
+	defaultTimestamp            int64                   = 0
+	defaultSkipStrictExistCheck                         = false
+	defaultConcurrency          uint64                  = 10
+	defaultTimeout              timeutil.DurationString = "3s"
+	defaultWaitAfterInsert      timeutil.DurationString = "2m"
 )
 
 // Default holds the default configuration values.
@@ -500,6 +501,7 @@ var Default = &Data{
 					},
 				},
 			},
+			Wait: defaultWaitAfterInsert,
 		},
 		{
 			Concurrency: 4,
@@ -517,7 +519,7 @@ var Default = &Data{
 							},
 							SearchConfig: []*SearchQuery{
 								{
-									Timeout: "3s",
+									Timeout: defaultTimeout,
 								},
 							},
 						},
@@ -536,7 +538,7 @@ var Default = &Data{
 							},
 							SearchConfig: []*SearchQuery{
 								{
-									Timeout: "3s",
+									Timeout: defaultTimeout,
 								},
 							},
 						},
@@ -555,7 +557,7 @@ var Default = &Data{
 							},
 							SearchConfig: []*SearchQuery{
 								{
-									Timeout: "3s",
+									Timeout: defaultTimeout,
 								},
 							},
 						},
@@ -574,7 +576,7 @@ var Default = &Data{
 							},
 							SearchConfig: []*SearchQuery{
 								{
-									Timeout: "3s",
+									Timeout: defaultTimeout,
 								},
 							},
 						},
