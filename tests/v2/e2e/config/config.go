@@ -92,39 +92,6 @@ type Operation struct {
 	Wait       timeutil.DurationString `yaml:"wait"`
 }
 
-type (
-	StatusCode  string
-	StatusCodes []StatusCode
-)
-
-func (sc StatusCode) Bind() StatusCode {
-	return config.GetActualValue(sc)
-}
-
-func (sc StatusCode) Equals(c string) bool {
-	return strings.EqualFold(sc.String(), StatusCode(c).Bind().String())
-}
-
-func (sc StatusCode) String() string {
-	return string(sc)
-}
-
-func (sc StatusCodes) Bind() StatusCodes {
-	for i, c := range sc {
-		sc[i] = c.Bind()
-	}
-	return sc
-}
-
-func (sc StatusCodes) Equals(c string) bool {
-	for _, s := range sc {
-		if s.Equals(c) {
-			return true
-		}
-	}
-	return false
-}
-
 type Execution struct {
 	*BaseConfig         `yaml:",inline,omitempty"`
 	*ModificationConfig `yaml:",inline,omitempty"`
@@ -164,6 +131,39 @@ type SearchQuery struct {
 type ModificationConfig struct {
 	SkipStrictExistCheck bool  `yaml:"skip_strict_exist_check,omitempty"` // Flag to indicate if strict existence checks should be skipped.
 	Timestamp            int64 `yaml:"timestamp,omitempty"`               // Timestamp value for the operation; used for versioning.
+}
+
+type (
+	StatusCode  string
+	StatusCodes []StatusCode
+)
+
+func (sc StatusCode) Bind() StatusCode {
+	return config.GetActualValue(sc)
+}
+
+func (sc StatusCode) Equals(c string) bool {
+	return strings.EqualFold(sc.String(), StatusCode(c).Bind().String())
+}
+
+func (sc StatusCode) String() string {
+	return string(sc)
+}
+
+func (sc StatusCodes) Bind() StatusCodes {
+	for i, c := range sc {
+		sc[i] = c.Bind()
+	}
+	return sc
+}
+
+func (sc StatusCodes) Equals(c string) bool {
+	for _, s := range sc {
+		if s.Equals(c) {
+			return true
+		}
+	}
+	return false
 }
 
 type KubernetesAction string

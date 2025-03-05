@@ -54,19 +54,6 @@ func IndexProperty(t *testing.T, ctx context.Context, plan config.Execution) {
 func TestE2EUnaryCRUD(t *testing.T) {
 	timestamp := time.Now().UnixNano()
 
-	{
-		res, err := client.IndexProperty(ctx, &payload.Empty{})
-		if err != nil {
-			st, ok := status.FromError(err)
-			if ok && st != nil {
-				t.Errorf("failed to get IndexProperty %v status: %s", err, st.String())
-			} else {
-				t.Errorf("failed to get IndexProperty %v", err)
-			}
-		}
-		t.Logf("IndexProperty: %v", res.String())
-	}
-
 	var eg errgroup.Group
 	if cfg.Insert.Num != 0 {
 		eg, _ := errgroup.New(ctx)
