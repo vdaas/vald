@@ -438,12 +438,31 @@ var Default = &Data{
 	},
 }
 
+// newData returns initial Data struct.
+func newData() *Data {
+	return &Data{
+		Target:           &config.GRPCClient{},
+		Search:           &SearchConfig{},
+		SearchByID:       &SearchConfig{},
+		LinearSearch:     &SearchConfig{},
+		LinearSearchByID: &SearchConfig{},
+		Insert:           &Setting{},
+		Update:           &Setting{},
+		Upsert:           &Setting{},
+		Remove:           &Setting{},
+		Object:           &Setting{},
+		Index:            &WaitAfterInsert{},
+		Dataset:          &Dataset{},
+		Kubernetes:       &Kubernetes{},
+	}
+}
+
 // Load reads the configuration from the specified file path.
 // If reading fails, it merges the read configuration with the default configuration.
 // Finally, it calls Bind to perform all necessary post-processing on the configuration.
 func Load(path string) (cfg *Data, err error) {
 	log.Debugf("loading test client configuration from %s", path)
-	cfg = new(Data)
+	cfg = newData()
 
 	// Attempt to read the configuration from the file.
 	err = config.Read(path, &cfg)
