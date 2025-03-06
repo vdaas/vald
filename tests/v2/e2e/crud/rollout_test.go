@@ -176,7 +176,7 @@ func TestE2EUnaryCRUDRolloutRestartAgent(t *testing.T) {
 		if err != nil {
 			t.Errorf("failed to rollout restart: %s", err.Error())
 		}
-		sleep(t, time.Second * 5)
+		sleep(t, time.Second*5)
 		close(done)
 	}
 
