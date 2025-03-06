@@ -76,34 +76,51 @@ type Data struct {
 // Strateguy represents a test strategy that includes a slice of operations to be executed
 // the operations are executed in concurrent goroutines with the specified delay between them.
 type Strategy struct {
-	Name        string                  `yaml:"name"                 json:"name,omitempty"` // Name of the strategy.
-	Delay       timeutil.DurationString `yaml:"delay"                json:"delay,omitempty"`
-	Timeout     timeutil.DurationString `yaml:"timeout"              json:"timeout,omitempty"`
-	Concurrency uint64                  `yaml:"concurrency"          json:"concurrency,omitempty"`
-	Operations  []*Operation            `yaml:"operations,omitempty" json:"operations,omitempty"`
-	Wait        timeutil.DurationString `yaml:"wait"                 json:"wait,omitempty"`
+	*TimeConfig `yaml:",inline,omitempty" json:",inline,omitempty"`
+	Name        string       `yaml:"name"                 json:"name,omitempty"` // Name of the strategy.
+	Concurrency uint64       `yaml:"concurrency"          json:"concurrency,omitempty"`
+	Operations  []*Operation `yaml:"operations,omitempty" json:"operations,omitempty"`
 }
 
 type Operation struct {
-	Name       string                  `json:"name,omitempty"       yaml:"name,omitempty"`
-	Delay      timeutil.DurationString `json:"delay,omitempty"      yaml:"delay,omitempty"`
-	Timeout    timeutil.DurationString `json:"timeout,omitempty"    yaml:"timeout,omitempty"`
-	Executions []*Execution            `json:"executions,omitempty" yaml:"executions,omitempty"`
-	Wait       timeutil.DurationString `json:"wait,omitempty"       yaml:"wait,omitempty"`
+	*TimeConfig `yaml:",inline,omitempty" json:",inline,omitempty"`
+	Name        string       `json:"name,omitempty"       yaml:"name,omitempty"`
+	Executions  []*Execution `json:"executions,omitempty" yaml:"executions,omitempty"`
 }
 
 type Execution struct {
 	*BaseConfig         `yaml:",inline,omitempty" json:",inline,omitempty"`
 	*ModificationConfig `yaml:",inline,omitempty" json:",inline,omitempty"`
 	*KubernetesConfig   `yaml:",inline,omitempty" json:",inline,omitempty"`
-	Name                string                  `yaml:"name"                            json:"name,omitempty"` // Name of the execution.
-	Delay               timeutil.DurationString `yaml:"delay"                           json:"delay,omitempty"`
-	Wait                timeutil.DurationString `yaml:"wait"                            json:"wait,omitempty"`
-	Timeout             timeutil.DurationString `yaml:"timeout"                         json:"timeout,omitempty"`
-	Type                OperationType           `yaml:"type"                            json:"type,omitempty"`
-	Mode                OperationMode           `yaml:"mode"                            json:"mode,omitempty"`
-	ExpectedStatusCodes StatusCodes             `yaml:"expected_status_codes,omitempty" json:"expected_status_codes,omitempty"`
-	SearchConfig        []*SearchQuery          `yaml:"search_config,omitempty"         json:"search_config,omitempty"`
+	*TimeConfig         `yaml:",inline,omitempty" json:",inline,omitempty"`
+	Name                string         `yaml:"name"                            json:"name,omitempty"` // Name of the execution.
+	Type                OperationType  `yaml:"type"                            json:"type,omitempty"`
+	Mode                OperationMode  `yaml:"mode"                            json:"mode,omitempty"`
+	ExpectedStatusCodes StatusCodes    `yaml:"expected_status_codes,omitempty" json:"expected_status_codes,omitempty"`
+	SearchConfig        []*SearchQuery `yaml:"search_config,omitempty"         json:"search_config,omitempty"`
+}
+
+type TimeConfig struct {
+	Delay   timeutil.DurationString `yaml:"delay"                           json:"delay,omitempty"`
+	Wait    timeutil.DurationString `yaml:"wait"                            json:"wait,omitempty"`
+	Timeout timeutil.DurationString `yaml:"timeout"                         json:"timeout,omitempty"`
+}
+type Timing interface {
+	GetDelay() timeutil.DurationString
+	GetWait() timeutil.DurationString
+	GetTimeout() timeutil.DurationString
+}
+
+func (t TimeConfig) GetDelay() timeutil.DurationString {
+	return t.Delay
+}
+
+func (t TimeConfig) GetWait() timeutil.DurationString {
+	return t.Wait
+}
+
+func (t TimeConfig) GetTimeout() timeutil.DurationString {
+	return t.Timeout
 }
 
 type BaseConfig struct {

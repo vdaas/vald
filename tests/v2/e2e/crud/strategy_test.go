@@ -52,7 +52,7 @@ func TestE2EStrategy(t *testing.T) {
 	if cfg.Kubernetes != nil {
 		kclient, err = k8s.NewClient(cfg.Kubernetes.KubeConfig, "")
 		if err != nil {
-			t.Fatalf("failed to create kubernetes client: %v", err)
+			t.Errorf("failed to create kubernetes client: %v", err)
 		}
 		if cfg.Kubernetes.PortForward.Enabled {
 			stop, _, err := k8s.Portforward(ctx, kclient,
@@ -64,7 +64,7 @@ func TestE2EStrategy(t *testing.T) {
 				if stop != nil {
 					stop()
 				}
-				t.Fatalf("failed to portforward: %v", err)
+				t.Errorf("failed to portforward: %v", err)
 			}
 			defer stop()
 		}
@@ -72,11 +72,11 @@ func TestE2EStrategy(t *testing.T) {
 
 	client, ctx, err := newClient(ctx, cfg.Metadata)
 	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
+		t.Fatal("failed to create client: %v", err)
 	}
 	ech, err := client.Start(ctx)
 	if err != nil {
-		t.Fatalf("failed to start client: %v", err)
+		t.Fatal("failed to start client: %v", err)
 	}
 
 	go func() {
@@ -85,14 +85,14 @@ func TestE2EStrategy(t *testing.T) {
 			return
 		case err := <-ech:
 			if err != nil {
-				t.Fatalf("client daemon returned error: %v", err)
+				t.Errorf("client daemon returned error: %v", err)
 			}
 		}
 	}()
 	defer func() {
 		err = client.Stop(ctx)
 		if err != nil {
-			t.Fatalf("failed to stop client: %v", err)
+			t.Errorf("failed to stop client: %v", err)
 		}
 	}()
 
@@ -113,121 +113,49 @@ func (r *runner) processStrategy(t *testing.T, ctx context.Context, idx int, st 
 	}
 
 	t.Run(fmt.Sprintf("#%d: strategy=%s", idx, st.Name), func(tt *testing.T) {
-		if st.Delay != "" {
-			dur, err := st.Delay.Duration()
-			if err != nil {
-				tt.Fatalf("failed to parse delay duration: %s, error: %v", st.Delay, err)
+		if err := executeWithTimings(tt, ctx, st, "strategy", func(ttt *testing.T, ctx context.Context) error {
+			eg, egctx := errgroup.New(ctx)
+			if st.Concurrency > 0 {
+				eg.SetLimit(int(st.Concurrency))
+				ttt.Logf("concurrency is set to %d, the operations will execute concurrently with limit (%d)", st.Concurrency, st.Concurrency)
+			} else {
+				ttt.Logf("concurrency is not set, the operations will execute concurrently with no limit (%d)", len(st.Operations))
 			}
-			if dur > 0 {
-				tt.Logf("delay is set to %s, this strategy will start after %s", st.Delay, dur.String())
-				select {
-				case <-ctx.Done():
-					tt.Fatal(ctx.Err())
-				case <-time.After(dur):
+
+			for i, op := range st.Operations {
+				if op != nil {
+					i, op := i, op
+					eg.Go(safety.RecoverFunc(func() error {
+						r.processOperation(ttt, egctx, i, op)
+						return nil
+					}))
 				}
 			}
-		}
-		if st.Timeout != "" {
-			dur, err := st.Timeout.Duration()
-			if err != nil {
-				tt.Fatalf("failed to parse timeout duration: %s, error: %v", st.Timeout, err)
-			}
-			if dur > 0 {
-				tt.Logf("timeout is set to %s, this strategy will stop after %s", st.Timeout, dur.String())
-				var cancel context.CancelFunc
-				ctx, cancel = context.WithTimeout(ctx, dur)
-				defer cancel()
-			}
-		}
-		eg, egctx := errgroup.New(ctx)
-		if st.Concurrency > 0 {
-			eg.SetLimit(int(st.Concurrency))
-			tt.Logf("concurrency is set to %d, the operations will execute concurrently with limit (%d)", st.Concurrency, st.Concurrency)
-		} else {
-			tt.Logf("concurrency is not set, the operations will execute concurrently with no limit (%d)", len(st.Operations))
-		}
-		for i, op := range st.Operations {
-			if op != nil {
-				eg.Go(safety.RecoverFunc(func() error {
-					r.processOperation(tt, egctx, i, op)
-					return nil
-				}))
-			}
-		}
-		err := eg.Wait()
-		if err != nil {
-			tt.Fatalf("failed to execute operations: %v", err)
-		}
-		if st.Wait != "" {
-			dur, err := st.Wait.Duration()
-			if err != nil {
-				tt.Fatalf("failed to parse wait duration: %s, error: %v", st.Wait, err)
-			}
-			if dur > 0 {
-				tt.Logf("wait is set to %s, this strategy is already finished, but will wait for %s", st.Wait, dur.String())
-				select {
-				case <-ctx.Done():
-					tt.Fatal(ctx.Err())
-				case <-time.After(dur):
-				}
-			}
+
+			return eg.Wait()
+		}); err != nil {
+			tt.Errorf("failed to process operations: %v", err)
 		}
 	})
 }
 
-func (r *runner) processOperation(
-	t *testing.T, ctx context.Context, idx int, op *config.Operation,
-) {
+func (r *runner) processOperation(t *testing.T, ctx context.Context, idx int, op *config.Operation) {
 	t.Helper()
 	if op == nil {
 		return
 	}
+
 	t.Run(fmt.Sprintf("#%d: operation=%s", idx, op.Name), func(tt *testing.T) {
-		if op.Delay != "" {
-			dur, err := op.Delay.Duration()
-			if err != nil {
-				tt.Fatalf("failed to parse delay duration: %s, error: %v", op.Delay, err)
+		if err := executeWithTimings(tt, ctx, op, "operation", func(ttt *testing.T, ctx context.Context) error {
+			ttt.Helper()
+			for i, e := range op.Executions {
+				r.processExecution(ttt, ctx, i, e)
 			}
-			if dur > 0 {
-				tt.Logf("delay is set to %s, this operation will start after %s", op.Delay, dur.String())
-				select {
-				case <-ctx.Done():
-					tt.Fatal(ctx.Err())
-				case <-time.After(dur):
-				}
-			}
-		}
-		if op.Timeout != "" {
-			dur, err := op.Timeout.Duration()
-			if err != nil {
-				tt.Fatalf("failed to parse timeout duration: %s, error: %v", op.Timeout, err)
-			}
-			if dur > 0 {
-				tt.Logf("timeout is set to %s, this operation will stop after %s", op.Timeout, dur.String())
-				var cancel context.CancelFunc
-				ctx, cancel = context.WithTimeout(ctx, dur)
-				defer cancel()
-			}
-		}
-		for i, e := range op.Executions {
-			r.processExecution(tt, ctx, i, e)
-		}
-		if op.Wait != "" {
-			dur, err := op.Wait.Duration()
-			if err != nil {
-				tt.Fatalf("failed to parse wait duration: %s, error: %v", op.Wait, err)
-			}
-			if dur > 0 {
-				tt.Logf("wait is set to %s, this operation is already finished, but will wait for %s", op.Wait, dur.String())
-				select {
-				case <-ctx.Done():
-					tt.Fatal(ctx.Err())
-				case <-time.After(dur):
-				}
-			}
+			return nil
+		}); err != nil {
+			tt.Errorf("failed to process operation: %v", err)
 		}
 	})
-	return
 }
 
 func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e *config.Execution) {
@@ -235,93 +163,116 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 	if e == nil {
 		return
 	}
-	t.Run(fmt.Sprintf("#%d: execution=%s", idx, e.Name), func(tt *testing.T) {
-		if e.Delay != "" {
-			dur, err := e.Delay.Duration()
-			if err != nil {
-				tt.Fatalf("failed to parse delay duration: %s, error: %v", e.Delay, err)
-			}
-			if dur > 0 {
-				tt.Logf("delay is set to %s, this execution will start after %s", e.Delay, dur.String())
-				select {
-				case <-ctx.Done():
-					tt.Fatal(ctx.Err())
-				case <-time.After(dur):
-				}
-			}
-		}
-		if e.Timeout != "" {
-			dur, err := e.Timeout.Duration()
-			if err != nil {
-				tt.Fatalf("failed to parse timeout duration: %s, error: %v", e.Timeout, err)
-			}
-			if dur > 0 {
-				tt.Logf("timeout is set to %s, this execution will stop after %s", e.Timeout, dur.String())
-				var cancel context.CancelFunc
-				ctx, cancel = context.WithTimeout(ctx, dur)
-				defer cancel()
-			}
-		}
-		tt.Logf("operation type: %s", e.Type)
-		switch e.Type {
-		case config.OpSearch,
-			config.OpSearchByID,
-			config.OpLinearSearch,
-			config.OpLinearSearchByID,
-			config.OpInsert,
-			config.OpUpdate,
-			config.OpUpsert,
-			config.OpRemove,
-			config.OpObject:
-			var (
-				train, test [][]float32
-				neighbors   [][]int
-			)
-			if len(ds.Train) > int(e.Offset)+int(e.Num) {
-				train = ds.Train[e.Offset : e.Offset+e.Num]
-			} else {
-				tt.Fatalf("train data is not enough, offset: %d, num: %d, total: %d", e.Offset, e.Num, len(ds.Train))
-			}
-			if len(ds.Test) > int(e.Offset)+int(e.Num) {
-				test = ds.Test[e.Offset : e.Offset+e.Num]
-			} else {
-				tt.Fatalf("test data is not enough, offset: %d, num: %d, total: %d", e.Offset, e.Num, len(ds.Test))
-			}
-			if len(ds.Neighbors) > int(e.Offset)+int(e.Num) {
-				neighbors = ds.Neighbors[e.Offset : e.Offset+e.Num]
-			} else {
-				tt.Fatalf("neighbor data is not enough, offset: %d, num: %d, total: %d", e.Offset, e.Num, len(ds.Neighbors))
-			}
+
+	t.Run(fmt.Sprintf("#%d: execution=%s type=%s mode=%s", idx, e.Name, e.Type, e.Mode), func(tt *testing.T) {
+		if err := executeWithTimings(tt, ctx, e, "execution", func(ttt *testing.T, ctx context.Context) error {
+			ttt.Helper()
+			ttt.Logf("operation type: %s", e.Type)
+
 			switch e.Type {
-			case config.OpSearch, config.OpSearchByID, config.OpLinearSearch, config.OpLinearSearchByID:
-				r.processSearch(t, ctx, test, train, neighbors, e)
-			case config.OpInsert:
-			case config.OpUpdate:
-			case config.OpUpsert:
-			case config.OpRemove:
-			case config.OpObject:
-			}
-		case config.OpIndexInfo:
-		case config.OpIndexProperty:
-		case config.OpKubernetes:
-		case config.OpClient:
-		case config.OpWait:
-		default:
-			tt.Fatalf("unsupported operation type: %s detected during execution %d", e.Type, idx)
-		}
-		if e.Wait != "" {
-			dur, err := e.Wait.Duration()
-			if err != nil {
-				tt.Fatalf("failed to parse wait duration: %s, error: %v", e.Wait, err)
-			}
-			if dur > 0 {
-				tt.Logf("wait is set to %s, this execution is already finished, but will wait for %s", e.Wait, dur.String())
-				select {
-				case <-ctx.Done():
-					tt.Fatal(ctx.Err())
-				case <-time.After(dur):
+			case config.OpSearch,
+				config.OpSearchByID,
+				config.OpLinearSearch,
+				config.OpLinearSearchByID,
+				config.OpInsert,
+				config.OpUpdate,
+				config.OpUpsert,
+				config.OpRemove,
+				config.OpObject:
+				train, test, neighbors := getDatasetSlices(ttt, e)
+				switch e.Type {
+				case config.OpSearch, config.OpSearchByID, config.OpLinearSearch, config.OpLinearSearchByID:
+					r.processSearch(ttt, ctx, test, train, neighbors, e)
+				case config.OpInsert:
+				case config.OpUpdate:
+				case config.OpUpsert:
+				case config.OpRemove:
+				case config.OpObject:
 				}
+			case config.OpIndexInfo:
+			case config.OpIndexProperty:
+			case config.OpKubernetes:
+			case config.OpClient:
+			case config.OpWait:
+			default:
+				ttt.Errorf("unsupported operation type: %s detected during execution %d", e.Type, idx)
 			}
+			return nil
+		}); err != nil {
+			tt.Errorf("failed to process execution: %v", err)
 		}
 	})
+}
+
+func executeWithTimings[T config.Timing](t *testing.T, ctx context.Context, cfg T, prefix string, fn func(*testing.T, context.Context) error) error {
+	t.Helper()
+
+	if delay := cfg.GetDelay(); delay != "" {
+		dur, err := delay.Duration()
+		if err != nil {
+			t.Errorf("failed to parse delay duration: %s, error: %v", delay, err)
+		}
+		if dur > 0 {
+			t.Logf("delay is set to %s, this %s will start after %s", delay, prefix, dur.String())
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(dur):
+			}
+		}
+	}
+
+	var cancel context.CancelFunc = func() {}
+	if timeout := cfg.GetTimeout(); timeout != "" {
+		dur, err := timeout.Duration()
+		if err != nil {
+			t.Errorf("failed to parse timeout duration: %s, error: %v", timeout, err)
+		}
+		if dur > 0 {
+			t.Logf("timeout is set to %s, this %s will stop after %s", timeout, prefix, dur.String())
+			ctx, cancel = context.WithTimeout(ctx, dur)
+		}
+	}
+	defer cancel()
+
+	err := fn(t, ctx)
+
+	if wait := cfg.GetWait(); wait != "" {
+		dur, err := wait.Duration()
+		if err != nil {
+			t.Errorf("failed to parse wait duration: %s, error: %v", wait, err)
+		}
+		if dur > 0 {
+			t.Logf("wait is set to %s, this %s is already finished, but will wait for %s", wait, prefix, dur.String())
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(dur):
+			}
+		}
+	}
+
+	return err
+}
+
+func getDatasetSlices(t *testing.T, e *config.Execution) (train, test [][]float32, neighbors [][]int) {
+	t.Helper()
+	if len(ds.Train) > int(e.Offset)+int(e.Num) {
+		train = ds.Train[e.Offset : e.Offset+e.Num]
+	} else {
+		t.Errorf("train data is not enough, offset: %d, num: %d, total: %d", e.Offset, e.Num, len(ds.Train))
+	}
+
+	if len(ds.Test) > int(e.Offset)+int(e.Num) {
+		test = ds.Test[e.Offset : e.Offset+e.Num]
+	} else {
+		t.Errorf("test data is not enough, offset: %d, num: %d, total: %d", e.Offset, e.Num, len(ds.Test))
+	}
+
+	if len(ds.Neighbors) > int(e.Offset)+int(e.Num) {
+		neighbors = ds.Neighbors[e.Offset : e.Offset+e.Num]
+	} else {
+		t.Errorf("neighbor data is not enough, offset: %d, num: %d, total: %d", e.Offset, e.Num, len(ds.Neighbors))
+	}
+	return train, test, neighbors
 }
