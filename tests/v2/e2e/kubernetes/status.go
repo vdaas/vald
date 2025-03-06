@@ -80,7 +80,7 @@ var ResourceStatusMap = map[ResourceStatus]string{
 // The function supports Deployment, StatefulSet, DaemonSet, Job, CronJob, Pod,
 // PersistentVolumeClaim, Service, and Ingress.
 // --------------------------------------------------------------------------------
-func WaitForStatus[T Object, L ObjectList, C NamedObject, I ObjectInterface[T, L, C]](
+func WaitForStatus[T Object, L ObjectList, C NamedObject, I ResourceInterface[T, L, C]](
 	ctx context.Context, client I, name string, statuses ...ResourceStatus,
 ) (obj T, matched bool, err error) {
 	if !slices.ContainsFunc(PossibleStatuses(obj), func(st ResourceStatus) bool {
