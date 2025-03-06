@@ -38,43 +38,43 @@ import (
 // It encapsulates all configuration sections, including gRPC target, search settings, operation settings,
 // Kubernetes settings, dataset details, and additional metadata.
 type Data struct {
-	Target           *config.GRPCClient `yaml:"target"`              // gRPC target configuration.
-	Search           *SearchConfig      `yaml:"search"`              // Configuration for search operations.
-	SearchByID       *SearchConfig      `yaml:"search_by_id"`        // Configuration for search-by-id operations.
-	LinearSearch     *SearchConfig      `yaml:"linear_search"`       // Configuration for linear search operations.
-	LinearSearchByID *SearchConfig      `yaml:"linear_search_by_id"` // Configuration for linear search-by-id operations.
-	Insert           *Setting           `yaml:"insert"`              // Configuration for insert operations.
-	Update           *Setting           `yaml:"update"`              // Configuration for update operations.
-	Upsert           *Setting           `yaml:"upsert"`              // Configuration for upsert operations.
-	Remove           *Setting           `yaml:"remove"`              // Configuration for remove operations.
-	Object           *Setting           `yaml:"object"`              // Configuration for object retrieval.
-	Index            *WaitAfterInsert   `yaml:"index"`               // Configuration for waiting period after insert.
-	Dataset          *Dataset           `yaml:"dataset"`             // Dataset configuration.
-	Kubernetes       *Kubernetes        `yaml:"kubernetes"`          // Kubernetes-related configuration.
-	Metadata         map[string]string  `yaml:"metadata"`            // Additional metadata provided as key-value pairs.
-	MetaString       string             `yaml:"metadata_string"`     // Raw metadata string (e.g., "KEY1=VAL1,KEY2=VAL2") to be parsed.
+	Target           *config.GRPCClient `yaml:"target" json:"target,omitempty"`                           // gRPC target configuration.
+	Search           *SearchConfig      `yaml:"search" json:"search,omitempty"`                           // Configuration for search operations.
+	SearchByID       *SearchConfig      `yaml:"search_by_id" json:"search_by_id,omitempty"`               // Configuration for search-by-id operations.
+	LinearSearch     *SearchConfig      `yaml:"linear_search" json:"linear_search,omitempty"`             // Configuration for linear search operations.
+	LinearSearchByID *SearchConfig      `yaml:"linear_search_by_id" json:"linear_search_by_id,omitempty"` // Configuration for linear search-by-id operations.
+	Insert           *Setting           `yaml:"insert" json:"insert,omitempty"`                           // Configuration for insert operations.
+	Update           *Setting           `yaml:"update" json:"update,omitempty"`                           // Configuration for update operations.
+	Upsert           *Setting           `yaml:"upsert" json:"upsert,omitempty"`                           // Configuration for upsert operations.
+	Remove           *Setting           `yaml:"remove" json:"remove,omitempty"`                           // Configuration for remove operations.
+	Object           *Setting           `yaml:"object" json:"object,omitempty"`                           // Configuration for object retrieval.
+	Index            *WaitAfterInsert   `yaml:"index" json:"index,omitempty"`                             // Configuration for waiting period after insert.
+	Dataset          *Dataset           `yaml:"dataset" json:"dataset,omitempty"`                         // Dataset configuration.
+	Kubernetes       *Kubernetes        `yaml:"kubernetes" json:"kubernetes,omitempty"`                   // Kubernetes-related configuration.
+	Metadata         map[string]string  `yaml:"metadata" json:"metadata,omitempty"`                       // Additional metadata provided as key-value pairs.
+	MetaString       string             `yaml:"metadata_string" json:"meta_string,omitempty"`             // Raw metadata string (e.g., "KEY1=VAL1,KEY2=VAL2") to be parsed.
 }
 
 // SearchConfig holds configuration parameters specific to search operations.
 // It defines the total number of items, an offset for pagination, and a slice of detailed search queries.
 type SearchConfig struct {
-	Num         uint64         `yaml:"num"`         // Total number of items to be used for search.
-	Offset      uint64         `yaml:"offset"`      // Starting offset for the search operation.
-	BulkSize    int            `yaml:"bulk_size"`   // Bulk size for multi-search operations.
-	Concurrency uint64         `yaml:"concurrency"` // Concurrency for search operations.
-	Queries     []*SearchQuery `yaml:"queries"`     // Slice of detailed search query configurations.
+	Num         uint64         `yaml:"num" json:"num,omitempty"`                 // Total number of items to be used for search.
+	Offset      uint64         `yaml:"offset" json:"offset,omitempty"`           // Starting offset for the search operation.
+	BulkSize    uint64         `yaml:"bulk_size" json:"bulk_size,omitempty"`     // Bulk size for multi-search operations.
+	Concurrency uint64         `yaml:"concurrency" json:"concurrency,omitempty"` // Concurrency for search operations.
+	Queries     []*SearchQuery `yaml:"queries" json:"queries,omitempty"`         // Slice of detailed search query configurations.
 }
 
 // SearchQuery represents the detailed parameters for a single search query.
 type SearchQuery struct {
-	K               uint32                              `yaml:"k"`         // Number of top results to return.
-	Radius          float32                             `yaml:"radius"`    // Radius for search (if applicable).
-	Epsilon         float32                             `yaml:"epsilon"`   // Epsilon for approximate search algorithms.
-	TimeoutString   string                              `yaml:"timeout"`   // Timeout value as a string; will be parsed to time.Duration.
-	AlgorithmString string                              `yaml:"algorithm"` // Algorithm identifier as a string; will be normalized and mapped.
-	MinNum          uint32                              `yaml:"min_num"`   // Minimum number of items required for the operation.
-	Ratio           float32                             `yaml:"ratio"`     // Ratio parameter for search (algorithm dependent).
-	Nprobe          uint32                              `yaml:"nprobe"`    // Number of probes for the search algorithm.
+	K               uint32                              `yaml:"k" json:"k,omitempty"`                               // Number of top results to return.
+	Radius          float32                             `yaml:"radius" json:"radius,omitempty"`                     // Radius for search (if applicable).
+	Epsilon         float32                             `yaml:"epsilon" json:"epsilon,omitempty"`                   // Epsilon for approximate search algorithms.
+	TimeoutString   string                              `yaml:"timeout_string" json:"timeout_string,omitempty"`     // Timeout value as a string; will be parsed to time.Duration.
+	AlgorithmString string                              `yaml:"algorithm_string" json:"algorithm_string,omitempty"` // Algorithm identifier as a string; will be normalized and mapped.
+	MinNum          uint32                              `yaml:"min_num" json:"min_num,omitempty"`                   // Minimum number of items required for the operation.
+	Ratio           float32                             `yaml:"ratio" json:"ratio,omitempty"`                       // Ratio parameter for search (algorithm dependent).
+	Nprobe          uint32                              `yaml:"nprobe" json:"nprobe,omitempty"`                     // Number of probes for the search algorithm.
 	Timeout         time.Duration                       // Parsed timeout value.
 	Algorithm       payload.Search_AggregationAlgorithm // Mapped algorithm constant based on AlgorithmString.
 }
@@ -82,39 +82,39 @@ type SearchQuery struct {
 // Setting represents basic operation settings used across multiple operations (e.g., insert, update).
 // It includes numeric values such as the number of items to process, an offset, and a timestamp.
 type Setting struct {
-	Num                  uint64 `yaml:"num"`                     // Number of items to process.
-	Offset               uint64 `yaml:"offset"`                  // Starting offset for the operation.
-	BulkSize             int    `yaml:"bulk_size"`               // Bulk size for multi-xxx operations.
-	Concurrency          uint64 `yaml:"concurrency"`             // Concurrency for operations.
-	SkipStrictExistCheck bool   `yaml:"skip_strict_exist_check"` // Flag to indicate if strict existence checks should be skipped.
-	Timestamp            int64  `yaml:"timestamp"`               // Timestamp value for the operation; used for versioning.
+	Num                  uint64 `yaml:"num" json:"num,omitempty"`                                         // Number of items to process.
+	Offset               uint64 `yaml:"offset" json:"offset,omitempty"`                                   // Starting offset for the operation.
+	BulkSize             uint64 `yaml:"bulk_size" json:"bulk_size,omitempty"`                             // Bulk size for multi-xxx operations.
+	Concurrency          uint64 `yaml:"concurrency" json:"concurrency,omitempty"`                         // Concurrency for operations.
+	SkipStrictExistCheck bool   `yaml:"skip_strict_exist_check" json:"skip_strict_exist_check,omitempty"` // Flag to indicate if strict existence checks should be skipped.
+	Timestamp            int64  `yaml:"timestamp" json:"timestamp,omitempty"`                             // Timestamp value for the operation; used for versioning.
 }
 
 // WaitAfterInsert holds configuration regarding the waiting period after an insert operation,
 // typically used before starting the indexing process.
 type WaitAfterInsert struct {
-	String          string        `yaml:"wait_after_insert"` // Wait duration as a string (e.g., "3m").
+	String          string        `yaml:"wait_after_insert" json:"string,omitempty"` // Wait duration as a string (e.g., "3m").
 	WaitAfterInsert time.Duration // Parsed wait duration value.
 }
 
 // Kubernetes holds configuration settings specific to Kubernetes environments.
 type Kubernetes struct {
-	KubeConfig  string       `yaml:"kubeconfig"`  // File path to the kubeconfig.
-	PortForward *PortForward `yaml:"portforward"` // Port forwarding settings.
+	KubeConfig  string       `yaml:"kubeconfig" json:"kubeconfig,omitempty"`   // File path to the kubeconfig.
+	PortForward *PortForward `yaml:"portforward" json:"portforward,omitempty"` // Port forwarding settings.
 }
 
 // PortForward holds configuration for port forwarding when running in a Kubernetes environment.
 type PortForward struct {
-	Enabled    bool   `yaml:"enabled"`     // Flag to enable or disable port forwarding.
-	PodName    string `yaml:"pod_name"`    // The name of the pod to forward from.
-	TargetPort uint16 `yaml:"target_port"` // The port forward target port number.
-	LocalPort  uint16 `yaml:"local_port"`  // The local port number; if not set, it defaults to TargetPort.
-	Namespace  string `yaml:"namespace"`   // The Kubernetes namespace of the pod.
+	Enabled    bool   `yaml:"enabled" json:"enabled,omitempty"`         // Flag to enable or disable port forwarding.
+	PodName    string `yaml:"pod_name" json:"pod_name,omitempty"`       // The name of the pod to forward from.
+	TargetPort uint16 `yaml:"target_port" json:"target_port,omitempty"` // The port forward target port number.
+	LocalPort  uint16 `yaml:"local_port" json:"local_port,omitempty"`   // The local port number; if not set, it defaults to TargetPort.
+	Namespace  string `yaml:"namespace" json:"namespace,omitempty"`     // The Kubernetes namespace of the pod.
 }
 
 // Dataset holds information about the dataset to be used, such as the filename.
 type Dataset struct {
-	Name string `yaml:"name"` // Name (or path) of the dataset file.
+	Name string `yaml:"name" json:"name,omitempty"` // Name (or path) of the dataset file.
 }
 
 // Bind processes and validates the Data configuration.
@@ -438,15 +438,34 @@ var Default = &Data{
 	},
 }
 
+// newData returns initial Data struct.
+func newData() *Data {
+	return &Data{
+		Target:           &config.GRPCClient{},
+		Search:           &SearchConfig{},
+		SearchByID:       &SearchConfig{},
+		LinearSearch:     &SearchConfig{},
+		LinearSearchByID: &SearchConfig{},
+		Insert:           &Setting{},
+		Update:           &Setting{},
+		Upsert:           &Setting{},
+		Remove:           &Setting{},
+		Object:           &Setting{},
+		Index:            &WaitAfterInsert{},
+		Dataset:          &Dataset{},
+		Kubernetes:       &Kubernetes{},
+	}
+}
+
 // Load reads the configuration from the specified file path.
 // If reading fails, it merges the read configuration with the default configuration.
 // Finally, it calls Bind to perform all necessary post-processing on the configuration.
 func Load(path string) (cfg *Data, err error) {
 	log.Debugf("loading test client configuration from %s", path)
-	cfg = new(Data)
+	cfg = newData()
 
 	// Attempt to read the configuration from the file.
-	err = config.Read(path, &cfg)
+	err = config.Read(path, cfg)
 	if err != nil {
 		// If reading fails, merge the configuration with default values.
 		cfg, err = config.Merge(cfg, Default)

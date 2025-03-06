@@ -21,9 +21,11 @@ package kubernetes
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
 )
 
@@ -58,20 +60,29 @@ func RolloutRestart[T Object, L ObjectList, C NamedObject, I ObjectInterface[T, 
 	ctx context.Context, client I, name string,
 ) error {
 	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		obj, err := client.Get(ctx, name, metav1.GetOptions{})
+		_, err := client.Get(ctx, name, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
-		annotations := obj.GetAnnotations()
-		if annotations == nil {
-			annotations = make(map[string]string, 1)
+
+		// For RolloutRestart, the annotation under the "T.spec.template.metadata" should be updated.
+		patchData := map[string]interface{}{
+			"spec": map[string]interface{}{
+				"template": map[string]interface{}{
+					"metadata": map[string]interface{}{
+						"annotations": map[string]string{
+							rolloutAnnotationKey: time.Now().UTC().Format(time.RFC3339),
+						},
+					},
+				},
+			},
+		}
+		patchBytes, err := json.Marshal(patchData)
+		if err != nil {
+			return err
 		}
 
-		annotations[rolloutAnnotationKey] = time.Now().UTC().Format(time.RFC3339)
-
-		obj.SetAnnotations(annotations)
-
-		_, err = client.Update(ctx, obj, metav1.UpdateOptions{})
+		_, err = client.Patch(ctx, name, types.MergePatchType, patchBytes, metav1.PatchOptions{})
 		return err
 	})
 }
