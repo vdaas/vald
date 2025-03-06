@@ -2021,11 +2021,12 @@ tests/performance/max_vector_dim_test.go
 tests/v2/e2e/config/config.go
 tests/v2/e2e/crud/assets/rollout.yaml
 tests/v2/e2e/crud/crud_test.go
-tests/v2/e2e/crud/multi_test.go
+tests/v2/e2e/crud/grpc_test.go
+tests/v2/e2e/crud/index_test.go
+tests/v2/e2e/crud/modification_test.go
+tests/v2/e2e/crud/object_test.go
 tests/v2/e2e/crud/search_test.go
 tests/v2/e2e/crud/strategy_test.go
-tests/v2/e2e/crud/stream_test.go
-tests/v2/e2e/crud/unary_test.go
 tests/v2/e2e/kubernetes/client.go
 tests/v2/e2e/kubernetes/portforward.go
 tests/v2/e2e/kubernetes/resources.go

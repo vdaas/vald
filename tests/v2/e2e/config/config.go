@@ -40,16 +40,28 @@ const (
 	OpSearchByID       OperationType = "search_by_id"
 	OpLinearSearch     OperationType = "linear_search"
 	OpLinearSearchByID OperationType = "linear_search_by_id"
-	OpInsert           OperationType = "insert"
-	OpUpdate           OperationType = "update"
-	OpUpsert           OperationType = "upsert"
-	OpRemove           OperationType = "remove"
-	OpObject           OperationType = "object"
-	OpIndexInfo        OperationType = "index_info"
-	OpIndexProperty    OperationType = "index_property"
-	OpKubernetes       OperationType = "kubernetes"
-	OpClient           OperationType = "client"
-	OpWait             OperationType = "wait"
+
+	OpInsert            OperationType = "insert"
+	OpUpdate            OperationType = "update"
+	OpUpsert            OperationType = "upsert"
+	OpRemove            OperationType = "remove"
+	OpRemoveByTimestamp OperationType = "remove_by_timestamp"
+
+	OpObject     OperationType = "object"
+	OpListObject OperationType = "list_object"
+	OpTimestamp  OperationType = "timestamp"
+	OpExists     OperationType = "exists"
+
+	OpIndexInfo             OperationType = "index_info"
+	OpIndexDetail           OperationType = "index_detail"
+	OpIndexStatistics       OperationType = "index_statistics"
+	OpIndexStatisticsDetail OperationType = "index_statistics_detail"
+	OpIndexProperty         OperationType = "index_property"
+	OpFlush                 OperationType = "flush"
+
+	OpKubernetes OperationType = "kubernetes"
+	OpClient     OperationType = "client"
+	OpWait       OperationType = "wait"
 )
 
 type OperationMode string
@@ -493,10 +505,19 @@ var Default = &Data{
 	},
 	Strategies: []*Strategy{
 		{
+			TimeConfig: &TimeConfig{
+				Timeout: "",
+				Delay:   "",
+				Wait:    defaultWaitAfterInsert,
+			},
 			Concurrency: 1,
 			Operations: []*Operation{
 				{
-					Delay: "",
+					TimeConfig: &TimeConfig{
+						Timeout: "",
+						Delay:   "",
+						Wait:    "",
+					},
 					Executions: []*Execution{
 						{
 							Type: OpInsert,
@@ -518,13 +539,11 @@ var Default = &Data{
 					},
 				},
 			},
-			Wait: defaultWaitAfterInsert,
 		},
 		{
 			Concurrency: 4,
 			Operations: []*Operation{
 				{
-					Delay: "",
 					Executions: []*Execution{
 						{
 							Type: OpSearch,
@@ -543,7 +562,6 @@ var Default = &Data{
 					},
 				},
 				{
-					Delay: "",
 					Executions: []*Execution{
 						{
 							Type: OpSearchByID,
@@ -562,7 +580,6 @@ var Default = &Data{
 					},
 				},
 				{
-					Delay: "",
 					Executions: []*Execution{
 						{
 							Type: OpLinearSearch,
@@ -581,7 +598,6 @@ var Default = &Data{
 					},
 				},
 				{
-					Delay: "",
 					Executions: []*Execution{
 						{
 							Type: OpLinearSearchByID,

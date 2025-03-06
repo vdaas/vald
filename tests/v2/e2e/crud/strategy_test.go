@@ -36,8 +36,9 @@ import (
 )
 
 type runner struct {
-	client vald.Client
-	k8s    k8s.Client
+	rootCtx context.Context
+	client  vald.Client
+	k8s     k8s.Client
 }
 
 func TestE2EStrategy(t *testing.T) {
@@ -48,12 +49,10 @@ func TestE2EStrategy(t *testing.T) {
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 
-	var (
-		kclient k8s.Client
-		err     error
-	)
+	var err error
+	r := new(runner)
 	if cfg.Kubernetes != nil {
-		kclient, err = k8s.NewClient(cfg.Kubernetes.KubeConfig, "")
+		r.k8s, err = k8s.NewClient(cfg.Kubernetes.KubeConfig, "")
 		if err != nil {
 			t.Errorf("failed to create kubernetes client: %v", err)
 		}
@@ -73,7 +72,7 @@ func TestE2EStrategy(t *testing.T) {
 		}
 	}
 
-	client, ctx, err := newClient(t, ctx, cfg.Metadata)
+	r.client, ctx, err = newClient(t, ctx, cfg.Metadata)
 	if err != nil {
 		t.Fatal("failed to create client: %v", err)
 	}
@@ -99,11 +98,6 @@ func TestE2EStrategy(t *testing.T) {
 		}
 	}()
 
-	r := &runner{
-		client: client,
-		k8s:    kclient,
-	}
-
 	for i, st := range cfg.Strategies {
 		r.processStrategy(t, ctx, i, st)
 	}
@@ -111,7 +105,7 @@ func TestE2EStrategy(t *testing.T) {
 
 func (r *runner) processStrategy(t *testing.T, ctx context.Context, idx int, st *config.Strategy) {
 	t.Helper()
-	if st == nil {
+	if r == nil || st == nil {
 		return
 	}
 
@@ -146,7 +140,7 @@ func (r *runner) processOperation(
 	t *testing.T, ctx context.Context, idx int, op *config.Operation,
 ) {
 	t.Helper()
-	if op == nil {
+	if r == nil || op == nil {
 		return
 	}
 
@@ -165,15 +159,13 @@ func (r *runner) processOperation(
 
 func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e *config.Execution) {
 	t.Helper()
-	if e == nil {
+	if r == nil || e == nil {
 		return
 	}
 
 	t.Run(fmt.Sprintf("#%d: execution=%s type=%s mode=%s", idx, e.Name, e.Type, e.Mode), func(tt *testing.T) {
 		if err := executeWithTimings(tt, ctx, e, "execution", func(ttt *testing.T, ctx context.Context) error {
 			ttt.Helper()
-			ttt.Logf("operation type: %s", e.Type)
-
 			switch e.Type {
 			case config.OpSearch,
 				config.OpSearchByID,
@@ -183,22 +175,43 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 				config.OpUpdate,
 				config.OpUpsert,
 				config.OpRemove,
-				config.OpObject:
+				config.OpRemoveByTimestamp,
+				config.OpObject,
+				config.OpListObject,
+				config.OpTimestamp,
+				config.OpExists:
 				train, test, neighbors := getDatasetSlices(ttt, e)
 				switch e.Type {
-				case config.OpSearch, config.OpSearchByID, config.OpLinearSearch, config.OpLinearSearchByID:
-					r.processSearch(ttt, ctx, test, train, neighbors, e)
-				case config.OpInsert:
-				case config.OpUpdate:
-				case config.OpUpsert:
-				case config.OpRemove:
-				case config.OpObject:
+				case config.OpSearch,
+					config.OpSearchByID,
+					config.OpLinearSearch,
+					config.OpLinearSearchByID:
+					r.processSearch(ttt, ctx, train, test, neighbors, e)
+				case config.OpInsert,
+					config.OpUpdate,
+					config.OpUpsert,
+					config.OpRemove,
+					config.OpRemoveByTimestamp:
+					r.processModification(ttt, ctx, train, e)
+				case config.OpObject,
+					config.OpListObject,
+					config.OpTimestamp,
+					config.OpExists:
+					r.processObject(ttt, ctx, train, e)
 				}
-			case config.OpIndexInfo:
-			case config.OpIndexProperty:
+			case config.OpIndexInfo,
+				config.OpIndexDetail,
+				config.OpIndexStatistics,
+				config.OpIndexStatisticsDetail,
+				config.OpIndexProperty,
+				config.OpFlush:
+				r.processIndex(ttt, ctx, e)
 			case config.OpKubernetes:
+				// TODO implement kubernetes operation here, eg. delete pod, rollout restart, etc.
 			case config.OpClient:
+				// TODO implement gRPC client operation here, eg. start, stop, etc.
 			case config.OpWait:
+				// do nothing
 			default:
 				ttt.Errorf("unsupported operation type: %s detected during execution %d", e.Type, idx)
 			}

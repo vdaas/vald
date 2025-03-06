@@ -16,7 +16,7 @@
 // limitations under the License.
 //
 
-// Package crud provides end-to-end tests using ann-benchmarks datasets.
+// package crud provides end-to-end tests using ann-benchmarks datasets.
 package crud
 
 import (
@@ -28,7 +28,6 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/proto"
-	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
@@ -48,19 +47,19 @@ func recall(t *testing.T, resultIDs []string, neighbors []int) float64 {
 	}
 
 	// Count how many resultIDs exist in the set of expected neighbor IDs.
-	var count float64
+	var count int
 	for _, r := range resultIDs {
 		if _, ok := ns[r]; ok {
 			count++
 		}
 	}
 	// Return the recall as a ratio.
-	return count / float64(len(neighbors))
+	return float64(count) / float64(len(neighbors))
 }
 
 // calculateRecall extracts the topK result IDs from the search response and computes the recall.
 // It uses the provided index to select the expected neighbor IDs from a global source (ds.Neighbors).
-func calculateRecall(t *testing.T, res *payload.Search_Response, idx int) float64 {
+func calculateRecall(t *testing.T, neighbors []int, res *payload.Search_Response) float64 {
 	t.Helper()
 	// Extract the IDs from the results.
 	topKIDs := make([]string, 0, len(res.GetResults()))
@@ -74,7 +73,7 @@ func calculateRecall(t *testing.T, res *payload.Search_Response, idx int) float6
 		return 0
 	}
 	// ds.Neighbors is assumed to be defined globally with expected neighbor IDs.
-	return recall(t, topKIDs, ds.Neighbors[idx][:len(topKIDs)])
+	return recall(t, topKIDs, neighbors[:len(topKIDs)])
 }
 
 // newSearchConfig creates a new Search_Config instance based on the provided search query and test ID.
@@ -113,33 +112,8 @@ func newSearchConfig(t *testing.T, id string, query *config.SearchQuery) *payloa
 	}
 }
 
-// handleSearchError centralizes the gRPC error handling and logging.
-// It compares the error's status code with the expected codes from the plan.
-// If the error is expected, it logs a message; otherwise, it logs an error.
-func handleSearchError(t *testing.T, err error, plan *config.Execution) {
-	t.Helper()
-	if err != nil {
-		if st, ok := status.FromError(err); ok && st != nil {
-			if plan.ExpectedStatusCodes.Equals(st.Code().String()) {
-				t.Logf("expected error: %v", st)
-			} else {
-				t.Errorf("unexpected error: %v", st)
-			}
-		} else {
-			t.Errorf("failed to search vector: %v", err)
-		}
-	}
-}
-
-// Type aliases for generic search functions.
-// doSearch is a generic function type for making gRPC calls.
 // newSearchRequest is a generic type for functions that create search requests.
-// newMultiSearchRequest is a generic type for functions that build bulk search requests.
-type (
-	doSearch[R, S proto.Message]              func(ctx context.Context, in R, opts ...grpc.CallOption) (S, error)
-	newSearchRequest[R proto.Message]         func(id string, vec []float32, scfg *payload.Search_Config) R
-	newMultiSearchRequest[R, S proto.Message] func([]R) S
-)
+type newSearchRequest[R proto.Message] func(id string, vec []float32, scfg *payload.Search_Config) R
 
 // Predefined request builder functions for unary and multi search requests.
 var (
@@ -162,14 +136,14 @@ var (
 	}
 
 	// searchMultiRequest builds a Search_MultiRequest from a slice of Search_Request.
-	searchMultiRequest newMultiSearchRequest[*payload.Search_Request, *payload.Search_MultiRequest] = func(reqs []*payload.Search_Request) *payload.Search_MultiRequest {
+	searchMultiRequest newMultiRequest[*payload.Search_Request, *payload.Search_MultiRequest] = func(reqs []*payload.Search_Request) *payload.Search_MultiRequest {
 		return &payload.Search_MultiRequest{
 			Requests: reqs,
 		}
 	}
 
 	// searchMultiIDRequest builds a Search_MultiIDRequest from a slice of Search_IDRequest.
-	searchMultiIDRequest newMultiSearchRequest[*payload.Search_IDRequest, *payload.Search_MultiIDRequest] = func(reqs []*payload.Search_IDRequest) *payload.Search_MultiIDRequest {
+	searchMultiIDRequest newMultiRequest[*payload.Search_IDRequest, *payload.Search_MultiIDRequest] = func(reqs []*payload.Search_IDRequest) *payload.Search_MultiIDRequest {
 		return &payload.Search_MultiIDRequest{
 			Requests: reqs,
 		}
@@ -237,7 +211,7 @@ func unarySearch[R proto.Message](
 	data [][]float32,
 	neighbors [][]int,
 	plan *config.Execution,
-	do doSearch[R, *payload.Search_Response],
+	call grpcCall[R, *payload.Search_Response],
 	newReq newSearchRequest[R],
 ) {
 	t.Helper()
@@ -246,6 +220,7 @@ func unarySearch[R proto.Message](
 	// Set the concurrency limit from the plan configuration.
 	eg.SetLimit(int(plan.Concurrency))
 	for i, vec := range data {
+		idx := i
 		// For each test vector, iterate over all search configurations.
 		for _, q := range plan.SearchConfig {
 			id := strconv.Itoa(i)
@@ -254,15 +229,15 @@ func unarySearch[R proto.Message](
 			// Launch the search request in a goroutine.
 			eg.Go(safety.RecoverFunc(func() error {
 				// Execute the search gRPC call.
-				res, err := do(ctx, newReq(id, vec, scfg))
+				res, err := call(ctx, newReq(id, vec, scfg))
 				if err != nil {
 					// Handle the error using the centralized error handler.
-					handleSearchError(t, err, plan)
+					handleGRPCCallError(t, err, plan)
 					return nil
 				}
 				// Log the result including calculated recall.
 				t.Logf("vector %v id %s searched recall: %f, payload %s",
-					vec, scfg.RequestId, calculateRecall(t, res, i), res.String())
+					vec, scfg.RequestId, calculateRecall(t, neighbors[idx], res), res.String())
 				return nil
 			}))
 		}
@@ -273,25 +248,25 @@ func unarySearch[R proto.Message](
 
 // multiSearch handles bulk search requests by grouping individual requests up to BulkSize.
 // Once the bulk size is reached, it sends the grouped requests and logs the responses.
-func multiSearch[R, S proto.Message](
+// It uses the provided builder functions to create the individual requests and the bulk request.
+// The bulk request is sent using the provided gRPC call function.
+// The function logs the response for each batch of requests.
+// The function is used for vector search, searchByID, linearSearch, and linearSearchByID operations.
+func multiSearch[Q, R proto.Message](
 	t *testing.T,
 	ctx context.Context,
 	data [][]float32,
 	neighbors [][]int,
 	plan *config.Execution,
-	do doSearch[S, *payload.Search_Responses],
-	addReqs newSearchRequest[R],
-	toReq func([]R) S,
+	call grpcCall[R, *payload.Search_Responses],
+	addReqs newSearchRequest[Q],
+	toReq newMultiRequest[Q, R],
 ) {
 	t.Helper()
 	eg, ctx := errgroup.New(ctx)
 	eg.SetLimit(int(plan.Concurrency))
 	// Initialize a slice to hold the bulk requests.
-	reqs := make([]R, 0, plan.BulkSize)
-	// msreq is used only for logging purposes (e.g., to refer to vector values).
-	msreq := &payload.Search_MultiRequest{
-		Requests: make([]*payload.Search_Request, 0, plan.BulkSize),
-	}
+	reqs := make([]Q, 0, plan.BulkSize)
 	for i, vec := range data {
 		for _, query := range plan.SearchConfig {
 			id := strconv.Itoa(i)
@@ -305,21 +280,21 @@ func multiSearch[R, S proto.Message](
 				reqs = reqs[:0]
 				eg.Go(safety.RecoverFunc(func() error {
 					// Convert the slice of individual requests into a bulk request.
-					res, err := do(ctx, toReq(batch))
+					res, err := call(ctx, toReq(batch))
 					if err != nil {
-						handleSearchError(t, err, plan)
+						handleGRPCCallError(t, err, plan)
 						return nil
 					}
 					// For each response in the bulk response, log the recall.
-					for i, r := range res.GetResponses() {
+					for _, r := range res.GetResponses() {
 						id, _, _ := strings.Cut(r.GetRequestId(), "-")
 						idx, _ := strconv.Atoi(id)
-						t.Logf("vector %v id %s searched recall: %f, payload %s",
-							msreq.GetRequests()[i].GetVector(), r.GetRequestId(),
-							calculateRecall(t, &payload.Search_Response{
+						t.Logf("id %s searched recall: %f, payload %s",
+							r.GetRequestId(),
+							calculateRecall(t, neighbors[idx], &payload.Search_Response{
 								RequestId: r.GetRequestId(),
 								Results:   r.GetResults(),
-							}, idx),
+							}),
 							res.String())
 					}
 					return nil
@@ -377,13 +352,13 @@ func streamSearch[S grpc.ClientStream, R proto.Message](
 	}, func(res *payload.Search_Response, err error) bool {
 		// This function is called for each response received.
 		if err != nil {
-			handleSearchError(t, err, plan)
+			handleGRPCCallError(t, err, plan)
 			return true
 		}
 		// Extract the vector index from the request ID.
 		id, _, _ := strings.Cut(res.GetRequestId(), "-")
 		idx, _ := strconv.Atoi(id)
-		t.Logf("request id %s searched recall: %f, payload %s", res.GetRequestId(), calculateRecall(t, res, idx), res.String())
+		t.Logf("request id %s searched recall: %f, payload %s", res.GetRequestId(), calculateRecall(t, neighbors[idx], res), res.String())
 		return true
 	})
 	if err != nil {
