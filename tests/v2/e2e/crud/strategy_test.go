@@ -26,10 +26,13 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/tests/v2/e2e/config"
 	k8s "github.com/vdaas/vald/tests/v2/e2e/kubernetes"
+	"google.golang.org/grpc/metadata"
 )
 
 type runner struct {
@@ -70,7 +73,7 @@ func TestE2EStrategy(t *testing.T) {
 		}
 	}
 
-	client, ctx, err := newClient(ctx, cfg.Metadata)
+	client, ctx, err := newClient(t, ctx, cfg.Metadata)
 	if err != nil {
 		t.Fatal("failed to create client: %v", err)
 	}
@@ -275,4 +278,29 @@ func getDatasetSlices(t *testing.T, e *config.Execution) (train, test [][]float3
 		t.Errorf("neighbor data is not enough, offset: %d, num: %d, total: %d", e.Offset, e.Num, len(ds.Neighbors))
 	}
 	return train, test, neighbors
+}
+
+func newClient(t *testing.T,
+	ctx context.Context, meta map[string]string,
+) (client vald.Client, mctx context.Context, err error) {
+	t.Helper()
+	if cfg == nil || cfg.Target == nil {
+		return nil, nil, errors.ErrGRPCTargetAddrNotFound
+	}
+	gopts, err := cfg.Target.Opts()
+	if err != nil {
+		return nil, nil, err
+	}
+	client, err = vald.New(
+		vald.WithClient(
+			grpc.New(gopts...),
+		),
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+	if meta != nil {
+		mctx = metadata.NewOutgoingContext(ctx, metadata.New(meta))
+	}
+	return client, mctx, nil
 }

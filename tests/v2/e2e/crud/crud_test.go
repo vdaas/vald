@@ -23,18 +23,14 @@ import (
 	"context"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/params"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/tests/e2e/hdf5"
 	"github.com/vdaas/vald/tests/v2/e2e/config"
 	k8s "github.com/vdaas/vald/tests/v2/e2e/kubernetes"
-	"google.golang.org/grpc/metadata"
 )
 
 var (
@@ -77,35 +73,4 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed to load dataset: %v", err)
 	}
 	os.Exit(m.Run())
-}
-
-func newClient(
-	ctx context.Context, meta map[string]string,
-) (client vald.Client, mctx context.Context, err error) {
-	if cfg == nil || cfg.Target == nil {
-		return nil, nil, errors.ErrGRPCTargetAddrNotFound
-	}
-	gopts, err := cfg.Target.Opts()
-	if err != nil {
-		return nil, nil, err
-	}
-	client, err = vald.New(
-		vald.WithClient(
-			grpc.New(gopts...),
-		),
-	)
-	if err != nil {
-		return nil, nil, err
-	}
-	if meta != nil {
-		mctx = metadata.NewOutgoingContext(ctx, metadata.New(meta))
-	}
-	return client, mctx, nil
-}
-
-func sleep(t *testing.T, dur time.Duration) {
-	t.Helper()
-	t.Logf("%v sleep for %s.", time.Now(), dur)
-	time.Sleep(dur)
-	t.Logf("%v sleep finished.", time.Now())
 }
