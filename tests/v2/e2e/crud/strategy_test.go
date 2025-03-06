@@ -142,7 +142,9 @@ func (r *runner) processStrategy(t *testing.T, ctx context.Context, idx int, st 
 	})
 }
 
-func (r *runner) processOperation(t *testing.T, ctx context.Context, idx int, op *config.Operation) {
+func (r *runner) processOperation(
+	t *testing.T, ctx context.Context, idx int, op *config.Operation,
+) {
 	t.Helper()
 	if op == nil {
 		return
@@ -207,7 +209,13 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 	})
 }
 
-func executeWithTimings[T config.Timing](t *testing.T, ctx context.Context, cfg T, prefix string, fn func(*testing.T, context.Context) error) error {
+func executeWithTimings[T config.Timing](
+	t *testing.T,
+	ctx context.Context,
+	cfg T,
+	prefix string,
+	fn func(*testing.T, context.Context) error,
+) error {
 	t.Helper()
 
 	if delay := cfg.GetDelay(); delay != "" {
@@ -258,7 +266,9 @@ func executeWithTimings[T config.Timing](t *testing.T, ctx context.Context, cfg 
 	return err
 }
 
-func getDatasetSlices(t *testing.T, e *config.Execution) (train, test [][]float32, neighbors [][]int) {
+func getDatasetSlices(
+	t *testing.T, e *config.Execution,
+) (train, test [][]float32, neighbors [][]int) {
 	t.Helper()
 	if len(ds.Train) > int(e.Offset)+int(e.Num) {
 		train = ds.Train[e.Offset : e.Offset+e.Num]
@@ -280,8 +290,8 @@ func getDatasetSlices(t *testing.T, e *config.Execution) (train, test [][]float3
 	return train, test, neighbors
 }
 
-func newClient(t *testing.T,
-	ctx context.Context, meta map[string]string,
+func newClient(
+	t *testing.T, ctx context.Context, meta map[string]string,
 ) (client vald.Client, mctx context.Context, err error) {
 	t.Helper()
 	if cfg == nil || cfg.Target == nil {

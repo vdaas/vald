@@ -26,8 +26,8 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
@@ -119,130 +119,220 @@ func (r *runner) search(
 	t *testing.T, ctx context.Context, test [][]float32, neighbors [][]int, plan *config.Execution,
 ) {
 	t.Helper()
-	unarySearch(t, ctx, test, neighbors, plan, r.client.Search)
+	unarySearch(t, ctx, test, neighbors, plan, r.client.Search,
+		func(_ string, vec []float32, scfg *payload.Search_Config) *payload.Search_Request {
+			return &payload.Search_Request{
+				Vector: vec,
+				Config: scfg,
+			}
+		})
 }
 
 func (r *runner) linearSearch(
 	t *testing.T, ctx context.Context, test [][]float32, neighbors [][]int, plan *config.Execution,
 ) {
 	t.Helper()
-	unarySearch(t, ctx, test, neighbors, plan, r.client.LinearSearch)
+	unarySearch(t, ctx, test, neighbors, plan, r.client.LinearSearch,
+		func(id string, vec []float32, scfg *payload.Search_Config) *payload.Search_Request {
+			return &payload.Search_Request{
+				Vector: vec,
+				Config: scfg,
+			}
+		})
 }
 
 func (r *runner) searchByID(
 	t *testing.T, ctx context.Context, train [][]float32, neighbors [][]int, plan *config.Execution,
 ) {
 	t.Helper()
-	unarySearchByID(t, ctx, train, neighbors, plan, r.client.SearchByID)
+	unarySearch(t, ctx, train, neighbors, plan, r.client.SearchByID,
+		func(id string, _ []float32, scfg *payload.Search_Config) *payload.Search_IDRequest {
+			return &payload.Search_IDRequest{
+				Id:     id,
+				Config: scfg,
+			}
+		})
 }
 
 func (r *runner) linearSearchByID(
 	t *testing.T, ctx context.Context, train [][]float32, neighbors [][]int, plan *config.Execution,
 ) {
 	t.Helper()
-	unarySearchByID(t, ctx, train, neighbors, plan, r.client.LinearSearchByID)
+	unarySearch(t, ctx, train, neighbors, plan, r.client.LinearSearchByID,
+		func(id string, _ []float32, scfg *payload.Search_Config) *payload.Search_IDRequest {
+			return &payload.Search_IDRequest{
+				Id:     id,
+				Config: scfg,
+			}
+		})
 }
 
 func (r *runner) multiSearch(
 	t *testing.T, ctx context.Context, test [][]float32, neighbors [][]int, plan *config.Execution,
 ) {
 	t.Helper()
-	multiSearch(t, ctx, test, neighbors, plan, r.client.MultiSearch)
+	multiSearch(t, ctx, test, neighbors, plan, r.client.MultiSearch,
+		func(id string, vec []float32, scfg *payload.Search_Config) *payload.Search_Request {
+			return &payload.Search_Request{
+				Vector: vec,
+				Config: scfg,
+			}
+		},
+		func(reqs []*payload.Search_Request) *payload.Search_MultiRequest {
+			return &payload.Search_MultiRequest{
+				Requests: reqs,
+			}
+		})
 }
 
 func (r *runner) multiLinearSearch(
 	t *testing.T, ctx context.Context, test [][]float32, neighbors [][]int, plan *config.Execution,
 ) {
 	t.Helper()
-	multiSearch(t, ctx, test, neighbors, plan, r.client.MultiLinearSearch)
+	multiSearch(t, ctx, test, neighbors, plan, r.client.MultiLinearSearch,
+		func(id string, vec []float32, scfg *payload.Search_Config) *payload.Search_Request {
+			return &payload.Search_Request{
+				Vector: vec,
+				Config: scfg,
+			}
+		},
+		func(reqs []*payload.Search_Request) *payload.Search_MultiRequest {
+			return &payload.Search_MultiRequest{
+				Requests: reqs,
+			}
+		})
 }
 
 func (r *runner) multiSearchByID(
 	t *testing.T, ctx context.Context, train [][]float32, neighbors [][]int, plan *config.Execution,
 ) {
 	t.Helper()
-	multiSearchByID(t, ctx, train, neighbors, plan, r.client.MultiSearchByID)
+	multiSearch(t, ctx, train, neighbors, plan, r.client.MultiSearchByID,
+		func(id string, _ []float32, scfg *payload.Search_Config) *payload.Search_IDRequest {
+			return &payload.Search_IDRequest{
+				Id:     id,
+				Config: scfg,
+			}
+		},
+		func(reqs []*payload.Search_IDRequest) *payload.Search_MultiIDRequest {
+			return &payload.Search_MultiIDRequest{
+				Requests: reqs,
+			}
+		})
 }
 
 func (r *runner) multiLinearSearchByID(
 	t *testing.T, ctx context.Context, train [][]float32, neighbors [][]int, plan *config.Execution,
 ) {
 	t.Helper()
-	multiSearchByID(t, ctx, train, neighbors, plan, r.client.MultiLinearSearchByID)
+	multiSearch(t, ctx, train, neighbors, plan, r.client.MultiLinearSearchByID,
+		func(id string, _ []float32, scfg *payload.Search_Config) *payload.Search_IDRequest {
+			return &payload.Search_IDRequest{
+				Id:     id,
+				Config: scfg,
+			}
+		},
+		func(reqs []*payload.Search_IDRequest) *payload.Search_MultiIDRequest {
+			return &payload.Search_MultiIDRequest{
+				Requests: reqs,
+			}
+		})
 }
 
 func (r *runner) streamSearch(
 	t *testing.T, ctx context.Context, test [][]float32, neighbors [][]int, plan *config.Execution,
 ) {
 	t.Helper()
-	streamSearch(t, ctx, test, neighbors, plan, r.client.StreamSearch)
+	streamSearch(t, ctx, test, neighbors, plan, r.client.StreamSearch,
+		func(_ string, vec []float32, scfg *payload.Search_Config) *payload.Search_Request {
+			return &payload.Search_Request{
+				Vector: vec,
+				Config: scfg,
+			}
+		})
 }
 
 func (r *runner) streamLinearSearch(
 	t *testing.T, ctx context.Context, test [][]float32, neighbors [][]int, plan *config.Execution,
 ) {
 	t.Helper()
-	streamSearch(t, ctx, test, neighbors, plan, r.client.StreamLinearSearch)
+	streamSearch(t, ctx, test, neighbors, plan, r.client.StreamLinearSearch,
+		func(_ string, vec []float32, scfg *payload.Search_Config) *payload.Search_Request {
+			return &payload.Search_Request{
+				Vector: vec,
+				Config: scfg,
+			}
+		})
 }
 
 func (r *runner) streamSearchByID(
 	t *testing.T, ctx context.Context, train [][]float32, neighbors [][]int, plan *config.Execution,
 ) {
 	t.Helper()
-	streamSearchByID(t, ctx, train, neighbors, plan, r.client.StreamSearchByID)
+	streamSearch(t, ctx, train, neighbors, plan, r.client.StreamSearchByID,
+		func(id string, _ []float32, scfg *payload.Search_Config) *payload.Search_IDRequest {
+			return &payload.Search_IDRequest{
+				Id:     id,
+				Config: scfg,
+			}
+		})
 }
 
 func (r *runner) streamLinearSearchByID(
 	t *testing.T, ctx context.Context, train [][]float32, neighbors [][]int, plan *config.Execution,
 ) {
 	t.Helper()
-	streamSearchByID(t, ctx, train, neighbors, plan, r.client.StreamLinearSearchByID)
+	streamSearch(t, ctx, train, neighbors, plan, r.client.StreamLinearSearchByID,
+		func(id string, _ []float32, scfg *payload.Search_Config) *payload.Search_IDRequest {
+			return &payload.Search_IDRequest{
+				Id:     id,
+				Config: scfg,
+			}
+		})
 }
 
-func unarySearch(
+func unarySearch[R proto.Message](
 	t *testing.T,
 	ctx context.Context,
-	test [][]float32,
+	data [][]float32,
 	neighbors [][]int,
 	plan *config.Execution,
-	do func(ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption) (*payload.Search_Response, error),
+	do func(ctx context.Context, in R, opts ...grpc.CallOption) (*payload.Search_Response, error),
+	newReq func(id string, vec []float32, scfg *payload.Search_Config) R,
 ) {
 	t.Helper()
 	eg, ctx := errgroup.New(ctx)
 	eg.SetLimit(int(plan.Concurrency))
-	for i, vec := range test {
-		for _, query := range plan.SearchConfig {
+	for i, vec := range data {
+		for _, q := range plan.SearchConfig {
+			query := q
 			id := strconv.Itoa(i)
-			rid := id + "-" + payload.Search_AggregationAlgorithm_name[int32(query.Algorithm)]
 			eg.Go(safety.RecoverFunc(func() (err error) {
-				var ratio *wrapperspb.FloatValue
-				if query.Ratio != 0 {
-					ratio = wrapperspb.Float(query.Ratio)
-				} else {
-					ratio = nil
-				}
-				var to time.Duration
-				if query.Timeout != "" {
-					to, err = query.Timeout.Duration()
-					if err != nil {
-						t.Errorf("failed to parse timeout duration: %s", err)
+				rid := id + "-" + payload.Search_AggregationAlgorithm_name[int32(query.Algorithm)]
+				res, err := do(ctx, newReq(id, vec, &payload.Search_Config{
+					RequestId: rid,
+					Num:       query.K,
+					Radius:    query.Radius,
+					Epsilon:   query.Epsilon,
+					Timeout: func() int64 {
+						if query.Timeout != "" {
+							to, err := query.Timeout.Duration()
+							if err == nil {
+								return to.Nanoseconds()
+							}
+						}
+						return time.Second.Nanoseconds()
+					}(),
+					AggregationAlgorithm: query.Algorithm,
+					MinNum:               query.MinNum,
+					Ratio: func() *wrapperspb.FloatValue {
+						if query.Ratio != 0 {
+							return wrapperspb.Float(query.Ratio)
+						}
 						return nil
-					}
-				}
-				res, err := do(ctx, &payload.Search_Request{
-					Vector: vec,
-					Config: &payload.Search_Config{
-						RequestId:            rid,
-						Num:                  query.K,
-						Radius:               query.Radius,
-						Epsilon:              query.Epsilon,
-						Timeout:              to.Nanoseconds(),
-						AggregationAlgorithm: query.Algorithm,
-						MinNum:               query.MinNum,
-						Ratio:                ratio,
-						Nprobe:               query.Nprobe,
-					},
-				})
+					}(),
+					Nprobe: query.Nprobe,
+				}))
 				if err != nil {
 					st, ok := status.FromError(err)
 					if ok && st != nil {
@@ -259,121 +349,55 @@ func unarySearch(
 	eg.Wait()
 }
 
-func unarySearchByID(
+func multiSearch[R, S proto.Message](
 	t *testing.T,
 	ctx context.Context,
-	train [][]float32,
+	data [][]float32,
 	neighbors [][]int,
 	plan *config.Execution,
-	do func(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (*payload.Search_Response, error),
+	do func(ctx context.Context, in S, opts ...grpc.CallOption) (*payload.Search_Responses, error),
+	addReqs func(id string, vec []float32, scfg *payload.Search_Config) R,
+	toReq func([]R) S,
 ) {
 	t.Helper()
 	eg, ctx := errgroup.New(ctx)
 	eg.SetLimit(int(plan.Concurrency))
-	for i, vec := range train {
-		for _, query := range plan.SearchConfig {
-			id := strconv.Itoa(i)
-			rid := id + "-" + payload.Search_AggregationAlgorithm_name[int32(query.Algorithm)]
-			eg.Go(safety.RecoverFunc(func() (err error) {
-				var ratio *wrapperspb.FloatValue
-				if query.Ratio != 0 {
-					ratio = wrapperspb.Float(query.Ratio)
-				} else {
-					ratio = nil
-				}
-				var to time.Duration
-				if query.Timeout != "" {
-					to, err = query.Timeout.Duration()
-					if err != nil {
-						t.Errorf("failed to parse timeout duration: %s", err)
-						return nil
-					}
-				}
-				res, err := do(ctx, &payload.Search_IDRequest{
-					Id: id,
-					Config: &payload.Search_Config{
-						RequestId:            rid,
-						Num:                  query.K,
-						Radius:               query.Radius,
-						Epsilon:              query.Epsilon,
-						Timeout:              to.Nanoseconds(),
-						AggregationAlgorithm: query.Algorithm,
-						MinNum:               query.MinNum,
-						Ratio:                ratio,
-						Nprobe:               query.Nprobe,
-					},
-				})
-				if err != nil {
-					st, ok := status.FromError(err)
-					if ok && st != nil {
-						t.Errorf("failed to search vector: %v, status: %s", err, st.String())
-					} else {
-						t.Errorf("failed to search vector: %v", err)
-					}
-				}
-				t.Logf("vector %v id %s searched recall: %f, payload %s", vec, rid, calculateRecall(t, res, i), res.String())
-				return nil
-			}))
-		}
-	}
-	eg.Wait()
-}
-
-func multiSearch(
-	t *testing.T,
-	ctx context.Context,
-	test [][]float32,
-	neighbors [][]int,
-	plan *config.Execution,
-	do func(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error),
-) {
-	t.Helper()
-	eg, ctx := errgroup.New(ctx)
-	eg.SetLimit(int(plan.Concurrency))
+	reqs := make([]R, 0, plan.BulkSize)
 	msreq := &payload.Search_MultiRequest{
 		Requests: make([]*payload.Search_Request, 0, plan.BulkSize),
 	}
-	for i, vec := range test {
+	for i, vec := range data {
 		for _, query := range plan.SearchConfig {
 			id := strconv.Itoa(i)
-			rid := id + "-" + payload.Search_AggregationAlgorithm_name[int32(query.Algorithm)]
-			var ratio *wrapperspb.FloatValue
-			if query.Ratio != 0 {
-				ratio = wrapperspb.Float(query.Ratio)
-			} else {
-				ratio = nil
-			}
-			var (
-				to  time.Duration
-				err error
-			)
-
-			if query.Timeout != "" {
-				to, err = query.Timeout.Duration()
-				if err != nil {
-					t.Errorf("failed to parse timeout duration: %s", err)
-					continue
-				}
-			}
-			msreq.Requests = append(msreq.Requests, &payload.Search_Request{
-				Vector: vec,
-				Config: &payload.Search_Config{
-					RequestId:            rid,
-					Num:                  query.K,
-					Radius:               query.Radius,
-					Epsilon:              query.Epsilon,
-					Timeout:              to.Nanoseconds(),
-					AggregationAlgorithm: query.Algorithm,
-					MinNum:               query.MinNum,
-					Ratio:                ratio,
-					Nprobe:               query.Nprobe,
-				},
-			})
-			if len(msreq.GetRequests()) >= int(plan.BulkSize) {
+			reqs = append(reqs, addReqs(id, vec, &payload.Search_Config{
+				RequestId: id + "-" + payload.Search_AggregationAlgorithm_name[int32(query.Algorithm)],
+				Num:       query.K,
+				Radius:    query.Radius,
+				Epsilon:   query.Epsilon,
+				Timeout: func() int64 {
+					if query.Timeout != "" {
+						to, err := query.Timeout.Duration()
+						if err == nil {
+							return to.Nanoseconds()
+						}
+					}
+					return time.Second.Nanoseconds()
+				}(),
+				AggregationAlgorithm: query.Algorithm,
+				MinNum:               query.MinNum,
+				Ratio: func() *wrapperspb.FloatValue {
+					if query.Ratio != 0 {
+						return wrapperspb.Float(query.Ratio)
+					}
+					return nil
+				}(),
+				Nprobe: query.Nprobe,
+			}))
+			if len(reqs) >= int(plan.BulkSize) {
 				req := msreq.CloneVT()
 				msreq.Reset()
 				eg.Go(safety.RecoverFunc(func() error {
-					res, err := do(ctx, req)
+					res, err := do(ctx, toReq(reqs))
 					if err != nil {
 						st, ok := status.FromError(err)
 						if ok && st != nil {
@@ -397,225 +421,58 @@ func multiSearch(
 	}
 }
 
-func multiSearchByID(
+func streamSearch[S grpc.ClientStream, R proto.Message](
 	t *testing.T,
 	ctx context.Context,
-	train [][]float32,
+	data [][]float32,
 	neighbors [][]int,
 	plan *config.Execution,
-	do func(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error),
+	newStream func(ctx context.Context, opts ...grpc.CallOption) (S, error),
+	newReq func(id string, vec []float32, scfg *payload.Search_Config) R,
 ) {
 	t.Helper()
-	eg, ctx := errgroup.New(ctx)
-	eg.SetLimit(int(plan.Concurrency))
-	msreq := &payload.Search_MultiIDRequest{
-		Requests: make([]*payload.Search_IDRequest, 0, plan.BulkSize),
+	stream, err := newStream(ctx)
+	if err != nil {
+		t.Error(err)
 	}
-	for i := range train {
-		for _, query := range plan.SearchConfig {
-			id := strconv.Itoa(i)
-			rid := id + "-" + payload.Search_AggregationAlgorithm_name[int32(query.Algorithm)]
-			var ratio *wrapperspb.FloatValue
-			if query.Ratio != 0 {
-				ratio = wrapperspb.Float(query.Ratio)
-			} else {
-				ratio = nil
-			}
-			var (
-				to  time.Duration
-				err error
-			)
-
-			if query.Timeout != "" {
-				to, err = query.Timeout.Duration()
-				if err != nil {
-					t.Errorf("failed to parse timeout duration: %s", err)
-					continue
+	qidx := 0
+	idx := 0
+	err = grpc.BidirectionalStreamClient(stream, func() *R {
+		if len(data) <= idx {
+			return nil
+		}
+		id := strconv.Itoa(idx)
+		if len(plan.SearchConfig) < qidx {
+			qidx = 0
+			idx++
+		}
+		query := plan.SearchConfig[qidx]
+		qidx++
+		req := newReq(id, data[idx], &payload.Search_Config{
+			RequestId: id + "-" + payload.Search_AggregationAlgorithm_name[int32(query.Algorithm)],
+			Num:       query.K,
+			Radius:    query.Radius,
+			Epsilon:   query.Epsilon,
+			Timeout: func() int64 {
+				if query.Timeout != "" {
+					to, err := query.Timeout.Duration()
+					if err == nil {
+						return to.Nanoseconds()
+					}
 				}
-			}
-			msreq.Requests = append(msreq.Requests, &payload.Search_IDRequest{
-				Id: id,
-				Config: &payload.Search_Config{
-					RequestId:            rid,
-					Num:                  query.K,
-					Radius:               query.Radius,
-					Epsilon:              query.Epsilon,
-					Timeout:              to.Nanoseconds(),
-					AggregationAlgorithm: query.Algorithm,
-					MinNum:               query.MinNum,
-					Ratio:                ratio,
-					Nprobe:               query.Nprobe,
-				},
-			})
-			if len(msreq.GetRequests()) >= int(plan.BulkSize) {
-				req := msreq.CloneVT()
-				msreq.Reset()
-				eg.Go(safety.RecoverFunc(func() error {
-					res, err := do(ctx, req)
-					if err != nil {
-						st, ok := status.FromError(err)
-						if ok && st != nil {
-							t.Errorf("failed to search vector: %v, status: %s", err, st.String())
-						} else {
-							t.Errorf("failed to search vector: %v", err)
-						}
-					}
-					for _, r := range res.GetResponses() {
-						id, _, _ := strings.Cut(r.GetRequestId(), "-")
-						idx, _ := strconv.Atoi(id)
-						t.Logf("id %s searched recall: %f, payload %s", r.GetRequestId(), calculateRecall(t, &payload.Search_Response{
-							RequestId: r.GetRequestId(),
-							Results:   r.GetResults(),
-						}, idx), res.String())
-					}
-					return nil
-				}))
-			}
-		}
-	}
-}
-
-func streamSearch[S vald.Search_StreamSearchClient](
-	t *testing.T,
-	ctx context.Context,
-	test [][]float32,
-	neighbors [][]int,
-	plan *config.Execution,
-	newStream func(ctx context.Context, opts ...grpc.CallOption) (S, error),
-) {
-	t.Helper()
-	stream, err := newStream(ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	qidx := 0
-	idx := 0
-	err = grpc.BidirectionalStreamClient(stream, func() *payload.Search_Request {
-		id := strconv.Itoa(idx)
-		if len(test) < idx {
-			return nil
-		}
-		if len(plan.SearchConfig) < qidx {
-			qidx = 0
-			idx++
-		}
-		query := plan.SearchConfig[qidx]
-		rid := id + "-" + payload.Search_AggregationAlgorithm_name[int32(query.Algorithm)]
-		vec := test[idx]
-		qidx++
-		var ratio *wrapperspb.FloatValue
-		if query.Ratio != 0 {
-			ratio = wrapperspb.Float(query.Ratio)
-		} else {
-			ratio = nil
-		}
-		var (
-			to  time.Duration
-			err error
-		)
-
-		if query.Timeout != "" {
-			to, err = query.Timeout.Duration()
-			if err != nil {
-				t.Errorf("failed to parse timeout duration: %s", err)
-			}
-			to = time.Minute
-		}
-		return &payload.Search_Request{
-			Vector: vec,
-			Config: &payload.Search_Config{
-				RequestId:            rid,
-				Num:                  query.K,
-				Radius:               query.Radius,
-				Epsilon:              query.Epsilon,
-				Timeout:              to.Nanoseconds(),
-				AggregationAlgorithm: query.Algorithm,
-				MinNum:               query.MinNum,
-				Ratio:                ratio,
-				Nprobe:               query.Nprobe,
-			},
-		}
-	}, func(res *payload.Search_Response, err error) bool {
-		if err != nil {
-			st, ok := status.FromError(err)
-			if ok && st != nil {
-				t.Errorf("failed to search vector: %v, status: %s", err, st.String())
-			} else {
-				t.Errorf("failed to search vector: %v", err)
-			}
-		}
-		id, _, _ := strings.Cut(res.GetRequestId(), "-")
-		idx, _ := strconv.Atoi(id)
-		t.Logf("request id %s searched recall: %f, payload %s", res.GetRequestId(), calculateRecall(t, &payload.Search_Response{
-			RequestId: res.GetRequestId(),
-			Results:   res.GetResults(),
-		}, idx), res.String())
-
-		return true
-	})
-	if err != nil {
-		t.Errorf("failed to complete insert stream %v", err)
-	}
-}
-
-func streamSearchByID[S vald.Search_StreamSearchByIDClient](
-	t *testing.T,
-	ctx context.Context,
-	train [][]float32,
-	neighbors [][]int,
-	plan *config.Execution,
-	newStream func(ctx context.Context, opts ...grpc.CallOption) (S, error),
-) {
-	t.Helper()
-	stream, err := newStream(ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	qidx := 0
-	idx := 0
-	err = grpc.BidirectionalStreamClient(stream, func() *payload.Search_IDRequest {
-		id := strconv.Itoa(idx)
-		if len(train) < idx {
-			return nil
-		}
-		if len(plan.SearchConfig) < qidx {
-			qidx = 0
-			idx++
-		}
-		query := plan.SearchConfig[qidx]
-		rid := id + "-" + payload.Search_AggregationAlgorithm_name[int32(query.Algorithm)]
-		qidx++
-		var ratio *wrapperspb.FloatValue
-		if query.Ratio != 0 {
-			ratio = wrapperspb.Float(query.Ratio)
-		} else {
-			ratio = nil
-		}
-		var (
-			to  time.Duration
-			err error
-		)
-		if query.Timeout != "" {
-			to, err = query.Timeout.Duration()
-			if err != nil {
-				t.Errorf("failed to parse timeout duration: %s", err)
-			}
-			to = time.Minute
-		}
-		return &payload.Search_IDRequest{
-			Id: id,
-			Config: &payload.Search_Config{
-				RequestId:            rid,
-				Num:                  query.K,
-				Radius:               query.Radius,
-				Epsilon:              query.Epsilon,
-				Timeout:              to.Nanoseconds(),
-				AggregationAlgorithm: query.Algorithm,
-				MinNum:               query.MinNum,
-				Ratio:                ratio,
-				Nprobe:               query.Nprobe,
-			},
-		}
+				return time.Second.Nanoseconds()
+			}(),
+			AggregationAlgorithm: query.Algorithm,
+			MinNum:               query.MinNum,
+			Ratio: func() *wrapperspb.FloatValue {
+				if query.Ratio != 0 {
+					return wrapperspb.Float(query.Ratio)
+				}
+				return nil
+			}(),
+			Nprobe: query.Nprobe,
+		})
+		return &req
 	}, func(res *payload.Search_Response, err error) bool {
 		if err != nil {
 			st, ok := status.FromError(err)
