@@ -1,0 +1,259 @@
+time_zone: UTC
+logging:
+  format: raw
+  level: info
+  logger: glg
+dataset:
+  name: _E2E_DATASET_PATH_
+kubernetes:
+  kube_config: $HOME/.kube/config
+  port_forward:
+    enabled: true
+    local_port: 8082
+    namespace: _E2E_TARGET_NAMESPACE_
+    pod_name: _E2E_TARGET_POD_NAME_
+    target_port: 8081
+metadata:
+  key1: sample metadata value1
+  key2: sample metadata value2
+  key3: sample metadata value3
+strategies:
+  - concurrency: 1
+    name: check Index Property
+    operations:
+      - executions:
+          - mode: unary
+            name: IndexProperty
+            type: index_property
+        name: IndexProperty
+  - concurrency: 1
+    name: Initial Insert and Wait
+    operations:
+      - executions:
+          - concurrency: 10
+            mode: unary
+            name: Insert
+            num: 30000
+            type: insert
+            wait: 2m
+          - mode: unary
+            name: IndexInfo
+            type: index_info
+        name: Insert -> IndexInfo
+  - concurrency: 4
+    name: Parallel Search Opeation (Search, SearchByID, LinearSearch, LinearSearchByID) x (ConcurrentQueue, SortSlice, SortPoolSlice, PairingHeap) = 16
+    operations:
+      - executions:
+          - concurrency: 10
+            mode: unary
+            name: ConcurrentQueue Search
+            num: 1000
+            search_config:
+              - timeout: 3s
+                algorithm: cq
+            type: search
+          - concurrency: 10
+            mode: unary
+            name: SortSlice Search
+            num: 1000
+            search_config:
+              - timeout: 3s
+                algorithm: ss
+            type: search
+          - concurrency: 10
+            mode: unary
+            name: SortPoolSlice Search
+            num: 1000
+            search_config:
+              - timeout: 3s
+                algorithm: ps
+            type: search
+          - concurrency: 10
+            mode: unary
+            name: PairingHeap Search
+            num: 1000
+            search_config:
+              - timeout: 3s
+                algorithm: heap
+            type: search
+      - executions:
+          - concurrency: 10
+            mode: unary
+            name: ConcurrentQueue SearchByID
+            num: 1000
+            search_config:
+              - timeout: 3s
+                algorithm: cq
+            type: search_by_id
+          - concurrency: 10
+            mode: unary
+            name: SortSlice SearchByID
+            num: 1000
+            search_config:
+              - timeout: 3s
+                algorithm: ss
+            type: search_by_id
+          - concurrency: 10
+            mode: unary
+            name: SortPoolSlice SearchByID
+            num: 1000
+            search_config:
+              - timeout: 3s
+                algorithm: ps
+            type: search_by_id
+          - concurrency: 10
+            mode: unary
+            name: PairingHeap SearchByID
+            num: 1000
+            search_config:
+              - timeout: 3s
+                algorithm: heap
+            type: search_by_id
+      - executions:
+          - concurrency: 10
+            mode: unary
+            name: ConcurrentQueue LinearSearch
+            num: 500
+            search_config:
+              - timeout: 3s
+                algorithm: cq
+            type: linear_search
+          - concurrency: 10
+            mode: unary
+            name: SortSlice LinearSearch
+            num: 500
+            search_config:
+              - timeout: 3s
+                algorithm: ss
+            type: linear_search
+          - concurrency: 10
+            mode: unary
+            name: SortPoolSlice LinearSearch
+            num: 500
+            search_config:
+              - timeout: 3s
+                algorithm: ps
+            type: linear_search
+          - concurrency: 10
+            mode: unary
+            name: PairingHeap LinearSearch
+            num: 500
+            search_config:
+              - timeout: 3s
+                algorithm: heap
+            type: linear_search
+      - executions:
+          - concurrency: 10
+            mode: unary
+            name: ConcurrentQueue LinearSearchByID
+            num: 500
+            search_config:
+              - timeout: 3s
+                algorithm: cq
+            type: linear_search_by_id
+          - concurrency: 10
+            mode: unary
+            name: SortSlice LinearSearchByID
+            num: 500
+            search_config:
+              - timeout: 3s
+                algorithm: ss
+            type: linear_search_by_id
+          - concurrency: 10
+            mode: unary
+            name: SortPoolSlice LinearSearchByID
+            num: 500
+            search_config:
+              - timeout: 3s
+                algorithm: ps
+            type: linear_search_by_id
+          - concurrency: 10
+            mode: unary
+            name: PairingHeap LinearSearchByID
+            num: 500
+            search_config:
+              - timeout: 3s
+                algorithm: heap
+            type: linear_search_by_id
+  - concurrency: 3
+    name: GetObject/Exists/GetTimestamp Opeation
+    operations:
+      - executions:
+          - mode: unary
+            type: object
+            num: 1000
+      - executions:
+          - mode: unary
+            type: exists
+            num: 1000
+      - executions:
+          - mode: unary
+            type: timestamp
+            num: 1000
+    wait: 2m
+  - concurrency: 1
+    name: Update -> Index Detail
+    operations:
+      - executions:
+          - concurrency: 10
+            mode: unary
+            num: 10000
+            type: update
+            wait: 2m
+          - mode: unary
+            type: index_detail
+    wait: 2m
+  - concurrency: 2
+    name: remove with upsert
+    operations:
+      - executions:
+          - concurrency: 10
+            mode: unary
+            num: 10000
+            type: remove
+          - mode: unary
+            type: index_statistics
+      - executions:
+          - concurrency: 10
+            mode: unary
+            num: 10000
+            type: upsert
+          - mode: unary
+            type: index_detail
+    wait: 2m
+  - concurrency: 1
+    operations:
+      - executions:
+          - mode: unary
+            type: remove_by_timestamp
+            wait: 2m
+          - mode: unary
+            type: index_detail
+          - concurrency: 10
+            mode: unary
+            num: 10000
+            type: upsert
+            wait: 2m
+          - mode: unary
+            type: index_detail
+    wait: 2m
+  - concurrency: 1
+    operations:
+      - executions:
+          - mode: unary
+            type: index_statistics_detail
+          - mode: unary
+            type: flush
+            wait: 2m
+          - mode: unary
+            type: index_info
+target:
+  addrs:
+    - 127.0.0.1:8082
+  backoff: null
+  call_option: null
+  circuit_breaker: null
+  connection_pool: null
+  dial_option: null
+  health_check_duration: ""
+  tls: null

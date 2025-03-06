@@ -70,6 +70,17 @@ jobs:
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.PACKAGE_USER }}
+          password: ${{ secrets.PACKAGE_TOKEN }}
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
         with:
@@ -85,17 +96,6 @@ jobs:
             image=ghcr.io/vdaas/vald/vald-buildkit:nightly
             network=host
           buildkitd-flags: "--debug --oci-worker-gc=false --oci-worker-snapshotter=stargz"
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ secrets.PACKAGE_USER }}
-          password: ${{ secrets.PACKAGE_TOKEN }}
       - name: Build and Publish
         id: build_and_publish
         uses: ./.github/actions/docker-build
