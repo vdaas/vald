@@ -88,10 +88,16 @@ func Get() Group {
 }
 
 func Go(f func() error) {
+	if instance == nil {
+		Init(context.Background())
+	}
 	instance.Go(f)
 }
 
 func TryGo(f func() error) bool {
+	if instance == nil {
+		Init(context.Background())
+	}
 	return instance.TryGo(f)
 }
 
@@ -198,6 +204,9 @@ func (g *group) doCancel(err error) {
 }
 
 func Wait() error {
+	if instance == nil {
+		return nil
+	}
 	return instance.Wait()
 }
 

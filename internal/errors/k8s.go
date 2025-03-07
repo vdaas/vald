@@ -37,4 +37,10 @@ var (
 	}
 
 	ErrPodTemplateNotFound = New("pod template not found")
+
+	ErrNoAvailablePods = New("no available pods")
+
+	ErrUndefinedNamespace = New("Undefined namespace")
+
+	ErrUndefinedService = New("Undefined service")
 )

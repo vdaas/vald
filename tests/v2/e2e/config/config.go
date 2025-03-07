@@ -108,7 +108,7 @@ type BaseConfig struct {
 	Num         uint64 `yaml:"num,omitempty"         json:"num,omitempty"`         // Number of items to process.
 	Offset      uint64 `yaml:"offset,omitempty"      json:"offset,omitempty"`      // Starting offset for the operation.
 	BulkSize    uint64 `yaml:"bulk_size,omitempty"   json:"bulk_size,omitempty"`   // Bulk size for multi-xxx operations.
-	Concurrency uint64 `yaml:"concurrency,omitempty" json:"concurrency,omitempty"` // Concurrency for operations.
+	Parallelism uint64 `yaml:"parallelism,omitempty" json:"parallelism,omitempty"` // Parallelism for operations.
 }
 
 // SearchQuery represents the detailed parameters for a single search query.
@@ -196,11 +196,11 @@ type Kubernetes struct {
 
 // PortForward holds configuration for port forwarding when running in a Kubernetes environment.
 type PortForward struct {
-	Enabled    bool   `yaml:"enabled"     json:"enabled,omitempty"`     // Flag to enable or disable port forwarding.
-	PodName    string `yaml:"pod_name"    json:"pod_name,omitempty"`    // The name of the pod to forward from.
-	TargetPort Port   `yaml:"target_port" json:"target_port,omitempty"` // The port forward target port number.
-	LocalPort  Port   `yaml:"local_port"  json:"local_port,omitempty"`  // The local port number; if not set, it defaults to TargetPort.
-	Namespace  string `yaml:"namespace"   json:"namespace,omitempty"`   // The Kubernetes namespace of the pod.
+	Enabled     bool   `yaml:"enabled"      json:"enabled,omitempty"`      // Flag to enable or disable port forwarding.
+	TargetPort  Port   `yaml:"target_port"  json:"target_port,omitempty"`  // The port forward target port number.
+	LocalPort   Port   `yaml:"local_port"   json:"local_port,omitempty"`   // The local port number; if not set, it defaults to TargetPort.
+	Namespace   string `yaml:"namespace"    json:"namespace,omitempty"`    // The Kubernetes namespace of the pod.
+	ServiceName string `yaml:"service_name" json:"service_name,omitempty"` // The Kubernetes service name of the pod.
 }
 
 // Dataset holds information about the dataset to be used, such as the filename.
@@ -427,7 +427,7 @@ func (pf *PortForward) Bind() *PortForward {
 		return nil
 	}
 	// Expand dynamic values in the pod name and namespace.
-	pf.PodName = config.GetActualValue(pf.PodName)
+	pf.ServiceName = config.GetActualValue(pf.ServiceName)
 	pf.Namespace = config.GetActualValue(pf.Namespace)
 
 	pf.TargetPort.Bind()

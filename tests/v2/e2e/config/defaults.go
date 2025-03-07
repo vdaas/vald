@@ -38,7 +38,8 @@ const (
 	defaultOffset               uint64                  = 0
 	defaultTimestamp            int64                   = 0
 	defaultSkipStrictExistCheck bool                    = false
-	defaultConcurrency          uint64                  = 10
+	defaultConcurrency          uint64                  = 2
+	defaultParallelism          uint64                  = 10
 	defaultTimeout              timeutil.DurationString = "3s"
 	defaultWaitAfterInsert      timeutil.DurationString = "2m"
 )
@@ -85,7 +86,7 @@ var Default = &Data{
 							BaseConfig: &BaseConfig{
 								Num:         defaultNum,
 								Offset:      defaultOffset,
-								Concurrency: defaultConcurrency,
+								Parallelism: defaultParallelism,
 							},
 							ModificationConfig: &ModificationConfig{
 								Timestamp:            defaultTimestamp,
@@ -112,7 +113,7 @@ var Default = &Data{
 							BaseConfig: &BaseConfig{
 								Num:         defaultNum,
 								Offset:      defaultOffset,
-								Concurrency: defaultConcurrency,
+								Parallelism: defaultParallelism,
 							},
 							SearchConfig: []*SearchQuery{
 								{
@@ -130,7 +131,7 @@ var Default = &Data{
 							BaseConfig: &BaseConfig{
 								Num:         defaultNum,
 								Offset:      defaultOffset,
-								Concurrency: defaultConcurrency,
+								Parallelism: defaultParallelism,
 							},
 							SearchConfig: []*SearchQuery{
 								{
@@ -148,7 +149,7 @@ var Default = &Data{
 							BaseConfig: &BaseConfig{
 								Num:         defaultNum,
 								Offset:      defaultOffset,
-								Concurrency: defaultConcurrency,
+								Parallelism: defaultParallelism,
 							},
 							SearchConfig: []*SearchQuery{
 								{
@@ -166,7 +167,7 @@ var Default = &Data{
 							BaseConfig: &BaseConfig{
 								Num:         defaultNum,
 								Offset:      defaultOffset,
-								Concurrency: defaultConcurrency,
+								Parallelism: defaultParallelism,
 							},
 							SearchConfig: []*SearchQuery{
 								{
@@ -233,7 +234,7 @@ var Default = &Data{
 							BaseConfig: &BaseConfig{
 								Num:         defaultNum,
 								Offset:      defaultOffset,
-								Concurrency: defaultConcurrency,
+								Parallelism: defaultParallelism,
 							},
 							ModificationConfig: &ModificationConfig{
 								Timestamp:            defaultTimestamp,
@@ -264,7 +265,7 @@ var Default = &Data{
 							BaseConfig: &BaseConfig{
 								Num:         defaultNum,
 								Offset:      defaultOffset,
-								Concurrency: defaultConcurrency,
+								Parallelism: defaultParallelism,
 							},
 							ModificationConfig: &ModificationConfig{
 								Timestamp:            defaultTimestamp,
@@ -285,7 +286,7 @@ var Default = &Data{
 							BaseConfig: &BaseConfig{
 								Num:         defaultNum,
 								Offset:      defaultOffset,
-								Concurrency: defaultConcurrency,
+								Parallelism: defaultParallelism,
 							},
 							ModificationConfig: &ModificationConfig{
 								Timestamp:            defaultTimestamp,
@@ -337,7 +338,7 @@ var Default = &Data{
 							BaseConfig: &BaseConfig{
 								Num:         defaultNum,
 								Offset:      defaultOffset,
-								Concurrency: defaultConcurrency,
+								Parallelism: defaultParallelism,
 							},
 							ModificationConfig: &ModificationConfig{
 								Timestamp:            defaultTimestamp,

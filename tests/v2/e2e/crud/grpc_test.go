@@ -53,4 +53,6 @@ type (
 	grpcCall[Q, R proto.Message] func(ctx context.Context, query Q, opts ...grpc.CallOption) (response R, err error)
 	// newMultiRequest is a generic type for functions that build bulk search requests.
 	newMultiRequest[R, S proto.Message] func([]R) S
+	// newStream is a generic type for functions that create a new gRPC stream.
+	newStream[S grpc.ClientStream] func(ctx context.Context, opts ...grpc.CallOption) (S, error)
 )

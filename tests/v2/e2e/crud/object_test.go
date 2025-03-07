@@ -147,7 +147,7 @@ func unaryObject[Q, R proto.Message](
 	eg, ctx := errgroup.New(ctx)
 	if plan != nil && plan.BaseConfig != nil {
 		// Set the concurrency limit from the plan configuration.
-		eg.SetLimit(int(plan.Concurrency))
+		eg.SetLimit(int(plan.Parallelism))
 	}
 	for i, vec := range data {
 		// For each test vector, iterate over all modification configurations.
@@ -178,7 +178,7 @@ func streamObject[S grpc.ClientStream, R proto.Message](
 	ctx context.Context,
 	data [][]float32,
 	plan *config.Execution,
-	newStream func(ctx context.Context, opts ...grpc.CallOption) (S, error),
+	newStream newStream[S],
 	newReq newObjectRequest[R],
 ) {
 	t.Helper()

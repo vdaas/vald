@@ -230,7 +230,7 @@ func unarySearch[R proto.Message](
 	// Create an error group to manage concurrent requests.
 	eg, ctx := errgroup.New(ctx)
 	// Set the concurrency limit from the plan configuration.
-	eg.SetLimit(int(plan.Concurrency))
+	eg.SetLimit(int(plan.Parallelism))
 	for i, vec := range data {
 		idx := i
 		// For each test vector, iterate over all search configurations.
@@ -276,7 +276,7 @@ func multiSearch[Q, R proto.Message](
 ) {
 	t.Helper()
 	eg, ctx := errgroup.New(ctx)
-	eg.SetLimit(int(plan.Concurrency))
+	eg.SetLimit(int(plan.Parallelism))
 	// Initialize a slice to hold the bulk requests.
 	reqs := make([]Q, 0, plan.BulkSize)
 	for i, vec := range data {
@@ -326,7 +326,7 @@ func streamSearch[S grpc.ClientStream, R proto.Message](
 	data [][]float32,
 	neighbors [][]int,
 	plan *config.Execution,
-	newStream func(ctx context.Context, opts ...grpc.CallOption) (S, error),
+	newStream newStream[S],
 	newReq newSearchRequest[R],
 ) {
 	t.Helper()

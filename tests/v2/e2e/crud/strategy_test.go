@@ -27,10 +27,12 @@ import (
 
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/tests/v2/e2e/config"
 	k8s "github.com/vdaas/vald/tests/v2/e2e/kubernetes"
+	"github.com/vdaas/vald/tests/v2/e2e/kubernetes/portforward"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -59,18 +61,30 @@ func TestE2EStrategy(t *testing.T) {
 			if r.k8s == nil {
 				t.Fatal("kubernetes client is nil")
 			}
-			stop, _, err := k8s.Portforward(ctx, r.k8s,
-				cfg.Kubernetes.PortForward.Namespace,
-				cfg.Kubernetes.PortForward.PodName,
-				cfg.Kubernetes.PortForward.LocalPort.Port(),
-				cfg.Kubernetes.PortForward.TargetPort.Port())
+
+			pfd, err := portforward.New(
+				portforward.WithAddress("localhost", "127.0.0.1"),
+				portforward.WithClient(r.k8s),
+				portforward.WithNamespace(cfg.Kubernetes.PortForward.Namespace),
+				portforward.WithServiceName(cfg.Kubernetes.PortForward.ServiceName),
+				portforward.WithPorts(map[uint16]uint16{
+					cfg.Kubernetes.PortForward.LocalPort.Port(): cfg.Kubernetes.PortForward.TargetPort.Port(),
+				}),
+			)
 			if err != nil {
-				if stop != nil {
-					stop()
+				if pfd != nil {
+					pfd.Stop()
 				}
 				t.Fatalf("failed to portforward: %v", err)
 			}
-			defer stop()
+			defer pfd.Stop()
+			_, err = pfd.Start(ctx)
+			if err != nil {
+				if pfd != nil {
+					pfd.Stop()
+				}
+				t.Fatalf("failed to portforward: %v", err)
+			}
 		}
 	}
 
@@ -187,7 +201,7 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 				config.OpExists:
 				train, test, neighbors := getDatasetSlices(ttt, e)
 				if e.BaseConfig != nil {
-					t.Logf("type: %s, mode: %s, execution: %d, len(test): %d, len(train): %d, len(neighbors): %d, num: %d, offset: %d",
+					log.Infof("type: %s, mode: %s, execution: %d, len(test): %d, len(train): %d, len(neighbors): %d, num: %d, offset: %d",
 						e.Type, e.Mode, idx, len(test), len(train), len(neighbors), e.Num, e.Offset)
 				}
 				switch e.Type {
