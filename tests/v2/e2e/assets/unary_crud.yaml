@@ -203,6 +203,7 @@ strategies:
           - parallelism: 10
             mode: unary
             num: 10000
+            offset: 10000
             type: update
             wait: 2m
           - mode: unary
@@ -237,6 +238,7 @@ strategies:
           - parallelism: 10
             mode: unary
             num: 10000
+            offset: 20000
             type: upsert
             wait: 2m
           - mode: unary
