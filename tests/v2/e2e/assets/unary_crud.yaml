@@ -1,7 +1,7 @@
 time_zone: UTC
 logging:
   format: raw
-  level: info
+  level: debug
   logger: glg
 dataset:
   name: _E2E_DATASET_PATH_
@@ -11,7 +11,7 @@ kubernetes:
     enabled: true
     local_port: 8082
     namespace: _E2E_TARGET_NAMESPACE_
-    pod_name: _E2E_TARGET_POD_NAME_
+    service_name: _E2E_TARGET_NAME_
     target_port: 8081
 metadata:
   key1: sample metadata value1
@@ -180,17 +180,22 @@ strategies:
     operations:
       - executions:
           - mode: unary
+            parallelism: 10
+            name: GetObject
             type: object
             num: 1000
       - executions:
           - mode: unary
+            parallelism: 10
+            name: Exists
             type: exists
             num: 1000
       - executions:
           - mode: unary
+            parallelism: 10
+            name: GetTimestamp
             type: timestamp
             num: 1000
-    wait: 2m
   - concurrency: 1
     name: Update -> Index Detail
     operations:
@@ -236,7 +241,6 @@ strategies:
             wait: 2m
           - mode: unary
             type: index_detail
-    wait: 2m
   - concurrency: 1
     operations:
       - executions:

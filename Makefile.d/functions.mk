@@ -140,7 +140,7 @@ define run-v2-e2e-crud-test
 	E2E_BIND_HOST="$(E2E_BIND_HOST)" \
 	E2E_BIND_PORT="$(E2E_BIND_PORT)" \
 	E2E_TARGET_NAMESPACE="$(E2E_TARGET_NAMESPACE)" \
-	E2E_TARGET_POD_NAME="$(E2E_TARGET_POD_NAME)" \
+	E2E_TARGET_NAME="$(E2E_TARGET_NAME)" \
 	E2E_DATASET_PATH="$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME)" \
 	go test \
 	    -race \

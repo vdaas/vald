@@ -386,11 +386,11 @@ var Default = &Data{
 	Kubernetes: &Kubernetes{
 		KubeConfig: file.Join(os.Getenv("HOME"), ".kube", "config"),
 		PortForward: &PortForward{
-			Enabled:    false,
-			PodName:    "vald-gateway-0",
-			TargetPort: localPort,
-			LocalPort:  localPort,
-			Namespace:  "default",
+			Enabled:     false,
+			ServiceName: "vald-lb-gateway",
+			TargetPort:  localPort,
+			LocalPort:   localPort,
+			Namespace:   "default",
 		},
 	},
 	Metadata: map[string]string{

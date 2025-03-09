@@ -27,7 +27,6 @@ import (
 	"slices"
 	"sync"
 	"sync/atomic"
-	"time"
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/errors"
@@ -80,7 +79,7 @@ type portForward struct {
 	// targets holds the current list of available pod names (extracted from Endpoints).
 	targets []string
 	// current is used for efficient round-robin selection.
-	current int64 // using atomic operations for concurrent safety
+	current atomic.Uint64 // using atomic operations for concurrent safety
 
 	// cancel cancels the overall port forward daemon context.
 	cancel context.CancelFunc
@@ -90,6 +89,8 @@ type portForward struct {
 
 	// mu protects access to the targets slice.
 	mu sync.RWMutex
+
+	healthy atomic.Bool
 }
 
 // NewForwarder creates a new instance of a Forwarder with default backoff settings.
@@ -129,13 +130,13 @@ func (pf *portForward) updateTargets(pods []string) {
 	pf.mu.Lock()
 	pf.targets = pods
 	pf.mu.Unlock()
-	atomic.StoreInt64(&pf.current, 0)
+	pf.current.Store(0)
 }
 
 // getNextPod returns a pod name using a counter-based round-robin strategy.
 // It uses an atomic counter with a modulus operation to avoid slice rotation.
 func (pf *portForward) getNextPod() (string, error) {
-	idx := atomic.AddInt64(&pf.current, 1)
+	idx := pf.current.Add(1)
 	pf.mu.RLock()
 	defer pf.mu.RUnlock()
 	if len(pf.targets) == 0 {
@@ -183,7 +184,11 @@ func (pf *portForward) Start(ctx context.Context) (<-chan error, error) {
 					log.Error("endpoints watcher channel closed, restarting watcher")
 					watcher, err = pf.endpointsWatcher(ctx)
 					if err != nil {
-						pf.ech <- err
+						select {
+						case <-ctx.Done():
+							return ctx.Err()
+						case pf.ech <- err:
+						}
 						return err
 					}
 				} else {
@@ -208,14 +213,29 @@ func (pf *portForward) Start(ctx context.Context) (<-chan error, error) {
 					err = pf.portForwardToService(ctx)
 				}
 				if err != nil {
-					log.Errorf("port forward connection loop ended with error: %v", err)
-					pf.ech <- err
+					if !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
+						log.Errorf("port forward connection loop ended with error: %v", err)
+					}
+					select {
+					case <-ctx.Done():
+						return ctx.Err()
+					case pf.ech <- err:
+					}
 				}
 			}
 		}
 	}))
 
-	return pf.ech, nil
+	for {
+		select {
+		case <-ctx.Done():
+			return pf.ech, ctx.Err()
+		default:
+			if pf.healthy.Load() {
+				return pf.ech, nil
+			}
+		}
+	}
 }
 
 // Stop gracefully terminates the port forwarding daemon by canceling the context
@@ -233,7 +253,10 @@ func (pf *portForward) endpointsWatcher(ctx context.Context) (w watch.Interface,
 	w, err = pf.eclient.Watch(ctx, metav1.ListOptions{
 		FieldSelector: fmt.Sprintf("metadata.name=%s", pf.serviceName),
 	})
-	log.Errorf("failed to watch endpoints for service %s: %v", pf.serviceName, err)
+	if err != nil {
+		log.Errorf("failed to watch endpoints for service %s: %v", pf.serviceName, err)
+		return nil, err
+	}
 	return w, err
 }
 
@@ -274,7 +297,7 @@ func (pf *portForward) portForwardToService(ctx context.Context) (err error) {
 	ctx, cancel = context.WithCancel(ctx)
 	defer cancel()
 
-	log.Infof("Attempting port forward to pod: %s", podName)
+	log.Infof("Attempting port forward to pod: %s on %v:%v", podName, pf.addresses, pf.ports)
 	// Create an inner context for this port forward session.
 	stop, ech, err := PortforwardExtended(ctx, pf.client, pf.namespace, podName, pf.addresses, pf.ports, pf.httpClient)
 	if err != nil {
@@ -285,6 +308,11 @@ func (pf *portForward) portForwardToService(ctx context.Context) (err error) {
 		return err
 	}
 	defer stop()
+
+	pf.healthy.Store(true)
+	defer pf.healthy.Store(false)
+
+	log.Infof("successfully established port forward to pod %s", podName)
 
 	// Wait for the port forward session to end or the context to be cancelled.
 	select {
@@ -316,12 +344,13 @@ func PortforwardExtended(
 	// Create a cancelable context for the port forward session.
 	ctx, cancel = context.WithCancel(ctx)
 
-	tctx, tcancel := context.WithTimeout(ctx, time.Second*30)
-	_, ok, err := k8s.WaitForStatus(tctx, k8s.Pod(c, namespace), podName, k8s.StatusAvailable)
-	tcancel()
-	if !ok || err != nil {
-		return cancel, nil, errors.Join(err, errors.ErrPodIsNotRunning(namespace, podName))
-	}
+	//tctx, tcancel := context.WithTimeout(ctx, time.Second*30)
+	//_, ok, err := k8s.WaitForStatus(tctx, k8s.Pod(c, namespace), podName, k8s.StatusAvailable)
+	//tcancel()
+	//if !ok || err != nil {
+	//	return cancel, nil, errors.Join(err, errors.ErrPodIsNotRunning(namespace, podName))
+	//}
+	//log.Debugf("pod %s is running", podName)
 
 	if hc == nil {
 		hc = http.DefaultClient
@@ -349,7 +378,7 @@ func PortforwardExtended(
 	slices.Sort(portPairs)
 	portPairs = slices.Clip(slices.Compact(portPairs))
 	slices.Sort(addresses)
-	portPairs = slices.Clip(slices.Compact(addresses))
+	addresses = slices.Clip(slices.Compact(addresses))
 
 	// Create a channel to signal when the port forwarder is ready.
 	readyChan := make(chan struct{})
@@ -365,6 +394,7 @@ func PortforwardExtended(
 		addresses, portPairs, ctx.Done(), readyChan, os.Stdout, os.Stderr,
 	)
 	if err != nil {
+		log.Errorf("failed to create port forwarder, addresses: %v, portPairs: %v, error: %v", addresses, portPairs, err)
 		return cancel, nil, err
 	}
 
@@ -373,9 +403,13 @@ func PortforwardExtended(
 	errgroup.Go(safety.RecoverFunc(func() (err error) {
 		defer cancel()
 		defer close(ech)
+		log.Debugf("port forwarder starting on %v:%v", addresses, portPairs)
 		// ForwardPorts blocks until the session ends.
 		if err = pf.ForwardPorts(); err != nil {
-			ech <- err
+			select {
+			case <-ctx.Done():
+			case ech <- err:
+			}
 		}
 		return nil
 	}))
@@ -385,6 +419,7 @@ func PortforwardExtended(
 	case <-ctx.Done():
 		return cancel, ech, ctx.Err()
 	case <-readyChan:
+		log.Debugf("port forwarder ready for pod %s on %v", podName, portPairs)
 		return cancel, ech, nil
 	}
 }

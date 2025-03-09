@@ -26,6 +26,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/proto"
@@ -149,7 +150,7 @@ func unaryObject[Q, R proto.Message](
 		// Set the concurrency limit from the plan configuration.
 		eg.SetLimit(int(plan.Parallelism))
 	}
-	for i, vec := range data {
+	for i := range data {
 		// For each test vector, iterate over all modification configurations.
 		id := strconv.Itoa(i)
 		// Launch the index modify request in a goroutine.
@@ -157,12 +158,12 @@ func unaryObject[Q, R proto.Message](
 			// Execute the modify gRPC call.
 			res, err := call(ctx, newReq(id))
 			if err != nil {
+				log.Errorf("object request id %s returned %v", id, err)
 				// Handle the error using the centralized error handler.
 				handleGRPCCallError(t, err, plan)
 				return nil
 			}
-			// Log the result of modified location
-			t.Logf("vector %v id %s modified to %v", vec, id, res)
+			log.Debugf("object request id %s returned %v", id, res)
 			return nil
 		})
 	}

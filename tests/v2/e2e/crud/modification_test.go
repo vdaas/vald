@@ -190,7 +190,10 @@ func unaryModify[Q, R proto.Message](
 	// Create an error group to manage concurrent requests.
 	eg, ctx := errgroup.New(ctx)
 	// Set the concurrency limit from the plan configuration.
-	eg.SetLimit(int(plan.Parallelism))
+	if plan != nil && plan.BaseConfig != nil {
+		// Set the concurrency limit from the plan configuration.
+		eg.SetLimit(int(plan.Parallelism))
+	}
 	for i, vec := range data {
 		// For each test vector, iterate over all modification configurations.
 		id := strconv.Itoa(i)

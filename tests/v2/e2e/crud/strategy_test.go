@@ -63,7 +63,7 @@ func TestE2EStrategy(t *testing.T) {
 			}
 
 			pfd, err := portforward.New(
-				portforward.WithAddress("localhost", "127.0.0.1"),
+				portforward.WithAddress("localhost"),
 				portforward.WithClient(r.k8s),
 				portforward.WithNamespace(cfg.Kubernetes.PortForward.Namespace),
 				portforward.WithServiceName(cfg.Kubernetes.PortForward.ServiceName),
@@ -201,7 +201,9 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 				config.OpExists:
 				train, test, neighbors := getDatasetSlices(ttt, e)
 				if e.BaseConfig != nil {
-					log.Infof("type: %s, mode: %s, execution: %d, len(test): %d, len(train): %d, len(neighbors): %d, num: %d, offset: %d",
+					log.Infof("started execution type: %s, mode: %s, execution: %d, len(test): %d, len(train): %d, len(neighbors): %d, num: %d, offset: %d",
+						e.Type, e.Mode, idx, len(test), len(train), len(neighbors), e.Num, e.Offset)
+					defer log.Infof("finished execution type: %s, mode: %s, execution: %d, len(test): %d, len(train): %d, len(neighbors): %d, num: %d, offset: %d",
 						e.Type, e.Mode, idx, len(test), len(train), len(neighbors), e.Num, e.Offset)
 				}
 				switch e.Type {
@@ -228,6 +230,7 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 				config.OpIndexStatisticsDetail,
 				config.OpIndexProperty,
 				config.OpFlush:
+				log.Infof("type: %s, mode: %s, execution: %d", e.Type, e.Mode, idx)
 				r.processIndex(ttt, ctx, e)
 			case config.OpKubernetes:
 				// TODO implement kubernetes operation here, eg. delete pod, rollout restart, etc.
@@ -259,7 +262,7 @@ func executeWithTimings[T config.Timing](
 			t.Errorf("failed to parse delay duration: %s, error: %v", delay, err)
 		}
 		if dur > 0 {
-			t.Logf("delay is set to %s, this %s will start after %s", delay, prefix, dur.String())
+			log.Infof("delay is set to %s, this %s will start after %s", delay, prefix, dur.String())
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
@@ -284,12 +287,13 @@ func executeWithTimings[T config.Timing](
 	err := fn(t, ctx)
 
 	if wait := cfg.GetWait(); wait != "" {
-		dur, err := wait.Duration()
-		if err != nil {
-			t.Errorf("failed to parse wait duration: %s, error: %v", wait, err)
+		dur, werr := wait.Duration()
+		if werr != nil {
+			t.Errorf("failed to parse wait duration: %s, error: %v", wait, werr)
+			return err
 		}
 		if dur > 0 {
-			t.Logf("wait is set to %s, this %s is already finished, but will wait for %s", wait, prefix, dur.String())
+			log.Infof("wait is set to %s, this %s is already finished, but will wait for %s", wait, prefix, dur.String())
 			select {
 			case <-ctx.Done():
 				return ctx.Err()

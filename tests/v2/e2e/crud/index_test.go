@@ -23,6 +23,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/tests/v2/e2e/config"
 )
@@ -70,6 +71,6 @@ func unaryIndex[Q, R proto.Message](
 		handleGRPCCallError(t, err, plan)
 		return
 	}
-	t.Logf("Index operation %s: returned %v", plan.Type, res)
+	log.Debugf("Index operation %s: returned %v", plan.Type, res)
 	return
 }
