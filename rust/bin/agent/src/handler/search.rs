@@ -242,7 +242,7 @@ impl search_server::Search for super::Agent {
             }
         };
 
-        bidirectional_stream(request, 10, process_fn).await
+        bidirectional_stream(request, self.stream_concurrency, process_fn).await
     }
 
     #[doc = " Server streaming response type for the StreamSearchByID method."]
