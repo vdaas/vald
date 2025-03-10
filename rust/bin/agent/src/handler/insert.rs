@@ -221,7 +221,7 @@ impl insert_server::Insert for super::Agent {
             }
         };
 
-        bidirectional_stream(request, 10, process_fn).await
+        bidirectional_stream(request, self.stream_concurrency, process_fn).await
     }
 
     #[doc = " A method to add new multiple vectors in a single request.\n"]
