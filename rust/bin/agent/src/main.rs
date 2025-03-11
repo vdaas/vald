@@ -383,6 +383,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "127.0.0.1",
         "vald/internal/core/algorithm",
         "vald-agent",
+        10,
     );
 
     tonic::transport::Server::builder()
