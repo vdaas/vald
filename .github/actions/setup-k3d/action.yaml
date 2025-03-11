@@ -47,10 +47,10 @@ runs:
       id: k3d_version
       shell: bash
       run: |
-        if [ "${K3D_VERSION}" != "latest" ]; then
-          TAG="TAG=v${K3D_VERSION}"
+        if [ "${K3D_VERSION}" = "latest" ]; then
+          K3D_VERSION=$(curl -fsSL https://api.github.com/repos/k3d-io/k3d/releases/latest | jq -r .tag_name | sed 's/^v//')
         fi
-        echo "tag=${TAG}" >> $GITHUB_OUTPUT
+        echo "tag=v${K3D_VERSION}" >> $GITHUB_OUTPUT
       env:
         K3D_VERSION: ${{ inputs.version }}
     - name: Detect k3s version
@@ -81,7 +81,7 @@ runs:
       if: steps.check_k3d.outputs.k3d_installed == 'false' || steps.check_k3d.outputs.installed_version != steps.k3d_version.outputs.tag
       shell: bash
       run: |
-        make k3d/install
+        TAG=${{ steps.k3d_version.outputs.tag }} make k3d/install
     - name: Check k3d version
       shell: bash
       run: |
