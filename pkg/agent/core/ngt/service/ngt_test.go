@@ -36,6 +36,7 @@ import (
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/k8s/vald"
 	kvald "github.com/vdaas/vald/internal/k8s/vald"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -11042,6 +11043,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // }
 //
 // func Test_ngt_loadStatistics(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 	}
 // 	type fields struct {
 // 		core                    core.NGT
 // 		eg                      errgroup.Group
@@ -11096,11 +11100,12 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
+// 		args       args
 // 		fields     fields
 // 		want       want
 // 		checkFunc  func(want, error) error
-// 		beforeFunc func(*testing.T)
-// 		afterFunc  func(*testing.T)
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
 // 	}
 // 	defaultCheckFunc := func(w want, err error) error {
 // 		if !errors.Is(err, w.err) {
@@ -11113,6 +11118,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		/*
 // 		   {
 // 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		       },
 // 		       fields: fields {
 // 		           core:nil,
 // 		           eg:nil,
@@ -11164,10 +11172,10 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T,) {
+// 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
-// 		       afterFunc: func(t *testing.T,) {
+// 		       afterFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
 // 		   },
@@ -11178,6 +11186,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		   func() test {
 // 		       return test {
 // 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           },
 // 		           fields: fields {
 // 		           core:nil,
 // 		           eg:nil,
@@ -11229,10 +11240,10 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T,) {
+// 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
-// 		           afterFunc: func(t *testing.T,) {
+// 		           afterFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
 // 		       }
@@ -11246,10 +11257,10 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			tt.Parallel()
 // 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 // 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt)
+// 				test.beforeFunc(tt, test.args)
 // 			}
 // 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt)
+// 				defer test.afterFunc(tt, test.args)
 // 			}
 // 			checkFunc := test.checkFunc
 // 			if test.checkFunc == nil {
@@ -11305,7 +11316,7 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				statisticsCache:         test.fields.statisticsCache,
 // 			}
 //
-// 			err := n.loadStatistics()
+// 			err := n.loadStatistics(test.args.ctx)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

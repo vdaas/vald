@@ -449,3 +449,241 @@ func Test_data_ShowVersion(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
+//
+// func Test_parser_Restore(t *testing.T) {
+// 	type fields struct {
+// 		overrideDefault bool
+// 		name            string
+// 		filters         []func(string) bool
+// 		f               *flag.FlagSet
+// 		defaults        *flag.FlagSet
+// 		filePath        struct {
+// 			keys        []string
+// 			defaultPath string
+// 			description string
+// 		}
+// 		version struct {
+// 			keys        []string
+// 			defaultFlag bool
+// 			description string
+// 		}
+// 		ErrorHandler ErrorHandling
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           overrideDefault:false,
+// 		           name:"",
+// 		           filters:nil,
+// 		           f:flag.FlagSet{},
+// 		           defaults:flag.FlagSet{},
+// 		           filePath:struct{keys []string; defaultPath string; description string}{},
+// 		           version:struct{keys []string; defaultFlag bool; description string}{},
+// 		           ErrorHandler:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           overrideDefault:false,
+// 		           name:"",
+// 		           filters:nil,
+// 		           f:flag.FlagSet{},
+// 		           defaults:flag.FlagSet{},
+// 		           filePath:struct{keys []string; defaultPath string; description string}{},
+// 		           version:struct{keys []string; defaultFlag bool; description string}{},
+// 		           ErrorHandler:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			p := &parser{
+// 				overrideDefault: test.fields.overrideDefault,
+// 				name:            test.fields.name,
+// 				filters:         test.fields.filters,
+// 				f:               test.fields.f,
+// 				defaults:        test.fields.defaults,
+// 				filePath:        test.fields.filePath,
+// 				version:         test.fields.version,
+// 				ErrorHandler:    test.fields.ErrorHandler,
+// 			}
+//
+// 			p.Restore()
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_parser_Override(t *testing.T) {
+// 	type fields struct {
+// 		overrideDefault bool
+// 		name            string
+// 		filters         []func(string) bool
+// 		f               *flag.FlagSet
+// 		defaults        *flag.FlagSet
+// 		filePath        struct {
+// 			keys        []string
+// 			defaultPath string
+// 			description string
+// 		}
+// 		version struct {
+// 			keys        []string
+// 			defaultFlag bool
+// 			description string
+// 		}
+// 		ErrorHandler ErrorHandling
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           overrideDefault:false,
+// 		           name:"",
+// 		           filters:nil,
+// 		           f:flag.FlagSet{},
+// 		           defaults:flag.FlagSet{},
+// 		           filePath:struct{keys []string; defaultPath string; description string}{},
+// 		           version:struct{keys []string; defaultFlag bool; description string}{},
+// 		           ErrorHandler:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           overrideDefault:false,
+// 		           name:"",
+// 		           filters:nil,
+// 		           f:flag.FlagSet{},
+// 		           defaults:flag.FlagSet{},
+// 		           filePath:struct{keys []string; defaultPath string; description string}{},
+// 		           version:struct{keys []string; defaultFlag bool; description string}{},
+// 		           ErrorHandler:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			p := &parser{
+// 				overrideDefault: test.fields.overrideDefault,
+// 				name:            test.fields.name,
+// 				filters:         test.fields.filters,
+// 				f:               test.fields.f,
+// 				defaults:        test.fields.defaults,
+// 				filePath:        test.fields.filePath,
+// 				version:         test.fields.version,
+// 				ErrorHandler:    test.fields.ErrorHandler,
+// 			}
+//
+// 			p.Override()
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

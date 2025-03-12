@@ -1,0 +1,128 @@
+package config
+
+// NOT IMPLEMENTED BELOW
+//
+// func TestIndexDeleter_Bind(t *testing.T) {
+// 	type fields struct {
+// 		IndexID          string
+// 		AgentPort        int
+// 		AgentName        string
+// 		AgentNamespace   string
+// 		AgentDNS         string
+// 		NodeName         string
+// 		Concurrency      int
+// 		DeletionPoolSize uint32
+// 		TargetAddrs      []string
+// 		Discoverer       *DiscovererClient
+// 	}
+// 	type want struct {
+// 		want *IndexDeleter
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *IndexDeleter) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *IndexDeleter) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           IndexID:"",
+// 		           AgentPort:0,
+// 		           AgentName:"",
+// 		           AgentNamespace:"",
+// 		           AgentDNS:"",
+// 		           NodeName:"",
+// 		           Concurrency:0,
+// 		           DeletionPoolSize:0,
+// 		           TargetAddrs:nil,
+// 		           Discoverer:DiscovererClient{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           IndexID:"",
+// 		           AgentPort:0,
+// 		           AgentName:"",
+// 		           AgentNamespace:"",
+// 		           AgentDNS:"",
+// 		           NodeName:"",
+// 		           Concurrency:0,
+// 		           DeletionPoolSize:0,
+// 		           TargetAddrs:nil,
+// 		           Discoverer:DiscovererClient{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			ic := &IndexDeleter{
+// 				IndexID:          test.fields.IndexID,
+// 				AgentPort:        test.fields.AgentPort,
+// 				AgentName:        test.fields.AgentName,
+// 				AgentNamespace:   test.fields.AgentNamespace,
+// 				AgentDNS:         test.fields.AgentDNS,
+// 				NodeName:         test.fields.NodeName,
+// 				Concurrency:      test.fields.Concurrency,
+// 				DeletionPoolSize: test.fields.DeletionPoolSize,
+// 				TargetAddrs:      test.fields.TargetAddrs,
+// 				Discoverer:       test.fields.Discoverer,
+// 			}
+//
+// 			got := ic.Bind()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }

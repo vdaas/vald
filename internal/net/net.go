@@ -196,7 +196,15 @@ func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool,
 
 	ip, nerr := netip.ParseAddr(host)
 	if nerr != nil {
-		log.Debugf("host: %s,\tport: %d,\tip: %#v,\terror: %v", host, port, ip, nerr)
+		ips, err := DefaultResolver.LookupIPAddr(context.Background(), host)
+		if err != nil || ips == nil || len(ips) == 0 {
+			log.Debugf("host: %s,\tport: %d,\tip: %#v,\tParseAddr error: %v, LookupIPAddr error:", host, port, ip, nerr, err)
+		} else {
+			ip, nerr = netip.ParseAddr(ips[0].String())
+			if nerr != nil {
+				log.Debugf("host: %s,\tport: %d,\tip: %#v,\tParseAddr error: %v", host, port, ip, nerr)
+			}
+		}
 	}
 
 	// return host and port and flags
