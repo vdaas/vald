@@ -17,9 +17,9 @@ name: "Setup k3d environment"
 description: "An action to set up k3d (k3s in Docker)"
 inputs:
   version:
-    description: "k3d version"
+    description: "The k3d to use. The default version is `versions/K3D_VERSION`"
     required: false
-    default: "latest"
+    default: ""
   k3s_version:
     description: "The k3s to use. The default version is `versions/K3S_VERSION`"
     required: false
@@ -47,8 +47,12 @@ runs:
       id: k3d_version
       shell: bash
       run: |
-        if [ "${K3D_VERSION}" = "latest" ]; then
-          K3D_VERSION=$(curl -fsSL https://api.github.com/repos/k3d-io/k3d/releases/latest | jq -r .tag_name | sed 's/^v//')
+        if [ -z "${K3D_VERSION}" ]; then
+          if [ -f "versions/K3D_VERSION" ]; then
+            K3D_VERSION=$(cat versions/K3D_VERSION)
+          else
+            K3D_VERSION=latest
+          fi
         fi
         echo "tag=v${K3D_VERSION}" >> $GITHUB_OUTPUT
       env:
@@ -81,7 +85,7 @@ runs:
       if: steps.check_k3d.outputs.k3d_installed == 'false' || steps.check_k3d.outputs.installed_version != steps.k3d_version.outputs.tag
       shell: bash
       run: |
-        TAG=${{ steps.k3d_version.outputs.tag }} make k3d/install
+        make k3d/install
     - name: Check k3d version
       shell: bash
       run: |

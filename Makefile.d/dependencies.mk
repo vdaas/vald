@@ -29,6 +29,7 @@ update/libs: \
 	update/helm-docs \
 	update/helm-operator \
 	update/jaeger-operator \
+	update/k3d \
 	update/k3s \
 	update/kind \
 	update/kube-linter \
@@ -99,6 +100,11 @@ rust/deps: \
 ## update chaos-mesh version
 update/chaos-mesh:
 	curl -fsSL https://api.github.com/repos/chaos-mesh/chaos-mesh/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/CHAOS_MESH_VERSION
+
+.PHONY: update/k3d
+## update k3d version
+update/k3d:
+	curl -fsSL https://api.github.com/repos/k3d-io/k3d/releases/latest | jq -r '.tag_name' | sed 's/v//g' > $(ROOTDIR)/versions/K3D_VERSION
 
 .PHONY: update/k3s
 ## update k3s version
