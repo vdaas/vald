@@ -95,6 +95,7 @@ const (
 	KubernetesActionCreate  KubernetesAction = "create"
 	KubernetesActionPatch   KubernetesAction = "patch"
 	KubernetesActionScale   KubernetesAction = "scale"
+	KubernetesActionWait    KubernetesAction = "wait"
 )
 
 type KubernetesKind string
@@ -109,4 +110,23 @@ const (
 	Secret      KubernetesKind = "secret"
 	Service     KubernetesKind = "service"
 	StatefulSet KubernetesKind = "statefulset"
+)
+
+type KubernetesStatus string
+
+const (
+	KubernetesStatusUnknown       KubernetesStatus = "unknown"
+	KubernetesStatusPending       KubernetesStatus = "pending"
+	KubernetesStatusUpdating      KubernetesStatus = "updating"
+	KubernetesStatusAvailable     KubernetesStatus = "available"
+	KubernetesStatusDegraded      KubernetesStatus = "degraded"
+	KubernetesStatusFailed        KubernetesStatus = "failed"
+	KubernetesStatusCompleted     KubernetesStatus = "completed"
+	KubernetesStatusScheduled     KubernetesStatus = "scheduled"
+	KubernetesStatusScaling       KubernetesStatus = "scalling"
+	KubernetesStatusPaused        KubernetesStatus = "paused"
+	KubernetesStatusTerminating   KubernetesStatus = "terminating"
+	KubernetesStatusNotReady      KubernetesStatus = "notready"
+	KubernetesStatusBound         KubernetesStatus = "bound"
+	KubernetesStatusLoadBalancing KubernetesStatus = "loadblancing"
 )

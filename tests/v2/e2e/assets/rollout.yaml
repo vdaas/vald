@@ -13,14 +13,259 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+time_zone: UTC
+logging:
+  format: raw
+  level: info
+  logger: glg
+dataset:
+  name: _E2E_DATASET_PATH_
+kubernetes:
+  kube_config: $HOME/.kube/config
+  port_forward:
+    enabled: true
+    local_port: 8082
+    namespace: _E2E_TARGET_NAMESPACE_
+    service_name: _E2E_TARGET_NAME_
+    target_port: 8081
 target:
   addrs:
-    - localhost
-dataset:
-  name: "fashion-mnist-784-euclidean.hdf5"
-index:
-  wait_after_inesrt: "2m"
-kubernetes:
-  kubeconfig: ${HOME}/.kube/config
-  portforward:
+    - 127.0.0.1:8082
+  health_check_duration: "1s"
+  connection_pool:
+    enable_dns_resolver: true
+    enable_rebalance: true
+    old_conn_close_duration: 2m
+    rebalance_duration: 30m
+    size: 3
+  backoff:
+    backoff_factor: 1.1
+    backoff_time_limit: 5s
+    enable_error_log: false
+    initial_duration: 5ms
+    jitter_limit: 100ms
+    maximum_duration: 5s
+    retry_count: 100
+  #  circuit_breaker:
+  #    closed_error_rate: 0.7
+  #    closed_refresh_timeout: 10s
+  #    half_open_error_rate: 0.5
+  #    min_samples: 1000
+  #    open_timeout: 1s
+  call_option:
+    content_subtype: ""
+    max_recv_msg_size: 0
+    max_retry_rpc_buffer_size: 0
+    max_send_msg_size: 0
+    wait_for_ready: true
+  dial_option:
+    authority: ""
+    backoff_base_delay: 1s
+    backoff_jitter: 0.2
+    backoff_max_delay: 120s
+    backoff_multiplier: 1.6
+    disable_retry: false
+    enable_backoff: true
+    idle_timeout: 1h
+    initial_connection_window_size: 2097152
+    initial_window_size: 1048576
+    insecure: true
+    interceptors: []
+    keepalive:
+      permit_without_stream: false
+      time: ""
+      timeout: 30s
+    max_call_attempts: 0
+    max_header_list_size: 0
+    max_msg_size: 0
+    min_connection_timeout: 20s
+    net:
+      dialer:
+        dual_stack_enabled: true
+        keepalive: ""
+        timeout: ""
+      dns:
+        cache_enabled: true
+        cache_expiration: 1h
+        refresh_duration: 30m
+      network: tcp
+      socket_option:
+        ip_recover_destination_addr: false
+        ip_transparent: false
+        reuse_addr: true
+        reuse_port: true
+        tcp_cork: false
+        tcp_defer_accept: false
+        tcp_fast_open: false
+        tcp_no_delay: false
+        tcp_quick_ack: false
+      tls:
+        ca: /path/to/ca
+        cert: /path/to/cert
+        enabled: false
+        insecure_skip_verify: false
+        key: /path/to/key
+    read_buffer_size: 0
+    shared_write_buffer: false
+    timeout: ""
+    user_agent: Vald-gRPC
+    write_buffer_size: 0
+  tls:
+    ca: /path/to/ca
+    cert: /path/to/cert
     enabled: false
+    insecure_skip_verify: false
+    key: /path/to/key
+metadata:
+  key1: sample metadata value1
+  key2: sample metadata value2
+  key3: sample metadata value3
+metadata_string: key4=value4,key5=value5
+strategies:
+  - name: InserrVector
+    concurrency: 1
+    delay: ""
+    wait: ""
+    timeout: ""
+    operations:
+      - name: InsertVec
+        delay: ""
+        wait: ""
+        timeout: ""
+        executions:
+          - name: Insert
+            type: insert
+            mode: unary
+            parallelism: 0
+            num: 60000
+            offset: 0
+            bulk_size: 0
+            # for timing setting
+            delay: ""
+            wait: 2m
+            timeout: ""
+            # for search configurations
+            search:
+              - k: 10
+                radius: -1
+                epsilon: 0.05
+                algorithm: cq
+                min_num: 10
+                ration: 0
+                nprobe: 0
+                timeout: 3s
+            # for modification like (Insert, Update, Upsert, Remove, RemoveByTimestamp)
+            modification:
+              skip_strict_exist_check: false
+              timestamp: 0
+            # expected patterns of test status codes
+            expected_status_codes:
+              - ok
+              - already_exists
+              - not_found
+            # for kubernetes configurations
+            kubernetes:
+              kind: "statefulset"
+              namespace: "default"
+              name: "vald-agent"
+              action: rollout
+  - name: Search_with_RolloutRestartAgent
+    concurrency: 2
+    operations:
+      - name: Search
+        executions:
+          - name: Search
+            type: search
+            mode: unary
+            parallelism: 0
+            num: 10000
+            offset: 0
+            bulk_size: 0
+            # for timing setting
+            delay: ""
+            wait: 2m
+            timeout: ""
+            # for search configurations
+            search:
+              - k: 10
+                radius: -1
+                epsilon: 0.05
+                algorithm: cq
+                min_num: 10
+                ration: 0
+                nprobe: 0
+                timeout: 3s
+            # expected patterns of test status codes
+            expected_status_codes:
+              - ok
+              - not_found
+      - name: RolloutRestartAgentPods
+        executions:
+          - name: RolloutRestart
+            type: kubernetes
+            kubernetes:
+              kind: "statefulset"
+              namespace: "default"
+              name: "vald-agent"
+              action: rollout
+          - name: WaitForAgentReady
+            type: kubernetes
+            kubernetes:
+              kind: "statefulset"
+              namespace: "default"
+              name: "vald-agent"
+              action: wait
+              status: available
+      - name: Search
+        executions:
+          - name: Search
+            type: search
+            mode: unary
+            parallelism: 0
+            num: 10000000
+            offset: 0
+            bulk_size: 0
+            # for timing setting
+            delay: ""
+            wait: 2m
+            timeout: ""
+            # for search configurations
+            search:
+              - k: 10
+                radius: -1
+                epsilon: 0.05
+                algorithm: cq
+                min_num: 10
+                ration: 0
+                nprobe: 0
+                timeout: 3s
+            # expected patterns of test status codes
+            expected_status_codes:
+              - ok
+              - not_found
+  - name: RemoveVectors
+    operations:
+      - name: Remove
+        delay: ""
+        wait: ""
+        timeout: ""
+        executions:
+          - name: Remove
+            type: remove
+            mode: stream
+            parallelism: 0
+            num: 60000
+            offset: 0
+            bulk_size: 20
+            # for timing setting
+            delay: ""
+            wait: ""
+            timeout: ""
+            # for modification like (Insert, Update, Upsert, Remove, RemoveByTimestamp)
+            modification:
+              skip_strict_exist_check: false
+              timestamp: 0
+            # expected patterns of test status codes
+            expected_status_codes:
+              - ok
+              - not_found
