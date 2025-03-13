@@ -99,6 +99,7 @@ HDF5_VERSION              := $(eval HDF5_VERSION := $(shell cat versions/HDF5_VE
 HELM_DOCS_VERSION         := $(eval HELM_DOCS_VERSION := $(shell cat versions/HELM_DOCS_VERSION))$(HELM_DOCS_VERSION)
 HELM_VERSION              := $(eval HELM_VERSION := $(shell cat versions/HELM_VERSION))$(HELM_VERSION)
 JAEGER_OPERATOR_VERSION   := $(eval JAEGER_OPERATOR_VERSION := $(shell cat versions/JAEGER_OPERATOR_VERSION))$(JAEGER_OPERATOR_VERSION)
+K3D_VERSION               := $(eval K3D_VERSION := $(shell cat versions/K3D_VERSION))$(K3D_VERSION)
 K3S_VERSION               := $(eval K3S_VERSION := $(shell cat versions/K3S_VERSION))$(K3S_VERSION)
 KIND_VERSION              := $(eval KIND_VERSION := $(shell cat versions/KIND_VERSION))$(KIND_VERSION)
 KUBECTL_VERSION           := $(eval KUBECTL_VERSION := $(shell cat versions/KUBECTL_VERSION))$(KUBECTL_VERSION)
