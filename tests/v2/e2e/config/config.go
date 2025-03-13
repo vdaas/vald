@@ -32,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/timeutil"
+	"github.com/vdaas/vald/tests/v2/e2e/kubernetes"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -117,6 +118,7 @@ type KubernetesConfig struct {
 	Namespace string           `yaml:"namespace" json:"namespace,omitempty"`
 	Name      string           `yaml:"name"      json:"name,omitempty"`
 	Action    KubernetesAction `yaml:"action"    json:"action,omitempty"`
+	Status    KubernetesStatus `yaml:"status"    json:"status,omitempty"`
 }
 
 // Kubernetes holds configuration for Kubernetes environments.
@@ -541,6 +543,41 @@ func (ka KubernetesAction) Bind() (bound KubernetesAction, err error) {
 	return bound, nil
 }
 
+// Bind expands environment variables for KubernetesAction.
+func (ks KubernetesStatus) Bind() (bound KubernetesStatus, err error) {
+	switch trimStringForCompare(config.GetActualValue(ks)) {
+	case "unknown", "u":
+		return KubernetesStatusUnknown, nil
+	case "pending", "pen", "p":
+		return KubernetesStatusPending, nil
+	case "updating", "update":
+		return KubernetesStatusUpdating, nil
+	case "available", "a":
+		return KubernetesStatusAvailable, nil
+	case "degraded", "degrade", "d":
+		return KubernetesStatusDegraded, nil
+	case "failed", "fail", "f":
+		return KubernetesStatusFailed, nil
+	case "completed", "complete", "c":
+		return KubernetesStatusCompleted, nil
+	case "scheduled", "schedule", "sc":
+		return KubernetesStatusScheduled, nil
+	case "scaling", "scale", "s":
+		return KubernetesStatusScaling, nil
+	case "paused", "pause":
+		return KubernetesStatusPaused, nil
+	case "terminating", "terminate", "t":
+		return KubernetesStatusTerminating, nil
+	case "notready", "r":
+		return KubernetesStatusNotReady, nil
+	case "bound", "b":
+		return KubernetesStatusBound, nil
+	case "loadbalancing", "locabalance", "l":
+		return KubernetesStatusLoadBalancing, nil
+	}
+	return bound, nil
+}
+
 // Bind binds and validates the KubernetesConfig.
 func (k *KubernetesConfig) Bind() (bound *KubernetesConfig, err error) {
 	if k == nil {
@@ -552,6 +589,9 @@ func (k *KubernetesConfig) Bind() (bound *KubernetesConfig, err error) {
 		return nil, err
 	}
 	if k.Kind, err = k.Kind.Bind(); err != nil {
+		return nil, err
+	}
+	if k.Status, err = k.Status.Bind(); err != nil {
 		return nil, err
 	}
 	if k.Namespace == "" || k.Name == "" || k.Action == "" || k.Kind == "" {
@@ -730,6 +770,40 @@ func (p Port) Port() uint16 {
 		return 0
 	}
 	return uint16(port)
+}
+
+func (ks KubernetesStatus) Status() kubernetes.ResourceStatus {
+	switch trimStringForCompare(ks) {
+	case KubernetesStatusUnknown:
+		return kubernetes.StatusUnknown
+	case KubernetesStatusPending:
+		return kubernetes.StatusPending
+	case KubernetesStatusUpdating:
+		return kubernetes.StatusUpdating
+	case KubernetesStatusAvailable:
+		return kubernetes.StatusAvailable
+	case KubernetesStatusDegraded:
+		return kubernetes.StatusDegraded
+	case KubernetesStatusFailed:
+		return kubernetes.StatusFailed
+	case KubernetesStatusCompleted:
+		return kubernetes.StatusCompleted
+	case KubernetesStatusScheduled:
+		return kubernetes.StatusScheduled
+	case KubernetesStatusScaling:
+		return kubernetes.StatusScaling
+	case KubernetesStatusPaused:
+		return kubernetes.StatusPaused
+	case KubernetesStatusTerminating:
+		return kubernetes.StatusTerminating
+	case KubernetesStatusNotReady:
+		return kubernetes.StatusNotReady
+	case KubernetesStatusBound:
+		return kubernetes.StatusBound
+	case KubernetesStatusLoadBalancing:
+		return kubernetes.StatusLoadBalancing
+	}
+	return kubernetes.StatusUnknown
 }
 
 // //////////////////////////////////////////////////////////////////////////////
