@@ -2020,6 +2020,7 @@ tests/v2/e2e/crud/crud_test.go
 tests/v2/e2e/crud/dataset_test.go
 tests/v2/e2e/crud/grpc_test.go
 tests/v2/e2e/crud/index_test.go
+tests/v2/e2e/crud/kubernetes_test.go
 tests/v2/e2e/crud/modification_test.go
 tests/v2/e2e/crud/object_test.go
 tests/v2/e2e/crud/search_test.go
