@@ -441,6 +441,9 @@ charts/vald/templates/index/job/correction/networkpolicy.yaml
 charts/vald/templates/index/job/creation/configmap.yaml
 charts/vald/templates/index/job/creation/cronjob.yaml
 charts/vald/templates/index/job/creation/networkpolicy.yaml
+charts/vald/templates/index/job/deletion/configmap.yaml
+charts/vald/templates/index/job/deletion/cronjob.yaml
+charts/vald/templates/index/job/deletion/networkpolicy.yaml
 charts/vald/templates/index/job/readreplica/rotate/clusterrole.yaml
 charts/vald/templates/index/job/readreplica/rotate/clusterrolebinding.yaml
 charts/vald/templates/index/job/readreplica/rotate/configmap.yaml
