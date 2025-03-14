@@ -47,3 +47,13 @@ func ParseWithDefault(t string, d time.Duration) time.Duration {
 
 	return parsed
 }
+
+type DurationString string
+
+func (d DurationString) Duration() (time.Duration, error) {
+	return Parse(string(d))
+}
+
+func (d DurationString) DurationWithDefault(def time.Duration) time.Duration {
+	return ParseWithDefault(string(d), def)
+}

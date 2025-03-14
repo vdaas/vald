@@ -33,6 +33,9 @@ plugins:
   - remote: buf.build/community/mfridman-go-json
     out: apis/grpc
     opt: paths=source_relative
+  - remote: buf.build/srikrsna/protoc-gen-gotag
+    out: apis/grpc
+    opt: paths=source_relative
   - remote: buf.build/community/pseudomuto-doc
     out: apis/docs/v1
     opt: markdown,docs.md

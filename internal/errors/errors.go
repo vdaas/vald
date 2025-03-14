@@ -83,6 +83,10 @@ var (
 		return Wrapf(err, "failed to output %s logs", str)
 	}
 
+	ErrUnimplemented = func(name string) error {
+		return Errorf("%s is unimplemented", name)
+	}
+
 	// New represents a function to generate the new error with a message.
 	// When the message is nil, it will return nil instead of an error.
 	New = func(msg string) error {

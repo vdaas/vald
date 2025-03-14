@@ -14,36 +14,43 @@
 // limitations under the License.
 //
 
-// Package errgroup provides server global wait group for graceful kill all goroutine
+// Package errgroup provides a global wait group for gracefully terminating all goroutines.
+// It is a custom implementation similar to sync/errgroup.
 package errgroup
 
 import (
 	"context"
 	"runtime"
+	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/semaphore"
 )
 
-// A Group is a collection of goroutines working on subtasks that are part of
-// the same overall task.
-//
-// A zero Group is valid, has no limit on the number of active goroutines,
-// and does not cancel on error.
+// Group is a collection of goroutines working on subtasks that are part of the same overall task.
+// A zero Group is valid; it has no limit on the number of active goroutines and does not cancel on error.
 type Group interface {
+	// Go starts the given function either in a new goroutine or inline (if limit == 1).
 	Go(func() error)
+	// SetLimit sets the maximum number of active goroutines.
 	SetLimit(limit int)
+	// TryGo attempts to start the given function, returning true if it was started.
 	TryGo(func() error) bool
+	// Wait blocks until all tasks started with Go have completed, returning the first non-nil error (if any).
 	Wait() error
 }
 
+// group is the concrete implementation of Group.
 type group struct {
 	egctx  context.Context
 	cancel context.CancelCauseFunc
 
 	wg sync.WaitGroup
 
+	// limit controls how many tasks can run concurrently.
+	limit atomic.Int64
+	// sem is used to limit concurrent goroutines when limit > 1.
 	sem *semaphore.Weighted
 
 	cancelOnce sync.Once
@@ -57,21 +64,24 @@ var (
 	once     sync.Once
 )
 
+// New creates a new Group and returns it along with its derived Context.
 func New(ctx context.Context) (Group, context.Context) {
-	g := &group{emap: make(map[string]struct{})}
+	g := &group{
+		emap: make(map[string]struct{}),
+	}
+	// Create a context that can be canceled with a cause.
 	g.egctx, g.cancel = context.WithCancelCause(ctx)
 	return g, g.egctx
 }
 
 // WithContext returns a new Group and an associated Context derived from ctx.
-//
-// The derived Context is canceled the first time a function passed to Go
-// returns a non-nil error or the first time Wait returns, whichever occurs
-// first.
+// The derived Context is canceled the first time a function passed to Go returns a non-nil error
+// or the first time Wait returns, whichever occurs first.
 func WithContext(ctx context.Context) (Group, context.Context) {
 	return New(ctx)
 }
 
+// Init initializes the global errgroup instance.
 func Init(ctx context.Context) (egctx context.Context) {
 	egctx = ctx
 	once.Do(func() {
@@ -80,6 +90,7 @@ func Init(ctx context.Context) (egctx context.Context) {
 	return
 }
 
+// Get returns the global errgroup instance, initializing it if necessary.
 func Get() Group {
 	if instance == nil {
 		Init(context.Background())
@@ -87,49 +98,89 @@ func Get() Group {
 	return instance
 }
 
+// Go is a package-level helper that calls the Go method on the global instance.
 func Go(f func() error) {
+	if instance == nil {
+		Init(context.Background())
+	}
 	instance.Go(f)
 }
 
+// TryGo is a package-level helper that calls the TryGo method on the global instance.
 func TryGo(f func() error) bool {
+	if instance == nil {
+		Init(context.Background())
+	}
 	return instance.TryGo(f)
 }
 
-// SetLimit limits the number of active goroutines in this group to at most n.
+// SetLimit sets the maximum number of active goroutines in the group.
 // A negative value indicates no limit.
-//
-// Any subsequent call to the Go method will block until it can add an active
-// goroutine without exceeding the configured limit.
-//
-// The limit must not be modified while any goroutines in the group are active.
+// This must not be modified while any tasks are active.
 func (g *group) SetLimit(limit int) {
-	if limit < 0 {
+	if limit <= 1 {
+		// For serial execution, do not use a semaphore.
 		g.sem = nil
+		g.limit.Store(int64(limit))
 		return
 	}
-
+	// For concurrent execution, initialize or resize the semaphore.
 	if g.sem == nil {
 		g.sem = semaphore.NewWeighted(int64(limit))
 	} else {
 		g.sem.Resize(int64(limit))
 	}
+	g.limit.Store(int64(limit))
 }
 
-// Go calls the given function in a new goroutine.
-// It blocks until the new goroutine can be added without the number of
-// active goroutines in the group exceeding the configured limit.
-//
-// The first call to return a non-nil error cancels the group's context, if the
-// group was created by calling WithContext. The error will be returned by Wait.
+// exec executes the provided function inline (synchronously) when limit == 1.
+// It wraps the call with wait group operations and reuses executeTask for error handling.
+// Performance Note: Inline execution avoids the overhead of goroutine scheduling and context switching.
+// run schedules the provided function to run in a new goroutine (asynchronously).
+// It wraps the call with wait group operations and reuses executeTask for error handling.
+func (g *group) exec(f func() error) {
+	// Execute the task function.
+	err := f()
+	if err != nil {
+		// If the error is not due to cancellation or deadline, yield and record it.
+		if !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
+			runtime.Gosched()
+			g.appendErr(err)
+		}
+		// Cancel the context with the encountered error.
+		g.doCancel(err)
+	}
+}
+
+// run schedules the provided function to run in a new goroutine (asynchronously).
+// It wraps the call with wait group operations and reuses executeTask for error handling.
+func (g *group) run(f func() error) {
+	g.wg.Add(1)
+	go func() {
+		// done() will call wg.Done() and release the semaphore slot.
+		defer g.done()
+		g.exec(f)
+	}()
+}
+
+// Go calls the given function either in a new goroutine or inline based on the limit.
+// For limit == 1, the function is executed inline to avoid unnecessary goroutine creation.
+// For limit > 1, the function is scheduled in a new goroutine after acquiring the semaphore.
 func (g *group) Go(f func() error) {
 	if f == nil {
 		return
 	}
+	// Check if we should execute inline (serial execution).
+	if g.limit.Load() == 1 {
+		g.exec(f)
+		return
+	}
+	// In concurrent mode, acquire the semaphore before launching a new goroutine.
 	if g.sem != nil {
 		err := g.sem.Acquire(g.egctx, 1)
 		if err != nil {
-			if !errors.Is(err, context.Canceled) &&
-				!errors.Is(err, context.DeadlineExceeded) {
+			// Handle errors from semaphore acquisition if not due to cancellation or deadline.
+			if !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
 				g.appendErr(err)
 			}
 			return
@@ -138,14 +189,19 @@ func (g *group) Go(f func() error) {
 	g.run(f)
 }
 
-// TryGo calls the given function in a new goroutine only if the number of
-// active goroutines in the group is currently below the configured limit.
-//
-// The return value reports whether the goroutine was started.
+// TryGo attempts to run the function, starting it in a new goroutine or inline if limit == 1,
+// only if the number of active tasks is below the configured limit.
+// Returns true if the function was executed, false otherwise.
 func (g *group) TryGo(f func() error) bool {
 	if f == nil {
 		return false
 	}
+	// Execute inline if in serial mode.
+	if g.limit.Load() == 1 {
+		g.exec(f)
+		return true
+	}
+	// In concurrent mode, try to acquire the semaphore without blocking.
 	if g.sem != nil && !g.sem.TryAcquire(1) {
 		return false
 	}
@@ -153,23 +209,7 @@ func (g *group) TryGo(f func() error) bool {
 	return true
 }
 
-func (g *group) run(f func() error) {
-	g.wg.Add(1)
-	go func() {
-		defer g.done()
-		err := f()
-		if err != nil {
-			if !errors.Is(err, context.Canceled) &&
-				!errors.Is(err, context.DeadlineExceeded) {
-				runtime.Gosched()
-				g.appendErr(err)
-			}
-			g.doCancel(err)
-			return
-		}
-	}()
-}
-
+// appendErr appends the error to the group's error list if it has not been recorded before.
 func (g *group) appendErr(err error) {
 	g.mu.RLock()
 	_, ok := g.emap[err.Error()]
@@ -182,6 +222,7 @@ func (g *group) appendErr(err error) {
 	}
 }
 
+// done releases the semaphore (if used) and marks the task as done in the wait group.
 func (g *group) done() {
 	defer g.wg.Done()
 	if g.sem != nil {
@@ -189,6 +230,8 @@ func (g *group) done() {
 	}
 }
 
+// doCancel cancels the group's context with the provided error.
+// It ensures that cancellation is performed only once.
 func (g *group) doCancel(err error) {
 	g.cancelOnce.Do(func() {
 		if g.cancel != nil {
@@ -197,14 +240,11 @@ func (g *group) doCancel(err error) {
 	})
 }
 
-func Wait() error {
-	return instance.Wait()
-}
-
-// Wait blocks until all function calls from the Go method have returned, then
-// returns the first non-nil error (if any) from them.
+// Wait blocks until all tasks started with Go have completed.
+// It returns the first non-nil error (if any) from the executed tasks.
 func (g *group) Wait() (err error) {
 	g.wg.Wait()
+	// After all tasks complete, cancel the context to propagate cancellation if needed.
 	g.doCancel(context.Canceled)
 	g.mu.RLock()
 	defer g.mu.RUnlock()
@@ -216,4 +256,12 @@ func (g *group) Wait() (err error) {
 	default:
 		return errors.Join(g.errs...)
 	}
+}
+
+// Wait is a package-level helper that calls the Wait method on the global instance.
+func Wait() error {
+	if instance == nil {
+		return nil
+	}
+	return instance.Wait()
 }
