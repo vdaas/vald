@@ -1,7 +1,7 @@
 //go:build e2e
 
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 		dim--
 	}
 	if dim > algorithm.MaximumVectorDimensionSize {
-		t.Fatalf("Invalid argument: dimension should be equal or under than " + strconv.Itoa(algorithm.MaximumVectorDimensionSize) + ". set dim was " + strconv.Itoa(dim))
+		t.Fatalf("Invalid argument: dimension should be equal or under than %d. set dim was %d", algorithm.MaximumVectorDimensionSize, dim)
 	}
 	conn, err := grpc.NewClient(
 		net.JoinHostPort(host, uint16(port)),

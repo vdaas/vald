@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -98,7 +98,6 @@
 .github/workflows/dockers-index-correction-image.yaml
 .github/workflows/dockers-index-creation-image.yaml
 .github/workflows/dockers-index-deletion-image.yaml
-.github/workflows/dockers-index-deletion.yaml
 .github/workflows/dockers-index-operator-image.yaml
 .github/workflows/dockers-index-save-image.yaml
 .github/workflows/dockers-loadtest-image.yaml
@@ -635,8 +634,6 @@ example/manifest/scylla/job.yaml
 go.mod
 go.sum
 hack/CHANGELOG.template.md
-hack/actions/gen/main.go
-hack/actions/gen/main_test.go
 hack/benchmark/assets/checksum/fashion-mnist-784-euclidean.md5
 hack/benchmark/assets/checksum/gist-960-euclidean.md5
 hack/benchmark/assets/checksum/glove-100-angular.md5
@@ -1463,8 +1460,6 @@ k8s/index/job/correction/configmap.yaml
 k8s/index/job/correction/cronjob.yaml
 k8s/index/job/creation/configmap.yaml
 k8s/index/job/creation/cronjob.yaml
-k8s/index/job/deletion/configmap.yaml
-k8s/index/job/deletion/cronjob.yaml
 k8s/index/job/save/configmap.yaml
 k8s/index/job/save/cronjob.yaml
 k8s/index/operator/configmap.yaml

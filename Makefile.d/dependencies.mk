@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ update/libs: \
 	update/helm-docs \
 	update/helm-operator \
 	update/jaeger-operator \
+	update/k3d \
 	update/k3s \
 	update/kind \
 	update/kube-linter \
@@ -51,8 +52,8 @@ go/download:
 
 .PHONY: go/deps
 ## install Go package dependencies
-go/deps: \
-	update/go
+go/deps:
+	head -n -1 $(ROOTDIR)/hack/go.mod.default | awk 'NR>=6 && $$0 !~ /(upgrade|latest|master|main)/' | sort
 	sed -i "3s/go [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?/go $(GO_VERSION)/g" $(ROOTDIR)/hack/go.mod.default
 	if $(GO_CLEAN_DEPS); then \
         	rm -rf $(ROOTDIR)/vendor \
@@ -99,6 +100,11 @@ rust/deps: \
 ## update chaos-mesh version
 update/chaos-mesh:
 	curl -fsSL https://api.github.com/repos/chaos-mesh/chaos-mesh/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/CHAOS_MESH_VERSION
+
+.PHONY: update/k3d
+## update k3d version
+update/k3d:
+	curl -fsSL https://api.github.com/repos/k3d-io/k3d/releases/latest | jq -r '.tag_name' | sed 's/v//g' > $(ROOTDIR)/versions/K3D_VERSION
 
 .PHONY: update/k3s
 ## update k3s version

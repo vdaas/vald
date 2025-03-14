@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -24,9 +24,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
   label:
+    if: github.event.comment.user.login != 'vdaas-ci'
     name: Add labels
     runs-on: ubuntu-latest
-    if: github.event.comment.user.login != 'vdaas-ci'
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Check PR Comments
         id: check_comments_label
@@ -35,8 +37,6 @@ jobs:
           TRIGGER_PHRASE: "/label"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: ./.github/actions/setup-yq
-        if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
       - name: Check permissions
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -74,9 +74,11 @@ jobs:
           USERNAME: ${{ steps.check_comments_label.outputs.COMMENTER_USERNAME }}
           TRAILING_LINE: ${{ steps.check_comments_label.outputs.TRAILING_LINE }}
   rebase:
+    if: github.event.comment.user.login != 'vdaas-ci'
     name: Rebase
     runs-on: ubuntu-latest
-    if: github.event.comment.user.login != 'vdaas-ci'
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Check PR Comments
         id: check_comments_rebase
@@ -85,8 +87,6 @@ jobs:
           TRIGGER_PHRASE: "/rebase"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: ./.github/actions/setup-yq
-        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
       - name: Check permissions
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -149,11 +149,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
   gentest:
+    if: github.event.comment.user.login != 'vdaas-ci'
     name: Add tests
     needs:
       - rebase
     runs-on: ubuntu-latest
-    if: github.event.comment.user.login != 'vdaas-ci'
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: check PR Comments
         id: check_comments_gen_test
@@ -162,8 +164,6 @@ jobs:
           TRIGGER_PHRASE: "/gen-test"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: ./.github/actions/setup-yq
-        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true'
       - name: check permissions
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -212,8 +212,6 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-      - uses: ./.github/actions/setup-go
-        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
       - name: Generate tests and push
         id: gen_test
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -263,12 +261,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
   format:
+    if: github.event.comment.user.login != 'vdaas-ci'
     name: Add license and run golines + gofumpt + goimports
     needs:
       - rebase
       - gentest
     runs-on: ubuntu-latest
-    if: github.event.comment.user.login != 'vdaas-ci'
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: check PR Comments
         id: check_comments_format
@@ -277,8 +277,6 @@ jobs:
           TRIGGER_PHRASE: "/format"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: ./.github/actions/setup-yq
-        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
       - name: check permissions
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -327,8 +325,6 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-      - uses: ./.github/actions/setup-go
-        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
       - name: update and push
         id: format_push
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -397,12 +393,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
   approve:
+    if: github.event.comment.user.login != 'vdaas-ci'
     name: Approve
     needs:
       - rebase
       - format
     runs-on: ubuntu-latest
-    if: github.event.comment.user.login != 'vdaas-ci'
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: check PR Comments
         id: check_comments_approve
@@ -411,8 +409,6 @@ jobs:
           TRIGGER_PHRASE: "/approve"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: ./.github/actions/setup-yq
-        if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
       - name: check permissions
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions

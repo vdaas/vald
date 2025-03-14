@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -437,6 +437,28 @@ func (s *server) doSearch(
 			span.End()
 		}
 	}()
+
+	if cfg == nil {
+		err = errors.ErrInvalidSearchConfig("search config is nil in doSearch")
+		err = status.WrapWithInvalidArgument(apiName+"/doSearch", err, &errdetails.RequestInfo{
+			RequestId:   "Search_Config is nil",
+			ServingData: "Search_Config is nil",
+		},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "Search_Config is nil",
+						Description: err.Error(),
+					},
+				},
+			})
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, nil, err
+	}
 
 	var (
 		num     = int(cfg.GetNum())

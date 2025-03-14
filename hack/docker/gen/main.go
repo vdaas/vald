@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -28,17 +28,123 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+	"golang.org/x/tools/go/packages"
+	"gopkg.in/yaml.v2"
 )
 
-var tmpl = fmt.Sprintf(`# syntax = docker/dockerfile:latest
-# check=error=true
-#
+const (
+	agent               = "agent"
+	agentFaiss          = agent + "-faiss"
+	agentNGT            = agent + "-ngt"
+	agentSidecar        = agent + "-sidecar"
+	benchJob            = "benchmark-job"
+	benchOperator       = "benchmark-operator"
+	binfmt              = "binfmt"
+	buildbase           = "buildbase"
+	buildkit            = "buildkit"
+	buildkitSyftScanner = buildkit + "-syft-scanner"
+	ciContainer         = "ci-container"
+	devContainer        = "dev-container"
+	exampleContainer    = "example-client"
+	discovererK8s       = "discoverer-k8s"
+	gateway             = "gateway"
+	gatewayFilter       = gateway + "-filter"
+	gatewayLb           = gateway + "-lb"
+	gatewayMirror       = gateway + "-mirror"
+	helmOperator        = "helm-operator"
+	indexCorrection     = "index-correction"
+	indexCreation       = "index-creation"
+	indexDeletion       = "index-deletion"
+	indexOperator       = "index-operator"
+	indexSave           = "index-save"
+	loadtest            = "loadtest"
+	managerIndex        = "manager-index"
+	readreplicaRotate   = "readreplica-rotate"
+
+	organization          = "vdaas"
+	repository            = "vald"
+	defaultBinaryDir      = "/usr/bin"
+	usrLocal              = "/usr/local"
+	usrLocalBinaryDir     = usrLocal + "/bin"
+	usrLocalLibDir        = usrLocal + "/lib"
+	defaultBuilderImage   = "ghcr.io/" + organization + "/" + repository + "/" + repository + "-" + buildbase
+	defaultBuilderTag     = "nightly"
+	defaultLanguage       = "en_US.UTF-8"
+	defaultMaintainer     = organization + ".org " + repository + " team <" + repository + "@" + organization + ".org>"
+	defaultRuntimeImage   = "gcr.io/distroless/static"
+	nonrootUser           = "nonroot"
+	rootUser              = "root"
+	defaultRuntimeTag     = nonrootUser
+	defaultRuntimeUser    = nonrootUser + ":" + nonrootUser
+	defaultBuildUser      = rootUser + ":" + rootUser
+	defaultBuildStageName = "builder"
+	maintainerKey         = "MAINTAINER"
+	minimumArgumentLength = 2
+	ubuntuVersion         = "24.04"
+
+	goWorkdir   = "${GOPATH}/src/github.com"
+	rustWorkdir = "${HOME}/rust/src/github.com"
+
+	agentInernalPackage = "pkg/agent/internal"
+
+	ngtPreprocess     = "make ngt/install"
+	faissPreprocess   = "make faiss/install"
+	usearchPreprocess = "make usearch/install"
+
+	helmOperatorRootdir   = "/opt/helm"
+	helmOperatorWatchFile = helmOperatorRootdir + "/watches.yaml"
+	helmOperatorChartsDir = helmOperatorRootdir + "/charts"
+
+	apisProtoPath = "apis/proto/**"
+
+	hackPath = "hack/**"
+
+	chartsValdPath            = "charts/vald"
+	helmOperatorPath          = chartsValdPath + "-helm-operator"
+	chartPath                 = chartsValdPath + "/Chart.yaml"
+	valuesPath                = chartsValdPath + "/values.yaml"
+	templatesPath             = chartsValdPath + "/templates/**"
+	helmOperatorChartPath     = helmOperatorPath + "/Chart.yaml"
+	helmOperatorValuesPath    = helmOperatorPath + "/values.yaml"
+	helmOperatorTemplatesPath = helmOperatorPath + "/templates/**"
+
+	goModPath = "go.mod"
+	goSumPath = "go.sum"
+
+	cargoLockPath       = "rust/Cargo.lock"
+	cargoTomlPath       = "rust/Cargo.toml"
+	rustBinAgentDirPath = "rust/bin/agent"
+	rustNgtRsPath       = "rust/libs/ngt-rs/**"
+	rustNgtPath         = "rust/libs/ngt/**"
+	rustProtoPath       = "rust/libs/proto/**"
+
+	excludeTestFilesPath = "!**/*_test.go"
+	excludeMockFilesPath = "!**/*_mock.go"
+
+	versionsPath           = "versions"
+	operatorSDKVersionPath = versionsPath + "/OPERATOR_SDK_VERSION"
+	goVersionPath          = versionsPath + "/GO_VERSION"
+	rustVersionPath        = versionsPath + "/RUST_VERSION"
+	faissVersionPath       = versionsPath + "/FAISS_VERSION"
+	ngtVersionPath         = versionsPath + "/NGT_VERSION"
+	usearchVersionPath     = versionsPath + "/USEARCH_VERSION"
+
+	makefilePath    = "Makefile"
+	makefileDirPath = makefilePath + ".d/**"
+
+	amd64Platform  = "linux/amd64"
+	arm64Platform  = "linux/arm64"
+	multiPlatforms = amd64Platform + "," + arm64Platform
+
+	header = `#
 # Copyright (C) 2019-{{.Year}} {{.Maintainer}}
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,7 +158,55 @@ var tmpl = fmt.Sprintf(`# syntax = docker/dockerfile:latest
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+#`
+)
+
+var license = template.Must(template.New("license").Parse(header + `
+
+# DO_NOT_EDIT this workflow file is generated by https://github.com/vdaas/vald/blob/main/hack/docker/gen/main.go
+
+`))
+
+var docker = template.Must(template.New("Dockerfile").Funcs(template.FuncMap{
+	"RunCommands": func(commands []string) string {
+		if len(commands) == 0 {
+			return ""
+		}
+		var b strings.Builder
+		for i, cmd := range commands {
+			if i > 0 {
+				b.WriteString(" \\\n    && ")
+			}
+			b.WriteString(cmd)
+		}
+		return b.String()
+	},
+	"RunMounts": func(commands []string) string {
+		if len(commands) == 0 {
+			return ""
+		}
+		var b strings.Builder
+		for i, cmd := range commands {
+			if i > 0 {
+				b.WriteString(" \\\n    ")
+			}
+			b.WriteString(cmd)
+		}
+		return b.String()
+	},
+
+	"Entrypoint": func(entries []string) string {
+		if len(entries) == 0 {
+			return "\"{{.BinDir}}/{{.AppName}}\""
+		}
+		return "\"" + strings.Join(entries, "\", \"") + "\""
+	},
+	"ContainerName": func(c ContainerType) string {
+		return c.String()
+	},
+}).Parse(fmt.Sprintf(`# syntax = docker/dockerfile:latest
+# check=error=true
+%s
 
 # DO_NOT_EDIT this Dockerfile is generated by https://github.com/vdaas/vald/blob/main/hack/docker/gen/main.go
 
@@ -135,115 +289,90 @@ ENTRYPOINT [{{Entrypoint .Entrypoints}}]
 {{- else if and (not (eq (ContainerName .ContainerType) "%s")) (not (eq (ContainerName .ContainerType) "%s"))}}
 ENTRYPOINT ["{{.BinDir}}/{{.AppName}}"]
 {{- end}}
-{{- end}}`, DevContainer.String(), CIContainer.String(),
+{{- end}}`, header, DevContainer.String(), CIContainer.String(),
 	DevContainer.String(),
 	DevContainer.String(), CIContainer.String(),
-	DevContainer.String(), CIContainer.String())
+	DevContainer.String(), CIContainer.String())))
 
-var docker = template.Must(template.New("Dockerfile").Funcs(template.FuncMap{
-	"RunCommands": func(commands []string) string {
-		if len(commands) == 0 {
-			return ""
-		}
-		var b strings.Builder
-		for i, cmd := range commands {
-			if i > 0 {
-				b.WriteString(" \\\n    && ")
-			}
-			b.WriteString(cmd)
-		}
-		return b.String()
-	},
-	"RunMounts": func(commands []string) string {
-		if len(commands) == 0 {
-			return ""
-		}
-		var b strings.Builder
-		for i, cmd := range commands {
-			if i > 0 {
-				b.WriteString(" \\\n    ")
-			}
-			b.WriteString(cmd)
-		}
-		return b.String()
-	},
+type (
+	Workflow struct {
+		Name string `yaml:"name"`
+		On   On     `yaml:"on"`
+		Jobs Jobs   `yaml:"jobs"`
+	}
 
-	"Entrypoint": func(entries []string) string {
-		if len(entries) == 0 {
-			return "\"{{.BinDir}}/{{.AppName}}\""
-		}
-		return "\"" + strings.Join(entries, "\", \"") + "\""
-	},
-	"ContainerName": func(c ContainerType) string {
-		return c.String()
-	},
-}).Parse(tmpl))
+	On struct {
+		Schedule          Schedule    `yaml:"schedule,omitempty"`
+		Push              Push        `yaml:"push"`
+		PullRequest       PullRequest `yaml:"pull_request"`
+		PullRequestTarget PullRequest `yaml:"pull_request_target"`
+	}
 
-type Data struct {
-	AliasImage        bool
-	ConfigExists      bool
-	Year              int
-	ContainerType     ContainerType
-	AppName           string
-	BinDir            string
-	BuildUser         string
-	BuilderImage      string
-	BuilderTag        string
-	BuildStageName    string
-	Maintainer        string
-	PackageDir        string
-	RootDir           string
-	RuntimeImage      string
-	RuntimeTag        string
-	RuntimeUser       string
-	Arguments         map[string]string
-	Environments      map[string]string
-	Entrypoints       []string
-	EnvironmentsSlice []string
-	ExtraCopies       []string
-	ExtraImages       []string
-	ExtraPackages     []string
-	Preprocess        []string
-	RunCommands       []string
-	RunMounts         []string
-	StageFiles        []string
-}
+	Schedule []struct {
+		Cron string `yaml:"cron,omitempty"`
+	}
 
-type ContainerType int
+	Push struct {
+		Branches []string `yaml:"branches"`
+		Tags     []string `yaml:"tags"`
+	}
 
-const (
-	organization          = "vdaas"
-	repository            = "vald"
-	defaultBinaryDir      = "/usr/bin"
-	usrLocal              = "/usr/local"
-	usrLocalBinaryDir     = usrLocal + "/bin"
-	usrLocalLibDir        = usrLocal + "/lib"
-	defaultBuilderImage   = "ghcr.io/vdaas/vald/vald-buildbase"
-	defaultBuilderTag     = "nightly"
-	defaultLanguage       = "en_US.UTF-8"
-	defaultMaintainer     = organization + ".org " + repository + " team <" + repository + "@" + organization + ".org>"
-	defaultRuntimeImage   = "gcr.io/distroless/static"
-	defaultRuntimeTag     = "nonroot"
-	defaultRuntimeUser    = "nonroot:nonroot"
-	rootUser              = "root"
-	defaultBuildUser      = rootUser + ":" + rootUser
-	defaultBuildStageName = "builder"
-	maintainerKey         = "MAINTAINER"
-	minimumArgumentLength = 2
-	ubuntuVersion         = "24.04"
+	PullRequest struct {
+		Types Types `yaml:"types,omitempty"`
+		Paths Paths `yaml:"paths"`
+	}
 
-	goWorkdir   = "${GOPATH}/src/github.com"
-	rustWorkdir = "${HOME}/rust/src/github.com"
+	Jobs struct {
+		Build Build `yaml:"build"`
+	}
 
-	agentInernalPackage = "pkg/agent/internal"
+	Build struct {
+		Uses    string `yaml:"uses"`
+		With    With   `yaml:"with"`
+		Secrets string `yaml:"secrets"`
+	}
 
-	ngtPreprocess     = "make ngt/install"
-	faissPreprocess   = "make faiss/install"
-	usearchPreprocess = "make usearch/install"
+	With struct {
+		Target    string `yaml:"target"`
+		Platforms string `yaml:"platforms,omitempty"`
+	}
 
-	helmOperatorRootdir   = "/opt/helm"
-	helmOperatorWatchFile = helmOperatorRootdir + "/watches.yaml"
-	helmOperatorChartsDir = helmOperatorRootdir + "/charts"
+	Types []string
+	Paths []string
+
+	Data struct {
+		AliasImage        bool
+		ConfigExists      bool
+		Year              int
+		ContainerType     ContainerType
+		AppName           string
+		BinDir            string
+		BuildPlatforms    string
+		BuildStageName    string
+		BuildUser         string
+		BuilderImage      string
+		BuilderTag        string
+		Maintainer        string
+		Name              string
+		PackageDir        string
+		RootDir           string
+		RuntimeImage      string
+		RuntimeTag        string
+		RuntimeUser       string
+		Arguments         map[string]string
+		Environments      map[string]string
+		Entrypoints       []string
+		EnvironmentsSlice []string
+		ExtraCopies       []string
+		ExtraImages       []string
+		ExtraPackages     []string
+		Preprocess        []string
+		PullRequestPaths  []string
+		RunCommands       []string
+		RunMounts         []string
+		StageFiles        []string
+	}
+	ContainerType int
 )
 
 const (
@@ -306,11 +435,11 @@ var (
 		"make RUST_VERSION=\"${RUST_VERSION}\" rust/install",
 	}
 	goBuildCommands = []string{
-		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}\" NAME=\"${REPO}\" cmd/${PKG}/${APP_NAME}",
+		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}/${REPO}\" NAME=\"${REPO}\" cmd/${PKG}/${APP_NAME}",
 		"mv \"cmd/${PKG}/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
 	}
 	goExampleBuildCommands = []string{
-		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}\" NAME=\"${REPO}\" ${PKG}/${APP_NAME}",
+		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}/${REPO}\" NAME=\"${REPO}\" ${PKG}/${APP_NAME}",
 		"mv \"${PKG}/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
 	}
 	rustBuildCommands = []string{
@@ -356,7 +485,6 @@ var (
 		"graphviz",
 		"jq",
 		"libaec-dev",
-		"libhdf5-dev",
 		"sed",
 		"zip",
 	}
@@ -532,7 +660,6 @@ func main() {
 		syscall.SIGKILL,
 		syscall.SIGTERM)
 	defer cancel()
-	log.Debug(tmpl)
 
 	maintainer := os.Getenv(maintainerKey)
 	if maintainer == "" {
@@ -541,23 +668,23 @@ func main() {
 	year := time.Now().Year()
 	eg, egctx := errgroup.New(ctx)
 	for n, d := range map[string]Data{
-		"vald-agent-ngt": {
+		"vald-" + agentNGT: {
 			AppName:       "ngt",
-			PackageDir:    "agent/core/ngt",
+			PackageDir:    agent + "/core/ngt",
 			ExtraPackages: append(clangBuildDeps, ngtBuildDeps...),
 			Preprocess:    []string{ngtPreprocess},
 		},
-		"vald-agent-faiss": {
+		"vald-" + agentFaiss: {
 			AppName:    "faiss",
-			PackageDir: "agent/core/faiss",
+			PackageDir: agent + "/core/faiss",
 			ExtraPackages: append(clangBuildDeps,
 				append(ngtBuildDeps,
 					faissBuildDeps...)...),
 			Preprocess: []string{faissPreprocess},
 		},
-		"vald-agent": {
-			AppName:       "agent",
-			PackageDir:    "agent/core/agent",
+		"vald-" + agent: {
+			AppName:       agent,
+			PackageDir:    agent + "/core/" + agent,
 			ContainerType: Rust,
 			RuntimeImage:  "gcr.io/distroless/cc-debian12",
 			ExtraPackages: append(clangBuildDeps,
@@ -569,7 +696,7 @@ func main() {
 				faissPreprocess,
 			},
 		},
-		"vald-agent-sidecar": {
+		"vald-" + agentSidecar: {
 			AppName:    "sidecar",
 			PackageDir: "agent/sidecar",
 		},
@@ -620,7 +747,7 @@ func main() {
 		"vald-benchmark-job": {
 			AppName:       "job",
 			PackageDir:    "tools/benchmark/job",
-			ExtraPackages: append(clangBuildDeps, "libhdf5-dev", "libaec-dev"),
+			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
 			Preprocess: []string{
 				"make hdf5/install",
 			},
@@ -671,7 +798,7 @@ func main() {
 		"vald-loadtest": {
 			AppName:       "loadtest",
 			PackageDir:    "tools/cli/loadtest",
-			ExtraPackages: append(clangBuildDeps, "libhdf5-dev", "libaec-dev"),
+			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
 			Preprocess: []string{
 				"make hdf5/install",
 			},
@@ -710,7 +837,7 @@ func main() {
 		"vald-example-client": {
 			AppName:       "client",
 			PackageDir:    "example/client",
-			ExtraPackages: append(clangBuildDeps, "libhdf5-dev", "libaec-dev"),
+			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
 			Preprocess: []string{
 				"make hdf5/install",
 			},
@@ -747,6 +874,187 @@ func main() {
 	} {
 		name := n
 		data := d
+
+		eg.Go(safety.RecoverFunc(func() error {
+			data.Name = strings.TrimPrefix(name, "vald-")
+			switch data.ContainerType {
+			case HelmOperator:
+				data.PullRequestPaths = append(data.PullRequestPaths,
+					chartPath,
+					valuesPath,
+					templatesPath,
+					helmOperatorChartPath,
+					helmOperatorValuesPath,
+					helmOperatorTemplatesPath,
+					operatorSDKVersionPath,
+				)
+			case DevContainer, CIContainer:
+				data.PullRequestPaths = append(data.PullRequestPaths,
+					apisProtoPath,
+					hackPath,
+				)
+			case Go:
+				data.PullRequestPaths = append(data.PullRequestPaths,
+					apisProtoPath,
+					goModPath,
+					goSumPath,
+					goVersionPath,
+					excludeTestFilesPath,
+					excludeMockFilesPath,
+				)
+				mainFile := file.Join(os.Args[1], "cmd", data.PackageDir, "main.go")
+				if file.Exists(mainFile) {
+					ns, err := buildDependencyTree(os.Args[1], mainFile)
+					if err != nil {
+						log.Error(err)
+					}
+					pkgs := make([]string, 0, len(ns)+1)
+					pkgs = append(pkgs, file.Join("cmd", data.PackageDir))
+					for _, pnode := range ns {
+						pkgs = append(pkgs, pnode.ToSlice()...)
+					}
+					slices.Sort(pkgs)
+					pkgs = slices.Compact(pkgs)
+					root, err := os.Getwd()
+					if err != nil {
+						root = os.Getenv("HOME")
+					}
+					if root != "" && !strings.HasSuffix(root, string(os.PathSeparator)) {
+						root += string(os.PathSeparator)
+					}
+					for i, pkg := range pkgs {
+						const splitWord = "/vdaas/vald/"
+						pkg = file.Join(pkg, "*.go")
+						index := strings.LastIndex(pkg, splitWord)
+						if index != -1 {
+							pkg = pkg[index+len(splitWord):]
+						}
+						if root != "" {
+							pkg = strings.TrimPrefix(pkg, root)
+						}
+						pkgs[i] = pkg
+					}
+					data.PullRequestPaths = append(data.PullRequestPaths, pkgs...)
+				}
+			case Rust:
+				data.PullRequestPaths = append(data.PullRequestPaths,
+					apisProtoPath,
+					cargoLockPath,
+					cargoTomlPath,
+					rustBinAgentDirPath,
+					rustNgtRsPath,
+					rustNgtPath,
+					rustProtoPath,
+					rustVersionPath,
+				)
+			}
+			if strings.EqualFold(data.Name, agentFaiss) || data.ContainerType == Rust {
+				data.PullRequestPaths = append(data.PullRequestPaths, faissVersionPath)
+			}
+			if strings.EqualFold(data.Name, agentNGT) || data.ContainerType == Rust {
+				data.PullRequestPaths = append(data.PullRequestPaths, ngtVersionPath)
+			}
+
+			if !data.AliasImage {
+				data.PullRequestPaths = append(data.PullRequestPaths, makefilePath, makefileDirPath)
+			}
+
+			if data.AliasImage {
+				data.BuildPlatforms = multiPlatforms
+			}
+			if data.ContainerType == CIContainer || data.Name == loadtest {
+				data.BuildPlatforms = amd64Platform
+			}
+
+			data.Year = time.Now().Year()
+			if maintainer := os.Getenv(maintainerKey); maintainer != "" {
+				data.Maintainer = maintainer
+			} else {
+				data.Maintainer = defaultMaintainer
+			}
+
+			log.Infof("Generating %s's workflow", data.Name)
+			workflow := new(Workflow)
+			err := yaml.Unmarshal(conv.Atob(`name: "Build docker image: `+data.Name+`"
+on:
+  schedule:
+    - cron: "0 * * * *"
+  push:
+    branches:
+      - "main"
+      - "release/v*.*"
+      - "!release/v*.*.*"
+    tags:
+      - "*.*.*"
+      - "*.*.*-*"
+      - "v*.*.*"
+      - "v*.*.*-*"
+  pull_request:
+    paths:
+      - ".github/actions/docker-build/action.yaml"
+      - ".github/workflows/_docker-image.yaml"
+      - ".github/workflows/dockers-`+data.Name+`-image.yaml"
+      - "dockers/`+data.PackageDir+`/Dockerfile"
+      - "hack/docker/gen/main.go"
+  pull_request_target:
+    types: [opened, reopened, synchronize, labeled]
+    paths: []
+
+jobs:
+  build:
+    uses: "./.github/workflows/_docker-image.yaml"
+    with:
+      target: "`+data.Name+`"
+      platforms: ""
+    secrets: "inherit"
+`), &workflow)
+			if err != nil {
+				return fmt.Errorf("Error decoding YAML: %v", err)
+			}
+
+			if !data.AliasImage {
+				workflow.On.Schedule = nil
+			}
+			workflow.On.PullRequest.Paths = append(workflow.On.PullRequest.Paths, data.PullRequestPaths...)
+			if strings.EqualFold(data.Name, exampleContainer) {
+				workflow.On.PullRequest.Paths = slices.DeleteFunc(workflow.On.PullRequest.Paths, func(path string) bool {
+					return strings.HasPrefix(path, "cmd") || strings.HasPrefix(path, "pkg")
+				})
+				workflow.On.PullRequest.Paths = append(workflow.On.PullRequest.Paths, data.PackageDir+"/**")
+			}
+			slices.Sort(workflow.On.PullRequest.Paths)
+			workflow.On.PullRequest.Paths = slices.Compact(workflow.On.PullRequest.Paths)
+
+			workflow.On.PullRequestTarget.Paths = workflow.On.PullRequest.Paths
+			workflow.Jobs.Build.With.Platforms = data.BuildPlatforms
+
+			workflowYamlTmp, err := yaml.Marshal(workflow)
+			if err != nil {
+				return fmt.Errorf("error marshaling workflowStruct to YAML: %w", err)
+			}
+
+			// remove the double quotation marks from the generated key "on": (note that the word "on" is a reserved word in sigs.k8s.io/yaml)
+			workflowYaml := strings.Replace(string(workflowYamlTmp), "\"on\":", "on:", 1)
+
+			if len(header) > (int(^uint(0)>>1) - len(workflowYaml)) {
+				return fmt.Errorf("size computation for allocation may overflow")
+			}
+			totalLen := len(header) + len(workflowYaml)
+
+			buf := bytes.NewBuffer(make([]byte, 0, totalLen))
+			err = license.Execute(buf, data)
+			if err != nil {
+				return fmt.Errorf("error executing template: %w", err)
+			}
+			buf.WriteString("\r\n")
+			buf.WriteString(workflowYaml)
+			fileName := file.Join(os.Args[1], ".github/workflows", "dockers-"+data.Name+"-image.yaml")
+			_, err = file.OverWriteFile(egctx, fileName, buf, fs.ModePerm)
+			if err != nil {
+				return fmt.Errorf("error writing workflow file for %s error: %w", fileName, err)
+			}
+			return nil
+		}))
 
 		eg.Go(safety.RecoverFunc(func() error {
 			data.Maintainer = maintainer
@@ -856,15 +1164,116 @@ func main() {
 			data.EnvironmentsSlice = topologicalSort(data.Environments)
 			data.ConfigExists = file.Exists(file.Join(os.Args[1], "cmd", data.PackageDir, "sample.yaml"))
 
-			buf := bytes.NewBuffer(make([]byte, 0, len(tmpl)))
+			buf := bytes.NewBuffer(make([]byte, 0, 1024))
 			log.Infof("Generating %s's Dockerfile", name)
 			docker.Execute(buf, data)
 			tpl := buf.String()
 			buf.Reset()
 			template.Must(template.New("Dockerfile").Parse(tpl)).Execute(buf, data)
-			file.OverWriteFile(egctx, file.Join(os.Args[1], "dockers", data.PackageDir, "Dockerfile"), buf, fs.ModePerm)
+			fileName := file.Join(os.Args[1], "dockers", data.PackageDir, "Dockerfile")
+			_, err := file.OverWriteFile(egctx, fileName, buf, fs.ModePerm)
+			if err != nil {
+				return fmt.Errorf("error writing Dockerfile for %s error: %w", fileName, err)
+			}
 			return nil
 		}))
 	}
 	eg.Wait()
+}
+
+// PackageNode represents a node in the dependency tree.
+type PackageNode struct {
+	Name    string
+	Imports []*PackageNode
+}
+
+// ToSlice traverses the dependency tree and returns all dependencies as a slice.
+func (n PackageNode) ToSlice() (pkgs []string) {
+	pkgs = make([]string, 0, len(n.Imports)+1)
+	if n.Name != "command-line-arguments" {
+		pkgs = append(pkgs, n.Name)
+	}
+	for _, node := range n.Imports {
+		pkgs = append(pkgs, node.ToSlice()...)
+	}
+	return pkgs
+}
+
+// String returns string of the dependency tree in a readable format.
+func (n PackageNode) String() string {
+	return n.string(0)
+}
+
+func (n PackageNode) string(depth int) (tree string) {
+	tree = fmt.Sprintf("%s- %s\n", strings.Repeat("  ", depth), n.Name)
+	for _, node := range n.Imports {
+		tree += node.string(depth + 1)
+	}
+	return tree
+}
+
+// processDependencies processes package dependencies while avoiding duplicate processing.
+func processDependencies(
+	pkg *packages.Package,
+	nodes map[string]*PackageNode,
+	mu *sync.Mutex,
+	checkList map[string]*PackageNode,
+	wg *sync.WaitGroup,
+) *PackageNode {
+	if !strings.Contains(pkg.PkgPath, "vdaas/vald") && pkg.Name != "main" {
+		return nil
+	}
+	if node, exists := checkList[pkg.PkgPath]; exists {
+		return node
+	}
+
+	node := &PackageNode{Name: pkg.PkgPath}
+	nodes[pkg.PkgPath] = node
+	checkList[pkg.PkgPath] = node
+	for _, imp := range pkg.Imports {
+		if !strings.Contains(imp.PkgPath, "vdaas/vald") {
+			continue
+		}
+		if child, exists := checkList[imp.PkgPath]; exists {
+			node.Imports = append(node.Imports, child)
+			continue
+		}
+		child := processDependencies(imp, nodes, mu, checkList, wg)
+		if child != nil {
+			node.Imports = append(node.Imports, child)
+		}
+	}
+
+	return node
+}
+
+// buildDependencyTree constructs a dependency tree for multiple entry packages.
+func buildDependencyTree(rootDir, entryFile string) ([]*PackageNode, error) {
+	cfg := &packages.Config{
+		Mode: packages.NeedName | packages.NeedImports | packages.NeedDeps,
+		Dir:  rootDir,
+	}
+
+	// Use entry file (e.g., main.go) as the root for analysis.
+	pkgs, err := packages.Load(cfg, entryFile)
+	if err != nil {
+		return nil, err
+	}
+
+	nodes := make(map[string]*PackageNode)
+	checkList := make(map[string]*PackageNode, len(pkgs)) // Tracks processed packages
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+
+	// Process all entry packages
+	var roots []*PackageNode
+	for _, pkg := range pkgs {
+		root := processDependencies(pkg, nodes, &mu, checkList, &wg)
+		if root != nil {
+			roots = append(roots, root)
+		}
+	}
+	wg.Wait()
+
+	return roots, nil
 }

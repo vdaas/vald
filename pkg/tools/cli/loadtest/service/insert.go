@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import (
 
 func insertRequestProvider(
 	dataset assets.Dataset, batchSize int,
-) (f func() any, size int, err error) {
+) (f func() *any, size int, err error) {
 	switch {
 	case batchSize == 1:
 		f, size = objectVectorProvider(dataset)
@@ -42,47 +42,49 @@ func insertRequestProvider(
 	return f, size, nil
 }
 
-func objectVectorProvider(dataset assets.Dataset) (func() any, int) {
+func objectVectorProvider(dataset assets.Dataset) (func() *any, int) {
 	idx := int32(-1)
 	size := dataset.TrainSize()
-	return func() (ret any) {
+	return func() (ret *any) {
 		if i := int(atomic.AddInt32(&idx, 1)); i < size {
 			v, err := dataset.Train(i)
 			if err != nil {
 				return nil
 			}
-			ret = &payload.Insert_Request{
+			obj := any(&payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     fuid.String(),
 					Vector: v.([]float32),
 				},
-			}
+			})
+			ret = &obj
 		}
 		return ret
 	}, size
 }
 
-func objectVectorsProvider(dataset assets.Dataset, n int) (func() any, int) {
+func objectVectorsProvider(dataset assets.Dataset, n int) (func() *any, int) {
 	provider, s := objectVectorProvider(dataset)
 	size := s / n
 	if s%n != 0 {
 		size = size + 1
 	}
-	return func() (ret any) {
+	return func() (ret *any) {
 		r := make([]*payload.Insert_Request, 0, n)
 		for i := 0; i < n; i++ {
 			d := provider()
 			if d == nil {
 				break
 			}
-			r = append(r, d.(*payload.Insert_Request))
+			r = append(r, (*d).(*payload.Insert_Request))
 		}
 		if len(r) == 0 {
 			return nil
 		}
-		return &payload.Insert_MultiRequest{
+		obj := any(&payload.Insert_MultiRequest{
 			Requests: r,
-		}
+		})
+		return &obj
 	}, size
 }
 

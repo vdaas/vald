@@ -3717,7 +3717,7 @@
                       "description": "gRPC client interceptors",
                       "items": {
                         "type": "string",
-                        "enum": ["TraceInterceptor"]
+                        "enum": ["TraceInterceptor", "MetricInterceptor"]
                       }
                     },
                     "keepalive": {
@@ -7053,7 +7053,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -7413,7 +7416,7 @@
                           "description": "gRPC client interceptors",
                           "items": {
                             "type": "string",
-                            "enum": ["TraceInterceptor"]
+                            "enum": ["TraceInterceptor", "MetricInterceptor"]
                           }
                         },
                         "keepalive": {
@@ -7765,7 +7768,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -9642,7 +9648,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -9990,7 +9999,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -10339,7 +10351,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -12222,7 +12237,7 @@
                           "description": "gRPC client interceptors",
                           "items": {
                             "type": "string",
-                            "enum": ["TraceInterceptor"]
+                            "enum": ["TraceInterceptor", "MetricInterceptor"]
                           }
                         },
                         "keepalive": {
@@ -14071,6 +14086,61 @@
             "corrector": {
               "type": "object",
               "properties": {
+                "affinity": {
+                  "type": "object",
+                  "properties": {
+                    "nodeAffinity": {
+                      "type": "object",
+                      "properties": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "node affinity preferred scheduling terms",
+                          "items": { "type": "object" }
+                        },
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "object",
+                          "properties": {
+                            "nodeSelectorTerms": {
+                              "type": "array",
+                              "description": "node affinity required node selectors",
+                              "items": { "type": "object" }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "podAffinity": {
+                      "type": "object",
+                      "properties": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod affinity preferred scheduling terms",
+                          "items": { "type": "object" }
+                        },
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod affinity required scheduling terms",
+                          "items": { "type": "object" }
+                        }
+                      }
+                    },
+                    "podAntiAffinity": {
+                      "type": "object",
+                      "properties": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod anti-affinity preferred scheduling terms",
+                          "items": { "type": "object" }
+                        },
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod anti-affinity required scheduling terms",
+                          "items": { "type": "object" }
+                        }
+                      }
+                    }
+                  }
+                },
                 "agent_namespace": {
                   "type": "string",
                   "description": "namespace of agent pods to manage"
@@ -14223,7 +14293,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -14571,7 +14644,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -14934,7 +15010,7 @@
                           "description": "gRPC client interceptors",
                           "items": {
                             "type": "string",
-                            "enum": ["TraceInterceptor"]
+                            "enum": ["TraceInterceptor", "MetricInterceptor"]
                           }
                         },
                         "keepalive": {
@@ -15171,6 +15247,10 @@
                 "name": {
                   "type": "string",
                   "description": "name of index correction job"
+                },
+                "nodeSelector": {
+                  "type": "object",
+                  "description": "node selector"
                 },
                 "node_name": { "type": "string", "description": "node name" },
                 "observability": {
@@ -16390,6 +16470,11 @@
                   "type": "boolean",
                   "description": "CronJob suspend setting for index correction"
                 },
+                "tolerations": {
+                  "type": "array",
+                  "description": "tolerations",
+                  "items": { "type": "object" }
+                },
                 "ttlSecondsAfterFinished": {
                   "type": "integer",
                   "description": "ttl setting for K8s completed jobs"
@@ -16404,6 +16489,61 @@
             "creator": {
               "type": "object",
               "properties": {
+                "affinity": {
+                  "type": "object",
+                  "properties": {
+                    "nodeAffinity": {
+                      "type": "object",
+                      "properties": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "node affinity preferred scheduling terms",
+                          "items": { "type": "object" }
+                        },
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "object",
+                          "properties": {
+                            "nodeSelectorTerms": {
+                              "type": "array",
+                              "description": "node affinity required node selectors",
+                              "items": { "type": "object" }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "podAffinity": {
+                      "type": "object",
+                      "properties": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod affinity preferred scheduling terms",
+                          "items": { "type": "object" }
+                        },
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod affinity required scheduling terms",
+                          "items": { "type": "object" }
+                        }
+                      }
+                    },
+                    "podAntiAffinity": {
+                      "type": "object",
+                      "properties": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod anti-affinity preferred scheduling terms",
+                          "items": { "type": "object" }
+                        },
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod anti-affinity required scheduling terms",
+                          "items": { "type": "object" }
+                        }
+                      }
+                    }
+                  }
+                },
                 "agent_namespace": {
                   "type": "string",
                   "description": "namespace of agent pods to manage"
@@ -16565,7 +16705,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -16913,7 +17056,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -17157,6 +17303,10 @@
                 "name": {
                   "type": "string",
                   "description": "name of index creation job"
+                },
+                "nodeSelector": {
+                  "type": "object",
+                  "description": "node selector"
                 },
                 "node_name": { "type": "string", "description": "node name" },
                 "observability": {
@@ -18376,6 +18526,11 @@
                   "description": "indexing target addresses",
                   "items": { "type": "string" }
                 },
+                "tolerations": {
+                  "type": "array",
+                  "description": "tolerations",
+                  "items": { "type": "object" }
+                },
                 "ttlSecondsAfterFinished": {
                   "type": "integer",
                   "description": "ttl setting for K8s completed jobs"
@@ -18602,7 +18757,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -18950,7 +19108,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -22115,6 +22276,61 @@
             "saver": {
               "type": "object",
               "properties": {
+                "affinity": {
+                  "type": "object",
+                  "properties": {
+                    "nodeAffinity": {
+                      "type": "object",
+                      "properties": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "node affinity preferred scheduling terms",
+                          "items": { "type": "object" }
+                        },
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "object",
+                          "properties": {
+                            "nodeSelectorTerms": {
+                              "type": "array",
+                              "description": "node affinity required node selectors",
+                              "items": { "type": "object" }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "podAffinity": {
+                      "type": "object",
+                      "properties": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod affinity preferred scheduling terms",
+                          "items": { "type": "object" }
+                        },
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod affinity required scheduling terms",
+                          "items": { "type": "object" }
+                        }
+                      }
+                    },
+                    "podAntiAffinity": {
+                      "type": "object",
+                      "properties": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod anti-affinity preferred scheduling terms",
+                          "items": { "type": "object" }
+                        },
+                        "requiredDuringSchedulingIgnoredDuringExecution": {
+                          "type": "array",
+                          "description": "pod anti-affinity required scheduling terms",
+                          "items": { "type": "object" }
+                        }
+                      }
+                    }
+                  }
+                },
                 "agent_namespace": {
                   "type": "string",
                   "description": "namespace of agent pods to manage"
@@ -22272,7 +22488,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -22620,7 +22839,10 @@
                               "description": "gRPC client interceptors",
                               "items": {
                                 "type": "string",
-                                "enum": ["TraceInterceptor"]
+                                "enum": [
+                                  "TraceInterceptor",
+                                  "MetricInterceptor"
+                                ]
                               }
                             },
                             "keepalive": {
@@ -22864,6 +23086,10 @@
                 "name": {
                   "type": "string",
                   "description": "name of index save job"
+                },
+                "nodeSelector": {
+                  "type": "object",
+                  "description": "node selector"
                 },
                 "node_name": { "type": "string", "description": "node name" },
                 "observability": {
@@ -24082,6 +24308,11 @@
                   "type": "array",
                   "description": "index saving target addresses",
                   "items": { "type": "string" }
+                },
+                "tolerations": {
+                  "type": "array",
+                  "description": "tolerations",
+                  "items": { "type": "object" }
                 },
                 "ttlSecondsAfterFinished": {
                   "type": "integer",

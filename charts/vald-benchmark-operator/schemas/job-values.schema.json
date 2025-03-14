@@ -134,7 +134,10 @@
             "interceptors": {
               "type": "array",
               "description": "gRPC client interceptors",
-              "items": { "type": "string", "enum": ["TraceInterceptor"] }
+              "items": {
+                "type": "string",
+                "enum": ["TraceInterceptor", "MetricInterceptor"]
+              }
             },
             "keepalive": {
               "type": "object",
@@ -1193,6 +1196,7 @@
           "description": "target cluster host",
           "minLength": 1
         },
+        "meta": { "type": "object", "description": "metadata for target host" },
         "port": {
           "type": "integer",
           "description": "target cluster port",

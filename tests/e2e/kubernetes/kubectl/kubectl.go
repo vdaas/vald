@@ -1,7 +1,7 @@
 //go:build e2e
 
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -28,37 +28,37 @@ import (
 )
 
 // RolloutResource rollouts and wait for the resource to be ready.
-func RolloutResource(ctx context.Context, t *testing.T, resource string) error {
+func RolloutResource(ctx context.Context, t *testing.T, resource, kubeconfig string) error {
 	t.Helper()
 
-	cmd := exec.CommandContext(ctx, "kubectl", "rollout", "restart", resource)
+	cmd := exec.CommandContext(ctx, "kubectl", "rollout", "restart", resource, "--kubeconfig", kubeconfig)
 	if err := runCmd(t, cmd); err != nil {
 		return err
 	}
 
-	cmd = exec.CommandContext(ctx, "kubectl", "rollout", "status", resource)
+	cmd = exec.CommandContext(ctx, "kubectl", "rollout", "status", resource, "--kubeconfig", kubeconfig)
 	return runCmd(t, cmd)
 }
 
 // WaitResources waits for multiple resources to be ready.
 func WaitResources(
-	ctx context.Context, t *testing.T, resource, labelSelector, condition, timeout string,
+	ctx context.Context, t *testing.T, resource, labelSelector, condition, timeout, kubeconfig string,
 ) error {
 	t.Helper()
 
-	cmd := exec.CommandContext(ctx, "kubectl", "wait", "--for=condition="+condition, "-l", labelSelector, "--timeout", timeout, resource)
+	cmd := exec.CommandContext(ctx, "kubectl", "wait", "--for=condition="+condition, "-l", labelSelector, "--timeout", timeout, resource, "--kubeconfig", kubeconfig)
 	return runCmd(t, cmd)
 }
 
-func DebugLog(ctx context.Context, t *testing.T, label string) error {
+func DebugLog(ctx context.Context, t *testing.T, label, kubeconfig string) error {
 	t.Helper()
-	cmd := exec.CommandContext(ctx, "kubectl", "logs", "-l", label, "--tail=-1")
+	cmd := exec.CommandContext(ctx, "kubectl", "logs", "-l", label, "--tail=-1", "--kubeconfig", kubeconfig)
 	return runCmd(t, cmd)
 }
 
-func KubectlCmd(ctx context.Context, t *testing.T, subcmds ...string) error {
+func KubectlCmd(ctx context.Context, t *testing.T, kubeconfig string, subcmds ...string) error {
 	t.Helper()
-	cmd := exec.CommandContext(ctx, "kubectl", subcmds...)
+	cmd := exec.CommandContext(ctx, "kubectl", append([]string{"--kubeconfig", kubeconfig}, subcmds...)...)
 	return runCmd(t, cmd)
 }
 

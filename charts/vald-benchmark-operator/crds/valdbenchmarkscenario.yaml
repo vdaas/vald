@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -61,34 +61,32 @@ spec:
               default: Available
               type: string
             spec:
-              type: object
               properties:
                 dataset:
-                  type: object
                   properties:
                     group:
-                      type: string
                       minLength: 1
-                    indexes:
-                      type: integer
-                      minimum: 0
-                    name:
                       type: string
+                    indexes:
+                      minimum: 0
+                      type: integer
+                    name:
                       enum:
                         - original
                         - fashion-mnist
+                      type: string
                     range:
-                      type: object
                       properties:
                         end:
-                          type: integer
                           minimum: 1
+                          type: integer
                         start:
-                          type: integer
                           minimum: 1
+                          type: integer
                       required:
                         - start
                         - end
+                      type: object
                     url:
                       type: string
                   required:
@@ -96,21 +94,26 @@ spec:
                     - indexes
                     - group
                     - range
+                  type: object
                 jobs:
-                  type: array
                   items:
                     type: object
                     x-kubernetes-preserve-unknown-fields: true
+                  type: array
                 target:
-                  type: object
                   properties:
                     host:
-                      type: string
                       minLength: 1
+                      type: string
+                    meta:
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     port:
-                      type: integer
                       maximum: 65535
                       minimum: 0
+                      type: integer
                   required:
                     - host
                     - port
+                  type: object
+              type: object

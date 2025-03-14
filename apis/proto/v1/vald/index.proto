@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -26,26 +26,34 @@ option java_multiple_files = true;
 option java_outer_classname = "ValdIndex";
 option java_package = "org.vdaas.vald.api.v1.vald";
 
+// Overview
 // Represent the index manager service.
 service Index {
+  // Overview
   // Represent the RPC to get the index information.
   rpc IndexInfo(payload.v1.Empty) returns (payload.v1.Info.Index.Count) {
     option (google.api.http).get = "/index/info";
   }
+
+  // Overview
   // Represent the RPC to get the index information for each agents.
   rpc IndexDetail(payload.v1.Empty) returns (payload.v1.Info.Index.Detail) {
     option (google.api.http).get = "/index/detail";
   }
+
+  // Overview
   // Represent the RPC to get the index statistics.
   rpc IndexStatistics(payload.v1.Empty) returns (payload.v1.Info.Index.Statistics) {
     option (google.api.http).get = "/index/statistics";
   }
 
+  // Overview
   // Represent the RPC to get the index statistics for each agents.
   rpc IndexStatisticsDetail(payload.v1.Empty) returns (payload.v1.Info.Index.StatisticsDetail) {
     option (google.api.http).get = "/index/statistics/detail";
   }
 
+  // Overview
   // Represent the RPC to get the index property.
   rpc IndexProperty(payload.v1.Empty) returns (payload.v1.Info.Index.PropertyDetail) {
     option (google.api.http).get = "/index/property";

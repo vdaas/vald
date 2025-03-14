@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -26,9 +26,19 @@ option java_multiple_files = true;
 option java_outer_classname = "ValdFlush";
 option java_package = "org.vdaas.vald.api.v1.vald";
 
-// Flush service provides ways to flush all indexed vectors.
+// Overview
+// Flush Service is responsible for removing all vectors that are indexed and uncommitted in the `vald-agent`.
 service Flush {
-  // A method to flush all indexed vector.
+  // Overview
+  // Flush RPC is the method to remove all vectors.
+  // ---
+  // Status Code
+  // |  0   | OK                |
+  // |  1   | CANCELLED         |
+  // |  3   | INVALID_ARGUMENT  |
+  // |  4   | DEADLINE_EXCEEDED |
+  // |  5   | NOT_FOUND         |
+  // |  13  | INTERNAL          |
   rpc Flush(payload.v1.Flush.Request) returns (payload.v1.Info.Index.Count) {
     option (google.api.http) = {delete: "/flush"};
   }

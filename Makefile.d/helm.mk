@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -155,17 +155,6 @@ helm/schema/vald-benchmark-operator: $(ROOTDIR)/charts/vald-benchmark-operator/v
 $(ROOTDIR)/charts/vald-benchmark-operator/values.schema.json: \
 	$(ROOTDIR)/charts/vald-benchmark-operator/values.yaml
 	$(call gen-vald-helm-schema,vald-benchmark-operator/values)
-
-.PHONY: yq/install
-## install yq
-yq/install: $(BINDIR)/yq
-
-$(BINDIR)/yq:
-	mkdir -p $(BINDIR)
-	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
-	cd $(TEMP_DIR) \
-	    && curl -fsSL https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_$(OS)_$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/yq \
-	    && chmod a+x $(BINDIR)/yq
 
 .PHONY: helm/schema/crd/all
 helm/schema/crd/all: \

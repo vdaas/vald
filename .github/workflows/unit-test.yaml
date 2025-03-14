@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -23,18 +23,20 @@ on:
     paths:
       - "go.mod"
       - "go.sum"
-      - ".github/workflows/test.yaml"
+      - ".github/workflows/unit-test.yaml"
       - "internal/**"
       - "pkg/**"
       - "cmd/**"
+      - "Makefile.d/test.mk"
   pull_request:
     paths:
       - "go.mod"
       - "go.sum"
-      - ".github/workflows/test.yaml"
+      - ".github/workflows/unit-test.yaml"
       - "internal/**"
       - "pkg/**"
       - "cmd/**"
+      - "Makefile.d/test.mk"
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest

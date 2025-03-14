@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -54,8 +54,6 @@ jobs:
           git checkout main
           git checkout -b ${BRANCH_NAME}
           echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_OUTPUT
-      - name: Setup Go environment
-        uses: ./.github/actions/setup-go
       - name: Run formatter and license.go
         run: |
           make format
@@ -99,8 +97,6 @@ jobs:
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Setup Go environment
-        uses: ./.github/actions/setup-go
       - name: Run `make format` and `make deps/install`
         run: |
           make deps/install

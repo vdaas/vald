@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -2306,7 +2306,8 @@ func Test_ngt_InsertCommit(t *testing.T) {
 		{
 			name: "return object id when object type is uint8",
 			args: args{
-				vec: []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
+				vec:      []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:    idxTempDir(t),
@@ -2321,7 +2322,8 @@ func Test_ngt_InsertCommit(t *testing.T) {
 		{
 			name: "return object id when object type is uint8 and all vector elem are 0",
 			args: args{
-				vec: []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
+				vec:      []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:    idxTempDir(t),
@@ -2340,6 +2342,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 					math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8,
 					math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8, math.MinInt8,
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:    idxTempDir(t),
@@ -2358,6 +2361,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 					math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8,
 					math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8, math.MaxUint8,
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:    idxTempDir(t),
@@ -2372,7 +2376,8 @@ func Test_ngt_InsertCommit(t *testing.T) {
 		{
 			name: "return object id when object type is float",
 			args: args{
-				vec: []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
+				vec:      []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:    idxTempDir(t),
@@ -2387,7 +2392,8 @@ func Test_ngt_InsertCommit(t *testing.T) {
 		{
 			name: "return object id when object type is float and all vector elem are 0",
 			args: args{
-				vec: []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
+				vec:      []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:    idxTempDir(t),
@@ -2406,6 +2412,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 					math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32,
 					math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32, math.SmallestNonzeroFloat32,
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:    idxTempDir(t),
@@ -2424,6 +2431,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 					math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32,
 					math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32, math.MaxFloat32,
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:    idxTempDir(t),
@@ -2438,7 +2446,8 @@ func Test_ngt_InsertCommit(t *testing.T) {
 		{
 			name: "return error if dimension is not the same as insert vector",
 			args: args{
-				vec: []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
+				vec:      []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:    idxTempDir(t),
@@ -2890,6 +2899,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				vecs: [][]float32{
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:             idxTempDir(t),
@@ -2913,6 +2923,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 					{3, 4, 5, 6, 7, 8, 9, 10, 11},
 					{4, 5, 6, 7, 8, 9, 10, 11, 12},
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:             idxTempDir(t),
@@ -2933,6 +2944,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
 					{0, 1, 2, 3, 4, 5, 6, 7, 8},
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:             idxTempDir(t),
@@ -2955,6 +2967,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 					{0, 1, 2, 3, 4, 5, 6, 7},
 					{0, 1, 2, 3, 4, 5, 6, 7, 8, 10},
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:             idxTempDir(t),
@@ -2978,6 +2991,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				vecs: [][]float32{
 					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:             idxTempDir(t),
@@ -3001,6 +3015,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 					{0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 0.11},
 					{0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 0.11, 0.12},
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:             idxTempDir(t),
@@ -3021,6 +3036,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
 					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:             idxTempDir(t),
@@ -3043,6 +3059,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7},
 					{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.10},
 				},
+				poolSize: uint32(1),
 			},
 			fields: fields{
 				idxPath:             idxTempDir(t),
@@ -3172,6 +3189,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
+				poolSize:            uint32(1),
 			},
 		},
 		{
@@ -3212,6 +3230,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 					bulkInsertChunkSize: 100,
 					dimension:           9,
 					objectType:          Float,
+					poolSize:            uint32(1),
 				},
 				createFunc: func(t *testing.T, f fields) (NGT, error) {
 					t.Helper()
@@ -3271,6 +3290,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 					bulkInsertChunkSize: 5,
 					dimension:           9,
 					objectType:          Float,
+					poolSize:            uint32(1),
 				},
 				createFunc: func(t *testing.T, f fields) (NGT, error) {
 					t.Helper()
@@ -3316,6 +3336,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
+				poolSize:            uint32(1),
 			},
 		},
 	}
@@ -3431,6 +3452,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				bulkInsertChunkSize: 5,
 				dimension:           9,
 				objectType:          Float,
+				poolSize:            uint32(1),
 			},
 		},
 		{

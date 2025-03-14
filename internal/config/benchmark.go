@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -47,8 +47,9 @@ type BenchmarkScenario struct {
 
 // BenchmarkTarget defines the desired state of BenchmarkTarget.
 type BenchmarkTarget struct {
-	Host string `json:"host,omitempty"`
-	Port int    `json:"port,omitempty"`
+	Host string            `json:"host,omitempty"`
+	Port int               `json:"port,omitempty"`
+	Meta map[string]string `json:"meta,omitempty"`
 }
 
 func (t *BenchmarkTarget) Bind() *BenchmarkTarget {

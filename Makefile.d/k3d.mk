@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -27,9 +27,9 @@ K3D_OPTIONS       = --port $(K3D_INGRESS_PORT):80@loadbalancer
 ## install K3D
 k3d/install: $(BINDIR)/k3d
 
-$(BINDIR)/k3d:
+$(BINDIR)/k3d: update/k3d
 	mkdir -p $(BINDIR)
-	curl -fsSL https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+	curl -fsSL https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=v$(K3D_VERSION) bash
 	chmod a+x $(BINDIR)/$(K3D_COMMAND)
 
 .PHONY: k3d/start

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 name: "Setup Go environment"
-description: "A action to set up Go environment"
+description: "An action to set up Go environment"
 inputs:
   go_version:
     description: "The Go version to use. The default version is `versions/GO_VERSION`"
@@ -28,14 +28,25 @@ runs:
       shell: bash
       run: |
         GO_VERSION=${GO_VERSION:-`make version/go`}
-
         echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
       env:
         GO_VERSION: ${{ inputs.go_version }}
-    - uses: actions/setup-go@v5
+    - name: Check if Go is installed
+      id: check_go
+      shell: bash
+      run: |
+        if command -v go &> /dev/null; then
+          echo "go_installed=true" >> $GITHUB_OUTPUT
+          echo "installed_version=$(go version | awk '{print $3}')" >> $GITHUB_OUTPUT
+        else
+          echo "go_installed=false" >> $GITHUB_OUTPUT
+        fi
+    - name: Setup Go (if not installed or version mismatch)
+      if: steps.check_go.outputs.go_installed == 'false' || steps.check_go.outputs.installed_version != steps.go_version.outputs.version
+      uses: actions/setup-go@v5
       with:
         go-version: ${{ steps.go_version.outputs.version }}
-    - name: Check Go version
+    - name: Verify Go version
       shell: bash
       run: |
         go version

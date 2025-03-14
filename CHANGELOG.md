@@ -1,5 +1,189 @@
 # CHANGELOG
 
+## v1.7.16
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.7.16</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.7.16</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.7.16</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.7.16</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.7.16</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.7.16</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.7.16</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.7.16</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.7.16</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.7.16</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.7.16</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.7.16</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.7.16</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.7.16</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.7.16)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.7.16/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.16/charts/vald-helm-operator/README.md)
+
+### Changes
+
+:recycle: Refactor
+
+- Fix format of proto files [#2778](https://github.com/vdaas/vald/pull/2778) ([#2783](https://github.com/vdaas/vald/pull/2783))
+- Refactor merge docker and github actions workflow gen logic [#2769](https://github.com/vdaas/vald/pull/2769) ([#2774](https://github.com/vdaas/vald/pull/2774))
+
+:pencil2: Document
+
+- Change symlink API documents [#2741](https://github.com/vdaas/vald/pull/2741) ([#2776](https://github.com/vdaas/vald/pull/2776))
+
+:green_heart: CI
+
+- Refactor github actions [#2773](https://github.com/vdaas/vald/pull/2773) ([#2779](https://github.com/vdaas/vald/pull/2779))
+  Change make command [#2765](https://github.com/vdaas/vald/pull/2765) ([#2770](https://github.com/vdaas/vald/pull/2770))
+
+:arrow_up: Update dependencies
+
+- Update libs dependency [#2775](https://github.com/vdaas/vald/pull/2775) ([#2785](https://github.com/vdaas/vald/pull/2785))
+
+## v1.7.15
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.7.15</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.7.15</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.7.15</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.7.15</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.7.15</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.7.15</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.7.15</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.7.15</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.7.15</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.7.15</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.7.15</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.7.15</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.7.15</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.7.15</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.7.15)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.7.15/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.15/charts/vald-helm-operator/README.md)
+
+### Changes
+
+:sparkles: New feature
+
+- Add affinity to jobTemplate [#2758](https://github.com/vdaas/vald/pull/2758) ([#2760](https://github.com/vdaas/vald/pull/2760))
+- feat: Implement delete expired index job [#2702](https://github.com/vdaas/vald/pull/2702) ([#2722](https://github.com/vdaas/vald/pull/2722))
+- Add QUIC support [#1771](https://github.com/vdaas/vald/pull/1771)
+- add example-client docker image [#2705](https://github.com/vdaas/vald/pull/2705) ([#2709](https://github.com/vdaas/vald/pull/2709))
+
+:recycle: Refactor
+
+- refactor dockerfiles and update gitattributes [#2743](https://github.com/vdaas/vald/pull/2743) ([#2745](https://github.com/vdaas/vald/pull/2745))
+
+:bug: Bugfix
+
+- :bug: Fix update deps workflow: buf is not found [#2737](https://github.com/vdaas/vald/pull/2737) ([#2739](https://github.com/vdaas/vald/pull/2739))
+- [BUGFIX] resolve agent GetGraphStatistics API double-free error problem [#2733](https://github.com/vdaas/vald/pull/2733)
+- fix rust-analyzer [#2731](https://github.com/vdaas/vald/pull/2731) ([#2732](https://github.com/vdaas/vald/pull/2732))
+- Fix installation command for arm64 [#2729](https://github.com/vdaas/vald/pull/2729) ([#2730](https://github.com/vdaas/vald/pull/2730))
+- fix not found error [#2726](https://github.com/vdaas/vald/pull/2726) ([#2727](https://github.com/vdaas/vald/pull/2727))
+- Fix bind DOCKER_OPTS option [#2718](https://github.com/vdaas/vald/pull/2718) ([#2719](https://github.com/vdaas/vald/pull/2719))
+
+:pencil2: Document
+
+- Update README.md [#2724](https://github.com/vdaas/vald/pull/2724) ([#2725](https://github.com/vdaas/vald/pull/2725))
+- :pencil: Remove clj link [#2710](https://github.com/vdaas/vald/pull/2710) ([#2714](https://github.com/vdaas/vald/pull/2714))
+
+:green_heart: CI
+
+- :green_heart: Multi-PF build for example-client [#2713](https://github.com/vdaas/vald/pull/2713)
+- Add auto deps version update workflow [#2707](https://github.com/vdaas/vald/pull/2707) ([#2717](https://github.com/vdaas/vald/pull/2717))
+
+:arrow_up: Update dependencies
+
+- :green_heart: use ci-container for update deps cron job [#2744](https://github.com/vdaas/vald/pull/2744) ([#2748](https://github.com/vdaas/vald/pull/2748))
+- update ubuntu version for devcontainer [#2736](https://github.com/vdaas/vald/pull/2736) ([#2750](https://github.com/vdaas/vald/pull/2750))
+- :arrow_up: update versions/BUF_VERSION [#2703](https://github.com/vdaas/vald/pull/2703) ([#2704](https://github.com/vdaas/vald/pull/2704))
+
+:handshake: Contributor
+
+- docs: add highpon as a contributor for code [#2721](https://github.com/vdaas/vald/pull/2721)
+
 ## v1.7.14
 
 ### Docker images
@@ -6024,7 +6208,7 @@
 - update dependencies version ([#381](https://github.com/vdaas/vald/pull/381))
 - Fix missing value on compressor health servers ([#377](https://github.com/vdaas/vald/pull/377))
 - Fix compressor readiness shutdown_duration / Fix cassandra … ([#376](https://github.com/vdaas/vald/pull/376))
-- Bump gopkg.in/yaml.v2 from 2.2.8 to 2.3.0 ([#375](https://github.com/vdaas/vald/pull/375))
+- Bump sigs.k8s.io/yaml from 2.2.8 to 2.3.0 ([#375](https://github.com/vdaas/vald/pull/375))
 - Fix`internal/log/format` to match the test template ([#369](https://github.com/vdaas/vald/pull/369))
 - Fix `internal/log/logger` to match the test template ([#371](https://github.com/vdaas/vald/pull/371))
 - Fix failing tests of `internal/log` and modified to match the test template ([#368](https://github.com/vdaas/vald/pull/368))

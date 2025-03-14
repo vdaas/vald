@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ func New(opts ...Option) (idx Indexer, err error) {
 	}
 	i.indexing.Store(false)
 	i.saving.Store(false)
-	if i.indexDuration+i.indexDurationLimit+i.saveIndexDurationLimit <= 0 {
+	if i.indexDuration <= 0 && i.indexDurationLimit <= 0 && i.saveIndexDurationLimit <= 0 {
 		return nil, errors.ErrInvalidConfig
 	}
 	return i, nil
