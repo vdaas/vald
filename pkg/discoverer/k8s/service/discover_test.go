@@ -122,11 +122,11 @@ package service
 // 		pods            sync.Map[string, *[]pod.Pod]
 // 		podMetrics      sync.Map[string, mpod.Pod]
 // 		services        sync.Map[string, *service.Service]
-// 		podsByNode      atomic.Value
-// 		podsByNamespace atomic.Value
-// 		podsByName      atomic.Value
-// 		nodeByName      atomic.Value
-// 		svcsByName      atomic.Value
+// 		podsByNode      atomic.Pointer[map[string]map[string]map[string][]*payload.Info_Pod]
+// 		podsByNamespace atomic.Pointer[map[string]map[string][]*payload.Info_Pod]
+// 		podsByName      atomic.Pointer[map[string][]*payload.Info_Pod]
+// 		nodeByName      atomic.Pointer[map[string]*payload.Info_Node]
+// 		svcsByName      atomic.Pointer[map[string]*payload.Info_Service]
 // 		ctrl            k8s.Controller
 // 		namespace       string
 // 		name            string
@@ -288,11 +288,11 @@ package service
 // 		pods            sync.Map[string, *[]pod.Pod]
 // 		podMetrics      sync.Map[string, mpod.Pod]
 // 		services        sync.Map[string, *service.Service]
-// 		podsByNode      atomic.Value
-// 		podsByNamespace atomic.Value
-// 		podsByName      atomic.Value
-// 		nodeByName      atomic.Value
-// 		svcsByName      atomic.Value
+// 		podsByNode      atomic.Pointer[map[string]map[string]map[string][]*payload.Info_Pod]
+// 		podsByNamespace atomic.Pointer[map[string]map[string][]*payload.Info_Pod]
+// 		podsByName      atomic.Pointer[map[string][]*payload.Info_Pod]
+// 		nodeByName      atomic.Pointer[map[string]*payload.Info_Node]
+// 		svcsByName      atomic.Pointer[map[string]*payload.Info_Service]
 // 		ctrl            k8s.Controller
 // 		namespace       string
 // 		name            string
@@ -454,11 +454,11 @@ package service
 // 		pods            sync.Map[string, *[]pod.Pod]
 // 		podMetrics      sync.Map[string, mpod.Pod]
 // 		services        sync.Map[string, *service.Service]
-// 		podsByNode      atomic.Value
-// 		podsByNamespace atomic.Value
-// 		podsByName      atomic.Value
-// 		nodeByName      atomic.Value
-// 		svcsByName      atomic.Value
+// 		podsByNode      atomic.Pointer[map[string]map[string]map[string][]*payload.Info_Pod]
+// 		podsByNamespace atomic.Pointer[map[string]map[string][]*payload.Info_Pod]
+// 		podsByName      atomic.Pointer[map[string][]*payload.Info_Pod]
+// 		nodeByName      atomic.Pointer[map[string]*payload.Info_Node]
+// 		svcsByName      atomic.Pointer[map[string]*payload.Info_Service]
 // 		ctrl            k8s.Controller
 // 		namespace       string
 // 		name            string
@@ -620,11 +620,11 @@ package service
 // 		pods            sync.Map[string, *[]pod.Pod]
 // 		podMetrics      sync.Map[string, mpod.Pod]
 // 		services        sync.Map[string, *service.Service]
-// 		podsByNode      atomic.Value
-// 		podsByNamespace atomic.Value
-// 		podsByName      atomic.Value
-// 		nodeByName      atomic.Value
-// 		svcsByName      atomic.Value
+// 		podsByNode      atomic.Pointer[map[string]map[string]map[string][]*payload.Info_Pod]
+// 		podsByNamespace atomic.Pointer[map[string]map[string][]*payload.Info_Pod]
+// 		podsByName      atomic.Pointer[map[string][]*payload.Info_Pod]
+// 		nodeByName      atomic.Pointer[map[string]*payload.Info_Node]
+// 		svcsByName      atomic.Pointer[map[string]*payload.Info_Service]
 // 		ctrl            k8s.Controller
 // 		namespace       string
 // 		name            string

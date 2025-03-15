@@ -1472,6 +1472,10 @@ func (n *ngt) loadStatistics(ctx context.Context) (err error) {
 			log.Errorf("failed to load index statistics to cache: %v", err)
 			return err
 		}
+		if stats == nil {
+			log.Warn("failed to load index statistics to cache: stats is nil")
+			return nil
+		}
 		n.statisticsCache.Store(&payload.Info_Index_Statistics{
 			Valid:                            stats.Valid,
 			MedianIndegree:                   stats.MedianIndegree,
