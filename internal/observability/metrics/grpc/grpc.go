@@ -14,7 +14,12 @@
 package grpc
 
 import (
+	"context"
+
+	"github.com/vdaas/vald/internal/net/grpc/pool"
+	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	api "go.opentelemetry.io/otel/metric"
 	view "go.opentelemetry.io/otel/sdk/metric"
 )
 
@@ -24,12 +29,19 @@ const (
 
 	completedRPCsMetricsName        = "server_completed_rpcs"
 	completedRPCsMetricsDescription = "Count of RPCs by method and status"
+
+	poolConnMetricsName        = "server_pool_conn"
+	poolConnMetricsDescription = "Count of healthy pool connections by target address"
 )
 
-type grpcServerMetrics struct{}
+type grpcServerMetrics struct {
+	poolTargetAddrKey string
+}
 
 func New() metrics.Metric {
-	return &grpcServerMetrics{}
+	return &grpcServerMetrics{
+		"target_address",
+	}
 }
 
 func (*grpcServerMetrics) View() ([]metrics.View, error) {
@@ -54,11 +66,39 @@ func (*grpcServerMetrics) View() ([]metrics.View, error) {
 				Aggregation: view.AggregationSum{},
 			},
 		),
+		view.NewView(
+			view.Instrument{
+				Name:        poolConnMetricsName,
+				Description: poolConnMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: view.AggregationSum{},
+			},
+		),
 	}, nil
 }
 
-func (*grpcServerMetrics) Register(metrics.Meter) error {
+func (gm *grpcServerMetrics) Register(m metrics.Meter) error {
 	// The metrics are dynamically registered at the grpc server interceptor package,
-	// so do nothing in this part
-	return nil
+	healthyConn, err := m.Int64ObservableGauge(
+		poolConnMetricsName,
+		metrics.WithDescription(poolConnMetricsDescription),
+		metrics.WithUnit(metrics.Dimensionless),
+	)
+	if err != nil {
+		return err
+	}
+	_, err = m.RegisterCallback(
+		func(ctx context.Context, o api.Observer) error {
+			ms := pool.Metrics(ctx)
+			if len(ms) == 0 {
+				return nil
+			}
+			for name, cnt := range ms {
+				o.ObserveInt64(healthyConn, cnt, api.WithAttributes(attribute.String(gm.poolTargetAddrKey, name)))
+			}
+			return nil
+		}, healthyConn,
+	)
+	return err
 }

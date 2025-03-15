@@ -14,7 +14,7 @@
   "paths": {
     "/index/detail": {
       "get": {
-        "summary": "Represent the RPC to get the index information for each agents.",
+        "summary": "Overview\nRepresent the RPC to get the index information for each agents.",
         "operationId": "Index_IndexDetail",
         "responses": {
           "200": {
@@ -35,7 +35,7 @@
     },
     "/index/info": {
       "get": {
-        "summary": "Represent the RPC to get the index information.",
+        "summary": "Overview\nRepresent the RPC to get the index information.",
         "operationId": "Index_IndexInfo",
         "responses": {
           "200": {
@@ -56,7 +56,7 @@
     },
     "/index/property": {
       "get": {
-        "summary": "Represent the RPC to get the index property.",
+        "summary": "Overview\nRepresent the RPC to get the index property.",
         "operationId": "Index_IndexProperty",
         "responses": {
           "200": {
@@ -77,7 +77,7 @@
     },
     "/index/statistics": {
       "get": {
-        "summary": "Represent the RPC to get the index statistics.",
+        "summary": "Overview\nRepresent the RPC to get the index statistics.",
         "operationId": "Index_IndexStatistics",
         "responses": {
           "200": {
@@ -98,7 +98,7 @@
     },
     "/index/statistics/detail": {
       "get": {
-        "summary": "Represent the RPC to get the index statistics for each agents.",
+        "summary": "Overview\nRepresent the RPC to get the index statistics for each agents.",
         "operationId": "Index_IndexStatisticsDetail",
         "responses": {
           "200": {
