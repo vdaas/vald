@@ -67,7 +67,12 @@ func (r *rand) init() *rand {
 	if r.x == nil {
 		r.x = new(uint32)
 	}
-	x := fastime.UnixNanoNow()
-	atomic.StoreUint32(r.x, uint32((x>>32)^x))
+	for {
+		seed := uint32((fastime.UnixNanoNow() >> 32) ^ fastime.UnixNanoNow())
+		if seed != 0 {
+			atomic.StoreUint32(r.x, seed)
+			break
+		}
+	}
 	return r
 }

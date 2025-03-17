@@ -168,7 +168,7 @@ func BidirectionalStream[Q, R any](
 
 // BidirectionalStreamClient is gRPC client stream.
 func BidirectionalStreamClient[S, R any](
-	stream ClientStream, sendDataProvider func() *S, callBack func(*R, error) bool,
+	stream ClientStream, concurrency int, sendDataProvider func() *S, callBack func(*R, error) bool,
 ) (err error) {
 	if stream == nil {
 		return errors.ErrGRPCClientStreamNotFound
@@ -176,6 +176,9 @@ func BidirectionalStreamClient[S, R any](
 
 	ctx, cancel := context.WithCancel(stream.Context())
 	eg, ctx := errgroup.New(ctx)
+	if concurrency > 0 {
+		eg.SetLimit(concurrency)
+	}
 
 	eg.Go(safety.RecoverFunc(func() (err error) {
 		for {
@@ -206,6 +209,7 @@ func BidirectionalStreamClient[S, R any](
 	}()
 
 	return func() (err error) {
+		wg := sync.WaitGroup{}
 		for {
 			select {
 			case <-ctx.Done():
@@ -213,6 +217,7 @@ func BidirectionalStreamClient[S, R any](
 			default:
 				data := sendDataProvider()
 				if data == nil {
+					wg.Wait()
 					err = stream.CloseSend()
 					cancel()
 					if err != nil {
@@ -220,11 +225,15 @@ func BidirectionalStreamClient[S, R any](
 					}
 					return eg.Wait()
 				}
-
-				err = stream.SendMsg(*data)
-				if err != nil {
-					return err
-				}
+				wg.Add(1)
+				eg.Go(safety.RecoverFunc(func() (err error) {
+					defer wg.Done()
+					err = stream.SendMsg(*data)
+					if err != nil {
+						return err
+					}
+					return nil
+				}))
 			}
 		}
 	}()

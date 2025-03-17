@@ -2872,8 +2872,8 @@ package pool
 // 		reconnectHash atomic.Pointer[string]
 // 	}
 // 	type want struct {
-// 		want  *ClientConn
-// 		want1 bool
+// 		wantConn *ClientConn
+// 		wantOk   bool
 // 	}
 // 	type test struct {
 // 		name       string
@@ -2884,12 +2884,12 @@ package pool
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got *ClientConn, got1 bool) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 	defaultCheckFunc := func(w want, gotConn *ClientConn, gotOk bool) error {
+// 		if !reflect.DeepEqual(gotConn, w.wantConn) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotConn, w.wantConn)
 // 		}
-// 		if !reflect.DeepEqual(got1, w.want1) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
+// 		if !reflect.DeepEqual(gotOk, w.wantOk) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
 // 		}
 // 		return nil
 // 	}
@@ -3006,8 +3006,8 @@ package pool
 // 				reconnectHash: test.fields.reconnectHash,
 // 			}
 //
-// 			got, got1 := p.Get(test.args.ctx)
-// 			if err := checkFunc(test.want, got, got1); err != nil {
+// 			gotConn, gotOk := p.Get(test.args.ctx)
+// 			if err := checkFunc(test.want, gotConn, gotOk); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})
@@ -3040,24 +3040,28 @@ package pool
 // 		reconnectHash atomic.Pointer[string]
 // 	}
 // 	type want struct {
-// 		want  *ClientConn
-// 		want1 bool
+// 		wantIdx  int
+// 		wantConn *ClientConn
+// 		wantOk   bool
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, *ClientConn, bool) error
+// 		checkFunc  func(want, int, *ClientConn, bool) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got *ClientConn, got1 bool) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 	defaultCheckFunc := func(w want, gotIdx int, gotConn *ClientConn, gotOk bool) error {
+// 		if !reflect.DeepEqual(gotIdx, w.wantIdx) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIdx, w.wantIdx)
 // 		}
-// 		if !reflect.DeepEqual(got1, w.want1) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
+// 		if !reflect.DeepEqual(gotConn, w.wantConn) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotConn, w.wantConn)
+// 		}
+// 		if !reflect.DeepEqual(gotOk, w.wantOk) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
 // 		}
 // 		return nil
 // 	}
@@ -3178,8 +3182,8 @@ package pool
 // 				reconnectHash: test.fields.reconnectHash,
 // 			}
 //
-// 			got, got1 := p.getHealthyConn(test.args.ctx, test.args.cnt, test.args.retry)
-// 			if err := checkFunc(test.want, got, got1); err != nil {
+// 			gotIdx, gotConn, gotOk := p.getHealthyConn(test.args.ctx, test.args.cnt, test.args.retry)
+// 			if err := checkFunc(test.want, gotIdx, gotConn, gotOk); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})

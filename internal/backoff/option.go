@@ -33,7 +33,6 @@ var defaultOptions = []Option{
 	WithJitterLimit("1m"),
 	WithBackOffFactor(1.5),
 	WithRetryCount(50),
-	WithEnableErrorLog(),
 }
 
 // WithInitialDuration returns the option to set the initial duration of backoff.

@@ -23,6 +23,7 @@ package service
 // 	type fields struct {
 // 		eg                 errgroup.Group
 // 		dataset            *config.BenchmarkDataset
+// 		meta               grpc.MD
 // 		jobType            jobType
 // 		jobFunc            func(context.Context, chan error) error
 // 		insertConfig       *config.InsertConfig
@@ -73,6 +74,7 @@ package service
 // 		       fields: fields {
 // 		           eg:nil,
 // 		           dataset:nil,
+// 		           meta:nil,
 // 		           jobType:nil,
 // 		           jobFunc:nil,
 // 		           insertConfig:nil,
@@ -116,6 +118,7 @@ package service
 // 		           fields: fields {
 // 		           eg:nil,
 // 		           dataset:nil,
+// 		           meta:nil,
 // 		           jobType:nil,
 // 		           jobFunc:nil,
 // 		           insertConfig:nil,
@@ -167,6 +170,7 @@ package service
 // 			j := &job{
 // 				eg:                 test.fields.eg,
 // 				dataset:            test.fields.dataset,
+// 				meta:               test.fields.meta,
 // 				jobType:            test.fields.jobType,
 // 				jobFunc:            test.fields.jobFunc,
 // 				insertConfig:       test.fields.insertConfig,

@@ -21,7 +21,7 @@ package service
 // 		batchSize int
 // 	}
 // 	type want struct {
-// 		wantF    func() any
+// 		wantF    func() *any
 // 		wantSize int
 // 		err      error
 // 	}
@@ -29,11 +29,11 @@ package service
 // 		name       string
 // 		args       args
 // 		want       want
-// 		checkFunc  func(want, func() any, int, error) error
+// 		checkFunc  func(want, func() *any, int, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotF func() any, gotSize int, err error) error {
+// 	defaultCheckFunc := func(w want, gotF func() *any, gotSize int, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -116,18 +116,18 @@ package service
 // 		dataset assets.Dataset
 // 	}
 // 	type want struct {
-// 		want  func() any
+// 		want  func() *any
 // 		want1 int
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		want       want
-// 		checkFunc  func(want, func() any, int) error
+// 		checkFunc  func(want, func() *any, int) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got func() any, got1 int) error {
+// 	defaultCheckFunc := func(w want, got func() *any, got1 int) error {
 // 		if !reflect.DeepEqual(got, w.want) {
 // 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
@@ -206,18 +206,18 @@ package service
 // 		n       int
 // 	}
 // 	type want struct {
-// 		want  func() any
+// 		want  func() *any
 // 		want1 int
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		want       want
-// 		checkFunc  func(want, func() any, int) error
+// 		checkFunc  func(want, func() *any, int) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got func() any, got1 int) error {
+// 	defaultCheckFunc := func(w want, got func() *any, got1 int) error {
 // 		if !reflect.DeepEqual(got, w.want) {
 // 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
@@ -302,7 +302,7 @@ package service
 // 		dataset          string
 // 		progressDuration time.Duration
 // 		loaderFunc       loadFunc
-// 		dataProvider     func() any
+// 		sendDataProvider func() *any
 // 		dataSize         int
 // 		operation        config.Operation
 // 	}
@@ -341,7 +341,7 @@ package service
 // 		           dataset:"",
 // 		           progressDuration:nil,
 // 		           loaderFunc:nil,
-// 		           dataProvider:nil,
+// 		           sendDataProvider:nil,
 // 		           dataSize:0,
 // 		           operation:nil,
 // 		       },
@@ -370,7 +370,7 @@ package service
 // 		           dataset:"",
 // 		           progressDuration:nil,
 // 		           loaderFunc:nil,
-// 		           dataProvider:nil,
+// 		           sendDataProvider:nil,
 // 		           dataSize:0,
 // 		           operation:nil,
 // 		           },
@@ -411,7 +411,7 @@ package service
 // 				dataset:          test.fields.dataset,
 // 				progressDuration: test.fields.progressDuration,
 // 				loaderFunc:       test.fields.loaderFunc,
-// 				dataProvider:     test.fields.dataProvider,
+// 				sendDataProvider: test.fields.sendDataProvider,
 // 				dataSize:         test.fields.dataSize,
 // 				operation:        test.fields.operation,
 // 			}
@@ -434,7 +434,7 @@ package service
 // 		dataset          string
 // 		progressDuration time.Duration
 // 		loaderFunc       loadFunc
-// 		dataProvider     func() any
+// 		sendDataProvider func() *any
 // 		dataSize         int
 // 		operation        config.Operation
 // 	}
@@ -473,7 +473,7 @@ package service
 // 		           dataset:"",
 // 		           progressDuration:nil,
 // 		           loaderFunc:nil,
-// 		           dataProvider:nil,
+// 		           sendDataProvider:nil,
 // 		           dataSize:0,
 // 		           operation:nil,
 // 		       },
@@ -502,7 +502,7 @@ package service
 // 		           dataset:"",
 // 		           progressDuration:nil,
 // 		           loaderFunc:nil,
-// 		           dataProvider:nil,
+// 		           sendDataProvider:nil,
 // 		           dataSize:0,
 // 		           operation:nil,
 // 		           },
@@ -543,7 +543,7 @@ package service
 // 				dataset:          test.fields.dataset,
 // 				progressDuration: test.fields.progressDuration,
 // 				loaderFunc:       test.fields.loaderFunc,
-// 				dataProvider:     test.fields.dataProvider,
+// 				sendDataProvider: test.fields.sendDataProvider,
 // 				dataSize:         test.fields.dataSize,
 // 				operation:        test.fields.operation,
 // 			}
