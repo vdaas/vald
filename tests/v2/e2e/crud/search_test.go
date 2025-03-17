@@ -134,14 +134,14 @@ var (
 	}
 
 	// searchMultiRequest builds a Search_MultiRequest from a slice of Search_Request.
-	searchMultiRequest newMultiRequest[*payload.Search_Request, *payload.Search_MultiRequest] = func(t *testing.T, reqs []*payload.Search_Request) *payload.Search_MultiRequest {
+	searchMultiRequest newMultiRequest[*payload.Search_Request, *payload.Search_MultiRequest] = func(t *testing.T, reqs ...*payload.Search_Request) *payload.Search_MultiRequest {
 		return &payload.Search_MultiRequest{
 			Requests: reqs,
 		}
 	}
 
 	// searchMultiIDRequest builds a Search_MultiIDRequest from a slice of Search_IDRequest.
-	searchMultiIDRequest newMultiRequest[*payload.Search_IDRequest, *payload.Search_MultiIDRequest] = func(t *testing.T, reqs []*payload.Search_IDRequest) *payload.Search_MultiIDRequest {
+	searchMultiIDRequest newMultiRequest[*payload.Search_IDRequest, *payload.Search_MultiIDRequest] = func(t *testing.T, reqs ...*payload.Search_IDRequest) *payload.Search_MultiIDRequest {
 		return &payload.Search_MultiIDRequest{
 			Requests: reqs,
 		}

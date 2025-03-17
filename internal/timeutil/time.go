@@ -16,11 +16,7 @@
 
 package timeutil
 
-import (
-	"time"
-
-	"github.com/vdaas/vald/internal/errors"
-)
+import "time"
 
 // ParseTime parses string to time.Duration.
 func Parse(t string) (time.Duration, error) {
@@ -29,7 +25,7 @@ func Parse(t string) (time.Duration, error) {
 	}
 	dur, err := time.ParseDuration(t)
 	if err != nil {
-		return 0, errors.Join(err, errors.ErrTimeoutParseFailed(t))
+		return 0, err
 	}
 	return dur, nil
 }

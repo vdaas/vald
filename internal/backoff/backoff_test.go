@@ -60,7 +60,7 @@ func TestNew(t *testing.T) {
 				jitterLimit:      float64(time.Minute),
 				backoffFactor:    1.1,
 				maxRetryCount:    50,
-				errLog:           true,
+				errLog:           false,
 				durationLimit:    float64(time.Hour) / 1.1,
 			},
 			checkFunc: func(got *backoff, want *backoff) error {

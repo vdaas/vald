@@ -24,18 +24,8 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/tests/v2/e2e/config"
 )
-
-func indexCallBack[R proto.Message](res R, err error) bool {
-	if err != nil {
-		return true
-	}
-	log.Infof("response: %v", res)
-	return true
-}
 
 func (r *runner) processIndex(t *testing.T, ctx context.Context, plan *config.Execution) {
 	t.Helper()
@@ -45,17 +35,17 @@ func (r *runner) processIndex(t *testing.T, ctx context.Context, plan *config.Ex
 	}
 	switch plan.Type {
 	case config.OpIndexInfo:
-		single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexInfo)
+		single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexInfo, printCallback[*payload.Info_Index_Count](passThrough))
 	case config.OpIndexDetail:
-		single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexDetail)
+		single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexDetail, printCallback[*payload.Info_Index_Detail](passThrough))
 	case config.OpIndexStatistics:
-		single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexStatistics)
+		single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexStatistics, printCallback[*payload.Info_Index_Statistics](passThrough))
 	case config.OpIndexStatisticsDetail:
-		single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexStatisticsDetail)
+		single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexStatisticsDetail, printCallback[*payload.Info_Index_StatisticsDetail](passThrough))
 	case config.OpIndexProperty:
-		single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexProperty)
+		single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexProperty, printCallback[*payload.Info_Index_PropertyDetail](passThrough))
 	case config.OpFlush:
-		single(t, ctx, 0, plan, new(payload.Flush_Request), r.client.Flush)
+		single(t, ctx, 0, plan, new(payload.Flush_Request), r.client.Flush, printCallback[*payload.Info_Index_Count](passThrough))
 	default:
 		t.Fatalf("unsupported index operation: %s", plan.Type)
 	}

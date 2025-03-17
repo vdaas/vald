@@ -30,11 +30,9 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/net"
-	htr "github.com/vdaas/vald/internal/net/http/transport"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
-	"golang.org/x/net/http2"
 )
 
 var (
@@ -132,19 +130,10 @@ func TestNew(t *testing.T) {
 				opts: nil,
 			},
 			want: want{
-				want: &http.Client{
-					Transport: htr.NewExpBackoff(
-						htr.WithRoundTripper(func() http.RoundTripper {
-							tr := new(http.Transport)
-							tr.Proxy = http.ProxyFromEnvironment
-							_ = http2.ConfigureTransport(tr)
-							return tr
-						}()),
-						htr.WithBackoff(
-							backoff.New(),
-						),
-					),
-				},
+				want: func() (c *http.Client) {
+					c, _ = New()
+					return c
+				}(),
 			},
 		},
 		{
@@ -157,19 +146,10 @@ func TestNew(t *testing.T) {
 				},
 			},
 			want: want{
-				want: &http.Client{
-					Transport: htr.NewExpBackoff(
-						htr.WithRoundTripper(func() http.RoundTripper {
-							tr := new(http.Transport)
-							tr.Proxy = http.ProxyFromEnvironment
-							_ = http2.ConfigureTransport(tr)
-							return tr
-						}()),
-						htr.WithBackoff(
-							backoff.New(),
-						),
-					),
-				},
+				want: func() (c *http.Client) {
+					c, _ = New()
+					return c
+				}(),
 			},
 		},
 		{

@@ -26,8 +26,11 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/iter"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/sync/errgroup"
@@ -43,25 +46,57 @@ type (
 	// newRequest is a function type that creates a new request.
 	newRequest[Q proto.Message] func(t *testing.T, idx uint64, id string, vec []float32, e *config.Execution) Q
 	// newMultiRequest is a generic type for functions that build bulk search requests.
-	newMultiRequest[R, S proto.Message] func(t *testing.T, reqs []R) S
+	newMultiRequest[R, S proto.Message] func(t *testing.T, reqs ...R) S
 	// callback is a function type that processes the response and error from a gRPC call.
 	callback[R proto.Message] func(t *testing.T, idx uint64, res R, err error) bool
 )
 
+func passThrough[M proto.Message](t *testing.T, msg M) any {
+	t.Helper()
+	return msg
+}
+
+func printCallback[M proto.Message](unwrap func(t *testing.T, msg M) any) callback[M] {
+	return func(t *testing.T, idx uint64, msg M, err error) bool {
+		t.Helper()
+		if err != nil {
+			log.Errorf("idx: %d operation returned error: %v", idx, err)
+			return true
+		}
+		log.Infof("idx: %d operation returned result: %v", idx, unwrap(t, msg))
+		return true
+	}
+}
+
+func handleGRPCStatusCodeError(
+	t *testing.T, err error, code codes.Code, plan *config.Execution,
+) error {
+	t.Helper()
+	if err != nil {
+		err = errors.Wrapf(err, "Code: %s", code.String())
+		if len(plan.ExpectedStatusCodes) != 0 && !plan.ExpectedStatusCodes.Equals(code.String()) {
+			err = errors.Wrapf(err, "unexpected gRPC response received expected: %v", plan.ExpectedStatusCodes)
+			t.Error(err.Error())
+			return err
+		}
+	}
+	return nil
+}
+
 // handleGRPCCallError centralizes the gRPC error handling and logging.
 // It compares the error's status code with the expected codes from the plan.
 // If the error is expected, it logs a message; otherwise, it logs an error.
-func handleGRPCCallError(t *testing.T, err error, plan *config.Execution) {
+func handleGRPCCallError(t *testing.T, err error, plan *config.Execution) error {
 	t.Helper()
 	if err != nil {
 		if st, ok := status.FromError(err); ok && st != nil {
-			if len(plan.ExpectedStatusCodes) != 0 && !plan.ExpectedStatusCodes.Equals(st.Code().String()) {
-				t.Errorf("unexpected error: %v", st)
-			}
-			return
+			err = errors.Wrapf(err, "gRPC Status received: %s", st.String())
+			return handleGRPCStatusCodeError(t, err, st.Code(), plan)
 		}
 		t.Errorf("failed to execute gRPC call error: %v", err)
+		return err
 	}
+	return nil
 }
 
 func single[Q, R proto.Message](
@@ -81,8 +116,10 @@ func single[Q, R proto.Message](
 	res, err := call(ctx, req)
 	if err != nil {
 		// Handle the error using the centralized error handler.
-		handleGRPCCallError(t, err, plan)
-		return
+		if err = handleGRPCCallError(t, err, plan); err != nil {
+			t.Error(err.Error())
+			return
+		}
 	}
 
 	for _, cb := range callback {
@@ -156,13 +193,13 @@ func multi[Q, M, R proto.Message](
 			// Meset the bulk request slice for the next batch.
 			reqs = reqs[:0]
 			eg.Go(func() error {
-				single(t, ctx, idx, plan, toReq(t, batch), call, callbacks...)
+				single(t, ctx, idx, plan, toReq(t, batch...), call, callbacks...)
 				return nil
 			})
 		}
 	}
 	eg.Go(func() error {
-		single(t, ctx, data.Len(), plan, toReq(t, reqs), call, callbacks...)
+		single(t, ctx, data.Len(), plan, toReq(t, reqs...), call, callbacks...)
 		return nil
 	})
 	eg.Wait()
@@ -199,6 +236,13 @@ func stream[S grpc.ClientStream, Q, R proto.Message](
 		idx.Add(1)
 		return &req
 	}, func(res *R, err error) bool {
+		if err != nil {
+			// Handle the error using the centralized error handler.
+			if err = handleGRPCCallError(t, err, plan); err != nil {
+				t.Error(err.Error())
+				return true
+			}
+		}
 		id := sidx.Add(1) - 1
 		for _, cb := range callbacks {
 			if cb != nil {

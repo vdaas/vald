@@ -118,10 +118,8 @@ func TryGo(f func() error) bool {
 // A negative value indicates no limit.
 // This must not be modified while any tasks are active.
 func (g *group) SetLimit(limit int) {
-	if limit <= 1 {
-		// For serial execution, do not use a semaphore.
-		g.sem = nil
-		g.limit.Store(int64(limit))
+	g.limit.Store(int64(limit))
+	if limit < 0 {
 		return
 	}
 	// For concurrent execution, initialize or resize the semaphore.
@@ -130,7 +128,6 @@ func (g *group) SetLimit(limit int) {
 	} else {
 		g.sem.Resize(int64(limit))
 	}
-	g.limit.Store(int64(limit))
 }
 
 // exec executes the provided function inline (synchronously) when limit == 1.
@@ -195,11 +192,6 @@ func (g *group) Go(f func() error) {
 func (g *group) TryGo(f func() error) bool {
 	if f == nil {
 		return false
-	}
-	// Execute inline if in serial mode.
-	if g.limit.Load() == 1 {
-		g.exec(f)
-		return true
 	}
 	// In concurrent mode, try to acquire the semaphore without blocking.
 	if g.sem != nil && !g.sem.TryAcquire(1) {

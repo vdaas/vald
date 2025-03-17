@@ -105,12 +105,11 @@ func (r *runner) processObject(
 					if err == io.EOF {
 						return
 					}
-					if plan.ExpectedStatusCodes != nil && plan.ExpectedStatusCodes.Equals(codes.ToString(res.GetStatus().GetCode())) {
-						t.Logf("expected error: %v", err)
+					if res != nil && res.GetStatus() != nil {
+						_ = handleGRPCStatusCodeError(t, err, codes.Code(res.GetStatus().GetCode()), plan)
 					} else {
-						t.Errorf("unexpected error: %v", err)
+						handleGRPCCallError(t, err, plan)
 					}
-
 					break
 				}
 				t.Logf("successfully get vector %v", res.GetVector())

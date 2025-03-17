@@ -1048,6 +1048,7 @@ internal/errors/observability.go
 internal/errors/observability_test.go
 internal/errors/option.go
 internal/errors/option_test.go
+internal/errors/params.go
 internal/errors/redis.go
 internal/errors/redis_test.go
 internal/errors/rotator.go

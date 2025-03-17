@@ -49,7 +49,6 @@ func NewWithTransport(rt http.RoundTripper, opts ...Option) (*http.Client, error
 		tr.Transport = http.DefaultTransport.(*http.Transport).Clone()
 	}
 	for _, opt := range append(defaultOptions, opts...) {
-		// ... existing code ...
 		if err := opt(tr); err != nil {
 			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 			e := new(errors.ErrCriticalOption)
@@ -61,7 +60,8 @@ func NewWithTransport(rt http.RoundTripper, opts ...Option) (*http.Client, error
 		}
 	}
 
-	err := http2.ConfigureTransport(tr.Transport)
+	var err error
+	err = http2.ConfigureTransport(tr.Transport)
 	if err != nil {
 		log.Warnf("Transport is already configured for HTTP2 error: %v", err)
 	}

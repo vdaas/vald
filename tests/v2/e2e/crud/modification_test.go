@@ -46,7 +46,7 @@ var (
 			},
 		}
 	}
-	insertMultipleRequest newMultiRequest[*payload.Insert_Request, *payload.Insert_MultiRequest] = func(t *testing.T, reqs []*payload.Insert_Request) *payload.Insert_MultiRequest {
+	insertMultipleRequest newMultiRequest[*payload.Insert_Request, *payload.Insert_MultiRequest] = func(t *testing.T, reqs ...*payload.Insert_Request) *payload.Insert_MultiRequest {
 		return &payload.Insert_MultiRequest{
 			Requests: reqs,
 		}
@@ -65,7 +65,7 @@ var (
 			},
 		}
 	}
-	updateMultipleRequest newMultiRequest[*payload.Update_Request, *payload.Update_MultiRequest] = func(t *testing.T, reqs []*payload.Update_Request) *payload.Update_MultiRequest {
+	updateMultipleRequest newMultiRequest[*payload.Update_Request, *payload.Update_MultiRequest] = func(t *testing.T, reqs ...*payload.Update_Request) *payload.Update_MultiRequest {
 		return &payload.Update_MultiRequest{
 			Requests: reqs,
 		}
@@ -84,7 +84,7 @@ var (
 			},
 		}
 	}
-	upsertMultipleRequest newMultiRequest[*payload.Upsert_Request, *payload.Upsert_MultiRequest] = func(t *testing.T, reqs []*payload.Upsert_Request) *payload.Upsert_MultiRequest {
+	upsertMultipleRequest newMultiRequest[*payload.Upsert_Request, *payload.Upsert_MultiRequest] = func(t *testing.T, reqs ...*payload.Upsert_Request) *payload.Upsert_MultiRequest {
 		return &payload.Upsert_MultiRequest{
 			Requests: reqs,
 		}
@@ -101,7 +101,7 @@ var (
 			},
 		}
 	}
-	removeMultipleRequest newMultiRequest[*payload.Remove_Request, *payload.Remove_MultiRequest] = func(t *testing.T, reqs []*payload.Remove_Request) *payload.Remove_MultiRequest {
+	removeMultipleRequest newMultiRequest[*payload.Remove_Request, *payload.Remove_MultiRequest] = func(t *testing.T, reqs ...*payload.Remove_Request) *payload.Remove_MultiRequest {
 		return &payload.Remove_MultiRequest{
 			Requests: reqs,
 		}

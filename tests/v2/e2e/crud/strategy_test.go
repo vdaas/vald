@@ -208,10 +208,13 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 				config.OpExists:
 				train, test, neighbors := getDatasetSlices(ttt, e)
 				if e.BaseConfig != nil {
-					log.Infof("started execution name: %s, type: %s, mode: %s, execution: %d, num: %d, offset: %d",
-						e.Name, e.Type, e.Mode, idx, e.Num, e.Offset)
-					defer log.Infof("finished execution name: %s type: %s, mode: %s, execution: %d, num: %d, offset: %d",
-						e.Name, e.Type, e.Mode, idx, e.Num, e.Offset)
+					start := time.Now()
+					log.Infof("started %s execution at %s, type: %s, mode: %s, execution: %d, num: %d, offset: %d, parallelism: %d, qps: %d",
+						e.Name, start.Format("2006-01-02 15:04:05"), e.Type, e.Mode, idx, e.Num, e.Offset, e.Parallelism, e.QPS)
+					defer func() {
+						log.Infof("finished %s execution in %s, type: %s, mode: %s, execution: %d, num: %d, offset: %d, parallelism: %d, qps: %d",
+							e.Name, time.Since(start).String(), e.Type, e.Mode, idx, e.Num, e.Offset, e.Parallelism, e.QPS)
+					}()
 				}
 				switch e.Type {
 				case config.OpSearch,
@@ -300,7 +303,7 @@ func executeWithTimings[T config.Timing](
 			return err
 		}
 		if dur > 0 {
-			log.Infof("\"%s.wait: %s\", wait configuration detected, this %s/%s is already finished, but will wait for %s", prefix, wait, prefix, name, dur.String())
+			log.Infof("\"%s.wait: %s\", wait configuration detected, this %s/%s is already finished, will wait for %s", prefix, wait, prefix, name, dur.String())
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
