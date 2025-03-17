@@ -40,6 +40,7 @@ k8s/manifest/update: \
 		--set manager.index.operator.enabled=true \
 		--set manager.index.saver.enabled=true \
 		--set manager.index.creator.enabled=true \
+		--set manager.index.deleter.enabled=true \
 		--set manager.index.corrector.enabled=true \
 		--set gateway.mirror.enabled=true \
 		--output-dir $(TEMP_DIR) \
@@ -55,6 +56,7 @@ k8s/manifest/update: \
 	mv $(TEMP_DIR)/vald/templates/index/operator $(ROOTDIR)/k8s/index/operator
 	mv $(TEMP_DIR)/vald/templates/index/job/correction $(ROOTDIR)/k8s/index/job/correction
 	mv $(TEMP_DIR)/vald/templates/index/job/creation $(ROOTDIR)/k8s/index/job/creation
+	mv $(TEMP_DIR)/vald/templates/index/job/deletion $(ROOTDIR)/k8s/index/job/deletion
 	mv $(TEMP_DIR)/vald/templates/index/job/save $(ROOTDIR)/k8s/index/job/save
 	mv $(TEMP_DIR)/vald/templates/index/job/readreplica/rotate $(ROOTDIR)/k8s/index/job/readreplica/rotate
 	rm -rf $(TEMP_DIR)
