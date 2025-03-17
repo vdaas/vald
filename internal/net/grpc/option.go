@@ -653,7 +653,7 @@ func WithClientInterceptors(names ...string) Option {
 	}
 }
 
-func WithOldConnCloseDuration(dur string) Option {
+func WithOldConnCloseDelay(dur string) Option {
 	return func(g *gRPCClient) {
 		if len(dur) == 0 {
 			return

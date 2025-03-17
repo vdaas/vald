@@ -45,6 +45,10 @@ func New(c codes.Code, msg string) *Status {
 	return status.New(c, msg)
 }
 
+func Is(err error, code codes.Code) bool {
+	return status.Code(err) == code
+}
+
 func newStatus(code codes.Code, msg string, err error, details ...any) (st *Status) {
 	st = New(code, msg)
 	return withDetails(st, err, details...)

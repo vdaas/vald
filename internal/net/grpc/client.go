@@ -1066,7 +1066,7 @@ func (g *gRPCClient) Disconnect(ctx context.Context, addr string) error {
 		atomic.AddUint64(&g.clientCount, ^uint64(0))
 		if p != nil {
 			log.Debugf("gRPC client connection pool addr = %s will disconnect soon...", addr)
-			return nil, p.Disconnect()
+			return nil, p.Disconnect(ctx)
 		}
 		return nil, nil
 	})

@@ -869,7 +869,7 @@ package pool
 // 	}
 // }
 //
-// func TestWithOldConnCloseDuration(t *testing.T) {
+// func TestWithOldConnCloseDelay(t *testing.T) {
 // 	type args struct {
 // 		dur string
 // 	}
@@ -946,7 +946,7 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := WithOldConnCloseDuration(test.args.dur)
+// 			got := WithOldConnCloseDelay(test.args.dur)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

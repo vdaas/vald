@@ -85,6 +85,9 @@ func New(opts ...Option) Parser {
 
 // Parse parses command-line argument and returns parsed data and whether there is a help option or not and error.
 func (p *parser) Parse() (Data, bool, error) {
+	if p == nil || p.f == nil {
+		return nil, false, errors.ErrArgumentParserNotFound
+	}
 	d := new(data)
 	for _, key := range p.filePath.keys {
 		p.f.StringVar(&d.configFilePath,
