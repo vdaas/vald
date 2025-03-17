@@ -33,6 +33,9 @@ jobs:
     needs: [detect-ci-container]
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      credentials:
+         username: ${{ secrets.PACKAGE_USER }}
+         password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -53,6 +56,9 @@ jobs:
     needs: [detect-ci-container]
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      credentials:
+         username: ${{ secrets.PACKAGE_USER }}
+         password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -72,6 +78,9 @@ jobs:
     needs: [detect-ci-container]
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      credentials:
+         username: ${{ secrets.PACKAGE_USER }}
+         password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config

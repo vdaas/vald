@@ -20,10 +20,18 @@ package params
 import (
 	"flag"
 	"os"
-	"path/filepath"
+	"slices"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
+)
+
+type ErrorHandling = flag.ErrorHandling
+
+const (
+	ContinueOnError ErrorHandling = flag.ContinueOnError
+	PanicOnError    ErrorHandling = flag.PanicOnError
+	ExitOnError     ErrorHandling = flag.ExitOnError
 )
 
 // Data is an interface to get the configuration path and flag.
@@ -43,7 +51,12 @@ type Parser interface {
 }
 
 type parser struct {
-	filePath struct {
+	overrideDefault bool
+	name            string
+	filters         []func(string) bool
+	f               *flag.FlagSet
+	defaults        *flag.FlagSet
+	filePath        struct {
 		keys        []string
 		defaultPath string
 		description string
@@ -53,6 +66,7 @@ type parser struct {
 		defaultFlag bool
 		description string
 	}
+	ErrorHandler ErrorHandling
 }
 
 // New returns parser object.
@@ -61,16 +75,19 @@ func New(opts ...Option) Parser {
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(p)
 	}
+	p.defaults = flag.CommandLine
+	p.f = flag.NewFlagSet(p.name, p.ErrorHandler)
+	if p.overrideDefault {
+		p.Override()
+	}
 	return p
 }
 
 // Parse parses command-line argument and returns parsed data and whether there is a help option or not and error.
 func (p *parser) Parse() (Data, bool, error) {
-	f := flag.NewFlagSet(filepath.Base(os.Args[0]), flag.ContinueOnError)
-
 	d := new(data)
 	for _, key := range p.filePath.keys {
-		f.StringVar(&d.configFilePath,
+		p.f.StringVar(&d.configFilePath,
 			key,
 			p.filePath.defaultPath,
 			p.filePath.description,
@@ -78,16 +95,28 @@ func (p *parser) Parse() (Data, bool, error) {
 	}
 
 	for _, key := range p.version.keys {
-		f.BoolVar(&d.showVersion,
+		p.f.BoolVar(&d.showVersion,
 			key,
 			p.version.defaultFlag,
 			p.version.description,
 		)
 	}
 
-	err := f.Parse(os.Args[1:])
+	args := os.Args[1:]
+	if p.filters != nil {
+		args = slices.DeleteFunc(args, func(s string) bool {
+			for _, filter := range p.filters {
+				if filter != nil && filter(s) {
+					return true
+				}
+			}
+			return false
+		})
+	}
+
+	err := p.f.Parse(args)
 	if err != nil {
-		if err != flag.ErrHelp {
+		if !errors.Is(err, flag.ErrHelp) {
 			return nil, false, errors.ErrArgumentParseFailed(err)
 		}
 		return nil, true, nil
@@ -96,11 +125,23 @@ func (p *parser) Parse() (Data, bool, error) {
 	if exist, _, err := file.ExistsWithDetail(d.configFilePath); !d.showVersion &&
 		(!exist ||
 			d.configFilePath == "") {
-		f.Usage()
+		p.f.Usage()
 		return nil, true, err
 	}
 
 	return d, false, nil
+}
+
+func (p *parser) Restore() {
+	if p.defaults != nil {
+		flag.CommandLine = p.defaults
+	}
+}
+
+func (p *parser) Override() {
+	if p.f != nil {
+		flag.CommandLine = p.f
+	}
 }
 
 // ConfigFilePath returns configFilePath.
