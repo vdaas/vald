@@ -18,11 +18,11 @@
 - Vald Version: v1.7.16
 - Go Version: v1.24.0
 - Rust Version: v1.84.1
-- Docker Version: v27.4.0
-- Kubernetes Version: v1.32.0
-- Helm Version: v3.16.3
-- NGT Version: v2.3.5
-- Faiss Version: v1.9.0
+- Docker Version: v27.5.1
+- Kubernetes Version: v1.32.1
+- Helm Version: v3.17.0
+- NGT Version: v2.3.11
+- Faiss Version: v1.10.0
 
 ### Checklist
 
