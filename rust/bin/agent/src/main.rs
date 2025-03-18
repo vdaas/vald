@@ -278,8 +278,9 @@ impl algorithm::ANN for QBGService {
         }
         if ots < ts {
             self.update(uuid.clone(), vector, ts)?;
+            return Ok(());
         }
-        Err(Error::UUIDAlreadyExists { uuid: uuid })
+        Err(Error::UUIDAlreadyExists { uuid })
     }
 
     fn remove(&mut self, _uuid: String, _ts: i64) -> Result<(), Error> {
