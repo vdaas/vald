@@ -378,7 +378,7 @@ require (
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10
 	github.com/quasilyte/go-ruleguard v0.4.2
 	github.com/quasilyte/go-ruleguard/dsl v0.3.22
-	github.com/quic-go/quic-go v0.49.0
+	github.com/quic-go/quic-go v0.50.1
 	github.com/scylladb/gocqlx v1.5.0
 	github.com/stretchr/testify v1.10.0
 	github.com/unum-cloud/usearch/golang v0.0.0-20250207215718-306d6646b8f5
