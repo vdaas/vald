@@ -350,13 +350,13 @@ func (s *server) MultiUpdate(
 			log.Warn(err)
 			attrs = trace.StatusCodeAlreadyExists(err.Error())
 		} else {
-			err = status.WrapWithInternal("Update API failed", err,
+			err = status.WrapWithInternal("MultiUpdate API failed", err,
 				&errdetails.RequestInfo{
 					RequestId:   strings.Join(uuids, ", "),
 					ServingData: errdetails.Serialize(reqs),
 				},
 				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Update",
+					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
 					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				}, info.Get())
 			log.Error(err)

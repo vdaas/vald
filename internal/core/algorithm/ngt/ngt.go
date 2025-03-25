@@ -275,7 +275,7 @@ const (
 	Cosine
 	// Poincare is poincare distance.
 	Poincare
-	// Lorentz is lorenz distance.
+	// Lorentz is lorentz distance.
 	Lorentz
 	// Jaccard is jaccard distance.
 	Jaccard
