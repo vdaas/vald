@@ -103,9 +103,9 @@ LABEL maintainer="${MAINTAINER}"
 
 ENV APP_NAME ngt
 
-COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
+COPY --from=builder /usr/bin/ngt /usr/bin/ngt
 COPY --from=builder /tmp/config.yaml /etc/server/config.yaml
 
 USER nonroot:nonroot
 
-ENTRYPOINT ["/go/bin/ngt"]
+ENTRYPOINT ["/usr/bin/ngt"]
