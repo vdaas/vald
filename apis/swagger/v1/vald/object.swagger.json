@@ -14,7 +14,8 @@
   "paths": {
     "/exists/{id}": {
       "get": {
-        "summary": "A method to check whether a specified ID is indexed or not.",
+        "summary": "Overview\nExists RPC is the method to check that a vector exists in the `vald-agent`.\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.",
+        "description": "Here are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                   | how to resolve                                                                           |\n| :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |",
         "operationId": "Object_Exists",
         "responses": {
           "200": {
@@ -43,7 +44,7 @@
     },
     "/object/list": {
       "get": {
-        "summary": "A method to get all the vectors with server streaming",
+        "summary": "Overview\nA method to get all the vectors with server streaming\n---\nStatus Code\nTODO\n---\nTroubleshooting\nTODO",
         "operationId": "Object_StreamListObject",
         "responses": {
           "200": {
@@ -73,7 +74,7 @@
     },
     "/object/meta/{id.id}": {
       "get": {
-        "summary": "Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process",
+        "summary": "Overview\nRepresent the RPC to get the vector metadata. This RPC is mainly used for index correction process\n---\nStatus Code\nTODO\n---\nTroubleshooting\nTODO",
         "operationId": "Object_GetTimestamp",
         "responses": {
           "200": {
@@ -102,7 +103,8 @@
     },
     "/object/{id.id}": {
       "get": {
-        "summary": "A method to fetch a vector.",
+        "summary": "Overview\nGetObject RPC is the method to get the metadata of a vector inserted into the `vald-agent`.\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  13  | INTERNAL          |\n---\nTroubleshooting\nThe request process may not be completed when the response code is NOT `0 (OK)`.",
+        "description": "Here are some common reasons and how to resolve each error.\n\n| name              | common reason                                                                                   | how to resolve                                                                           |\n| :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |\n| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |\n| INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |\n| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |\n| NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |\n| INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |",
         "operationId": "Object_GetObject",
         "responses": {
           "200": {

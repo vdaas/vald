@@ -371,6 +371,25 @@ func ReadFile(path string) (n []byte, err error) {
 	return io.ReadAll(f)
 }
 
+func AbsolutePath(path string) string {
+	if path == "" {
+		return ""
+	}
+	if !filepath.IsAbs(path) {
+		root, err := os.Getwd()
+		if err == nil {
+			path = joinFilePaths(root, path)
+		}
+		if !filepath.IsAbs(path) {
+			absPath, err := filepath.Abs(path)
+			if err == nil {
+				path = absPath
+			}
+		}
+	}
+	return filepath.Clean(path)
+}
+
 // Exists returns file existence.
 func Exists(path string) (e bool) {
 	e, _, _ = ExistsWithDetail(path)
@@ -542,21 +561,7 @@ func Join(paths ...string) (path string) {
 	} else {
 		path = replacer.Replace(paths[0])
 	}
-	if filepath.IsAbs(path) || !Exists(path) {
-		return filepath.Clean(path)
-	}
-
-	root, err := os.Getwd()
-	if err != nil {
-		err = errors.ErrFailedToGetAbsPath(err, path)
-		log.Warn(err)
-		return filepath.Clean(path)
-	}
-	abs := joinFilePaths(root, path)
-	if !Exists(abs) {
-		return filepath.Clean(path)
-	}
-	return filepath.Clean(abs)
+	return AbsolutePath(path)
 }
 
 var replacer = strings.NewReplacer(
