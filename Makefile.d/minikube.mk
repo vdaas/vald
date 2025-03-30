@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 .PHONY: minikube/install
 minikube/install: $(BINDIR)/minikube
 
@@ -25,11 +26,12 @@ $(BINDIR)/minikube:
 # Only use this for development related to Volume Snapshots. Usually k3d is faster.
 .PHONY: minikube/start
 minikube/start:
-	minikube start --force
+	minikube start
 	minikube addons enable volumesnapshots
 	minikube addons enable csi-hostpath-driver
 	minikube addons disable storage-provisioner
 	minikube addons disable default-storageclass
+	minikube addons enable metrics-server
 	kubectl patch storageclass csi-hostpath-sc -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
 .PHONY: minikube/delete
