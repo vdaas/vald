@@ -3687,6 +3687,9 @@ manager:
       # @schema {"name": "manager.index.deleter.target_addrs", "type": "array", "items": {"type": "string"}}
       # manager.index.deleter.target_addrs -- indexing target addresses
       target_addrs: []
+      # @schema {"name": "manager.index.deleter.index_id", "type": "string"}
+      # manager.index.deleter.index_id -- index id for deletion
+      index_id: ""
       # @schema {"name": "manager.index.deleter.agent_namespace", "type": "string"}
       # manager.index.deleter.agent_namespace -- namespace of agent pods to manage
       agent_namespace: _MY_POD_NAMESPACE_
