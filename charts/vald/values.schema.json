@@ -18609,10 +18609,6 @@
                   "description": "concurrency for indexing",
                   "minimum": 1
                 },
-                "creation_pool_size": {
-                  "type": "integer",
-                  "description": "number of pool size of create index processing"
-                },
                 "discoverer": {
                   "type": "object",
                   "properties": {
@@ -19326,7 +19322,7 @@
                 },
                 "enabled": {
                   "type": "boolean",
-                  "description": "enable index creation CronJob"
+                  "description": "enable index deletion CronJob"
                 },
                 "env": {
                   "type": "array",
@@ -19351,6 +19347,10 @@
                     }
                   }
                 },
+                "index_id": {
+                  "type": "string",
+                  "description": "index id for deletion"
+                },
                 "initContainers": {
                   "type": "array",
                   "description": "init containers",
@@ -19358,7 +19358,7 @@
                 },
                 "name": {
                   "type": "string",
-                  "description": "name of index creation job"
+                  "description": "name of index deletion job"
                 },
                 "nodeSelector": {
                   "type": "object",
@@ -19480,7 +19480,7 @@
                 },
                 "schedule": {
                   "type": "string",
-                  "description": "CronJob schedule setting for index creation"
+                  "description": "CronJob schedule setting for index deletion"
                 },
                 "server_config": {
                   "type": "object",
@@ -20575,7 +20575,7 @@
                 },
                 "suspend": {
                   "type": "boolean",
-                  "description": "CronJob suspend setting for index creation"
+                  "description": "CronJob suspend setting for index deletion"
                 },
                 "target_addrs": {
                   "type": "array",
