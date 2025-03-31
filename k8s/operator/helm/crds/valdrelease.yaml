@@ -11429,6 +11429,8 @@ spec:
                                 tag:
                                   type: string
                               type: object
+                            index_id:
+                              type: string
                             initContainers:
                               items:
                                 type: object
