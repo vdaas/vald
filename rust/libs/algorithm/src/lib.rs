@@ -15,20 +15,84 @@
 //
 use anyhow::Result;
 use proto::payload::v1::search;
-use std::{error, fmt, i64};
+use std::{collections::HashMap, error, fmt, i64};
+
+pub trait MultiError {
+    fn new_uuid_already_exists(uuids: Vec<String>) -> Error;
+    fn new_object_id_not_found(uuids: Vec<String>) -> Error;
+    fn new_invalid_dimension_size(
+        uuids: Vec<String>,
+        current: Vec<String>,
+        limit: Vec<String>,
+    ) -> Error;
+    fn new_uuid_not_found(uuids: Vec<String>) -> Error;
+    fn split_uuids(uuids: String) -> Vec<String>;
+}
 
 #[derive(Debug)]
 pub enum Error {
     CreateIndexingIsInProgress {},
     FlushingIsInProgress {},
     EmptySearchResult {},
-    IncompatibleDimensionSize { got: usize, want: usize },
-    UUIDAlreadyExists { uuid: String },
-    UUIDNotFound { id: usize },
+    IncompatibleDimensionSize {
+        got: usize,
+        want: usize,
+    },
+    UUIDAlreadyExists {
+        uuid: String,
+    },
+    UUIDNotFound {
+        uuid: String,
+    },
     UncommittedIndexNotFound {},
-    InvalidUUID { uuid: String },
-    ObjectIDNotFound { uuid: String },
+    InvalidUUID {
+        uuid: String,
+    },
+    InvalidDimensionSize {
+        uuid: String,
+        current: String,
+        limit: String,
+    },
+    ObjectIDNotFound {
+        uuid: String,
+    },
     Unknown {},
+}
+
+impl MultiError for Error {
+    fn new_uuid_already_exists(uuids: Vec<String>) -> Error {
+        Error::UUIDAlreadyExists {
+            uuid: uuids.join(","),
+        }
+    }
+
+    fn new_object_id_not_found(uuids: Vec<String>) -> Error {
+        Error::ObjectIDNotFound {
+            uuid: uuids.join(","),
+        }
+    }
+
+    fn new_invalid_dimension_size(
+        uuids: Vec<String>,
+        current: Vec<String>,
+        limit: Vec<String>,
+    ) -> Error {
+        Error::InvalidDimensionSize {
+            uuid: uuids.join(","),
+            current: current.join(","),
+            limit: limit.join(","),
+        }
+    }
+
+    fn new_uuid_not_found(uuids: Vec<String>) -> Error {
+        Error::UUIDNotFound {
+            uuid: uuids.join(","),
+        }
+    }
+
+    fn split_uuids(uuids: String) -> Vec<String> {
+        uuids.split(",").map(|x| x.to_string()).collect()
+    }
 }
 
 impl error::Error for Error {}
@@ -45,15 +109,26 @@ impl fmt::Display for Error {
                 got, want
             ),
             Error::UUIDAlreadyExists { uuid } => write!(f, "uuid {} index already exists", uuid),
-            Error::UUIDNotFound { id } => {
-                if *id == (0 as usize) {
+            Error::UUIDNotFound { uuid } => {
+                if *uuid == "0" {
                     write!(f, "object uuid not found")
                 } else {
-                    write!(f, "object uuid {}'s metadata not found", id)
+                    write!(f, "object uuid {}'s metadata not found", uuid)
                 }
             }
             Error::UncommittedIndexNotFound {} => write!(f, "uncommitted indexes are not found"),
             Error::InvalidUUID { uuid } => write!(f, "uuid \"{}\" is invalid", uuid),
+            Error::InvalidDimensionSize {
+                uuid: _,
+                current,
+                limit,
+            } => {
+                if *limit == "0" {
+                    write!(f, "dimension size {} is invalid, the supporting dimension size must be bigger than 2", current)
+                } else {
+                    write!(f, "dimension size {} is invalid, the supporting dimension size must be between 2 ~ {}", current, limit)
+                }
+            }
             Error::ObjectIDNotFound { uuid } => write!(f, "uuid {}'s object id not found", uuid),
             Error::Unknown {} => write!(f, "unknown error"),
         }
@@ -65,8 +140,12 @@ pub trait ANN: Send + Sync {
     fn create_index(&mut self) -> Result<(), Error>;
     fn save_index(&mut self) -> Result<(), Error>;
     fn insert(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error>;
+    fn insert_multiple(&mut self, vectors: HashMap<String, Vec<f32>>) -> Result<(), Error>;
     fn update(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error>;
+    fn update_multiple(&mut self, vectors: HashMap<String, Vec<f32>>) -> Result<(), Error>;
+    fn ready_for_update(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error>;
     fn remove(&mut self, uuid: String, ts: i64) -> Result<(), Error>;
+    fn remove_multiple(&mut self, uuids: Vec<String>) -> Result<(), Error>;
     fn search(
         &self,
         vector: Vec<f32>,
