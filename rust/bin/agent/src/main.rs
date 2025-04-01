@@ -14,13 +14,15 @@
 // limitations under the License.
 //
 
-use algorithm::Error;
+use algorithm::{Error, MultiError};
 use anyhow::Result;
+use chrono::{Local, Timelike};
 use config::Config;
 use proto::payload::v1::object::Distance;
 use proto::payload::v1::search;
 use qbg::index::Index;
 use qbg::property::Property;
+use std::collections::HashMap;
 
 mod handler;
 
@@ -46,11 +48,32 @@ impl algorithm::ANN for _MockService {
         todo!()
     }
 
+    fn insert_multiple(&mut self, _vectors: HashMap<String, Vec<f32>>) -> Result<(), Error> {
+        todo!()
+    }
+
     fn update(&mut self, _uuid: String, _vector: Vec<f32>, _ts: i64) -> Result<(), Error> {
         todo!()
     }
 
+    fn update_multiple(&mut self, _vectors: HashMap<String, Vec<f32>>) -> Result<(), Error> {
+        todo!()
+    }
+
+    fn ready_for_update(
+        &mut self,
+        _uuid: String,
+        _vector: Vec<f32>,
+        _ts: i64,
+    ) -> Result<(), Error> {
+        todo!()
+    }
+
     fn remove(&mut self, _uuid: String, _ts: i64) -> Result<(), Error> {
+        todo!()
+    }
+
+    fn remove_multiple(&mut self, _uuids: Vec<String>) -> Result<(), Error> {
         todo!()
     }
 
@@ -197,16 +220,91 @@ impl algorithm::ANN for QBGService {
         Ok(())
     }
 
+    fn insert_multiple(&mut self, vectors: HashMap<String, Vec<f32>>) -> Result<(), Error> {
+        let mut uuids: Vec<String> = vec![];
+        for (uuid, vec) in vectors {
+            let result = self.insert(uuid, vec, Local::now().nanosecond().into());
+            match result {
+                Ok(()) => continue,
+                Err(err) => match err {
+                    Error::UUIDAlreadyExists { uuid } => uuids.push(uuid),
+                    _ => return Err(err),
+                },
+            }
+        }
+        if !uuids.is_empty() {
+            return Err(Error::new_uuid_already_exists(uuids));
+        }
+        Ok(())
+    }
+
     fn update(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error> {
         self.remove(uuid.clone(), ts)?;
         self.insert(uuid, vector, ts)?;
         Ok(())
     }
 
+    fn update_multiple(&mut self, mut vectors: HashMap<String, Vec<f32>>) -> Result<(), Error> {
+        let mut uuids: Vec<String> = vec![];
+        for (uuid, vec) in vectors.clone() {
+            let result = self.ready_for_update(uuid.clone(), vec, Local::now().nanosecond().into());
+            match result {
+                Ok(()) => uuids.push(uuid),
+                Err(_err) => {
+                    let _ = vectors.remove(&uuid);
+                }
+            }
+        }
+        self.remove_multiple(uuids.clone())?;
+        self.insert_multiple(vectors)
+    }
+
+    fn ready_for_update(&mut self, uuid: String, vector: Vec<f32>, ts: i64) -> Result<(), Error> {
+        if uuid.len() == 0 {
+            return Err(Error::UUIDNotFound {
+                uuid: "0".to_string(),
+            });
+        }
+        if vector.len() != self.get_dimension_size() {
+            return Err(Error::InvalidDimensionSize {
+                uuid: uuid,
+                current: vector.len().to_string(),
+                limit: self.get_dimension_size().to_string(),
+            });
+        }
+        let (ovec, ots) = self.get_object(uuid.clone())?;
+        if (vector.len() != ovec.len()) | (vector != ovec) {
+            return Ok(());
+        }
+        if ots < ts {
+            self.update(uuid.clone(), vector, ts)?;
+            return Ok(());
+        }
+        Err(Error::UUIDAlreadyExists { uuid })
+    }
+
     fn remove(&mut self, _uuid: String, _ts: i64) -> Result<(), Error> {
         // convert uuid to id
         let id = 1;
         self.index.remove(id).unwrap();
+        Ok(())
+    }
+
+    fn remove_multiple(&mut self, uuids: Vec<String>) -> Result<(), Error> {
+        let mut ids: Vec<String> = vec![];
+        for uuid in uuids {
+            let result = self.remove(uuid, Local::now().nanosecond().into());
+            match result {
+                Ok(()) => continue,
+                Err(err) => match err {
+                    Error::ObjectIDNotFound { uuid } => ids.push(uuid),
+                    _ => return Err(err),
+                },
+            }
+        }
+        if !ids.is_empty() {
+            return Err(Error::new_object_id_not_found(ids));
+        }
         Ok(())
     }
 
