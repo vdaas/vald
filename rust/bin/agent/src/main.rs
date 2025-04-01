@@ -273,7 +273,7 @@ impl algorithm::ANN for QBGService {
             });
         }
         let (ovec, ots) = self.get_object(uuid.clone())?;
-        if (vector.len() != ovec.len()) | (vector != ovec) {
+        if (vector.len() != ovec.len()) || (vector != ovec) {
             return Ok(());
         }
         if ots < ts {

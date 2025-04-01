@@ -287,8 +287,7 @@ func (c *client) discover(ctx context.Context) (err error) {
 		_, err = bo.Do(ctx, func(ctx context.Context) (any, bool, error) {
 			connected, err = c.updateDiscoveryInfo(ctx)
 			if err != nil {
-				if !errors.Is(err, errors.ErrGRPCClientNotFound) &&
-					!errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+				if errors.IsNot(err, errors.ErrGRPCClientNotFound, errors.ErrGRPCClientConnNotFound("*")) {
 					return nil, true, err
 				}
 				return nil, false, err

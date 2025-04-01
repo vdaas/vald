@@ -16,7 +16,6 @@ package vector
 import (
 	"math"
 	"math/rand"
-	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	irand "github.com/vdaas/vald/internal/rand"
@@ -95,7 +94,6 @@ func NegativeUniformDistributedFloat32VectorGenerator(n, dim int) (vecs [][]floa
 	rvs := UniformDistributedFloat32VectorGenerator(n, right)
 	vecs = make([][]float32, 0, n)
 	// skipcq: GO-S1033
-	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < n; i++ {
 		// skipcq: CRT-D0001
 		vs := append(lvs[i], rvs[i]...)

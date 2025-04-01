@@ -170,12 +170,12 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 		if addr != "" {
 			_, err := g.Connect(ctx, addr)
 			if err != nil {
-				if !errors.Is(err, context.Canceled) &&
-					!errors.Is(err, context.DeadlineExceeded) &&
-					!errors.Is(err, errors.ErrCircuitBreakerOpenState) &&
-					!errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) &&
-					!errors.Is(err, errors.ErrGRPCClientConnNotFound(addr)) &&
-					!errors.Is(err, errors.ErrGRPCClientNotFound) {
+				if errors.IsNot(err, context.Canceled,
+					context.DeadlineExceeded,
+					errors.ErrCircuitBreakerOpenState,
+					errors.ErrGRPCClientConnNotFound("*"),
+					errors.ErrGRPCClientConnNotFound(addr),
+					errors.ErrGRPCClientNotFound) {
 					log.Errorf("failed to initial connection to %s,\terror: %v", addr, err)
 					ech <- err
 				} else {
@@ -258,18 +258,14 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 						var err error
 						// for rebalancing connection we don't need to check connection health
 						p, err = p.Connect(ctx)
-						if err != nil {
-							if !errors.Is(err, context.Canceled) &&
-								!errors.Is(err, context.DeadlineExceeded) &&
-								!errors.Is(err, errors.ErrCircuitBreakerOpenState) &&
-								!errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) &&
-								!errors.Is(err, errors.ErrGRPCClientConnNotFound(addr)) &&
-								!errors.Is(err, errors.ErrGRPCClientNotFound) {
-								log.Error(err)
-								ech <- err
-							} else {
-								log.Warn(err)
-							}
+						if errors.IsNot(err, context.Canceled,
+							context.DeadlineExceeded,
+							errors.ErrCircuitBreakerOpenState,
+							errors.ErrGRPCClientConnNotFound("*"),
+							errors.ErrGRPCClientConnNotFound(addr),
+							errors.ErrGRPCClientNotFound) {
+							log.Error(err)
+							ech <- err
 						}
 						// if rebalanced connection pool is nil even error is nil we should disconnect and delete it
 						if err == nil && p == nil {
@@ -300,18 +296,14 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 					var err error
 					// if not healthy we should try reconnect
 					p, err = p.Reconnect(ctx, false)
-					if err != nil {
-						if !errors.Is(err, context.Canceled) &&
-							!errors.Is(err, context.DeadlineExceeded) &&
-							!errors.Is(err, errors.ErrCircuitBreakerOpenState) &&
-							!errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) &&
-							!errors.Is(err, errors.ErrGRPCClientConnNotFound(addr)) &&
-							!errors.Is(err, errors.ErrGRPCClientNotFound) {
-							log.Error(err)
-							ech <- err
-						} else {
-							log.Warn(err)
-						}
+					if errors.IsNot(err, context.Canceled,
+						context.DeadlineExceeded,
+						errors.ErrCircuitBreakerOpenState,
+						errors.ErrGRPCClientConnNotFound("*"),
+						errors.ErrGRPCClientConnNotFound(addr),
+						errors.ErrGRPCClientNotFound) {
+						log.Error(err)
+						ech <- err
 					}
 					// if rebalanced connection pool is nil even error is nil we should disconnect and delete it
 					if err == nil && p == nil {
@@ -379,18 +371,14 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 				if disconnectFlag &&
 					!disconnected[addr] {
 					err = g.Disconnect(ctx, addr)
-					if err != nil {
-						if !errors.Is(err, context.Canceled) &&
-							!errors.Is(err, context.DeadlineExceeded) &&
-							!errors.Is(err, errors.ErrCircuitBreakerOpenState) &&
-							!errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) &&
-							!errors.Is(err, errors.ErrGRPCClientConnNotFound(addr)) &&
-							!errors.Is(err, errors.ErrGRPCClientNotFound) {
-							log.Error(err)
-							ech <- err
-						} else {
-							log.Warn(err)
-						}
+					if errors.IsNot(err, context.Canceled,
+						context.DeadlineExceeded,
+						errors.ErrCircuitBreakerOpenState,
+						errors.ErrGRPCClientConnNotFound("*"),
+						errors.ErrGRPCClientConnNotFound(addr),
+						errors.ErrGRPCClientNotFound) {
+						log.Error(err)
+						ech <- err
 					}
 					disconnected[addr] = true
 				}
@@ -489,8 +477,7 @@ func (g *gRPCClient) RangeConcurrent(
 			select {
 			case <-egctx.Done():
 				err = egctx.Err()
-				if err != nil && (errors.Is(err, context.Canceled) ||
-					errors.Is(err, context.DeadlineExceeded)) {
+				if errors.IsAny(err, context.Canceled, context.DeadlineExceeded) {
 					return err
 				}
 				return nil
@@ -513,8 +500,7 @@ func (g *gRPCClient) RangeConcurrent(
 						case codes.Canceled, codes.DeadlineExceeded:
 							return err
 						}
-					} else if errors.Is(err, context.Canceled) ||
-						errors.Is(err, context.DeadlineExceeded) {
+					} else if errors.IsAny(err, context.Canceled, context.DeadlineExceeded) {
 						return err
 					}
 				}
@@ -764,17 +750,16 @@ func (g *gRPCClient) RoundRobin(
 		return g.bo.Do(sctx, func(ictx context.Context) (r any, ret bool, err error) {
 			r, err = do()
 			if err != nil {
-				if errors.Is(err, context.Canceled) ||
-					errors.Is(err, context.DeadlineExceeded) ||
-					errors.Is(err, errors.ErrCircuitBreakerOpenState) ||
-					errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) ||
-					errors.Is(err, errors.ErrGRPCClientNotFound) {
+				if errors.IsAny(err, context.Canceled,
+					context.DeadlineExceeded,
+					errors.ErrCircuitBreakerOpenState,
+					errors.ErrGRPCClientConnNotFound("*"),
+					errors.ErrGRPCClientNotFound) {
 					return nil, false, err
 				}
 				st, ok := status.FromError(err)
 				if !ok || st == nil {
-					if errors.Is(err, context.Canceled) ||
-						errors.Is(err, context.DeadlineExceeded) {
+					if errors.IsAny(err, context.Canceled, context.DeadlineExceeded) {
 						return nil, false, err
 					}
 					return nil, err != nil, err
@@ -865,18 +850,17 @@ func (g *gRPCClient) connectWithBackoff(
 				return err
 			})
 			if err != nil {
-				if errors.Is(err, context.Canceled) ||
-					errors.Is(err, context.DeadlineExceeded) ||
-					errors.Is(err, errors.ErrCircuitBreakerOpenState) ||
-					errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) ||
-					errors.Is(err, errors.ErrGRPCClientNotFound) ||
+				if errors.IsAny(err, context.Canceled,
+					context.DeadlineExceeded,
+					errors.ErrCircuitBreakerOpenState,
+					errors.ErrGRPCClientConnNotFound("*"),
+					errors.ErrGRPCClientNotFound) ||
 					p.IsIPConn() && errors.Is(err, errors.ErrGRPCClientConnNotFound(addr)) {
 					return nil, false, err
 				}
 				st, ok := status.FromError(err)
 				if !ok || st == nil {
-					if errors.Is(err, context.Canceled) ||
-						errors.Is(err, context.DeadlineExceeded) {
+					if errors.IsAny(err, context.Canceled, context.DeadlineExceeded) {
 						return nil, false, err
 					}
 					return nil, err != nil, err
@@ -901,14 +885,12 @@ func (g *gRPCClient) connectWithBackoff(
 					}
 					return r, err
 				})
-				if err != nil {
-					if errors.Is(err, context.Canceled) ||
-						errors.Is(err, context.DeadlineExceeded) ||
-						errors.Is(err, errors.ErrCircuitBreakerOpenState) ||
-						errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) ||
-						errors.Is(err, errors.ErrGRPCClientNotFound) {
-						return nil, false, err
-					}
+				if errors.IsAny(err, context.Canceled,
+					context.DeadlineExceeded,
+					errors.ErrCircuitBreakerOpenState,
+					errors.ErrGRPCClientConnNotFound("*"),
+					errors.ErrGRPCClientNotFound) {
+					return nil, false, err
 				}
 				return r, ret, err
 			}
@@ -998,7 +980,7 @@ func (g *gRPCClient) Connect(
 		conn, err = pool.New(ctx, opts...)
 		if err != nil || conn == nil {
 			derr := g.Disconnect(ctx, addr)
-			if derr != nil && !errors.Is(derr, errors.ErrGRPCClientConnNotFound(addr)) {
+			if errors.IsNot(derr, errors.ErrGRPCClientConnNotFound(addr)) {
 				log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
 				err = errors.Join(err, derr)
 			}
@@ -1009,7 +991,7 @@ func (g *gRPCClient) Connect(
 		if err != nil {
 			log.Error(err)
 			derr := g.Disconnect(ctx, addr)
-			if derr != nil && !errors.Is(derr, errors.ErrGRPCClientConnNotFound(addr)) {
+			if errors.IsNot(derr, errors.ErrGRPCClientConnNotFound(addr)) {
 				log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
 				err = errors.Join(err, derr)
 			}
@@ -1066,7 +1048,7 @@ func (g *gRPCClient) Disconnect(ctx context.Context, addr string) error {
 		atomic.AddUint64(&g.clientCount, ^uint64(0))
 		if p != nil {
 			log.Debugf("gRPC client connection pool addr = %s will disconnect soon...", addr)
-			return nil, p.Disconnect()
+			return nil, p.Disconnect(ctx)
 		}
 		return nil, nil
 	})
@@ -1105,7 +1087,7 @@ func (g *gRPCClient) Close(ctx context.Context) (err error) {
 	}
 	g.conns.Range(func(addr string, p pool.Conn) bool {
 		derr := g.Disconnect(ctx, addr)
-		if derr != nil && !errors.Is(derr, errors.ErrGRPCClientConnNotFound(addr)) {
+		if errors.IsNot(derr, errors.ErrGRPCClientConnNotFound(addr)) {
 			err = errors.Join(err, derr)
 		}
 		return true

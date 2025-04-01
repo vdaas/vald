@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
@@ -38,7 +39,7 @@ type Loader interface {
 }
 
 type (
-	loadFunc func(context.Context, *grpc.ClientConn, any, ...grpc.CallOption) (any, error)
+	loadFunc func(context.Context, *grpc.ClientConn, any, ...grpc.CallOption) (proto.Message, error)
 )
 
 type loader struct {
@@ -50,7 +51,7 @@ type loader struct {
 	dataset          string
 	progressDuration time.Duration
 	loaderFunc       loadFunc
-	sendDataProvider func() *any
+	sendDataProvider func() (proto.Message, bool)
 	dataSize         int
 	operation        config.Operation
 }
@@ -135,7 +136,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 		log.Infof("progress %d requests, %f[vps], error: %d", pgCnt, vps(int(pgCnt)*l.batchSize, start, time.Now()), errCnt)
 	}
 
-	f := func(i *any, err error) {
+	f := func(i proto.Message, err error) {
 		atomic.AddInt32(&pgCnt, 1)
 		if err != nil {
 			atomic.AddInt32(&errCnt, 1)
@@ -184,7 +185,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 }
 
 func (l *loader) do(
-	ctx context.Context, f func(*any, error), notify func(context.Context, error),
+	ctx context.Context, f func(proto.Message, error), notify func(context.Context, error),
 ) (err error) {
 	eg, egctx := errgroup.New(ctx)
 
@@ -204,12 +205,12 @@ func (l *loader) do(
 				}
 
 				if l.operation == config.StreamInsert {
-					return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.sendDataProvider, func(i *payload.Empty, err error) bool {
+					return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.concurrency, l.sendDataProvider, func(i *payload.Empty, err error) bool {
 						f(nil, err)
 						return true
 					})
 				} else {
-					return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.sendDataProvider, func(i *payload.Search_Response, err error) bool {
+					return nil, grpc.BidirectionalStreamClient(st.(grpc.ClientStream), l.concurrency, l.sendDataProvider, func(i *payload.Search_Response, err error) bool {
 						f(nil, err)
 						return true
 					})
@@ -222,8 +223,8 @@ func (l *loader) do(
 		eg.SetLimit(l.concurrency)
 
 		for {
-			r := l.sendDataProvider()
-			if r == nil {
+			r, ok := l.sendDataProvider()
+			if !ok {
 				break
 			}
 
@@ -233,8 +234,8 @@ func (l *loader) do(
 					err = nil
 				}()
 				_, err = l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
-					res, err := l.loaderFunc(egctx, conn, *r)
-					f(&res, err)
+					res, err := l.loaderFunc(egctx, conn, r)
+					f(res, err)
 					return res, err
 				})
 
