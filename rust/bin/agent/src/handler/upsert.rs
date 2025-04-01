@@ -176,8 +176,100 @@ impl upsert_server::Upsert for super::Agent {
     #[doc = " A method to insert/update multiple vectors in a single request.\n"]
     async fn multi_upsert(
         &self,
-        _request: tonic::Request<upsert::MultiRequest>,
+        request: tonic::Request<upsert::MultiRequest>,
     ) -> std::result::Result<tonic::Response<object::Locations>, tonic::Status> {
-        todo!()
+        info!("Recieved a request from {:?}", request.remote_addr());
+        let mreq = request.get_ref();
+        let hostname = cargo::util::hostname()?;
+        let domain = hostname.to_str().unwrap();
+        {
+            let s = self.s.read().await;
+            let mut ireqs = insert::MultiRequest { requests: vec![] };
+            let mut ureqs = update::MultiRequest { requests: vec![] };
+            let mut ids = vec![];
+            for req in mreq.requests.clone() {
+                let vec = match req.vector.clone() {
+                    Some(v) => v,
+                    None => return Err(Status::invalid_argument("Missing vector in request")),
+                };
+                let config = match req.config.clone() {
+                    Some(c) => c,
+                    None => return Err(Status::invalid_argument("Missing config in request")),
+                };
+                if vec.vector.len() != s.get_dimension_size() {
+                    let err = Error::IncompatibleDimensionSize {
+                        got: vec.vector.len(),
+                        want: s.get_dimension_size(),
+                    };
+                    let mut err_details = ErrorDetails::new();
+                    let metadata = HashMap::new();
+                    let resource_type = self.resource_type.clone() + "/qbg.MultiUpsert";
+                    let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
+                    err_details.set_error_info(err.to_string(), domain, metadata);
+                    err_details.set_request_info(
+                        vec.id,
+                        String::from_utf8(req.encode_to_vec())
+                            .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
+                    );
+                    err_details.set_bad_request(vec![FieldViolation::new(
+                        "vector dimension size",
+                        err.to_string(),
+                    )]);
+                    err_details.set_resource_info(resource_type, resource_name, "", "");
+                    let status = Status::with_error_details(
+                        Code::InvalidArgument,
+                        "Upsert API Incompatible Dimension Size detected",
+                        err_details,
+                    );
+                    warn!("{:?}", status);
+                    return Err(status);
+                }
+                ids.push(vec.id.clone());
+                let exists = s.exists(vec.id.clone());
+                if exists {
+                    ureqs.requests.push(update::Request {
+                        vector: Some(vec),
+                        config: Some(update::Config {
+                            skip_strict_exist_check: true,
+                            filters: config.filters,
+                            timestamp: config.timestamp,
+                            disable_balanced_update: config.disable_balanced_update,
+                        }),
+                    });
+                } else {
+                    ireqs.requests.push(insert::Request {
+                        vector: Some(vec),
+                        config: Some(insert::Config {
+                            skip_strict_exist_check: true,
+                            filters: config.filters,
+                            timestamp: config.timestamp,
+                        }),
+                    });
+                }
+            }
+
+            if ireqs.requests.len() <= 0 {
+                let res = self.multi_update(tonic::Request::new(ureqs)).await?;
+                return Ok(res);
+            } else if ureqs.requests.len() <= 0 {
+                let res = self.multi_insert(tonic::Request::new(ireqs)).await?;
+                return Ok(res);
+            } else {
+                let ures = self.multi_update(tonic::Request::new(ureqs)).await?;
+                let ires = self.multi_insert(tonic::Request::new(ireqs)).await?;
+
+                let mut locs = object::Locations { locations: vec![] };
+                let ilocs = ires.into_inner().locations;
+                let ulocs = ures.into_inner().locations;
+                if ulocs.len() == 0 {
+                    locs.locations = ilocs;
+                } else if ilocs.len() == 0 {
+                    locs.locations = ulocs;
+                } else {
+                    locs.locations = [ilocs, ulocs].concat();
+                }
+                return Ok(tonic::Response::new(locs));
+            }
+        }
     }
 }
