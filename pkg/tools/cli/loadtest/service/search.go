@@ -20,17 +20,18 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 )
 
-func searchRequestProvider(dataset assets.Dataset) (func() *any, int, error) {
+func searchRequestProvider(dataset assets.Dataset) (func() (proto.Message, bool), int, error) {
 	size := dataset.QuerySize()
 	idx := int32(-1)
-	return func() (ret *any) {
+	return func() (ret proto.Message, ok bool) {
 		if i := int(atomic.AddInt32(&idx, 1)); i < size {
 			v, err := dataset.Query(i)
 			if err != nil {
-				return nil
+				return nil, false
 			}
 			obj := any(&payload.Search_Request{
 				Vector: v.([]float32),
@@ -42,7 +43,7 @@ func searchRequestProvider(dataset assets.Dataset) (func() *any, int, error) {
 			})
 			ret = &obj
 		}
-		return ret
+		return ret, true
 	}, size, nil
 }
 

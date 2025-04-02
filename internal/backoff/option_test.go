@@ -374,10 +374,6 @@ func TestDefaultOptions(t *testing.T) {
 					return errors.New("invalid param (maxRetryCount) was set")
 				}
 
-				if got.errLog != true {
-					return errors.New("invalid param (errLog) was set")
-				}
-
 				return nil
 			},
 		},

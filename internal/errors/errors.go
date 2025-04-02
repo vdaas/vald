@@ -83,6 +83,10 @@ var (
 		return Wrapf(err, "failed to output %s logs", str)
 	}
 
+	ErrUnimplemented = func(name string) error {
+		return Errorf("%s is unimplemented", name)
+	}
+
 	// New represents a function to generate the new error with a message.
 	// When the message is nil, it will return nil instead of an error.
 	New = func(msg string) error {
@@ -161,6 +165,30 @@ func Is(err, target error) (same bool) {
 		return err == target
 	}
 	return is(err, target, reflect.TypeOf(target).Comparable())
+}
+
+func IsAny(err error, targets ...error) (same bool) {
+	if err == nil || len(targets) == 0 {
+		return false
+	}
+	for _, target := range targets {
+		if Is(err, target) {
+			return true
+		}
+	}
+	return false
+}
+
+func IsNot(err error, targets ...error) (same bool) {
+	if err == nil || len(targets) == 0 {
+		return err != nil
+	}
+	for _, target := range targets {
+		if Is(err, target) {
+			return false
+		}
+	}
+	return true
 }
 
 func is(err, target error, targetComparable bool) (same bool) {

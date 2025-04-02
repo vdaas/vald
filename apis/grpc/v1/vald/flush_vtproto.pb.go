@@ -42,7 +42,16 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FlushClient interface {
-	// A method to flush all indexed vector.
+	// Overview
+	// Flush RPC is the method to remove all vectors.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  13  | INTERNAL          |
 	Flush(ctx context.Context, in *payload.Flush_Request, opts ...grpc.CallOption) (*payload.Info_Index_Count, error)
 }
 
@@ -69,7 +78,16 @@ func (c *flushClient) Flush(
 // All implementations must embed UnimplementedFlushServer
 // for forward compatibility
 type FlushServer interface {
-	// A method to flush all indexed vector.
+	// Overview
+	// Flush RPC is the method to remove all vectors.
+	// ---
+	// Status Code
+	// |  0   | OK                |
+	// |  1   | CANCELLED         |
+	// |  3   | INVALID_ARGUMENT  |
+	// |  4   | DEADLINE_EXCEEDED |
+	// |  5   | NOT_FOUND         |
+	// |  13  | INTERNAL          |
 	Flush(context.Context, *payload.Flush_Request) (*payload.Info_Index_Count, error)
 	mustEmbedUnimplementedFlushServer()
 }

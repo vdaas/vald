@@ -19,6 +19,11 @@
 e2e:
 	$(call run-e2e-crud-test,-run TestE2EStandardCRUD)
 
+.PHONY: e2e/v2
+## run e2e
+e2e/v2:
+	$(call run-v2-e2e-crud-test,-run TestE2EStrategy)
+
 .PHONY: e2e/faiss
 ## run e2e/faiss
 e2e/faiss:
