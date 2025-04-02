@@ -257,7 +257,7 @@ func TestWithTLSHandshakeTimeout(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"TLSHandshakeTimeout",
 					"dummy",
-					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+					errors.New("time: invalid duration \"dummy\""),
 				),
 			},
 		},
@@ -766,7 +766,7 @@ func TestWithIdleConnTimeout(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"idleConnTimeout",
 					"dummy",
-					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+					errors.New("time: invalid duration \"dummy\""),
 				),
 			},
 		},
@@ -863,7 +863,7 @@ func TestWithResponseHeaderTimeout(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"responseHeaderTimeout",
 					"dummy",
-					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+					errors.New("time: invalid duration \"dummy\""),
 				),
 			},
 		},
@@ -960,7 +960,7 @@ func TestWithExpectContinueTimeout(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"expectContinueTimeout",
 					"dummy",
-					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+					errors.New("time: invalid duration \"dummy\""),
 				),
 			},
 		},

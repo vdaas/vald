@@ -926,7 +926,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			select {
 			case <-ctx.Done():
 				err = n.CreateIndex(ctx, n.poolSize)
-				if err != nil && !errors.Is(err, errors.ErrUncommittedIndexNotFound) {
+				if errors.IsNot(err, errors.ErrUncommittedIndexNotFound) {
 					ech <- err
 					return errors.Join(ctx.Err(), err)
 				}
@@ -1472,6 +1472,10 @@ func (n *ngt) loadStatistics(ctx context.Context) (err error) {
 			log.Errorf("failed to load index statistics to cache: %v", err)
 			return err
 		}
+		if stats == nil {
+			log.Warn("failed to load index statistics to cache: stats is nil")
+			return nil
+		}
 		n.statisticsCache.Store(&payload.Info_Index_Statistics{
 			Valid:                            stats.Valid,
 			MedianIndegree:                   stats.MedianIndegree,
@@ -1817,10 +1821,7 @@ func (n *ngt) CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err erro
 	}()
 
 	err = n.CreateIndex(ctx, poolSize)
-	if err != nil &&
-		!errors.Is(err, errors.ErrUncommittedIndexNotFound) &&
-		!errors.Is(err, context.Canceled) &&
-		!errors.Is(err, context.DeadlineExceeded) {
+	if errors.IsNot(err, errors.ErrUncommittedIndexNotFound, context.Canceled, context.DeadlineExceeded) {
 		return err
 	}
 	return n.SaveIndex(ctx)
@@ -1969,9 +1970,7 @@ func (n *ngt) Close(ctx context.Context) (err error) {
 	defer n.core.Close()
 	defer func() {
 		kerr := n.kvs.Close()
-		if kerr != nil &&
-			!errors.Is(err, context.Canceled) &&
-			!errors.Is(err, context.DeadlineExceeded) {
+		if errors.IsNot(kerr, context.Canceled, context.DeadlineExceeded) {
 			if err != nil {
 				err = errors.Join(kerr, err)
 			} else {
@@ -1985,10 +1984,7 @@ func (n *ngt) Close(ctx context.Context) (err error) {
 			return err
 		}
 		cerr := n.CreateIndex(ctx, n.poolSize)
-		if cerr != nil &&
-			!errors.Is(err, errors.ErrUncommittedIndexNotFound) &&
-			!errors.Is(err, context.Canceled) &&
-			!errors.Is(err, context.DeadlineExceeded) {
+		if errors.IsNot(cerr, errors.ErrUncommittedIndexNotFound, context.Canceled, context.DeadlineExceeded) {
 			if err != nil {
 				err = errors.Join(cerr, err)
 			} else {
@@ -1996,10 +1992,7 @@ func (n *ngt) Close(ctx context.Context) (err error) {
 			}
 		}
 		serr := n.SaveIndex(ctx)
-		if serr != nil &&
-			!errors.Is(err, errors.ErrUncommittedIndexNotFound) &&
-			!errors.Is(err, context.Canceled) &&
-			!errors.Is(err, context.DeadlineExceeded) {
+		if errors.IsNot(serr, errors.ErrUncommittedIndexNotFound, context.Canceled, context.DeadlineExceeded) {
 			if err != nil {
 				err = errors.Join(serr, err)
 			} else {

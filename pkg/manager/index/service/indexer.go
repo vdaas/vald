@@ -116,9 +116,7 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 		defer stl.Stop()
 		finalize := func() (err error) {
 			err = ctx.Err()
-			if err != nil &&
-				!errors.Is(err, context.Canceled) &&
-				!errors.Is(err, context.DeadlineExceeded) {
+			if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
 				return err
 			}
 			return nil
@@ -132,18 +130,14 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 			case <-it.C: // index duration ticker
 				// execute CreateIndex. This execution ignores low index agent.
 				err = idx.createIndex(grpc.WithGRPCMethod(ctx, "core.v1.Agent/CreateIndex"), true)
-				if err != nil &&
-					!errors.Is(err, context.Canceled) &&
-					!errors.Is(err, context.DeadlineExceeded) {
+				if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
 					err = errors.Wrap(err, "an error occurred during create indexing")
 				}
 				it.Reset(idx.indexDuration)
 			case <-itl.C: // index duration limit ticker
 				// execute CreateIndex. This execution always executes CreateIndex regardless of the state of the uncommitted index.
 				err = idx.createIndex(grpc.WithGRPCMethod(ctx, "core.v1.Agent/CreateIndex"), false)
-				if err != nil &&
-					!errors.Is(err, context.Canceled) &&
-					!errors.Is(err, context.DeadlineExceeded) {
+				if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
 					err = errors.Wrap(err, "an error occurred during force create indexing")
 				}
 				itl.Reset(idx.indexDurationLimit)
@@ -156,9 +150,7 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 					defer mu.Unlock()
 					defer st.Reset(idx.saveIndexDuration)
 					err = idx.saveIndex(grpc.WithGRPCMethod(ctx, "core.v1.Agent/SaveIndex"), false)
-					if err != nil &&
-						!errors.Is(err, context.Canceled) &&
-						!errors.Is(err, context.DeadlineExceeded) {
+					if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
 						err = errors.Wrap(err, "an error occurred during save indexing")
 						log.Error(err)
 						select {
@@ -178,9 +170,7 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 					defer mu.Unlock()
 					defer stl.Reset(idx.saveIndexDurationLimit)
 					err = idx.saveIndex(grpc.WithGRPCMethod(ctx, "core.v1.Agent/SaveIndex"), true)
-					if err != nil &&
-						!errors.Is(err, context.Canceled) &&
-						!errors.Is(err, context.DeadlineExceeded) {
+					if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
 						err = errors.Wrap(err, "an error occurred during force save indexing")
 						log.Error(err)
 						select {
@@ -192,9 +182,7 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 					return nil
 				}))
 			}
-			if err != nil &&
-				!errors.Is(err, context.Canceled) &&
-				!errors.Is(err, context.DeadlineExceeded) {
+			if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
 				log.Error(err)
 				select {
 				case <-ctx.Done():
