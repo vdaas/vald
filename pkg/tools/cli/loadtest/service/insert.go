@@ -22,12 +22,13 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 )
 
 func insertRequestProvider(
 	dataset assets.Dataset, batchSize int,
-) (f func() *any, size int, err error) {
+) (f func() (proto.Message, bool), size int, err error) {
 	switch {
 	case batchSize == 1:
 		f, size = objectVectorProvider(dataset)
@@ -42,49 +43,48 @@ func insertRequestProvider(
 	return f, size, nil
 }
 
-func objectVectorProvider(dataset assets.Dataset) (func() *any, int) {
+func objectVectorProvider(dataset assets.Dataset) (func() (proto.Message, bool), int) {
 	idx := int32(-1)
 	size := dataset.TrainSize()
-	return func() (ret *any) {
+	return func() (ret proto.Message, ok bool) {
 		if i := int(atomic.AddInt32(&idx, 1)); i < size {
 			v, err := dataset.Train(i)
 			if err != nil {
-				return nil
+				return nil, false
 			}
-			obj := any(&payload.Insert_Request{
+			ret = &payload.Insert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     fuid.String(),
 					Vector: v.([]float32),
 				},
-			})
-			ret = &obj
+			}
 		}
-		return ret
+		return ret, true
 	}, size
 }
 
-func objectVectorsProvider(dataset assets.Dataset, n int) (func() *any, int) {
+func objectVectorsProvider(dataset assets.Dataset, n int) (func() (proto.Message, bool), int) {
 	provider, s := objectVectorProvider(dataset)
 	size := s / n
 	if s%n != 0 {
 		size = size + 1
 	}
-	return func() (ret *any) {
+	return func() (ret proto.Message, ok bool) {
 		r := make([]*payload.Insert_Request, 0, n)
 		for i := 0; i < n; i++ {
-			d := provider()
-			if d == nil {
+			d, ok := provider()
+			if !ok {
 				break
 			}
-			r = append(r, (*d).(*payload.Insert_Request))
+			r = append(r, d)
 		}
 		if len(r) == 0 {
-			return nil
+			return nil, false
 		}
-		obj := any(&payload.Insert_MultiRequest{
+		ret = &payload.Insert_MultiRequest{
 			Requests: r,
-		})
-		return &obj
+		}
+		return ret, true
 	}, size
 }
 

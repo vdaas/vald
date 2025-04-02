@@ -203,10 +203,10 @@ func TestBidirectionalStream(t *testing.T) {
 //
 // func TestBidirectionalStreamClient(t *testing.T) {
 // 	type args struct {
-// 		stream       ClientStream
-// 		dataProvider func() any
-// 		newData      func() any
-// 		f            func(any, error)
+// 		stream           ClientStream
+// 		concurrency      int
+// 		sendDataProvider func() *S
+// 		callBack         func(*R, error) bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -232,9 +232,9 @@ func TestBidirectionalStream(t *testing.T) {
 // 		       name: "test_case_1",
 // 		       args: args {
 // 		           stream:nil,
-// 		           dataProvider:nil,
-// 		           newData:nil,
-// 		           f:nil,
+// 		           concurrency:0,
+// 		           sendDataProvider:nil,
+// 		           callBack:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -254,9 +254,9 @@ func TestBidirectionalStream(t *testing.T) {
 // 		           name: "test_case_2",
 // 		           args: args {
 // 		           stream:nil,
-// 		           dataProvider:nil,
-// 		           newData:nil,
-// 		           f:nil,
+// 		           concurrency:0,
+// 		           sendDataProvider:nil,
+// 		           callBack:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -287,7 +287,7 @@ func TestBidirectionalStream(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			err := BidirectionalStreamClient(test.args.stream, test.args.dataProvider, test.args.newData, test.args.f)
+// 			err := BidirectionalStreamClient(test.args.stream, test.args.concurrency, test.args.sendDataProvider, test.args.callBack)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

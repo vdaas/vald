@@ -19,6 +19,7 @@ package config
 // 	type fields struct {
 // 		Host string
 // 		Port int
+// 		Meta map[string]string
 // 	}
 // 	type want struct {
 // 		want *BenchmarkTarget
@@ -45,6 +46,7 @@ package config
 // 		       fields: fields {
 // 		           Host:"",
 // 		           Port:0,
+// 		           Meta:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -65,6 +67,7 @@ package config
 // 		           fields: fields {
 // 		           Host:"",
 // 		           Port:0,
+// 		           Meta:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -97,6 +100,7 @@ package config
 // 			tr := &BenchmarkTarget{
 // 				Host: test.fields.Host,
 // 				Port: test.fields.Port,
+// 				Meta: test.fields.Meta,
 // 			}
 //
 // 			got := tr.Bind()
