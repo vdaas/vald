@@ -444,6 +444,8 @@ clean-generated:
 	mv $(ROOTDIR)/apis/grpc/v1/agent/core/agent.go $(TEMP_DIR)/agent.go
 	mv $(ROOTDIR)/apis/grpc/v1/payload/interface.go $(TEMP_DIR)/interface.go
 	mv $(ROOTDIR)/apis/grpc/v1/mirror/mirror.go $(TEMP_DIR)/mirror.go
+	mv $(ROOTDIR)/apis/docs/buf.gen.*.yaml $(TEMP_DIR)/
+	mv $(ROOTDIR)/apis/docs/v1/*.tmpl $(TEMP_DIR)/
 	rm -rf \
 		$(ROOTDIR)/*.log \
 		$(ROOTDIR)/*.svg \
@@ -461,6 +463,9 @@ clean-generated:
 	mv $(TEMP_DIR)/interface.go $(ROOTDIR)/apis/grpc/v1/payload/interface.go
 	mkdir -p $(ROOTDIR)/apis/grpc/v1/mirror
 	mv $(TEMP_DIR)/mirror.go $(ROOTDIR)/apis/grpc/v1/mirror/mirror.go
+	mkdir -p $(ROOTDIR)/apis/docs/v1
+	mv $(TEMP_DIR)/buf.gen.*.yaml $(ROOTDIR)/apis/docs
+	mv $(TEMP_DIR)/*.tmpl $(ROOTDIR)/apis/docs/v1
 
 .PHONY: files
 ## add current repository file list to .gitfiles
