@@ -43,12 +43,33 @@ jobs:
       - uses: ./.github/actions/dump-context
   detect-ci-container:
     uses: ./.github/workflows/_detect-ci-container.yaml
-  codeql-build:
-    name: CodeQL
-    runs-on: ubuntu-latest
+  analyze:
+    name: CodeQL Analyze (${{ matrix.language }})
+    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    env:
+      CODEQL_ENABLE_EXPERIMENTAL_FEATURES: true
+      CODEQL_ACTION_TEST_MODE: true
     needs: [detect-ci-container]
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+            build-mode: none
+          - language: go
+            build-mode: autobuild
+          - language: rust
+            build-mode: none
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      credentials:
+        username: ${{ secrets.PACKAGE_USER }}
+        password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -60,11 +81,15 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
-          languages: go
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
           config-file: ./.github/codeql/codeql-config.yaml
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
+        if: matrix.language == 'go'
+        uses: github/codeql-action/autobuild@v3
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
