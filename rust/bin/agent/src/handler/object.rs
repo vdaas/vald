@@ -18,11 +18,11 @@ use log::{info, warn};
 use prost::Message;
 use proto::{payload::v1::object, vald::v1::object_server};
 use tokio::sync::RwLock;
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 use tonic::{Code, Status};
-use tonic_types::{ErrorDetails, FieldViolation, StatusExt};
+use tonic_types::StatusExt;
 
-use super::common::bidirectional_stream;
+use super::common::{bidirectional_stream, build_error_details};
 
 async fn get_object(
     s: Arc<RwLock<dyn algorithm::ANN>>,
@@ -43,18 +43,9 @@ async fn get_object(
         let s = s.read().await;
         if uuid.len() == 0 {
             let err = Error::InvalidUUID { uuid: uuid.clone() };
-            let metadata = HashMap::new();
             let resource_type = format!("{}/qbg.GetObject", resource_type);
             let resource_name = format!("{}: {}({})", api_name, name, ip);
-            let mut err_details = ErrorDetails::new();
-            err_details.set_error_info(err.to_string(), domain, metadata);
-            err_details.set_request_info(
-                uuid.clone(),
-                String::from_utf8(request.encode_to_vec())
-                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-            );
-            err_details.set_bad_request(vec![FieldViolation::new("uuid", err.to_string())]);
-            err_details.set_resource_info(resource_type, resource_name, "", "");
+            let err_details = build_error_details(err, domain, &uuid, request.encode_to_vec(), &resource_type, &resource_name, Some("uuid"));
             let status = Status::with_error_details(
                 Code::InvalidArgument,
                 format!(
@@ -114,14 +105,9 @@ impl object_server::Object for super::Agent {
         request: tonic::Request<tonic::Streaming<object::VectorRequest>>,
     ) -> std::result::Result<tonic::Response<Self::StreamGetObjectStream>, tonic::Status> {
         info!("Received stream get object request from {:?}", request.remote_addr());
-    
-        let hostname = cargo::util::hostname()?;
-        let _domain = hostname.to_str().unwrap();
-        let _resource_type = self.resource_type.clone() + "/qbg.StreamGetObject";
-        let _resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
 
         let s = self.s.clone();
-        let resource_type = self.resource_type.clone();
+        let resource_type = self.resource_type.clone() + "/qbg.StreamGetObject";
         let name = self.name.clone();
         let ip = self.ip.clone();
         let api_name = self.api_name.clone();

@@ -23,9 +23,9 @@ use proto::{
 use tokio::sync::RwLock;
 use std::{collections::HashMap, string::String, sync::Arc};
 use tonic::{Code, Status};
-use tonic_types::{ErrorDetails, FieldViolation, StatusExt};
+use tonic_types::StatusExt;
 
-use super::common::bidirectional_stream;
+use super::common::{build_error_details, bidirectional_stream};
 
 pub(super) async fn insert(
     s: Arc<RwLock<dyn algorithm::ANN>>,
@@ -52,21 +52,9 @@ pub(super) async fn insert(
                 got: vec.vector.len(),
                 want: s.get_dimension_size(),
             };
-            let mut err_details = ErrorDetails::new();
-            let metadata = HashMap::new();
             let resource_type = format!("{}/qbg.Insert", resource_type);
             let resource_name = format!("{}: {}({})", api_name, name, ip);
-            err_details.set_error_info(err.to_string(), domain, metadata);
-            err_details.set_request_info(
-                vec.id,
-                String::from_utf8(request.encode_to_vec())
-                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-            );
-            err_details.set_bad_request(vec![FieldViolation::new(
-                "vector dimension size",
-                err.to_string(),
-            )]);
-            err_details.set_resource_info(resource_type, resource_name, "", "");
+            let err_details = build_error_details(err, domain, &vec.id, request.encode_to_vec(), &resource_type, &resource_name, Some("vector dimension size"));
             let status = Status::with_error_details(
                 Code::InvalidArgument,
                 "Insert API Incombatible Dimension Size detedted",
@@ -78,32 +66,18 @@ pub(super) async fn insert(
         let result = s.insert(vec.id.clone(), vec.vector.clone(), config.timestamp);
         match result {
             Err(err) => {
-                let metadata = HashMap::new();
                 let resource_type = format!("{}/qbg.Insert", resource_type);
                 let resource_name = format!("{}: {}({})", api_name, name, ip);
+                let request_bytes = request.encode_to_vec();
                 let status = match err {
                     Error::FlushingIsInProgress {} => {
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(
-                            vec.id,
-                            String::from_utf8(request.encode_to_vec())
-                                .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                        );
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
+                        let err_details = build_error_details(err, domain, &vec.id, request_bytes, &resource_type, &resource_name, None);
                         let status = Status::with_error_details(Code::Aborted, "Insert API aborted to process insert request due to flushing indices is in progress", err_details);
                         warn!("{:?}", status);
                         status
                     }
                     Error::UUIDAlreadyExists { uuid: _ } => {
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(
-                            vec.id.clone(),
-                            String::from_utf8(request.encode_to_vec())
-                                .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                        );
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
+                        let err_details = build_error_details(err, domain, &vec.id, request_bytes, &resource_type, &resource_name, None);
                         let status = Status::with_error_details(
                             Code::AlreadyExists,
                             format!("Insert API uuid {} already exists", vec.id),
@@ -113,18 +87,7 @@ pub(super) async fn insert(
                         status
                     }
                     Error::UUIDNotFound { uuid: _ } => {
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(
-                            vec.id.clone(),
-                            String::from_utf8(request.encode_to_vec())
-                                .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                        );
-                        err_details.set_bad_request(vec![FieldViolation::new(
-                            "uuid",
-                            err.to_string(),
-                        )]);
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
+                        let err_details = build_error_details(err, domain, &vec.id, request_bytes, &resource_type, &resource_name, Some("uuid"));
                         let status = Status::with_error_details(
                             Code::InvalidArgument,
                             format!(
@@ -137,14 +100,7 @@ pub(super) async fn insert(
                         status
                     }
                     _ => {
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(
-                            vec.id,
-                            String::from_utf8(request.encode_to_vec())
-                                .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                        );
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
+                        let err_details = build_error_details(err, domain, &vec.id, request_bytes, &resource_type, &resource_name, None);
                         Status::with_error_details(
                             Code::Unknown,
                             "failed to parse Insert gRPC error response",
@@ -191,14 +147,8 @@ impl insert_server::Insert for super::Agent {
         request: tonic::Request<tonic::Streaming<insert::Request>>,
     ) -> std::result::Result<tonic::Response<Self::StreamInsertStream>, tonic::Status> {
         info!("Received stream insert request from {:?}", request.remote_addr());
-
-        let hostname = cargo::util::hostname()?;
-        let _domain = hostname.to_str().unwrap();
-        let _resource_type = self.resource_type.clone() + "/qbg.StreamInsert";
-        let _resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
-
         let s = self.s.clone();
-        let resource_type = self.resource_type.clone();
+        let resource_type = format!("{}/qbg.StreamInsert", self.resource_type.clone());
         let name = self.name.clone();
         let ip = self.ip.clone();
         let api_name = self.api_name.clone();
@@ -247,21 +197,9 @@ impl insert_server::Insert for super::Agent {
                         got: vec.vector.len(),
                         want: s.get_dimension_size(),
                     };
-                    let mut err_details = ErrorDetails::new();
-                    let metadata = HashMap::new();
-                    let resource_type = self.resource_type.clone() + "/qbg.MultiInsert";
+                    let resource_type = format!("{}/qbg.MultiInsert", self.resource_type);
                     let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
-                    err_details.set_error_info(err.to_string(), domain, metadata);
-                    err_details.set_request_info(
-                        vec.id,
-                        String::from_utf8(req.encode_to_vec())
-                            .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                    );
-                    err_details.set_bad_request(vec![FieldViolation::new(
-                        "vector dimension size",
-                        err.to_string(),
-                    )]);
-                    err_details.set_resource_info(resource_type, resource_name, "", "");
+                    let err_details = build_error_details(err, domain, &vec.id, mreq.encode_to_vec(), &resource_type, &resource_name, Some("vector dimension size"));
                     let status = Status::with_error_details(
                         Code::InvalidArgument,
                         "MultiInsert API Incombatible Dimension Size detedted",
@@ -276,32 +214,18 @@ impl insert_server::Insert for super::Agent {
             let result = s.insert_multiple(vmap);
             match result {
                 Err(err) => {
-                    let metadata = HashMap::new();
-                    let resource_type = self.resource_type.clone() + "/qbg.MultiInsert";
+                    let resource_type = format!("{}/qbg.MultiInsert", self.resource_type);
                     let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
+                    let request_bytes = mreq.encode_to_vec();
                     let status = match err {
                         Error::FlushingIsInProgress {} => {
-                            let mut err_details = ErrorDetails::new();
-                            err_details.set_error_info(err.to_string(), domain, metadata);
-                            err_details.set_request_info(
-                                uuids.join(", "),
-                                String::from_utf8(mreq.encode_to_vec())
-                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                            );
-                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            let err_details = build_error_details(err, domain, &uuids.join(", "), request_bytes, &resource_type, &resource_name, None);
                             let status = Status::with_error_details(Code::Aborted, "MultiInsert API aborted to process insert request due to flushing indices is in progress", err_details);
                             warn!("{:?}", status);
                             status
                         }
                         Error::UUIDAlreadyExists { ref uuid } => {
-                            let mut err_details = ErrorDetails::new();
-                            err_details.set_error_info(err.to_string(), domain, metadata);
-                            err_details.set_request_info(
-                                uuid,
-                                String::from_utf8(mreq.encode_to_vec())
-                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                            );
-                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            let err_details = build_error_details(&err, domain, uuid, request_bytes, &resource_type, &resource_name, None);
                             let uuids = Error::split_uuids(uuid.to_string());
                             let status = Status::with_error_details(
                                 Code::AlreadyExists,
@@ -312,18 +236,7 @@ impl insert_server::Insert for super::Agent {
                             status
                         }
                         Error::UUIDNotFound { uuid: _ } => {
-                            let mut err_details = ErrorDetails::new();
-                            err_details.set_error_info(err.to_string(), domain, metadata);
-                            err_details.set_request_info(
-                                uuids.join(", "),
-                                String::from_utf8(mreq.encode_to_vec())
-                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                            );
-                            err_details.set_bad_request(vec![FieldViolation::new(
-                                "uuid",
-                                err.to_string(),
-                            )]);
-                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            let err_details = build_error_details(err, domain, &uuids.join(", "), request_bytes, &resource_type, &resource_name, Some("uuid"));
                             let status = Status::with_error_details(
                                 Code::InvalidArgument,
                                 format!("MultiInsert API invalid uuids \"{:?}\" detected", uuids),
@@ -333,14 +246,7 @@ impl insert_server::Insert for super::Agent {
                             status
                         }
                         _ => {
-                            let mut err_details = ErrorDetails::new();
-                            err_details.set_error_info(err.to_string(), domain, metadata);
-                            err_details.set_request_info(
-                                uuids.join(", "),
-                                String::from_utf8(mreq.encode_to_vec())
-                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                            );
-                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            let err_details = build_error_details(err, domain, &uuids.join(", "), request_bytes, &resource_type, &resource_name, None);
                             let status = Status::with_error_details(
                                 Code::Internal,
                                 "MultiInsert API failed",

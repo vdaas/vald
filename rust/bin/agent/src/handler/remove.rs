@@ -21,11 +21,11 @@ use proto::{
     vald::v1::remove_server,
 };
 use tokio::sync::RwLock;
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 use tonic::{Code, Status};
-use tonic_types::{ErrorDetails, FieldViolation, StatusExt};
+use tonic_types::StatusExt;
 
-use super::common::bidirectional_stream;
+use super::common::{bidirectional_stream, build_error_details};
 
 async fn remove(
     s: Arc<RwLock<dyn algorithm::ANN>>,
@@ -50,18 +50,9 @@ async fn remove(
         let mut s = s.write().await;
         if uuid.len() == 0 {
             let err = Error::InvalidUUID { uuid: uuid.clone() };
-            let metadata = HashMap::new();
             let resource_type = format!("{}/qbg.Remove", resource_type);
             let resource_name = format!("{}: {}({})", api_name, name, ip);
-            let mut err_details = ErrorDetails::new();
-            err_details.set_error_info(err.to_string(), domain, metadata);
-            err_details.set_request_info(
-                uuid.clone(),
-                String::from_utf8(request.encode_to_vec())
-                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-            );
-            err_details.set_bad_request(vec![FieldViolation::new("uuid", err.to_string())]);
-            err_details.set_resource_info(resource_type, resource_name, "", "");
+            let err_details = build_error_details(err, domain, &uuid, request.encode_to_vec(), &resource_type, &resource_name, Some("uuid"));
             let status = Status::with_error_details(
                 Code::InvalidArgument,
                 format!("Remove API invalid argument for uuid \"{}\" detected", uuid),
@@ -73,32 +64,18 @@ async fn remove(
         let result = s.remove(uuid.clone(), config.timestamp);
         match result {
             Err(err) => {
-                let metadata = HashMap::new();
                 let resource_type = format!("{}/qbg.Remove", resource_type);
                 let resource_name = format!("{}: {}({})", api_name, name, ip);
+                let request_bytes = request.encode_to_vec();
                 let status = match err {
                     Error::FlushingIsInProgress {} => {
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(
-                            uuid,
-                            String::from_utf8(request.encode_to_vec())
-                                .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                        );
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
+                        let err_details = build_error_details(err, domain, &uuid, request_bytes, &resource_type, &resource_name, None);
                         let status = Status::with_error_details(Code::Aborted, "Remove API aborted to process remove request due to flushing indices is in progress", err_details);
                         warn!("{:?}", status);
                         status
                     }
                     Error::ObjectIDNotFound { uuid: _ } => {
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(
-                            uuid.clone(),
-                            String::from_utf8(request.encode_to_vec())
-                                .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                        );
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
+                        let err_details = build_error_details(err, domain, &uuid, request_bytes, &resource_type, &resource_name, None);
                         let status = Status::with_error_details(
                             Code::NotFound,
                             format!("Remove API uuid {} not found", uuid),
@@ -108,18 +85,7 @@ async fn remove(
                         status
                     }
                     Error::UUIDNotFound { uuid: _ } => {
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(
-                            uuid.clone(),
-                            String::from_utf8(request.encode_to_vec())
-                                .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                        );
-                        err_details.set_bad_request(vec![FieldViolation::new(
-                            "uuid",
-                            err.to_string(),
-                        )]);
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
+                        let err_details = build_error_details(err, domain, &uuid, request_bytes, &resource_type, &resource_name, Some("uuid"));
                         let status = Status::with_error_details(
                             Code::InvalidArgument,
                             format!(
@@ -132,14 +98,7 @@ async fn remove(
                         status
                     }
                     _ => {
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(
-                            uuid,
-                            String::from_utf8(request.encode_to_vec())
-                                .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                        );
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
+                        let err_details = build_error_details(err, domain, &uuid, request_bytes, &resource_type, &resource_name, None);
                         let status = Status::with_error_details(
                             Code::Internal,
                             "Remove API failed",
@@ -197,13 +156,8 @@ impl remove_server::Remove for super::Agent {
     ) -> std::result::Result<tonic::Response<Self::StreamRemoveStream>, tonic::Status> {
         info!("Received stream remove request from {:?}", request.remote_addr());
     
-        let hostname = cargo::util::hostname()?;
-        let _domain = hostname.to_str().unwrap();
-        let _resource_type = self.resource_type.clone() + "/qbg.StreamRemove";
-        let _resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
-
         let s = self.s.clone();
-        let resource_type = self.resource_type.clone();
+        let resource_type = self.resource_type.clone() + "/qbg.StreamRemove";
         let name = self.name.clone();
         let ip = self.ip.clone();
         let api_name = self.api_name.clone();
@@ -252,33 +206,19 @@ impl remove_server::Remove for super::Agent {
             let result = s.remove_multiple(uuids.clone());
             match result {
                 Err(err) => {
-                    let metadata = HashMap::new();
                     let resource_type = self.resource_type.clone() + "/qbg.MultiRemove";
                     let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
+                    let request_bytes = mreq.encode_to_vec();
                     let status = match err {
                         Error::FlushingIsInProgress {} => {
-                            let mut err_details = ErrorDetails::new();
-                            err_details.set_error_info(err.to_string(), domain, metadata);
-                            err_details.set_request_info(
-                                uuids.join(","),
-                                String::from_utf8(mreq.encode_to_vec())
-                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                            );
-                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            let err_details = build_error_details(err, domain, &uuids.join(","), request_bytes, &resource_type, &resource_name, None);
                             let status = Status::with_error_details(Code::Aborted, "MultiRemove API aborted to process remove request due to flushing indices is in progress", err_details);
                             warn!("{:?}", status);
                             status
                         }
                         Error::ObjectIDNotFound { ref uuid } => {
-                            let mut err_details = ErrorDetails::new();
-                            err_details.set_error_info(err.to_string(), domain, metadata);
-                            err_details.set_request_info(
-                                uuid,
-                                String::from_utf8(mreq.encode_to_vec())
-                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                            );
+                            let err_details = build_error_details(err, domain, uuid, request_bytes, &resource_type, &resource_name, None);
                             let uuids = Error::split_uuids(uuid.to_string());
-                            err_details.set_resource_info(resource_type, resource_name, "", "");
                             let status = Status::with_error_details(
                                 Code::NotFound,
                                 format!("MultiRemove API uuids {:?} not found", uuids),
@@ -288,18 +228,7 @@ impl remove_server::Remove for super::Agent {
                             status
                         }
                         Error::UUIDNotFound { uuid: _ } => {
-                            let mut err_details = ErrorDetails::new();
-                            err_details.set_error_info(err.to_string(), domain, metadata);
-                            err_details.set_request_info(
-                                uuids.join(", "),
-                                String::from_utf8(mreq.encode_to_vec())
-                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                            );
-                            err_details.set_bad_request(vec![FieldViolation::new(
-                                "uuid",
-                                err.to_string(),
-                            )]);
-                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            let err_details = build_error_details(err, domain, &uuids.join(","), request_bytes, &resource_type, &resource_name, Some("uuid"));
                             let status = Status::with_error_details(
                                 Code::InvalidArgument,
                                 format!(
@@ -312,14 +241,7 @@ impl remove_server::Remove for super::Agent {
                             status
                         }
                         _ => {
-                            let mut err_details = ErrorDetails::new();
-                            err_details.set_error_info(err.to_string(), domain, metadata);
-                            err_details.set_request_info(
-                                uuids.join(", "),
-                                String::from_utf8(mreq.encode_to_vec())
-                                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                            );
-                            err_details.set_resource_info(resource_type, resource_name, "", "");
+                            let err_details = build_error_details(err, domain, &uuids.join(","), request_bytes, &resource_type, &resource_name, None);
                             let status = Status::with_error_details(
                                 Code::Internal,
                                 "MultiRemove API failed",

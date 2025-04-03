@@ -22,7 +22,7 @@ use std::{collections::HashMap, string::String, sync::Arc};
 use tonic::{Code, Status};
 use tonic_types::{ErrorDetails, FieldViolation, StatusExt};
 
-use super::common::bidirectional_stream;
+use super::common::{bidirectional_stream, build_error_details};
 
 async fn search(
     s: Arc<RwLock<dyn algorithm::ANN>>,
@@ -45,21 +45,9 @@ async fn search(
                 got: request.vector.len(),
                 want: s.get_dimension_size(),
             };
-            let metadata = HashMap::new();
             let resource_type = format!("{}/qbg.Search", resource_type);
             let resource_name = format!("{}: {}({})", api_name, name, ip);
-            let mut err_details = ErrorDetails::new();
-            err_details.set_error_info(err.to_string(), domain, metadata);
-            err_details.set_request_info(
-                config.request_id,
-                String::from_utf8(request.encode_to_vec())
-                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-            );
-            err_details.set_bad_request(vec![FieldViolation::new(
-                "vector dimension size",
-                err.to_string(),
-            )]);
-            err_details.set_resource_info(resource_type, resource_name, "", "");
+            let err_details = build_error_details(err, domain, &config.request_id, request.encode_to_vec(), &resource_type, &resource_name, Some("vector dimension size"));
             let status = Status::with_error_details(
                 Code::InvalidArgument,
                 "Search API Incombatible Dimension Size detedted",
@@ -76,51 +64,29 @@ async fn search(
         );
         match result {
             Err(err) => {
-                let metadata = HashMap::new();
                 let resource_type = format!("{}/qbg.Search", resource_type);
                 let resource_name = format!("{}: {}({})", api_name, name, ip);
+                let request_bytes = request.encode_to_vec();
                 let status = match err {
                     Error::CreateIndexingIsInProgress {} => {
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(
-                            config.request_id,
-                            String::from_utf8(request.encode_to_vec())
-                                .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                        );
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
+                        let err_details = build_error_details(err, domain, &config.request_id, request_bytes, &resource_type, &resource_name, None);
                         let status = Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to creating indices is in progress", err_details);
                         debug!("{:?}", status);
                         status
                     }
                     Error::FlushingIsInProgress {} => {
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(
-                            config.request_id,
-                            String::from_utf8(request.encode_to_vec())
-                                .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                        );
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
+                        let err_details = build_error_details(err, domain, &config.request_id, request_bytes, &resource_type, &resource_name, None);
                         let status = Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to flushing indices is in progress", err_details);
                         debug!("{:?}", status);
                         status
                     }
                     Error::EmptySearchResult {} => {
-                        let request_id = config.request_id;
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(
-                            &request_id,
-                            String::from_utf8(request.encode_to_vec())
-                                .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                        );
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
+                        let err_details = build_error_details(err, domain, &config.request_id, request_bytes, &resource_type, &resource_name, None);
                         let status = Status::with_error_details(
                             Code::NotFound,
                             format!(
                                 "Search API requestID {}'s search result not found",
-                                &request_id
+                                &config.request_id,
                             ),
                             err_details,
                         );
@@ -128,18 +94,7 @@ async fn search(
                         status
                     }
                     Error::IncompatibleDimensionSize { got: _, want: _ } => {
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(
-                            config.request_id,
-                            String::from_utf8(request.encode_to_vec())
-                                .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                        );
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
-                        err_details.set_bad_request(vec![FieldViolation::new(
-                            "vector dimension size",
-                            err.to_string(),
-                        )]);
+                        let err_details = build_error_details(err, domain, &config.request_id, request_bytes, &resource_type, &resource_name, Some("vector dimension size"));
                         let status = Status::with_error_details(
                             Code::InvalidArgument,
                             "Search API Incompatible Dimension Size detected",
@@ -149,14 +104,7 @@ async fn search(
                         status
                     }
                     _ => {
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(err.to_string(), domain, metadata);
-                        err_details.set_request_info(
-                            config.request_id,
-                            String::from_utf8(request.encode_to_vec())
-                                .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                        );
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
+                        let err_details = build_error_details(err, domain, &config.request_id, request_bytes, &resource_type, &resource_name, None);
                         let status = Status::with_error_details(
                             Code::Internal,
                             "Search API failed to process search request",
@@ -212,14 +160,9 @@ impl search_server::Search for super::Agent {
         request: tonic::Request<tonic::Streaming<search::Request>>,
     ) -> std::result::Result<tonic::Response<Self::StreamSearchStream>, tonic::Status> {
         info!("Received stream search request from {:?}", request.remote_addr());
-    
-        let hostname = cargo::util::hostname()?;
-        let _domain = hostname.to_str().unwrap();
-        let _resource_type = self.resource_type.clone() + "/qbg.StreamSearch";
-        let _resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
 
         let s = self.s.clone();
-        let resource_type = self.resource_type.clone();
+        let resource_type = self.resource_type.clone() + "/qbg.StreamSearch";
         let name = self.name.clone();
         let ip = self.ip.clone();
         let api_name = self.api_name.clone();
