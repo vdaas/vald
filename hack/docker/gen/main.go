@@ -65,7 +65,6 @@ const (
 	indexDeletion       = "index-deletion"
 	indexOperator       = "index-operator"
 	indexSave           = "index-save"
-	loadtest            = "loadtest"
 	managerIndex        = "manager-index"
 	readreplicaRotate   = "readreplica-rotate"
 
@@ -795,14 +794,6 @@ func main() {
 			},
 			Entrypoints: []string{"{{$.BinDir}}/{{.AppName}}", "run", "--watches-file=" + helmOperatorWatchFile},
 		},
-		"vald-loadtest": {
-			AppName:       "loadtest",
-			PackageDir:    "tools/cli/loadtest",
-			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
-			Preprocess: []string{
-				"make hdf5/install",
-			},
-		},
 		"vald-ci-container": {
 			AppName:       "ci-container",
 			ContainerType: CIContainer,
@@ -962,7 +953,7 @@ func main() {
 			if data.AliasImage {
 				data.BuildPlatforms = multiPlatforms
 			}
-			if data.ContainerType == CIContainer || data.Name == loadtest {
+			if data.ContainerType == CIContainer {
 				data.BuildPlatforms = amd64Platform
 			}
 

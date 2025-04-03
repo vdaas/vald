@@ -41,7 +41,7 @@ func New(b *testing.B, opts ...Option) Benchmark {
 		opt(bm)
 	}
 
-	fn := assets.Data(bm.name)
+	fn := assets.LoadData(bm.name)
 	if fn == nil {
 		b.Fatalf("dataset provider is nil: %v", bm.name)
 	}
