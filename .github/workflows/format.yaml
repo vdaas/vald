@@ -33,6 +33,9 @@ jobs:
     needs: [detect-ci-container]
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      credentials:
+        username: ${{ secrets.PACKAGE_USER }}
+        password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -97,6 +100,9 @@ jobs:
     needs: [detect-ci-container]
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      credentials:
+        username: ${{ secrets.PACKAGE_USER }}
+        password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -107,14 +113,8 @@ jobs:
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Run `make format` and `make deps/install`
         run: |
-<<<<<<< HEAD
-          make deps/install
-          make format
-          git checkout go.mod go.sum ./example/client/go.mod ./example/client/go.sum ./rust/Cargo.lock ./dockers
-=======
           make deps/install proto/replace license format format/go format/go/test
           git checkout go.mod go.sum ./example/client/go.mod ./example/client/go.sum ./rust/Cargo.lock ./rust/rust-toolchain.toml ./dockers
->>>>>>> 47e25a547 (Remove loadtest component (#2914))
       - name: Check format and deps difference
         run: |
           if git diff --quiet --exit-code; then

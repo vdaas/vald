@@ -159,13 +159,13 @@ PROTO_VALD_API_DOCS := $(PROTO_VALD_APIS:$(ROOTDIR)/apis/proto/v1/vald/%.proto=$
 PROTO_MIRROR_APIS := $(eval PROTO_MIRROR_APIS := $(filter $(ROOTDIR)/apis/proto/v1/mirror/%.proto,$(PROTOS)))$(PROTO_MIRROR_APIS)
 PROTO_MIRROR_API_DOCS := $(PROTO_MIRROR_APIS:$(ROOTDIR)/apis/proto/v1/mirror/%.proto=$(ROOTDIR)/apis/docs/v1/%.md)
 
-LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -Ofast -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
+LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
 
 NGT_LDFLAGS = -fopenmp -lopenblas -llapack
 FAISS_LDFLAGS = $(NGT_LDFLAGS) -lgfortran
-HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl
+HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl -lm
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
-TEST_LDFLAGS = $(LDFLAGS) $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
+TEST_LDFLAGS = $(LDFLAGS) $(CGO_LDFLAGS)
 
 ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
@@ -351,6 +351,8 @@ CSPELL_EXTRA_OPTIONS ?=
 COMMA := ,
 SHELL = bash
 
+E2E_CONFIG                         ?= $(ROOTDIR)/tests/v2/e2e/assets/unary_crud.yaml
+E2E_ADDR                           ?= $(E2E_BIND_HOST):$(E2E_BIND_PORT)
 E2E_BIND_HOST                      ?= 127.0.0.1
 E2E_BIND_PORT                      ?= 8082
 E2E_DATASET_NAME                   ?= fashion-mnist-784-euclidean.hdf5
@@ -469,7 +471,13 @@ clean-generated:
 .PHONY: files
 ## add current repository file list to .gitfiles
 files:
-	git ls-files > $(ROOTDIR)/.gitfiles
+	@if [ ! -f $(ROOTDIR)/.gitfiles ]; then \
+		printf '\n%.0s' {1..15} > $(ROOTDIR)/.gitfiles; \
+	else \
+		head -n 15 $(ROOTDIR)/.gitfiles > $(ROOTDIR)/.gitfiles.tmp; \
+		git ls-files >> $(ROOTDIR)/.gitfiles.tmp; \
+		mv $(ROOTDIR)/.gitfiles.tmp $(ROOTDIR)/.gitfiles; \
+	fi
 
 .PHONY: license
 ## add license to files
@@ -545,12 +553,17 @@ format/go: \
 	golines/install \
 	gofumpt/install \
 	strictgoimports/install \
-	goimports/install
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/strictgoimports -w
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/goimports -w
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/crlfmt -w -diff=false
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/gofumpt -w
+	goimports/install \
+	files
+	@echo "Formatting Go files..."
+	@cat $(ROOTDIR)/.gitfiles | grep -e "\.go$$" | grep -v "_test\.go$$" | xargs -I {} -P$(CORES) bash -c '\
+	        echo "Formatting {}" && \
+		$(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH) {} && \
+		$(GOBIN)/strictgoimports -w {} && \
+		$(GOBIN)/goimports -w {} && \
+		$(GOBIN)/crlfmt -w -diff=false {} && \
+		$(GOBIN)/gofumpt -w {}'
+	@echo "Go formatting complete."
 
 .PHONY: format/go/test
 ## run golines, gofumpt, goimports for go test files
@@ -559,12 +572,17 @@ format/go/test: \
 	golines/install \
 	gofumpt/install \
 	strictgoimports/install \
-	goimports/install
-	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
-	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/strictgoimports -w
-	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/goimports -w
-	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/crlfmt -w -diff=false
-	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/gofumpt -w
+	goimports/install \
+	files
+	@echo "Formatting Go Test files..."
+	@cat $(ROOTDIR)/.gitfiles | grep -e "_test\.go$$" | xargs -I {} -P$(CORES) bash -c '\
+	        echo "Formatting Test file {}" && \
+		$(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH) {} && \
+		$(GOBIN)/strictgoimports -w {} && \
+		$(GOBIN)/goimports -w {} && \
+		$(GOBIN)/crlfmt -w -diff=false {} && \
+		$(GOBIN)/gofumpt -w {}'
+	@echo "Go test file formatting complete."
 
 .PHONY: format/yaml
 format/yaml: \
@@ -685,6 +703,7 @@ $(USR_LOCAL)/include/NGT/Capi.h:
 	git clone --depth 1 --branch v$(NGT_VERSION) https://github.com/yahoojapan/NGT $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \
 	cmake -DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_STATIC_EXECS=ON \
 		-DBUILD_TESTING=OFF \
@@ -706,6 +725,7 @@ $(LIB_PATH)/libfaiss.a:
 	tar zxf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz -C $(TEMP_DIR)/
 	cd $(TEMP_DIR)/faiss-$(FAISS_VERSION) && \
 	cmake -DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_STATIC_EXECS=ON \
 		-DBUILD_TESTING=OFF \
@@ -729,6 +749,7 @@ $(USR_LOCAL)/include/usearch.h:
 	git clone --depth 1 --recursive --branch v$(USEARCH_VERSION) https://github.com/unum-cloud/usearch $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
 	cd $(TEMP_DIR)/usearch-$(USEARCH_VERSION) && \
 	cmake -DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_TESTING=OFF \
 		-DUSEARCH_BUILD_LIB_C=ON \

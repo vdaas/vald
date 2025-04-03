@@ -151,7 +151,21 @@ pub mod filter_client {
                 .insert(GrpcMethod::new("vald.v1.Filter", "MultiSearchObject"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to search object by bidirectional streaming.
+        /** Overview
+ MultiSearchObject RPC is the method to search objects with multiple objects in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         pub async fn stream_search_object(
             &mut self,
@@ -184,7 +198,16 @@ pub mod filter_client {
                 .insert(GrpcMethod::new("vald.v1.Filter", "StreamSearchObject"));
             self.inner.streaming(req, path, codec).await
         }
-        /** A method insert object.
+        /** Overview
+ InsertObject RPC is the method to insert object through Vald Filter Gateway.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         pub async fn insert_object(
             &mut self,
@@ -213,7 +236,20 @@ pub mod filter_client {
                 .insert(GrpcMethod::new("vald.v1.Filter", "InsertObject"));
             self.inner.unary(req, path, codec).await
         }
-        /** Represent the streaming RPC to insert object by bidirectional streaming.
+        /** Overview
+ StreamInsertObject RPC is the method to add new multiple object using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).
+
+ By using the bidirectional streaming RPC, the insert request can be communicated in any order between client and server.
+ Each Insert request and response are independent.
+ It's the recommended method to insert a large number of objects.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         pub async fn stream_insert_object(
             &mut self,
@@ -246,7 +282,16 @@ pub mod filter_client {
                 .insert(GrpcMethod::new("vald.v1.Filter", "StreamInsertObject"));
             self.inner.streaming(req, path, codec).await
         }
-        /** A method to insert multiple objects.
+        /** Overview
+ MultiInsertObject RPC is the method to add multiple new objects in **1** request.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         pub async fn multi_insert_object(
             &mut self,
@@ -275,7 +320,16 @@ pub mod filter_client {
                 .insert(GrpcMethod::new("vald.v1.Filter", "MultiInsertObject"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to update object.
+        /** Overview
+ UpdateObject RPC is the method to update a single vector.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         pub async fn update_object(
             &mut self,
@@ -304,7 +358,19 @@ pub mod filter_client {
                 .insert(GrpcMethod::new("vald.v1.Filter", "UpdateObject"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to update object by bidirectional streaming.
+        /** Overview
+ StreamUpdateObject RPC is the method to update multiple objects using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ By using the bidirectional streaming RPC, the update request can be communicated in any order between client and server.
+ Each Update request and response are independent.
+ It's the recommended method to update the large amount of objects.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         pub async fn stream_update_object(
             &mut self,
@@ -337,7 +403,22 @@ pub mod filter_client {
                 .insert(GrpcMethod::new("vald.v1.Filter", "StreamUpdateObject"));
             self.inner.streaming(req, path, codec).await
         }
-        /** A method to update multiple objects.
+        /** Overview
+ MultiUpdateObject is the method to update multiple objects in **1** request.
+
+ <div class="notice">
+ gRPC has the message size limitation.<br>
+ Please be careful that the size of the request exceed the limit.
+ </div>
+ ---
+ Status Code
+
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         pub async fn multi_update_object(
             &mut self,
@@ -366,7 +447,16 @@ pub mod filter_client {
                 .insert(GrpcMethod::new("vald.v1.Filter", "MultiUpdateObject"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to upsert object.
+        /** Overview
+ UpsertObject RPC is the method to update a single object and add a new single object.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         pub async fn upsert_object(
             &mut self,
@@ -395,7 +485,16 @@ pub mod filter_client {
                 .insert(GrpcMethod::new("vald.v1.Filter", "UpsertObject"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to upsert object by bidirectional streaming.
+        /** Overview
+ UpsertObject RPC is the method to update a single object and add a new single object.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         pub async fn stream_upsert_object(
             &mut self,
@@ -428,7 +527,21 @@ pub mod filter_client {
                 .insert(GrpcMethod::new("vald.v1.Filter", "StreamUpsertObject"));
             self.inner.streaming(req, path, codec).await
         }
-        /** A method to upsert multiple objects.
+        /** Overview
+ MultiUpsertObject is the method to update existing multiple objects and add new multiple objects in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         pub async fn multi_upsert_object(
             &mut self,
@@ -493,7 +606,21 @@ pub mod filter_server {
             >
             + Send
             + 'static;
-        /** A method to search object by bidirectional streaming.
+        /** Overview
+ MultiSearchObject RPC is the method to search objects with multiple objects in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         async fn stream_search_object(
             &self,
@@ -504,7 +631,16 @@ pub mod filter_server {
             tonic::Response<Self::StreamSearchObjectStream>,
             tonic::Status,
         >;
-        /** A method insert object.
+        /** Overview
+ InsertObject RPC is the method to insert object through Vald Filter Gateway.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         async fn insert_object(
             &self,
@@ -524,7 +660,20 @@ pub mod filter_server {
             >
             + Send
             + 'static;
-        /** Represent the streaming RPC to insert object by bidirectional streaming.
+        /** Overview
+ StreamInsertObject RPC is the method to add new multiple object using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).
+
+ By using the bidirectional streaming RPC, the insert request can be communicated in any order between client and server.
+ Each Insert request and response are independent.
+ It's the recommended method to insert a large number of objects.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         async fn stream_insert_object(
             &self,
@@ -535,7 +684,16 @@ pub mod filter_server {
             tonic::Response<Self::StreamInsertObjectStream>,
             tonic::Status,
         >;
-        /** A method to insert multiple objects.
+        /** Overview
+ MultiInsertObject RPC is the method to add multiple new objects in **1** request.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         async fn multi_insert_object(
             &self,
@@ -546,7 +704,16 @@ pub mod filter_server {
             tonic::Response<super::super::super::payload::v1::object::Locations>,
             tonic::Status,
         >;
-        /** A method to update object.
+        /** Overview
+ UpdateObject RPC is the method to update a single vector.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         async fn update_object(
             &self,
@@ -566,7 +733,19 @@ pub mod filter_server {
             >
             + Send
             + 'static;
-        /** A method to update object by bidirectional streaming.
+        /** Overview
+ StreamUpdateObject RPC is the method to update multiple objects using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ By using the bidirectional streaming RPC, the update request can be communicated in any order between client and server.
+ Each Update request and response are independent.
+ It's the recommended method to update the large amount of objects.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         async fn stream_update_object(
             &self,
@@ -577,7 +756,22 @@ pub mod filter_server {
             tonic::Response<Self::StreamUpdateObjectStream>,
             tonic::Status,
         >;
-        /** A method to update multiple objects.
+        /** Overview
+ MultiUpdateObject is the method to update multiple objects in **1** request.
+
+ <div class="notice">
+ gRPC has the message size limitation.<br>
+ Please be careful that the size of the request exceed the limit.
+ </div>
+ ---
+ Status Code
+
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         async fn multi_update_object(
             &self,
@@ -588,7 +782,16 @@ pub mod filter_server {
             tonic::Response<super::super::super::payload::v1::object::Locations>,
             tonic::Status,
         >;
-        /** A method to upsert object.
+        /** Overview
+ UpsertObject RPC is the method to update a single object and add a new single object.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         async fn upsert_object(
             &self,
@@ -608,7 +811,16 @@ pub mod filter_server {
             >
             + Send
             + 'static;
-        /** A method to upsert object by bidirectional streaming.
+        /** Overview
+ UpsertObject RPC is the method to update a single object and add a new single object.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         async fn stream_upsert_object(
             &self,
@@ -619,7 +831,21 @@ pub mod filter_server {
             tonic::Response<Self::StreamUpsertObjectStream>,
             tonic::Status,
         >;
-        /** A method to upsert multiple objects.
+        /** Overview
+ MultiUpsertObject is the method to update existing multiple objects and add new multiple objects in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  13  | INTERNAL          |
 */
         async fn multi_upsert_object(
             &self,
@@ -1744,7 +1970,8 @@ pub mod index_client {
             req.extensions_mut().insert(GrpcMethod::new("vald.v1.Index", "IndexDetail"));
             self.inner.unary(req, path, codec).await
         }
-        /** Represent the RPC to get the index statistics.
+        /** Overview
+ Represent the RPC to get the index statistics.
 */
         pub async fn index_statistics(
             &mut self,
@@ -1771,7 +1998,8 @@ pub mod index_client {
                 .insert(GrpcMethod::new("vald.v1.Index", "IndexStatistics"));
             self.inner.unary(req, path, codec).await
         }
-        /** Represent the RPC to get the index statistics for each agents.
+        /** Overview
+ Represent the RPC to get the index statistics for each agents.
 */
         pub async fn index_statistics_detail(
             &mut self,
@@ -1800,7 +2028,8 @@ pub mod index_client {
                 .insert(GrpcMethod::new("vald.v1.Index", "IndexStatisticsDetail"));
             self.inner.unary(req, path, codec).await
         }
-        /** Represent the RPC to get the index property.
+        /** Overview
+ Represent the RPC to get the index property.
 */
         pub async fn index_property(
             &mut self,
@@ -1852,7 +2081,8 @@ pub mod index_server {
             tonic::Response<super::super::super::payload::v1::info::index::Detail>,
             tonic::Status,
         >;
-        /** Represent the RPC to get the index statistics.
+        /** Overview
+ Represent the RPC to get the index statistics.
 */
         async fn index_statistics(
             &self,
@@ -1861,7 +2091,8 @@ pub mod index_server {
             tonic::Response<super::super::super::payload::v1::info::index::Statistics>,
             tonic::Status,
         >;
-        /** Represent the RPC to get the index statistics for each agents.
+        /** Overview
+ Represent the RPC to get the index statistics for each agents.
 */
         async fn index_statistics_detail(
             &self,
@@ -1872,7 +2103,8 @@ pub mod index_server {
             >,
             tonic::Status,
         >;
-        /** Represent the RPC to get the index property.
+        /** Overview
+ Represent the RPC to get the index property.
 */
         async fn index_property(
             &self,
@@ -2343,7 +2575,33 @@ pub mod insert_client {
             req.extensions_mut().insert(GrpcMethod::new("vald.v1.Insert", "Insert"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to add new multiple vectors by bidirectional streaming.
+        /** Overview
+ StreamInsert RPC is the method to add new multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ Using the bidirectional streaming RPC, the insert request can be communicated in any order between client and server.
+ Each Insert request and response are independent.
+ It's the recommended method to insert a large number of vectors.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | ALREADY_EXISTS    | Request ID is already inserted.                                                                                                                     | Change request ID.                                                                       |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn stream_insert(
             &mut self,
@@ -2376,7 +2634,35 @@ pub mod insert_client {
                 .insert(GrpcMethod::new("vald.v1.Insert", "StreamInsert"));
             self.inner.streaming(req, path, codec).await
         }
-        /** A method to add new multiple vectors in a single request.
+        /** Overview
+ MultiInsert RPC is the method to add multiple new vectors in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | ALREADY_EXISTS    | Request ID is already inserted.                                                                                                                     | Change request ID.                                                                       |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn multi_insert(
             &mut self,
@@ -2430,7 +2716,33 @@ pub mod insert_server {
             >
             + Send
             + 'static;
-        /** A method to add new multiple vectors by bidirectional streaming.
+        /** Overview
+ StreamInsert RPC is the method to add new multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ Using the bidirectional streaming RPC, the insert request can be communicated in any order between client and server.
+ Each Insert request and response are independent.
+ It's the recommended method to insert a large number of vectors.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | ALREADY_EXISTS    | Request ID is already inserted.                                                                                                                     | Change request ID.                                                                       |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn stream_insert(
             &self,
@@ -2441,7 +2753,35 @@ pub mod insert_server {
             tonic::Response<Self::StreamInsertStream>,
             tonic::Status,
         >;
-        /** A method to add new multiple vectors in a single request.
+        /** Overview
+ MultiInsert RPC is the method to add multiple new vectors in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  6   | ALREADY_EXISTS    |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | ALREADY_EXISTS    | Request ID is already inserted.                                                                                                                     | Change request ID.                                                                       |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn multi_insert(
             &self,
@@ -2843,7 +3183,31 @@ pub mod object_client {
             req.extensions_mut().insert(GrpcMethod::new("vald.v1.Object", "GetObject"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to fetch vectors by bidirectional streaming.
+        /** Overview
+ StreamGetObject RPC is the method to get the metadata of multiple existing vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ Using the bidirectional streaming RPC, the GetObject request can be communicated in any order between client and server.
+ Each Upsert request and response are independent.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                   | how to resolve                                                                           |
+ | :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn stream_get_object(
             &mut self,
@@ -2876,7 +3240,14 @@ pub mod object_client {
                 .insert(GrpcMethod::new("vald.v1.Object", "StreamGetObject"));
             self.inner.streaming(req, path, codec).await
         }
-        /** A method to get all the vectors with server streaming
+        /** Overview
+ A method to get all the vectors with server streaming
+ ---
+ Status Code
+ TODO
+ ---
+ Troubleshooting
+ TODO
 */
         pub async fn stream_list_object(
             &mut self,
@@ -2909,7 +3280,14 @@ pub mod object_client {
                 .insert(GrpcMethod::new("vald.v1.Object", "StreamListObject"));
             self.inner.server_streaming(req, path, codec).await
         }
-        /** Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
+        /** Overview
+ Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
+ ---
+ Status Code
+ TODO
+ ---
+ Troubleshooting
+ TODO
 */
         pub async fn get_timestamp(
             &mut self,
@@ -2972,7 +3350,31 @@ pub mod object_server {
             >
             + Send
             + 'static;
-        /** A method to fetch vectors by bidirectional streaming.
+        /** Overview
+ StreamGetObject RPC is the method to get the metadata of multiple existing vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ Using the bidirectional streaming RPC, the GetObject request can be communicated in any order between client and server.
+ Each Upsert request and response are independent.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                   | how to resolve                                                                           |
+ | :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn stream_get_object(
             &self,
@@ -2992,7 +3394,14 @@ pub mod object_server {
             >
             + Send
             + 'static;
-        /** A method to get all the vectors with server streaming
+        /** Overview
+ A method to get all the vectors with server streaming
+ ---
+ Status Code
+ TODO
+ ---
+ Troubleshooting
+ TODO
 */
         async fn stream_list_object(
             &self,
@@ -3003,7 +3412,14 @@ pub mod object_server {
             tonic::Response<Self::StreamListObjectStream>,
             tonic::Status,
         >;
-        /** Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
+        /** Overview
+ Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
+ ---
+ Status Code
+ TODO
+ ---
+ Troubleshooting
+ TODO
 */
         async fn get_timestamp(
             &self,
@@ -3478,7 +3894,33 @@ pub mod remove_client {
             req.extensions_mut().insert(GrpcMethod::new("vald.v1.Remove", "Remove"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to remove an indexed vector based on timestamp.
+        /** Overview
+ RemoveByTimestamp RPC is the method to remove vectors based on timestamp.
+
+ <div class="notice">
+ In the TimestampRequest message, the 'timestamps' field is repeated, allowing the inclusion of multiple Timestamp.<br>
+ When multiple Timestamps are provided, it results in an `AND` condition, enabling the realization of deletions with specified ranges.<br>
+ This design allows for versatile deletion operations, facilitating tasks such as removing data within a specific time range.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                   | how to resolve                                                                                                       |
+ | :---------------- | :---------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.                              |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed.                             |
+ | NOT_FOUND         | No vectors in the system match the specified timestamp conditions.                              | Check whether vectors matching the specified timestamp conditions exist in the system, and fix conditions if needed. |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.
 */
         pub async fn remove_by_timestamp(
             &mut self,
@@ -3507,7 +3949,35 @@ pub mod remove_client {
                 .insert(GrpcMethod::new("vald.v1.Remove", "RemoveByTimestamp"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to remove multiple indexed vectors by bidirectional streaming.
+        /** Overview
+ A method to remove multiple indexed vectors by bidirectional streaming.
+
+ StreamRemove RPC is the method to remove multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ Using the bidirectional streaming RPC, the remove request can be communicated in any order between client and server.
+ Each Remove request and response are independent.
+ It's the recommended method to remove a large number of vectors.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+   The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                   | how to resolve                                                                           |
+ | :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn stream_remove(
             &mut self,
@@ -3540,7 +4010,35 @@ pub mod remove_client {
                 .insert(GrpcMethod::new("vald.v1.Remove", "StreamRemove"));
             self.inner.streaming(req, path, codec).await
         }
-        /** A method to remove multiple indexed vectors in a single request.
+        /** Overview
+ MultiRemove is the method to remove multiple vectors in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                   | how to resolve                                                                           |
+ | :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn multi_remove(
             &mut self,
@@ -3585,7 +4083,33 @@ pub mod remove_server {
             tonic::Response<super::super::super::payload::v1::object::Location>,
             tonic::Status,
         >;
-        /** A method to remove an indexed vector based on timestamp.
+        /** Overview
+ RemoveByTimestamp RPC is the method to remove vectors based on timestamp.
+
+ <div class="notice">
+ In the TimestampRequest message, the 'timestamps' field is repeated, allowing the inclusion of multiple Timestamp.<br>
+ When multiple Timestamps are provided, it results in an `AND` condition, enabling the realization of deletions with specified ranges.<br>
+ This design allows for versatile deletion operations, facilitating tasks such as removing data within a specific time range.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                   | how to resolve                                                                                                       |
+ | :---------------- | :---------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.                              |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed.                             |
+ | NOT_FOUND         | No vectors in the system match the specified timestamp conditions.                              | Check whether vectors matching the specified timestamp conditions exist in the system, and fix conditions if needed. |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.
 */
         async fn remove_by_timestamp(
             &self,
@@ -3605,7 +4129,35 @@ pub mod remove_server {
             >
             + Send
             + 'static;
-        /** A method to remove multiple indexed vectors by bidirectional streaming.
+        /** Overview
+ A method to remove multiple indexed vectors by bidirectional streaming.
+
+ StreamRemove RPC is the method to remove multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ Using the bidirectional streaming RPC, the remove request can be communicated in any order between client and server.
+ Each Remove request and response are independent.
+ It's the recommended method to remove a large number of vectors.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+   The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                   | how to resolve                                                                           |
+ | :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn stream_remove(
             &self,
@@ -3616,7 +4168,35 @@ pub mod remove_server {
             tonic::Response<Self::StreamRemoveStream>,
             tonic::Status,
         >;
-        /** A method to remove multiple indexed vectors in a single request.
+        /** Overview
+ MultiRemove is the method to remove multiple vectors in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                   | how to resolve                                                                           |
+ | :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn multi_remove(
             &self,
@@ -4068,7 +4648,32 @@ pub mod search_client {
             req.extensions_mut().insert(GrpcMethod::new("vald.v1.Search", "SearchByID"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to search indexed vectors by multiple vectors.
+        /** Overview
+ StreamSearch RPC is the method to search vectors with multi queries(vectors) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ Using the bidirectional streaming RPC, the search request can be communicated in any order between the client and server.
+ Each Search request and response are independent.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                   | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn stream_search(
             &mut self,
@@ -4101,7 +4706,32 @@ pub mod search_client {
                 .insert(GrpcMethod::new("vald.v1.Search", "StreamSearch"));
             self.inner.streaming(req, path, codec).await
         }
-        /** A method to search indexed vectors by multiple IDs.
+        /** Overview
+ StreamSearchByID RPC is the method to search vectors with multi queries(IDs) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ Using the bidirectional streaming RPC, the search request can be communicated in any order between the client and server.
+ Each SearchByID request and response are independent.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                    | how to resolve                                                                           |
+ | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn stream_search_by_id(
             &mut self,
@@ -4134,7 +4764,35 @@ pub mod search_client {
                 .insert(GrpcMethod::new("vald.v1.Search", "StreamSearchByID"));
             self.inner.streaming(req, path, codec).await
         }
-        /** A method to search indexed vectors by multiple vectors in a single request.
+        /** Overview
+ MultiSearch RPC is the method to search vectors with multiple vectors in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+   The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                   | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn multi_search(
             &mut self,
@@ -4163,7 +4821,35 @@ pub mod search_client {
                 .insert(GrpcMethod::new("vald.v1.Search", "MultiSearch"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to search indexed vectors by multiple IDs in a single request.
+        /** Overview
+ MultiSearchByID RPC is the method to search vectors with multiple IDs in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                    | how to resolve                                                                           |
+ | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn multi_search_by_id(
             &mut self,
@@ -4192,7 +4878,30 @@ pub mod search_client {
                 .insert(GrpcMethod::new("vald.v1.Search", "MultiSearchByID"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to linear search indexed vectors by a raw vector.
+        /** Overview
+ LinearSearch RPC is the method to linear search vector(s) similar to the request vector.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                   | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn linear_search(
             &mut self,
@@ -4221,7 +4930,32 @@ pub mod search_client {
                 .insert(GrpcMethod::new("vald.v1.Search", "LinearSearch"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to linear search indexed vectors by ID.
+        /** Overview
+ LinearSearchByID RPC is the method to linear search similar vectors using a user-defined vector ID.<br>
+ The vector with the same requested ID should be indexed into the `vald-agent` before searching.
+ You will get a `NOT_FOUND` error if the vector isn't stored.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                    | how to resolve                                                                           |
+ | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn linear_search_by_id(
             &mut self,
@@ -4250,7 +4984,32 @@ pub mod search_client {
                 .insert(GrpcMethod::new("vald.v1.Search", "LinearSearchByID"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to linear search indexed vectors by multiple vectors.
+        /** Overview
+ StreamLinearSearch RPC is the method to linear search vectors with multi queries(vectors) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ Using the bidirectional streaming RPC, the linear search request can be communicated in any order between the client and server.
+ Each LinearSearch request and response are independent.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                   | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn stream_linear_search(
             &mut self,
@@ -4283,7 +5042,32 @@ pub mod search_client {
                 .insert(GrpcMethod::new("vald.v1.Search", "StreamLinearSearch"));
             self.inner.streaming(req, path, codec).await
         }
-        /** A method to linear search indexed vectors by multiple IDs.
+        /** Overview
+   StreamLinearSearchByID RPC is the method to linear search vectors with multi queries(IDs) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ Using the bidirectional streaming RPC, the linear search request can be communicated in any order between the client and server.
+ Each LinearSearchByID request and response are independent.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                    | how to resolve                                                                           |
+ | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn stream_linear_search_by_id(
             &mut self,
@@ -4316,8 +5100,35 @@ pub mod search_client {
                 .insert(GrpcMethod::new("vald.v1.Search", "StreamLinearSearchByID"));
             self.inner.streaming(req, path, codec).await
         }
-        /** A method to linear search indexed vectors by multiple vectors in a single
- request.
+        /** Overview
+ MultiLinearSearch RPC is the method to linear search vectors with multiple vectors in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+   The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                   | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn multi_linear_search(
             &mut self,
@@ -4346,8 +5157,35 @@ pub mod search_client {
                 .insert(GrpcMethod::new("vald.v1.Search", "MultiLinearSearch"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to linear search indexed vectors by multiple IDs in a single
- request.
+        /** Overview
+ MultiLinearSearchByID RPC is the method to linear search vectors with multiple IDs in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ // ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                    | how to resolve                                                                           |
+ | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn multi_linear_search_by_id(
             &mut self,
@@ -4408,7 +5246,32 @@ pub mod search_server {
             >
             + Send
             + 'static;
-        /** A method to search indexed vectors by multiple vectors.
+        /** Overview
+ StreamSearch RPC is the method to search vectors with multi queries(vectors) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ Using the bidirectional streaming RPC, the search request can be communicated in any order between the client and server.
+ Each Search request and response are independent.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                   | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn stream_search(
             &self,
@@ -4428,7 +5291,32 @@ pub mod search_server {
             >
             + Send
             + 'static;
-        /** A method to search indexed vectors by multiple IDs.
+        /** Overview
+ StreamSearchByID RPC is the method to search vectors with multi queries(IDs) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ Using the bidirectional streaming RPC, the search request can be communicated in any order between the client and server.
+ Each SearchByID request and response are independent.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                    | how to resolve                                                                           |
+ | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn stream_search_by_id(
             &self,
@@ -4439,7 +5327,35 @@ pub mod search_server {
             tonic::Response<Self::StreamSearchByIDStream>,
             tonic::Status,
         >;
-        /** A method to search indexed vectors by multiple vectors in a single request.
+        /** Overview
+ MultiSearch RPC is the method to search vectors with multiple vectors in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+   The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                   | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn multi_search(
             &self,
@@ -4450,7 +5366,35 @@ pub mod search_server {
             tonic::Response<super::super::super::payload::v1::search::Responses>,
             tonic::Status,
         >;
-        /** A method to search indexed vectors by multiple IDs in a single request.
+        /** Overview
+ MultiSearchByID RPC is the method to search vectors with multiple IDs in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                    | how to resolve                                                                           |
+ | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn multi_search_by_id(
             &self,
@@ -4461,7 +5405,30 @@ pub mod search_server {
             tonic::Response<super::super::super::payload::v1::search::Responses>,
             tonic::Status,
         >;
-        /** A method to linear search indexed vectors by a raw vector.
+        /** Overview
+ LinearSearch RPC is the method to linear search vector(s) similar to the request vector.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                   | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn linear_search(
             &self,
@@ -4470,7 +5437,32 @@ pub mod search_server {
             tonic::Response<super::super::super::payload::v1::search::Response>,
             tonic::Status,
         >;
-        /** A method to linear search indexed vectors by ID.
+        /** Overview
+ LinearSearchByID RPC is the method to linear search similar vectors using a user-defined vector ID.<br>
+ The vector with the same requested ID should be indexed into the `vald-agent` before searching.
+ You will get a `NOT_FOUND` error if the vector isn't stored.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                    | how to resolve                                                                           |
+ | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn linear_search_by_id(
             &self,
@@ -4488,7 +5480,32 @@ pub mod search_server {
             >
             + Send
             + 'static;
-        /** A method to linear search indexed vectors by multiple vectors.
+        /** Overview
+ StreamLinearSearch RPC is the method to linear search vectors with multi queries(vectors) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ Using the bidirectional streaming RPC, the linear search request can be communicated in any order between the client and server.
+ Each LinearSearch request and response are independent.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                   | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn stream_linear_search(
             &self,
@@ -4508,7 +5525,32 @@ pub mod search_server {
             >
             + Send
             + 'static;
-        /** A method to linear search indexed vectors by multiple IDs.
+        /** Overview
+   StreamLinearSearchByID RPC is the method to linear search vectors with multi queries(IDs) using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ Using the bidirectional streaming RPC, the linear search request can be communicated in any order between the client and server.
+ Each LinearSearchByID request and response are independent.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                    | how to resolve                                                                           |
+ | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn stream_linear_search_by_id(
             &self,
@@ -4519,8 +5561,35 @@ pub mod search_server {
             tonic::Response<Self::StreamLinearSearchByIDStream>,
             tonic::Status,
         >;
-        /** A method to linear search indexed vectors by multiple vectors in a single
- request.
+        /** Overview
+ MultiLinearSearch RPC is the method to linear search vectors with multiple vectors in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+   The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                   | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                 | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn multi_linear_search(
             &self,
@@ -4531,8 +5600,35 @@ pub mod search_server {
             tonic::Response<super::super::super::payload::v1::search::Responses>,
             tonic::Status,
         >;
-        /** A method to linear search indexed vectors by multiple IDs in a single
- request.
+        /** Overview
+ MultiLinearSearchByID RPC is the method to linear search vectors with multiple IDs in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ // ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                    | how to resolve                                                                           |
+ | :---------------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                  | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                                                          | Check request payload and fix request payload.                                           |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn multi_linear_search_by_id(
             &self,
@@ -5353,7 +6449,35 @@ pub mod update_client {
             req.extensions_mut().insert(GrpcMethod::new("vald.v1.Update", "Update"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to update multiple indexed vectors by bidirectional streaming.
+        /** Overview
+ StreamUpdate RPC is the method to update multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ Using the bidirectional streaming RPC, the update request can be communicated in any order between client and server.
+ Each Update request and response are independent.
+ It's the recommended method to update the large amount of vectors.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  6   | ALREADY_EXISTS    |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Requested ID is NOT inserted.                                                                                                                       | Send a request with an ID that is already inserted.                                      |
+ | ALREADY_EXISTS    | Request pair of ID and vector is already inserted.                                                                                                  | Change request ID.                                                                       |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn stream_update(
             &mut self,
@@ -5386,7 +6510,37 @@ pub mod update_client {
                 .insert(GrpcMethod::new("vald.v1.Update", "StreamUpdate"));
             self.inner.streaming(req, path, codec).await
         }
-        /** A method to update multiple indexed vectors in a single request.
+        /** Overview
+ MultiUpdate is the method to update multiple vectors in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  6   | ALREADY_EXISTS    |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Requested ID is NOT inserted.                                                                                                                       | Send a request with an ID that is already inserted.                                      |
+ | ALREADY_EXISTS    | Request pair of ID and vector is already inserted.                                                                                                  | Change request ID.                                                                       |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn multi_update(
             &mut self,
@@ -5415,7 +6569,14 @@ pub mod update_client {
                 .insert(GrpcMethod::new("vald.v1.Update", "MultiUpdate"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to update timestamp an indexed vector.
+        /** Overview
+ A method to update timestamp an indexed vector.
+ ---
+ Status Code
+ TODO
+ ---
+ Troubleshooting
+ TODO
 */
         pub async fn update_timestamp(
             &mut self,
@@ -5469,7 +6630,35 @@ pub mod update_server {
             >
             + Send
             + 'static;
-        /** A method to update multiple indexed vectors by bidirectional streaming.
+        /** Overview
+ StreamUpdate RPC is the method to update multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ Using the bidirectional streaming RPC, the update request can be communicated in any order between client and server.
+ Each Update request and response are independent.
+ It's the recommended method to update the large amount of vectors.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  6   | ALREADY_EXISTS    |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Requested ID is NOT inserted.                                                                                                                       | Send a request with an ID that is already inserted.                                      |
+ | ALREADY_EXISTS    | Request pair of ID and vector is already inserted.                                                                                                  | Change request ID.                                                                       |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn stream_update(
             &self,
@@ -5480,7 +6669,37 @@ pub mod update_server {
             tonic::Response<Self::StreamUpdateStream>,
             tonic::Status,
         >;
-        /** A method to update multiple indexed vectors in a single request.
+        /** Overview
+ MultiUpdate is the method to update multiple vectors in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  6   | ALREADY_EXISTS    |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | NOT_FOUND         | Requested ID is NOT inserted.                                                                                                                       | Send a request with an ID that is already inserted.                                      |
+ | ALREADY_EXISTS    | Request pair of ID and vector is already inserted.                                                                                                  | Change request ID.                                                                       |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn multi_update(
             &self,
@@ -5491,7 +6710,14 @@ pub mod update_server {
             tonic::Response<super::super::super::payload::v1::object::Locations>,
             tonic::Status,
         >;
-        /** A method to update timestamp an indexed vector.
+        /** Overview
+ A method to update timestamp an indexed vector.
+ ---
+ Status Code
+ TODO
+ ---
+ Troubleshooting
+ TODO
 */
         async fn update_timestamp(
             &self,
@@ -5917,7 +7143,34 @@ pub mod upsert_client {
             req.extensions_mut().insert(GrpcMethod::new("vald.v1.Upsert", "Upsert"));
             self.inner.unary(req, path, codec).await
         }
-        /** A method to insert/update multiple vectors by bidirectional streaming.
+        /** Overview
+ StreamUpsert RPC is the method to update multiple existing vectors or add new multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ Using the bidirectional streaming RPC, the upsert request can be communicated in any order between the client and server.
+ Each Upsert request and response are independent.
+ It’s the recommended method to upsert a large number of vectors.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  6   | ALREADY_EXISTS    |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn stream_upsert(
             &mut self,
@@ -5950,7 +7203,36 @@ pub mod upsert_client {
                 .insert(GrpcMethod::new("vald.v1.Upsert", "StreamUpsert"));
             self.inner.streaming(req, path, codec).await
         }
-        /** A method to insert/update multiple vectors in a single request.
+        /** Overview
+ MultiUpsert is the method to update existing multiple vectors and add new multiple vectors in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  6   | ALREADY_EXISTS    |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
 */
         pub async fn multi_upsert(
             &mut self,
@@ -6004,7 +7286,34 @@ pub mod upsert_server {
             >
             + Send
             + 'static;
-        /** A method to insert/update multiple vectors by bidirectional streaming.
+        /** Overview
+ StreamUpsert RPC is the method to update multiple existing vectors or add new multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+ Using the bidirectional streaming RPC, the upsert request can be communicated in any order between the client and server.
+ Each Upsert request and response are independent.
+ It’s the recommended method to upsert a large number of vectors.
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  6   | ALREADY_EXISTS    |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn stream_upsert(
             &self,
@@ -6015,7 +7324,36 @@ pub mod upsert_server {
             tonic::Response<Self::StreamUpsertStream>,
             tonic::Status,
         >;
-        /** A method to insert/update multiple vectors in a single request.
+        /** Overview
+ MultiUpsert is the method to update existing multiple vectors and add new multiple vectors in **1** request.
+
+ <div class="notice">
+ gRPC has a message size limitation.<br>
+ Please be careful that the size of the request exceeds the limit.
+ </div>
+ ---
+ Status Code
+ |  0   | OK                |
+ |  1   | CANCELLED         |
+ |  3   | INVALID_ARGUMENT  |
+ |  4   | DEADLINE_EXCEEDED |
+ |  5   | NOT_FOUND         |
+ |  6   | ALREADY_EXISTS    |
+ |  10  | ABORTED           |
+ |  13  | INTERNAL          |
+ ---
+ Troubleshooting
+ The request process may not be completed when the response code is NOT `0 (OK)`.
+
+ Here are some common reasons and how to resolve each error.
+
+ | name              | common reason                                                                                                                                       | how to resolve                                                                           |
+ | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+ | CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+ | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+ | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+ | ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
+ | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
 */
         async fn multi_upsert(
             &self,

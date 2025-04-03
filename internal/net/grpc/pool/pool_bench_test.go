@@ -117,7 +117,7 @@ func Benchmark_ConnPool(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	b.StartTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		conn, ok := pool.Get(ctx)
 		if ok {
 			do(b, conn)
@@ -141,7 +141,7 @@ func Benchmark_StaticDial(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	b.StartTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		val, ok := conns.Load(DefaultServerAddr)
 		if ok {
 			do(b, val)

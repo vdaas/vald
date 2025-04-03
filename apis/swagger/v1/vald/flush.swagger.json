@@ -14,7 +14,7 @@
   "paths": {
     "/flush": {
       "delete": {
-        "summary": "A method to flush all indexed vector.",
+        "summary": "Overview\nFlush RPC is the method to remove all vectors.\n---\nStatus Code\n|  0   | OK                |\n|  1   | CANCELLED         |\n|  3   | INVALID_ARGUMENT  |\n|  4   | DEADLINE_EXCEEDED |\n|  5   | NOT_FOUND         |\n|  13  | INTERNAL          |",
         "operationId": "Flush_Flush",
         "responses": {
           "200": {
