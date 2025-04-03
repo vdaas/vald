@@ -51,7 +51,7 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 		b.Run(dname, func(b *testing.B) {
 			ctx := context.Background()
 
-			dataset := assets.Data(dname)(b)
+			dataset := assets.LoadData(dname)(b)
 
 			c, err := core.New(
 				core.WithAddrs(grpcAddr),
@@ -92,7 +92,7 @@ func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 		b.Run(dname, func(b *testing.B) {
 			ctx := context.Background()
 
-			dataset := assets.Data(dname)(b)
+			dataset := assets.LoadData(dname)(b)
 
 			c, err := core.New(
 				core.WithAddrs(grpcAddr),

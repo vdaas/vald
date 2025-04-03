@@ -100,13 +100,6 @@ jobs:
     with:
       target: index-save
     secrets: inherit
-  loadtest:
-    needs: [dump-contexts-to-log]
-    uses: ./.github/workflows/_docker-image.yaml
-    with:
-      target: loadtest
-      platforms: linux/amd64
-    secrets: inherit
   manager-index:
     needs: [dump-contexts-to-log]
     uses: ./.github/workflows/_docker-image.yaml

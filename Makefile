@@ -45,7 +45,6 @@ INDEX_DELETION_IMAGE            = $(NAME)-index-deletion
 INDEX_OPERATOR_IMAGE            = $(NAME)-index-operator
 INDEX_SAVE_IMAGE                = $(NAME)-index-save
 LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
-LOADTEST_IMAGE                  = $(NAME)-loadtest
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 MIRROR_GATEWAY_IMAGE            = $(NAME)-mirror-gateway
 READREPLICA_ROTATE_IMAGE        = $(NAME)-readreplica-rotate
