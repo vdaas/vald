@@ -67,8 +67,7 @@ enabled = true
     "dockers/operator/helm/Dockerfile",
     "dockers/readreplica/job/readreplica/rotate/Dockerfile",
     "dockers/tools/benchmark/job/Dockerfile",
-    "dockers/tools/benchmark/operator/Dockerfile",
-    "dockers/tools/cli/loadtest/Dockerfile"
+    "dockers/tools/benchmark/operator/Dockerfile"
   ]
 
   trusted_registries = [
