@@ -117,7 +117,7 @@ package service
 // 		dataset          string
 // 		progressDuration time.Duration
 // 		loaderFunc       loadFunc
-// 		dataProvider     func() any
+// 		sendDataProvider func() *any
 // 		dataSize         int
 // 		operation        config.Operation
 // 	}
@@ -156,7 +156,7 @@ package service
 // 		           dataset:"",
 // 		           progressDuration:nil,
 // 		           loaderFunc:nil,
-// 		           dataProvider:nil,
+// 		           sendDataProvider:nil,
 // 		           dataSize:0,
 // 		           operation:nil,
 // 		       },
@@ -188,7 +188,7 @@ package service
 // 		           dataset:"",
 // 		           progressDuration:nil,
 // 		           loaderFunc:nil,
-// 		           dataProvider:nil,
+// 		           sendDataProvider:nil,
 // 		           dataSize:0,
 // 		           operation:nil,
 // 		           },
@@ -229,7 +229,7 @@ package service
 // 				dataset:          test.fields.dataset,
 // 				progressDuration: test.fields.progressDuration,
 // 				loaderFunc:       test.fields.loaderFunc,
-// 				dataProvider:     test.fields.dataProvider,
+// 				sendDataProvider: test.fields.sendDataProvider,
 // 				dataSize:         test.fields.dataSize,
 // 				operation:        test.fields.operation,
 // 			}
@@ -255,7 +255,7 @@ package service
 // 		dataset          string
 // 		progressDuration time.Duration
 // 		loaderFunc       loadFunc
-// 		dataProvider     func() any
+// 		sendDataProvider func() *any
 // 		dataSize         int
 // 		operation        config.Operation
 // 	}
@@ -294,7 +294,7 @@ package service
 // 		           dataset:"",
 // 		           progressDuration:nil,
 // 		           loaderFunc:nil,
-// 		           dataProvider:nil,
+// 		           sendDataProvider:nil,
 // 		           dataSize:0,
 // 		           operation:nil,
 // 		       },
@@ -326,7 +326,7 @@ package service
 // 		           dataset:"",
 // 		           progressDuration:nil,
 // 		           loaderFunc:nil,
-// 		           dataProvider:nil,
+// 		           sendDataProvider:nil,
 // 		           dataSize:0,
 // 		           operation:nil,
 // 		           },
@@ -367,7 +367,7 @@ package service
 // 				dataset:          test.fields.dataset,
 // 				progressDuration: test.fields.progressDuration,
 // 				loaderFunc:       test.fields.loaderFunc,
-// 				dataProvider:     test.fields.dataProvider,
+// 				sendDataProvider: test.fields.sendDataProvider,
 // 				dataSize:         test.fields.dataSize,
 // 				operation:        test.fields.operation,
 // 			}
@@ -383,7 +383,7 @@ package service
 // func Test_loader_do(t *testing.T) {
 // 	type args struct {
 // 		ctx    context.Context
-// 		f      func(any, error)
+// 		f      func(*any, error)
 // 		notify func(context.Context, error)
 // 	}
 // 	type fields struct {
@@ -395,7 +395,7 @@ package service
 // 		dataset          string
 // 		progressDuration time.Duration
 // 		loaderFunc       loadFunc
-// 		dataProvider     func() any
+// 		sendDataProvider func() *any
 // 		dataSize         int
 // 		operation        config.Operation
 // 	}
@@ -436,7 +436,7 @@ package service
 // 		           dataset:"",
 // 		           progressDuration:nil,
 // 		           loaderFunc:nil,
-// 		           dataProvider:nil,
+// 		           sendDataProvider:nil,
 // 		           dataSize:0,
 // 		           operation:nil,
 // 		       },
@@ -470,7 +470,7 @@ package service
 // 		           dataset:"",
 // 		           progressDuration:nil,
 // 		           loaderFunc:nil,
-// 		           dataProvider:nil,
+// 		           sendDataProvider:nil,
 // 		           dataSize:0,
 // 		           operation:nil,
 // 		           },
@@ -511,7 +511,7 @@ package service
 // 				dataset:          test.fields.dataset,
 // 				progressDuration: test.fields.progressDuration,
 // 				loaderFunc:       test.fields.loaderFunc,
-// 				dataProvider:     test.fields.dataProvider,
+// 				sendDataProvider: test.fields.sendDataProvider,
 // 				dataSize:         test.fields.dataSize,
 // 				operation:        test.fields.operation,
 // 			}

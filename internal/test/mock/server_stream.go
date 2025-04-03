@@ -28,11 +28,28 @@ type StreamInsertServerMock struct {
 }
 
 func (m *StreamInsertServerMock) Send(l *payload.Object_StreamLocation) error {
-	return m.SendFunc(l)
+	if m != nil {
+		if m.SendFunc != nil {
+			return m.SendFunc(l)
+		}
+		return m.ServerStream.SendMsg(l)
+	}
+	return nil
 }
 
-func (m *StreamInsertServerMock) Recv() (*payload.Insert_Request, error) {
-	return m.RecvFunc()
+func (m *StreamInsertServerMock) Recv() (res *payload.Insert_Request, err error) {
+	if m != nil {
+		if m.RecvFunc != nil {
+			return m.RecvFunc()
+		}
+		res = new(payload.Insert_Request)
+		err := m.ServerStream.RecvMsg(res)
+		if err != nil {
+			return nil, err
+		}
+		return res, nil
+	}
+	return nil, nil
 }
 
 // ServerStreamMock implements grpc.ServerStream mock implementation.

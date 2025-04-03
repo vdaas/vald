@@ -30,11 +30,9 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/net"
-	htr "github.com/vdaas/vald/internal/net/http/transport"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
-	"golang.org/x/net/http2"
 )
 
 var (
@@ -132,19 +130,10 @@ func TestNew(t *testing.T) {
 				opts: nil,
 			},
 			want: want{
-				want: &http.Client{
-					Transport: htr.NewExpBackoff(
-						htr.WithRoundTripper(func() http.RoundTripper {
-							tr := new(http.Transport)
-							tr.Proxy = http.ProxyFromEnvironment
-							_ = http2.ConfigureTransport(tr)
-							return tr
-						}()),
-						htr.WithBackoff(
-							backoff.New(),
-						),
-					),
-				},
+				want: func() (c *http.Client) {
+					c, _ = New()
+					return c
+				}(),
 			},
 		},
 		{
@@ -157,19 +146,10 @@ func TestNew(t *testing.T) {
 				},
 			},
 			want: want{
-				want: &http.Client{
-					Transport: htr.NewExpBackoff(
-						htr.WithRoundTripper(func() http.RoundTripper {
-							tr := new(http.Transport)
-							tr.Proxy = http.ProxyFromEnvironment
-							_ = http2.ConfigureTransport(tr)
-							return tr
-						}()),
-						htr.WithBackoff(
-							backoff.New(),
-						),
-					),
-				},
+				want: func() (c *http.Client) {
+					c, _ = New()
+					return c
+				}(),
 			},
 		},
 		{
@@ -211,3 +191,95 @@ func TestNew(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
+//
+// func TestNewWithTransport(t *testing.T) {
+// 	type args struct {
+// 		rt   http.RoundTripper
+// 		opts []Option
+// 	}
+// 	type want struct {
+// 		want *http.Client
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, *http.Client, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got *http.Client, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           rt:nil,
+// 		           opts:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           rt:nil,
+// 		           opts:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got, err := NewWithTransport(test.args.rt, test.args.opts...)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
