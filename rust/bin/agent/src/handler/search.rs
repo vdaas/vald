@@ -18,9 +18,9 @@ use log::{debug, error, info, warn};
 use prost::Message;
 use proto::{payload::v1::search, vald::v1::search_server};
 use tokio::sync::RwLock;
-use std::{collections::HashMap, string::String, sync::Arc};
+use std::sync::Arc;
 use tonic::{Code, Status};
-use tonic_types::{ErrorDetails, FieldViolation, StatusExt};
+use tonic_types::StatusExt;
 
 use super::common::{bidirectional_stream, build_error_details};
 

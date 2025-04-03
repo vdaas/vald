@@ -18,16 +18,16 @@ use log::{info, warn};
 use prost::Message;
 use proto::{
     payload::v1::{insert, object, update, upsert},
-    vald::v1::upsert_server,
+    vald::v1::{insert_server::Insert, update_server::Update, upsert_server},
 };
 use tokio::sync::RwLock;
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 use tonic::{Code, Status};
-use tonic_types::{ErrorDetails, FieldViolation, StatusExt};
+use tonic_types::StatusExt;
 
 use super::update::update as update_fn;
 use super::insert::insert as insert_fn;
-use super::common::bidirectional_stream;
+use super::common::{bidirectional_stream, build_error_details};
 
 async fn upsert(
     s: Arc<RwLock<dyn algorithm::ANN>>,
@@ -55,21 +55,9 @@ async fn upsert(
                 got: vec.vector.len(),
                 want: s_inner.get_dimension_size(),
             };
-            let mut err_details = ErrorDetails::new();
-            let metadata = HashMap::new();
             let resource_type = format!("{}/qbg.Upsert", resource_type);
             let resource_name = format!("{}: {}({})", api_name, name, ip);
-            err_details.set_error_info(err.to_string(), domain, metadata);
-            err_details.set_request_info(
-                uuid,
-                String::from_utf8(request.encode_to_vec())
-                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-            );
-            err_details.set_bad_request(vec![FieldViolation::new(
-                "vector dimension size",
-                err.to_string(),
-            )]);
-            err_details.set_resource_info(resource_type, resource_name, "", "");
+            let err_details = build_error_details(err, domain, &vec.id, request.encode_to_vec(), &resource_type, &resource_name, Some("vector dimension size"));
             let status = Status::with_error_details(
                 Code::InvalidArgument,
                 "Upsert API Incompatible Dimension Size detected",
@@ -80,18 +68,9 @@ async fn upsert(
         }
         if uuid.len() == 0 {
             let err = Error::InvalidUUID { uuid: uuid.clone() };
-            let mut err_details = ErrorDetails::new();
-            let metadata = HashMap::new();
             let resource_type = format!("{}/qbg.Upsert", resource_type);
             let resource_name = format!("{}: {}({})", api_name, name, ip);
-            err_details.set_error_info(err.to_string(), domain, metadata);
-            err_details.set_request_info(
-                uuid.clone(),
-                String::from_utf8(request.encode_to_vec())
-                    .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-            );
-            err_details.set_bad_request(vec![FieldViolation::new("uuid", err.to_string())]);
-            err_details.set_resource_info(resource_type, resource_name, "", "");
+            let err_details = build_error_details(err, domain, &uuid, request.encode_to_vec(), &resource_type, &resource_name, Some("uuid"));
             let status = Status::with_error_details(
                 Code::InvalidArgument,
                 format!("Upsert API invalid argument for uuid \"{}\" detected", uuid),
@@ -111,7 +90,7 @@ async fn upsert(
                 name,
                 ip,
                 &update::Request {
-                    vector: request.vector.clone(),
+                    vector: Some(vec),
                     config: Some(update::Config {
                         skip_strict_exist_check: true,
                         filters: config.filters,
@@ -128,7 +107,7 @@ async fn upsert(
                 name,
                 ip,
                 &insert::Request {
-                    vector: request.vector.clone(),
+                    vector: Some(vec),
                     config: Some(insert::Config {
                         skip_strict_exist_check: true,
                         filters: config.filters,
@@ -148,23 +127,11 @@ async fn upsert(
                     | Code::Ok
                     | Code::Unimplemented => return Err(st),
                     _ => {
-                        let metadata = HashMap::new();
                         let resource_type =
                             format!("{}{}", resource_type, rt_name);
                         let resource_name =
                             format!("{}: {}({})", api_name, name, ip);
-                        let mut err_details = ErrorDetails::new();
-                        err_details.set_error_info(
-                            st.get_details_error_info().unwrap().reason,
-                            domain,
-                            metadata,
-                        );
-                        err_details.set_request_info(
-                            uuid,
-                            String::from_utf8(request.encode_to_vec())
-                                .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                        );
-                        err_details.set_resource_info(resource_type, resource_name, "", "");
+                        let err_details = build_error_details(st.get_details_error_info().unwrap().reason, domain, &uuid, request.encode_to_vec(), &resource_type, &resource_name, None);
                         Status::with_error_details(st.code(), st.message(), err_details)
                     }
                 };
@@ -203,14 +170,8 @@ impl upsert_server::Upsert for super::Agent {
         request: tonic::Request<tonic::Streaming<upsert::Request>>,
     ) -> std::result::Result<tonic::Response<Self::StreamUpsertStream>, tonic::Status> {
         info!("Received stream upsert request from {:?}", request.remote_addr());
-    
-        let hostname = cargo::util::hostname()?;
-        let _domain = hostname.to_str().unwrap();
-        let _resource_type = self.resource_type.clone() + "/qbg.StreamUpsert";
-        let _resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
-
         let s = self.s.clone();
-        let resource_type = self.resource_type.clone();
+        let resource_type = self.resource_type.clone() + "/qbg.StreamUpsert";
         let name = self.name.clone();
         let ip = self.ip.clone();
         let api_name = self.api_name.clone();
@@ -264,21 +225,9 @@ impl upsert_server::Upsert for super::Agent {
                         got: vec.vector.len(),
                         want: s.get_dimension_size(),
                     };
-                    let mut err_details = ErrorDetails::new();
-                    let metadata = HashMap::new();
                     let resource_type = self.resource_type.clone() + "/qbg.MultiUpsert";
                     let resource_name = format!("{}: {}({})", self.api_name, self.name, self.ip);
-                    err_details.set_error_info(err.to_string(), domain, metadata);
-                    err_details.set_request_info(
-                        vec.id,
-                        String::from_utf8(req.encode_to_vec())
-                            .unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
-                    );
-                    err_details.set_bad_request(vec![FieldViolation::new(
-                        "vector dimension size",
-                        err.to_string(),
-                    )]);
-                    err_details.set_resource_info(resource_type, resource_name, "", "");
+                    let err_details = build_error_details(err, domain, &vec.id, req.encode_to_vec(), &resource_type, &resource_name, Some("vector dimension size"));
                     let status = Status::with_error_details(
                         Code::InvalidArgument,
                         "Upsert API Incompatible Dimension Size detected",

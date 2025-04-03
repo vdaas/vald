@@ -217,7 +217,7 @@ impl remove_server::Remove for super::Agent {
                             status
                         }
                         Error::ObjectIDNotFound { ref uuid } => {
-                            let err_details = build_error_details(err, domain, uuid, request_bytes, &resource_type, &resource_name, None);
+                            let err_details = build_error_details(&err, domain, uuid, request_bytes, &resource_type, &resource_name, None);
                             let uuids = Error::split_uuids(uuid.to_string());
                             let status = Status::with_error_details(
                                 Code::NotFound,
