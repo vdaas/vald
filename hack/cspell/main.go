@@ -97,7 +97,6 @@ var (
 		"**/cmd/manager/index/index",
 		"**/cmd/tools/benchmark/job/job",
 		"**/cmd/tools/benchmark/operator/operator",
-		"**/cmd/tools/cli/loadtest/loadtest",
 		"**/hack/cspell/**",
 		"**/internal/core/algorithm/ngt/assets/index",
 		"**/internal/test/data/agent/ngt/validIndex",
