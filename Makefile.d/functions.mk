@@ -419,16 +419,17 @@ define update-github-actions
 		if [ -n "$$ACTION_NAME" ] && [ "$$ACTION_NAME" != "security-and-quality" ]; then \
 			FILE_NAME=`echo $$ACTION_NAME | tr '/' '_' | tr '-' '_' | tr '[:lower:]' '[:upper:]'`; \
 			if [ -n "$$FILE_NAME" ]; then \
-				if [ "$$ACTION_NAME" = "aquasecurity/trivy-action" ] || [ "$$ACTION_NAME" = "machine-learning-apps/actions-chatops" ]; then \
-					VERSION="master"; \
-				else \
-					REPO_NAME=`echo $$ACTION_NAME | cut -d'/' -f1-2`; \
-					if [ "$$ACTION_NAME" = "github/codeql-action/init" ] || [ "$$ACTION_NAME" = "github/codeql-action/autobuild" ] || [ "$$ACTION_NAME" = "github/codeql-action/analyze" ] || [ "$$ACTION_NAME" = "github/codeql-action/upload-sarif" ]; then \
-						VERSION=`curl $(EXTRA_CURL_OPTION) -fsSL https://api.github.com/repos/$$REPO_NAME/tags?per_page=1 | grep -Po '"name": "\K.*?(?=")' | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`; \
-					else \
-						VERSION=`curl $(EXTRA_CURL_OPTION) -fsSL https://api.github.com/repos/$$REPO_NAME/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`;\
-					fi; \
-				fi; \
+				case "$$ACTION_NAME" in \
+					"aquasecurity/trivy-action" | "machine-learning-apps/actions-chatops" ) VERSION="master";; \
+					"github/codeql-action"* ) \
+						REPO_NAME=`echo $$ACTION_NAME | cut -d'/' -f1-2`; \
+						VERSION=`curl -fsSL https://api.github.com/repos/$$REPO_NAME/tags?per_page=1 | grep -Po '"name": "\K.*?(?=")' | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`; \
+						;; \
+					* ) \
+						REPO_NAME=`echo $$ACTION_NAME | cut -d'/' -f1-2`; \
+						VERSION=`curl -fsSL https://api.github.com/repos/$$REPO_NAME/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`; \
+						;; \
+				esac; \
 				if [ -n "$$VERSION" ]; then \
 					OLD_VERSION=`cat $(ROOTDIR)/versions/actions/$$FILE_NAME`; \
 					echo "updating $$ACTION_NAME version file $$FILE_NAME from $$OLD_VERSION to $$VERSION"; \
