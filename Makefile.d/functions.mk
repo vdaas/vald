@@ -423,7 +423,11 @@ define update-github-actions
 					VERSION="master"; \
 				else \
 					REPO_NAME=`echo $$ACTION_NAME | cut -d'/' -f1-2`; \
-					VERSION=`curl -fsSL https://api.github.com/repos/$$REPO_NAME/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`;\
+					if [ "$$ACTION_NAME" = "github/codeql-action/init" ] || [ "$$ACTION_NAME" = "github/codeql-action/autobuild" ] || [ "$$ACTION_NAME" = "github/codeql-action/analyze" ] || [ "$$ACTION_NAME" = "github/codeql-action/upload-sarif" ]; then \
+						VERSION=`curl $(EXTRA_CURL_OPTION) -fsSL https://api.github.com/repos/$$REPO_NAME/tags?per_page=1 | grep -Po '"name": "\K.*?(?=")' | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`; \
+					else \
+						VERSION=`curl $(EXTRA_CURL_OPTION) -fsSL https://api.github.com/repos/$$REPO_NAME/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`;\
+					fi; \
 				fi; \
 				if [ -n "$$VERSION" ]; then \
 					OLD_VERSION=`cat $(ROOTDIR)/versions/actions/$$FILE_NAME`; \
