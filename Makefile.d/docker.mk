@@ -39,7 +39,6 @@ docker/build: \
 	docker/build/index-deletion \
 	docker/build/index-operator \
 	docker/build/index-save \
-	docker/build/loadtest \
 	docker/build/manager-index \
 	docker/build/readreplica-rotate
 
@@ -67,7 +66,6 @@ docker/xpanes/build:
 		docker/build/index-deletion \
 		docker/build/index-operator \
 		docker/build/index-save \
-		docker/build/loadtest \
 		docker/build/manager-index \
 		docker/build/operator/helm \
 		docker/build/readreplica-rotate
@@ -296,18 +294,6 @@ docker/build/helm-operator:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/operator/helm/Dockerfile" \
 		IMAGE=$(HELM_OPERATOR_IMAGE) \
 		EXTRA_ARGS="--build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION) --build-arg UPX_OPTIONS=$(UPX_OPTIONS) $(EXTRA_ARGS)" \
-		docker/build/image
-
-.PHONY: docker/name/loadtest
-docker/name/loadtest:
-	@echo "$(ORG)/$(LOADTEST_IMAGE)"
-
-.PHONY: docker/build/loadtest
-## build loadtest image
-docker/build/loadtest:
-	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/cli/loadtest/Dockerfile" \
-		DOCKER_OPTS="$${DOCKER_OPTS:+$${DOCKER_OPTS}} --build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
-		IMAGE=$(LOADTEST_IMAGE) \
 		docker/build/image
 
 .PHONY: docker/name/index-correction

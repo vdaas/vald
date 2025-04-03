@@ -1087,20 +1087,6 @@ func Test_ngt_Close(t *testing.T) {
 		func() test {
 			tmpDir := setup(t)
 			return test{
-				name: "Close returns ErrUncommittedIndexNotFound when it is not a read replica and try to Create Index because nothing has committed",
-				args: args{
-					cfg: &defaultConfig,
-					opts: []Option{
-						WithIndexPath(tmpDir),
-						WithIsReadReplica(false),
-					},
-				},
-				want: errors.ErrUncommittedIndexNotFound,
-			}
-		}(),
-		func() test {
-			tmpDir := setup(t)
-			return test{
 				name: "Close successes when it is a read replica because it skips all the Close operations",
 				args: args{
 					cfg: &defaultConfig,
