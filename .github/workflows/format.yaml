@@ -59,33 +59,41 @@ jobs:
           echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_OUTPUT
       - name: Run formatter and license.go
         run: |
-          make format
-          git checkout go.mod go.sum ./example/client/go.mod ./example/client/go.sum ./rust/Cargo.lock ./dockers
-      - name: Check and Push to main branch
-        continue-on-error: true
+          make deps/install proto/replace license format format/go format/go/test
+          git checkout go.mod go.sum ./example/client/go.mod ./example/client/go.sum ./rust/Cargo.lock ./rust/rust-toolchain.toml ./dockers
+      - name: Check difference
+        id: check_diff
         run: |
           if git diff --quiet --exit-code; then
             echo "Nothing updated"
           else
-            git add .
-            git commit -S --signoff -m ":robot: Update license headers / Format Go codes and YAML files"
-
-            git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-            git push -u origin ${BRANCH_NAME}
-
-            curl --include --verbose --fail \
-            -H "Accept: application/json" \
-            -H "Content-Type:application/json" \
-            -H "Authorization: token ${GITHUB_TOKEN}" \
-            --request POST \
-            --data "{\"title\": \"Update license headers / Format codes\", \"head\": \"${BRANCH_NAME}\", \"base\": \"main\", \"body\": \"Update license headers / Format Go codes and YAML files.\", \"maintainer_can_modify\": true}" \
-            $API_URL
+            git diff && git status
+            echo "HAS_GIT_DIFF=true" >> $GITHUB_OUTPUT
           fi
-        env:
-          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
-          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          API_URL: https://api.github.com/repos/vdaas/vald/pulls
-          BRANCH_NAME: ${{ steps.switch_to_new_branch.outputs.BRANCH_NAME }}
+      - name: Get Label
+        id: pr-label
+        if: ${{ steps.check_diff.outputs.HAS_GIT_DIFF == 'true' }}
+        run: |
+          LATEST=$(make version/vald | grep -o -E "[0-9]+\.[0-9]+")
+          if ${LATEST} eq "1.7"; then
+            echo "LABELS=release/v${LATEST}" >> $GITHUB_OUTPUT
+          else
+            SUPPORT=$(echo ${LATEST} | awk '{print $1-0.1}')
+            echo "LABELS=actions/backport/release/v${LATEST},release/v${SUPPORT}" >> $GITHUB_OUTPUT
+          fi
+      - name: Create PR
+        if: ${{ steps.check_diff.outputs.HAS_GIT_DIFF == 'true' }}
+        uses: peter-evans/create-pull-request@v7
+        with:
+          author: "${{ secrets.DISPATCH_USER }} <vald@vdaas.org>"
+          token: ${{ secrets.DISPATCH_TOKEN }}
+          committer: "${{ secrets.DISPATCH_USER }} <vald@vdaas.org>"
+          signoff: true
+          delete-branch: true
+          base: main
+          title: "Update license headers / Format codes"
+          body: "Update license headers / Format Go codes and YAML files."
+          labels: ${{ steps.pr-label.outputs.LABELS }}
   check-format-diff:
     if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
     runs-on: ubuntu-latest
@@ -105,7 +113,7 @@ jobs:
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Run `make format` and `make deps/install`
         run: |
-          make deps/install license format format/go format/go/test
+          make deps/install proto/replace license format format/go format/go/test
           git checkout go.mod go.sum ./example/client/go.mod ./example/client/go.sum ./rust/Cargo.lock ./rust/rust-toolchain.toml ./dockers
       - name: Check format and deps difference
         run: |
