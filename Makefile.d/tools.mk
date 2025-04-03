@@ -213,6 +213,7 @@ $(LIB_PATH)/libz.a: $(LIB_PATH)
 	&& mkdir -p build \
 	&& cd build \
 	&& cmake  -DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_STATIC_EXECS=ON \
 		-DBUILD_TESTING=OFF \
@@ -241,6 +242,7 @@ $(LIB_PATH)/libhdf5.a: $(LIB_PATH) \
 	&& mkdir -p $(TEMP_DIR)/hdf5/build \
 	&& cd $(TEMP_DIR)/hdf5/build \
 	&& cmake -DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_STATIC_EXECS=ON \
 		-DBUILD_TESTING=OFF \

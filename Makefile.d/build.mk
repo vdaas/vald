@@ -31,7 +31,6 @@ binary/build: \
 	cmd/manager/index/index \
 	cmd/tools/benchmark/job/job \
 	cmd/tools/benchmark/operator/operator \
-	cmd/tools/cli/loadtest/loadtest \
 	example/client/client \
 	cmd/agent/core/ngt/ngt \
 	cmd/agent/core/faiss/faiss \
@@ -105,10 +104,6 @@ cmd/tools/benchmark/operator/operator:
 	$(eval CGO_ENABLED = 0)
 	$(call go-build,tools/benchmark/operator,,-static,,,$@)
 
-cmd/tools/cli/loadtest/loadtest:
-	$(eval CGO_ENABLED = 1)
-	$(call go-build,tools/cli/loadtest,-linkmode 'external',$(LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
-
 example/client/client:
 	$(eval CGO_ENABLED = 1)
 	$(call go-example-build,example/client,-linkmode 'external',$(LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
@@ -127,7 +122,6 @@ binary/build/zip: \
 	artifacts/vald-agent-sidecar-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-benchmark-job-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-benchmark-operator-$(GOOS)-$(GOARCH).zip \
-	artifacts/vald-cli-loadtest-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-discoverer-k8s-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-example-client-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-filter-gateway-$(GOOS)-$(GOARCH).zip \
@@ -174,10 +168,6 @@ artifacts/vald-benchmark-job-$(GOOS)-$(GOARCH).zip: cmd/tools/benchmark/job/job
 	zip --junk-paths $@ $<
 
 artifacts/vald-benchmark-operator-$(GOOS)-$(GOARCH).zip: cmd/tools/benchmark/operator/operator
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-cli-loadtest-$(GOOS)-$(GOARCH).zip: cmd/tools/cli/loadtest/loadtest
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 

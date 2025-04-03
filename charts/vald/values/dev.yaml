@@ -46,6 +46,7 @@ agent:
       memory: 50Mi
   ngt:
     dimension: 784
+    enable_statistics: true
 discoverer:
   podAnnotations:
     profefe.com/enable: "true"

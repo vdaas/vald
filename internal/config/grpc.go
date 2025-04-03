@@ -183,7 +183,7 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 	if g.ConnectionPool != nil {
 		opts = append(opts,
 			grpc.WithConnectionPoolSize(g.ConnectionPool.Size),
-			grpc.WithOldConnCloseDuration(g.ConnectionPool.OldConnCloseDuration),
+			grpc.WithOldConnCloseDelay(g.ConnectionPool.OldConnCloseDuration),
 			grpc.WithResolveDNS(g.ConnectionPool.ResolveDNS),
 		)
 		if g.ConnectionPool.EnableRebalance {

@@ -458,18 +458,12 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		if err != nil && err != http.ErrServerClosed && err != grpc.ErrServerStopped {
 			rerr = errors.Join(rerr, err)
 		}
-		if err != nil &&
-			!errors.Is(err, http.ErrServerClosed) &&
-			!errors.Is(err, grpc.ErrServerStopped) &&
-			!errors.Is(err, context.Canceled) &&
-			!errors.Is(err, context.DeadlineExceeded) {
+		if errors.IsNot(err, http.ErrServerClosed, grpc.ErrServerStopped, context.Canceled, context.DeadlineExceeded) {
 			rerr = errors.Join(rerr, err)
 		}
 
 		err = sctx.Err()
-		if err != nil &&
-			!errors.Is(err, context.Canceled) &&
-			!errors.Is(err, context.DeadlineExceeded) {
+		if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
 			rerr = errors.Join(rerr, err)
 		}
 
