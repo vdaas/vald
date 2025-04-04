@@ -996,13 +996,11 @@ func TestGetActualValue(t *testing.T) {
 		func() test {
 			fname := "version"
 			return test{
-				name: "return file contents when val is file://env",
+				name: "return empty when not exists file contents",
 				args: args{
 					val: "file://" + fname,
 				},
-				want: want{
-					wantRes: "file://" + fname,
-				},
+				want: want{},
 			}
 		}(),
 	}

@@ -31,6 +31,9 @@ jobs:
     needs: [detect-ci-container]
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      credentials:
+        username: ${{ secrets.PACKAGE_USER }}
+        password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -45,6 +48,7 @@ jobs:
           git_commit_gpgsign: true
       - name: Run update command
         run: |
+          make deps/install
           make files
           make update
           make helm/schema/all
@@ -54,9 +58,7 @@ jobs:
           make helm/docs/vald
           make helm/docs/vald-helm-operator
           make helm/docs/vald-benchmark-operator
-          : # delete `make license` if it is not needed.
-          make license
-          make format
+          make proto/replace license format format/go format/go/test
           make perm
       - name: Check difference
         id: check_diff

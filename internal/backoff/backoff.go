@@ -19,6 +19,7 @@ package backoff
 
 import (
 	"context"
+	"maps"
 	"math"
 	"strconv"
 	"time"
@@ -240,9 +241,5 @@ func Metrics(context.Context) map[string]int64 {
 		return nil
 	}
 
-	m := make(map[string]int64, len(metrics))
-	for name, cnt := range metrics {
-		m[name] = cnt
-	}
-	return m
+	return maps.Clone(metrics)
 }
