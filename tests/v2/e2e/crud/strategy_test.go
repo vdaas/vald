@@ -123,7 +123,7 @@ func TestE2EStrategy(t *testing.T) {
 			t.Errorf("failed to stop client: %v", err)
 		}
 	}()
-	t.Logf("connected addrs: %v", r.client.GRPCClient().ConnectedAddrs())
+	t.Logf("connected addrs: %v", r.client.GRPCClient().ConnectedAddrs(ctx))
 
 	for i, st := range cfg.Strategies {
 		r.processStrategy(t, ctx, i, st)

@@ -43,7 +43,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type InsertClient interface {
 	// Overview
-	// Inset RPC is the method to add a new single vector.
+	// Insert RPC is the method to add a new single vector.
 	// ---
 	// Status Code
 	// | 0    | OK                |
@@ -194,7 +194,7 @@ func (c *insertClient) MultiInsert(
 // for forward compatibility
 type InsertServer interface {
 	// Overview
-	// Inset RPC is the method to add a new single vector.
+	// Insert RPC is the method to add a new single vector.
 	// ---
 	// Status Code
 	// | 0    | OK                |
