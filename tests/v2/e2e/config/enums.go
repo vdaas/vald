@@ -123,10 +123,10 @@ const (
 	KubernetesStatusFailed        KubernetesStatus = "failed"
 	KubernetesStatusCompleted     KubernetesStatus = "completed"
 	KubernetesStatusScheduled     KubernetesStatus = "scheduled"
-	KubernetesStatusScaling       KubernetesStatus = "scalling"
+	KubernetesStatusScaling       KubernetesStatus = "scaling"
 	KubernetesStatusPaused        KubernetesStatus = "paused"
 	KubernetesStatusTerminating   KubernetesStatus = "terminating"
 	KubernetesStatusNotReady      KubernetesStatus = "notready"
 	KubernetesStatusBound         KubernetesStatus = "bound"
-	KubernetesStatusLoadBalancing KubernetesStatus = "loadblancing"
+	KubernetesStatusLoadBalancing KubernetesStatus = "loadbalancing"
 )
