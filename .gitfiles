@@ -1966,6 +1966,8 @@ rust/libs/algorithms/qbg/build.rs
 rust/libs/algorithms/qbg/src/input.cpp
 rust/libs/algorithms/qbg/src/input.h
 rust/libs/algorithms/qbg/src/lib.rs
+rust/libs/kvs/Cargo.toml
+rust/libs/kvs/src/lib.rs
 rust/libs/observability/Cargo.toml
 rust/libs/observability/src/config.rs
 rust/libs/observability/src/lib.rs
