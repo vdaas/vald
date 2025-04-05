@@ -118,14 +118,14 @@ func (s *server) aggregationSearch(
 				}
 				return nil
 			default:
-				st, msg, err := status.ParseError(err, codes.Unknown, "failed to parse search gRPC error response",
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-					})
+				st, ok := status.FromError(err)
+				if !ok {
+					log.Debug(err)
+					return nil
+				}
 				if sspan != nil {
 					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				switch st.Code() {
@@ -139,8 +139,8 @@ func (s *server) aggregationSearch(
 					codes.InvalidArgument:
 					return nil
 				}
+				log.Debug(err)
 			}
-			log.Debug(err)
 			return nil
 		}
 		if r == nil || len(r.GetResults()) == 0 {
@@ -156,7 +156,6 @@ func (s *server) aggregationSearch(
 					sspan.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
-				log.Debug(err)
 				return nil
 			default:
 				r, err = f(sctx, fcfg, vc, copts...)
@@ -185,14 +184,14 @@ func (s *server) aggregationSearch(
 						}
 						return nil
 					default:
-						st, msg, err := status.ParseError(err, codes.Unknown, "failed to parse search gRPC error response",
-							&errdetails.ResourceInfo{
-								ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-								ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-							})
+						st, ok := status.FromError(err)
+						if !ok {
+							log.Debug(err)
+							return nil
+						}
 						if sspan != nil {
 							sspan.RecordError(err)
-							sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+							sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 							sspan.SetStatus(trace.StatusError, err.Error())
 						}
 						switch st.Code() {
@@ -206,8 +205,8 @@ func (s *server) aggregationSearch(
 							codes.InvalidArgument:
 							return nil
 						}
+						log.Debug(err)
 					}
-					log.Debug(err)
 					return nil
 				}
 				if r == nil || len(r.GetResults()) == 0 {

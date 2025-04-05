@@ -421,13 +421,10 @@ define update-github-actions
 			if [ -n "$$FILE_NAME" ]; then \
 				case "$$ACTION_NAME" in \
 					"aquasecurity/trivy-action" | "machine-learning-apps/actions-chatops" ) VERSION="master";; \
-					"github/codeql-action"* ) \
-						REPO_NAME=`echo $$ACTION_NAME | cut -d'/' -f1-2`; \
-						VERSION=`curl -fsSL https://api.github.com/repos/$$REPO_NAME/tags?per_page=1 | grep -Po '"name": "\K.*?(?=")' | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`; \
-						;; \
 					* ) \
 						REPO_NAME=`echo $$ACTION_NAME | cut -d'/' -f1-2`; \
-						VERSION=`curl -fsSL https://api.github.com/repos/$$REPO_NAME/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`; \
+						echo "$$ACTION_NAME to $$REPO_NAME"; \
+						VERSION=`curl -fsSL https://api.github.com/repos/$$REPO_NAME/tags?per_page=1 | grep -Po '"name": "\K.*?(?=")' | head -n1 | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`; \
 						;; \
 				esac; \
 				if [ -n "$$VERSION" ]; then \
