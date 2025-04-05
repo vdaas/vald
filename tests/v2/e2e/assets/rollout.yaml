@@ -128,7 +128,7 @@ strategies:
   - concurrency: 1
     name: Initial Insert and Wait
     operations:
-      - name: Inset Operation
+      - name: Insert Operation
         executions:
           - name: Insert
             type: insert
@@ -140,7 +140,6 @@ strategies:
           - mode: unary
             name: IndexInfo
             type: index_info
-        name: Insert -> IndexInfo
   - name: Search_with_RolloutRestartAgent
     concurrency: 2
     operations:
@@ -158,14 +157,13 @@ strategies:
             timeout: ""
             # for search configurations
             search:
-              - k: 10
-                radius: -1
-                epsilon: 0.05
-                algorithm: cq
-                min_num: 10
-                ratio: 0
-                timeout: 3s
-            # expected patterns of test status codes
+              k: 10
+              radius: -1
+              epsilon: 0.05
+              algorithm: cq
+              min_num: 10
+              ratio: 0
+              timeout: 3s
             expected_status_codes:
               - ok
               - not_found

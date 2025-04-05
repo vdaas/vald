@@ -189,7 +189,7 @@ strategies:
   - concurrency: 1
     name: Initial Insert and Wait
     operations:
-      - name: Inset Operation
+      - name: Insert -> IndexInfo
         executions:
           - name: Insert
             type: insert
@@ -202,7 +202,6 @@ strategies:
           - mode: unary
             name: IndexInfo
             type: index_info
-        name: Insert -> IndexInfo
   - concurrency: 4
     name: Parallel Search Opeation (Search, SearchByID, LinearSearch, LinearSearchByID) x (ConcurrentQueue, SortSlice, SortPoolSlice, PairingHeap) = 16
     operations:
