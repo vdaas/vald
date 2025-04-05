@@ -15,7 +15,8 @@
 //
 
 use futures::StreamExt;
-use std::sync::Arc;
+use tonic_types::{ErrorDetails, FieldViolation};
+use std::{collections::HashMap, sync::Arc};
 use tokio::sync::Mutex;
 use tonic::{Request, Response, Status, Streaming};
 use tokio_stream::wrappers::ReceiverStream;
@@ -26,6 +27,29 @@ macro_rules! stream_type {
     ($t:ty) => {
         tokio_stream::wrappers::ReceiverStream<Result<$t, tonic::Status>>
     };
+}
+
+pub fn build_error_details(
+    err_msg: impl ToString,
+    domain: &str,
+    id: &str,
+    request_bytes: Vec<u8>,
+    resource_type: &str,
+    resource_name: &str,
+    field: Option<&str>,
+) -> ErrorDetails {
+    let mut err_details = ErrorDetails::new();
+    let metadata = HashMap::new();
+    err_details.set_error_info(err_msg.to_string(), domain, metadata);
+    err_details.set_request_info(
+        id,
+        String::from_utf8(request_bytes).unwrap_or_else(|_| "<invalid UTF-8>".to_string()),
+    );
+    if let Some(field) = field {
+        err_details.set_bad_request(vec![FieldViolation::new(field, err_msg.to_string())]);
+    }
+    err_details.set_resource_info(resource_type, resource_name, "", "");
+    err_details
 }
 
 pub async fn bidirectional_stream<Q, R, F, Fut>(
