@@ -356,7 +356,7 @@ logging:
   # @schema {"name": "logging.logger", "type": "string", "enum": ["glg", "zap"]}
   # logging.logger -- logger name.
   # currently logger must be `glg` or `zap`.
-  logger: glg
+  logger: zap
   # @schema {"name": "logging.level", "type": "string", "enum": ["debug", "info", "warn", "error", "fatal"]}
   # logging.level -- logging level.
   # logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
@@ -685,6 +685,7 @@ observability:
       node_name: _MY_NODE_NAME_
       # @schema {"name": "observability.otlp.attribute.service_name", "type": "string"}
       service_name: "vald-benchmark-operator"
+      hpge: "test"
   # @schema {"name": "observability.otlp.attribute.metrics", "type": "object"}
   metrics:
     # @schema {"name": "observability.otlp.attribute.metrics.enable_cgo", "type": "boolean"}
