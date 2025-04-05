@@ -46,12 +46,6 @@ target:
     jitter_limit: 100ms
     maximum_duration: 5s
     retry_count: 100
-  #  circuit_breaker:
-  #    closed_error_rate: 0.7
-  #    closed_refresh_timeout: 10s
-  #    half_open_error_rate: 0.5
-  #    min_samples: 1000
-  #    open_timeout: 1s
   call_option:
     content_subtype: ""
     max_recv_msg_size: 0
@@ -122,53 +116,31 @@ metadata:
   key3: sample metadata value3
 metadata_string: key4=value4,key5=value5
 strategies:
-  - name: InserrVector
-    concurrency: 1
-    delay: ""
-    wait: ""
-    timeout: ""
+  - concurrency: 1
+    name: check Index Property
     operations:
-      - name: InsertVec
-        delay: ""
-        wait: ""
-        timeout: ""
+      - name: IndexProperty
+        executions:
+          - mode: unary
+            name: IndexProperty
+            type: index_property
+            wait: 3s
+  - concurrency: 1
+    name: Initial Insert and Wait
+    operations:
+      - name: Inset Operation
         executions:
           - name: Insert
             type: insert
             mode: unary
-            parallelism: 0
+            parallelism: 10
             num: 60000
-            offset: 0
-            bulk_size: 0
-            # for timing setting
-            delay: ""
+            qps: 3000
             wait: 2m
-            timeout: ""
-            # for search configurations
-            search:
-              - k: 10
-                radius: -1
-                epsilon: 0.05
-                algorithm: cq
-                min_num: 10
-                ration: 0
-                nprobe: 0
-                timeout: 3s
-            # for modification like (Insert, Update, Upsert, Remove, RemoveByTimestamp)
-            modification:
-              skip_strict_exist_check: false
-              timestamp: 0
-            # expected patterns of test status codes
-            expected_status_codes:
-              - ok
-              - already_exists
-              - not_found
-            # for kubernetes configurations
-            kubernetes:
-              kind: "statefulset"
-              namespace: "default"
-              name: "vald-agent"
-              action: rollout
+          - mode: unary
+            name: IndexInfo
+            type: index_info
+        name: Insert -> IndexInfo
   - name: Search_with_RolloutRestartAgent
     concurrency: 2
     operations:
@@ -177,11 +149,10 @@ strategies:
           - name: Search
             type: search
             mode: unary
-            parallelism: 0
-            num: 10000
+            parallelism: 100
+            num: 10000000
+            qps: 3000
             offset: 0
-            bulk_size: 0
-            # for timing setting
             delay: ""
             wait: 2m
             timeout: ""
@@ -192,8 +163,7 @@ strategies:
                 epsilon: 0.05
                 algorithm: cq
                 min_num: 10
-                ration: 0
-                nprobe: 0
+                ratio: 0
                 timeout: 3s
             # expected patterns of test status codes
             expected_status_codes:
@@ -216,33 +186,6 @@ strategies:
               name: "vald-agent"
               action: wait
               status: available
-      - name: Search
-        executions:
-          - name: Search
-            type: search
-            mode: unary
-            parallelism: 0
-            num: 10000000
-            offset: 0
-            bulk_size: 0
-            # for timing setting
-            delay: ""
-            wait: 2m
-            timeout: ""
-            # for search configurations
-            search:
-              - k: 10
-                radius: -1
-                epsilon: 0.05
-                algorithm: cq
-                min_num: 10
-                ration: 0
-                nprobe: 0
-                timeout: 3s
-            # expected patterns of test status codes
-            expected_status_codes:
-              - ok
-              - not_found
   - name: RemoveVectors
     operations:
       - name: Remove
@@ -257,10 +200,7 @@ strategies:
             num: 60000
             offset: 0
             bulk_size: 20
-            # for timing setting
-            delay: ""
-            wait: ""
-            timeout: ""
+            wait: "2m"
             # for modification like (Insert, Update, Upsert, Remove, RemoveByTimestamp)
             modification:
               skip_strict_exist_check: false

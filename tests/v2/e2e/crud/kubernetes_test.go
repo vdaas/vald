@@ -102,7 +102,7 @@ func (r *runner) processKubernetes(t *testing.T, ctx context.Context, plan *conf
 		default:
 		}
 		if err != nil {
-			t.Errorf("failed to delete %s: %v", plan.Kubernetes.Kind, err)
+			t.Errorf("failed to get %s: %v", plan.Kubernetes.Kind, err)
 		}
 		if obj != nil {
 			log.Infof("kubernetes object: %v", obj)
