@@ -169,6 +169,14 @@ var (
 	_ PersistentVolumeClaimClient = (*pvc)(nil)
 	_ PersistentVolumeClient      = (*pv)(nil)
 	_ EndpointClient              = (*endponts)(nil)
+
+	EmptyGetOptions    = metav1.GetOptions{}
+	EmptyListOptions   = metav1.ListOptions{}
+	EmptyCreateOptions = metav1.CreateOptions{}
+	EmptyUpdateOptions = metav1.UpdateOptions{}
+	EmptyPatchOptions  = metav1.PatchOptions{}
+	EmptyApplyOptions  = metav1.ApplyOptions{}
+	EmptyDeleteOptions = metav1.DeleteOptions{}
 )
 
 func Pod(c Client, namespace string) PodClient {
