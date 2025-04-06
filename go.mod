@@ -302,11 +302,11 @@ replace (
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20250305212854-3a7bc9f8a4de
 	golang.org/x/mod => golang.org/x/mod v0.24.0
 	golang.org/x/net => golang.org/x/net v0.38.0
-	golang.org/x/oauth2 => golang.org/x/oauth2 v0.28.0
-	golang.org/x/sync => golang.org/x/sync v0.12.0
-	golang.org/x/sys => golang.org/x/sys v0.31.0
-	golang.org/x/term => golang.org/x/term v0.30.0
-	golang.org/x/text => golang.org/x/text v0.23.0
+	golang.org/x/oauth2 => golang.org/x/oauth2 v0.29.0
+	golang.org/x/sync => golang.org/x/sync v0.13.0
+	golang.org/x/sys => golang.org/x/sys v0.32.0
+	golang.org/x/term => golang.org/x/term v0.31.0
+	golang.org/x/text => golang.org/x/text v0.24.0
 	golang.org/x/time => golang.org/x/time v0.11.0
 	golang.org/x/tools => golang.org/x/tools v0.31.0
 	golang.org/x/xerrors => golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da
@@ -398,10 +398,10 @@ require (
 	go.uber.org/zap v1.27.0
 	gocloud.dev v0.41.0
 	golang.org/x/net v0.38.0
-	golang.org/x/oauth2 v0.28.0
-	golang.org/x/sync v0.12.0
-	golang.org/x/sys v0.31.0
-	golang.org/x/text v0.23.0
+	golang.org/x/oauth2 v0.29.0
+	golang.org/x/sync v0.13.0
+	golang.org/x/sys v0.32.0
+	golang.org/x/text v0.24.0
 	golang.org/x/time v0.11.0
 	golang.org/x/tools v0.31.0
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
@@ -524,7 +524,7 @@ require (
 	golang.org/x/exp/typeparams v0.0.0-20250305212735-054e65f0b394 // indirect
 	golang.org/x/image v0.25.0 // indirect
 	golang.org/x/mod v0.24.0 // indirect
-	golang.org/x/term v0.30.0 // indirect
+	golang.org/x/term v0.31.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect
 	google.golang.org/api v0.228.0 // indirect

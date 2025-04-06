@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 [toolchain]
-channel = "1.85.1"
+channel = "1.86.0"
