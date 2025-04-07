@@ -8,12 +8,12 @@ replace (
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.4
 	github.com/kpango/glg => github.com/kpango/glg v1.6.15
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.9
-	golang.org/x/crypto => golang.org/x/crypto v0.36.0
+	golang.org/x/crypto => golang.org/x/crypto v0.37.0
 	golang.org/x/net => golang.org/x/net v0.38.0
-	golang.org/x/text => golang.org/x/text v0.23.0
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20250324211829-b45e905df463
-	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20250324211829-b45e905df463
-	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20250324211829-b45e905df463
+	golang.org/x/text => golang.org/x/text v0.24.0
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20250404141209-ee84b53bf3d0
+	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20250404141209-ee84b53bf3d0
+	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20250404141209-ee84b53bf3d0
 	google.golang.org/grpc => google.golang.org/grpc v1.71.1
 	google.golang.org/protobuf => google.golang.org/protobuf v1.36.6
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
@@ -37,6 +37,6 @@ require (
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250106144421-5f5ef82da422 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250324211829-b45e905df463 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 )
