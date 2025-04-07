@@ -240,10 +240,25 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 				config.OpIndexStatisticsDetail,
 				config.OpIndexProperty,
 				config.OpFlush:
-				log.Infof("type: %s, mode: %s, execution: %d", e.Type, e.Mode, idx)
+				start := time.Now()
+				log.Infof("started %s execution at %s, type: %s, mode: %s, execution: %d",
+					e.Name, start.Format("2006-01-02 15:04:05"), e.Type, e.Mode, idx)
+				defer func() {
+					log.Infof("finished %s execution in %s, type: %s, mode: %s, execution: %d",
+						e.Name, time.Since(start).String(), e.Type, e.Mode, idx)
+				}()
 				r.processIndex(ttt, ctx, e)
 			case config.OpKubernetes:
-				// TODO implement kubernetes operation here, eg. delete pod, rollout restart, etc.
+				if e.Kubernetes != nil {
+					start := time.Now()
+					log.Infof("started %s execution at %s, type: %s, mode: %s, execution: %d, kubernetes action: %s, kind: %s, namespace: %s, name: %s, status: %s",
+						e.Name, start.Format("2006-01-02 15:04:05"), e.Type, e.Mode, idx, e.Kubernetes.Action, e.Kubernetes.Kind, e.Kubernetes.Namespace, e.Kubernetes.Name, e.Kubernetes.Status)
+					defer func() {
+						log.Infof("finished %s execution in %s, type: %s, mode: %s, execution: %d, kubernetes action: %s, kind: %s, namespace: %s, name: %s, status: %s",
+							e.Name, time.Since(start).String(), e.Type, e.Mode, idx, e.Kubernetes.Action, e.Kubernetes.Kind, e.Kubernetes.Namespace, e.Kubernetes.Name, e.Kubernetes.Status)
+					}()
+					r.processKubernetes(ttt, ctx, e)
+				}
 			case config.OpClient:
 				// TODO implement gRPC client operation here, eg. start, stop, etc.
 			case config.OpWait:

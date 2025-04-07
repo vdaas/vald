@@ -475,7 +475,7 @@ files:
 		printf '\n%.0s' {1..15} > $(ROOTDIR)/.gitfiles; \
 	else \
 		head -n 15 $(ROOTDIR)/.gitfiles > $(ROOTDIR)/.gitfiles.tmp; \
-		git ls-files >> $(ROOTDIR)/.gitfiles.tmp; \
+		git ls-files | uniq >> $(ROOTDIR)/.gitfiles.tmp; \
 		mv $(ROOTDIR)/.gitfiles.tmp $(ROOTDIR)/.gitfiles; \
 	fi
 
