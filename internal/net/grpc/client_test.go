@@ -3107,7 +3107,7 @@ package grpc
 // 				stopMonitor:            test.fields.stopMonitor,
 // 			}
 //
-// 			gotAddrs := g.ConnectedAddrs()
+//			gotAddrs := g.ConnectedAddrs(context.Background())
 // 			if err := checkFunc(test.want, gotAddrs); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -3303,6 +3303,7 @@ package grpc
 //
 // func Test_gRPCClient_rangeConns(t *testing.T) {
 // 	type args struct {
+// 		ctx context.Context
 // 		fn func(addr string, p pool.Conn) bool
 // 	}
 // 	type fields struct {
