@@ -274,8 +274,13 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 	if err = syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rl); err != nil {
 		return nil, err
 	}
+
+	concurrency := int(rl.Max) / 2
+
+	log.Debugf("starting to scan available ports from %d to %d, concurrency %d", start, end, concurrency)
+
 	eg, egctx := errgroup.New(ctx)
-	eg.SetLimit(int(rl.Max) / 2)
+	eg.SetLimit(concurrency)
 
 	var mu sync.Mutex
 
@@ -312,6 +317,8 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 	if len(ports) == 0 {
 		return nil, errors.ErrNoPortAvailable(host, start, end)
 	}
+
+	log.Debugf("finished to scan available ports %v", ports)
 
 	return ports, nil
 }

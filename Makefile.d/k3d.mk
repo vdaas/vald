@@ -17,6 +17,7 @@
 K3D_CLUSTER_NAME  = "vald-cluster"
 K3D_COMMAND       = k3d
 K3D_NODES         = 5
+K3D_NETWORK       = bridge
 K3D_PORT          = 6550
 K3D_HOST          = localhost
 K3D_INGRESS_PORT  = 8081
@@ -29,7 +30,7 @@ k3d/install: $(BINDIR)/k3d
 
 $(BINDIR)/k3d: update/k3d
 	mkdir -p $(BINDIR)
-	curl -fsSL https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=v$(K3D_VERSION) bash
+	curl -fsSL https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=v$(K3D_VERSION) K3D_INSTALL_DIR=$(BINDIR) bash
 	chmod a+x $(BINDIR)/$(K3D_COMMAND)
 
 .PHONY: k3d/start
@@ -41,6 +42,8 @@ k3d/start:
 	  --host-pid-mode=$(K3D_HOST_PID_MODE) \
 	  --api-port $(K3D_HOST):$(K3D_PORT) \
 	  -v "/lib/modules:/lib/modules" \
+	  --k3s-arg '--kubelet-arg=eviction-hard=imagefs.available<1%,nodefs.available<1%@agent:*' \
+	  --k3s-arg '--kubelet-arg=eviction-minimum-reclaim=imagefs.available=1%,nodefs.available=1%@agent:*' \
 	  $(K3D_OPTIONS)
 	@make k3d/config
 
