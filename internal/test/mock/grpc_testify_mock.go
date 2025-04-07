@@ -199,8 +199,8 @@ func (c *ClientInternal) GetBackoff() backoff.Backoff {
 	return v
 }
 
-func (c *ClientInternal) ConnectedAddrs() []string {
-	args := c.Called()
+func (c *ClientInternal) ConnectedAddrs(ctx context.Context) []string {
+	args := c.Called(ctx)
 	v, ok := args.Get(0).([]string)
 	if !ok {
 		// panic here like testify mock does
