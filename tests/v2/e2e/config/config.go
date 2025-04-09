@@ -33,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/timeutil"
 	"github.com/vdaas/vald/internal/timeutil/rate"
+	"github.com/vdaas/vald/tests/v2/e2e/kubernetes"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -120,6 +121,7 @@ type KubernetesConfig struct {
 	Namespace string           `yaml:"namespace" json:"namespace,omitempty"`
 	Name      string           `yaml:"name"      json:"name,omitempty"`
 	Action    KubernetesAction `yaml:"action"    json:"action,omitempty"`
+	Status    KubernetesStatus `yaml:"status"    json:"status,omitempty"`
 }
 
 // Kubernetes holds configuration for Kubernetes environments.
@@ -165,23 +167,27 @@ func (d *Data) Bind() (bound *Data, err error) {
 		d.Target.Bind()
 	}
 	// Bind each Strategy.
-	for i, strategy := range d.Strategies {
-		var bs *Strategy
-		if bs, err = strategy.Bind(); err != nil {
-			return nil, err
+	var cnt int
+	for _, strategy := range d.Strategies {
+		if strategy != nil {
+			var bs *Strategy
+			if bs, err = strategy.Bind(); err != nil {
+				return nil, errors.Wrapf(err, "failed to bind strategy: %s", strategy.Name)
+			}
+			d.Strategies[cnt] = bs
+			cnt++
 		}
-		d.Strategies[i] = bs
 	}
 	// Bind Dataset.
 	if d.Dataset != nil {
 		if d.Dataset, err = d.Dataset.Bind(); err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "failed to bind dataset configuration for %s", d.Dataset.Name)
 		}
 	}
 	// Bind Kubernetes.
 	if d.Kubernetes != nil {
 		if d.Kubernetes, err = d.Kubernetes.Bind(); err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "failed to bind Kubernetes configuration for %s", d.Kubernetes.KubeConfig)
 		}
 	}
 	// Process metadata.
@@ -200,16 +206,20 @@ func (d *Data) Bind() (bound *Data, err error) {
 // Bind binds and validates the Strategy configuration.
 func (s *Strategy) Bind() (bound *Strategy, err error) {
 	if s == nil || s.Operations == nil || len(s.Operations) == 0 {
-		return nil, errors.Wrap(errors.ErrInvalidConfig, "missing required fields on Strategy")
+		return nil, errors.Wrapf(errors.ErrInvalidConfig, "missing required fields on Strategy %s", s.Name)
 	}
 	s.Name = config.GetActualValue(s.Name)
 	s.TimeConfig.Bind()
-	for i, op := range s.Operations {
-		var bo *Operation
-		if bo, err = op.Bind(); err != nil {
-			return nil, err
+	var cnt int
+	for _, op := range s.Operations {
+		if op != nil {
+			var bo *Operation
+			if bo, err = op.Bind(); err != nil {
+				return nil, errors.Wrapf(err, "failed to bind operation: %s", op.Name)
+			}
+			s.Operations[cnt] = bo
+			cnt++
 		}
-		s.Operations[i] = bo
 	}
 	return s, nil
 }
@@ -217,14 +227,14 @@ func (s *Strategy) Bind() (bound *Strategy, err error) {
 // Bind binds and validates the Operation configuration.
 func (o *Operation) Bind() (bound *Operation, err error) {
 	if o == nil || o.Executions == nil || len(o.Executions) == 0 {
-		return nil, errors.Wrap(errors.ErrInvalidConfig, "missing required fields on Operation")
+		return nil, errors.Wrapf(errors.ErrInvalidConfig, "missing required fields on Operation %s", o.Name)
 	}
 	o.Name = config.GetActualValue(o.Name)
 	o.TimeConfig.Bind()
 	for i, exec := range o.Executions {
 		var be *Execution
 		if be, err = exec.Bind(); err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "failed to bind execution: %s", exec.Name)
 		}
 		o.Executions[i] = be
 	}
@@ -238,10 +248,10 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 	}
 	// Bind OperationType and OperationMode.
 	if e.Type, err = e.Type.Bind(); err != nil {
-		return
+		return nil, errors.Wrapf(err, "failed to bind OperationType: %s on Execution %s", e.Type, e.Name)
 	}
 	if e.Mode, err = e.Mode.Bind(); err != nil {
-		return
+		return nil, errors.Wrapf(err, "failed to bind OperationMode: %s on Execution %s", e.Mode, e.Name)
 	}
 	e.Name = config.GetActualValue(e.Name)
 	e.TimeConfig.Bind()
@@ -259,17 +269,14 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 		OpListObject,
 		OpTimestamp,
 		OpExists:
-		if err != nil {
-			return nil, err
-		}
 		if e.BaseConfig == nil || e.BaseConfig.Num == 0 {
-			return nil, errors.Wrap(errors.ErrInvalidConfig, "BaseConfig and its Num are required for execute "+string(e.Type))
+			return nil, errors.Wrapf(errors.ErrInvalidConfig, "BaseConfig and its Num are required for Execution %s of type %s", e.Name, e.Type)
 		}
 		if e.BaseConfig.QPS > 0 {
 			e.Limiter = rate.NewLimiter(int(e.BaseConfig.QPS))
 		}
 		if e.Mode == OperationMultiple && e.BaseConfig.BulkSize == 0 {
-			return nil, errors.New("bulk_size must be greater than 0 for multiple operations")
+			return nil, errors.Errorf("bulk_size must be greater than 0 for multiple operations for Execution %s of type %s of mode %s", e.Name, e.Type, e.Mode)
 		}
 		switch e.Type {
 		case OpSearch,
@@ -277,12 +284,10 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 			OpLinearSearch,
 			OpLinearSearchByID:
 			if e.Search == nil {
-				return nil, errors.Wrap(errors.ErrInvalidConfig, "SearchConfig is required for execute")
+				return nil, errors.Errorf("missing required fields on SearchQuery for Execution %s of type %s", e.Name, e.Type)
 			}
-			if e.Search != nil {
-				if e.Search, err = e.Search.Bind(); err != nil {
-					return nil, err
-				}
+			if e.Search, err = e.Search.Bind(); err != nil {
+				return nil, errors.Wrapf(err, "failed to bind SearchQuery for Execution %s of type %s", e.Name, e.Type)
 			}
 		case OpInsert,
 			OpUpdate,
@@ -291,12 +296,14 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 			OpRemoveByTimestamp:
 			if e.Modification != nil {
 				if e.Modification, err = e.Modification.Bind(); err != nil {
-					return nil, err
+					return nil, errors.Wrapf(err, "failed to bind ModificationConfig for Execution %s of type %s", e.Name, e.Type)
 				}
 			}
 		}
-		if e.ExpectedStatusCodes, err = e.ExpectedStatusCodes.Bind(); err != nil {
-			return
+		if e.ExpectedStatusCodes != nil {
+			if e.ExpectedStatusCodes, err = e.ExpectedStatusCodes.Bind(); err != nil {
+				return nil, errors.Wrapf(err, "failed to bind StatusCodes for Execution %s of type %s", e.Name, e.Type)
+			}
 		}
 	case OpIndexInfo,
 		OpIndexDetail,
@@ -306,16 +313,18 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 		OpFlush:
 	case OpKubernetes:
 		if e.Kubernetes != nil {
-			if e.Kubernetes, err = e.Kubernetes.Bind(); err != nil {
-				return
+			ek, err := e.Kubernetes.Bind()
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to bind Kubernetes configuration for Execution: %s, detail %v", e.Name, e.Kubernetes)
 			}
+			e.Kubernetes = ek
 		}
 	case OpClient:
 		// do nothing
 	case OpWait:
 		// do nothing
 	default:
-		return nil, errors.Wrap(errors.ErrInvalidConfig, "unsupported operation type"+string(e.Type))
+		return nil, errors.Wrapf(errors.ErrInvalidConfig, "unsupported operation type %s for Execution %s", e.Type, e.Name)
 	}
 	bound = e
 	return
@@ -428,9 +437,6 @@ func (ot OperationType) Bind() (bound OperationType, err error) {
 
 // Bind expands environment variables for OperationMode.
 func (om OperationMode) Bind() (bound OperationMode, err error) {
-	if om == "" {
-		return "", errors.Wrap(errors.ErrInvalidConfig, "missing required fields on OperationMode")
-	}
 	switch trimStringForCompare(config.GetActualValue(om)) {
 	case "unary", "un", "u":
 		return OperationUnary, nil
@@ -438,10 +444,9 @@ func (om OperationMode) Bind() (bound OperationMode, err error) {
 		return OperationStream, nil
 	case "multiple", "multi", "m":
 		return OperationMultiple, nil
-	case "other", "oth", "o":
+	default:
 		return OperationOther, nil
 	}
-	return bound, nil
 }
 
 // Bind expands environment variables for StatusCode.
@@ -525,7 +530,7 @@ func (kk KubernetesKind) Bind() (bound KubernetesKind, err error) {
 // Bind expands environment variables for KubernetesAction.
 func (ka KubernetesAction) Bind() (bound KubernetesAction, err error) {
 	switch trimStringForCompare(config.GetActualValue(ka)) {
-	case "rollout", "roll", "r":
+	case "rollout", "roll", "ro":
 		return KubernetesActionRollout, nil
 	case "delete", "del", "d":
 		return KubernetesActionDelete, nil
@@ -541,6 +546,43 @@ func (ka KubernetesAction) Bind() (bound KubernetesAction, err error) {
 		return KubernetesActionPatch, nil
 	case "scale", "s":
 		return KubernetesActionScale, nil
+	case "wait", "wa", "w":
+		return KubernetesActionWait, nil
+	}
+	return bound, nil
+}
+
+// Bind expands environment variables for KubernetesAction.
+func (ks KubernetesStatus) Bind() (bound KubernetesStatus, err error) {
+	switch trimStringForCompare(config.GetActualValue(ks)) {
+	case "unknown", "u":
+		return KubernetesStatusUnknown, nil
+	case "pending", "pen", "p":
+		return KubernetesStatusPending, nil
+	case "updating", "update":
+		return KubernetesStatusUpdating, nil
+	case "available", "a":
+		return KubernetesStatusAvailable, nil
+	case "degraded", "degrade", "d":
+		return KubernetesStatusDegraded, nil
+	case "failed", "fail", "f":
+		return KubernetesStatusFailed, nil
+	case "completed", "complete", "c":
+		return KubernetesStatusCompleted, nil
+	case "scheduled", "schedule", "sc":
+		return KubernetesStatusScheduled, nil
+	case "scaling", "scale", "s":
+		return KubernetesStatusScaling, nil
+	case "paused", "pause":
+		return KubernetesStatusPaused, nil
+	case "terminating", "terminate", "t":
+		return KubernetesStatusTerminating, nil
+	case "notready", "r":
+		return KubernetesStatusNotReady, nil
+	case "bound", "b":
+		return KubernetesStatusBound, nil
+	case "loadbalancing", "locabalance", "l":
+		return KubernetesStatusLoadBalancing, nil
 	}
 	return bound, nil
 }
@@ -556,6 +598,9 @@ func (k *KubernetesConfig) Bind() (bound *KubernetesConfig, err error) {
 		return nil, err
 	}
 	if k.Kind, err = k.Kind.Bind(); err != nil {
+		return nil, err
+	}
+	if k.Status, err = k.Status.Bind(); err != nil {
 		return nil, err
 	}
 	if k.Namespace == "" || k.Name == "" || k.Action == "" || k.Kind == "" {
@@ -736,6 +781,40 @@ func (p Port) Port() uint16 {
 	return uint16(port)
 }
 
+func (ks KubernetesStatus) Status() kubernetes.ResourceStatus {
+	switch trimStringForCompare(ks) {
+	case KubernetesStatusUnknown:
+		return kubernetes.StatusUnknown
+	case KubernetesStatusPending:
+		return kubernetes.StatusPending
+	case KubernetesStatusUpdating:
+		return kubernetes.StatusUpdating
+	case KubernetesStatusAvailable:
+		return kubernetes.StatusAvailable
+	case KubernetesStatusDegraded:
+		return kubernetes.StatusDegraded
+	case KubernetesStatusFailed:
+		return kubernetes.StatusFailed
+	case KubernetesStatusCompleted:
+		return kubernetes.StatusCompleted
+	case KubernetesStatusScheduled:
+		return kubernetes.StatusScheduled
+	case KubernetesStatusScaling:
+		return kubernetes.StatusScaling
+	case KubernetesStatusPaused:
+		return kubernetes.StatusPaused
+	case KubernetesStatusTerminating:
+		return kubernetes.StatusTerminating
+	case KubernetesStatusNotReady:
+		return kubernetes.StatusNotReady
+	case KubernetesStatusBound:
+		return kubernetes.StatusBound
+	case KubernetesStatusLoadBalancing:
+		return kubernetes.StatusLoadBalancing
+	}
+	return kubernetes.StatusUnknown
+}
+
 // //////////////////////////////////////////////////////////////////////////////
 // Const Section
 // //////////////////////////////////////////////////////////////////////////////
@@ -755,14 +834,13 @@ func Load(path string) (cfg *Data, err error) {
 	log.Debugf("loading test client configuration from %s", path)
 	cfg = new(Data)
 	if err = config.Read(path, &cfg); err != nil {
-		return
+		return nil, errors.Wrapf(err, "failed to read configuration from %s", path)
 	}
 	if cfg == nil {
-		err = errors.ErrInvalidConfig
-		return
+		return nil, errors.Errorf("failed to load configuration from %s", path)
 	}
 	if cfg, err = cfg.Bind(); err != nil {
-		return
+		return nil, errors.Wrapf(err, "failed to bind configuration from %s", path)
 	}
 	log.Debug(config.ToRawYaml(cfg))
 	return
