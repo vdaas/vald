@@ -93,7 +93,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 			grpc.WithClientInterceptors(clientInterceptors...),
 		)
 	}
-	gcli := grpc.New(copts...)
+	gcli := grpc.New("Benchmark Job Vald Client", copts...)
 	vcli, err := vald.New(
 		vald.WithAddrs(cfg.Job.ClientConfig.Addrs...),
 		vald.WithClient(gcli),

@@ -264,16 +264,16 @@ func (p *pool) init() {
 }
 
 // getSlots returns the current connection slots slice.
-func (p *pool) getSlots() *[]atomic.Pointer[poolConn] {
-	if v := p.connSlots.Load(); v != nil {
-		return v
+func (p *pool) getSlots() []atomic.Pointer[poolConn] {
+	if v := p.connSlots.Load(); v != nil && len(*v) > 0 {
+		return *v
 	}
 	return nil
 }
 
 // grow increases the number of connection slots if the new size is larger.
 func (p *pool) grow(newSize uint64) {
-	oldSlots := *p.getSlots()
+	oldSlots := p.getSlots()
 	currentLen := uint64(len(oldSlots))
 	if currentLen >= newSize {
 		return
@@ -286,7 +286,7 @@ func (p *pool) grow(newSize uint64) {
 
 // load retrieves the poolConn at the specified index.
 func (p *pool) load(idx uint64) *poolConn {
-	slots := *p.getSlots()
+	slots := p.getSlots()
 	if slots == nil || idx >= p.slotCount() {
 		return nil
 	}
@@ -295,7 +295,7 @@ func (p *pool) load(idx uint64) *poolConn {
 
 // store sets the poolConn at the specified index.
 func (p *pool) store(idx uint64, pc *poolConn) {
-	slots := *p.getSlots()
+	slots := p.getSlots()
 	if slots == nil || idx >= p.slotCount() {
 		return
 	}
@@ -306,7 +306,7 @@ func (p *pool) store(idx uint64, pc *poolConn) {
 func (p *pool) loop(
 	ctx context.Context, fn func(ctx context.Context, idx uint64, pc *poolConn) bool,
 ) error {
-	slots := *p.getSlots()
+	slots := p.getSlots()
 	if slots == nil {
 		return errors.Errorf("connection slots not initialized")
 	}
@@ -330,7 +330,14 @@ func (p *pool) loop(
 
 // slotCount returns the number of connection slots.
 func (p *pool) slotCount() uint64 {
-	return uint64(len(*p.getSlots()))
+	if p == nil {
+		return 0
+	}
+	slots := p.getSlots()
+	if slots == nil || len(slots) == 0 {
+		return 0
+	}
+	return uint64(len(slots))
 }
 
 // flush clears the connection slots.
@@ -787,7 +794,6 @@ func (p *pool) isHealthy(ctx context.Context, idx uint64, conn *ClientConn) bool
 	state := conn.GetState()
 	switch state {
 	case connectivity.Ready:
-		log.Debugf("gRPC target %s's pool connection %d/%d status is Ready\tstatus: %s", conn.Target(), idx+1, p.Size(), state.String())
 		return true
 	case connectivity.Connecting:
 		return true
