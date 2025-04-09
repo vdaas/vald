@@ -19,6 +19,15 @@ on:
     paths:
       - "charts/**"
       - "k8s/**"
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - labeled
+    paths:
+      - "charts/**"
+      - "k8s/**"
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
