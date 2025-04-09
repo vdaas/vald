@@ -30,6 +30,7 @@ pub struct Agent {
     ip: String,
     resource_type: String,
     api_name: String,
+    stream_concurrency: usize,
 }
 
 impl Agent {
@@ -39,6 +40,7 @@ impl Agent {
         ip: &str,
         resource_type: &str,
         api_name: &str,
+        stream_concurrency: usize,
     ) -> Self {
         Self {
             s: Arc::new(RwLock::new(s)),
@@ -46,6 +48,7 @@ impl Agent {
             ip: ip.to_string(),
             resource_type: resource_type.to_string(),
             api_name: api_name.to_string(),
+            stream_concurrency: stream_concurrency
         }
     }
 }
