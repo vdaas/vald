@@ -23,8 +23,13 @@ assignees: ""
 <!--- Please change the versions below along with your environment -->
 
 - Vald Version: v1.7.16
+<<<<<<< HEAD
 - Go Version: v1.24.1
 - Rust Version: v1.85.1
+=======
+- Go Version: v1.24.2
+- Rust Version: v1.86.0
+>>>>>>> ec0469046 ([create-pull-request] automated change (#2922))
 - Docker Version: v28.0.4
 - Kubernetes Version: v1.32.3
 - Helm Version: v3.17.2
