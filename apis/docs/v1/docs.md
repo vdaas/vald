@@ -1714,9 +1714,9 @@ Represent the index manager service.
 Overview
 Insert Service is responsible for inserting new vectors into the `vald-agent`.
 
-| Method Name | Request Type                                             | Response Type                                              | Description                                                                  |
-| ----------- | -------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------- | --- | --- | --- | --- | --------- | --- | --- | ---------------- | --- | --- | ----------------- | --- | --- | --------- | --- | --- | -------- | ---------------------------------------------------------------------------------------------------- |
-| Insert      | [.payload.v1.Insert.Request](#payload-v1-Insert-Request) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | Overview Inset RPC is the method to add a new single vector. --- Status Code | 0   | OK  |     | 1   | CANCELLED |     | 3   | INVALID_ARGUMENT |     | 4   | DEADLINE_EXCEEDED |     | 5   | NOT_FOUND |     | 13  | INTERNAL | --- Troubleshooting The request process may not be completed when the response code is NOT `0 (OK)`. |
+| Method Name | Request Type                                             | Response Type                                              | Description                                                                   |
+| ----------- | -------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------- | --- | --- | --- | --- | --------- | --- | --- | ---------------- | --- | --- | ----------------- | --- | --- | --------- | --- | --- | -------- | ---------------------------------------------------------------------------------------------------- |
+| Insert      | [.payload.v1.Insert.Request](#payload-v1-Insert-Request) | [.payload.v1.Object.Location](#payload-v1-Object-Location) | Overview Insert RPC is the method to add a new single vector. --- Status Code | 0   | OK  |     | 1   | CANCELLED |     | 3   | INVALID_ARGUMENT |     | 4   | DEADLINE_EXCEEDED |     | 5   | NOT_FOUND |     | 13  | INTERNAL | --- Troubleshooting The request process may not be completed when the response code is NOT `0 (OK)`. |
 
 Here are some common reasons and how to resolve each error.
 
