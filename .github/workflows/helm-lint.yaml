@@ -18,6 +18,14 @@ on:
   pull_request:
     paths:
       - "charts/**"
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - labeled
+    paths:
+      - "charts/**"
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
