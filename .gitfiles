@@ -1492,6 +1492,8 @@ k8s/index/job/correction/configmap.yaml
 k8s/index/job/correction/cronjob.yaml
 k8s/index/job/creation/configmap.yaml
 k8s/index/job/creation/cronjob.yaml
+k8s/index/job/deletion/configmap.yaml
+k8s/index/job/deletion/cronjob.yaml
 k8s/index/job/save/configmap.yaml
 k8s/index/job/save/cronjob.yaml
 k8s/index/operator/configmap.yaml
