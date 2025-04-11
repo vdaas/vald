@@ -30,14 +30,34 @@ func prometheusQuery(query string) *prometheus.DataqueryBuilder {
 		Expr(query)
 }
 
+func ValdClusterOverview() *dashboard.DashboardBuilder {
+	builder := dashboard.NewDashboardBuilder("Vald Cluster Overview").Uid("vald_cluster_overview")
+	addOverviewVariables(builder)
+	addStatPanels(builder)
+	addOverviewIndexPanel(builder)
+	addNodeCPUPanel(builder)
+	addNodeMemoryPanel(builder)
+
+	addCompletedRPCPanel(builder, "Vald LB Gateway: ", "$ValdGatewayPodName")
+	addLatencyPanel(builder, "Vald LB Gateway: ", "$ValdGatewayPodName", `=~".*"`)
+	addCompletedRPCPanel(builder, "Vald Agent: ", "$ValdAgentPodName")
+	addLatencyPanel(builder, "Vald Agent: ", "$ValdAgentPodName", `!~".*Index$"`)
+	addBackoffPanel(builder)
+	addBackoffPerRPCPanel(builder)
+	addCircuitBreakerState(builder)
+	addLatencyPanel(builder, "Vald Agent Index: ", "$ValdAgentPodName", `=~".*Index$"`)
+	repeatOverview(builder)
+	return builder.Time("now-5m", "now")
+}
+
 func ValdLBGateway() *dashboard.DashboardBuilder {
 	dashboard := dashboard.NewDashboardBuilder("Vald LB Gateway").Uid("vald_lb_gateway")
 	addVariables(dashboard, "gateway lb.*")
 	addStatPanels(dashboard)
 	addMemoryPanel(dashboard)
 	addCPUPanel(dashboard)
-	addCompletedRPCPanel(dashboard)
-	addLatencyPanel(dashboard)
+	addCompletedRPCPanel(dashboard, "", "$PodName")
+	addLatencyPanel(dashboard, "", "$PodName", `=~".*"`)
 	addGCPanel(dashboard)
 	addGoroutinePanel(dashboard)
 	return dashboard.Time("now-3h", "now")
@@ -49,8 +69,8 @@ func ValdDiscoverer() *dashboard.DashboardBuilder {
 	addStatPanels(dashboard)
 	addMemoryPanel(dashboard)
 	addCPUPanel(dashboard)
-	addCompletedRPCPanel(dashboard)
-	addLatencyPanel(dashboard)
+	addCompletedRPCPanel(dashboard, "", "$PodName")
+	addLatencyPanel(dashboard, "", "$PodName", `=~".*"`)
 	addGCPanel(dashboard)
 	addGoroutinePanel(dashboard)
 	return dashboard.Time("now-3h", "now")
@@ -62,8 +82,8 @@ func ValdIndexManager() *dashboard.DashboardBuilder {
 	addStatPanels(dashboard)
 	addMemoryPanel(dashboard)
 	addCPUPanel(dashboard)
-	addCompletedRPCPanel(dashboard)
-	addLatencyPanel(dashboard)
+	addCompletedRPCPanel(dashboard, "", "$PodName")
+	addLatencyPanel(dashboard, "", "$PodName", `=~".*"`)
 	addGCPanel(dashboard)
 	addGoroutinePanel(dashboard)
 	return dashboard.Time("now-3h", "now")
@@ -104,8 +124,8 @@ func ValdAgent() *dashboard.DashboardBuilder {
 	addUncommitedIndexPanel(builder)
 	addIndexPerPodPanel(builder)
 	addIndexLatencyPanel(builder)
-	addCompletedRPCPanel(builder)
-	addLatencyPanel(builder)
+	addCompletedRPCPanel(builder, "", "$PodName")
+	addLatencyPanel(builder, "", "$PodName", `=~".*"`)
 	addGCPanel(builder)
 	addGoroutinePanel(builder)
 	return builder.Time("now-3h", "now")
@@ -140,7 +160,7 @@ func main() {
 
 	client := goapi.NewHTTPClientWithConfig(strfmt.Default, cfg)
 
-	for _, dashboard := range []func() *dashboard.DashboardBuilder{ValdLBGateway, ValdDiscoverer, ValdIndexManager, ValdAgent, ValdIndexCorrection, ValdAgentMemory} {
+	for _, dashboard := range []func() *dashboard.DashboardBuilder{ValdClusterOverview, ValdLBGateway, ValdDiscoverer, ValdIndexManager, ValdAgent, ValdIndexCorrection, ValdAgentMemory} {
 		dashboardModel, err := dashboard().Build()
 		if err != nil {
 			panic(err)

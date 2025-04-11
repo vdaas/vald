@@ -38,10 +38,13 @@ func addCPUPanel(dashboard *dashboard.DashboardBuilder) {
 	dashboard.WithPanel(panel)
 }
 
-func addMemoryPanel(dashboard *dashboard.DashboardBuilder) {
+func addMemoryPanel(builder *dashboard.DashboardBuilder) {
 	panel := timeseries.NewPanelBuilder().
 		Title("Memory").
-		Span(12).Height(8)
+		GridPos(dashboard.GridPos{
+			H: 8,
+			W: 12,
+		})
 	for _, resource := range []string{"statefulset", "deployment", "daemonset"} {
 		panel.WithTarget(prometheusQuery(
 			fmt.Sprintf(
@@ -52,34 +55,43 @@ func addMemoryPanel(dashboard *dashboard.DashboardBuilder) {
 		).
 			Format("time_series").LegendFormat("{{target_pod}}"))
 	}
-	dashboard.WithPanel(panel)
+	builder.WithPanel(panel)
 }
 
-func addLatencyPanel(dashboard *dashboard.DashboardBuilder) {
+func addLatencyPanel(builder *dashboard.DashboardBuilder, subTitle string, targetPod string, methodCondition string) {
 	panel := timeseries.NewPanelBuilder().
-		Title("Latency").
-		Span(12).Height(8)
+		Title(fmt.Sprintf("Latency (%s%s)", subTitle, targetPod)).
+		GridPos(dashboard.GridPos{
+			H: 8,
+			W: 12,
+		})
 	for _, quantile := range []float32{0.5, 0.95, 0.99} {
 		panel.WithTarget(prometheusQuery(
 			fmt.Sprintf(
-				`histogram_quantile(%f, sum(rate(server_latency_bucket{exported_kubernetes_namespace="$Namespace", kubernetes_name="$ReplicaSet", target_pod=~"$PodName"}[$interval])) by (le, grpc_server_method))`,
+				`histogram_quantile(%f, sum(rate(server_latency_bucket{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"%s", grpc_server_method%s}[$interval])) by (le, grpc_server_method))`,
 				quantile,
+				targetPod,
+				methodCondition,
 			),
 		).
-			Format("time_series").LegendFormat(fmt.Sprintf("{{grpc_server_method}} p%f", quantile)))
+			Format("time_series").LegendFormat(fmt.Sprintf("{{grpc_server_method}} p%f", quantile))).Min(0)
 	}
-	dashboard.WithPanel(panel)
+	builder.WithPanel(panel)
 }
 
-func addCompletedRPCPanel(dashboard *dashboard.DashboardBuilder) {
+func addCompletedRPCPanel(dashboard *dashboard.DashboardBuilder, subTitle string, targetPod string) {
 	panel := timeseries.NewPanelBuilder().
-		Title("Completed RPCs").
+		Title(fmt.Sprintf("Completed RPCs (%s%s)", subTitle, targetPod)).
 		Span(12).Height(8).
 		WithTarget(prometheusQuery(
-			`sum(irate(server_completed_rpcs{exported_kubernetes_namespace="$Namespace", kubernetes_name="$ReplicaSet", target_pod=~"$PodName"}[$interval])) by (grpc_server_method, grpc_server_status)`,
+			fmt.Sprintf(
+				`sum(irate(server_completed_rpcs{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"%s"}[$interval])) by (grpc_server_method, grpc_server_status)`, targetPod,
+			),
 		).Format("time_series").LegendFormat("{{grpc_server_method}} ({{grpc_server_status}})")).
 		WithTarget(prometheusQuery(
-			`sum(irate(server_completed_rpcs{exported_kubernetes_namespace="$Namespace", kubernetes_name="$ReplicaSet", target_pod=~"$PodName"}[$interval])) by (grpc_server_status)`,
+			fmt.Sprintf(
+				`sum(irate(server_completed_rpcs{exported_kubernetes_namespace="$Namespace", kubernetes_name="$ReplicaSet", target_pod=~"%s"}[$interval])) by (grpc_server_status)`, targetPod,
+			),
 		).Format("time_series").LegendFormat("Total ({{grpc_server_status}})"))
 	dashboard.WithPanel(panel)
 }
@@ -151,52 +163,52 @@ func addIndexPerPodPanel(dashboard *dashboard.DashboardBuilder) {
 }
 
 func addMemstatsPanels(dashboard *dashboard.DashboardBuilder) {
-	addOverviewPanel(dashboard, "Alloc", "alloc_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "Total Alloc", "alloc_bytes_total", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "Sys", "sys_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "Lookups", "lookups_count", nil)
-	addOverviewPanel(dashboard, "Mallocs", "mallocs_total", nil)
-	addOverviewPanel(dashboard, "Frees", "frees_total", nil)
-	addOverviewPanel(dashboard, "HeapAlloc", "heap_alloc_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "HeapSys", "heap_sys_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "HeapIdle", "heap_idle_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "HeapInUse", "heap_inuse_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "HeapReleased", "heap_released_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "HeapObjects", "heap_objects_count", nil)
-	addOverviewPanel(dashboard, "StackInUse", "stack_inuse_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "StackSys", "stack_sys_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "MSpanInUse", "mspan_inuse_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "MSpanSys", "mspan_sys_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "Alloc", "alloc_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "Total Alloc", "alloc_bytes_total", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "Sys", "sys_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "Lookups", "lookups_count", nil)
+	addMetricPanel(dashboard, "Mallocs", "mallocs_total", nil)
+	addMetricPanel(dashboard, "Frees", "frees_total", nil)
+	addMetricPanel(dashboard, "HeapAlloc", "heap_alloc_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "HeapSys", "heap_sys_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "HeapIdle", "heap_idle_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "HeapInUse", "heap_inuse_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "HeapReleased", "heap_released_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "HeapObjects", "heap_objects_count", nil)
+	addMetricPanel(dashboard, "StackInUse", "stack_inuse_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "StackSys", "stack_sys_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "MSpanInUse", "mspan_inuse_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "MSpanSys", "mspan_sys_bytes", cog.ToPtr("decbytes"))
 
-	addOverviewPanel(dashboard, "MCacheInUse", "mcache_inuse_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "MCacheSys", "mcache_sys_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "BuckHashSys", "buckhash_sys_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "GCSys", "gc_sys_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "OtherSys", "other_sys_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "NextGC", "next_gc_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "PauseTotalMS", "pause_ms_total", cog.ToPtr("ms"))
-	addOverviewPanel(dashboard, "NumGC", "gc_count", nil)
-	addOverviewPanel(dashboard, "NumForcedGC", "forced_gc_count", nil)
-	addOverviewPanel(dashboard, "HeapWillReturn", "heap_will_return_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "LiveObjects", "live_objects_count", nil)
+	addMetricPanel(dashboard, "MCacheInUse", "mcache_inuse_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "MCacheSys", "mcache_sys_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "BuckHashSys", "buckhash_sys_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "GCSys", "gc_sys_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "OtherSys", "other_sys_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "NextGC", "next_gc_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "PauseTotalMS", "pause_ms_total", cog.ToPtr("ms"))
+	addMetricPanel(dashboard, "NumGC", "gc_count", nil)
+	addMetricPanel(dashboard, "NumForcedGC", "forced_gc_count", nil)
+	addMetricPanel(dashboard, "HeapWillReturn", "heap_will_return_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "LiveObjects", "live_objects_count", nil)
 }
 
 func addProcStatusPanels(dashboard *dashboard.DashboardBuilder) {
-	addOverviewPanel(dashboard, "VMPeak", "vmpeak_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "VMSize", "vmsize_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "VMData", "vmdata_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "VMRSS", "vmrss_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "VMHWM", "vmhwm_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "VMStk", "vmstk_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "VMSwap", "vmswap_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "VMExe", "vmexe_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "VMLib", "vmlib_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "VMLck", "vmlck_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "VMPin", "vmpin_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "VMPTE", "vmpte_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "VMPeak", "vmpeak_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "VMSize", "vmsize_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "VMData", "vmdata_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "VMRSS", "vmrss_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "VMHWM", "vmhwm_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "VMStk", "vmstk_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "VMSwap", "vmswap_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "VMExe", "vmexe_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "VMLib", "vmlib_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "VMLck", "vmlck_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "VMPin", "vmpin_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, "VMPTE", "vmpte_bytes", cog.ToPtr("decbytes"))
 }
 
-func addOverviewPanel(dashboard *dashboard.DashboardBuilder, title string, metric string, unit *string) {
+func addMetricPanel(dashboard *dashboard.DashboardBuilder, title string, metric string, unit *string) {
 	panel := timeseries.NewPanelBuilder().
 		Title(title).
 		Span(6).Height(8).

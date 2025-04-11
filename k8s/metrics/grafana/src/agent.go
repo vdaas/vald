@@ -67,7 +67,7 @@ func addAgentPanels(builder *dashboard.DashboardBuilder) {
 						{Value: cog.ToPtr[float64](1000), Color: "red"},
 					}),
 			).
-			Span(3).Height(6)).
+			Span(4).Height(6)).
 		WithPanel(stat.NewPanelBuilder().
 			Title("Insert Vqueue").
 			WithTarget(prometheusQuery(
@@ -82,7 +82,7 @@ func addAgentPanels(builder *dashboard.DashboardBuilder) {
 						{Value: cog.ToPtr[float64](1000), Color: "red"},
 					}),
 			).
-			Span(8).Height(3)).
+			Span(4).Height(6)).
 		WithPanel(stat.NewPanelBuilder().
 			Title("Delete Vqueue").
 			WithTarget(prometheusQuery(
@@ -97,7 +97,7 @@ func addAgentPanels(builder *dashboard.DashboardBuilder) {
 						{Value: cog.ToPtr[float64](1000), Color: "red"},
 					}),
 			).
-			Span(8).Height(3)).
+			Span(4).Height(6)).
 		WithPanel(statPanel("Algorithm Version", "algorithm_info").Span(6)).
 		WithPanel(agentStatPanel("Dimension", "dimension")).
 		WithPanel(agentStatPanel("Distance Type", "distance_type")).

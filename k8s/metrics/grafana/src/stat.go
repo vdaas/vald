@@ -25,16 +25,20 @@ func addStatPanels(builder *dashboard.DashboardBuilder) {
 	builder.WithPanel(statPanel("Vald Version", "vald_version")).
 		WithPanel(statPanel("Go Version", "go_version")).
 		WithPanel(statPanel("Go OS", "go_os")).
+		WithPanel(statPanel("Git Commit", "git_commit").Span(6)).
+		WithPanel(
+			statPanel("Built at", "build_time").Span(6),
+		).
 		WithPanel(stat.NewPanelBuilder().
 			Title("Pods ($ReplicaSet)").
 			WithTarget(prometheusQuery(
 				`count(kube_pod_info{namespace="$Namespace", pod=~"$ReplicaSet.*"})`,
 			).Format("table")).
-			Span(6).Height(6)).
+			Span(12).Height(3)).
 		WithPanel(stat.NewPanelBuilder().
 			Title("Total memory working set ($ReplicaSet)").
 			WithTarget(prometheusQuery(
-				`sum(container_memory_working_set_bytes{namespace="$Namespace", container="$ReplicaSet", image!=""})`,
+				`sum(container_memory_working_set_bytes{namespace="$Namespace", container=~"$ReplicaSet", image!=""})`,
 			).Format("time_series")).
 			Unit("decbytes").
 			Thresholds(
@@ -46,9 +50,7 @@ func addStatPanels(builder *dashboard.DashboardBuilder) {
 						{Value: cog.ToPtr[float64](1000000000000), Color: "red"},
 					}),
 			).
-			Span(6).Height(6)).
-		WithPanel(statPanel("Git Commit", "git_commit").Span(8)).
-		WithPanel(statPanel("Built at", "build_time"))
+			Span(12).Height(3))
 }
 
 func statPanel(title string, field string) *stat.PanelBuilder {
