@@ -150,11 +150,50 @@ func addIndexPerPodPanel(dashboard *dashboard.DashboardBuilder) {
 	dashboard.WithPanel(panel)
 }
 
-func addAgentMemoryPanels(dashboard *dashboard.DashboardBuilder) {
+func addMemstatsPanels(dashboard *dashboard.DashboardBuilder) {
 	addOverviewPanel(dashboard, "Alloc", "alloc_bytes", cog.ToPtr("decbytes"))
 	addOverviewPanel(dashboard, "Total Alloc", "alloc_bytes_total", cog.ToPtr("decbytes"))
 	addOverviewPanel(dashboard, "Sys", "sys_bytes", cog.ToPtr("decbytes"))
-	addOverviewPanel(dashboard, "Lookups", "lookups_count", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "Lookups", "lookups_count", nil)
+	addOverviewPanel(dashboard, "Mallocs", "mallocs_total", nil)
+	addOverviewPanel(dashboard, "Frees", "frees_total", nil)
+	addOverviewPanel(dashboard, "HeapAlloc", "heap_alloc_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "HeapSys", "heap_sys_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "HeapIdle", "heap_idle_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "HeapInUse", "heap_inuse_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "HeapReleased", "heap_released_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "HeapObjects", "heap_objects_count", nil)
+	addOverviewPanel(dashboard, "StackInUse", "stack_inuse_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "StackSys", "stack_sys_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "MSpanInUse", "mspan_inuse_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "MSpanSys", "mspan_sys_bytes", cog.ToPtr("decbytes"))
+
+	addOverviewPanel(dashboard, "MCacheInUse", "mcache_inuse_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "MCacheSys", "mcache_sys_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "BuckHashSys", "buckhash_sys_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "GCSys", "gc_sys_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "OtherSys", "other_sys_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "NextGC", "next_gc_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "PauseTotalMS", "pause_ms_total", cog.ToPtr("ms"))
+	addOverviewPanel(dashboard, "NumGC", "gc_count", nil)
+	addOverviewPanel(dashboard, "NumForcedGC", "forced_gc_count", nil)
+	addOverviewPanel(dashboard, "HeapWillReturn", "heap_will_return_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "LiveObjects", "live_objects_count", nil)
+}
+
+func addProcStatusPanels(dashboard *dashboard.DashboardBuilder) {
+	addOverviewPanel(dashboard, "VMPeak", "vmpeak_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "VMSize", "vmsize_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "VMData", "vmdata_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "VMRSS", "vmrss_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "VMHWM", "vmhwm_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "VMStk", "vmstk_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "VMSwap", "vmswap_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "VMExe", "vmexe_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "VMLib", "vmlib_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "VMLck", "vmlck_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "VMPin", "vmpin_bytes", cog.ToPtr("decbytes"))
+	addOverviewPanel(dashboard, "VMPTE", "vmpte_bytes", cog.ToPtr("decbytes"))
 }
 
 func addOverviewPanel(dashboard *dashboard.DashboardBuilder, title string, metric string, unit *string) {

@@ -116,7 +116,10 @@ func ValdAgentMemory() *dashboard.DashboardBuilder {
 	builder.
 		WithRow(dashboard.NewRowBuilder("runtime.Memstats"))
 	addVariables(builder, "agent .*")
-	addAgentMemoryPanels(builder)
+	addMemstatsPanels(builder)
+	builder.
+		WithRow(dashboard.NewRowBuilder("/proc/<pid>/status"))
+	addProcStatusPanels(builder)
 	return builder.Time("now-15m", "now").Refresh("5s")
 }
 
