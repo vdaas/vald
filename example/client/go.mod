@@ -11,9 +11,9 @@ replace (
 	golang.org/x/crypto => golang.org/x/crypto v0.37.0
 	golang.org/x/net => golang.org/x/net v0.39.0
 	golang.org/x/text => golang.org/x/text v0.24.0
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20250407143221-ac9807e6c755
-	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20250407143221-ac9807e6c755
-	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20250407143221-ac9807e6c755
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20250409194420-de1ac958c67a
+	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20250409194420-de1ac958c67a
+	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20250409194420-de1ac958c67a
 	google.golang.org/grpc => google.golang.org/grpc v1.71.1
 	google.golang.org/protobuf => google.golang.org/protobuf v1.36.6
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
