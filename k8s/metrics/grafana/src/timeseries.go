@@ -16,9 +16,9 @@ package main
 import (
 	"fmt"
 
+	"github.com/grafana/grafana-foundation-sdk/go/cog"
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
 	"github.com/grafana/grafana-foundation-sdk/go/timeseries"
-	"github.com/grafana/grafana-foundation-sdk/go/cog"
 )
 
 func addCPUPanel(dashboard *dashboard.DashboardBuilder) {
