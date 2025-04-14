@@ -90,6 +90,12 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 			return nil, err
 		}
 		c.cfg.RootCAs = pool
+	} else if c.cert != "" {
+		pool, err := NewX509CertPool(c.cert)
+		if err != nil {
+			return nil, err
+		}
+		c.cfg.RootCAs = pool
 	}
 
 	if c.cert != "" && c.key != "" {
@@ -115,8 +121,7 @@ func NewX509CertPool(path string) (pool *x509.CertPool, err error) {
 	if err != nil || pool == nil {
 		pool = x509.NewCertPool()
 	}
-
-	if !pool.AppendCertsFromPEM(c) {
+	if c != nil && !pool.AppendCertsFromPEM(c) {
 		err = errors.ErrCertificationFailed
 	}
 	return pool, err

@@ -128,14 +128,12 @@ func (g *GRPCClient) Bind() *GRPCClient {
 		g.DialOption = new(DialOption)
 	}
 
-	if g.TLS != nil &&
-		g.TLS.Enabled &&
-		g.TLS.Cert != "" &&
-		g.TLS.Key != "" {
+	if g.TLS != nil && g.TLS.Enabled {
 		g.TLS.Bind()
 	} else {
 		g.TLS = &TLS{
 			Enabled: false,
+			InsecureSkipVerify: true,
 		}
 		g.DialOption.Insecure = true
 	}
