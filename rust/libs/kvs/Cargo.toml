@@ -13,15 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-[workspace]
-members = [
-	"bin/meta",
-	"bin/agent",
-	"libs/algorithm",
-	"libs/algorithms/ngt",
-	"libs/algorithms/qbg",
-	"libs/algorithms/faiss",
-	"libs/kvs",
-	"libs/observability",
-	"libs/proto",
-]
+[package]
+name = "kvs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.97"
+kv = { version = "0.24.0", features = ["bincode", "bincode-value"] }
+serde = { version = "1.0.219", features = ["derive"] }
+
+[dev-dependencies]
+tokio = { version = "1.44.1", features = ["macros", "rt-multi-thread", "sync"] }
