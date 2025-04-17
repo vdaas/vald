@@ -18,13 +18,10 @@ package main
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
 	"github.com/grafana/grafana-foundation-sdk/go/stat"
 	"github.com/grafana/grafana-foundation-sdk/go/timeseries"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 func addOverviewIndexPanel(builder *dashboard.DashboardBuilder) {
@@ -116,7 +113,7 @@ func repeatOverview(builder *dashboard.DashboardBuilder) {
 					ks.kind,
 					ks.kind,
 				),
-			).Format("time_series").LegendFormat(cases.Title(language.English).String(strings.ReplaceAll(ks.status, "_", " ")))).
+			).Format("time_series").LegendFormat(ks.status)).
 			FillOpacity(opacity)
 	}
 	builder.

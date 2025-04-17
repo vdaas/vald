@@ -15,15 +15,15 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/grafana/grafana-foundation-sdk/go/cog/plugins"
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
 	"github.com/grafana/grafana-foundation-sdk/go/prometheus"
+	"github.com/vdaas/vald/internal/encoding/json"
+	"github.com/vdaas/vald/internal/strings"
 	"gopkg.in/yaml.v3"
 )
 

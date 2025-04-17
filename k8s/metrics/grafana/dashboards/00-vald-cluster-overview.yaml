@@ -644,79 +644,79 @@ data:
             {
               "expr": "max(kube_deployment_status_replicas{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) \u003e= 1",
               "format": "time_series",
-              "legendFormat": "Replicas",
+              "legendFormat": "replicas",
               "refId": ""
             },
             {
               "expr": "max(kube_deployment_status_replicas_available{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) \u003e= 1",
               "format": "time_series",
-              "legendFormat": "Replicas Available",
+              "legendFormat": "replicas_available",
               "refId": ""
             },
             {
               "expr": "max(kube_deployment_status_replicas_unavailable{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) \u003e= 1",
               "format": "time_series",
-              "legendFormat": "Replicas Unavailable",
+              "legendFormat": "replicas_unavailable",
               "refId": ""
             },
             {
               "expr": "max(kube_deployment_status_replicas_updated{namespace=\"$Namespace\", deployment=\"$ReplicaSet\"}) and on() count(kube_deployment_created{deployment=~\"$ReplicaSet\"}) \u003e= 1",
               "format": "time_series",
-              "legendFormat": "Replicas Updated",
+              "legendFormat": "replicas_updated",
               "refId": ""
             },
             {
               "expr": "max(kube_daemonset_status_current_number_scheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) \u003e= 1",
               "format": "time_series",
-              "legendFormat": "Current Number Scheduled",
+              "legendFormat": "current_number_scheduled",
               "refId": ""
             },
             {
               "expr": "max(kube_daemonset_status_desired_number_scheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) \u003e= 1",
               "format": "time_series",
-              "legendFormat": "Desired Number Scheduled",
+              "legendFormat": "desired_number_scheduled",
               "refId": ""
             },
             {
               "expr": "max(kube_daemonset_status_number_available{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) \u003e= 1",
               "format": "time_series",
-              "legendFormat": "Number Available",
+              "legendFormat": "number_available",
               "refId": ""
             },
             {
               "expr": "max(kube_daemonset_status_number_misscheduled{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) \u003e= 1",
               "format": "time_series",
-              "legendFormat": "Number Misscheduled",
+              "legendFormat": "number_misscheduled",
               "refId": ""
             },
             {
               "expr": "max(kube_daemonset_status_number_ready{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) \u003e= 1",
               "format": "time_series",
-              "legendFormat": "Number Ready",
+              "legendFormat": "number_ready",
               "refId": ""
             },
             {
               "expr": "max(kube_daemonset_status_number_unavailable{namespace=\"$Namespace\", daemonset=\"$ReplicaSet\"}) and on() count(kube_daemonset_created{daemonset=~\"$ReplicaSet\"}) \u003e= 1",
               "format": "time_series",
-              "legendFormat": "Number Unavailable",
+              "legendFormat": "number_unavailable",
               "refId": ""
             },
             {
               "expr": "max(kube_statefulset_status_replicas_current{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) \u003e= 1",
               "format": "time_series",
-              "legendFormat": "Replicas Current",
+              "legendFormat": "replicas_current",
               "refId": ""
             },
             {
               "expr": "max(kube_statefulset_status_replicas_ready{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) \u003e= 1",
               "format": "time_series",
-              "legendFormat": "Replicas Ready",
+              "legendFormat": "replicas_ready",
               "refId": ""
             },
             {
               "expr": "max(kube_statefulset_status_replicas_updated{namespace=\"$Namespace\", statefulset=\"$ReplicaSet\"}) and on() count(kube_statefulset_created{statefulset=~\"$ReplicaSet\"}) \u003e= 1",
               "format": "time_series",
-              "legendFormat": "Replicas Updated",
+              "legendFormat": "replicas_updated",
               "refId": ""
             }
           ],
