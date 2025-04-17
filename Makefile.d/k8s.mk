@@ -397,6 +397,7 @@ k8s/metrics/prometheus/operator/delete:
 k8s/metrics/grafana/deploy:
 	kubectl apply -f $(ROOTDIR)/k8s/metrics/grafana/dashboards
 	kubectl apply -f $(ROOTDIR)/k8s/metrics/grafana
+	kubectl set image deployment/grafana grafana=grafana/grafana:${GRAFANA_VERSION}
 
 .PHONY: k8s/metrics/grafana/delete
 ## delete grafana
