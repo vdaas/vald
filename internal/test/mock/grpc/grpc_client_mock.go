@@ -51,7 +51,7 @@ func (gc *GRPCClientMock) OrderedRangeConcurrent(
 }
 
 // ConnectedAddrs calls the ConnectedAddrsFunc object.
-func (gc *GRPCClientMock) ConnectedAddrs() []string {
+func (gc *GRPCClientMock) ConnectedAddrs(_ context.Context) []string {
 	return gc.ConnectedAddrsFunc()
 }
 
