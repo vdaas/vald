@@ -17,9 +17,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
-	"path/filepath"
 
 	"github.com/grafana/grafana-foundation-sdk/go/cog/plugins"
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
@@ -232,7 +232,7 @@ func main() {
 			panic(err)
 		}
 
-		filePath := filepath.Join(rootDir, "k8s/metrics/grafana/dashboards", *dashboardModel.Uid + ".yaml")
+		filePath := filepath.Join(rootDir, "k8s/metrics/grafana/dashboards", *dashboardModel.Uid+".yaml")
 		file, err := os.Create(filePath)
 		if err != nil {
 			panic(err)

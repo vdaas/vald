@@ -56,7 +56,7 @@ const (
 # limitations under the License.
 #`
 	maintainerKey = "MAINTAINER"
-	rootKey = "ROOTDIR"
+	rootKey       = "ROOTDIR"
 )
 
 type kindStatus struct {
