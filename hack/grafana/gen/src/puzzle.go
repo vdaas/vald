@@ -11,6 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+// This file is a workaround for placing panels from top left.
+// This file can be removed when https://github.com/grafana/grafana-foundation-sdk/issues/673 is resolved.
+
 package main
 
 import (
