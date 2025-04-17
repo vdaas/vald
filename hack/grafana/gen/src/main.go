@@ -127,7 +127,7 @@ func ValdAgent() *dashboard.DashboardBuilder {
 	addIndexPerPodPanel(builder)
 	addIndexLatencyPanel(builder)
 	addCompletedRPCPanel(builder, "", "$ReplicaSet", "$PodName")
-	addLatencyPanel(builder, "", "$ReplicaSet", "$PodName", `=~".*"`)
+	addLatencyPanel(builder, "", "$ReplicaSet", "$PodName", `!~".*SaveIndex"`)
 	addGCPanel(builder, "$ReplicaSet")
 	addGoroutinePanel(builder, "$ReplicaSet", "$PodName")
 	return builder.Time("now-3h", "now")

@@ -847,19 +847,19 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "histogram_quantile(0.500000, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\", grpc_server_method=~\".*\"}[$interval])) by (le, grpc_server_method))",
+              "expr": "histogram_quantile(0.500000, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\", grpc_server_method!~\".*SaveIndex\"}[$interval])) by (le, grpc_server_method))",
               "format": "time_series",
               "legendFormat": "{{grpc_server_method}} p50",
               "refId": ""
             },
             {
-              "expr": "histogram_quantile(0.950000, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\", grpc_server_method=~\".*\"}[$interval])) by (le, grpc_server_method))",
+              "expr": "histogram_quantile(0.950000, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\", grpc_server_method!~\".*SaveIndex\"}[$interval])) by (le, grpc_server_method))",
               "format": "time_series",
               "legendFormat": "{{grpc_server_method}} p95",
               "refId": ""
             },
             {
-              "expr": "histogram_quantile(0.990000, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\", grpc_server_method=~\".*\"}[$interval])) by (le, grpc_server_method))",
+              "expr": "histogram_quantile(0.990000, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\", grpc_server_method!~\".*SaveIndex\"}[$interval])) by (le, grpc_server_method))",
               "format": "time_series",
               "legendFormat": "{{grpc_server_method}} p99",
               "refId": ""
