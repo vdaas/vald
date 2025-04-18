@@ -1,0 +1,7 @@
+resources:
+  - configmap.yaml
+  - deployment.yaml
+  - svc.yaml
+images:
+  - name: grafana/grafana
+    newTag: 11.6.0-ubuntu
