@@ -398,7 +398,12 @@ k8s/metrics/prometheus/operator/delete:
 ## deploy grafana
 k8s/metrics/grafana/deploy:
 	kubectl apply -f $(ROOTDIR)/k8s/metrics/grafana/dashboards
-	kubectl apply -f $(ROOTDIR)/k8s/metrics/grafana
+	# Grafana does not support tags like 11.6. We need to fetch latest like 11.6.x.
+	yq -i '(.images[] | select(.name == "grafana/grafana")).newTag = "$(shell curl -s \
+	  https://registry.hub.docker.com/v2/repositories/grafana/grafana/tags \
+	  | jq -r '.results[].name' | grep '^${GRAFANA_VERSION}' | sort -V | tail -n1)"' \
+	  k8s/metrics/grafana/kustomization.yaml
+	kubectl apply -k $(ROOTDIR)/k8s/metrics/grafana
 
 .PHONY: k8s/metrics/grafana/delete
 ## delete grafana
