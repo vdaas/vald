@@ -543,6 +543,20 @@ data:
             "auto_count": 30
           },
           {
+            "type": "query",
+            "name": "ContainerName",
+            "label": "container",
+            "skipUrlSync": false,
+            "query": "label_values(app_version_info{server_name=~\"index correction job\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}, container)",
+            "multi": true,
+            "allowCustomValue": true,
+            "includeAll": true,
+            "allValue": ".+",
+            "auto": false,
+            "auto_min": "10s",
+            "auto_count": 30
+          },
+          {
             "type": "interval",
             "name": "interval",
             "label": "interval",

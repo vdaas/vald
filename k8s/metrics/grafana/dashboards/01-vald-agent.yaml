@@ -847,19 +847,19 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "histogram_quantile(0.500000, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\", grpc_server_method!~\".*SaveIndex\"}[$interval])) by (le, grpc_server_method))",
+              "expr": "histogram_quantile(0.500000, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\", container=~\"$ContainerName\", grpc_server_method!~\".*SaveIndex\"}[$interval])) by (le, grpc_server_method))",
               "format": "time_series",
               "legendFormat": "{{grpc_server_method}} p50",
               "refId": ""
             },
             {
-              "expr": "histogram_quantile(0.950000, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\", grpc_server_method!~\".*SaveIndex\"}[$interval])) by (le, grpc_server_method))",
+              "expr": "histogram_quantile(0.950000, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\", container=~\"$ContainerName\", grpc_server_method!~\".*SaveIndex\"}[$interval])) by (le, grpc_server_method))",
               "format": "time_series",
               "legendFormat": "{{grpc_server_method}} p95",
               "refId": ""
             },
             {
-              "expr": "histogram_quantile(0.990000, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\", grpc_server_method!~\".*SaveIndex\"}[$interval])) by (le, grpc_server_method))",
+              "expr": "histogram_quantile(0.990000, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\", container=~\"$ContainerName\", grpc_server_method!~\".*SaveIndex\"}[$interval])) by (le, grpc_server_method))",
               "format": "time_series",
               "legendFormat": "{{grpc_server_method}} p99",
               "refId": ""
@@ -964,6 +964,20 @@ data:
               "value": "$__all"
             },
             "multi": false,
+            "allowCustomValue": true,
+            "includeAll": true,
+            "allValue": ".+",
+            "auto": false,
+            "auto_min": "10s",
+            "auto_count": 30
+          },
+          {
+            "type": "query",
+            "name": "ContainerName",
+            "label": "container",
+            "skipUrlSync": false,
+            "query": "label_values(app_version_info{server_name=~\"agent .*\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}, container)",
+            "multi": true,
             "allowCustomValue": true,
             "includeAll": true,
             "allValue": ".+",

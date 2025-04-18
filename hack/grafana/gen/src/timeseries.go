@@ -77,17 +77,18 @@ func addJobMemoryPanel(builder *dashboard.DashboardBuilder) {
 	builder.WithPanel(panel.Min(0))
 }
 
-func addLatencyPanel(builder *dashboard.DashboardBuilder, subTitle string, kubernetesName string, targetPod string, methodCondition string) {
+func addLatencyPanel(builder *dashboard.DashboardBuilder, subTitle string, kubernetesName string, targetPod string, container string, methodCondition string) {
 	panel := timeseries.NewPanelBuilder().
 		Title(fmt.Sprintf("Latency (%s%s)", subTitle, targetPod)).
 		Span(widthHalf).Height(heightTall)
 	for _, quantile := range quntiles {
 		panel.WithTarget(prometheusQuery(
 			fmt.Sprintf(
-				`histogram_quantile(%f, sum(rate(server_latency_bucket{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"%s", target_pod=~"%s", grpc_server_method%s}[$interval])) by (le, grpc_server_method))`,
+				`histogram_quantile(%f, sum(rate(server_latency_bucket{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"%s", target_pod=~"%s", container=~"%s", grpc_server_method%s}[$interval])) by (le, grpc_server_method))`,
 				quantile,
 				kubernetesName,
 				targetPod,
+				container,
 				methodCondition,
 			),
 		).

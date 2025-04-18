@@ -90,7 +90,7 @@ func addBenchmarkJobMetrics(builder *dashboard.DashboardBuilder) {
 	addBenchmarkJobCPUPanel(builder)
 	addBenchmarkJobMemoryPanel(builder)
 	addCompletedRPCPanel(builder, "", "$JobReplicaSet", "$JobPodName")
-	addLatencyPanel(builder, "", "$JobReplicaSet", "$JobPodName", `=~".*"`)
+	addLatencyPanel(builder, "", "$JobReplicaSet", "$JobPodName", ".*", `=~".*"`)
 	addGoroutinePanel(builder, "$JobReplicaSet", "$JobPodName")
 	addGCPanel(builder, "$JobReplicaSet")
 }
