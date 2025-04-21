@@ -27,24 +27,43 @@ server_config:
       grpc:
         bidirectional_stream_concurrency: 20
         connection_timeout: ""
+        enable_admin: true
+        enable_channelz: true
+        enable_reflection: true
         header_table_size: 0
-        initial_conn_window_size: 0
-        initial_window_size: 0
-        interceptors: []
+        initial_conn_window_size: 2097152
+        initial_window_size: 1048576
+        interceptors:
+        - RecoverInterceptor
         keepalive:
           max_conn_age: ""
           max_conn_age_grace: ""
           max_conn_idle: ""
-          time: ""
-          timeout: ""
+          min_time: 10m
+          permit_without_stream: false
+          time: 3h
+          timeout: 60s
+        max_concurrent_streams: 0
         max_header_list_size: 0
         max_receive_message_size: 0
         max_send_message_size: 0
+        num_stream_workers: 0
         read_buffer_size: 0
+        shared_write_buffer: false
+        wait_for_handlers: true
         write_buffer_size: 0
+      socket_option:
+        ip_recover_destination_addr: false
+        ip_transparent: false
+        reuse_addr: true
+        reuse_port: true
+        tcp_cork: false
+        tcp_defer_accept: false
+        tcp_fast_open: false
+        tcp_no_delay: false
+        tcp_quick_ack: false
+      socket_path: ""
       mode: GRPC
-      probe_wait_time: 3s
-      restart: true
   health_check_servers:
     - name: readiness
       host: 0.0.0.0
