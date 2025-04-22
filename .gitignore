@@ -73,3 +73,5 @@ target/
 *.pdb
 
 !rust/libs
+
+.stamp

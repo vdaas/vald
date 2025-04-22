@@ -540,12 +540,12 @@ update: \
 
 .PHONY: format
 ## format go codes
-format: \
+format: license \
 	dockerfile \
 	dashboard \
-	license \
 	format/proto \
 	format/go \
+	format/go/test \
 	format/json \
 	format/md \
 	format/yaml \
