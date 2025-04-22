@@ -64,6 +64,8 @@ func NewConfig(path string) (cfg *Config, err error) {
 	return cfg, nil
 }
 
+const BenchmarkOperatorInfo = "benchmark_operator_info"
+
 // func FakeData() {
 // 	d := Config{
 // 		Version: "v0.0.1",

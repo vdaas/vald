@@ -20,6 +20,9 @@ import (
 	"github.com/grafana/grafana-foundation-sdk/go/common"
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
 	"github.com/grafana/grafana-foundation-sdk/go/stat"
+	"github.com/grafana/promql-builder/go/promql"
+	"github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt/public_const"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
 )
 
 func addAgentPanels(builder *dashboard.DashboardBuilder) {
@@ -27,7 +30,9 @@ func addAgentPanels(builder *dashboard.DashboardBuilder) {
 		WithPanel(stat.NewPanelBuilder().
 			Title("Indices").
 			WithTarget(prometheusQuery(
-				`sum(agent_core_ngt_index_count{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$PodName"})`,
+				promql.Sum(
+					addBasicLabel(promql.Vector(public_const.IndexCountMetricsName)),
+				).String(),
 			).Format("table")).
 			Thresholds(
 				dashboard.NewThresholdsConfigBuilder().
@@ -38,7 +43,9 @@ func addAgentPanels(builder *dashboard.DashboardBuilder) {
 		WithPanel(stat.NewPanelBuilder().
 			Title("Indexing Pods").
 			WithTarget(prometheusQuery(
-				`sum(agent_core_ngt_is_indexing{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$PodName"})`,
+				promql.Sum(
+					addBasicLabel(promql.Vector(public_const.IsIndexingMetricsName)),
+				).String(),
 			).Format("table")).
 			Thresholds(
 				dashboard.NewThresholdsConfigBuilder().
@@ -49,7 +56,9 @@ func addAgentPanels(builder *dashboard.DashboardBuilder) {
 		WithPanel(stat.NewPanelBuilder().
 			Title("Uncommitted Indices").
 			WithTarget(prometheusQuery(
-				`sum(agent_core_ngt_uncommitted_index_count{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$PodName"})`,
+				promql.Sum(
+					addBasicLabel(promql.Vector(public_const.UncommittedIndexCountMetricsName)),
+				).String(),
 			).Format("table")).
 			Thresholds(
 				dashboard.NewThresholdsConfigBuilder().
@@ -60,7 +69,9 @@ func addAgentPanels(builder *dashboard.DashboardBuilder) {
 		WithPanel(stat.NewPanelBuilder().
 			Title("Insert Vqueue").
 			WithTarget(prometheusQuery(
-				`sum(agent_core_ngt_insert_vqueue_count{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$PodName"})`,
+				promql.Sum(
+					addBasicLabel(promql.Vector(public_const.InsertVQueueCountMetricsName)),
+				).String(),
 			).Format("table")).
 			Thresholds(
 				dashboard.NewThresholdsConfigBuilder().
@@ -71,7 +82,9 @@ func addAgentPanels(builder *dashboard.DashboardBuilder) {
 		WithPanel(stat.NewPanelBuilder().
 			Title("Delete Vqueue").
 			WithTarget(prometheusQuery(
-				`sum(agent_core_ngt_delete_vqueue_count{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$PodName"})`,
+				promql.Sum(
+					addBasicLabel(promql.Vector(public_const.DeleteVQueueCountMetricsName)),
+				).String(),
 			).Format("table")).
 			Thresholds(
 				dashboard.NewThresholdsConfigBuilder().
@@ -86,7 +99,9 @@ func addAgentPanels(builder *dashboard.DashboardBuilder) {
 		WithPanel(stat.NewPanelBuilder().
 			Title("Broken Index Store Count").
 			WithTarget(prometheusQuery(
-				`sum(agent_core_ngt_broken_index_store_count{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$PodName"})`,
+				promql.Sum(
+					addBasicLabel(promql.Vector(public_const.BrokenIndexStoreCountMetricsName)),
+				).String(),
 			).Format("table")).
 			Span(widthOneEighth).Height(heightShort))
 }
@@ -95,7 +110,7 @@ func agentStatPanel(title string, field string) *stat.PanelBuilder {
 	return stat.NewPanelBuilder().
 		Title(title).
 		WithTarget(prometheusQuery(
-			`agent_core_ngt_info{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$PodName"}`,
+			addBasicLabel(promql.Vector(config.AgentNGTInfo)).String(),
 		).Format("table")).
 		ReduceOptions(common.NewReduceDataOptionsBuilder().Calcs([]string{"lastNotNull"}).Fields(field)).
 		Span(widthQuarter).Height(heightShort)

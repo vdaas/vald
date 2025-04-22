@@ -99,7 +99,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
 			benchmarkmetrics.New(operator),
-			infometrics.New("benchmark_operator_info", "Benchmark Operator info", *cfg.Job.Image),
+			infometrics.New(config.BenchmarkOperatorInfo, "Benchmark Operator info", *cfg.Job.Image),
 			backoffmetrics.New(),
 		)
 		if err != nil {

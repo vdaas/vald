@@ -18,22 +18,23 @@ import (
 
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt/public_const"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 	api "go.opentelemetry.io/otel/metric"
 	view "go.opentelemetry.io/otel/sdk/metric"
 )
 
 const (
-	indexCountMetricsName        = "agent_core_ngt_index_count"
+	indexCountMetricsName        = public_const.IndexCountMetricsName
 	indexCountMetricsDescription = "Agent NGT index count"
 
-	uncommittedIndexCountMetricsName        = "agent_core_ngt_uncommitted_index_count"
+	uncommittedIndexCountMetricsName        = public_const.UncommittedIndexCountMetricsName
 	uncommittedIndexCountMetricsDescription = "Agent NGT index count"
 
-	insertVQueueCountMetricsName        = "agent_core_ngt_insert_vqueue_count"
+	insertVQueueCountMetricsName        = public_const.InsertVQueueCountMetricsName
 	insertVQueueCountMetricsDescription = "Agent NGT insert vqueue count"
 
-	deleteVQueueCountMetricsName        = "agent_core_ngt_delete_vqueue_count"
+	deleteVQueueCountMetricsName        = public_const.DeleteVQueueCountMetricsName
 	deleteVQueueCountMetricsDescription = "Agent NGT delete vqueue count"
 
 	completedCreateIndexTotalMetricsName        = "agent_core_ngt_completed_create_index_total"
@@ -42,13 +43,13 @@ const (
 	executedProactiveGCTotalMetricsName        = "agent_core_ngt_executed_proactive_gc_total"
 	executedProactiveGCTotalMetricsDescription = "The cumulative count of proactive GC execution"
 
-	isIndexingMetricsName        = "agent_core_ngt_is_indexing"
+	isIndexingMetricsName        = public_const.IsIndexingMetricsName
 	isIndexingMetricsDescription = "Currently indexing or no"
 
 	isSavingMetricsName        = "agent_core_ngt_is_saving"
 	isSavingMetricsDescription = "Currently saving or not"
 
-	brokenIndexStoreCountMetricsName        = "agent_core_ngt_broken_index_store_count"
+	brokenIndexStoreCountMetricsName        = public_const.BrokenIndexStoreCountMetricsName
 	brokenIndexStoreCountMetricsDescription = "How many broken index generations have been stored"
 
 	medianIndegreeMetricsName        = "agent_core_ngt_median_indegree"

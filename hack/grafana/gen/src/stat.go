@@ -21,6 +21,7 @@ import (
 	"github.com/grafana/grafana-foundation-sdk/go/common"
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
 	"github.com/grafana/grafana-foundation-sdk/go/stat"
+	"github.com/grafana/promql-builder/go/promql"
 )
 
 func addStatPanels(builder *dashboard.DashboardBuilder) {
@@ -31,13 +32,18 @@ func addStatPanels(builder *dashboard.DashboardBuilder) {
 		stat.NewPanelBuilder().
 			Title("Pods ($ReplicaSet)").
 			WithTarget(prometheusQuery(
-				`count(kube_pod_info{namespace="$Namespace", pod=~"$ReplicaSet.*"})`,
+				promql.Count(promql.Vector(podInfo).
+					Label("namespace", namespaceVariable).
+					LabelMatchRegexp("pod", "$ReplicaSet.*")).String(),
 			).Format("table")).
 			Span(widthQuarter).Height(heightMedium),
 		stat.NewPanelBuilder().
 			Title("Total memory working set ($ReplicaSet)").
 			WithTarget(prometheusQuery(
-				`sum(container_memory_working_set_bytes{namespace="$Namespace", container=~"$ReplicaSet", image!=""})`,
+				promql.Sum(promql.Vector(memMetric).
+					Label("namespace", namespaceVariable).
+					LabelMatchRegexp("container", "$ReplicaSet").
+					LabelNeq("image", "")).String(),
 			).Format("time_series")).
 			Unit("decbytes").
 			Thresholds(
@@ -57,7 +63,7 @@ func statPanel(title string, field string) *stat.PanelBuilder {
 	return stat.NewPanelBuilder().
 		Title(title).
 		WithTarget(prometheusQuery(
-			`app_version_info{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$PodName"}`,
+			addBasicLabel(promql.Vector(appInfo)).String(),
 		).Format("table")).
 		ReduceOptions(common.NewReduceDataOptionsBuilder().Calcs([]string{"lastNotNull"}).Fields(field)).
 		Span(widthOneSixth).Height(heightShort)

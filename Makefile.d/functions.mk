@@ -378,20 +378,7 @@ define gen-dockerfile
 endef
 
 define gen-dashboard
-	BIN_PATH="$(TEMP_DIR)/vald-dashboard-gen"; \
-	rm -rf $$BIN_PATH; \
-	MAINTAINER=$2 \
-	GOPRIVATE=$(GOPRIVATE) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	go build -modcacherw \
-		-mod=readonly \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $$BIN_PATH $(ROOTDIR)/hack/grafana/gen/src; \
-	$$BIN_PATH $1; \
-	rm -rf $$BIN_PATH
+	go run $(ROOTDIR)/hack/grafana/gen/src
 endef
 
 define gen-vald-helm-schema

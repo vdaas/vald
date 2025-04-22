@@ -51,7 +51,7 @@ data:
           "type": "stat",
           "targets": [
             {
-              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
+              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "table",
               "refId": ""
             }
@@ -85,7 +85,7 @@ data:
           "type": "stat",
           "targets": [
             {
-              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
+              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "table",
               "refId": ""
             }
@@ -119,7 +119,7 @@ data:
           "type": "stat",
           "targets": [
             {
-              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
+              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "table",
               "refId": ""
             }
@@ -153,7 +153,7 @@ data:
           "type": "stat",
           "targets": [
             {
-              "expr": "count(kube_pod_info{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"})",
+              "expr": "count(kube_pod_info{namespace=\"$Namespace\",pod=~\"$ReplicaSet.*\"})",
               "format": "table",
               "refId": ""
             }
@@ -171,7 +171,7 @@ data:
           "type": "stat",
           "targets": [
             {
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=~\"$ReplicaSet\", image!=\"\"})",
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\",container=~\"$ReplicaSet\",image!=\"\"})",
               "format": "time_series",
               "refId": ""
             }
@@ -212,7 +212,7 @@ data:
           "type": "stat",
           "targets": [
             {
-              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
+              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "table",
               "refId": ""
             }
@@ -246,7 +246,7 @@ data:
           "type": "stat",
           "targets": [
             {
-              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
+              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "table",
               "refId": ""
             }
@@ -293,7 +293,7 @@ data:
           "type": "stat",
           "targets": [
             {
-              "expr": "index_job_correction_checked_index_count{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
+              "expr": "index_job_correction_checked_index_count{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "table",
               "refId": ""
             }
@@ -326,7 +326,7 @@ data:
           "type": "stat",
           "targets": [
             {
-              "expr": "index_job_correction_corrected_old_index_count{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
+              "expr": "index_job_correction_corrected_old_index_count{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "table",
               "refId": ""
             }
@@ -359,7 +359,7 @@ data:
           "type": "stat",
           "targets": [
             {
-              "expr": "index_job_correction_corrected_replication_count{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
+              "expr": "index_job_correction_corrected_replication_count{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "table",
               "refId": ""
             }
@@ -405,7 +405,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", container=\"$ReplicaSet\", pod=~\"$PodName\", image!=\"\"}[$interval])) by (pod) and on() count(kube_job_created{job_name=~\"$ReplicaSet-.*\"}) \u003e= 1",
+              "expr": "sum by (pod) (irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\",container=\"$ReplicaSet\",pod=~\"$PodName\",image!=\"\"}[$interval]))",
               "format": "time_series",
               "legendFormat": "{{pod}}",
               "refId": ""
@@ -430,7 +430,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=\"$ReplicaSet\", pod=~\"$PodName\", image!=\"\"}) by (pod) and on() count(kube_job_created{job_name=~\"$ReplicaSet-.*\"}) \u003e= 1",
+              "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"$Namespace\",container=\"$ReplicaSet\",pod=~\"$PodName\",image!=\"\"})",
               "format": "time_series",
               "legendFormat": "{{pod}}",
               "refId": ""
@@ -455,7 +455,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "goroutine_count{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
+              "expr": "goroutine_count{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -474,7 +474,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "increase(gc_count{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_node=~\".+\"}[$interval])",
+              "expr": "increase(gc_count{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_node=~\".+\"}[$interval])",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""

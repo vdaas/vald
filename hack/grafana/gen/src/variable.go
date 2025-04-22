@@ -79,11 +79,6 @@ func addOverviewVariables(builder *dashboard.DashboardBuilder) {
 			IncludeAll(true).
 			AllValue(".+").
 			Multi(true),
-		).
-		WithVariable(dashboard.NewQueryVariableBuilder("PodName").
-			IncludeAll(true).
-			AllValue(".+").
-			Hide(2),
 		)
 	addIntervalVariable(builder, "30m")
 }

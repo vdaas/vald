@@ -17,12 +17,12 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/grafana/grafana-foundation-sdk/go/common"
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
 	"github.com/grafana/grafana-foundation-sdk/go/stat"
 	"github.com/grafana/grafana-foundation-sdk/go/timeseries"
+	"github.com/grafana/promql-builder/go/promql"
+	"github.com/vdaas/vald/pkg/tools/benchmark/operator/config"
 )
 
 func addSumStatPanel(builder *dashboard.DashboardBuilder, title string, metric string) {
@@ -31,10 +31,7 @@ func addSumStatPanel(builder *dashboard.DashboardBuilder, title string, metric s
 			stat.NewPanelBuilder().
 				Title(title).
 				WithTarget(prometheusQuery(
-					fmt.Sprintf(
-						`sum(%s{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$PodName"})`,
-						metric,
-					),
+					promql.Sum(addBasicLabel(promql.Vector(metric))).String(),
 				).Format("table")).
 				ReduceOptions(common.NewReduceDataOptionsBuilder().Calcs([]string{"lastNotNull"}).Fields("/^Value$/")).
 				Span(widthOneSixth).Height(heightShort),
@@ -47,7 +44,7 @@ func addBenchmarkStatPanel(builder *dashboard.DashboardBuilder, title string, fi
 			stat.NewPanelBuilder().
 				Title(title).
 				WithTarget(prometheusQuery(
-					`benchmark_operator_info{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$PodName"}`,
+					addBasicLabel(promql.Vector(config.BenchmarkOperatorInfo)).String(),
 				).Format("table")).
 				ReduceOptions(common.NewReduceDataOptionsBuilder().Calcs([]string{"lastNotNull"}).Fields(field)).
 				Span(width).Height(heightShort),
@@ -57,7 +54,7 @@ func addBenchmarkStatPanel(builder *dashboard.DashboardBuilder, title string, fi
 func addBenchmarkStatPanels(dashboard *dashboard.DashboardBuilder) {
 	addSumStatPanel(dashboard, "All Scenario Count", "benchmark_operator_applied_scenario")
 	addSumStatPanel(dashboard, "Running Scenario Count", "benchmark_operator_running_scenario")
-	addSumStatPanel(dashboard, "Running Scenario Count", "benchmark_operator_complete_scenario")
+	addSumStatPanel(dashboard, "Completed Scenario Count", "benchmark_operator_complete_scenario")
 	addBenchmarkStatPanel(dashboard, "Job Image Name", "repository", witdhOneThird)
 	addBenchmarkStatPanel(dashboard, "Job Image Version", "tag", widthOneSixth)
 	addSumStatPanel(dashboard, "All Benchmark Job Count", "benchmark_operator_applied_benchmark_job")
@@ -70,7 +67,13 @@ func addBenchmarkJobCPUPanel(builder *dashboard.DashboardBuilder) {
 		Title("CPU").
 		Height(heightTall).Span(widthHalf).
 		WithTarget(prometheusQuery(
-			`sum(irate(container_cpu_usage_seconds_total{namespace="$Namespace", pod=~"$JobPodName", image=~".*$JobReplicaSet.*"}[$interval])) by (pod) and on() count(kube_pod_created{pod=~"$JobPodName"}) >= 1`,
+			promql.Sum(promql.Irate(
+				promql.Vector(cpuMetric).
+					Label("namespace", namespaceVariable).
+					LabelMatchRegexp("pod", "$JobPodName").
+					LabelMatchRegexp(imageKey, ".*$JobReplicaSet.*").
+					Range(intervalVariable),
+			)).By([]string{"pod"}).String(),
 		).Format("time_series").LegendFormat("{{pod}}"))
 	builder.WithPanel(panel)
 }
@@ -80,7 +83,12 @@ func addBenchmarkJobMemoryPanel(builder *dashboard.DashboardBuilder) {
 		Title("Memory Working Set").
 		Height(heightTall).Span(widthHalf).
 		WithTarget(prometheusQuery(
-			`sum(container_memory_working_set_bytes{namespace="$Namespace", pod=~"$JobPodName", image=~".*$JobReplicaSet.*"}) by (pod) and on() count(kube_pod_created{pod=~"$JobPodName"}) >= 1`,
+			promql.Sum(
+				promql.Vector(memMetric).
+					Label("namespace", namespaceVariable).
+					LabelMatchRegexp("pod", "$JobPodName").
+					LabelMatchRegexp(imageKey, ".*$JobReplicaSet.*"),
+			).By([]string{"pod"}).String(),
 		).Format("time_series").LegendFormat("{{pod}}")).
 		Unit("decbytes")
 	builder.WithPanel(panel)
@@ -90,7 +98,7 @@ func addBenchmarkJobMetrics(builder *dashboard.DashboardBuilder) {
 	addBenchmarkJobCPUPanel(builder)
 	addBenchmarkJobMemoryPanel(builder)
 	addCompletedRPCPanel(builder, "", "$JobReplicaSet", "$JobPodName")
-	addLatencyPanel(builder, "", "$JobReplicaSet", "$JobPodName", ".*", `=~".*"`)
+	addLatencyPanel(builder, "", "$JobReplicaSet", "$JobPodName", ".*", ".*", true)
 	addGoroutinePanel(builder, "$JobReplicaSet", "$JobPodName")
 	addGCPanel(builder, "$JobReplicaSet")
 }

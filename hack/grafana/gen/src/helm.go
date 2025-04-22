@@ -24,6 +24,7 @@ import (
 	"github.com/grafana/grafana-foundation-sdk/go/stat"
 	"github.com/grafana/grafana-foundation-sdk/go/table"
 	"github.com/grafana/grafana-foundation-sdk/go/timeseries"
+	"github.com/grafana/promql-builder/go/promql"
 )
 
 func addReconcileDurationPanel(dashboard *dashboard.DashboardBuilder) {
@@ -32,10 +33,20 @@ func addReconcileDurationPanel(dashboard *dashboard.DashboardBuilder) {
 		Span(widthHalf).Height(heightTall)
 	for _, quantile := range quntiles {
 		panel.WithTarget(prometheusQuery(
-			fmt.Sprintf(
-				`histogram_quantile(%f, sum(rate(controller_runtime_reconcile_time_seconds_bucket{namespace=~"$Namespace", app_kubernetes_io_name=~"$ReplicaSet", instance=~"$PodName"}[$interval])) by (le))`,
+			promql.HistogramQuantile(
 				quantile,
-			),
+				promql.Sum(promql.Rate(promql.Vector(
+					reconcileSec,
+				).Label("namespace", namespaceVariable).
+					LabelMatchRegexp(appNameKey, nameVariable).
+					LabelMatchRegexp(instanceKey, podVariable).
+					Range(intervalVariable),
+				)).By([]string{"le"}),
+			).String(),
+			// fmt.Sprintf(
+			// 	`histogram_quantile(%f, sum(rate(controller_runtime_reconcile_time_seconds_bucket{namespace=~"$Namespace", app_kubernetes_io_name=~"$ReplicaSet", instance=~"$PodName"}[$interval])) by (le))`,
+			// 	quantile,
+			// ),
 		).
 			Format("time_series").LegendFormat(fmt.Sprintf("p%d", int(quantile*100))))
 	}
@@ -48,10 +59,14 @@ func addK8SAPILantencyPanel(dashboard *dashboard.DashboardBuilder) {
 		Span(widthHalf).Height(heightTall)
 	for _, quantile := range quntiles {
 		panel.WithTarget(prometheusQuery(
-			fmt.Sprintf(
-				`histogram_quantile(%f, sum(rate(rest_client_request_duration_seconds_bucket{namespace=~"$Namespace"}[$interval])) by (le))`,
+			promql.HistogramQuantile(
 				quantile,
-			),
+				promql.Sum(promql.Rate(promql.Vector(
+					restDurationSec,
+				).Label("namespace", namespaceVariable).
+					Range(intervalVariable),
+				)).By([]string{"le"}),
+			).String(),
 		).
 			Format("time_series").LegendFormat(fmt.Sprintf("p%d", int(quantile*100))))
 	}
@@ -64,7 +79,10 @@ func addHelmOperatorPanels(builder *dashboard.DashboardBuilder) {
 			stat.NewPanelBuilder().
 				Title("Operator SDK Version").
 				WithTarget(prometheusQuery(
-					`helm_operator_build_info{namespace=~"$Namespace", app_kubernetes_io_name="$ReplicaSet", instance=~"$PodName"}`,
+					promql.Vector(helmInfo).
+						Label("namespace", namespaceVariable).
+						Label(appNameKey, nameVariable).
+						LabelMatchRegexp(instanceKey, podVariable).String(),
 				).Format("table")).
 				ReduceOptions(common.NewReduceDataOptionsBuilder().Calcs([]string{"lastNotNull"}).Fields("version")).
 				Span(widthQuarter).Height(heightMedium),
@@ -73,7 +91,10 @@ func addHelmOperatorPanels(builder *dashboard.DashboardBuilder) {
 			stat.NewPanelBuilder().
 				Title("Go Version").
 				WithTarget(prometheusQuery(
-					`go_info{namespace=~"$Namespace", app_kubernetes_io_name=~"$ReplicaSet", instance=~"$PodName"}`,
+					promql.Vector(goInfo).
+						Label("namespace", namespaceVariable).
+						LabelMatchRegexp(appNameKey, nameVariable).
+						LabelMatchRegexp(instanceKey, podVariable).String(),
 				).Format("table")).
 				ReduceOptions(common.NewReduceDataOptionsBuilder().Calcs([]string{"lastNotNull"}).Fields("version")).
 				Span(widthQuarter).Height(heightMedium),
@@ -82,7 +103,10 @@ func addHelmOperatorPanels(builder *dashboard.DashboardBuilder) {
 			table.NewPanelBuilder().
 				Title("Resources").
 				WithTarget(prometheusQuery(
-					`resource_created_at_seconds{namespace=~"$Namespace", app_kubernetes_io_name=~"$ReplicaSet", instance=~"$PodName"}`,
+					promql.Vector(resCreatedSec).
+						Label("namespace", namespaceVariable).
+						LabelMatchRegexp(appNameKey, nameVariable).
+						LabelMatchRegexp(instanceKey, podVariable).String(),
 				).Format("table")).
 				Span(widthHalf).Height(heightMedium),
 		).
@@ -91,7 +115,12 @@ func addHelmOperatorPanels(builder *dashboard.DashboardBuilder) {
 				Title("Reconcile Total").
 				Span(widthHalf).Height(heightTall).
 				WithTarget(prometheusQuery(
-					`sum(irate(controller_runtime_reconcile_total{namespace=~"$Namespace", app_kubernetes_io_name=~"$ReplicaSet", instance=~"$PodName"}[$interval])) by (controller, result)`,
+					promql.Sum(promql.Irate(promql.Vector(reconcileTotal).
+						Label("namespace", namespaceVariable).
+						LabelMatchRegexp(appNameKey, nameVariable).
+						LabelMatchRegexp(instanceKey, podVariable).
+						Range(intervalVariable),
+					)).By([]string{"controller", "result"}).String(),
 				).Format("time_series").LegendFormat("{{controller}} ({{result}})")),
 		).
 		WithPanel(
@@ -99,7 +128,12 @@ func addHelmOperatorPanels(builder *dashboard.DashboardBuilder) {
 				Title("Reconcile Errors").
 				Span(widthHalf).Height(heightTall).
 				WithTarget(prometheusQuery(
-					`sum(irate(controller_runtime_reconcile_errors_total{namespace=~"$Namespace", app_kubernetes_io_name=~"$ReplicaSet", instance=~"$PodName"}[5m])) by (controller)`,
+					promql.Sum(promql.Irate(promql.Vector(reconcileErrorTotal).
+						Label("namespace", namespaceVariable).
+						LabelMatchRegexp(appNameKey, nameVariable).
+						LabelMatchRegexp(instanceKey, podVariable).
+						Range(intervalVariable),
+					)).By([]string{"controller"}).String(),
 				).Format("time_series").LegendFormat("{{controller}}")),
 		)
 	addReconcileDurationPanel(builder)

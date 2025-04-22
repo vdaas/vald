@@ -19,22 +19,22 @@ import (
 	"github.com/grafana/grafana-foundation-sdk/go/cog"
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
 	"github.com/grafana/grafana-foundation-sdk/go/timeseries"
+	"github.com/grafana/promql-builder/go/promql"
+	"github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt/public_const"
 )
 
 func addCPUPanel(dashboard *dashboard.DashboardBuilder) {
 	panel := timeseries.NewPanelBuilder().
 		Title("CPU").
-		Span(widthHalf).Height(heightTall)
-	for _, resource := range []string{"statefulset", "deployment", "daemonset"} {
-		panel.WithTarget(prometheusQuery(
-			fmt.Sprintf(
-				`sum(irate(container_cpu_usage_seconds_total{namespace="$Namespace", container="$ReplicaSet", pod=~"$PodName", image!=""}[$interval])) by (pod) and on() count(kube_%s_created{%s="$ReplicaSet"}) >= 1`,
-				resource,
-				resource,
-			),
-		).
-			Format("time_series").LegendFormat("{{pod}}"))
-	}
+		Span(widthHalf).Height(heightTall).
+		WithTarget(prometheusQuery(
+			promql.Sum(promql.Irate(promql.Vector(cpuMetric).
+				Label("namespace", namespaceVariable).
+				LabelMatchRegexp("container", "$ReplicaSet").
+				LabelMatchRegexp("pod", "$PodName").
+				LabelNeq("image", "").
+				Range(intervalVariable))).By([]string{"pod"}).String(),
+		).Format("time_series").LegendFormat("{{pod}}"))
 	dashboard.WithPanel(panel.Min(0))
 }
 
@@ -42,16 +42,13 @@ func addMemoryPanel(builder *dashboard.DashboardBuilder) {
 	panel := timeseries.NewPanelBuilder().
 		Title("Memory").
 		Span(widthHalf).Height(heightTall)
-	for _, resource := range []string{"statefulset", "deployment", "daemonset"} {
-		panel.WithTarget(prometheusQuery(
-			fmt.Sprintf(
-				`sum(container_memory_working_set_bytes{namespace="$Namespace", container="$ReplicaSet", pod=~"$PodName", image!=""}) by (pod) and on() count(kube_%s_created{%s="$ReplicaSet"}) >= 1`,
-				resource,
-				resource,
-			),
-		).
-			Format("time_series").LegendFormat("{{target_pod}}"))
-	}
+	panel.WithTarget(prometheusQuery(
+		promql.Sum(promql.Vector(memMetric).
+			Label("namespace", namespaceVariable).
+			Label("container", nameVariable).
+			LabelMatchRegexp("pod", podVariable).
+			LabelNeq("image", "")).By([]string{"pod"}).String()).
+		Format("time_series").LegendFormat("{{target_pod}}"))
 	builder.WithPanel(panel.Min(0))
 }
 
@@ -60,8 +57,12 @@ func addJobCPUPanel(dashboard *dashboard.DashboardBuilder) {
 		Title("CPU").
 		Span(widthHalf).Height(heightTall).
 		WithTarget(prometheusQuery(
-			`sum(irate(container_cpu_usage_seconds_total{namespace="$Namespace", container="$ReplicaSet", pod=~"$PodName", image!=""}[$interval])) by (pod) and on() count(kube_job_created{job_name=~"$ReplicaSet-.*"}) >= 1`,
-		).
+			promql.Sum(promql.Irate(promql.Vector(cpuMetric).
+				Label("namespace", namespaceVariable).
+				Label("container", nameVariable).
+				LabelMatchRegexp("pod", podVariable).
+				LabelNeq("image", "").
+				Range(intervalVariable))).By([]string{"pod"}).String()).
 			Format("time_series").LegendFormat("{{pod}}"))
 	dashboard.WithPanel(panel.Min(0))
 }
@@ -71,26 +72,27 @@ func addJobMemoryPanel(builder *dashboard.DashboardBuilder) {
 		Title("Memory").
 		Span(widthHalf).Height(heightTall).
 		WithTarget(prometheusQuery(
-			`sum(container_memory_working_set_bytes{namespace="$Namespace", container="$ReplicaSet", pod=~"$PodName", image!=""}) by (pod) and on() count(kube_job_created{job_name=~"$ReplicaSet-.*"}) >= 1`,
-		).
+			promql.Sum(promql.Vector(memMetric).
+				Label("namespace", namespaceVariable).
+				Label("container", nameVariable).
+				LabelMatchRegexp("pod", podVariable).
+				LabelNeq("image", "")).By([]string{"pod"}).String()).
 			Format("time_series").LegendFormat("{{pod}}"))
 	builder.WithPanel(panel.Min(0))
 }
 
-func addLatencyPanel(builder *dashboard.DashboardBuilder, subTitle string, kubernetesName string, targetPod string, container string, methodCondition string) {
+func addLatencyPanel(builder *dashboard.DashboardBuilder, subTitle string, kubernetesName string, targetPod string, container string, method string, match bool) {
 	panel := timeseries.NewPanelBuilder().
 		Title(fmt.Sprintf("Latency (%s%s)", subTitle, targetPod)).
 		Span(widthHalf).Height(heightTall)
 	for _, quantile := range quntiles {
 		panel.WithTarget(prometheusQuery(
-			fmt.Sprintf(
-				`histogram_quantile(%f, sum(rate(server_latency_bucket{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"%s", target_pod=~"%s", container=~"%s", grpc_server_method%s}[$interval])) by (le, grpc_server_method))`,
-				quantile,
-				kubernetesName,
-				targetPod,
-				container,
-				methodCondition,
-			),
+			promql.HistogramQuantile(quantile, promql.Sum(promql.Rate(
+				addGRPCMatch(
+					addBasicLabel(promql.Vector(serverLatencyBucket)).
+						LabelMatchRegexp("container", container),
+					method, match,
+				).Range(intervalVariable))).By([]string{"le", grpcServerMethod})).String(),
 		).
 			Format("time_series").LegendFormat(fmt.Sprintf("{{grpc_server_method}} p%d", int(quantile*100)))).Min(0)
 	}
@@ -102,14 +104,14 @@ func addCompletedRPCPanel(dashboard *dashboard.DashboardBuilder, subTitle string
 		Title(fmt.Sprintf("Completed RPCs (%s%s)", subTitle, targetPod)).
 		Span(widthHalf).Height(heightTall).
 		WithTarget(prometheusQuery(
-			fmt.Sprintf(
-				`sum(irate(server_completed_rpcs{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"%s", target_pod=~"%s"}[$interval])) by (grpc_server_method, grpc_server_status)`, kubernetesName, targetPod,
-			),
+			promql.Sum(promql.Irate(
+				addBasicLabel(promql.Vector(serverCompletedRPCs)).
+					Range(intervalVariable))).By([]string{grpcServerMethod, grpcServerStatus}).String(),
 		).Format("time_series").LegendFormat("{{grpc_server_method}} ({{grpc_server_status}})")).
 		WithTarget(prometheusQuery(
-			fmt.Sprintf(
-				`sum(irate(server_completed_rpcs{exported_kubernetes_namespace="$Namespace", kubernetes_name="%s", target_pod=~"%s"}[$interval])) by (grpc_server_status)`, kubernetesName, targetPod,
-			),
+			promql.Sum(promql.Irate(
+				addBasicLabel(promql.Vector(serverCompletedRPCs)).
+					Range(intervalVariable))).By([]string{grpcServerStatus}).String(),
 		).Format("time_series").LegendFormat("Total ({{grpc_server_status}})"))
 	dashboard.WithPanel(panel)
 }
@@ -119,11 +121,7 @@ func addGoroutinePanel(dashboard *dashboard.DashboardBuilder, kubernetesName str
 		Title("Goroutine Count").
 		Span(widthHalf).Height(heightTall).
 		WithTarget(prometheusQuery(
-			fmt.Sprintf(
-				`goroutine_count{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"%s", target_pod=~"%s"}`,
-				kubernetesName,
-				targetPod,
-			),
+			addBasicLabel(promql.Vector("goroutine_count")).String(),
 		).Format("time_series").LegendFormat("{{target_pod}}"))
 	dashboard.WithPanel(panel)
 }
@@ -133,10 +131,11 @@ func addGCPanel(dashboard *dashboard.DashboardBuilder, kubernetesName string) {
 		Title("GC Count").
 		Span(widthHalf).Height(heightTall).
 		WithTarget(prometheusQuery(
-			fmt.Sprintf(
-				`increase(gc_count{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"%s", target_node=~".+"}[$interval])`,
-				kubernetesName,
-			),
+			promql.Increase(promql.Vector("gc_count").
+				Label(namespaceKey, namespaceVariable).
+				LabelMatchRegexp(nameKey, kubernetesName).
+				LabelMatchRegexp("target_node", ".+").
+				Range(intervalVariable)).String(),
 		).Format("time_series").LegendFormat("{{target_pod}}"))
 	dashboard.WithPanel(panel)
 }
@@ -146,7 +145,8 @@ func addIndexPanel(dashboard *dashboard.DashboardBuilder) {
 		Title("Total Indices").
 		Span(widthHalf).Height(heightTall).
 		WithTarget(prometheusQuery(
-			`sum(agent_core_ngt_index_count{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$PodName"})`,
+			promql.Sum(addBasicLabel(
+				promql.Vector(public_const.IndexCountMetricsName))).String(),
 		).Format("time_series").LegendFormat("indices"))
 	dashboard.WithPanel(panel)
 }
@@ -156,7 +156,7 @@ func addUncommitedIndexPanel(dashboard *dashboard.DashboardBuilder) {
 		Title("Uncommitted Indices").
 		Span(widthHalf).Height(heightTall).
 		WithTarget(prometheusQuery(
-			`sum(agent_core_ngt_uncommitted_index_count{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$PodName"})`,
+			promql.Sum(addBasicLabel(promql.Vector(public_const.UncommittedIndexCountMetricsName))).String(),
 		).Format("time_series").LegendFormat("uncommitted-indices"))
 	dashboard.WithPanel(panel)
 }
@@ -167,10 +167,10 @@ func addIndexLatencyPanel(dashboard *dashboard.DashboardBuilder) {
 		Span(widthHalf).Height(heightTall)
 	for _, quantile := range quntiles {
 		panel.WithTarget(prometheusQuery(
-			fmt.Sprintf(
-				`histogram_quantile(%f, sum(rate(server_latency_bucket{exported_kubernetes_namespace="$Namespace", kubernetes_name="$ReplicaSet", target_pod=~"$PodName", grpc_server_method=~".*Index$"}[$interval])) by (le, grpc_server_method))`,
-				quantile,
-			),
+			promql.HistogramQuantile(quantile, promql.Sum(promql.Rate(addBasicLabel(
+				promql.Vector(serverLatencyBucket),
+			).LabelMatchRegexp(grpcServerMethod, ".*Index$").
+				Range(intervalVariable))).By([]string{"le", grpcServerMethod})).String(),
 		).
 			Format("time_series").LegendFormat(fmt.Sprintf("{{grpc_server_method}} p%d", int(quantile*100))))
 	}
@@ -182,7 +182,9 @@ func addIndexPerPodPanel(dashboard *dashboard.DashboardBuilder) {
 		Title("Indices Per Pod").
 		Span(widthHalf).Height(heightTall).
 		WithTarget(prometheusQuery(
-			`sum(agent_core_ngt_index_count{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$PodName"}) by (target_pod)`,
+			promql.Sum(addBasicLabel(promql.Vector(
+				public_const.IndexCountMetricsName))).
+				By([]string{"target_pod"}).String(),
 		).Format("time_series").LegendFormat("{{hostname}}"))
 	dashboard.WithPanel(panel)
 }
@@ -238,7 +240,7 @@ func addMetricPanel(dashboard *dashboard.DashboardBuilder, title string, metric 
 		Title(title).
 		Span(widthQuarter).Height(heightTall).
 		WithTarget(prometheusQuery(
-			fmt.Sprintf(`%s{exported_kubernetes_namespace="$Namespace", target_pod=~"$PodName", kubernetes_name=~"$ReplicaSet"}`, metric),
+			addBasicLabel(promql.Vector(metric)).String(),
 		).Format("time_series").LegendFormat("{{target_pod}}")).Min(0)
 	if unit != nil {
 		panel.Unit(*unit)

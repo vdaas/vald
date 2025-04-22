@@ -17,11 +17,11 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
 	"github.com/grafana/grafana-foundation-sdk/go/stat"
 	"github.com/grafana/grafana-foundation-sdk/go/timeseries"
+	"github.com/grafana/promql-builder/go/promql"
+	"github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt/public_const"
 )
 
 func addOverviewIndexPanel(builder *dashboard.DashboardBuilder) {
@@ -29,7 +29,10 @@ func addOverviewIndexPanel(builder *dashboard.DashboardBuilder) {
 		WithPanel(stat.NewPanelBuilder().
 			Title("Indices").
 			WithTarget(prometheusQuery(
-				`sum(agent_core_ngt_index_count{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$ValdAgentPodName"})`,
+				promql.Sum(promql.Vector(public_const.IndexCountMetricsName).
+					Label(namespaceKey, namespaceVariable).
+					LabelMatchRegexp(nameKey, nameVariable).
+					LabelMatchRegexp(podKey, "$ValdAgentPodName")).String(),
 			).Format("table")).
 			Thresholds(
 				dashboard.NewThresholdsConfigBuilder().
@@ -44,7 +47,10 @@ func addNodeCPUPanel(builder *dashboard.DashboardBuilder) {
 		Title("Node CPU").
 		Span((widthFull - widthOneSixth) / 2).Height(heightMedium).
 		WithTarget(prometheusQuery(
-			`sum by (instance) (irate(node_cpu_seconds_total{mode!="idle"}[$interval]))`,
+			promql.Sum(promql.Irate(promql.Vector(nodeCPUMetric).
+				LabelNeq("mode", "idle").
+				Range(intervalVariable))).
+				By([]string{instanceKey}).String(),
 		).Format("time_series").LegendFormat("{{instance}}")).
 		FillOpacity(opacity)
 	builder.WithPanel(panel)
@@ -67,7 +73,13 @@ func addBackoffPanel(builder *dashboard.DashboardBuilder) {
 		Title("Backoff Retry Count (Vald LB Gateway)").
 		Span(widthHalf).Height(heightTall).
 		WithTarget(prometheusQuery(
-			`increase(sum(label_replace(backoff_retry_count{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$ValdGatewayPodName", backoff_name!~"github.com/.*"}, "rpc", "$1",  "backoff_name", "(.*/.*)/.*")) by (rpc) [$interval:])`,
+			promql.Increase(promql.Subquery(promql.Sum(promql.LabelReplace(promql.Vector(backoffRetryCount).
+				Label(namespaceKey, namespaceVariable).
+				LabelMatchRegexp(nameKey, nameVariable).
+				LabelMatchRegexp(podKey, "$ValdGatewayPodName").
+				LabelNotMatchRegexp("backoff_name", "github.com/.*"),
+				"\"rpc\"", "\"$1\"", "\"backoff_name\"", "\"(.*/.*)/.*\"")).
+				By([]string{"rpc"})).Range(intervalVariable + ":")).String(),
 		).Format("time_series").LegendFormat("{{rpc}}")).
 		FillOpacity(opacity)
 	builder.WithPanel(panel)
@@ -78,10 +90,33 @@ func addBackoffPerRPCPanel(builder *dashboard.DashboardBuilder) {
 		Title("Backoff Retry Count / Agent Completed RPCs (Vald LB Gateway)").
 		Span(widthHalf).Height(heightTall).
 		WithTarget(prometheusQuery(
-			`increase(sum(label_replace(backoff_retry_count{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$ValdGatewayPodName", backoff_name!~"github.com/.*"}, "grpc_server_method", "$1",  "backoff_name", "(.*/.*)/.*")) by (grpc_server_method)[$interval:]) / sum(irate(server_completed_rpcs{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$ValdAgentPodName"}[$interval])) by (grpc_server_method)`,
-		).Format("time_series").LegendFormat("{{grpc_server_method}} ({{grpc_server_status}})")).
-		FillOpacity(opacity)
+			promql.Div(
+				promql.Increase(promql.Subquery(promql.Sum(promql.LabelReplace(promql.Vector(backoffRetryCount).
+					Label(namespaceKey, namespaceVariable).
+					LabelMatchRegexp(nameKey, nameVariable).
+					LabelMatchRegexp(podKey, "$ValdGatewayPodName").
+					LabelNotMatchRegexp("backoff_name", "github.com/.*"),
+					"\"rpc\"", "\"$1\"", "\"backoff_name\"", "\"(.*/.*)/.*\"")).
+					By([]string{"rpc"})).Range(intervalVariable+":")),
+				promql.Sum(promql.Irate(promql.Vector(serverCompletedRPCs).
+					Label(namespaceKey, namespaceVariable).
+					LabelMatchRegexp(nameKey, nameVariable).
+					LabelMatchRegexp(podKey, "$ValdAgentPodName").
+					Range(intervalVariable))).By([]string{"grpc_server_method"})).String(),
+		).Format("time_series").LegendFormat("{{grpc_server_method}} ({{grpc_server_status}})"),
+		).FillOpacity(opacity)
 	builder.WithPanel(panel)
+}
+
+func circuitBreakerQuery(state string) string {
+	return promql.Increase(promql.Subquery(promql.Sum(promql.LabelReplace(
+		promql.Vector(circuitBreakerState).
+			Label(namespaceKey, namespaceVariable).
+			LabelMatchRegexp(nameKey, nameVariable).
+			LabelMatchRegexp(podKey, "$ValdGatewayPodName").
+			Label("state", state),
+		"\"rpc\"", "\"$1\"", "\"name\"", "\"(.*/.*)/.*\"")).
+		By([]string{"rpc", "state"})).Range(intervalVariable + ":")).String()
 }
 
 func addCircuitBreakerState(builder *dashboard.DashboardBuilder) {
@@ -89,10 +124,10 @@ func addCircuitBreakerState(builder *dashboard.DashboardBuilder) {
 		Title("Circuit Breaker State (Vald LB Gateway)").
 		Span(widthHalf).Height(heightTall).
 		WithTarget(prometheusQuery(
-			`increase(sum(label_replace(circuit_breaker_state{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$ValdGatewayPodName", state="open"}, "rpc", "$1",  "name", "(.*/.*)/.*")) by (rpc, state) [$interval:])`,
+			circuitBreakerQuery("open"),
 		).Format("time_series").LegendFormat("{{rpc}} ({{state}})")).
 		WithTarget(prometheusQuery(
-			`increase(sum(label_replace(circuit_breaker_state{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$ValdGatewayPodName", state="half-open"}, "rpc", "$1",  "name", "(.*/.*)/.*")) by (rpc, state) [$interval:])`,
+			circuitBreakerQuery("half-open"),
 		).Format("time_series").LegendFormat("{{rpc}} ({{state}})")).
 		FillOpacity(opacity)
 	builder.WithPanel(panel)
@@ -105,14 +140,10 @@ func repeatOverview(builder *dashboard.DashboardBuilder) {
 	for _, ks := range allKindStatus {
 		podStatusPanel.
 			WithTarget(prometheusQuery(
-				fmt.Sprintf(
-					`max(kube_%s_status_%s{namespace="$Namespace", %s="$ReplicaSet"}) and on() count(kube_%s_created{%s=~"$ReplicaSet"}) >= 1`,
-					ks.kind,
-					ks.status,
-					ks.kind,
-					ks.kind,
-					ks.kind,
-				),
+				promql.Max(promql.Vector("kube_"+ks.kind+"_status_"+ks.status).
+					Label("namespace", namespaceVariable).
+					Label(ks.kind, "$ReplicaSet"),
+				).String(),
 			).Format("time_series").LegendFormat(ks.status)).
 			FillOpacity(opacity)
 	}
@@ -121,20 +152,28 @@ func repeatOverview(builder *dashboard.DashboardBuilder) {
 		WithPanel(stat.NewPanelBuilder().
 			Title("Pods").
 			WithTarget(prometheusQuery(
-				`count(kube_pod_info{namespace="$Namespace", pod=~"$ReplicaSet.*"})`,
+				promql.Count(promql.Vector(podInfo).
+					Label("namespace", namespaceVariable).
+					LabelMatchRegexp("pod", "$ReplicaSet.*")).String(),
 			).Format("table")).
 			Span(widthOneEighth).Height(heightTall)).
 		WithPanel(podStatusPanel).
 		WithPanel(timeseries.NewPanelBuilder().
 			Title("CPU").
 			WithTarget(prometheusQuery(
-				`sum(irate(container_cpu_usage_seconds_total{namespace="$Namespace", pod=~"$ReplicaSet.*", image!=""}[$interval])) by (pod)`,
+				promql.Sum(promql.Irate(promql.Vector(cpuMetric).
+					Label("namespace", namespaceVariable).
+					LabelMatchRegexp("pod", "$ReplicaSet.*").
+					LabelNeq("image", "").Range(intervalVariable))).By([]string{"pod"}).String(),
 			).Format("time_series")).
 			Span(witdhOneThird).Height(heightTall).Min(0)).
 		WithPanel(timeseries.NewPanelBuilder().
 			Title("Memory Working Set").
 			WithTarget(prometheusQuery(
-				`sum(container_memory_working_set_bytes{namespace="$Namespace", pod=~"$ReplicaSet.*", image!=""}) by (pod)`,
+				promql.Subquery(promql.Sum(promql.Vector(memMetric).
+					Label("namespace", namespaceVariable).
+					LabelMatchRegexp("pod", "$ReplicaSet.*").
+					LabelNeq("image", "")).By([]string{"pod"})).String(),
 			).Format("time_series")).
 			Unit("decbytes").
 			Span(witdhOneThird).Height(heightTall).Min(0))

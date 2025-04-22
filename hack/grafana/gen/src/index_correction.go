@@ -17,11 +17,10 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/grafana/grafana-foundation-sdk/go/common"
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
 	"github.com/grafana/grafana-foundation-sdk/go/stat"
+	"github.com/grafana/promql-builder/go/promql"
 )
 
 func addIndexCorrectionPanels(builder *dashboard.DashboardBuilder) {
@@ -35,7 +34,7 @@ func indexCorrectionPanel(title string, metric string) *stat.PanelBuilder {
 	return stat.NewPanelBuilder().
 		Title(title).
 		WithTarget(prometheusQuery(
-			fmt.Sprintf(`%s{exported_kubernetes_namespace="$Namespace", kubernetes_name=~"$ReplicaSet", target_pod=~"$PodName"}`, metric),
+			addBasicLabel(promql.Vector(metric)).String(),
 		).Format("table")).
 		ReduceOptions(common.NewReduceDataOptionsBuilder().Calcs([]string{"mean"})).
 		Span(8).Height(heightMedium)

@@ -52,7 +52,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "alloc_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "alloc_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -78,7 +78,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "alloc_bytes_total{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "alloc_bytes_total{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -104,7 +104,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "sys_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "sys_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -130,7 +130,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "lookups_count{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "lookups_count{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -155,7 +155,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "mallocs_total{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "mallocs_total{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -180,7 +180,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "frees_total{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "frees_total{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -205,7 +205,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "heap_alloc_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "heap_alloc_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -231,7 +231,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "heap_sys_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "heap_sys_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -257,7 +257,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "heap_idle_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "heap_idle_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -283,7 +283,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "heap_inuse_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "heap_inuse_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -309,7 +309,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "heap_released_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "heap_released_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -335,7 +335,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "heap_objects_count{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "heap_objects_count{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -360,7 +360,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "stack_inuse_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "stack_inuse_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -386,7 +386,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "stack_sys_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "stack_sys_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -412,7 +412,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "mspan_inuse_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "mspan_inuse_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -438,7 +438,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "mspan_sys_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "mspan_sys_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -464,7 +464,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "mcache_inuse_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "mcache_inuse_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -490,7 +490,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "mcache_sys_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "mcache_sys_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -516,7 +516,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "buckhash_sys_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "buckhash_sys_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -542,7 +542,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "gc_sys_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "gc_sys_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -568,7 +568,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "other_sys_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "other_sys_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -594,7 +594,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "next_gc_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "next_gc_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -620,7 +620,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "pause_ms_total{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "pause_ms_total{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -646,7 +646,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "gc_count{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "gc_count{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -671,7 +671,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "forced_gc_count{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "forced_gc_count{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -696,7 +696,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "heap_will_return_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "heap_will_return_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -722,7 +722,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "live_objects_count{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "live_objects_count{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -760,7 +760,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "vmpeak_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "vmpeak_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -786,7 +786,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "vmsize_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "vmsize_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -812,7 +812,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "vmdata_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "vmdata_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -838,7 +838,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "vmrss_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "vmrss_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -864,7 +864,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "vmhwm_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "vmhwm_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -890,7 +890,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "vmstk_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "vmstk_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -916,7 +916,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "vmswap_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "vmswap_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -942,7 +942,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "vmexe_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "vmexe_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -968,7 +968,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "vmlib_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "vmlib_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -994,7 +994,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "vmlck_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "vmlck_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -1020,7 +1020,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "vmpin_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "vmpin_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
@@ -1046,7 +1046,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "vmpte_bytes{exported_kubernetes_namespace=\"$Namespace\", target_pod=~\"$PodName\", kubernetes_name=~\"$ReplicaSet\"}",
+              "expr": "vmpte_bytes{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""

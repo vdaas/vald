@@ -300,6 +300,8 @@ github.com/goxjs/gl v0.0.0-20210104184919-e3fafc6f8f2a/go.mod h1:dy/f2gjY09hwVfI
 github.com/goxjs/glfw v0.0.0-20191126052801-d2efb5f20838/go.mod h1:oS8P8gVOT4ywTcjV6wZlOU4GuVFQ8F5328KY3MJ79CY=
 github.com/grafana/grafana-foundation-sdk/go v0.0.0-20250414225753-70fb4a598946 h1:igHrSoa/1/Btv42R+t8vQqUV7Gx3gSEmsUBmwwWNhR8=
 github.com/grafana/grafana-foundation-sdk/go v0.0.0-20250414225753-70fb4a598946/go.mod h1:48EA8jF85SrReYflLa39Sk34b6NpxwJPBwjF3TJgRpE=
+github.com/grafana/promql-builder/go v0.0.0-20250217162746-04e54ec636c3 h1:ZX0q1uZWI6OgwRaoztfdmFmmK/YZ9OrDRXuOIfLlk6A=
+github.com/grafana/promql-builder/go v0.0.0-20250217162746-04e54ec636c3/go.mod h1:TsO1alA6DmSpsS8xh4lAknLlY2wLl4q3B/HFMlZvXaE=
 github.com/grafana/pyroscope-go/godeltaprof v0.1.8 h1:iwOtYXeeVSAeYefJNaxDytgjKtUuKQbJqgAIjlnicKg=
 github.com/grafana/pyroscope-go/godeltaprof v0.1.8/go.mod h1:2+l7K7twW49Ct4wFluZD3tZ6e0SjanjcUUBPVD/UuGU=
 github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 h1:+ngKgrYPPJrOjhax5N+uePQ0Fh1Z7PheYoUI/0nzkPA=

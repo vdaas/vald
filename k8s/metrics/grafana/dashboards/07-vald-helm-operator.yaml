@@ -38,7 +38,7 @@ data:
           "type": "stat",
           "targets": [
             {
-              "expr": "helm_operator_build_info{namespace=~\"$Namespace\", app_kubernetes_io_name=\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "expr": "helm_operator_build_info{namespace=\"$Namespace\",app_kubernetes_io_name=\"$ReplicaSet\",instance=~\"$PodName\"}",
               "format": "table",
               "refId": ""
             }
@@ -72,7 +72,7 @@ data:
           "type": "stat",
           "targets": [
             {
-              "expr": "go_info{namespace=~\"$Namespace\", app_kubernetes_io_name=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "expr": "go_info{namespace=\"$Namespace\",app_kubernetes_io_name=~\"$ReplicaSet\",instance=~\"$PodName\"}",
               "format": "table",
               "refId": ""
             }
@@ -106,7 +106,7 @@ data:
           "type": "table",
           "targets": [
             {
-              "expr": "resource_created_at_seconds{namespace=~\"$Namespace\", app_kubernetes_io_name=~\"$ReplicaSet\", instance=~\"$PodName\"}",
+              "expr": "resource_created_at_seconds{namespace=\"$Namespace\",app_kubernetes_io_name=~\"$ReplicaSet\",instance=~\"$PodName\"}",
               "format": "table",
               "refId": ""
             }
@@ -124,7 +124,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "sum(irate(controller_runtime_reconcile_total{namespace=~\"$Namespace\", app_kubernetes_io_name=~\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (controller, result)",
+              "expr": "sum by (controller, result) (irate(controller_runtime_reconcile_total{namespace=\"$Namespace\",app_kubernetes_io_name=~\"$ReplicaSet\",instance=~\"$PodName\"}[$interval]))",
               "format": "time_series",
               "legendFormat": "{{controller}} ({{result}})",
               "refId": ""
@@ -143,7 +143,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "sum(irate(controller_runtime_reconcile_errors_total{namespace=~\"$Namespace\", app_kubernetes_io_name=~\"$ReplicaSet\", instance=~\"$PodName\"}[5m])) by (controller)",
+              "expr": "sum by (controller) (irate(controller_runtime_reconcile_errors_total{namespace=\"$Namespace\",app_kubernetes_io_name=~\"$ReplicaSet\",instance=~\"$PodName\"}[$interval]))",
               "format": "time_series",
               "legendFormat": "{{controller}}",
               "refId": ""
@@ -162,19 +162,19 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "histogram_quantile(0.500000, sum(rate(controller_runtime_reconcile_time_seconds_bucket{namespace=~\"$Namespace\", app_kubernetes_io_name=~\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (le))",
+              "expr": "histogram_quantile(0.5, sum by (le) (rate(controller_runtime_reconcile_time_seconds_bucket{namespace=\"$Namespace\",app_kubernetes_io_name=~\"$ReplicaSet\",instance=~\"$PodName\"}[$interval])))",
               "format": "time_series",
               "legendFormat": "p50",
               "refId": ""
             },
             {
-              "expr": "histogram_quantile(0.950000, sum(rate(controller_runtime_reconcile_time_seconds_bucket{namespace=~\"$Namespace\", app_kubernetes_io_name=~\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (le))",
+              "expr": "histogram_quantile(0.95, sum by (le) (rate(controller_runtime_reconcile_time_seconds_bucket{namespace=\"$Namespace\",app_kubernetes_io_name=~\"$ReplicaSet\",instance=~\"$PodName\"}[$interval])))",
               "format": "time_series",
               "legendFormat": "p95",
               "refId": ""
             },
             {
-              "expr": "histogram_quantile(0.990000, sum(rate(controller_runtime_reconcile_time_seconds_bucket{namespace=~\"$Namespace\", app_kubernetes_io_name=~\"$ReplicaSet\", instance=~\"$PodName\"}[$interval])) by (le))",
+              "expr": "histogram_quantile(0.99, sum by (le) (rate(controller_runtime_reconcile_time_seconds_bucket{namespace=\"$Namespace\",app_kubernetes_io_name=~\"$ReplicaSet\",instance=~\"$PodName\"}[$interval])))",
               "format": "time_series",
               "legendFormat": "p99",
               "refId": ""
@@ -193,19 +193,19 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "histogram_quantile(0.500000, sum(rate(rest_client_request_duration_seconds_bucket{namespace=~\"$Namespace\"}[$interval])) by (le))",
+              "expr": "histogram_quantile(0.5, sum by (le) (rate(rest_client_request_duration_seconds_bucket{namespace=\"$Namespace\"}[$interval])))",
               "format": "time_series",
               "legendFormat": "p50",
               "refId": ""
             },
             {
-              "expr": "histogram_quantile(0.950000, sum(rate(rest_client_request_duration_seconds_bucket{namespace=~\"$Namespace\"}[$interval])) by (le))",
+              "expr": "histogram_quantile(0.95, sum by (le) (rate(rest_client_request_duration_seconds_bucket{namespace=\"$Namespace\"}[$interval])))",
               "format": "time_series",
               "legendFormat": "p95",
               "refId": ""
             },
             {
-              "expr": "histogram_quantile(0.990000, sum(rate(rest_client_request_duration_seconds_bucket{namespace=~\"$Namespace\"}[$interval])) by (le))",
+              "expr": "histogram_quantile(0.99, sum by (le) (rate(rest_client_request_duration_seconds_bucket{namespace=\"$Namespace\"}[$interval])))",
               "format": "time_series",
               "legendFormat": "p99",
               "refId": ""
