@@ -34,7 +34,6 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
@@ -136,28 +135,19 @@ func (e *export) doExportIndex(
 
 	emptyReq := new(payload.Object_List_Request)
 
-	eg, egctx := errgroup.WithContext(ctx)
-	eg.SetLimit(e.streamListConcurrency)
-	ctx, cancel := context.WithCancelCause(egctx)
-	gatewayAddrs := e.gateway.GRPCClient().ConnectedAddrs()
-	if len(gatewayAddrs) == 0 {
-		log.Errorf("Active gateway is not found: %v", ctx.Err())
-		return errors.New("no active gateways available")
-	}
-
-	conn, err := grpc.NewClient(gatewayAddrs[0], grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return err
-	}
-
-	vcClient := vc.NewValdClient(conn)
 	grpcCallOpts := []grpc.CallOption{
 		grpc.WaitForReady(true),
 	}
-	stream, err := vcClient.StreamListObject(ctx, emptyReq, grpcCallOpts...)
+
+	stream, err := e.gateway.StreamListObject(ctx, emptyReq, grpcCallOpts...)
 	if err != nil || stream == nil {
 		return err
 	}
+
+	eg, egctx := errgroup.WithContext(ctx)
+	eg.SetLimit(e.streamListConcurrency)
+	ctx, cancel := context.WithCancelCause(egctx)
+	defer cancel(nil)
 
 	for {
 		select {
