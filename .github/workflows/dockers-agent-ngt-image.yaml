@@ -110,7 +110,6 @@ on:
       - internal/observability/exporter/otlp/*.go
       - internal/observability/metrics/*.go
       - internal/observability/metrics/agent/core/ngt/*.go
-      - internal/observability/metrics/agent/core/ngt/public_const/*.go
       - internal/observability/metrics/grpc/*.go
       - internal/observability/metrics/info/*.go
       - internal/observability/metrics/mem/*.go
@@ -234,7 +233,6 @@ on:
       - internal/observability/exporter/otlp/*.go
       - internal/observability/metrics/*.go
       - internal/observability/metrics/agent/core/ngt/*.go
-      - internal/observability/metrics/agent/core/ngt/public_const/*.go
       - internal/observability/metrics/grpc/*.go
       - internal/observability/metrics/info/*.go
       - internal/observability/metrics/mem/*.go

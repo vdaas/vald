@@ -81,15 +81,7 @@ func addJobMemoryPanel(builder *dashboard.DashboardBuilder) {
 	builder.WithPanel(panel.Min(0))
 }
 
-func addLatencyPanel(
-	builder *dashboard.DashboardBuilder,
-	subTitle string,
-	kubernetesName string,
-	targetPod string,
-	container string,
-	method string,
-	match bool,
-) {
+func addLatencyPanel(builder *dashboard.DashboardBuilder, subTitle string, kubernetesName string, targetPod string, container string, method string, match bool) {
 	panel := timeseries.NewPanelBuilder().
 		Title(fmt.Sprintf("Latency (%s%s)", subTitle, targetPod)).
 		Span(widthHalf).Height(heightTall)
@@ -107,9 +99,7 @@ func addLatencyPanel(
 	builder.WithPanel(panel)
 }
 
-func addCompletedRPCPanel(
-	dashboard *dashboard.DashboardBuilder, subTitle string, kubernetesName string, targetPod string,
-) {
+func addCompletedRPCPanel(dashboard *dashboard.DashboardBuilder, subTitle string, kubernetesName string, targetPod string) {
 	panel := timeseries.NewPanelBuilder().
 		Title(fmt.Sprintf("Completed RPCs (%s%s)", subTitle, targetPod)).
 		Span(widthHalf).Height(heightTall).
@@ -126,9 +116,7 @@ func addCompletedRPCPanel(
 	dashboard.WithPanel(panel)
 }
 
-func addGoroutinePanel(
-	dashboard *dashboard.DashboardBuilder, kubernetesName string, targetPod string,
-) {
+func addGoroutinePanel(dashboard *dashboard.DashboardBuilder, kubernetesName string, targetPod string) {
 	panel := timeseries.NewPanelBuilder().
 		Title("Goroutine Count").
 		Span(widthHalf).Height(heightTall).
@@ -247,9 +235,7 @@ func addProcStatusPanels(dashboard *dashboard.DashboardBuilder) {
 	addMetricPanel(dashboard, "VMPTE", "vmpte_bytes", cog.ToPtr("decbytes"))
 }
 
-func addMetricPanel(
-	dashboard *dashboard.DashboardBuilder, title string, metric string, unit *string,
-) {
+func addMetricPanel(dashboard *dashboard.DashboardBuilder, title string, metric string, unit *string) {
 	panel := timeseries.NewPanelBuilder().
 		Title(title).
 		Span(widthQuarter).Height(heightTall).

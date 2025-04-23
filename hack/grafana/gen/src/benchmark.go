@@ -38,9 +38,7 @@ func addSumStatPanel(builder *dashboard.DashboardBuilder, title string, metric s
 		)
 }
 
-func addBenchmarkStatPanel(
-	builder *dashboard.DashboardBuilder, title string, field string, width uint32,
-) {
+func addBenchmarkStatPanel(builder *dashboard.DashboardBuilder, title string, field string, width uint32) {
 	builder.
 		WithPanel(
 			stat.NewPanelBuilder().
