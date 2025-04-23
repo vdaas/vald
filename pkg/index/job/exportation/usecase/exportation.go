@@ -78,19 +78,8 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 		}
 	}
 
-	grpcServerOptions := []server.Option{
-		server.WithGRPCOption(
-			grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
-			grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
-		),
-	}
-
 	// For health check and metrics
-	srv, err := starter.New(starter.WithConfig(cfg.Server),
-		starter.WithGRPC(func(_ *iconf.Server) []server.Option {
-			return grpcServerOptions
-		}),
-	)
+	srv, err := starter.New(starter.WithConfig(cfg.Server))
 	if err != nil {
 		return nil, err
 	}
