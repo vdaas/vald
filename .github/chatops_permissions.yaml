@@ -69,9 +69,6 @@ users:
     role:
       - author
       - admin
-  rinx:
-    role:
-      - contributor
   kmrmt:
     role:
       - author
@@ -81,17 +78,13 @@ users:
       - sig-lead
       - contributor
       - sig-set
-  hlts2:
-    role:
-      - contributor
-      - sig-sre
-      - sig-set
+      - author
   datelier:
     role:
       - contributor
       - sig-core
-  kevindiu:
+      - author
+  Matts966:
     role:
-      - sig-lead
       - contributor
-      - sig-set
+      - author

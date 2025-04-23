@@ -13,15 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-[workspace]
-members = [
-	"bin/meta",
-	"bin/agent",
-	"libs/algorithm",
-	"libs/algorithms/ngt",
-	"libs/algorithms/qbg",
-	"libs/algorithms/faiss",
-	"libs/kvs",
-	"libs/observability",
-	"libs/proto",
-]
+{{- $deleter   := .Values.manager.index.deleter -}}
+{{- if $deleter.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $deleter.name }}
+  labels:
+    {{- include "vald.labels" (dict "Values" $deleter "default" .) | nindent 10 }}
+spec:
+  schedule: {{ $deleter.schedule | quote }}
+  concurrencyPolicy: Forbid
+  suspend: {{ $deleter.suspend }}
+  startingDeadlineSeconds: {{ $deleter.startingDeadlineSeconds }}
+  jobTemplate:
+    {{- include "vald.index_job" (dict "Job" $deleter "default" . "type" "deleter") | nindent 10 }}
+{{- end }}
