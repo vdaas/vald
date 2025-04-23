@@ -540,9 +540,7 @@ update: \
 
 .PHONY: format
 ## format go codes
-format: license \
-	dockerfile \
-	dashboard \
+format: \
 	format/proto \
 	format/go \
 	format/go/test \
@@ -564,7 +562,8 @@ format/go: \
 	gofumpt/install \
 	strictgoimports/install \
 	goimports/install \
-	files
+	files \
+	license
 	@echo "Formatting Go files..."
 	@cat $(ROOTDIR)/.gitfiles | grep -e "\.go$$" | grep -v "_test\.go$$" | xargs -I {} -P$(CORES) bash -c '\
 	        echo "Formatting {}" && \
@@ -583,7 +582,8 @@ format/go/test: \
 	gofumpt/install \
 	strictgoimports/install \
 	goimports/install \
-	files
+	files \
+	license
 	@echo "Formatting Go Test files..."
 	@cat $(ROOTDIR)/.gitfiles | grep -e "_test\.go$$" | xargs -I {} -P$(CORES) bash -c '\
 	        echo "Formatting Test file {}" && \
