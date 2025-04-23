@@ -750,7 +750,7 @@ func (c *client) StreamListObject(
 			span.End()
 		}
 	}()
-	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+	client, err := c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (any, error) {
@@ -758,6 +758,11 @@ func (c *client) StreamListObject(
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	res, ok := client.(vald.Object_StreamListObjectClient)
+	if !ok {
+		return nil, errors.New("failed to cast client to vald.Object_StreamListObjectClient")
 	}
 	return res, nil
 }
