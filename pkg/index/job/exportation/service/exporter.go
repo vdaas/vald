@@ -186,27 +186,17 @@ func (e *export) doExportIndex(
 					objVec := res.GetVector()
 					log.Infof("received object vector id: %s, timestamp: %d", objVec.GetId(), objVec.GetTimestamp())
 
-					storedBinary, ok, err := e.storedVector.Get(objVec.GetId())
-					if err != nil {
-						log.Errorf("failed to perform Get from check list but still try to finish processing without cache: %v", err)
-						return err
-					}
-
-					var storedObjVec payload.Object_Vector
-					if ok {
-						if err := storedObjVec.UnmarshalVT(storedBinary); err != nil {
-							log.Errorf("failed to Unmarshal proto to payload.Object_Vector: %v", err)
-							return err
-						}
-					}
-
 					isUpsertVector := !ok || storedObjVec.GetTimestamp() < objVec.GetTimestamp()
 					if isUpsertVector {
 						dAtA, err := objVec.MarshalVT()
 						if err != nil {
 							return err
 						}
-						e.storedVector.Set(objVec.GetId(), dAtA)
+-						e.storedVector.Set(objVec.GetId(), dAtA)
++						if err := e.storedVector.Set(objVec.GetId(), dAtA); err != nil {
++							// Abort export so that the caller notices the failure.
++							return fmt.Errorf("failed to persist vector %s: %w", objVec.GetId(), err)
++						}
 					}
 					return nil
 				}))
