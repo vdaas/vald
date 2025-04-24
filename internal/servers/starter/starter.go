@@ -44,6 +44,11 @@ func New(sopts ...Option) (Server, error) {
 		cfg:     new(config.Servers),
 		pstartf: make(map[string]func() error, len(sopts)),
 		pstopf:  make(map[string]func() error, len(sopts)),
+		grpc: func(cfg *config.Server) []server.Option {
+			return []server.Option{
+				server.WithGRPCOption(),
+			}
+		},
 	}
 
 	for _, opt := range sopts {
