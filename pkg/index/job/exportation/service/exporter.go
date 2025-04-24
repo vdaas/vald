@@ -103,6 +103,14 @@ func (e *export) StartClient(ctx context.Context) (<-chan error, error) {
 		for {
 			select {
 			case <-ctx.Done():
+				if errors.Is(ctx.Err(), context.Canceled) {
+					log.Warn("context canceled when starting client")
+					return ctx.Err()
+				}
+				if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+					log.Warn("context deadline exceeded when starting client")
+					return ctx.Err()
+				}
 				return ctx.Err()
 			case err = <-gch:
 			}
