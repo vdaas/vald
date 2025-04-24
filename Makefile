@@ -492,10 +492,10 @@ dockerfile:
 
 .PHONY: dashboard
 ## generate dashboards
-dashboard: k8s/metrics/grafana/dashboards/.stamp
+dashboard: k8s/metrics/grafana/dashboards/00-vald-cluster-overview.yaml
 
-k8s/metrics/grafana/dashboards/.stamp: $(shell find hack/grafana/gen -type f) versions/GRAFANA_VERSION
-	touch k8s/metrics/grafana/dashboards/.stamp
+# To cache the generated dashboards, making a generated file target
+k8s/metrics/grafana/dashboards/00-vald-cluster-overview.yaml: $(shell find hack/grafana/gen -type f) versions/GRAFANA_VERSION
 	$(call gen-dashboard,$(ROOTDIR),$(MAINTAINER))
 
 .PHONY: workflow
