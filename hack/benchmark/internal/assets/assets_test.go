@@ -15,7 +15,7 @@ package assets
 
 // NOT IMPLEMENTED BELOW
 //
-// func TestData(t *testing.T) {
+// func TestLoadData(t *testing.T) {
 // 	type args struct {
 // 		name string
 // 	}
@@ -92,7 +92,7 @@ package assets
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := Data(test.args.name)
+// 			got := LoadData(test.args.name)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

@@ -46,7 +46,6 @@
 .github/chatops_permissions.yaml
 .github/codeql/codeql-config.yaml
 .github/conflint.yaml
-.github/dependabot.yaml
 .github/helm/values/vald-mirror-target.yaml
 .github/helm/values/values-agent-sidecar.yaml
 .github/helm/values/values-chaos.yaml
