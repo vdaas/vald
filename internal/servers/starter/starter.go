@@ -44,11 +44,6 @@ func New(sopts ...Option) (Server, error) {
 		cfg:     new(config.Servers),
 		pstartf: make(map[string]func() error, len(sopts)),
 		pstopf:  make(map[string]func() error, len(sopts)),
-		grpc: func(cfg *config.Server) []server.Option {
-			return []server.Option{
-				server.WithGRPCOption(),
-			}
-		},
 	}
 
 	for _, opt := range sopts {
@@ -114,10 +109,16 @@ func (s *srvs) setupAPIs(cfg *tls.Config) ([]servers.Option, error) {
 			}
 			opts = append(opts, servers.WithServer(srv))
 		case server.GRPC:
-			srv, err := server.New(
-				append(append(sc.Opts(), s.grpc(sc)...),
-					server.WithTLSConfig(cfg),
-				)...)
+			grpcOpts := append(
+				sc.Opts(),
+				server.WithTLSConfig(cfg),
+			)
+
+			if s.grpc != nil {
+				grpcOpts = append(grpcOpts, s.grpc(sc)...)
+			}
+
+			srv, err := server.New(grpcOpts...)
 			if err != nil {
 				return nil, err
 			}
