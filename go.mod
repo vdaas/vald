@@ -349,7 +349,7 @@ replace (
 )
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.6-20250307204501-0409229c3780.1
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.6-20250425153114-8976f5be98c1.1
 	cloud.google.com/go/storage v1.51.0
 	code.cloudfoundry.org/bytefmt v0.36.0
 	github.com/akrylysov/pogreb v0.10.2
