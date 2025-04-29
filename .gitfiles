@@ -128,7 +128,7 @@
 .github/workflows/update-pull-request-and-issue-template.yaml
 .github/workflows/update-web-docs.yaml
 .gitignore
-.golangci.yml
+.golangci.json
 .prh.yaml
 .textlintrc
 .whitesource
