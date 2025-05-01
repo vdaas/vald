@@ -56,7 +56,7 @@ func discovererClient(
 		discoverer.WithNamespace(cfg.Gateway.AgentNamespace),
 		discoverer.WithPort(cfg.Gateway.AgentPort),
 		discoverer.WithServiceDNSARecord(cfg.Gateway.AgentDNS),
-		discoverer.WithDiscovererClient(grpc.New(dopts...)),
+		discoverer.WithDiscovererClient(grpc.New("Discoverer Client", dopts...)),
 		discoverer.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
 		discoverer.WithOptions(aopts...),
 		discoverer.WithNodeName(cfg.Gateway.NodeName),
@@ -73,7 +73,7 @@ func discovererClient(
 			grpc.WithErrGroup(eg),
 			grpc.WithConnectionPoolSize(int(cfg.Gateway.ReadReplicaReplicas)),
 		)
-		discovererOpts = append(discovererOpts, discoverer.WithReadReplicaClient(grpc.New(rrOpts...)))
+		discovererOpts = append(discovererOpts, discoverer.WithReadReplicaClient(grpc.New("Read Replica Client", rrOpts...)))
 	}
 
 	return discoverer.New(discovererOpts...)
