@@ -11,10 +11,10 @@ replace (
 	golang.org/x/crypto => golang.org/x/crypto v0.37.0
 	golang.org/x/net => golang.org/x/net v0.39.0
 	golang.org/x/text => golang.org/x/text v0.24.0
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20250407143221-ac9807e6c755
-	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20250407143221-ac9807e6c755
-	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20250407143221-ac9807e6c755
-	google.golang.org/grpc => google.golang.org/grpc v1.71.1
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20250428153025-10db94c68c34
+	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20250428153025-10db94c68c34
+	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20250428153025-10db94c68c34
+	google.golang.org/grpc => google.golang.org/grpc v1.72.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.36.6
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
 	sigs.k8s.io/yaml => sigs.k8s.io/yaml v1.4.0
@@ -36,7 +36,7 @@ require (
 	golang.org/x/net v0.37.0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/text v0.24.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20250106144421-5f5ef82da422 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250404141209-ee84b53bf3d0 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20250218202821-56aae31c358a // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250425173222-7b384671a197 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 )
