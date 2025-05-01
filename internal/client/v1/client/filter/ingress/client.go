@@ -139,7 +139,7 @@ func (c *client) GenVector(
 			span.End()
 		}
 	}()
-  res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Vector, error) {
