@@ -595,6 +595,7 @@ func (k *KubernetesConfig) Bind() (bound *KubernetesConfig, err error) {
 	}
 	k.Namespace = config.GetActualValue(k.Namespace)
 	k.Name = config.GetActualValue(k.Name)
+	k.LabelSelector = config.GetActualValue(k.LabelSelector)
 	if k.Action, err = k.Action.Bind(); err != nil {
 		return nil, err
 	}

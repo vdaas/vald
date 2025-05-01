@@ -86,7 +86,14 @@ func extractItems[T any](obj any) ([]T, error) {
 
 	out := make([]T, items.Len())
 	for i := 0; i < items.Len(); i++ {
-		val, ok := items.Index(i).Interface().(T)
+		v := items.Index(i)
+		if v.CanAddr() {
+			if ptr, ok := v.Addr().Interface().(T); ok {
+				out[i] = ptr
+				continue
+			}
+		}
+		val, ok := v.Interface().(T) // fallback to value match
 		if !ok {
 			return nil, fmt.Errorf("item at index %d is not of type T", i)
 		}
@@ -132,6 +139,10 @@ func WaitForStatus[T Object, L ObjectList, C NamedObject, I ResourceInterface[T,
 			}
 			matched = true
 			items, err := extractItems[T](l)
+			// if no resources found yet, keep polling
+			if len(items) == 0 {
+				continue
+			}
 			if err != nil {
 				return false, errors.Wrap(err, "failed to extract items")
 			}
