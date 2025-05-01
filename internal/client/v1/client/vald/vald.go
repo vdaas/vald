@@ -165,9 +165,11 @@ func (c *client) StreamSearch(
 	if err != nil {
 		return nil, err
 	}
-	// err == nil, res should not be nil
 	// TODO: refactor RoundRobin using generics
-	res, _ = _res.(vald.Search_StreamSearchClient)
+	res, ok := _res.(vald.Search_StreamSearchClient)
+	if !ok {
+		return nil, errors.ErrGRPCClientNotFound
+	}
 	return res, nil
 }
 
