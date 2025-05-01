@@ -1592,7 +1592,7 @@ func Test_ngt_E2E(t *testing.T) {
 					50,
 				),
 				addr:   "127.0.0.1:8080",
-				client: grpc.New(grpc.WithInsecure(true)),
+				client: grpc.New("NGT Test Client", grpc.WithInsecure(true)),
 			},
 		},
 	}
