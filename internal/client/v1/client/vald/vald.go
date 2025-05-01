@@ -156,16 +156,16 @@ func (c *client) StreamSearch(
 			span.End()
 		}
 	}()
-	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+	_res, err := c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (any, error) {
-		res, err = vald.NewValdClient(conn).StreamSearch(ctx, append(copts, opts...)...)
-		return nil, err
+		return vald.NewValdClient(conn).StreamSearch(ctx, append(copts, opts...)...)
 	})
 	if err != nil {
 		return nil, err
 	}
+	res, _ = _res.(vald.Search_StreamSearchClient)
 	return res, nil
 }
 
