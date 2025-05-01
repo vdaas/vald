@@ -32,7 +32,6 @@ func Exists(kv kvs.BidiMap, vq vqueue.Queue, uuid string) (oid uint32, ok bool) 
 	if !ok {
 		oid, kts, ok = kv.Get(uuid)
 		if !ok {
-			log.Debugf("Exists\tuuid: %s's data not found in kvsdb and insert vqueue\terror: %v", uuid, errors.ErrObjectIDNotFound(uuid))
 			return 0, false
 		}
 		if kts < its {
