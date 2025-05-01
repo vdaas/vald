@@ -682,6 +682,25 @@ func (g *gRPCClient) OrderedRangeConcurrent(
 	return nil
 }
 
+func RoundRobin[R any](
+	c Client,
+	ctx context.Context,
+	f func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption) (R, error),
+) (data R, err error) {
+	res, err := c.RoundRobin(ctx, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
+		return f(ctx, conn, copts...)
+	})
+	var zero R
+	if err != nil {
+		return zero, err
+	}
+	if res, ok := res.(R); ok {
+		return res, nil
+	}
+	return zero, errors.UnexpectedProtoMessageType(zero, res)
+}
+
 func (g *gRPCClient) RoundRobin(
 	ctx context.Context,
 	f func(ctx context.Context,
