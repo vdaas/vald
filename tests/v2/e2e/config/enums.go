@@ -96,6 +96,7 @@ const (
 	KubernetesActionPatch   KubernetesAction = "patch"
 	KubernetesActionScale   KubernetesAction = "scale"
 	KubernetesActionWait    KubernetesAction = "wait"
+	KubernetesActionWaitAll KubernetesAction = "waitall"
 )
 
 type KubernetesKind string

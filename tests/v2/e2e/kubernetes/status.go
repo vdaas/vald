@@ -22,6 +22,7 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"slices"
 	"time"
 
@@ -73,20 +74,42 @@ var ResourceStatusMap = map[ResourceStatus]string{
 	StatusLoadBalancing: "Load balancer provisioning in progress",
 }
 
+func extractItems[T any](obj any) ([]T, error) {
+	v := reflect.ValueOf(obj)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	items := v.FieldByName("Items")
+	if !items.IsValid() || items.Kind() != reflect.Slice {
+		return nil, fmt.Errorf("field 'Items' not found or not a slice")
+	}
+
+	out := make([]T, items.Len())
+	for i := 0; i < items.Len(); i++ {
+		val, ok := items.Index(i).Interface().(T)
+		if !ok {
+			return nil, fmt.Errorf("item at index %d is not of type T", i)
+		}
+		out[i] = val
+	}
+	return out, nil
+}
+
 // --------------------------------------------------------------------------------
-// WaitForStatus waits for a Kubernetes resource to reach a specific status.
-// The function checks the status of the resource at regular intervals and returns
-// the object, a boolean indicating if the status matched, and an error (if any).
+// WaitForStatus waits for specific Kubernetes resources to reach a specific status.
+// The function checks the status of the resources at regular intervals and returns
+// objects, a boolean indicating if the status matched, and an error (if any).
 // The function supports Deployment, StatefulSet, DaemonSet, Job, CronJob, Pod,
 // PersistentVolumeClaim, Service, and Ingress.
 // --------------------------------------------------------------------------------
 func WaitForStatus[T Object, L ObjectList, C NamedObject, I ResourceInterface[T, L, C]](
-	ctx context.Context, client I, name string, statuses ...ResourceStatus,
-) (obj T, matched bool, err error) {
+	ctx context.Context, client I, name string, labelSelector string, statuses ...ResourceStatus,
+) (matched bool, err error) {
+	var obj T
 	if !slices.ContainsFunc(PossibleStatuses(obj), func(st ResourceStatus) bool {
 		return slices.Contains(statuses, st)
 	}) {
-		return obj, false, errors.ErrStatusPatternNeverMatched
+		return false, errors.ErrStatusPatternNeverMatched
 	}
 
 	ticker := time.NewTicker(5 * time.Second)
@@ -94,20 +117,37 @@ func WaitForStatus[T Object, L ObjectList, C NamedObject, I ResourceInterface[T,
 	for {
 		select {
 		case <-ctx.Done():
-			return obj, false, ctx.Err()
+			return false, ctx.Err()
 		case <-ticker.C:
-			obj, err = client.Get(ctx, name, metav1.GetOptions{})
-			if err != nil {
-				return obj, false, err
+			opts := metav1.ListOptions{}
+			if name != "" {
+				opts.FieldSelector = "metadata.name=" + name
 			}
-			status, info, err := CheckResourceState(obj)
-			if err != nil {
-				return obj, false, errors.Wrap(err, info)
+			if labelSelector != "" {
+				opts.LabelSelector = labelSelector
 			}
-			for _, st := range statuses {
-				if st == status {
-					return obj, true, nil
+			l, err := client.List(ctx, opts)
+			if err != nil {
+				return false, err
+			}
+			matched = true
+			items, err := extractItems[T](l)
+			if err != nil {
+				return false, errors.Wrap(err, "failed to extract items")
+			}
+			for _, obj := range items {
+				status, info, err := CheckResourceState(obj)
+				if err != nil {
+					return false, errors.Wrap(err, info)
 				}
+				for _, st := range statuses {
+					if st != status {
+						matched = false
+					}
+				}
+			}
+			if matched {
+				return true, nil
 			}
 		}
 	}
