@@ -369,12 +369,22 @@ impl algorithm::ANN for QBGService {
 }
 
 fn parse_duration_from_string(input: &str) -> Option<Duration> {
-    if input.len() < 2 || input.chars().last().unwrap().is_numeric() {
+    if input.len() < 2 {
+        return None;
+    }
+    let last_char = match input.chars().last() {
+        Some(c) => c,
+        None => return None,
+    };
+    if last_char.is_numeric() {
         return None;
     }
 
     let (value, unit) = input.split_at(input.len() - 1);
-    let num: u64 = value.parse().ok()?;
+    let num: u64 = match value.parse() {
+        Ok(n) => n,
+        Err(_) => return None,
+    };
     match unit {
         "s" => Some(Duration::from_secs(num)),
         "m" => Some(Duration::from_secs(num * 60)),
