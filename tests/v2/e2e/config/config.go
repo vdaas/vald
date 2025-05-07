@@ -606,12 +606,12 @@ func (k *KubernetesConfig) Bind() (bound *KubernetesConfig, err error) {
 		return nil, err
 	}
 	if k.Namespace == "" || (k.Name == "" && k.LabelSelector == "") || k.Action == "" || k.Kind == "" {
-		return nil, errors.Errorf("kubernetes config: namespace: %s, name: %s or selector: %s, action: %s, and kind: %s must be provided",
+		return nil, errors.Errorf("kubernetes config: namespace: %s, name: %s or label_selector: %s, action: %s, and kind: %s must be provided",
 			k.Namespace, k.Name, k.LabelSelector, k.Action, k.Kind)
 	}
 	if k.LabelSelector != "" {
 		if k.Action != KubernetesActionWait {
-			return nil, errors.Errorf("kubernetes config: selector is currently only supported for wait action")
+			return nil, errors.Errorf("kubernetes config: label_selector is currently only supported for wait action")
 		}
 	}
 	return k, nil
