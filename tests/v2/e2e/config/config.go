@@ -117,12 +117,12 @@ type ModificationConfig struct {
 
 // KubernetesConfig holds Kubernetes-specific settings.
 type KubernetesConfig struct {
-	Kind          KubernetesKind   `yaml:"kind"      json:"kind,omitempty"`
-	Namespace     string           `yaml:"namespace" json:"namespace,omitempty"`
-	Name          string           `yaml:"name"      json:"name,omitempty"`
-	LabelSelector string           `yaml:"label_selector"  json:"label_selector,omitempty"`
-	Action        KubernetesAction `yaml:"action"    json:"action,omitempty"`
-	Status        KubernetesStatus `yaml:"status"    json:"status,omitempty"`
+	Kind          KubernetesKind   `yaml:"kind"           json:"kind,omitempty"`
+	Namespace     string           `yaml:"namespace"      json:"namespace,omitempty"`
+	Name          string           `yaml:"name"           json:"name,omitempty"`
+	LabelSelector string           `yaml:"label_selector" json:"label_selector,omitempty"`
+	Action        KubernetesAction `yaml:"action"         json:"action,omitempty"`
+	Status        KubernetesStatus `yaml:"status"         json:"status,omitempty"`
 }
 
 // Kubernetes holds configuration for Kubernetes environments.
