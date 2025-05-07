@@ -60,7 +60,7 @@ func New(opts ...Option) (Client, error) {
 		if c.addrs == nil {
 			return nil, errors.ErrGRPCTargetAddrNotFound
 		}
-		c.c = grpc.New("Vald Client", grpc.WithAddrs(c.addrs...))
+		c.c = grpc.New(grpc.WithAddrs(c.addrs...))
 	}
 	return c, nil
 }

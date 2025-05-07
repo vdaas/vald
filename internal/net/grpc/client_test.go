@@ -21,7 +21,6 @@ package grpc
 //
 // func TestNew(t *testing.T) {
 // 	type args struct {
-// 		name string
 // 		opts []Option
 // 	}
 // 	type want struct {
@@ -47,7 +46,6 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           name:"",
 // 		           opts:nil,
 // 		       },
 // 		       want: want{},
@@ -67,7 +65,6 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           name:"",
 // 		           opts:nil,
 // 		           },
 // 		           want: want{},
@@ -99,7 +96,7 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			gotC := New(test.args.name, test.args.opts...)
+// 			gotC := New(test.args.opts...)
 // 			if err := checkFunc(test.want, gotC); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -112,7 +109,6 @@ package grpc
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		name                   string
 // 		addrs                  map[string]struct{}
 // 		poolSize               uint64
 // 		clientCount            uint64
@@ -131,6 +127,7 @@ package grpc
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
 // 		mcd                    time.Duration
+// 		group                  singleflight.Group[pool.Conn]
 // 		crl                    sync.Map[string, bool]
 // 		ech                    <-chan error
 // 		monitorRunning         atomic.Bool
@@ -167,7 +164,6 @@ package grpc
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -186,6 +182,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -211,7 +208,6 @@ package grpc
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -230,6 +226,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -264,7 +261,6 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
 // 				addrs:                  test.fields.addrs,
 // 				poolSize:               test.fields.poolSize,
 // 				clientCount:            test.fields.clientCount,
@@ -283,6 +279,7 @@ package grpc
 // 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
 // 				mcd:                    test.fields.mcd,
+// 				group:                  test.fields.group,
 // 				crl:                    test.fields.crl,
 // 				ech:                    test.fields.ech,
 // 				monitorRunning:         test.fields.monitorRunning,
@@ -303,7 +300,6 @@ package grpc
 // 		f   func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
 // 	}
 // 	type fields struct {
-// 		name                   string
 // 		addrs                  map[string]struct{}
 // 		poolSize               uint64
 // 		clientCount            uint64
@@ -322,6 +318,7 @@ package grpc
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
 // 		mcd                    time.Duration
+// 		group                  singleflight.Group[pool.Conn]
 // 		crl                    sync.Map[string, bool]
 // 		ech                    <-chan error
 // 		monitorRunning         atomic.Bool
@@ -355,7 +352,6 @@ package grpc
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -374,6 +370,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -400,7 +397,6 @@ package grpc
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -419,6 +415,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -453,7 +450,6 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
 // 				addrs:                  test.fields.addrs,
 // 				poolSize:               test.fields.poolSize,
 // 				clientCount:            test.fields.clientCount,
@@ -472,6 +468,7 @@ package grpc
 // 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
 // 				mcd:                    test.fields.mcd,
+// 				group:                  test.fields.group,
 // 				crl:                    test.fields.crl,
 // 				ech:                    test.fields.ech,
 // 				monitorRunning:         test.fields.monitorRunning,
@@ -493,7 +490,6 @@ package grpc
 // 		f           func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
 // 	}
 // 	type fields struct {
-// 		name                   string
 // 		addrs                  map[string]struct{}
 // 		poolSize               uint64
 // 		clientCount            uint64
@@ -512,6 +508,7 @@ package grpc
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
 // 		mcd                    time.Duration
+// 		group                  singleflight.Group[pool.Conn]
 // 		crl                    sync.Map[string, bool]
 // 		ech                    <-chan error
 // 		monitorRunning         atomic.Bool
@@ -546,7 +543,6 @@ package grpc
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -565,6 +561,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -592,7 +589,6 @@ package grpc
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -611,6 +607,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -645,7 +642,6 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
 // 				addrs:                  test.fields.addrs,
 // 				poolSize:               test.fields.poolSize,
 // 				clientCount:            test.fields.clientCount,
@@ -664,6 +660,7 @@ package grpc
 // 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
 // 				mcd:                    test.fields.mcd,
+// 				group:                  test.fields.group,
 // 				crl:                    test.fields.crl,
 // 				ech:                    test.fields.ech,
 // 				monitorRunning:         test.fields.monitorRunning,
@@ -685,7 +682,6 @@ package grpc
 // 		f      func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
 // 	}
 // 	type fields struct {
-// 		name                   string
 // 		addrs                  map[string]struct{}
 // 		poolSize               uint64
 // 		clientCount            uint64
@@ -704,6 +700,7 @@ package grpc
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
 // 		mcd                    time.Duration
+// 		group                  singleflight.Group[pool.Conn]
 // 		crl                    sync.Map[string, bool]
 // 		ech                    <-chan error
 // 		monitorRunning         atomic.Bool
@@ -738,7 +735,6 @@ package grpc
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -757,6 +753,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -784,7 +781,6 @@ package grpc
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -803,6 +799,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -837,7 +834,6 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
 // 				addrs:                  test.fields.addrs,
 // 				poolSize:               test.fields.poolSize,
 // 				clientCount:            test.fields.clientCount,
@@ -856,6 +852,7 @@ package grpc
 // 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
 // 				mcd:                    test.fields.mcd,
+// 				group:                  test.fields.group,
 // 				crl:                    test.fields.crl,
 // 				ech:                    test.fields.ech,
 // 				monitorRunning:         test.fields.monitorRunning,
@@ -878,7 +875,6 @@ package grpc
 // 		f           func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
 // 	}
 // 	type fields struct {
-// 		name                   string
 // 		addrs                  map[string]struct{}
 // 		poolSize               uint64
 // 		clientCount            uint64
@@ -897,6 +893,7 @@ package grpc
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
 // 		mcd                    time.Duration
+// 		group                  singleflight.Group[pool.Conn]
 // 		crl                    sync.Map[string, bool]
 // 		ech                    <-chan error
 // 		monitorRunning         atomic.Bool
@@ -932,7 +929,6 @@ package grpc
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -951,6 +947,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -979,7 +976,6 @@ package grpc
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -998,6 +994,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -1032,7 +1029,6 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
 // 				addrs:                  test.fields.addrs,
 // 				poolSize:               test.fields.poolSize,
 // 				clientCount:            test.fields.clientCount,
@@ -1051,6 +1047,7 @@ package grpc
 // 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
 // 				mcd:                    test.fields.mcd,
+// 				group:                  test.fields.group,
 // 				crl:                    test.fields.crl,
 // 				ech:                    test.fields.ech,
 // 				monitorRunning:         test.fields.monitorRunning,
@@ -1071,7 +1068,6 @@ package grpc
 // 		f   func(ctx context.Context, conn *ClientConn, copts ...CallOption) (any, error)
 // 	}
 // 	type fields struct {
-// 		name                   string
 // 		addrs                  map[string]struct{}
 // 		poolSize               uint64
 // 		clientCount            uint64
@@ -1090,6 +1086,7 @@ package grpc
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
 // 		mcd                    time.Duration
+// 		group                  singleflight.Group[pool.Conn]
 // 		crl                    sync.Map[string, bool]
 // 		ech                    <-chan error
 // 		monitorRunning         atomic.Bool
@@ -1127,7 +1124,6 @@ package grpc
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -1146,6 +1142,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -1172,7 +1169,6 @@ package grpc
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -1191,6 +1187,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -1225,7 +1222,6 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
 // 				addrs:                  test.fields.addrs,
 // 				poolSize:               test.fields.poolSize,
 // 				clientCount:            test.fields.clientCount,
@@ -1244,6 +1240,7 @@ package grpc
 // 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
 // 				mcd:                    test.fields.mcd,
+// 				group:                  test.fields.group,
 // 				crl:                    test.fields.crl,
 // 				ech:                    test.fields.ech,
 // 				monitorRunning:         test.fields.monitorRunning,
@@ -1265,7 +1262,6 @@ package grpc
 // 		f    func(ctx context.Context, conn *ClientConn, copts ...CallOption) (any, error)
 // 	}
 // 	type fields struct {
-// 		name                   string
 // 		addrs                  map[string]struct{}
 // 		poolSize               uint64
 // 		clientCount            uint64
@@ -1284,6 +1280,7 @@ package grpc
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
 // 		mcd                    time.Duration
+// 		group                  singleflight.Group[pool.Conn]
 // 		crl                    sync.Map[string, bool]
 // 		ech                    <-chan error
 // 		monitorRunning         atomic.Bool
@@ -1322,7 +1319,6 @@ package grpc
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -1341,6 +1337,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -1368,7 +1365,6 @@ package grpc
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -1387,6 +1383,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -1421,7 +1418,6 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
 // 				addrs:                  test.fields.addrs,
 // 				poolSize:               test.fields.poolSize,
 // 				clientCount:            test.fields.clientCount,
@@ -1440,6 +1436,7 @@ package grpc
 // 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
 // 				mcd:                    test.fields.mcd,
+// 				group:                  test.fields.group,
 // 				crl:                    test.fields.crl,
 // 				ech:                    test.fields.ech,
 // 				monitorRunning:         test.fields.monitorRunning,
@@ -1463,7 +1460,6 @@ package grpc
 // 		f             func(ctx context.Context, conn *ClientConn, copts ...CallOption) (any, error)
 // 	}
 // 	type fields struct {
-// 		name                   string
 // 		addrs                  map[string]struct{}
 // 		poolSize               uint64
 // 		clientCount            uint64
@@ -1482,6 +1478,7 @@ package grpc
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
 // 		mcd                    time.Duration
+// 		group                  singleflight.Group[pool.Conn]
 // 		crl                    sync.Map[string, bool]
 // 		ech                    <-chan error
 // 		monitorRunning         atomic.Bool
@@ -1522,7 +1519,6 @@ package grpc
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -1541,6 +1537,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -1570,7 +1567,6 @@ package grpc
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -1589,6 +1585,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -1623,7 +1620,6 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
 // 				addrs:                  test.fields.addrs,
 // 				poolSize:               test.fields.poolSize,
 // 				clientCount:            test.fields.clientCount,
@@ -1642,6 +1638,7 @@ package grpc
 // 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
 // 				mcd:                    test.fields.mcd,
+// 				group:                  test.fields.group,
 // 				crl:                    test.fields.crl,
 // 				ech:                    test.fields.ech,
 // 				monitorRunning:         test.fields.monitorRunning,
@@ -1658,7 +1655,6 @@ package grpc
 //
 // func Test_gRPCClient_GetDialOption(t *testing.T) {
 // 	type fields struct {
-// 		name                   string
 // 		addrs                  map[string]struct{}
 // 		poolSize               uint64
 // 		clientCount            uint64
@@ -1677,6 +1673,7 @@ package grpc
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
 // 		mcd                    time.Duration
+// 		group                  singleflight.Group[pool.Conn]
 // 		crl                    sync.Map[string, bool]
 // 		ech                    <-chan error
 // 		monitorRunning         atomic.Bool
@@ -1705,7 +1702,6 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -1724,6 +1720,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -1746,7 +1743,6 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -1765,6 +1761,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -1799,7 +1796,6 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
 // 				addrs:                  test.fields.addrs,
 // 				poolSize:               test.fields.poolSize,
 // 				clientCount:            test.fields.clientCount,
@@ -1818,6 +1814,7 @@ package grpc
 // 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
 // 				mcd:                    test.fields.mcd,
+// 				group:                  test.fields.group,
 // 				crl:                    test.fields.crl,
 // 				ech:                    test.fields.ech,
 // 				monitorRunning:         test.fields.monitorRunning,
@@ -1834,7 +1831,6 @@ package grpc
 //
 // func Test_gRPCClient_GetCallOption(t *testing.T) {
 // 	type fields struct {
-// 		name                   string
 // 		addrs                  map[string]struct{}
 // 		poolSize               uint64
 // 		clientCount            uint64
@@ -1853,6 +1849,7 @@ package grpc
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
 // 		mcd                    time.Duration
+// 		group                  singleflight.Group[pool.Conn]
 // 		crl                    sync.Map[string, bool]
 // 		ech                    <-chan error
 // 		monitorRunning         atomic.Bool
@@ -1881,7 +1878,6 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -1900,6 +1896,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -1922,7 +1919,6 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -1941,6 +1937,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -1975,7 +1972,6 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
 // 				addrs:                  test.fields.addrs,
 // 				poolSize:               test.fields.poolSize,
 // 				clientCount:            test.fields.clientCount,
@@ -1994,6 +1990,7 @@ package grpc
 // 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
 // 				mcd:                    test.fields.mcd,
+// 				group:                  test.fields.group,
 // 				crl:                    test.fields.crl,
 // 				ech:                    test.fields.ech,
 // 				monitorRunning:         test.fields.monitorRunning,
@@ -2010,7 +2007,6 @@ package grpc
 //
 // func Test_gRPCClient_GetBackoff(t *testing.T) {
 // 	type fields struct {
-// 		name                   string
 // 		addrs                  map[string]struct{}
 // 		poolSize               uint64
 // 		clientCount            uint64
@@ -2029,6 +2025,7 @@ package grpc
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
 // 		mcd                    time.Duration
+// 		group                  singleflight.Group[pool.Conn]
 // 		crl                    sync.Map[string, bool]
 // 		ech                    <-chan error
 // 		monitorRunning         atomic.Bool
@@ -2057,7 +2054,6 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -2076,6 +2072,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -2098,7 +2095,6 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -2117,6 +2113,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -2151,7 +2148,6 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
 // 				addrs:                  test.fields.addrs,
 // 				poolSize:               test.fields.poolSize,
 // 				clientCount:            test.fields.clientCount,
@@ -2170,6 +2166,7 @@ package grpc
 // 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
 // 				mcd:                    test.fields.mcd,
+// 				group:                  test.fields.group,
 // 				crl:                    test.fields.crl,
 // 				ech:                    test.fields.ech,
 // 				monitorRunning:         test.fields.monitorRunning,
@@ -2190,7 +2187,6 @@ package grpc
 // 		disabled bool
 // 	}
 // 	type fields struct {
-// 		name                   string
 // 		addrs                  map[string]struct{}
 // 		poolSize               uint64
 // 		clientCount            uint64
@@ -2209,6 +2205,7 @@ package grpc
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
 // 		mcd                    time.Duration
+// 		group                  singleflight.Group[pool.Conn]
 // 		crl                    sync.Map[string, bool]
 // 		ech                    <-chan error
 // 		monitorRunning         atomic.Bool
@@ -2237,7 +2234,6 @@ package grpc
 // 		           disabled:false,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -2256,6 +2252,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -2282,7 +2279,6 @@ package grpc
 // 		           disabled:false,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -2301,6 +2297,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -2335,7 +2332,6 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
 // 				addrs:                  test.fields.addrs,
 // 				poolSize:               test.fields.poolSize,
 // 				clientCount:            test.fields.clientCount,
@@ -2354,6 +2350,7 @@ package grpc
 // 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
 // 				mcd:                    test.fields.mcd,
+// 				group:                  test.fields.group,
 // 				crl:                    test.fields.crl,
 // 				ech:                    test.fields.ech,
 // 				monitorRunning:         test.fields.monitorRunning,
@@ -2375,7 +2372,6 @@ package grpc
 // 		dopts []DialOption
 // 	}
 // 	type fields struct {
-// 		name                   string
 // 		addrs                  map[string]struct{}
 // 		poolSize               uint64
 // 		clientCount            uint64
@@ -2394,6 +2390,7 @@ package grpc
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
 // 		mcd                    time.Duration
+// 		group                  singleflight.Group[pool.Conn]
 // 		crl                    sync.Map[string, bool]
 // 		ech                    <-chan error
 // 		monitorRunning         atomic.Bool
@@ -2432,7 +2429,6 @@ package grpc
 // 		           dopts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -2451,6 +2447,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -2478,7 +2475,6 @@ package grpc
 // 		           dopts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -2497,6 +2493,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -2531,7 +2528,6 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
 // 				addrs:                  test.fields.addrs,
 // 				poolSize:               test.fields.poolSize,
 // 				clientCount:            test.fields.clientCount,
@@ -2550,6 +2546,7 @@ package grpc
 // 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
 // 				mcd:                    test.fields.mcd,
+// 				group:                  test.fields.group,
 // 				crl:                    test.fields.crl,
 // 				ech:                    test.fields.ech,
 // 				monitorRunning:         test.fields.monitorRunning,
@@ -2570,7 +2567,6 @@ package grpc
 // 		addr string
 // 	}
 // 	type fields struct {
-// 		name                   string
 // 		addrs                  map[string]struct{}
 // 		poolSize               uint64
 // 		clientCount            uint64
@@ -2589,6 +2585,7 @@ package grpc
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
 // 		mcd                    time.Duration
+// 		group                  singleflight.Group[pool.Conn]
 // 		crl                    sync.Map[string, bool]
 // 		ech                    <-chan error
 // 		monitorRunning         atomic.Bool
@@ -2622,7 +2619,6 @@ package grpc
 // 		           addr:"",
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -2641,6 +2637,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -2667,7 +2664,6 @@ package grpc
 // 		           addr:"",
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -2686,6 +2682,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -2720,7 +2717,6 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
 // 				addrs:                  test.fields.addrs,
 // 				poolSize:               test.fields.poolSize,
 // 				clientCount:            test.fields.clientCount,
@@ -2739,6 +2735,7 @@ package grpc
 // 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
 // 				mcd:                    test.fields.mcd,
+// 				group:                  test.fields.group,
 // 				crl:                    test.fields.crl,
 // 				ech:                    test.fields.ech,
 // 				monitorRunning:         test.fields.monitorRunning,
@@ -2759,7 +2756,6 @@ package grpc
 // 		addr string
 // 	}
 // 	type fields struct {
-// 		name                   string
 // 		addrs                  map[string]struct{}
 // 		poolSize               uint64
 // 		clientCount            uint64
@@ -2778,6 +2774,7 @@ package grpc
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
 // 		mcd                    time.Duration
+// 		group                  singleflight.Group[pool.Conn]
 // 		crl                    sync.Map[string, bool]
 // 		ech                    <-chan error
 // 		monitorRunning         atomic.Bool
@@ -2811,7 +2808,6 @@ package grpc
 // 		           addr:"",
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -2830,6 +2826,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -2856,7 +2853,6 @@ package grpc
 // 		           addr:"",
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -2875,6 +2871,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -2909,7 +2906,6 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
 // 				addrs:                  test.fields.addrs,
 // 				poolSize:               test.fields.poolSize,
 // 				clientCount:            test.fields.clientCount,
@@ -2928,6 +2924,7 @@ package grpc
 // 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
 // 				mcd:                    test.fields.mcd,
+// 				group:                  test.fields.group,
 // 				crl:                    test.fields.crl,
 // 				ech:                    test.fields.ech,
 // 				monitorRunning:         test.fields.monitorRunning,
@@ -2943,11 +2940,7 @@ package grpc
 // }
 //
 // func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
-// 	type args struct {
-// 		ctx context.Context
-// 	}
 // 	type fields struct {
-// 		name                   string
 // 		addrs                  map[string]struct{}
 // 		poolSize               uint64
 // 		clientCount            uint64
@@ -2966,6 +2959,7 @@ package grpc
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
 // 		mcd                    time.Duration
+// 		group                  singleflight.Group[pool.Conn]
 // 		crl                    sync.Map[string, bool]
 // 		ech                    <-chan error
 // 		monitorRunning         atomic.Bool
@@ -2976,12 +2970,11 @@ package grpc
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
 // 		fields     fields
 // 		want       want
 // 		checkFunc  func(want, []string) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
 // 	}
 // 	defaultCheckFunc := func(w want, gotAddrs []string) error {
 // 		if !reflect.DeepEqual(gotAddrs, w.wantAddrs) {
@@ -2994,11 +2987,7 @@ package grpc
 // 		/*
 // 		   {
 // 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		       },
 // 		       fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -3017,6 +3006,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -3024,10 +3014,10 @@ package grpc
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
+// 		       beforeFunc: func(t *testing.T,) {
 // 		           t.Helper()
 // 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
+// 		       afterFunc: func(t *testing.T,) {
 // 		           t.Helper()
 // 		       },
 // 		   },
@@ -3038,11 +3028,7 @@ package grpc
 // 		   func() test {
 // 		       return test {
 // 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           },
 // 		           fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -3061,6 +3047,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -3068,10 +3055,10 @@ package grpc
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
+// 		           beforeFunc: func(t *testing.T,) {
 // 		               t.Helper()
 // 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
+// 		           afterFunc: func(t *testing.T,) {
 // 		               t.Helper()
 // 		           },
 // 		       }
@@ -3085,17 +3072,16 @@ package grpc
 // 			tt.Parallel()
 // 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 // 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
+// 				test.beforeFunc(tt)
 // 			}
 // 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
+// 				defer test.afterFunc(tt)
 // 			}
 // 			checkFunc := test.checkFunc
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
 // 				addrs:                  test.fields.addrs,
 // 				poolSize:               test.fields.poolSize,
 // 				clientCount:            test.fields.clientCount,
@@ -3114,13 +3100,14 @@ package grpc
 // 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
 // 				mcd:                    test.fields.mcd,
+// 				group:                  test.fields.group,
 // 				crl:                    test.fields.crl,
 // 				ech:                    test.fields.ech,
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				stopMonitor:            test.fields.stopMonitor,
 // 			}
 //
-// 			gotAddrs := g.ConnectedAddrs(test.args.ctx)
+//			gotAddrs := g.ConnectedAddrs(context.Background())
 // 			if err := checkFunc(test.want, gotAddrs); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -3133,7 +3120,6 @@ package grpc
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		name                   string
 // 		addrs                  map[string]struct{}
 // 		poolSize               uint64
 // 		clientCount            uint64
@@ -3152,6 +3138,7 @@ package grpc
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
 // 		mcd                    time.Duration
+// 		group                  singleflight.Group[pool.Conn]
 // 		crl                    sync.Map[string, bool]
 // 		ech                    <-chan error
 // 		monitorRunning         atomic.Bool
@@ -3184,7 +3171,6 @@ package grpc
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -3203,6 +3189,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -3228,7 +3215,6 @@ package grpc
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -3247,6 +3233,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -3281,7 +3268,6 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
 // 				addrs:                  test.fields.addrs,
 // 				poolSize:               test.fields.poolSize,
 // 				clientCount:            test.fields.clientCount,
@@ -3300,6 +3286,7 @@ package grpc
 // 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
 // 				mcd:                    test.fields.mcd,
+// 				group:                  test.fields.group,
 // 				crl:                    test.fields.crl,
 // 				ech:                    test.fields.ech,
 // 				monitorRunning:         test.fields.monitorRunning,
@@ -3316,12 +3303,10 @@ package grpc
 //
 // func Test_gRPCClient_rangeConns(t *testing.T) {
 // 	type args struct {
-// 		ctx   context.Context
-// 		force bool
-// 		fn    func(addr string, p pool.Conn) bool
+// 		ctx context.Context
+// 		fn func(addr string, p pool.Conn) bool
 // 	}
 // 	type fields struct {
-// 		name                   string
 // 		addrs                  map[string]struct{}
 // 		poolSize               uint64
 // 		clientCount            uint64
@@ -3340,6 +3325,7 @@ package grpc
 // 		cb                     circuitbreaker.CircuitBreaker
 // 		gbo                    gbackoff.Config
 // 		mcd                    time.Duration
+// 		group                  singleflight.Group[pool.Conn]
 // 		crl                    sync.Map[string, bool]
 // 		ech                    <-chan error
 // 		monitorRunning         atomic.Bool
@@ -3369,12 +3355,9 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
-// 		           force:false,
 // 		           fn:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -3393,6 +3376,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -3415,12 +3399,9 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
-// 		           force:false,
 // 		           fn:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
@@ -3439,6 +3420,7 @@ package grpc
 // 		           cb:nil,
 // 		           gbo:nil,
 // 		           mcd:nil,
+// 		           group:nil,
 // 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
@@ -3473,7 +3455,6 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			g := &gRPCClient{
-// 				name:                   test.fields.name,
 // 				addrs:                  test.fields.addrs,
 // 				poolSize:               test.fields.poolSize,
 // 				clientCount:            test.fields.clientCount,
@@ -3492,13 +3473,14 @@ package grpc
 // 				cb:                     test.fields.cb,
 // 				gbo:                    test.fields.gbo,
 // 				mcd:                    test.fields.mcd,
+// 				group:                  test.fields.group,
 // 				crl:                    test.fields.crl,
 // 				ech:                    test.fields.ech,
 // 				monitorRunning:         test.fields.monitorRunning,
 // 				stopMonitor:            test.fields.stopMonitor,
 // 			}
 //
-// 			err := g.rangeConns(test.args.ctx, test.args.force, test.args.fn)
+// 			err := g.rangeConns(test.args.fn)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

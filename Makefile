@@ -139,8 +139,9 @@ endif
 
 GIT_COMMIT := $(eval GIT_COMMIT := $(shell git rev-list -1 HEAD))$(GIT_COMMIT)
 
+MAKELISTS := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
+
 ROOTDIR = $(eval ROOTDIR := $(or $(shell git rev-parse --show-toplevel), $(PWD)))$(ROOTDIR)
-MAKELISTS := Makefile $(shell find $(ROOTDIR)/Makefile.d -type f -regex ".*\.mk")
 PROTODIRS := $(eval PROTODIRS := $(shell find $(ROOTDIR)/apis/proto -type d | sed -e "s%apis/proto/%%g" | grep -v "apis/proto"))$(PROTODIRS)
 BENCH_DATASET_BASE_DIR = hack/benchmark/assets
 BENCH_DATASET_MD5_DIR_NAME = checksum
@@ -407,7 +408,7 @@ help:
 ## set correct permissions for dirs and files
 perm:
 	find $(ROOTDIR) -type d -not -path "$(ROOTDIR)/.git*" -exec chmod 755 {} \;
-	@cat $(ROOTDIR)/.gitfiles | grep -vE '^\s*#' | grep -v gitignore | xargs -I {} -P$(CORES) chmod 644 {}
+	find $(ROOTDIR) -type f -not -path "$(ROOTDIR)/.git*" -not -name ".gitignore" -exec chmod 644 {} \;
 	if [ -d "$(ROOTDIR)/.git" ]; then \
 		chmod 750 "$(ROOTDIR)/.git"; \
 		if [ -f "$(ROOTDIR)/.git/config" ]; then \
@@ -538,15 +539,12 @@ format: \
 	format/json \
 	format/md \
 	format/yaml \
-	remove/empty/file \
-	format/go \
-	format/go/test
+	remove/empty/file
 
 .PHONY: remove/empty/file
 ## removes empty file such as just includes \r \n space tab
-remove/empty/file: \
-	files
-	@cat $(ROOTDIR)/.gitfiles | grep -vE '^\s*#' | grep -v gitkeep | xargs -I {} -P$(CORES) -n1 sh -c 'if [ -f "{}" ] && [ -z "$$(tr -d '\''[:space:]'\'' < "{}")" ]; then rm "{}"; fi'
+remove/empty/file:
+	find $(ROOTDIR)/ -type f ! -name ".gitkeep" -print0 | xargs -0 -P$(CORES) -n 1 sh -c 'grep -qvE "^[ \t\n]*$$" "$$1" || rm "$$1"' sh
 
 .PHONY: format/go
 ## run golines, gofumpt, goimports for all go files
@@ -559,7 +557,7 @@ format/go: \
 	files
 	@echo "Formatting Go files..."
 	@cat $(ROOTDIR)/.gitfiles | grep -e "\.go$$" | grep -v "_test\.go$$" | xargs -I {} -P$(CORES) bash -c '\
-	        echo "Formatting Go file {}" && \
+	        echo "Formatting {}" && \
 		$(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH) {} && \
 		$(GOBIN)/strictgoimports -w {} && \
 		$(GOBIN)/goimports -w {} && \
@@ -578,7 +576,7 @@ format/go/test: \
 	files
 	@echo "Formatting Go Test files..."
 	@cat $(ROOTDIR)/.gitfiles | grep -e "_test\.go$$" | xargs -I {} -P$(CORES) bash -c '\
-	        echo "Formatting Go Test file {}" && \
+	        echo "Formatting Test file {}" && \
 		$(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH) {} && \
 		$(GOBIN)/strictgoimports -w {} && \
 		$(GOBIN)/goimports -w {} && \
@@ -589,14 +587,11 @@ format/go/test: \
 .PHONY: format/yaml
 format/yaml: \
 	prettier/install\
-	yamlfmt/install \
-	files
-	@echo "Formatting YAML files..."
-	- @cat $(ROOTDIR)/.gitfiles | grep -E '\.ya?ml\b' | grep -Ev '(templates|s3)' | xargs -I {} -P$(CORES) bash -c '\
-		echo "Formatting YAML file {}" && \
-		yamlfmt {} && \
-		prettier --write {}'
-	@echo "YAML file formatting complete."
+	yamlfmt/install
+	-find $(ROOTDIR) -name "*.yaml" -type f | grep -v templates | grep -v s3 | xargs -P$(CORES) -I {} prettier --write {}
+	-find $(ROOTDIR) -name "*.yml" -type f | grep -v templates | grep -v s3 | xargs -P$(CORES) -I {} prettier --write {}
+	-find $(ROOTDIR) -name "*.yaml" -type f | grep -v templates | grep -v s3 | xargs -P$(CORES) -I {} yamlfmt {}
+	-find $(ROOTDIR) -name "*.yml" -type f | grep -v templates | grep -v s3 | xargs -P$(CORES) -I {} yamlfmt {}
 
 .PHONY: format/md
 format/md: \
@@ -712,7 +707,6 @@ $(USR_LOCAL)/include/NGT/Capi.h:
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_STATIC_EXECS=ON \
 		-DBUILD_TESTING=OFF \
-		-DNGT_LARGE_DATASET=ON \
 		-DCMAKE_C_FLAGS="$(CFLAGS)" \
 		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
 		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \

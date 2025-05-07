@@ -2463,7 +2463,6 @@ package pool
 // func Test_pool_dial(t *testing.T) {
 // 	type args struct {
 // 		ctx  context.Context
-// 		idx  uint64
 // 		addr string
 // 	}
 // 	type fields struct {
@@ -2514,7 +2513,6 @@ package pool
 // 		       name: "test_case_1",
 // 		       args: args {
 // 		           ctx:nil,
-// 		           idx:0,
 // 		           addr:"",
 // 		       },
 // 		       fields: fields {
@@ -2554,7 +2552,6 @@ package pool
 // 		           name: "test_case_2",
 // 		           args: args {
 // 		           ctx:nil,
-// 		           idx:0,
 // 		           addr:"",
 // 		           },
 // 		           fields: fields {
@@ -2624,7 +2621,7 @@ package pool
 // 				closing:           test.fields.closing,
 // 			}
 //
-// 			got, err := p.dial(test.args.ctx, test.args.idx, test.args.addr)
+// 			got, err := p.dial(test.args.ctx, test.args.addr)
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -4240,17 +4237,17 @@ package pool
 // 		ctx context.Context
 // 	}
 // 	type want struct {
-// 		want map[string]int64
+// 		want map[string]uint64
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		want       want
-// 		checkFunc  func(want, map[string]int64) error
+// 		checkFunc  func(want, map[string]uint64) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got map[string]int64) error {
+// 	defaultCheckFunc := func(w want, got map[string]uint64) error {
 // 		if !reflect.DeepEqual(got, w.want) {
 // 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
@@ -4323,7 +4320,6 @@ package pool
 // func Test_pool_isHealthy(t *testing.T) {
 // 	type args struct {
 // 		ctx  context.Context
-// 		idx  uint64
 // 		conn *ClientConn
 // 	}
 // 	type fields struct {
@@ -4370,7 +4366,6 @@ package pool
 // 		       name: "test_case_1",
 // 		       args: args {
 // 		           ctx:nil,
-// 		           idx:0,
 // 		           conn:nil,
 // 		       },
 // 		       fields: fields {
@@ -4410,7 +4405,6 @@ package pool
 // 		           name: "test_case_2",
 // 		           args: args {
 // 		           ctx:nil,
-// 		           idx:0,
 // 		           conn:nil,
 // 		           },
 // 		           fields: fields {
@@ -4480,7 +4474,7 @@ package pool
 // 				closing:           test.fields.closing,
 // 			}
 //
-// 			got := p.isHealthy(test.args.ctx, test.args.idx, test.args.conn)
+// 			got := p.isHealthy(test.args.ctx, test.args.conn)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

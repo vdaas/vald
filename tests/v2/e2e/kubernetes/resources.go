@@ -559,8 +559,8 @@ func (b *baseClient[T, L, C]) GetPodTemplate(obj T) (*corev1.PodTemplateSpec, er
 }
 
 func (b *baseClient[T, L, C]) SetPodTemplate(obj T, pt *corev1.PodTemplateSpec) (T, error) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
+	b.mu.RLock()
+	defer b.mu.RUnlock()
 	if b.setPodTemplate == nil {
 		return obj, errors.ErrPodTemplateNotFound
 	}

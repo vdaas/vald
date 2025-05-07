@@ -91,16 +91,13 @@ package grpc
 // }
 //
 // func Test_grpcServerMetrics_View(t *testing.T) {
-// 	type fields struct {
-// 		poolTargetAddrKey string
-// 	}
 // 	type want struct {
 // 		want []metrics.View
 // 		err  error
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
+// 		g          *grpcServerMetrics
 // 		want       want
 // 		checkFunc  func(want, []metrics.View, error) error
 // 		beforeFunc func(*testing.T)
@@ -120,9 +117,6 @@ package grpc
 // 		/*
 // 		   {
 // 		       name: "test_case_1",
-// 		       fields: fields {
-// 		           poolTargetAddrKey:"",
-// 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
 // 		       beforeFunc: func(t *testing.T,) {
@@ -139,9 +133,6 @@ package grpc
 // 		   func() test {
 // 		       return test {
 // 		           name: "test_case_2",
-// 		           fields: fields {
-// 		           poolTargetAddrKey:"",
-// 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
 // 		           beforeFunc: func(t *testing.T,) {
@@ -170,9 +161,7 @@ package grpc
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 			g := &grpcServerMetrics{
-// 				poolTargetAddrKey: test.fields.poolTargetAddrKey,
-// 			}
+// 			g := &grpcServerMetrics{}
 //
 // 			got, err := g.View()
 // 			if err := checkFunc(test.want, got, err); err != nil {
@@ -184,10 +173,7 @@ package grpc
 //
 // func Test_grpcServerMetrics_Register(t *testing.T) {
 // 	type args struct {
-// 		m metrics.Meter
-// 	}
-// 	type fields struct {
-// 		poolTargetAddrKey string
+// 		in0 metrics.Meter
 // 	}
 // 	type want struct {
 // 		err error
@@ -195,7 +181,7 @@ package grpc
 // 	type test struct {
 // 		name       string
 // 		args       args
-// 		fields     fields
+// 		g          *grpcServerMetrics
 // 		want       want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
@@ -213,10 +199,7 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           m:nil,
-// 		       },
-// 		       fields: fields {
-// 		           poolTargetAddrKey:"",
+// 		           in0:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -235,10 +218,7 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           m:nil,
-// 		           },
-// 		           fields: fields {
-// 		           poolTargetAddrKey:"",
+// 		           in0:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -268,11 +248,9 @@ package grpc
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 			gm := &grpcServerMetrics{
-// 				poolTargetAddrKey: test.fields.poolTargetAddrKey,
-// 			}
+// 			g := &grpcServerMetrics{}
 //
-// 			err := gm.Register(test.args.m)
+// 			err := g.Register(test.args.in0)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

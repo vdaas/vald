@@ -28,8 +28,6 @@ gateway:
       profefe.com/service: "vald-lb-gateway"
     ingress:
       enabled: true
-    hpa:
-      enabled: false
     resources:
       requests:
         cpu: 100m
