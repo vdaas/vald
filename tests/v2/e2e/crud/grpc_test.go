@@ -228,6 +228,12 @@ func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](
 		t.Error(err)
 		return
 	}
+
+	if any(stream) == nil {
+		err = errors.ErrGRPCClientStreamNotFound
+		t.Error(err)
+		return
+	}
 	// qidx tracks the current index within the modify configuration slice.
 	// idx tracks the current vector index.
 	var idx atomic.Uint64

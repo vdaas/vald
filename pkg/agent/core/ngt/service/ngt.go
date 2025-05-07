@@ -1392,7 +1392,6 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	log.Debug("create index insert phase started")
 	var icnt uint32
 	n.vq.RangePopInsert(ctx, now, func(uuid string, vector []float32, timestamp int64) bool {
-		log.Debugf("start insert operation for ngt index id: %s", uuid)
 		var oid uint
 		oid, err = n.core.Insert(vector)
 		if err != nil {
@@ -1407,7 +1406,6 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 				return true
 			}
 		}
-		log.Debugf("start insert operation for kvsdb id: %s, oid: %d", uuid, oid)
 		n.kvs.Set(uuid, uint32(oid), timestamp)
 		atomic.AddUint32(&icnt, 1)
 
@@ -1417,8 +1415,6 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			delete(n.fmap, uuid)
 		}
 		n.fmu.Unlock()
-		log.Debugf("finished to insert ngt index and kvsdb id: %s, oid: %d", uuid, oid)
-
 		vqProcessedCnt++
 		return true
 	})

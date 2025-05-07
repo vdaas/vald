@@ -128,7 +128,6 @@ on:
       - internal/sync/*.go
       - internal/sync/errgroup/*.go
       - internal/sync/semaphore/*.go
-      - internal/sync/singleflight/*.go
       - internal/test/data/hdf5/*.go
       - internal/timeutil/*.go
       - internal/timeutil/location/*.go
@@ -247,7 +246,6 @@ on:
       - internal/sync/*.go
       - internal/sync/errgroup/*.go
       - internal/sync/semaphore/*.go
-      - internal/sync/singleflight/*.go
       - internal/test/data/hdf5/*.go
       - internal/timeutil/*.go
       - internal/timeutil/location/*.go

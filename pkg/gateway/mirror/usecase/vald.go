@@ -72,7 +72,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	mClient, err := client.New(
 		client.WithAddrs(cfg.Mirror.Client.Addrs...),
-		client.WithClient(grpc.New(cOpts...)),
+		client.WithClient(grpc.New("Gateway Client", cOpts...)),
 	)
 	if err != nil {
 		return nil, err

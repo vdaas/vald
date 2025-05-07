@@ -22,7 +22,7 @@
 *.go                   text encoding=utf-8 eol=lf diff=go
 *.h                    text encoding=utf-8 eol=lf diff=cpp
 *.hpp                  text encoding=utf-8 eol=lf diff=cpp
-*.json                 text encoding=utf-8 eol=lf diff=json linguist-language=JSON
+*.json                 text encoding=utf-8 eol=lf diff=json linguist-language=JSON merge=ours
 *.md                   text encoding=utf-8 eol=lf
 *.proto                text encoding=utf-8 eol=lf diff=proto
 *.py                   text encoding=utf-8 eol=lf diff=python
@@ -48,7 +48,6 @@ LICENSE                text encoding=utf-8 eol=lf
 *.ai      binary filter=lfs diff=lfs merge=lfs -text
 *.psd     binary filter=lfs diff=lfs merge=lfs -text
 
-*.json    merge=ours
 *.mod     merge=ours
 *.sum     merge=ours
 *.svg     merge=ours

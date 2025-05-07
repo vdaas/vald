@@ -123,7 +123,6 @@ on:
       - internal/sync/*.go
       - internal/sync/errgroup/*.go
       - internal/sync/semaphore/*.go
-      - internal/sync/singleflight/*.go
       - internal/timeutil/*.go
       - internal/timeutil/location/*.go
       - internal/tls/*.go
@@ -232,7 +231,6 @@ on:
       - internal/sync/*.go
       - internal/sync/errgroup/*.go
       - internal/sync/semaphore/*.go
-      - internal/sync/singleflight/*.go
       - internal/timeutil/*.go
       - internal/timeutil/location/*.go
       - internal/tls/*.go
