@@ -1517,7 +1517,6 @@ k8s/manager/index/pdb.yaml
 k8s/manager/index/priorityclass.yaml
 k8s/manager/index/svc.yaml
 k8s/metrics/grafana/configmap.yaml
-k8s/metrics/grafana/dashboards/.stamp
 k8s/metrics/grafana/dashboards/00-vald-cluster-overview.yaml
 k8s/metrics/grafana/dashboards/01-vald-agent.yaml
 k8s/metrics/grafana/dashboards/02-vald-discoverer.yaml
