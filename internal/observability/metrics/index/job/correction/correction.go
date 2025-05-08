@@ -23,14 +23,14 @@ import (
 )
 
 const (
-	checkedIndexCount     = "index_job_correction_checked_index_count"
-	checkedIndexCountDesc = "The number of checked indexes while index correction job"
+	CheckedIndexCount     = "index_job_correction_checked_index_count"
+	CheckedIndexCountDesc = "The number of checked indexes while index correction job"
 
-	correctedOldIndexCount     = "index_job_correction_corrected_old_index_count"
-	correctedOldIndexCountDesc = "The number of corrected old indexes while index correction job"
+	CorrectedOldIndexCount     = "index_job_correction_corrected_old_index_count"
+	CorrectedOldIndexCountDesc = "The number of corrected old indexes while index correction job"
 
-	correctedReplicationCount     = "index_job_correction_corrected_replication_count"
-	correctedReplicationCountDesc = "The number of operation happened to correct replication number while index correction job"
+	CorrectedReplicationCount     = "index_job_correction_corrected_replication_count"
+	CorrectedReplicationCountDesc = "The number of operation happened to correct replication number while index correction job"
 )
 
 type correctionMetrics struct {
@@ -47,8 +47,8 @@ func (*correctionMetrics) View() ([]metrics.View, error) {
 	return []metrics.View{
 		view.NewView(
 			view.Instrument{
-				Name:        checkedIndexCount,
-				Description: checkedIndexCountDesc,
+				Name:        CheckedIndexCount,
+				Description: CheckedIndexCountDesc,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -56,8 +56,8 @@ func (*correctionMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        correctedOldIndexCount,
-				Description: correctedOldIndexCountDesc,
+				Name:        CorrectedOldIndexCount,
+				Description: CorrectedOldIndexCountDesc,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -65,8 +65,8 @@ func (*correctionMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        correctedReplicationCount,
-				Description: correctedReplicationCountDesc,
+				Name:        CorrectedReplicationCount,
+				Description: CorrectedReplicationCountDesc,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -77,8 +77,8 @@ func (*correctionMetrics) View() ([]metrics.View, error) {
 
 func (c *correctionMetrics) Register(m metrics.Meter) error {
 	checkedIndexCount, err := m.Int64ObservableGauge(
-		checkedIndexCount,
-		metrics.WithDescription(checkedIndexCountDesc),
+		CheckedIndexCount,
+		metrics.WithDescription(CheckedIndexCountDesc),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -86,8 +86,8 @@ func (c *correctionMetrics) Register(m metrics.Meter) error {
 	}
 
 	oldIndexCount, err := m.Int64ObservableGauge(
-		correctedOldIndexCount,
-		metrics.WithDescription(correctedOldIndexCountDesc),
+		CorrectedOldIndexCount,
+		metrics.WithDescription(CorrectedOldIndexCountDesc),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -95,8 +95,8 @@ func (c *correctionMetrics) Register(m metrics.Meter) error {
 	}
 
 	replicationCount, err := m.Int64ObservableGauge(
-		correctedReplicationCount,
-		metrics.WithDescription(correctedReplicationCountDesc),
+		CorrectedReplicationCount,
+		metrics.WithDescription(CorrectedReplicationCountDesc),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {

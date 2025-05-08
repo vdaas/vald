@@ -737,6 +737,18 @@ hack/go.mod.default
 hack/gorules/rules.go
 hack/gorules/rules_test.go
 hack/gorules/testdata/tests.go
+hack/grafana/gen/src/agent.go
+hack/grafana/gen/src/benchmark.go
+hack/grafana/gen/src/common.go
+hack/grafana/gen/src/const.go
+hack/grafana/gen/src/helm.go
+hack/grafana/gen/src/index_correction.go
+hack/grafana/gen/src/main.go
+hack/grafana/gen/src/overview.go
+hack/grafana/gen/src/puzzle.go
+hack/grafana/gen/src/stat.go
+hack/grafana/gen/src/timeseries.go
+hack/grafana/gen/src/variable.go
 hack/helm/schema/crd/main.go
 hack/helm/schema/crd/main_test.go
 hack/helm/schema/gen/main.go
@@ -1288,6 +1300,7 @@ internal/observability/metrics/agent/core/faiss/faiss.go
 internal/observability/metrics/agent/core/faiss/faiss_test.go
 internal/observability/metrics/agent/core/ngt/ngt.go
 internal/observability/metrics/agent/core/ngt/ngt_test.go
+internal/observability/metrics/agent/core/ngt/public_const/public_const.go
 internal/observability/metrics/agent/sidecar/sidecar.go
 internal/observability/metrics/agent/sidecar/sidecar_test.go
 internal/observability/metrics/backoff/backoff.go
@@ -1514,6 +1527,7 @@ k8s/metrics/grafana/dashboards/09-vald-index-correction.yaml
 k8s/metrics/grafana/dashboards/10-vald-benchmark-operator.yaml
 k8s/metrics/grafana/dashboards/99-vald-agent-memory.yaml
 k8s/metrics/grafana/deployment.yaml
+k8s/metrics/grafana/kustomization.yaml
 k8s/metrics/grafana/svc.yaml
 k8s/metrics/jaeger/README.md
 k8s/metrics/jaeger/jaeger.yaml
@@ -2063,6 +2077,7 @@ versions/DOCKER_VERSION
 versions/FAISS_VERSION
 versions/GOLANGCILINT_VERSION
 versions/GO_VERSION
+versions/GRAFANA_VERSION
 versions/HDF5_VERSION
 versions/HELM_DOCS_VERSION
 versions/HELM_VERSION

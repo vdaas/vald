@@ -49,6 +49,7 @@ type run struct {
 }
 
 const (
+	agentNGTInfo = config.AgentNGTInfo
 	fieldManager = "vald-agent-index-controller"
 )
 
@@ -118,7 +119,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
 			ngtmetrics.New(ngt),
-			infometrics.New("agent_core_ngt_info", "Agent NGT info", *cfg.NGT),
+			infometrics.New(agentNGTInfo, "Agent NGT info", *cfg.NGT),
 			memmetrics.New(),
 		)
 		if err != nil {

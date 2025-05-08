@@ -24,43 +24,43 @@ import (
 )
 
 const (
-	allocMetricsName        = "alloc_bytes"
-	allocMetricsDescription = "Currently allocated number of bytes on the heap"
+	AllocMetricsName        = "alloc_bytes"
+	AllocMetricsDescription = "Currently allocated number of bytes on the heap"
 
-	totalAllocMetricsName        = "alloc_bytes_total"
-	totalAllocMetricsDescription = "Cumulative bytes allocated for heap objects"
+	TotalAllocMetricsName        = "alloc_bytes_total"
+	TotalAllocMetricsDescription = "Cumulative bytes allocated for heap objects"
 
-	sysMetricsName        = "sys_bytes"
-	sysMetricsDescription = "Total bytes of memory obtained from the OS"
+	SysMetricsName        = "sys_bytes"
+	SysMetricsDescription = "Total bytes of memory obtained from the OS"
 
-	mallocsMetricsName        = "mallocs_total"
-	mallocsMetricsDescription = "The cumulative count of heap objects allocated"
+	MallocsMetricsName        = "mallocs_total"
+	MallocsMetricsDescription = "The cumulative count of heap objects allocated"
 
-	freesMetricsName        = "frees_total"
-	freesMetricsDescription = "The cumulative count of heap objects freed"
+	FreesMetricsName        = "frees_total"
+	FreesMetricsDescription = "The cumulative count of heap objects freed"
 
-	heapAllocMetricsName        = "heap_alloc_bytes"
-	heapAllocMetricsDescription = "Bytes of allocated heap object"
+	HeapAllocMetricsName        = "heap_alloc_bytes"
+	HeapAllocMetricsDescription = "Bytes of allocated heap object"
 
-	heapSysMetricsName        = "heap_sys_bytes"
-	heapSysMetricsDescription = "Bytes of heap memory obtained from the OS"
+	HeapSysMetricsName        = "heap_sys_bytes"
+	HeapSysMetricsDescription = "Bytes of heap memory obtained from the OS"
 
-	heapIdleMetricsName        = "heap_idle_bytes"
-	heapIdleMetricsDescription = "Bytes in idle (unused) spans"
+	HeapIdleMetricsName        = "heap_idle_bytes"
+	HeapIdleMetricsDescription = "Bytes in idle (unused) spans"
 
-	heapInuseMetricsName        = "heap_inuse_bytes"
-	heapInuseMetricsDescription = "Bytes in in-use spans"
+	HeapInuseMetricsName        = "heap_inuse_bytes"
+	HeapInuseMetricsDescription = "Bytes in in-use spans"
 
-	heapReleasedMetricsName        = "heap_released_bytes"
-	heapReleasedMetricsDescription = "Bytes of physical memory returned to the OS"
+	HeapReleasedMetricsName        = "heap_released_bytes"
+	HeapReleasedMetricsDescription = "Bytes of physical memory returned to the OS"
 
-	stackInuseMetricsName        = "stack_inuse_bytes"
-	stackInuseMetricsDescription = "Bytes in stack spans"
+	StackInuseMetricsName        = "stack_inuse_bytes"
+	StackInuseMetricsDescription = "Bytes in stack spans"
 
-	stackSysMetricsName        = "stack_sys_bytes"
-	stackSysMetricsDescription = "Bytes of stack memory obtained from the OS"
+	StackSysMetricsName        = "stack_sys_bytes"
+	StackSysMetricsDescription = "Bytes of stack memory obtained from the OS"
 
-	pauseTotalMsMetricsName        = "pause_ms_total"
+	PauseTotalMsMetricsName        = "pause_ms_total"
 	pauseTotalMsMetricsDescription = "The cumulative milliseconds in GC"
 
 	numGCMetricsName        = "gc_count"
@@ -77,8 +77,8 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 	return []metrics.View{
 		view.NewView(
 			view.Instrument{
-				Name:        allocMetricsName,
-				Description: allocMetricsDescription,
+				Name:        AllocMetricsName,
+				Description: AllocMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -86,8 +86,8 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        totalAllocMetricsDescription,
-				Description: totalAllocMetricsDescription,
+				Name:        TotalAllocMetricsDescription,
+				Description: TotalAllocMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -95,8 +95,8 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        sysMetricsName,
-				Description: sysMetricsDescription,
+				Name:        SysMetricsName,
+				Description: SysMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -104,8 +104,8 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        mallocsMetricsName,
-				Description: mallocsMetricsDescription,
+				Name:        MallocsMetricsName,
+				Description: MallocsMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -113,8 +113,8 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        freesMetricsName,
-				Description: freesMetricsDescription,
+				Name:        FreesMetricsName,
+				Description: FreesMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -122,8 +122,8 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        heapAllocMetricsName,
-				Description: heapAllocMetricsDescription,
+				Name:        HeapAllocMetricsName,
+				Description: HeapAllocMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -131,8 +131,8 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        heapSysMetricsName,
-				Description: heapSysMetricsDescription,
+				Name:        HeapSysMetricsName,
+				Description: HeapSysMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -140,8 +140,8 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        heapIdleMetricsName,
-				Description: heapIdleMetricsDescription,
+				Name:        HeapIdleMetricsName,
+				Description: HeapIdleMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -149,8 +149,8 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        heapInuseMetricsName,
-				Description: heapInuseMetricsDescription,
+				Name:        HeapInuseMetricsName,
+				Description: HeapInuseMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -158,8 +158,8 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        heapReleasedMetricsName,
-				Description: heapReleasedMetricsDescription,
+				Name:        HeapReleasedMetricsName,
+				Description: HeapReleasedMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -167,8 +167,8 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        stackInuseMetricsName,
-				Description: stackInuseMetricsDescription,
+				Name:        StackInuseMetricsName,
+				Description: StackInuseMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -176,8 +176,8 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        stackSysMetricsName,
-				Description: stackSysMetricsDescription,
+				Name:        StackSysMetricsName,
+				Description: StackSysMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -185,7 +185,7 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        pauseTotalMsMetricsName,
+				Name:        PauseTotalMsMetricsName,
 				Description: pauseTotalMsMetricsDescription,
 			},
 			view.Stream{
@@ -207,8 +207,8 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 // skipcq: GO-R1005
 func (*memoryMetrics) Register(m metrics.Meter) error {
 	alloc, err := m.Int64ObservableGauge(
-		allocMetricsName,
-		metrics.WithDescription(allocMetricsDescription),
+		AllocMetricsName,
+		metrics.WithDescription(AllocMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
@@ -216,8 +216,8 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 	}
 
 	totalAlloc, err := m.Int64ObservableGauge(
-		totalAllocMetricsDescription,
-		metrics.WithDescription(totalAllocMetricsDescription),
+		TotalAllocMetricsDescription,
+		metrics.WithDescription(TotalAllocMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
@@ -225,8 +225,8 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 	}
 
 	sys, err := m.Int64ObservableGauge(
-		sysMetricsName,
-		metrics.WithDescription(sysMetricsDescription),
+		SysMetricsName,
+		metrics.WithDescription(SysMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
@@ -234,8 +234,8 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 	}
 
 	mallocs, err := m.Int64ObservableGauge(
-		mallocsMetricsName,
-		metrics.WithDescription(mallocsMetricsDescription),
+		MallocsMetricsName,
+		metrics.WithDescription(MallocsMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -243,8 +243,8 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 	}
 
 	frees, err := m.Int64ObservableGauge(
-		freesMetricsName,
-		metrics.WithDescription(freesMetricsDescription),
+		FreesMetricsName,
+		metrics.WithDescription(FreesMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -252,8 +252,8 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 	}
 
 	heapAlloc, err := m.Int64ObservableGauge(
-		heapAllocMetricsName,
-		metrics.WithDescription(heapAllocMetricsDescription),
+		HeapAllocMetricsName,
+		metrics.WithDescription(HeapAllocMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
@@ -261,8 +261,8 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 	}
 
 	heapSys, err := m.Int64ObservableGauge(
-		heapSysMetricsName,
-		metrics.WithDescription(heapSysMetricsDescription),
+		HeapSysMetricsName,
+		metrics.WithDescription(HeapSysMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
@@ -270,8 +270,8 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 	}
 
 	heapIdle, err := m.Int64ObservableGauge(
-		heapIdleMetricsName,
-		metrics.WithDescription(heapIdleMetricsDescription),
+		HeapIdleMetricsName,
+		metrics.WithDescription(HeapIdleMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
@@ -279,8 +279,8 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 	}
 
 	heapInuse, err := m.Int64ObservableGauge(
-		heapInuseMetricsName,
-		metrics.WithDescription(heapInuseMetricsDescription),
+		HeapInuseMetricsName,
+		metrics.WithDescription(HeapInuseMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
@@ -288,8 +288,8 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 	}
 
 	heapReleased, err := m.Int64ObservableGauge(
-		heapReleasedMetricsName,
-		metrics.WithDescription(heapReleasedMetricsDescription),
+		HeapReleasedMetricsName,
+		metrics.WithDescription(HeapReleasedMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
@@ -297,8 +297,8 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 	}
 
 	stackInuse, err := m.Int64ObservableGauge(
-		stackInuseMetricsName,
-		metrics.WithDescription(stackInuseMetricsDescription),
+		StackInuseMetricsName,
+		metrics.WithDescription(StackInuseMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
@@ -306,8 +306,8 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 	}
 
 	stackSys, err := m.Int64ObservableGauge(
-		stackSysMetricsName,
-		metrics.WithDescription(stackSysMetricsDescription),
+		StackSysMetricsName,
+		metrics.WithDescription(StackSysMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
@@ -315,7 +315,7 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 	}
 
 	pauseTotalMs, err := m.Int64ObservableGauge(
-		pauseTotalMsMetricsName,
+		PauseTotalMsMetricsName,
 		metrics.WithDescription(pauseTotalMsMetricsDescription),
 		metrics.WithUnit(metrics.Milliseconds),
 	)

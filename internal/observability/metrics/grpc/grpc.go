@@ -24,14 +24,14 @@ import (
 )
 
 const (
-	latencyMetricsName        = "server_latency"
-	latencyMetricsDesctiption = "Server latency in milliseconds, by method"
+	LatencyMetricsName        = "server_latency"
+	LatencyMetricsDesctiption = "Server latency in milliseconds, by method"
 
-	completedRPCsMetricsName        = "server_completed_rpcs"
-	completedRPCsMetricsDescription = "Count of RPCs by method and status"
+	CompletedRPCsMetricsName        = "server_completed_rpcs"
+	CompletedRPCsMetricsDescription = "Count of RPCs by method and status"
 
-	poolConnMetricsName        = "server_pool_conn"
-	poolConnMetricsDescription = "Count of healthy pool connections by target address"
+	PoolConnMetricsName        = "server_pool_conn"
+	PoolConnMetricsDescription = "Count of healthy pool connections by target address"
 )
 
 type grpcServerMetrics struct {
@@ -48,8 +48,8 @@ func (*grpcServerMetrics) View() ([]metrics.View, error) {
 	return []metrics.View{
 		view.NewView(
 			view.Instrument{
-				Name:        latencyMetricsName,
-				Description: latencyMetricsDesctiption,
+				Name:        LatencyMetricsName,
+				Description: LatencyMetricsDesctiption,
 			},
 			view.Stream{
 				Aggregation: view.AggregationExplicitBucketHistogram{
@@ -59,8 +59,8 @@ func (*grpcServerMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        completedRPCsMetricsName,
-				Description: completedRPCsMetricsDescription,
+				Name:        CompletedRPCsMetricsName,
+				Description: CompletedRPCsMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationSum{},
@@ -68,8 +68,8 @@ func (*grpcServerMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        poolConnMetricsName,
-				Description: poolConnMetricsDescription,
+				Name:        PoolConnMetricsName,
+				Description: PoolConnMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationSum{},
@@ -81,8 +81,8 @@ func (*grpcServerMetrics) View() ([]metrics.View, error) {
 func (gm *grpcServerMetrics) Register(m metrics.Meter) error {
 	// The metrics are dynamically registered at the grpc server interceptor package,
 	healthyConn, err := m.Int64ObservableGauge(
-		poolConnMetricsName,
-		metrics.WithDescription(poolConnMetricsDescription),
+		PoolConnMetricsName,
+		metrics.WithDescription(PoolConnMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {

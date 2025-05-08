@@ -377,6 +377,10 @@ define gen-dockerfile
 	rm -rf $$BIN_PATH
 endef
 
+define gen-dashboard
+	go run $(ROOTDIR)/hack/grafana/gen/src
+endef
+
 define gen-vald-helm-schema
 	BIN_PATH="$(TEMP_DIR)/vald-helm-schema-gen"; \
 	rm -rf $$BIN_PATH; \
