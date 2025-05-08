@@ -1,0 +1,220 @@
+{
+  "formatters": {
+    "enable": [
+      "gofumpt",
+      "goimports"
+    ],
+    "exclusions": {
+      "generated": "lax",
+      "paths": [
+        "third_party$",
+        "builtin$",
+        "examples$"
+      ]
+    }
+  },
+  "linters": {
+    "default": "none",
+    "enable": [
+      "asasalint",
+      "asciicheck",
+      "bidichk",
+      "bodyclose",
+      "containedctx",
+      "contextcheck",
+      "decorder",
+      "depguard",
+      "dogsled",
+      "dupl",
+      "dupword",
+      "durationcheck",
+      "errchkjson",
+      "errname",
+      "errorlint",
+      "exhaustive",
+      "forcetypeassert",
+      "ginkgolinter",
+      "gocheckcompilerdirectives",
+      "gochecknoglobals",
+      "gochecknoinits",
+      "goconst",
+      "godot",
+      "gosec",
+      "gosmopolitan",
+      "govet",
+      "grouper",
+      "ineffassign",
+      "interfacebloat",
+      "loggercheck",
+      "maintidx",
+      "makezero",
+      "mirror",
+      "misspell",
+      "mnd",
+      "musttag",
+      "nakedret",
+      "nilerr",
+      "nilnil",
+      "noctx",
+      "nolintlint",
+      "nosprintfhostport",
+      "prealloc",
+      "predeclared",
+      "reassign",
+      "rowserrcheck",
+      "sqlclosecheck",
+      "staticcheck",
+      "tagalign",
+      "tagliatelle",
+      "testableexamples",
+      "thelper",
+      "unconvert",
+      "unparam",
+      "unused",
+      "usestdlibvars"
+    ],
+    "exclusions": {
+      "generated": "lax",
+      "paths": [
+        "third_party$",
+        "builtin$",
+        "examples$"
+      ],
+      "rules": [
+        {
+          "linters": [
+            "dupl",
+            "forcetypeassert",
+            "gochecknoinits",
+            "mnd",
+            "noctx"
+          ],
+          "path": "_test\\.go"
+        },
+        {
+          "linters": [
+            "govet"
+          ],
+          "path": "_test\\.go",
+          "text": "copylocks:"
+        },
+        {
+          "linters": [
+            "gochecknoglobals",
+            "mnd"
+          ],
+          "path": "options?\\.go"
+        },
+        {
+          "linters": [
+            "gochecknoglobals"
+          ],
+          "path": "main\\.go"
+        },
+        {
+          "linters": [
+            "depguard"
+          ],
+          "path": "internal/errors/errors\\.go"
+        },
+        {
+          "linters": [
+            "depguard"
+          ],
+          "path": "internal/errors/errors_benchmark_test\\.go"
+        },
+        {
+          "linters": [
+            "depguard"
+          ],
+          "path": "internal/test/comparator/standard\\.go"
+        },
+        {
+          "linters": [
+            "depguard"
+          ],
+          "path": "internal/sync/alias\\.go"
+        },
+        {
+          "linters": [
+            "depguard"
+          ],
+          "path": "hack/benchmark/src/singleflight/singleflight_bench_test\\.go"
+        }
+      ]
+    },
+    "settings": {
+      "depguard": {
+        "rules": {
+          "main": {
+            "deny": [
+              {
+                "desc": "sync is allowed only by internal/sync",
+                "pkg": "sync"
+              },
+              {
+                "desc": "golang.org/x/sync is allowed only by internal/sync",
+                "pkg": "golang.org/x/sync"
+              },
+              {
+                "desc": "golang.org/x/sync/singleflight is allowed only by internal/sync/singleflight",
+                "pkg": "golang.org/x/sync/singleflight"
+              },
+              {
+                "desc": "golang.org/x/sync/semaphore is allowed only by internal/sync/semaphore",
+                "pkg": "golang.org/x/sync/semaphore"
+              },
+              {
+                "desc": "errors is allowed only by internal/errors",
+                "pkg": "errors"
+              },
+              {
+                "desc": "errors is allowed only by internal/errors",
+                "pkg": "github.com/cockroachdb/errors"
+              },
+              {
+                "desc": "errors is allowed only by internal/errors",
+                "pkg": "github.com/pkg/errors"
+              },
+              {
+                "desc": "errors is allowed only by internal/errors",
+                "pkg": "github.com/go-errors/errors"
+              },
+              {
+                "desc": "cmp is allowed only by internal/test/comparator",
+                "pkg": "github.com/google/go-cmp/cmp"
+              },
+              {
+                "desc": "cmpopts is allowed only by internal/test/comparator",
+                "pkg": "github.com/google/go-cmp/cmp/cmpopts"
+              }
+            ]
+          }
+        }
+      },
+      "gocritic": {
+        "enabled-checks": [
+          "ruleguard"
+        ],
+        "settings": {
+          "ruleguard": {
+            "rules": "./hack/gorules/rules.go"
+          }
+        }
+      },
+      "govet": {
+        "enable-all": true
+      },
+      "tagliatelle": {
+        "case": {
+          "rules": {
+            "json": "snake",
+            "yaml": "snake"
+          },
+          "use-field-name": true
+        }
+      }
+    }
+  },
+  "version": "2"
+}

@@ -104,10 +104,8 @@ func WaitForStatus[T Object, L ObjectList, C NamedObject, I ResourceInterface[T,
 			if err != nil {
 				return obj, false, errors.Wrap(err, info)
 			}
-			for _, st := range statuses {
-				if st == status {
-					return obj, true, nil
-				}
+			if slices.Contains(statuses, status) {
+				return obj, true, nil
 			}
 		}
 	}
