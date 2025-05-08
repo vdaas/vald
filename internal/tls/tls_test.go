@@ -35,7 +35,7 @@ var goleakIgnoreOptions = []goleak.Option{
 	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
 }
 
-func TestNew(t *testing.T) {
+func TestNewServerConfig(t *testing.T) {
 	type args struct {
 		opts []Option
 	}
@@ -65,9 +65,9 @@ func TestNew(t *testing.T) {
 			name: "returns cfg and nil when option is not empty",
 			args: args{
 				opts: []Option{
-					WithCert(testdata.GetTestdataPath("tls/dummyServer.crt")),
-					WithKey(testdata.GetTestdataPath("tls/dummyServer.key")),
-					WithCa(testdata.GetTestdataPath("tls/dummyCa.pem")),
+					WithCert(testdata.GetTestdataPath("tls/server.crt")),
+					WithKey(testdata.GetTestdataPath("tls/server.key")),
+					WithCa(testdata.GetTestdataPath("tls/ca.pem")),
 				},
 			},
 			want: want{
@@ -75,10 +75,10 @@ func TestNew(t *testing.T) {
 					cfg := new(tls.Config)
 
 					cfg.Certificates = make([]tls.Certificate, 1)
-					cfg.Certificates[0], _ = tls.LoadX509KeyPair(testdata.GetTestdataPath("tls/dummyServer.crt"),
-						testdata.GetTestdataPath("tls/dummyServer.key"))
+					cfg.Certificates[0], _ = tls.LoadX509KeyPair(testdata.GetTestdataPath("tls/server.crt"),
+						testdata.GetTestdataPath("tls/server.key"))
 
-					pool, _ := NewX509CertPool(testdata.GetTestdataPath("tls/dummyCa.pem"))
+					pool, _ := NewX509CertPool(testdata.GetTestdataPath("tls/ca.pem"))
 					cfg.ClientCAs = pool
 					cfg.ClientAuth = tls.RequireAndVerifyClientCert
 
@@ -121,7 +121,7 @@ func TestNew(t *testing.T) {
 			name: "returns nil and error when cert path is empty",
 			args: args{
 				opts: []Option{
-					WithKey(testdata.GetTestdataPath("tls/dummyServer.key")),
+					WithKey(testdata.GetTestdataPath("tls/server.key")),
 				},
 			},
 			want: want{
@@ -132,7 +132,7 @@ func TestNew(t *testing.T) {
 			name: "returns nil and error when key path is empty",
 			args: args{
 				opts: []Option{
-					WithCert(testdata.GetTestdataPath("tls/dummyServer.crt")),
+					WithCert(testdata.GetTestdataPath("tls/server.crt")),
 				},
 			},
 			want: want{
@@ -143,25 +143,25 @@ func TestNew(t *testing.T) {
 			name: "returns nil and error when contents of cert file is invalid",
 			args: args{
 				opts: []Option{
-					WithCert(testdata.GetTestdataPath("tls/invalid.crt")),
-					WithKey(testdata.GetTestdataPath("tls/dummyServer.key")),
+					WithCert(testdata.GetTestdataPath("tls/invalid-server.crt")),
+					WithKey(testdata.GetTestdataPath("tls/server.key")),
 				},
 			},
 			want: want{
-				err: errors.New("tls: failed to find any PEM data in certificate input"),
+				err: errors.New("tls: failed to find \"CERTIFICATE\" PEM block in certificate input after skipping PEM blocks of the following types: [CERTIFICATE REQUEST]"),
 			},
 		},
 		{
 			name: "returns nil and error when contents of ca file is invalid",
 			args: args{
 				opts: []Option{
-					WithCert(testdata.GetTestdataPath("tls/dummyServer.crt")),
-					WithKey(testdata.GetTestdataPath("tls/dummyServer.key")),
-					WithCa(testdata.GetTestdataPath("tls/invalid.pem")),
+					WithCert(testdata.GetTestdataPath("tls/server.crt")),
+					WithKey(testdata.GetTestdataPath("tls/server.key")),
+					WithCa(testdata.GetTestdataPath("tls/invalid-ca.pem")),
 				},
 			},
 			want: want{
-				err: errors.ErrCertificationFailed,
+				err: errors.ErrNoCertsAddedToPool,
 			},
 		},
 	}
@@ -181,7 +181,7 @@ func TestNew(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got, err := New(test.args.opts...)
+			got, err := NewServerConfig(test.args.opts...)
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -207,7 +207,14 @@ func TestNewClientConfig(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got *Config, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			left, right := "<nil>", "<nil>"
+			if err != nil {
+				left = err.Error()
+			}
+			if w.err != nil {
+				right = w.err.Error()
+			}
+			return errors.Errorf("got_error: \"%s\",\n\t\t\t\twant: \"%s\"", left, right)
 		}
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
@@ -219,7 +226,7 @@ func TestNewClientConfig(t *testing.T) {
 			name: "returns cfg and nil when option is empty",
 			checkFunc: func(w want, c *Config, err error) error {
 				if !errors.Is(err, w.err) {
-					return fmt.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					return errors.Errorf("got_error: \"%s\",\n\t\t\t\twant: \"%s\"", err.Error(), w.err.Error())
 				}
 				if c == nil {
 					return errors.New("config is nil")
@@ -231,13 +238,13 @@ func TestNewClientConfig(t *testing.T) {
 			name: "returns cfg and nil when cert and key option is not empty",
 			args: args{
 				opts: []Option{
-					WithCert(testdata.GetTestdataPath("tls/dummyServer.crt")),
-					WithKey(testdata.GetTestdataPath("tls/dummyServer.key")),
+					WithCert(testdata.GetTestdataPath("tls/server.crt")),
+					WithKey(testdata.GetTestdataPath("tls/server.key")),
 				},
 			},
 			checkFunc: func(w want, c *Config, err error) error {
 				if !errors.Is(err, w.err) {
-					return fmt.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					return errors.Errorf("got_error: \"%s\",\n\t\t\t\twant: \"%s\"", err.Error(), w.err.Error())
 				}
 				if c == nil {
 					return errors.New("config is nil")
@@ -252,25 +259,25 @@ func TestNewClientConfig(t *testing.T) {
 			name: "returns nil and error when contents of ca file is invalid",
 			args: args{
 				opts: []Option{
-					WithCa(testdata.GetTestdataPath("tls/invalid.pem")),
+					WithCa(testdata.GetTestdataPath("tls/invalid-ca.pem")),
 				},
 			},
 			want: want{
-				err: errors.ErrCertificationFailed,
+				err: errors.ErrNoCertsAddedToPool,
 			},
 		},
 		{
 			name: "returns nil and error when contents of cert file is invalid",
 			args: args{
 				opts: []Option{
-					WithCert(testdata.GetTestdataPath("tls/invalid.crt")),
-					WithKey(testdata.GetTestdataPath("tls/dummyServer.key")),
+					WithCert(testdata.GetTestdataPath("tls/invalid-server.crt")),
+					WithKey(testdata.GetTestdataPath("tls/server.key")),
 				},
 			},
 			checkFunc: func(w want, c *Config, err error) error {
-				wantErr := "tls: failed to find any PEM data in certificate input"
+				wantErr := "tls: failed to find \"CERTIFICATE\" PEM block in certificate input after skipping PEM blocks of the following types: [CERTIFICATE REQUEST]"
 				if err.Error() != wantErr {
-					return fmt.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					return errors.Errorf("got_error: \"%s\",\n\t\t\t\twant: \"%s\"", err.Error(), wantErr)
 				}
 				if c != nil {
 					return errors.Errorf("config is not nil: %v", c)
@@ -297,7 +304,7 @@ func TestNewClientConfig(t *testing.T) {
 
 			got, err := NewClientConfig(test.args.opts...)
 			if err := checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
+				tt.Errorf("error = %s", err.Error())
 			}
 		})
 	}
@@ -332,11 +339,11 @@ func TestNewX509CertPool(t *testing.T) {
 		{
 			name: "returns pool and nil when the pool exists and adds the cert into pool",
 			args: args{
-				path: testdata.GetTestdataPath("tls/dummyServer.crt"),
+				path: testdata.GetTestdataPath("tls/ca.pem"),
 			},
 			want: want{
 				want: func() *x509.CertPool {
-					path := testdata.GetTestdataPath("tls/dummyServer.crt")
+					path := testdata.GetTestdataPath("tls/ca.pem")
 					pool, err := x509.SystemCertPool()
 					if err != nil {
 						pool = x509.NewCertPool()
@@ -356,7 +363,7 @@ func TestNewX509CertPool(t *testing.T) {
 					return errors.New("got is nil")
 				}
 				if ok := cp.Equal(w.want); !ok {
-					return errors.Errorf("not equals. want: %#v, got: %#v", w.want, cp)
+					return errors.New("cert pool is not equals")
 				}
 				return nil
 			},
@@ -364,17 +371,17 @@ func TestNewX509CertPool(t *testing.T) {
 		{
 			name: "returns nil and error when contents of path is invalid",
 			args: args{
-				path: testdata.GetTestdataPath("tls/invalid.pem"),
+				path: testdata.GetTestdataPath("tls/invalid-ca.pem"),
 			},
 			want: want{
-				err: errors.ErrCertificationFailed,
+				err: errors.ErrNoCertsAddedToPool,
 			},
 			checkFunc: func(w want, cp *x509.CertPool, err error) error {
 				if !errors.Is(err, w.err) {
 					return errors.Errorf("err not equals. want: %v, but got: %v", w.err, err)
 				}
-				if cp == nil {
-					return errors.Errorf("got is nil: %v", cp)
+				if cp != nil {
+					return errors.Errorf("got is not nil: %v", cp)
 				}
 				return nil
 			},

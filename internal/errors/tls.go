@@ -28,7 +28,17 @@ var (
 
 	ErrCertificationFailed = New("certification failed")
 
+	ErrUnsupportedClientAuthType = New("Unsupported Client Auth Type")
+
 	ErrFailedToHandshakeTLSConnection = func(network, addr string) error {
 		return Errorf("failed to handshake connection to %s:%s", network, addr)
 	}
+
+	ErrFailedToLoadCertKey = func(role, cert, key string) error {
+		return Errorf("failed to load %s certificate/key (cert: %s, key: %s)", role, cert, key)
+	}
+
+	ErrNoCertsAddedToPool = New("no CA or self-signed certificates added to pool")
+
+	ErrNoCertsFoundInPEM = New("no certificates found from PEM")
 )
