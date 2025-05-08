@@ -754,7 +754,11 @@ func (c *client) StreamListObject(
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (any, error) {
-		return vald.NewValdClient(conn).StreamListObject(ctx, in, append(copts, opts...)...)
+		res, err = vald.NewValdClient(conn).StreamListObject(ctx, in, append(copts, opts...)...)
+		if err != nil {
+			return nil, err
+		}
+		return res, nil
 	})
 	if err != nil {
 		return nil, err

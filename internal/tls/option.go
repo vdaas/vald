@@ -17,7 +17,12 @@
 // Package tls provides implementation of Go API for tls certificate provider
 package tls
 
-import "crypto/tls"
+import (
+	"crypto/tls"
+
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/strings"
+)
 
 type Option func(*credentials) error
 
@@ -68,6 +73,41 @@ var defaultOptions = func() []Option {
 	}
 }
 
+var (
+	replacer      *strings.Replacer
+	clientAuthMap map[string]tls.ClientAuthType
+)
+
+func init() {
+	replacer = strings.NewReplacer(
+		" ", "",
+		"-", "",
+		"_", "",
+		"ｰ", "",
+		"ー", "",
+	)
+	clientAuthMap = map[string]tls.ClientAuthType{
+		"auto":                       tls.NoClientCert,
+		"noclientcert":               tls.NoClientCert,
+		"none":                       tls.NoClientCert,
+		"request":                    tls.RequestClientCert,
+		"requestclientcert":          tls.RequestClientCert,
+		"requireanyclientcert":       tls.RequireAnyClientCert,
+		"requireany":                 tls.RequireAnyClientCert,
+		"verifyclientcertifgiven":    tls.VerifyClientCertIfGiven,
+		"verifyifgiven":              tls.VerifyClientCertIfGiven,
+		"requireandverifyclientcert": tls.RequireAndVerifyClientCert,
+		"requireandverify":           tls.RequireAndVerifyClientCert,
+	}
+}
+
+func parseClientAuthType(authType string) tls.ClientAuthType {
+	if t, ok := clientAuthMap[replacer.Replace(strings.ToLower(authType))]; ok {
+		return t
+	}
+	return tls.NoClientCert
+}
+
 func WithCert(cert string) Option {
 	return func(c *credentials) error {
 		c.cert = cert
@@ -98,9 +138,34 @@ func WithTLSConfig(cfg *tls.Config) Option {
 	}
 }
 
+func WithServerName(name string) Option {
+	return func(c *credentials) error {
+		c.sn = name
+		return nil
+	}
+}
+
 func WithInsecureSkipVerify(insecure bool) Option {
 	return func(c *credentials) error {
 		c.insecure = insecure
+		return nil
+	}
+}
+
+// WithClientAuth sets server-side client auth policy
+func WithClientAuth(auth string) Option {
+	at := parseClientAuthType(auth)
+	return func(c *credentials) error {
+		switch at {
+		case tls.NoClientCert,
+			tls.RequestClientCert,
+			tls.RequireAnyClientCert,
+			tls.VerifyClientCertIfGiven,
+			tls.RequireAndVerifyClientCert:
+			c.clientAuth = at
+		default:
+			return errors.ErrUnsupportedClientAuthType
+		}
 		return nil
 	}
 }

@@ -232,11 +232,7 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 	}
 
 	if cfg.TLS != nil && cfg.TLS.Enabled {
-		tcfg, err := tls.New(
-			tls.WithCert(cfg.TLS.Cert),
-			tls.WithKey(cfg.TLS.Key),
-			tls.WithCa(cfg.TLS.CA),
-		)
+		tcfg, err := tls.NewClientConfig(cfg.TLS.Opts()...)
 		if err != nil {
 			return nil, err
 		}

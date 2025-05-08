@@ -202,9 +202,11 @@ data:
       tls:
         ca: /path/to/ca
         cert: /path/to/cert
+        client_auth: None
         enabled: false
         insecure_skip_verify: false
         key: /path/to/key
+        server_name: ""
     observability:
       enabled: false
       otlp:
