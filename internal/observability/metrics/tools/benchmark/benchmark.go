@@ -24,23 +24,23 @@ import (
 )
 
 const (
-	appliedScenarioCount            = "benchmark_operator_applied_scenario"
-	appliedScenarioCountDescription = "Benchmark Operator applied scenario count"
+	AppliedScenarioCount            = "benchmark_operator_applied_scenario"
+	AppliedScenarioCountDescription = "Benchmark Operator applied scenario count"
 
-	runningScenarioCount            = "benchmark_operator_running_scenario"
-	runningScenarioCountDescription = "Benchmark Operator running scenario count"
+	RunningScenarioCount            = "benchmark_operator_running_scenario"
+	RunningScenarioCountDescription = "Benchmark Operator running scenario count"
 
-	completeScenarioCount            = "benchmark_operator_complete_scenario"
-	completeScenarioCountDescription = "Benchmark Operator complete scenario count"
+	CompleteScenarioCount            = "benchmark_operator_complete_scenario"
+	CompleteScenarioCountDescription = "Benchmark Operator complete scenario count"
 
-	appliedBenchmarkJobCount            = "benchmark_operator_applied_benchmark_job"
-	appliedBenchmarkJobCountDescription = "Benchmark Operator applied benchmark job count"
+	AppliedBenchmarkJobCount            = "benchmark_operator_applied_benchmark_job"
+	AppliedBenchmarkJobCountDescription = "Benchmark Operator applied benchmark job count"
 
-	runningBenchmarkJobCount            = "benchmark_operator_running_benchmark_job"
-	runningBenchmarkJobCountDescription = "Benchmark Operator running benchmark job count"
+	RunningBenchmarkJobCount            = "benchmark_operator_running_benchmark_job"
+	RunningBenchmarkJobCountDescription = "Benchmark Operator running benchmark job count"
 
-	completeBenchmarkJobCount            = "benchmark_operator_complete_benchmark_job"
-	completeBenchmarkJobCountDescription = "Benchmark Operator complete benchmark job count"
+	CompleteBenchmarkJobCount            = "benchmark_operator_complete_benchmark_job"
+	CompleteBenchmarkJobCountDescription = "Benchmark Operator complete benchmark job count"
 
 	// appliedJobCount            = "benchmark_operator_applied_job"
 	// appliedJobCountDescription = "Benchmark Operator applied job count".
@@ -73,8 +73,8 @@ func (om *operatorMetrics) View() ([]metrics.View, error) {
 	return []metrics.View{
 		view.NewView(
 			view.Instrument{
-				Name:        appliedScenarioCount,
-				Description: appliedScenarioCountDescription,
+				Name:        AppliedScenarioCount,
+				Description: AppliedScenarioCountDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -82,8 +82,8 @@ func (om *operatorMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        runningScenarioCount,
-				Description: runningScenarioCountDescription,
+				Name:        RunningScenarioCount,
+				Description: RunningScenarioCountDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -91,8 +91,8 @@ func (om *operatorMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        completeScenarioCount,
-				Description: completeScenarioCountDescription,
+				Name:        CompleteScenarioCount,
+				Description: CompleteScenarioCountDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -100,8 +100,8 @@ func (om *operatorMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        appliedBenchmarkJobCount,
-				Description: appliedBenchmarkJobCountDescription,
+				Name:        AppliedBenchmarkJobCount,
+				Description: AppliedBenchmarkJobCountDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -109,8 +109,8 @@ func (om *operatorMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        runningBenchmarkJobCount,
-				Description: runningBenchmarkJobCountDescription,
+				Name:        RunningBenchmarkJobCount,
+				Description: RunningBenchmarkJobCountDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -118,8 +118,8 @@ func (om *operatorMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        completeBenchmarkJobCount,
-				Description: completeBenchmarkJobCountDescription,
+				Name:        CompleteBenchmarkJobCount,
+				Description: CompleteBenchmarkJobCountDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -131,24 +131,24 @@ func (om *operatorMetrics) View() ([]metrics.View, error) {
 // TODO: implement here.
 func (om *operatorMetrics) Register(m metrics.Meter) error {
 	appliedScenarioCount, err := m.Int64ObservableCounter(
-		appliedScenarioCount,
-		metrics.WithDescription(appliedScenarioCountDescription),
+		AppliedScenarioCount,
+		metrics.WithDescription(AppliedScenarioCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
 	}
 	runningScenarioCount, err := m.Int64ObservableCounter(
-		runningScenarioCount,
-		metrics.WithDescription(runningScenarioCountDescription),
+		RunningScenarioCount,
+		metrics.WithDescription(RunningScenarioCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
 	}
 	completeScenarioCount, err := m.Int64ObservableCounter(
-		completeScenarioCount,
-		metrics.WithDescription(completeScenarioCountDescription),
+		CompleteScenarioCount,
+		metrics.WithDescription(CompleteScenarioCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -156,24 +156,24 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 	}
 
 	appliedBenchJobCount, err := m.Int64ObservableCounter(
-		appliedBenchmarkJobCount,
-		metrics.WithDescription(appliedScenarioCountDescription),
+		AppliedBenchmarkJobCount,
+		metrics.WithDescription(AppliedScenarioCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
 	}
 	runningBenchJobCount, err := m.Int64ObservableCounter(
-		runningBenchmarkJobCount,
-		metrics.WithDescription(runningScenarioCountDescription),
+		RunningBenchmarkJobCount,
+		metrics.WithDescription(RunningScenarioCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
 	}
 	completeBenchJobCount, err := m.Int64ObservableCounter(
-		completeBenchmarkJobCount,
-		metrics.WithDescription(completeScenarioCountDescription),
+		CompleteBenchmarkJobCount,
+		metrics.WithDescription(CompleteScenarioCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {

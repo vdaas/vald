@@ -45,7 +45,7 @@ data:
             "y": 0
           },
           "id": 0,
-          "panels": null
+          "panels": []
         },
         {
           "type": "stat",
@@ -205,7 +205,7 @@ data:
                 ]
               }
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -287,7 +287,7 @@ data:
             "y": 7
           },
           "id": 0,
-          "panels": null
+          "panels": []
         },
         {
           "type": "stat",
@@ -326,7 +326,7 @@ data:
                 ]
               }
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -366,7 +366,7 @@ data:
                 ]
               }
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -406,7 +406,7 @@ data:
                 ]
               }
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -446,7 +446,7 @@ data:
                 ]
               }
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -486,7 +486,7 @@ data:
                 ]
               }
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -654,7 +654,7 @@ data:
             "y": 17
           },
           "id": 0,
-          "panels": null
+          "panels": []
         },
         {
           "type": "timeseries",
@@ -678,7 +678,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -703,7 +703,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -853,7 +853,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -866,7 +866,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "GC Count",
+          "title": "The number of completed GC cycles",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -885,7 +885,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "Goroutine Count",
+          "title": "Number of goroutines",
           "transparent": false,
           "gridPos": {
             "h": 8,

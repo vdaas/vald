@@ -21,6 +21,9 @@ import (
 	"github.com/grafana/grafana-foundation-sdk/go/timeseries"
 	"github.com/grafana/promql-builder/go/promql"
 	"github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt/public_const"
+	"github.com/vdaas/vald/internal/observability/metrics/mem"
+	"github.com/vdaas/vald/internal/observability/metrics/mem/index"
+	"github.com/vdaas/vald/internal/observability/metrics/runtime/goroutine"
 )
 
 func addCPUPanel(dashboard *dashboard.DashboardBuilder) {
@@ -102,7 +105,7 @@ func addLatencyPanel(
 					method, match,
 				).Range(intervalVariable))).By([]string{"le", grpcServerMethod})).String(),
 		).
-			Format("time_series").LegendFormat(fmt.Sprintf("{{grpc_server_method}} p%d", int(quantile*100)))).Min(0)
+			Format("time_series").LegendFormat(fmt.Sprintf("{{%s}} p%d", grpcServerMethod, int(quantile*100)))).Min(0)
 	}
 	builder.WithPanel(panel)
 }
@@ -130,20 +133,20 @@ func addGoroutinePanel(
 	dashboard *dashboard.DashboardBuilder, kubernetesName string, targetPod string,
 ) {
 	panel := timeseries.NewPanelBuilder().
-		Title("Goroutine Count").
+		Title(goroutine.MetricsDescription).
 		Span(widthHalf).Height(heightTall).
 		WithTarget(prometheusQuery(
-			addBasicLabel(promql.Vector("goroutine_count")).String(),
+			addBasicLabel(promql.Vector(goroutine.MetricsName)).String(),
 		).Format("time_series").LegendFormat("{{target_pod}}"))
 	dashboard.WithPanel(panel)
 }
 
 func addGCPanel(dashboard *dashboard.DashboardBuilder, kubernetesName string) {
 	panel := timeseries.NewPanelBuilder().
-		Title("GC Count").
+		Title(mem.NumGCMetricsDescription).
 		Span(widthHalf).Height(heightTall).
 		WithTarget(prometheusQuery(
-			promql.Increase(promql.Vector("gc_count").
+			promql.Increase(promql.Vector(mem.NumGCMetricsName).
 				Label(namespaceKey, namespaceVariable).
 				LabelMatchRegexp(nameKey, kubernetesName).
 				LabelMatchRegexp("target_node", ".+").
@@ -184,7 +187,7 @@ func addIndexLatencyPanel(dashboard *dashboard.DashboardBuilder) {
 			).LabelMatchRegexp(grpcServerMethod, ".*Index$").
 				Range(intervalVariable))).By([]string{"le", grpcServerMethod})).String(),
 		).
-			Format("time_series").LegendFormat(fmt.Sprintf("{{grpc_server_method}} p%d", int(quantile*100))))
+			Format("time_series").LegendFormat(fmt.Sprintf("{{%s}} p%d", grpcServerMethod, int(quantile*100))))
 	}
 	dashboard.WithPanel(panel)
 }
@@ -202,49 +205,49 @@ func addIndexPerPodPanel(dashboard *dashboard.DashboardBuilder) {
 }
 
 func addMemstatsPanels(dashboard *dashboard.DashboardBuilder) {
-	addMetricPanel(dashboard, "Alloc", "alloc_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "Total Alloc", "alloc_bytes_total", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "Sys", "sys_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "Lookups", "lookups_count", nil)
-	addMetricPanel(dashboard, "Mallocs", "mallocs_total", nil)
-	addMetricPanel(dashboard, "Frees", "frees_total", nil)
-	addMetricPanel(dashboard, "HeapAlloc", "heap_alloc_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "HeapSys", "heap_sys_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "HeapIdle", "heap_idle_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "HeapInUse", "heap_inuse_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "HeapReleased", "heap_released_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "HeapObjects", "heap_objects_count", nil)
-	addMetricPanel(dashboard, "StackInUse", "stack_inuse_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "StackSys", "stack_sys_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "MSpanInUse", "mspan_inuse_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "MSpanSys", "mspan_sys_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, index.AllocMetricsDescription, index.AllocMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, index.TotalAllocMetricsDescription, index.TotalAllocMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, index.SysMetricsDescription, index.SysMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.LookupsMetricsDescription, mem.LookupsMetricsName, nil)
+	addMetricPanel(dashboard, mem.MallocsMetricsDescription, mem.MallocsMetricsName, nil)
+	addMetricPanel(dashboard, mem.FreesMetricsDescription, mem.FreesMetricsName, nil)
+	addMetricPanel(dashboard, mem.HeapAllocMetricsDescription, mem.HeapAllocMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.HeapSysMetricsDescription, mem.HeapSysMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.HeapIdleMetricsDescription, mem.HeapIdleMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.HeapInuseMetricsDescription, mem.HeapInuseMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.HeapReleasedMetricsDescription, mem.HeapReleasedMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.HeapObjectsMetricsDescription, mem.HeapObjectsMetricsName, nil)
+	addMetricPanel(dashboard, mem.StackInuseMetricsDescription, mem.StackInuseMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.StackSysMetricsDescription, mem.StackSysMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.MspanInuseMetricsDescription, mem.MspanInuseMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.MspanSysMetricsDescription, mem.MspanSysMetricsName, cog.ToPtr("decbytes"))
 
-	addMetricPanel(dashboard, "MCacheInUse", "mcache_inuse_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "MCacheSys", "mcache_sys_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "BuckHashSys", "buckhash_sys_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "GCSys", "gc_sys_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "OtherSys", "other_sys_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "NextGC", "next_gc_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "PauseTotalMS", "pause_ms_total", cog.ToPtr("ms"))
-	addMetricPanel(dashboard, "NumGC", "gc_count", nil)
-	addMetricPanel(dashboard, "NumForcedGC", "forced_gc_count", nil)
-	addMetricPanel(dashboard, "HeapWillReturn", "heap_will_return_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "LiveObjects", "live_objects_count", nil)
+	addMetricPanel(dashboard, mem.McacheInuseMetricsDescription, mem.McacheInuseMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.McacheSysMetricsDescription, mem.McacheSysMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.BuckHashSysMetricsDescription, mem.BuckHashSysMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.GcSysMetricsDescription, mem.GcSysMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.OtherSysMetricsDescription, mem.OtherSysMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.NextGcSysMetricsDescription, mem.NextGcSysMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.PauseTotalMsMetricsDescription, mem.PauseTotalMsMetricsName, cog.ToPtr("ms"))
+	addMetricPanel(dashboard, mem.NumGCMetricsDescription, mem.NumGCMetricsName, nil)
+	addMetricPanel(dashboard, mem.NumForcedGCMetricsDescription, mem.NumGCMetricsName, nil)
+	addMetricPanel(dashboard, mem.HeapWillReturnMetricsDescription, mem.HeapWillReturnMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.LiveObjectsMetricsDescription, mem.LiveObjectsMetricsName, nil)
 }
 
 func addProcStatusPanels(dashboard *dashboard.DashboardBuilder) {
-	addMetricPanel(dashboard, "VMPeak", "vmpeak_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "VMSize", "vmsize_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "VMData", "vmdata_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "VMRSS", "vmrss_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "VMHWM", "vmhwm_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "VMStk", "vmstk_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "VMSwap", "vmswap_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "VMExe", "vmexe_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "VMLib", "vmlib_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "VMLck", "vmlck_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "VMPin", "vmpin_bytes", cog.ToPtr("decbytes"))
-	addMetricPanel(dashboard, "VMPTE", "vmpte_bytes", cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.VmpeakMetricsDescription, mem.VmpeakMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.VmsizeMetricsDescription, mem.VmsizeMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.VmdataMetricsDescription, mem.VmdataMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.VmrssMetricsDescription, mem.VmrssMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.VmhwmMetricsDescription, mem.VmhwmMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.VmstkMetricsDescription, mem.VmstkMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.VmswapMetricsDescription, mem.VmswapMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.VmexeMetricsDescription, mem.VmexeMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.VmlibMetricsDescription, mem.VmlibMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.VmlckMetricsDescription, mem.VmlckMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.VmpinMetricsDescription, mem.VmpinMetricsName, cog.ToPtr("decbytes"))
+	addMetricPanel(dashboard, mem.VmpteMetricsDescription, mem.VmpteMetricsName, cog.ToPtr("decbytes"))
 }
 
 func addMetricPanel(

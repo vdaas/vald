@@ -21,6 +21,10 @@ import (
 
 	"github.com/grafana/grafana-foundation-sdk/go/cog"
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
+	"github.com/vdaas/vald/internal/observability/metrics/backoff"
+	"github.com/vdaas/vald/internal/observability/metrics/circuitbreaker"
+	"github.com/vdaas/vald/internal/observability/metrics/grpc"
+	"github.com/vdaas/vald/internal/observability/metrics/version"
 )
 
 const (
@@ -78,14 +82,14 @@ const (
 	helmInfo            = "helm_operator_build_info"
 	goInfo              = "go_info"
 	resCreatedSec       = "resource_created_at_seconds"
-	backoffRetryCount   = "backoff_retry_count"
-	serverCompletedRPCs = "server_completed_rpcs"
+	backoffRetryCount   = backoff.MetricsName
+	serverCompletedRPCs = grpc.CompletedRPCsMetricsName
 	podInfo             = "kube_pod_info"
-	appInfo             = "app_version_info"
+	appInfo             = version.Name
 	grpcServerMethod    = "grpc_server_method"
 	grpcServerStatus    = "grpc_server_status"
 	serverLatencyBucket = "server_latency_bucket"
-	circuitBreakerState = "circuit_breaker_state"
+	circuitBreakerState = circuitbreaker.MetricsName
 )
 
 type kindStatus struct {

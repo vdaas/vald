@@ -87,7 +87,7 @@ func addBasicVariables(builder *dashboard.DashboardBuilder, serverName string) {
 	builder.
 		WithVariable(dashboard.NewQueryVariableBuilder("ReplicaSet").
 			Label("name").
-			Query(dashboard.StringOrMap{String: cog.ToPtr(fmt.Sprintf("label_values(app_version_info{server_name=~\"%s\"}, kubernetes_name)", serverName))}),
+			Query(dashboard.StringOrMap{String: cog.ToPtr(fmt.Sprintf("label_values(%s{server_name=~\"%s\"}, kubernetes_name)", appInfo, serverName))}),
 		).
 		WithVariable(dashboard.NewQueryVariableBuilder("PodName").
 			Label("pod").
@@ -99,11 +99,11 @@ func addBasicVariables(builder *dashboard.DashboardBuilder, serverName string) {
 			AllValue(".+").
 			Multi(false).
 			IncludeAll(true).
-			Query(dashboard.StringOrMap{String: cog.ToPtr(fmt.Sprintf("label_values(app_version_info{server_name=~\"%s\", kubernetes_name=\"$ReplicaSet\"}, target_pod)", serverName))}),
+			Query(dashboard.StringOrMap{String: cog.ToPtr(fmt.Sprintf("label_values(%s{server_name=~\"%s\", kubernetes_name=\"$ReplicaSet\"}, target_pod)", appInfo, serverName))}),
 		).
 		WithVariable(dashboard.NewQueryVariableBuilder("ContainerName").
 			Label("container").
-			Query(dashboard.StringOrMap{String: cog.ToPtr(fmt.Sprintf("label_values(app_version_info{server_name=~\"%s\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}, container)", serverName))}).
+			Query(dashboard.StringOrMap{String: cog.ToPtr(fmt.Sprintf("label_values(%s{server_name=~\"%s\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}, container)", appInfo, serverName))}).
 			IncludeAll(true).
 			AllValue(".+").
 			Multi(true),

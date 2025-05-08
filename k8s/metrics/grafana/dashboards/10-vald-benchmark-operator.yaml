@@ -192,7 +192,7 @@ data:
                 ]
               }
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -272,7 +272,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "All Scenario Count",
+          "title": "Benchmark Operator applied scenario count",
           "transparent": false,
           "gridPos": {
             "h": 3,
@@ -306,7 +306,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "Running Scenario Count",
+          "title": "Benchmark Operator running scenario count",
           "transparent": false,
           "gridPos": {
             "h": 3,
@@ -340,7 +340,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "Completed Scenario Count",
+          "title": "Benchmark Operator complete scenario count",
           "transparent": false,
           "gridPos": {
             "h": 3,
@@ -442,7 +442,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "All Benchmark Job Count",
+          "title": "Benchmark Operator applied benchmark job count",
           "transparent": false,
           "gridPos": {
             "h": 3,
@@ -476,7 +476,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "Running Benchmark Job Count",
+          "title": "Benchmark Operator running benchmark job count",
           "transparent": false,
           "gridPos": {
             "h": 3,
@@ -510,7 +510,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "Completed Benchmark Job Count",
+          "title": "Benchmark Operator complete benchmark job count",
           "transparent": false,
           "gridPos": {
             "h": 3,
@@ -546,7 +546,7 @@ data:
             "y": 12
           },
           "id": 0,
-          "panels": null
+          "panels": []
         },
         {
           "type": "timeseries",
@@ -589,7 +589,7 @@ data:
             "defaults": {
               "unit": "decbytes"
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -651,7 +651,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -664,7 +664,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "Goroutine Count",
+          "title": "Number of goroutines",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -683,7 +683,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "GC Count",
+          "title": "The number of completed GC cycles",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -703,7 +703,7 @@ data:
             "y": 37
           },
           "id": 0,
-          "panels": null
+          "panels": []
         },
         {
           "type": "timeseries",
@@ -727,7 +727,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -752,7 +752,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -765,7 +765,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "Goroutine Count",
+          "title": "Number of goroutines",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -784,7 +784,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "GC Count",
+          "title": "The number of completed GC cycles",
           "transparent": false,
           "gridPos": {
             "h": 8,

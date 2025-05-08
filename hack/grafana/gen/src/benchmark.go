@@ -22,6 +22,7 @@ import (
 	"github.com/grafana/grafana-foundation-sdk/go/stat"
 	"github.com/grafana/grafana-foundation-sdk/go/timeseries"
 	"github.com/grafana/promql-builder/go/promql"
+	"github.com/vdaas/vald/internal/observability/metrics/tools/benchmark"
 	"github.com/vdaas/vald/pkg/tools/benchmark/operator/config"
 )
 
@@ -54,14 +55,14 @@ func addBenchmarkStatPanel(
 }
 
 func addBenchmarkStatPanels(dashboard *dashboard.DashboardBuilder) {
-	addSumStatPanel(dashboard, "All Scenario Count", "benchmark_operator_applied_scenario")
-	addSumStatPanel(dashboard, "Running Scenario Count", "benchmark_operator_running_scenario")
-	addSumStatPanel(dashboard, "Completed Scenario Count", "benchmark_operator_complete_scenario")
+	addSumStatPanel(dashboard, benchmark.AppliedScenarioCountDescription, benchmark.AppliedScenarioCount)
+	addSumStatPanel(dashboard, benchmark.RunningScenarioCountDescription, benchmark.RunningScenarioCount)
+	addSumStatPanel(dashboard, benchmark.CompleteScenarioCountDescription, benchmark.CompleteScenarioCount)
 	addBenchmarkStatPanel(dashboard, "Job Image Name", "repository", witdhOneThird)
 	addBenchmarkStatPanel(dashboard, "Job Image Version", "tag", widthOneSixth)
-	addSumStatPanel(dashboard, "All Benchmark Job Count", "benchmark_operator_applied_benchmark_job")
-	addSumStatPanel(dashboard, "Running Benchmark Job Count", "benchmark_operator_running_benchmark_job")
-	addSumStatPanel(dashboard, "Completed Benchmark Job Count", "benchmark_operator_complete_benchmark_job")
+	addSumStatPanel(dashboard, benchmark.AppliedBenchmarkJobCountDescription, benchmark.AppliedBenchmarkJobCount)
+	addSumStatPanel(dashboard, benchmark.RunningBenchmarkJobCountDescription, benchmark.RunningBenchmarkJobCount)
+	addSumStatPanel(dashboard, benchmark.CompleteBenchmarkJobCountDescription, benchmark.CompleteBenchmarkJobCount)
 }
 
 func addBenchmarkJobCPUPanel(builder *dashboard.DashboardBuilder) {

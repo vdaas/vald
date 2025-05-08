@@ -192,7 +192,7 @@ data:
                 ]
               }
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -300,7 +300,7 @@ data:
                 ]
               }
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -327,7 +327,7 @@ data:
                 "fillOpacity": 10
               }
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -355,7 +355,7 @@ data:
                 "fillOpacity": 10
               }
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -417,7 +417,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -479,7 +479,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -506,7 +506,7 @@ data:
                 "fillOpacity": 10
               }
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -533,7 +533,7 @@ data:
                 "fillOpacity": 10
               }
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -566,7 +566,7 @@ data:
                 "fillOpacity": 10
               }
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -603,7 +603,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -617,7 +617,7 @@ data:
             "y": 44
           },
           "id": 0,
-          "panels": null,
+          "panels": [],
           "repeat": "ReplicaSet"
         },
         {
@@ -734,7 +734,7 @@ data:
                 "fillOpacity": 10
               }
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -758,7 +758,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -783,7 +783,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         }
       ],

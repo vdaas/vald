@@ -409,7 +409,7 @@ k8s/metrics/grafana/deploy:
 ## delete grafana
 k8s/metrics/grafana/delete:
 	kubectl delete -f $(ROOTDIR)/k8s/metrics/grafana/dashboards
-	kubectl delete -f $(ROOTDIR)/k8s/metrics/grafana
+	kubectl delete -k $(ROOTDIR)/k8s/metrics/grafana
 
 .PHONY: k8s/metrics/jaeger/deploy
 ## deploy jaeger

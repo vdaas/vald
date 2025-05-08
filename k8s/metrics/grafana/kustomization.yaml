@@ -19,4 +19,4 @@ resources:
   - svc.yaml
 images:
   - name: grafana/grafana
-    newTag: 11.6.0-ubuntu
+    newTag: 11.6.1-ubuntu

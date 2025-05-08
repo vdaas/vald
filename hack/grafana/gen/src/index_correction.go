@@ -21,13 +21,14 @@ import (
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
 	"github.com/grafana/grafana-foundation-sdk/go/stat"
 	"github.com/grafana/promql-builder/go/promql"
+	"github.com/vdaas/vald/internal/observability/metrics/index/job/correction"
 )
 
 func addIndexCorrectionPanels(builder *dashboard.DashboardBuilder) {
 	builder.
-		WithPanel(indexCorrectionPanel("Checked Index Count", "index_job_correction_checked_index_count")).
-		WithPanel(indexCorrectionPanel("Corrected Index Count", "index_job_correction_corrected_old_index_count")).
-		WithPanel(indexCorrectionPanel("Corrected Replication Count", "index_job_correction_corrected_replication_count"))
+		WithPanel(indexCorrectionPanel(correction.CheckedIndexCountDesc, correction.CheckedIndexCount)).
+		WithPanel(indexCorrectionPanel(correction.CorrectedOldIndexCountDesc, correction.CorrectedOldIndexCount)).
+		WithPanel(indexCorrectionPanel(correction.CorrectedReplicationCountDesc, correction.CorrectedReplicationCount))
 }
 
 func indexCorrectionPanel(title string, metric string) *stat.PanelBuilder {

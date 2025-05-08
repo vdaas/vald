@@ -192,7 +192,7 @@ data:
                 ]
               }
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -285,7 +285,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -310,7 +310,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -372,7 +372,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -385,7 +385,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "Goroutine Count",
+          "title": "Number of goroutines",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -404,7 +404,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "GC Count",
+          "title": "The number of completed GC cycles",
           "transparent": false,
           "gridPos": {
             "h": 8,

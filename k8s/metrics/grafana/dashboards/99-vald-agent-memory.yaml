@@ -46,7 +46,7 @@ data:
             "y": 0
           },
           "id": 0,
-          "panels": null
+          "panels": []
         },
         {
           "type": "timeseries",
@@ -58,7 +58,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "Alloc",
+          "title": "Currently allocated number of bytes on the heap",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -71,7 +71,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -84,7 +84,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "Total Alloc",
+          "title": "Cumulative bytes allocated for heap objects",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -97,7 +97,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -110,7 +110,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "Sys",
+          "title": "Total bytes of memory obtained from the OS",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -123,7 +123,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -136,7 +136,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "Lookups",
+          "title": "The number of pointers",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -148,7 +148,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -161,7 +161,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "Mallocs",
+          "title": "The cumulative count of heap objects allocated",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -173,7 +173,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -186,7 +186,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "Frees",
+          "title": "The cumulative count of heap objects freed",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -198,7 +198,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -211,7 +211,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "HeapAlloc",
+          "title": "Bytes of allocated heap object",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -224,7 +224,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -237,7 +237,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "HeapSys",
+          "title": "Bytes of heap memory obtained from the OS",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -250,7 +250,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -263,7 +263,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "HeapIdle",
+          "title": "Bytes in idle (unused) spans",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -276,7 +276,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -289,7 +289,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "HeapInUse",
+          "title": "Bytes in in-use spans",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -302,7 +302,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -315,7 +315,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "HeapReleased",
+          "title": "Bytes of physical memory returned to the OS",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -328,7 +328,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -341,7 +341,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "HeapObjects",
+          "title": "The number of allocated heap objects",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -353,7 +353,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -366,7 +366,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "StackInUse",
+          "title": "Bytes in stack spans",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -379,7 +379,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -392,7 +392,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "StackSys",
+          "title": "Bytes of stack memory obtained from the OS",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -405,7 +405,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -418,7 +418,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "MSpanInUse",
+          "title": "Bytes of allocated mspan structures",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -431,7 +431,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -444,7 +444,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "MSpanSys",
+          "title": "Bytes of memory obtained from the OS for mspan structures",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -457,7 +457,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -470,7 +470,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "MCacheInUse",
+          "title": "Bytes of allocated mcache structures",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -483,7 +483,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -496,7 +496,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "MCacheSys",
+          "title": "Bytes of memory obtained from the OS mcache structures",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -509,7 +509,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -522,7 +522,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "BuckHashSys",
+          "title": "Bytes of memory in profiling bucket hash tables",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -535,7 +535,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -548,7 +548,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "GCSys",
+          "title": "Bytes of memory in GC metadata",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -561,7 +561,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -574,7 +574,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "OtherSys",
+          "title": "Bytes of memory in misc off-heap runtime allocations",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -587,7 +587,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -600,7 +600,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "NextGC",
+          "title": "Target heap size of the next GC",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -613,7 +613,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -626,7 +626,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "PauseTotalMS",
+          "title": "The cumulative milliseconds in GC",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -639,7 +639,7 @@ data:
               "unit": "ms",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -652,7 +652,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "NumGC",
+          "title": "The number of completed GC cycles",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -664,20 +664,20 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
           "type": "timeseries",
           "targets": [
             {
-              "expr": "forced_gc_count{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
+              "expr": "gc_count{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""
             }
           ],
-          "title": "NumForcedGC",
+          "title": "The number of GC cycles called by the application",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -689,7 +689,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -702,7 +702,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "HeapWillReturn",
+          "title": "Bytes of returning to OS. It contains the two following parts (heapWillReturn = heapIdle - heapReleased)",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -715,7 +715,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -728,7 +728,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "LiveObjects",
+          "title": "The cumulative count of living heap objects allocated. It contains the two following parts (liveObjects = mallocs - frees)",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -740,7 +740,7 @@ data:
             "defaults": {
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -754,7 +754,7 @@ data:
             "y": 57
           },
           "id": 0,
-          "panels": null
+          "panels": []
         },
         {
           "type": "timeseries",
@@ -766,7 +766,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "VMPeak",
+          "title": "peak virtual memory size",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -779,7 +779,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -792,7 +792,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "VMSize",
+          "title": "toal program size",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -805,7 +805,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -818,7 +818,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "VMData",
+          "title": "size of private data segments",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -831,7 +831,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -844,7 +844,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "VMRSS",
+          "title": "size of memory portions. It contains the three following parts (VmRSS = RssAnon + RssFile + RssShmem)",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -857,7 +857,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -870,7 +870,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "VMHWM",
+          "title": "peak resident set size (\"high water mark\")",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -883,7 +883,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -896,7 +896,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "VMStk",
+          "title": "size of stack segments",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -909,7 +909,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -922,7 +922,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "VMSwap",
+          "title": "amount of swap used by anonymous private data (shmem swap usage is not included)",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -935,7 +935,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -948,7 +948,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "VMExe",
+          "title": "size of text segment",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -961,7 +961,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -974,7 +974,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "VMLib",
+          "title": "size of shared library code",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -987,7 +987,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -1000,7 +1000,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "VMLck",
+          "title": "locked memory size",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -1013,7 +1013,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -1026,7 +1026,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "VMPin",
+          "title": "pinned memory size",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -1039,7 +1039,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         },
         {
@@ -1052,7 +1052,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "VMPTE",
+          "title": "size of page table entries",
           "transparent": false,
           "gridPos": {
             "h": 8,
@@ -1065,7 +1065,7 @@ data:
               "unit": "decbytes",
               "min": 0
             },
-            "overrides": null
+            "overrides": []
           }
         }
       ],
