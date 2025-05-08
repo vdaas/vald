@@ -16,9 +16,7 @@
 
 package main
 
-import (
-	"github.com/grafana/promql-builder/go/promql"
-)
+import "github.com/grafana/promql-builder/go/promql"
 
 func addBasicLabel(vector *promql.VectorExprBuilder) *promql.VectorExprBuilder {
 	return vector.Label(namespaceKey, namespaceVariable).
@@ -26,7 +24,9 @@ func addBasicLabel(vector *promql.VectorExprBuilder) *promql.VectorExprBuilder {
 		LabelMatchRegexp(podKey, podVariable)
 }
 
-func addGRPCMatch(vector *promql.VectorExprBuilder, method string, match bool) *promql.VectorExprBuilder {
+func addGRPCMatch(
+	vector *promql.VectorExprBuilder, method string, match bool,
+) *promql.VectorExprBuilder {
 	if match {
 		return vector.LabelMatchRegexp(grpcServerMethod, method)
 	}
