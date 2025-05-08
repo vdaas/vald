@@ -55,7 +55,7 @@ agent:
     size: 1Gi
   readreplica:
     enabled: true
-    snapshot_classname: "csi-hostpath-snapclass"
+    snapshot_classname: "csi-hostpath-snapclass-v1"
     hpa:
       enabled: true
 discoverer:

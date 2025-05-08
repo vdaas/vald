@@ -32,8 +32,8 @@ inputs:
     description: "If k3d is not required, set this to false"
     required: false
     default: "true"
-  require_minikube:
-    description: "If minikube is not required, set this to true and set require_k3d to false"
+  require_snapshot:
+    description: "If volume snapshot for readreplica is not required, set this to false"
     required: false
     default: "false"
   ingress_port:
@@ -83,14 +83,31 @@ runs:
     - uses: ./.github/actions/setup-k3d
       if: ${{ inputs.require_k3d == 'true' }}
       with:
-        agents: 3
+        agents: 2
         ingress_port: ${{ inputs.ingress_port }}
-    - name: Setup Minikube environment
-      if: ${{ inputs.require_minikube == 'true' }}
+    - name: Volume Snapshot
+      if: ${{ inputs.require_snapshot == 'true' }}
       shell: bash
       run: |
-        make minikube/install
-        make minikube/start
+        # kubectl kustomize https://github.com/kubernetes-csi/external-snapshotter/client/config/crd | kubectl create -f -
+        # kubectl -n kube-system kustomize https://github.com/kubernetes-csi/external-snapshotter/deploy/kubernetes/snapshot-controller | kubectl create -f -
+        # kubectl -n kube-system kustomize https://github.com/kubernetes-csi/external-snapshotter/deploy/kubernetes/csi-snapshotter | kubectl create -f -
+        # kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/master/examples/kubernetes/storageclass.yaml
+        # kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-attacher/refs/heads/master/deploy/kubernetes/rbac.yaml
+        # kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-attacher/refs/heads/master/deploy/kubernetes/deployment.yaml
+        # git clone https://github.com/kubernetes-csi/csi-driver-host-path.git
+        # csi-driver-host-path/deploy/kubernetes-latest/deploy.sh
+        # kubectl patch storageclass csi-hostpath-sc -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
+        git clone https://github.com/kubernetes-csi/csi-driver-host-path.git
+        csi-driver-host-path/deploy/kubernetes-latest/deploy.sh || true
+        kubectl kustomize https://github.com/kubernetes-csi/external-snapshotter/client/config/crd | kubectl create -f -
+        kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/master/examples/kubernetes/storageclass.yaml
+        kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/master/examples/kubernetes/snapshotclass-v1.yaml
+        kubectl patch storageclass csi-hostpath-sc -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+        kubectl -n kube-system kustomize https://github.com/kubernetes-csi/external-snapshotter/deploy/kubernetes/snapshot-controller | kubectl create -f -
+
+
     - name: Check Kubernetes cluster
       shell: bash
       run: |
