@@ -541,7 +541,6 @@ update: \
 ## format go codes
 format: \
 	dockerfile \
-	dashboard \
 	license \
 	format/proto \
 	format/go \
