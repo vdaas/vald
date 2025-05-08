@@ -111,23 +111,23 @@ func (r *runner) processKubernetes(t *testing.T, ctx context.Context, plan *conf
 		var ok bool
 		switch plan.Kubernetes.Kind {
 		case config.ConfigMap:
-			_, ok, err = kubernetes.WaitForStatus(ctx, kubernetes.ConfigMap(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.Status.Status())
+			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.ConfigMap(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
 		case config.CronJob:
-			_, ok, err = kubernetes.WaitForStatus(ctx, kubernetes.CronJob(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.Status.Status())
+			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.CronJob(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
 		case config.DaemonSet:
-			_, ok, err = kubernetes.WaitForStatus(ctx, kubernetes.DaemonSet(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.Status.Status())
+			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.DaemonSet(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
 		case config.Deployment:
-			_, ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Deployment(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.Status.Status())
+			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Deployment(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
 		case config.Job:
-			_, ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Job(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.Status.Status())
+			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Job(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
 		case config.Pod:
-			_, ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Pod(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.Status.Status())
+			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Pod(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
 		case config.Secret:
-			_, ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Secret(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.Status.Status())
+			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Secret(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
 		case config.Service:
-			_, ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Service(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.Status.Status())
+			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Service(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
 		case config.StatefulSet:
-			_, ok, err = kubernetes.WaitForStatus(ctx, kubernetes.StatefulSet(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.Status.Status())
+			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.StatefulSet(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
 		default:
 		}
 		if !ok {
