@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/metrics/circuitbreaker"
 	"github.com/vdaas/vald/internal/observability/metrics/grpc"
 	"github.com/vdaas/vald/internal/observability/metrics/version"
+	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/metric"
 )
 
 const (
@@ -86,8 +87,8 @@ const (
 	serverCompletedRPCs = grpc.CompletedRPCsMetricsName
 	podInfo             = "kube_pod_info"
 	appInfo             = version.Name
-	grpcServerMethod    = "grpc_server_method"
-	grpcServerStatus    = "grpc_server_status"
+	grpcServerMethod    = metric.GRPCMethodKeyName
+	grpcServerStatus    = metric.GRPCStatus
 	serverLatencyBucket = "server_latency_bucket"
 	circuitBreakerState = circuitbreaker.MetricsName
 )
