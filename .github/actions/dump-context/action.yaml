@@ -48,3 +48,15 @@ runs:
       run: echo $JSON
       env:
         JSON: ${{toJSON(matrix)}}
+    - name: Dump Core Count
+      shell: bash
+      run: nproc --all
+    - name: Dump Memory Usage
+      shell: bash
+      run: free -h
+    - name: Dump CPU Information
+      shell: bash
+      run: lscpu
+    - name: Dump Memory Information
+      shell: bash
+      run: cat /proc/meminfo
