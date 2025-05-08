@@ -109,7 +109,6 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 	var aech <-chan error
 	if c.client == nil {
 		c.client = grpc.New(
-			"Agent Client",
 			append(
 				c.opts,
 				grpc.WithAddrs(addrs...),

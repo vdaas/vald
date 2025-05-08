@@ -149,9 +149,10 @@ strategies:
             type: search
             mode: unary
             parallelism: 100
-            num: 100000
+            num: 10000000
             qps: 3000
             offset: 0
+            delay: ""
             wait: 2m
             timeout: ""
             # for search configurations
@@ -171,7 +172,6 @@ strategies:
           - name: RolloutRestart
             type: kubernetes
             mode: other
-            delay: "40s"
             kubernetes:
               kind: "statefulset"
               namespace: "default"

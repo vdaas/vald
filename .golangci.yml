@@ -1,0 +1,200 @@
+#
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+run:
+  timeout: 30m
+  skip-dirs:
+    - (^|/)apis($|/)
+    - (^|/)hack/benchmark($|/)
+    - (^|/)pkg/filter/ingress($|/)
+    - (^|/)internal/core/algorithm/ngt($|/)
+output:
+  format: line-number
+linters:
+  disable-all: true
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - containedctx
+    - contextcheck
+    - decorder
+    - depguard
+    - dogsled
+    - dupl
+    - dupword
+    - durationcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - execinquery
+    - exhaustive
+    - exportloopref
+    - forcetypeassert
+    - ginkgolinter
+    - gocheckcompilerdirectives
+    - gochecknoglobals
+    - gochecknoinits
+    - goconst
+    - godot
+    - gofumpt
+    - goimports
+    - gomnd
+    - gosec #(gas)
+    - gosimple #(megacheck)
+    - gosmopolitan
+    - govet #(vet, vetshadow)
+    - grouper
+    - ineffassign
+    - interfacebloat
+    - loggercheck #(logrlint)
+    - maintidx
+    - makezero
+    - mirror
+    - misspell
+    - musttag
+    - nakedret
+    - nilerr
+    - nilnil
+    - noctx
+    - nolintlint
+    - nosprintfhostport
+    - prealloc
+    - predeclared
+    - reassign
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck #(megacheck)
+    - stylecheck
+    - tagalign
+    - tagliatelle
+    - tenv
+    - testableexamples
+    - thelper
+    - unconvert
+    - unparam
+    - unused #(megacheck)
+    - usestdlibvars
+    # Disabled by your configuration linters
+    # - cyclop
+    # - errcheck
+    # - exhaustruct
+    # - forbidigo
+    # - funlen
+    # - gci
+    # - gocognit
+    # - gocritic
+    # - gocyclo
+    # - godox
+    # - goerr113
+    # - gofmt
+    # - goheader
+    # - gomoddirectives
+    # - gomodguard
+    # - goprintffuncname
+    # - importas
+    # - ireturn
+    # - lll
+    # - nestif
+    # - nlreturn
+    # - nonamedreturns
+    # - paralleltest
+    # - promlinter
+    # - revive
+    # - testpackage
+    # - tparallel
+    # - typecheck
+    # - varnamelen
+    # - wastedassign
+    # - whitespace
+    # - wrapcheck
+    # - wslissues:
+issues:
+  exclude-use-default: false
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - dupl
+        - forcetypeassert
+        - gomnd
+        - noctx
+        - gochecknoinits
+    - path: _test\.go
+      text: "copylocks:"
+      linters:
+        - govet
+    - path: options?\.go
+      linters:
+        - gochecknoglobals
+        - gomnd
+    - path: main\.go
+      linters:
+        - gochecknoglobals
+    - path: internal/errors/errors\.go
+      linters:
+        - depguard
+    - path: internal/errors/errors_benchmark_test\.go
+      linters:
+        - depguard
+    - path: internal/test/comparator/standard\.go
+      linters:
+        - depguard
+    - path: internal/sync/alias\.go
+      linters:
+        - depguard
+    - path: hack/benchmark/src/singleflight/singleflight_bench_test\.go
+      linters:
+        - depguard
+linters-settings:
+  gocritic:
+    enabled-checks:
+      - ruleguard
+    settings:
+      ruleguard:
+        rules: "./hack/gorules/rules.go"
+  tagliatelle:
+    case:
+      use-field-name: true
+      rules:
+        json: snake
+        yaml: snake
+  depguard:
+    rules:
+      main:
+        deny:
+          - pkg: "sync"
+            desc: "sync is allowed only by internal/sync"
+          - pkg: "golang.org/x/sync"
+            desc: "golang.org/x/sync is allowed only by internal/sync"
+          - pkg: "golang.org/x/sync/singleflight"
+            desc: "golang.org/x/sync/singleflight is allowed only by internal/sync/singleflight"
+          - pkg: "golang.org/x/sync/semaphore"
+            desc: "golang.org/x/sync/semaphore is allowed only by internal/sync/semaphore"
+          - pkg: "errors"
+            desc: "errors is allowed only by internal/errors"
+          - pkg: "github.com/cockroachdb/errors"
+            desc: "errors is allowed only by internal/errors"
+          - pkg: "github.com/pkg/errors"
+            desc: "errors is allowed only by internal/errors"
+          - pkg: github.com/go-errors/errors
+            desc: "errors is allowed only by internal/errors"
+          - pkg: github.com/google/go-cmp/cmp
+            desc: "cmp is allowed only by internal/test/comparator"
+          - pkg: github.com/google/go-cmp/cmp/cmpopts
+            desc: "cmpopts is allowed only by internal/test/comparator"
+  govet:
+    check-shadowing: true
+    enable-all: true

@@ -343,7 +343,7 @@ func newClient(
 	}
 	client, err = vald.New(
 		vald.WithClient(
-			grpc.New("E2E Strategy Testing Vald Client", gopts...),
+			grpc.New(gopts...),
 		),
 	)
 	if err != nil {

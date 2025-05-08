@@ -50,9 +50,6 @@ var (
 		return Errorf("gRPC client connection not found in %s", addr)
 	}
 
-	// ErrGRPCServerStreamNotFound represents an error that the vald internal gRPC server couldn't find any gRPC server stream connection.
-	ErrGRPCServerStreamNotFound = New("vald internal gRPC server gRPC server stream not found")
-
 	// ErrGRPCClientStreamNotFound represents an error that the vald internal gRPC client couldn't find any gRPC client stream connection.
 	ErrGRPCClientStreamNotFound = New("vald internal gRPC client gRPC client stream not found")
 

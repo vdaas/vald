@@ -70,7 +70,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	c, err := client.New(
 		client.WithAddrs(cfg.Client.Addrs...),
-		client.WithClient(grpc.New("Gateway Client", copts...)),
+		client.WithClient(grpc.New(copts...)),
 	)
 	if err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	ic, err := ingress.New(
 		ingress.WithAddrs(iaddrs...),
-		ingress.WithClient(grpc.New("Ingress Filter Client", icopts...)),
+		ingress.WithClient(grpc.New(icopts...)),
 	)
 	if err != nil {
 		return nil, err
@@ -141,7 +141,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	ec, err := egress.New(
 		egress.WithAddrs(eaddrs...),
-		egress.WithClient(grpc.New("Egress Filter Client", ecopts...)),
+		egress.WithClient(grpc.New(ecopts...)),
 	)
 	if err != nil {
 		return nil, err
