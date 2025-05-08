@@ -21,11 +21,11 @@ import (
 
 	"github.com/grafana/grafana-foundation-sdk/go/cog"
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
+	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/metric"
 	"github.com/vdaas/vald/internal/observability/metrics/backoff"
 	"github.com/vdaas/vald/internal/observability/metrics/circuitbreaker"
 	"github.com/vdaas/vald/internal/observability/metrics/grpc"
 	"github.com/vdaas/vald/internal/observability/metrics/version"
-	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/metric"
 )
 
 const (
