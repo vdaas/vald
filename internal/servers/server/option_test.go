@@ -14,7 +14,6 @@
 package server
 
 import (
-	"crypto/tls"
 	"net/http"
 	"reflect"
 	"testing"
@@ -24,6 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/tls"
 )
 
 func TestWithHost(t *testing.T) {

@@ -41,17 +41,19 @@ $(GOPATH)bin/gotests:
 	$(call go-install, github.com/cweill/gotests/gotests)
 
 ## run tests for cmd, internal, pkg
-test:
+test: certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/...
+	$(MAKE) certs/clean
 
 .PHONY: test/tparse
 ## run tests for cmd, internal, pkg and show table
 test/tparse: \
-        tparse/install
+	certs/gen \
+	tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
@@ -61,11 +63,13 @@ test/tparse: \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
+	$(MAKE) certs/clean
 
 .PHONY: test/cmd/tparse
 ## run tests for cmd and show table
 test/cmd/tparse: \
-        tparse/install
+	certs/gen \
+	tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
@@ -75,11 +79,13 @@ test/cmd/tparse: \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
+	$(MAKE) certs/clean
 
 .PHONY: test/internal/tparse
 ## run tests for internal and show table
 test/internal/tparse: \
-        tparse/install
+	certs/gen \
+	tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
@@ -89,11 +95,13 @@ test/internal/tparse: \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/internal/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
+	$(MAKE) certs/clean
 
 .PHONY: test/pkg/tparse
 ## run tests for pkg and who table
 test/pkg/tparse: \
-        tparse/install
+	certs/gen \
+	tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
@@ -103,11 +111,13 @@ test/pkg/tparse: \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
+	$(MAKE) certs/clean
 
 .PHONY: test/hack/tparse
 ## run tests for hack and show table
 test/hack/tparse: \
-        tparse/install
+	certs/gen \
+	tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
@@ -124,11 +134,13 @@ test/hack/tparse: \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
 	rm -rf $(ROOTDIR)/vendor
+	$(MAKE) certs/clean
 
 .PHONY: test/all/tparse
 ## run tests for all Go codes and show table
 test/all/tparse: \
-        tparse/install
+	certs/gen \
+	tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
@@ -138,11 +150,13 @@ test/all/tparse: \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
+	$(MAKE) certs/clean
 
 .PHONY: test/gotestfmt
 ## run tests for cmd, internal, pkg and show table
 test/gotestfmt: \
-        gotestfmt/install
+	certs/gen \
+	gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
@@ -153,11 +167,13 @@ test/gotestfmt: \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
+	$(MAKE) certs/clean
 
 .PHONY: test/cmd/gotestfmt
 ## run tests for cmd and show table
 test/cmd/gotestfmt: \
-        gotestfmt/install
+	certs/gen \
+	gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
@@ -168,11 +184,13 @@ test/cmd/gotestfmt: \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/cmd/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
+	$(MAKE) certs/clean
 
 .PHONY: test/internal/gotestfmt
 ## run tests for internal and show table
 test/internal/gotestfmt: \
-        gotestfmt/install
+	certs/gen \
+	gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
@@ -183,11 +201,13 @@ test/internal/gotestfmt: \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/internal/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
+	$(MAKE) certs/clean
 
 .PHONY: test/pkg/gotestfmt
 ## run tests for pkg and who table
 test/pkg/gotestfmt: \
-        gotestfmt/install
+	certs/gen \
+	gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
@@ -198,11 +218,13 @@ test/pkg/gotestfmt: \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
+	$(MAKE) certs/clean
 
 .PHONY: test/hack/gotestfmt
 ## run tests for hack and show table
 test/hack/gotestfmt: \
-        gotestfmt/install
+	certs/gen \
+	gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
@@ -220,11 +242,13 @@ test/hack/gotestfmt: \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
 	rm -rf $(ROOTDIR)/vendor
+	$(MAKE) certs/clean
 
 .PHONY: test/all/gotestfmt
 ## run tests for all Go codes and show table
 test/all/gotestfmt: \
-        gotestfmt/install
+	certs/gen \
+	gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
@@ -235,6 +259,7 @@ test/all/gotestfmt: \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
+	$(MAKE) certs/clean
 
 .PHONY: test/create-empty
 ## create empty test file if not exists
@@ -265,30 +290,33 @@ test/remove-empty:
 
 .PHONY: test/pkg
 ## run tests for pkg
-test/pkg:
+test/pkg: certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/pkg/...
+	$(MAKE) certs/clean
 
 .PHONY: test/internal
 ## run tests for internal
-test/internal:
+test/internal: certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/internal/...
+	$(MAKE) certs/clean
 
 .PHONY: test/cmd
 ## run tests for cmd
-test/cmd:
+test/cmd: certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/cmd/...
+	$(MAKE) certs/clean
 
 .PHONY: test/rust
 ## run tests for rust
@@ -313,7 +341,7 @@ test/rust/agent:
 
 .PHONY: test/hack
 ## run tests for hack
-test/hack:
+test/hack: certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
 	go mod vendor -o $(ROOTDIR)/vendor
 	GOPRIVATE=$(GOPRIVATE) \
@@ -326,19 +354,21 @@ test/hack:
 		$(ROOTDIR)/hack/license/...\
 		$(ROOTDIR)/hack/tools/...
 	rm -rf $(ROOTDIR)/vendor
+	$(MAKE) certs/clean
 
 .PHONY: test/all
 ## run tests for all Go codes
-test/all:
+test/all: certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/...
+	$(MAKE) certs/clean
 
 .PHONY: coverage
 ## calculate coverages
-coverage:
+coverage: certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
@@ -348,6 +378,7 @@ coverage:
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
 	go tool cover -html=coverage.out -o coverage.html
+	$(MAKE) certs/clean
 
 .PHONY: gotests/gen
 ## generate missing go test files
