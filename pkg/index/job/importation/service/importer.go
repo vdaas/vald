@@ -15,6 +15,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"time"
 
@@ -91,6 +92,14 @@ func (i *importer) StartClient(ctx context.Context) (<-chan error, error) {
 		for {
 			select {
 			case <-ctx.Done():
+				if errors.Is(ctx.Err(), context.Canceled) {
+					log.Warn("context canceled when starting client")
+					return ctx.Err()
+				}
+				if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+					log.Warn("context deadline exceeded when starting client")
+					return ctx.Err()
+				}
 				return ctx.Err()
 			case err = <-gch:
 			}
@@ -114,7 +123,7 @@ func (i *importer) Start(ctx context.Context) error {
 func (i *importer) doImportIndex(
 	ctx context.Context,
 ) (errs error) {
-	log.Info("starting doImporterIndex")
+	log.Info("starting doImportIndex")
 	ctx, span := trace.StartSpan(igrpc.WrapGRPCMethod(ctx, grpcMethodName), apiName+"/service/index.doExportIndex")
 	defer func() {
 		if span != nil {
@@ -124,13 +133,8 @@ func (i *importer) doImportIndex(
 
 	eg, egctx := errgroup.WithContext(ctx)
 	eg.SetLimit(i.streamListConcurrency)
-	ctx = context.WithoutCancel(egctx)
-	gatewayAddrs := i.gateway.GRPCClient().ConnectedAddrs()
-	if len(gatewayAddrs) == 0 {
-		log.Errorf("Active gateway is not found.: %v ", ctx.Err())
-	}
 
-	vch := make(chan *payload.Object_Vector, 5*len(gatewayAddrs))
+	vch := make(chan *payload.Object_Vector, 5*5)
 	ctx, cancel := context.WithCancel(egctx)
 
 	eg.Go(safety.RecoverFunc(func() (err error) {
@@ -154,34 +158,21 @@ func (i *importer) doImportIndex(
 		return nil
 	}))
 
-	i.gateway.GRPCClient().RangeConcurrent(egctx, len(gatewayAddrs), func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+	i.gateway.GRPCClient().RangeConcurrent(egctx, 1, func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 		cs, err := vc.NewValdClient(conn).StreamUpsert(egctx, copts...)
 		if err != nil {
 			log.Errorf("failed to create stream upsert client: %v", err)
 			return nil
 		}
 
-		err = igrpc.BidirectionalStreamClient(cs, func() (res *payload.Upsert_Request) {
+		err = igrpc.BidirectionalStreamClient(cs, 1, func() (res *payload.Upsert_Request, ok bool) {
 			select {
 			case <-ctx.Done():
-				select {
-				case vec, ok := <-vch:
-					if !ok {
-						return nil
-					}
-					return &payload.Upsert_Request{
-						Vector: vec,
-						Config: &payload.Upsert_Config{
-							SkipStrictExistCheck: i.forceUpdate,
-							Timestamp:            vec.GetTimestamp(),
-						},
-					}
-				case <-time.After(time.Second):
-					return nil
-				}
+				return nil, false
 			case vec, ok := <-vch:
+				fmt.Println("get vector", vec, ok)
 				if !ok {
-					return nil
+					return nil, false
 				}
 				return &payload.Upsert_Request{
 					Vector: vec,
@@ -189,9 +180,15 @@ func (i *importer) doImportIndex(
 						SkipStrictExistCheck: i.forceUpdate,
 						Timestamp:            vec.GetTimestamp(),
 					},
-				}
+				}, true
 			}
-		}, func(loc *payload.Object_StreamLocation, err error) {})
+		}, func(loc *payload.Object_StreamLocation, err error) bool {
+			if err != nil {
+				log.Errorf("stream location error: %v", err)
+				return false
+			}
+			return true
+		})
 		if err != nil {
 			log.Errorf("failed to range gateway: %v", err)
 			return nil
