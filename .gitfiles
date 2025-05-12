@@ -186,6 +186,8 @@ apis/grpc/v1/agent/sidecar/sidecar.pb.go
 apis/grpc/v1/agent/sidecar/sidecar_vtproto.pb.go
 apis/grpc/v1/discoverer/discoverer.pb.go
 apis/grpc/v1/discoverer/discoverer_vtproto.pb.go
+apis/grpc/v1/embedder/embedder.pb.go
+apis/grpc/v1/embedder/embedder_vtproto.pb.go
 apis/grpc/v1/filter/egress/egress_filter.pb.go
 apis/grpc/v1/filter/egress/egress_filter_vtproto.pb.go
 apis/grpc/v1/filter/ingress/ingress_filter.pb.go
@@ -224,6 +226,7 @@ apis/grpc/v1/vald/vald.go
 apis/proto/v1/agent/core/agent.proto
 apis/proto/v1/agent/sidecar/sidecar.proto
 apis/proto/v1/discoverer/discoverer.proto
+apis/proto/v1/embedder/embedder.proto
 apis/proto/v1/filter/egress/egress_filter.proto
 apis/proto/v1/filter/ingress/ingress_filter.proto
 apis/proto/v1/meta/meta.proto
@@ -242,6 +245,7 @@ apis/proto/v1/vald/upsert.proto
 apis/swagger/v1/agent/core/agent.swagger.json
 apis/swagger/v1/agent/sidecar/sidecar.swagger.json
 apis/swagger/v1/discoverer/discoverer.swagger.json
+apis/swagger/v1/embedder/embedder.swagger.json
 apis/swagger/v1/filter/egress/egress_filter.swagger.json
 apis/swagger/v1/filter/ingress/ingress_filter.swagger.json
 apis/swagger/v1/meta/meta.swagger.json
@@ -559,6 +563,7 @@ cmd/tools/cli/vdctl/doc.go
 cmd/tools/cli/vdctl/main.go
 cmd/tools/cli/vdctl/main_test.go
 codecov.yaml
+core
 design/Vald Architecture Assets.drawio
 design/Vald Architecture Dataflow.drawio
 design/Vald Architecture Overview.drawio
@@ -2217,6 +2222,28 @@ pkg/tools/benchmark/operator/service/option_test.go
 pkg/tools/benchmark/operator/usecase/benchmarkd.go
 pkg/tools/benchmark/operator/usecase/benchmarkd_test.go
 pkg/tools/benchmark/operator/usecase/doc.go
+pkg/tools/embedder/README.md
+pkg/tools/embedder/config/config.go
+pkg/tools/embedder/config/config_test.go
+pkg/tools/embedder/handler/doc.go
+pkg/tools/embedder/handler/grpc/handler.go
+pkg/tools/embedder/handler/grpc/option.go
+pkg/tools/embedder/handler/rest/handler.go
+pkg/tools/embedder/handler/rest/handler_test.go
+pkg/tools/embedder/handler/rest/option.go
+pkg/tools/embedder/handler/rest/option_test.go
+pkg/tools/embedder/router/option.go
+pkg/tools/embedder/router/option_test.go
+pkg/tools/embedder/router/router.go
+pkg/tools/embedder/router/router_test.go
+pkg/tools/embedder/service/doc.go
+pkg/tools/embedder/service/embedder.go
+pkg/tools/embedder/service/llm.go
+pkg/tools/embedder/service/llm_option.go
+pkg/tools/embedder/service/option.go
+pkg/tools/embedder/usecase/agentd.go
+pkg/tools/embedder/usecase/embedder.go
+qemu_make_20250512-042753_18331.core
 renovate.json
 rust/Cargo.lock
 rust/Cargo.toml
@@ -2261,6 +2288,7 @@ rust/libs/observability/src/observability.rs
 rust/libs/proto/Cargo.toml
 rust/libs/proto/src/core.v1.tonic.rs
 rust/libs/proto/src/discoverer.v1.tonic.rs
+rust/libs/proto/src/embedder.v1.tonic.rs
 rust/libs/proto/src/filter.egress.v1.tonic.rs
 rust/libs/proto/src/filter.ingress.v1.tonic.rs
 rust/libs/proto/src/lib.rs
