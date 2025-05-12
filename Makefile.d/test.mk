@@ -369,18 +369,25 @@ gotests/gen-test:
 
 .PHONY: gotests/patch
 ## apply patches to generated go test files
-gotests/patch:
+gotests/patch: \
+	files
 	@$(call green, "apply patches to go test files...")
 	find $(ROOTDIR)/internal/k8s/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%k8s.io/apimachinery/pkg/api/errors%$(GOPKG)/internal/errors%g"
-	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%cockroachdb/errors%$(REPO)/internal/errors%g"
-	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%golang.org/x/sync/errgroup%$(GOPKG)/internal/sync/errgroup%g"
-	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%pkg/errors%$(REPO)/internal/errors%g"
-	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%go-errors/errors%$(REPO)/internal/errors%g"
-	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%go.uber.org/goleak%$(GOPKG)/internal/test/goleak%g"
-	find $(ROOTDIR)/internal/errors -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%\"$(GOPKG)/internal/errors\"%%g"
-	find $(ROOTDIR)/internal/errors -name '*_test.go' -not -name '*_benchmark_test.go' | xargs -P$(CORES) sed -i -E "s/errors\.//g"
-	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%\"$(GOPKG)/internal/test/goleak\"%%g"
-	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs -P$(CORES) sed -i -E "s/goleak\.//g"
+	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?internal/k8s/.*\_test.go$$' | xargs -I {} -P$(CORES) bash -c '\
+		echo "Replacing internal/k8s Test File {}" && \
+		sed -i -E "s%cockroachdb/errors%$(REPO)/internal/errors%g" {} && \
+		sed -i -E "s%golang.org/x/sync/errgroup%$(GOPKG)/internal/sync/errgroup%g"{} && \
+		sed -i -E "s%pkg/errors%$(REPO)/internal/errors%g"{} && \
+		sed -i -E "s%go-errors/errors%$(REPO)/internal/errors%g"{} && \
+		sed -i -E "s%go.uber.org/goleak%$(GOPKG)/internal/test/goleak%g"{}'
+	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?internal/errors/.*\_test.go$$' | xargs -I {} -P$(CORES) bash -c '\
+		echo "Replacing internal/errors Test {}" && \
+		sed -i -E "s%\"$(GOPKG)/internal/errors\"%%g" {} && \
+		sed -i -E "s/errors\.//g" {}
+	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?internal/test/goleak/.*\_test.go$$' | xargs -I {} -P$(CORES) bash -c '\
+		echo "Replacing goleak Test file {}" && \
+		sed -i -E "s%\"$(GOPKG)/internal/test/goleak\"%%g" {} && \
+		sed -i -E "s/goleak\.//g" {}
 
 .PHONY: test/patch-placeholder
 ## apply patches to the placeholder of the generated go test files

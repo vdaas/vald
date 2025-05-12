@@ -16,7 +16,7 @@
 time_zone: UTC
 logging:
   format: raw
-  level: info
+  level: debug
   logger: glg
 dataset:
   name: _E2E_DATASET_PATH_
