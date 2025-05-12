@@ -57,6 +57,7 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 				core.WithAddrs(grpcAddr),
 				core.WithGRPCClient(
 					grpc.New(
+						"Agent Client for Benchmark",
 						grpc.WithAddrs(grpcAddr),
 						grpc.WithInsecure(true),
 					),
@@ -98,6 +99,7 @@ func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 				core.WithAddrs(grpcAddr),
 				core.WithGRPCClient(
 					grpc.New(
+						"Agent Stream Client for Benchmark",
 						grpc.WithAddrs(grpcAddr),
 						grpc.WithInsecure(true),
 					),

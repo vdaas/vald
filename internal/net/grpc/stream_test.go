@@ -203,10 +203,10 @@ func TestBidirectionalStream(t *testing.T) {
 //
 // func TestBidirectionalStreamClient(t *testing.T) {
 // 	type args struct {
-// 		stream           ClientStream
+// 		stream           S
 // 		concurrency      int
-// 		sendDataProvider func() *S
-// 		callBack         func(*R, error) bool
+// 		sendDataProvider func() (Q, bool)
+// 		callBack         func(R, error) bool
 // 	}
 // 	type want struct {
 // 		err error
