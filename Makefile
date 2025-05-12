@@ -534,7 +534,6 @@ format: \
 	dockerfile \
 	license \
 	format/proto \
-	format/go \
 	format/json \
 	format/md \
 	format/yaml \
