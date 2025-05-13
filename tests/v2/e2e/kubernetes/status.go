@@ -128,7 +128,15 @@ func WaitForStatus[T Object, L ObjectList, C NamedObject, I ResourceInterface[T,
 		case <-ticker.C:
 			opts := metav1.ListOptions{}
 			if name != "" {
-				opts.FieldSelector = "metadata.name=" + name
+				obj, err := client.Get(ctx, name, metav1.GetOptions{})
+				if err != nil {
+					return false, err
+				}
+				status, info, err := CheckResourceState(obj)
+				if err != nil {
+					return false, errors.Wrap(err, info)
+				}
+				return slices.Contains(statuses, status), nil
 			}
 			if labelSelector != "" {
 				opts.LabelSelector = labelSelector
