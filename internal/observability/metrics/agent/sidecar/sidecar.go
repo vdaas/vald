@@ -26,14 +26,14 @@ import (
 )
 
 const (
-	uploadTotalMetricsName        = "agent_sidecar_completed_upload_total"
-	uploadTotalMetricsDescription = "Cumulative count of completed upload execution"
+	UploadTotalMetricsName        = "agent_sidecar_completed_upload_total"
+	UploadTotalMetricsDescription = "Cumulative count of completed upload execution"
 
-	uploadBytesMetricsName        = "agent_sidecar_upload_bytes"
-	uploadBytesMetricsDescription = "Uploaded bytes at the last backup execution"
+	UploadBytesMetricsName        = "agent_sidecar_upload_bytes"
+	UploadBytesMetricsDescription = "Uploaded bytes at the last backup execution"
 
-	uploadLatencyMetricsName        = "agent_sidecar_upload_latency"
-	uploadLatencyMetricsDescription = "Upload latency"
+	UploadLatencyMetricsName        = "agent_sidecar_upload_latency"
+	UploadLatencyMetricsDescription = "Upload latency"
 )
 
 type MetricsHook interface {
@@ -62,8 +62,8 @@ func (*sidecarMetrics) View() ([]metrics.View, error) {
 	return []metrics.View{
 		view.NewView(
 			view.Instrument{
-				Name:        uploadTotalMetricsName,
-				Description: uploadTotalMetricsDescription,
+				Name:        UploadTotalMetricsName,
+				Description: UploadTotalMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationSum{},
@@ -71,8 +71,8 @@ func (*sidecarMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        uploadBytesMetricsName,
-				Description: uploadBytesMetricsDescription,
+				Name:        UploadBytesMetricsName,
+				Description: UploadBytesMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -80,8 +80,8 @@ func (*sidecarMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        uploadLatencyMetricsName,
-				Description: uploadLatencyMetricsDescription,
+				Name:        UploadLatencyMetricsName,
+				Description: UploadLatencyMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationExplicitBucketHistogram{
@@ -94,24 +94,24 @@ func (*sidecarMetrics) View() ([]metrics.View, error) {
 
 func (sm *sidecarMetrics) Register(m metrics.Meter) error {
 	uploadTotal, err := m.Int64ObservableCounter(
-		uploadTotalMetricsName,
-		metrics.WithDescription(uploadTotalMetricsDescription),
+		UploadTotalMetricsName,
+		metrics.WithDescription(UploadTotalMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
 	}
 	uploadBytes, err := m.Int64ObservableGauge(
-		uploadBytesMetricsName,
-		metrics.WithDescription(uploadBytesMetricsDescription),
+		UploadBytesMetricsName,
+		metrics.WithDescription(UploadBytesMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
 	)
 	if err != nil {
 		return err
 	}
 	uploadLatency, err := m.Float64ObservableGauge(
-		uploadLatencyMetricsName,
-		metrics.WithDescription(uploadLatencyMetricsDescription),
+		UploadLatencyMetricsName,
+		metrics.WithDescription(UploadLatencyMetricsDescription),
 		metrics.WithUnit(metrics.Milliseconds),
 	)
 	if err != nil {

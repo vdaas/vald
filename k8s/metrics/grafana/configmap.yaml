@@ -21,14 +21,6 @@ data:
   providers.yaml: |
     apiVersion: 1
     providers:
-      - name: 'default'
-        orgId: 1
-        folder: ''
-        type: file
-        disableDeletion: false
-        editable: true
-        options:
-          path: /var/lib/grafana/dashboards
       - name: dashboards-vald
         orgId: 1
         folder: Vald
@@ -36,7 +28,7 @@ data:
         disableDeletion: true
         editable: false
         options:
-          path: /var/lib/grafana/dashboards-vald
+          path: /var/lib/grafana/dashboards
 ---
 apiVersion: v1
 kind: ConfigMap
