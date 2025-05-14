@@ -14,5 +14,4 @@
 // limitations under the License.
 //
 
-// Package ngt provides ngt agent starter  functionality
 package ngt

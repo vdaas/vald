@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package algorithm provides core interface
 package algorithm
 
 import "context"

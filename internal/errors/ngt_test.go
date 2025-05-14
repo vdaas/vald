@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package errors
 package errors
 
 // NOT IMPLEMENTED BELOW

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package core provides core agent server interface
 package core
 
 const (

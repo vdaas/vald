@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package mirror provides vald server interface
 package mirror
 
 const (

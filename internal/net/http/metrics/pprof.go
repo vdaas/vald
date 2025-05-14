@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package metrics provides pprof profiler handler
 package metrics
 
 import (

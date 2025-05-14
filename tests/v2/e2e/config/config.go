@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 
-// Package config provides configuration types and logic for loading and binding configuration values.
 // This file includes refactored Bind methods (always returning error) and non-Bind functions,
 // with named return values and proper ordering of sections.
 package config

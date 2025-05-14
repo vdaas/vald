@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package ngt provides ngt
 package ngt
 
 // NOT IMPLEMENTED BELOW

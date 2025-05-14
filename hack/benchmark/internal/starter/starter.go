@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package starter provides starter  interfaces
 package starter
 
 import (

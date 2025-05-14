@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package singleflight represents zero time caching
 package singleflight
 
 import (

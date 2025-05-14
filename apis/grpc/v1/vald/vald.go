@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package vald provides vald server interface
 package vald
 
 import grpc "google.golang.org/grpc"
