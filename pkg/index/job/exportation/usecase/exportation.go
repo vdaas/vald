@@ -51,7 +51,7 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 	// skipcq: CRT-D0001
 	gOpts = append(gOpts, grpc.WithErrGroup(eg))
 
-	gateway, err := vald.New(vald.WithClient(grpc.New(gOpts...)))
+	gateway, err := vald.New(vald.WithClient(grpc.New("Index exporter client", gOpts...)))
 	if err != nil {
 		return nil, err
 	}
