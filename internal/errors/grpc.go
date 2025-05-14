@@ -74,6 +74,11 @@ var (
 		return Errorf("failed to marshal/unmarshal proto message, message type is %T (missing vtprotobuf/protobuf helpers)", v)
 	}
 
+	// UnexpectedProtoMessageType represents an error that the gRPC protocol buffers message type is invalid.
+	UnexpectedProtoMessageType = func(e, a any) error {
+		return Errorf("unexpected proto message type, expected message type is %T, actual is %T", e, a)
+	}
+
 	// ErrServerStreamClientRecv represents a function to generate an error that the gRPC client couldn't receive from stream.
 	ErrServerStreamClientRecv = func(err error) error {
 		return Wrap(err, "gRPC client failed to receive from stream")
