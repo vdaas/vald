@@ -22,6 +22,7 @@
 .fossa.yml
 .gitattributes
 .gitfiles
+.gitguardian.yaml
 .github/ISSUE_TEMPLATE/bug_report.md
 .github/ISSUE_TEMPLATE/feature_request.md
 .github/ISSUE_TEMPLATE/security_issue_report.md
@@ -153,6 +154,7 @@ Makefile.d/kind.mk
 Makefile.d/minikube.mk
 Makefile.d/proto.mk
 Makefile.d/test.mk
+Makefile.d/tls.mk
 Makefile.d/tools.mk
 README.md
 SECURITY.md
@@ -1358,9 +1360,6 @@ internal/servers/starter/option.go
 internal/servers/starter/option_test.go
 internal/servers/starter/starter.go
 internal/servers/starter/starter_test.go
-internal/servers/starter/testdata/dummyCa.pem
-internal/servers/starter/testdata/dummyServer.crt
-internal/servers/starter/testdata/dummyServer.key
 internal/strings/strings.go
 internal/strings/strings_benchmark_test.go
 internal/strings/strings_test.go
@@ -1400,11 +1399,6 @@ internal/test/data/request/remove_test.go
 internal/test/data/strings/strings.go
 internal/test/data/strings/strings_benchmark_test.go
 internal/test/data/strings/strings_test.go
-internal/test/data/tls/dummyCa.pem
-internal/test/data/tls/dummyServer.crt
-internal/test/data/tls/dummyServer.key
-internal/test/data/tls/invalid.crt
-internal/test/data/tls/invalid.pem
 internal/test/data/vector/gen.go
 internal/test/data/vector/gen_test.go
 internal/test/data/vector/noise/noise.go
@@ -1474,7 +1468,6 @@ k8s/external/minio/svc.yaml
 k8s/gateway/gateway/ing.yaml
 k8s/gateway/gateway/lb/configmap.yaml
 k8s/gateway/gateway/lb/deployment.yaml
-k8s/gateway/gateway/lb/hpa.yaml
 k8s/gateway/gateway/lb/pdb.yaml
 k8s/gateway/gateway/lb/priorityclass.yaml
 k8s/gateway/gateway/lb/svc.yaml

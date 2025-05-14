@@ -18,7 +18,6 @@
 package server
 
 import (
-	"crypto/tls"
 	"fmt"
 	"net/http"
 	"time"
@@ -37,6 +36,7 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
+	"github.com/vdaas/vald/internal/tls"
 	"golang.org/x/net/http2"
 )
 

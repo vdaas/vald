@@ -18,11 +18,11 @@ package mysql
 
 import (
 	"context"
-	"crypto/tls"
 	"time"
 
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/timeutil"
+	"github.com/vdaas/vald/internal/tls"
 )
 
 // Option represents the functional option for mySQLClient.
