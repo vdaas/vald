@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package usecase provides functionality for the Vald project.
+// Package usecase provides functionality for the Vald project..
 package usecase

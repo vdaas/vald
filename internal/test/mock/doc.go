@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package mock provides mock implementation for testing.
+// Package mock provides mock implementation for testing..
 package mock

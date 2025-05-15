@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package errors provides error types and function
+// Package errors provides error types and function.
 package errors

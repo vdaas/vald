@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package timeutil provides functionality for the Vald project.
+// Package timeutil provides functionality for the Vald project..
 package timeutil

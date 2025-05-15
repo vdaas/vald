@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package ngt provides functionality for the Vald project.
+// Package ngt provides functionality for the Vald project..
 package ngt

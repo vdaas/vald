@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package index provides functionality for the Vald project.
+// Package index provides functionality for the Vald project..
 package index

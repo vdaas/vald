@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package core provides agent ngt gRPC client functions
+// Package core provides agent ngt gRPC client functions.
 package core

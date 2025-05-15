@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package portforward provides functionality for the Vald project.
+// Package portforward provides functionality for the Vald project..
 package portforward

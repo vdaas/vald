@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package multiapis provides functionality for the Vald project.
+// Package multiapis provides functionality for the Vald project..
 package multiapis

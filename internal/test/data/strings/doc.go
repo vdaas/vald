@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package strings provides functionality for the Vald project.
+// Package strings provides functionality for the Vald project..
 package strings

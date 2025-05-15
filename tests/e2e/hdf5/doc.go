@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package hdf5 provides functionality for the Vald project.
+// Package hdf5 provides functionality for the Vald project..
 package hdf5

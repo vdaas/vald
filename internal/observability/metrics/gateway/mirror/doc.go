@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package mirror provides functionality for the Vald project.
+// Package mirror provides functionality for the Vald project..
 package mirror

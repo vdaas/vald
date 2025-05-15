@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package types provides alias of protobuf library types
+// Package types provides alias of protobuf library types.
 package types

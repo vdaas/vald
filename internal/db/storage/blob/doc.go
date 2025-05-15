@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package blob provides functionality for the Vald project.
+// Package blob provides functionality for the Vald project..
 package blob

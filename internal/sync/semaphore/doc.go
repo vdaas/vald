@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package semaphore provides a weighted semaphore implementation.
+// Package semaphore provides a weighted semaphore implementation..
 package semaphore

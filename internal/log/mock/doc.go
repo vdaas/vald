@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package mock provides functionality for the Vald project.
+// Package mock provides functionality for the Vald project..
 package mock

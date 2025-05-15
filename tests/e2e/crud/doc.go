@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package crud provides functionality for the Vald project.
+// Package crud provides functionality for the Vald project..
 package crud

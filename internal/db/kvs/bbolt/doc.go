@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package bbolt provides functionality for the Vald project.
+// Package bbolt provides functionality for the Vald project..
 package bbolt

@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package exporter provides functionality for the Vald project.
+// Package exporter provides functionality for the Vald project..
 package exporter

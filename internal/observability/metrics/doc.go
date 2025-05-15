@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package metrics provides functionality for the Vald project.
+// Package metrics provides functionality for the Vald project..
 package metrics

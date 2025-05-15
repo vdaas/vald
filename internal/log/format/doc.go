@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package format provides functionality for the Vald project.
+// Package format provides functionality for the Vald project..
 package format

@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package zap provides functionality for the Vald project.
+// Package zap provides functionality for the Vald project..
 package zap

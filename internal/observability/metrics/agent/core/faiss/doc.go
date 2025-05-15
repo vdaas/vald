@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package faiss provides functionality for the Vald project.
+// Package faiss provides functionality for the Vald project..
 package faiss

@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package gob provides functionality for the Vald project.
+// Package gob provides functionality for the Vald project..
 package gob

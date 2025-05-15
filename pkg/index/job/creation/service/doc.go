@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package service provides functionality for the Vald project.
+// Package service provides functionality for the Vald project..
 package service

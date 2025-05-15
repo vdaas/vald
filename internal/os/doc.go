@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package os provides os functions
+// Package os provides os functions.
 package os

@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package vector provides functionality for the Vald project.
+// Package vector provides functionality for the Vald project..
 package vector

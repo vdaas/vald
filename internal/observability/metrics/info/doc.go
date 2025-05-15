@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package info provides functionality for the Vald project.
+// Package info provides functionality for the Vald project..
 package info

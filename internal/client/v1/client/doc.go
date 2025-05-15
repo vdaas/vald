@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package client provides vald component client interfaces
+// Package client provides vald component client interfaces.
 package client

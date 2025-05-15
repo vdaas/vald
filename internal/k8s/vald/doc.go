@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package vald provides functionality for the Vald project.
+// Package vald provides functionality for the Vald project..
 package vald

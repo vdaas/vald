@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package k8s provides functionality for the Vald project.
+// Package k8s provides functionality for the Vald project..
 package k8s

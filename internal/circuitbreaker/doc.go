@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package circuitbreaker provides functionality for the Vald project.
+// Package circuitbreaker provides functionality for the Vald project..
 package circuitbreaker

@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package watch provides functionality for the Vald project.
+// Package watch provides functionality for the Vald project..
 package watch

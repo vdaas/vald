@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package test provides functions for general testing use
+// Package test provides functions for general testing use.
 package test

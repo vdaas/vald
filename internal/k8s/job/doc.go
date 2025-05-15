@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package job provides functionality for the Vald project.
+// Package job provides functionality for the Vald project..
 package job

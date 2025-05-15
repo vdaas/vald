@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package info provides build-time info
+// Package info provides build-time info.
 package info

@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package faiss provides implementation of Go API for https://github.com/facebookresearch/faiss
+// Package faiss provides implementation of Go API for https://github.com/facebookresearch/faiss.
 package faiss

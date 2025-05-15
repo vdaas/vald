@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package comparator provides functionality for the Vald project.
+// Package comparator provides functionality for the Vald project..
 package comparator

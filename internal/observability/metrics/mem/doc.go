@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package mem provides functionality for the Vald project.
+// Package mem provides functionality for the Vald project..
 package mem

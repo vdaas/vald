@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package version provides functionality for the Vald project.
+// Package version provides functionality for the Vald project..
 package version

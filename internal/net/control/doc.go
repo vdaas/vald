@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package control provides network socket option
+// Package control provides network socket option.
 package control

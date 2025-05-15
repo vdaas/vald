@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package credentials provides generic functionality for grpc credentials setting
+// Package credentials provides generic functionality for grpc credentials setting.
 package credentials

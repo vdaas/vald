@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package cgo provides functionality for the Vald project.
+// Package cgo provides functionality for the Vald project..
 package cgo

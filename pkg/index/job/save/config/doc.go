@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package config provides functionality for the Vald project.
+// Package config provides functionality for the Vald project..
 package config

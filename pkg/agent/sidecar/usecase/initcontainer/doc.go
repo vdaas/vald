@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package initcontainer provides functionality for the Vald project.
+// Package initcontainer provides functionality for the Vald project..
 package initcontainer

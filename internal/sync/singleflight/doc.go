@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package singleflight provides a duplicate function call suppression
+// Package singleflight provides a duplicate function call suppression.
 package singleflight

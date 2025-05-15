@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package errdetails provides error detail for gRPC status
+// Package errdetails provides error detail for gRPC status.
 package errdetails

@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package version provides version comparison functionality
+// Package version provides version comparison functionality.
 package version

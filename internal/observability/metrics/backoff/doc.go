@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package backoff provides functionality for the Vald project.
+// Package backoff provides functionality for the Vald project..
 package backoff

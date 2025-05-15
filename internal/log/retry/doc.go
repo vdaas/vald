@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package retry provides functionality for the Vald project.
+// Package retry provides functionality for the Vald project..
 package retry

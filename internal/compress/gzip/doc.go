@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package gzip provides functionality for the Vald project.
+// Package gzip provides functionality for the Vald project..
 package gzip

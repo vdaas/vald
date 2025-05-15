@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package runner provides implementation of process runner
+// Package runner provides implementation of process runner.
 package runner

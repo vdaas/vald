@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package unit provides functionality for the Vald project.
+// Package unit provides functionality for the Vald project..
 package unit

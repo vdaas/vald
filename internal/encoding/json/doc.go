@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package json provides functionality for the Vald project.
+// Package json provides functionality for the Vald project..
 package json

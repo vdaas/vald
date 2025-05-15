@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package rest provides rest api logic
+// Package rest provides rest api logic.
 package rest

@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package svc provides kubernetes svc information and preriodically update
+// Package svc provides kubernetes svc information and preriodically update.
 package service

@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package io provides functionality for the Vald project.
+// Package io provides functionality for the Vald project..
 package io

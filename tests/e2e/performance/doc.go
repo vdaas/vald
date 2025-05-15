@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package performance provides functionality for the Vald project.
+// Package performance provides functionality for the Vald project..
 package performance

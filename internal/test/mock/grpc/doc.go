@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package grpc provides functionality for the Vald project.
+// Package grpc provides functionality for the Vald project..
 package grpc

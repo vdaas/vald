@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package keepalive provides grpc keepalive configuration
+// Package keepalive provides grpc keepalive configuration.
 package keepalive

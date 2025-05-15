@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package router provides functionality for the Vald project.
+// Package router provides functionality for the Vald project..
 package router

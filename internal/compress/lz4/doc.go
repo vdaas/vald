@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package lz4 provides functionality for the Vald project.
+// Package lz4 provides functionality for the Vald project..
 package lz4

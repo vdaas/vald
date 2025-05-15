@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package trace provides functionality for the Vald project.
+// Package trace provides functionality for the Vald project..
 package trace

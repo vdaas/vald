@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package observability provides functionality for the Vald project.
+// Package observability provides functionality for the Vald project..
 package observability

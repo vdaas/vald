@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package reader provides the reader functions for handling with s3.
+// Package reader provides the reader functions for handling with s3..
 package reader

@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package location provides functionality for the Vald project.
+// Package location provides functionality for the Vald project..
 package location

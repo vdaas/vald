@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package quic provides functionality for the Vald project.
+// Package quic provides functionality for the Vald project..
 package quic

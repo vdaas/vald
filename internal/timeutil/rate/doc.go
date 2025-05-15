@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package rate provides functionality for the Vald project.
+// Package rate provides functionality for the Vald project..
 package rate

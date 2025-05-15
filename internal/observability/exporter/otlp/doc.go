@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package otlp provides functionality for the Vald project.
+// Package otlp provides functionality for the Vald project..
 package otlp

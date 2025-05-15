@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package kvs provides functionality for the Vald project.
+// Package kvs provides functionality for the Vald project..
 package kvs

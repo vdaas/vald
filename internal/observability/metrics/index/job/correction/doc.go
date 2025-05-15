@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package correction provides functionality for the Vald project.
+// Package correction provides functionality for the Vald project..
 package correction

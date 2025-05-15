@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package cacher provides implementation of cache type definition
+// Package cacher provides implementation of cache type definition.
 package cacher

@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package errgroup provides a global wait group for gracefully terminating all goroutines.
+// Package errgroup provides a global wait group for gracefully terminating all goroutines..
 package errgroup

@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package observer provides storage observer
+// Package observer provides storage observer.
 package observer

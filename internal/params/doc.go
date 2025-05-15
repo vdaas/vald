@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package params provides implementation of Go API for argument parser
+// Package params provides implementation of Go API for argument parser.
 package params

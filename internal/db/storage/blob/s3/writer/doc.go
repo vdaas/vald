@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package writer provides functionality for the Vald project.
+// Package writer provides functionality for the Vald project..
 package writer

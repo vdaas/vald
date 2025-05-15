@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package glg provides functionality for the Vald project.
+// Package glg provides functionality for the Vald project..
 package glg

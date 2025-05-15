@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package urlopener provides functionality for the Vald project.
+// Package urlopener provides functionality for the Vald project..
 package urlopener

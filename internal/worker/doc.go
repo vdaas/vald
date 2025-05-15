@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package worker provides worker processes
+// Package worker provides worker processes.
 package worker

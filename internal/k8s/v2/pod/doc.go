@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package pod provides kubernetes pod information and preriodically update
+// Package pod provides kubernetes pod information and preriodically update.
 package pod

@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package codes provides status codes of grpc
+// Package codes provides status codes of grpc.
 package codes

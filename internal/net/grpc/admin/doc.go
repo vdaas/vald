@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package admin provides grpc admin metrics registration API for providing grpc metrics endpoints
+// Package admin provides grpc admin metrics registration API for providing grpc metrics endpoints.
 package admin

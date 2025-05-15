@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package zstd provides functionality for the Vald project.
+// Package zstd provides functionality for the Vald project..
 package zstd

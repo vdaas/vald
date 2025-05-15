@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package noise provides functionality for the Vald project.
+// Package noise provides functionality for the Vald project..
 package noise

@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package health provides generic functionality for grpc health checks.
+// Package health provides generic functionality for grpc health checks..
 package health

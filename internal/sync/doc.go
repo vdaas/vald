@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package sync provides functionality for the Vald project.
+// Package sync provides functionality for the Vald project..
 package sync

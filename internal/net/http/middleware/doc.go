@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package middleware provides rest.Func Middleware
+// Package middleware provides rest.Func Middleware.
 package middleware

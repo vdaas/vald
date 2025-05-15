@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package testify provides functionality for the Vald project.
+// Package testify provides functionality for the Vald project..
 package testify

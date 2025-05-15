@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package kubectl provides functionality for the Vald project.
+// Package kubectl provides functionality for the Vald project..
 package kubectl

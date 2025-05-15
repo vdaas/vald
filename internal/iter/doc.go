@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package iter provides functionality for the Vald project.
+// Package iter provides functionality for the Vald project..
 package iter

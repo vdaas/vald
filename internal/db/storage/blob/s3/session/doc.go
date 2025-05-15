@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package session provides functionality for the Vald project.
+// Package session provides functionality for the Vald project..
 package session

@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package storage provides blob storage service
+// Package storage provides blob storage service.
 package storage

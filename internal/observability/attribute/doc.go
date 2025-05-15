@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package attribute provides functionality for the Vald project.
+// Package attribute provides functionality for the Vald project..
 package attribute

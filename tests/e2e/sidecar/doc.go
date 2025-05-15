@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package sidecar provides functionality for the Vald project.
+// Package sidecar provides functionality for the Vald project..
 package sidecar

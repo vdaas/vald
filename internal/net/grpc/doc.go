@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package grpc provides generic functionality for grpc
+// Package grpc provides generic functionality for grpc.
 package grpc

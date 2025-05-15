@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package restorer provides restorer service
+// Package restorer provides restorer service.
 package restorer

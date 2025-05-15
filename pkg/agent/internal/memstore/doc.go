@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package memstore provides functionality for the Vald project.
+// Package memstore provides functionality for the Vald project..
 package memstore

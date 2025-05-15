@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package file provides file I/O functionality
+// Package file provides file I/O functionality.
 package file

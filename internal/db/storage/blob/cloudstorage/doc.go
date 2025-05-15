@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package cloudstorage provides functionality for the Vald project.
+// Package cloudstorage provides functionality for the Vald project..
 package cloudstorage

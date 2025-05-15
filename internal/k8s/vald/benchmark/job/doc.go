@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package job provides benchmark job crd information and preriodically update
+// Package job provides benchmark job crd information and preriodically update.
 package job

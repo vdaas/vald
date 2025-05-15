@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package status provides statuses and errors returned by grpc handler functions
+// Package status provides statuses and errors returned by grpc handler functions.
 package status

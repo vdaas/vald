@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package goroutine provides functionality for the Vald project.
+// Package goroutine provides functionality for the Vald project..
 package goroutine

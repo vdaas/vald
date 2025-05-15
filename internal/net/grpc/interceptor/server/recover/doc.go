@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package recover provides gRPC interceptors for recovery
+// Package recover provides gRPC interceptors for recovery.
 package recover

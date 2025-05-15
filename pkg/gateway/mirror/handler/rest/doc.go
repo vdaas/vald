@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package rest provides functionality for the Vald project.
+// Package rest provides functionality for the Vald project..
 package rest

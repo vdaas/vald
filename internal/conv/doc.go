@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package conv provides functionality for the Vald project.
+// Package conv provides functionality for the Vald project..
 package conv

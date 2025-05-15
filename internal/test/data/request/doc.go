@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package request provides functions to generate proto request for testing
+// Package request provides functions to generate proto request for testing.
 package request

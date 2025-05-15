@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package trace provides trace functions.
+// Package trace provides trace functions..
 package trace

@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package s3 provides functionality for the Vald project.
+// Package s3 provides functionality for the Vald project..
 package s3

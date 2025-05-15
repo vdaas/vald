@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package goleak provides functionality for the Vald project.
+// Package goleak provides functionality for the Vald project..
 package goleak

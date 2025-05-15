@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package benchmark provides functionality for the Vald project.
+// Package benchmark provides functionality for the Vald project..
 package benchmark

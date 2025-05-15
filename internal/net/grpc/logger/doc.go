@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package logger provides functionality for the Vald project.
+// Package logger provides functionality for the Vald project..
 package logger
