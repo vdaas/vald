@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package usecase represents gateways usecase layer
 package usecase
 
 import (

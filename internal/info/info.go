@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package info provides build-time info
 package info
 
 import (

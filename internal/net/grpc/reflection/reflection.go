@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package reflection provides grpc reflection for providing grpc server proto specs
 package reflection
 
 import "google.golang.org/grpc/reflection"
