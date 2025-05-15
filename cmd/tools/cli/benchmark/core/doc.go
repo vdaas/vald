@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package ngt provides implementation of Go API for https://github.com/yahoojapan/NGT
+// Package main provides functionality for the Vald project.
 package main
