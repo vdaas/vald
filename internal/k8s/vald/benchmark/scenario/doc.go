@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package operator provides benchmark operator crd information and preriodically update
+// Package scenario provides functionality for handling scenario operations
 package scenario

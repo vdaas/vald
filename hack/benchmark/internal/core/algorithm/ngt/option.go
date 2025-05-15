@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package ngt provides ngt
 package ngt
 
 type Option func(*core)

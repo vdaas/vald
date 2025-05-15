@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package service represents gateway's service logic
 package service
 
 import (

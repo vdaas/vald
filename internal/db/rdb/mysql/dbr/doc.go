@@ -15,5 +15,4 @@
 //
 
 // Package dbr provides the dbr functions for handling with databases.
-// This package is wrapping package of "https://github.com/gocraft/dbr/v2".
 package dbr

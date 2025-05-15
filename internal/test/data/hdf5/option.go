@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package hdf5 is load hdf5 file
 package hdf5
 
 import "github.com/vdaas/vald/internal/errors"

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package service manages the main logic of benchmark job.
 package service
 
 import (

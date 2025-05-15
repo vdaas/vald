@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package service manages the main logic of server.
 package service
 
 import (

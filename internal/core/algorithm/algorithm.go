@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package algorithm defines vald's core ann algorithm interface & constraint.
 package algorithm
 
 import "math"

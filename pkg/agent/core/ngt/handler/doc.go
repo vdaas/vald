@@ -14,4 +14,5 @@
 // limitations under the License.
 //
 
+// Package handler provides functionality for handling handler operations
 package handler

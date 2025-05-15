@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package strategy provides benchmark strategy
 package strategy
 
 import (

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config stores all server application settings
 package config
 
 import "github.com/vdaas/vald/internal/config"

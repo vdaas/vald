@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 
-// Package config provides configuration types and logic for loading and binding configuration values.
 // This file includes detailed Bind methods for all configuration types with extensive comments.
 package config
 

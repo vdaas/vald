@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package k8s provides kubernetes control functionality
 package k8s
 
 // NOT IMPLEMENTED BELOW

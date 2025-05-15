@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package keepalive provides grpc keepalive configuration
 package keepalive
 
 import "google.golang.org/grpc/keepalive"

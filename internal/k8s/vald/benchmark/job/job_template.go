@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package job manages the main logic of benchmark job.
 package job
 
 import (

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package benchmark provides benchmark frame
 package benchmark
 
 type Option func(*benchmark)

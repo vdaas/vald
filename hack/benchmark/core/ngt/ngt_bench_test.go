@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package ngt provides benchmark program
 package ngt
 
 import (
