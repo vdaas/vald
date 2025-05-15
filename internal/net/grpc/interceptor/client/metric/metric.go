@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package metric provides gRPC client interceptors for client metric
 package metric
 
 import (

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package errors provides error types and function
 package errors
 
 // ErrUnsupportedClientMethod is unsupported method error for gRPC/REST client.

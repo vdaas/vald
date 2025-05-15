@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package gache provides implementation of cache using gache
 
 package gache
 

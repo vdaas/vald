@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package rest provides rest api logic
 package rest
 
 import "github.com/vdaas/vald/pkg/agent/core/ngt/handler/grpc"

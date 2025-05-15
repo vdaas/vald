@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package ingress provides ingress filter client logic
 package ingress
 
 import "github.com/vdaas/vald/internal/net/grpc"

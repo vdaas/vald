@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package main provides program main
 package main
 
 import (

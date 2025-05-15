@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 // Observability represents the configuration for the observability.

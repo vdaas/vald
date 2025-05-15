@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package starter provides server startup and shutdown flow control
 package starter
 
 import (
