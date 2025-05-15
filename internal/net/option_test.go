@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package tcp provides tcp option
 package net
 
 import (

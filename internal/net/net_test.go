@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package net provides net functionality for grpc
 package net
 
 import (

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package client is Kubernetes client for getting resource from Kubernetes cluster.
 package client
 
 import (

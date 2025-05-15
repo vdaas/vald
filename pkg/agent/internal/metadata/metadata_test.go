@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package metadata provides agent metadata structs and info.
 package metadata
 
 // NOT IMPLEMENTED BELOW

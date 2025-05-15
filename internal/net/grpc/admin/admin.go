@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package admin provides grpc admin metrics registration API for providing grpc metrics endpoints
 package admin
 
 import "google.golang.org/grpc/admin"

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package vald provides vald gRPC client library
 package vald
 
 import "github.com/vdaas/vald/internal/net/grpc"

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package io provides io functions
 package io
 
 import (

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package runner provides implementation of process runner
 package runner
 
 import "github.com/vdaas/vald/internal/config"

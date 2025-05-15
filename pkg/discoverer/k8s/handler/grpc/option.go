@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package grpc provides grpc server logic
 package grpc
 
 import (

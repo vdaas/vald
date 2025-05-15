@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package grpc provides generic functionality for grpc
 package grpc
 
 import "google.golang.org/grpc"

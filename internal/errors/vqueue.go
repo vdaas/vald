@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package errors provides error types and function
 package errors
 
 var ErrVQueueFinalizing = New("error vector queue is now finalizing...")

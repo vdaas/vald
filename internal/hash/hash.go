@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package info provides hash functionality
 package hash
 
 import "github.com/zeebo/xxh3"
