@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package main provides program main
+// Package main provides functionality for the Vald project.
 package main
