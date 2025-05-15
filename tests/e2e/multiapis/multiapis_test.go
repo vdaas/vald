@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 
-// package multiapis provides e2e tests for multi APIs
 package multiapis
 
 import (

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// package noise provides a noise generator for adding noise to vectors.
 package noise
 
 // ---------------------------------------

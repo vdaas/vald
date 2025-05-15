@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 
-// package portforward provides port-forward functionality for e2e tests
 package portforward
 
 import (

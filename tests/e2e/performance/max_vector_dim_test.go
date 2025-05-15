@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 
-// package performance provides e2e tests for check max bit size
 package performance
 
 import (

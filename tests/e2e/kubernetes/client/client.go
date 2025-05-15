@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 
-// package client provides kubernetes client
 package client
 
 import (

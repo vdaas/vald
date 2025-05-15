@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 
-// package hdf5 provides hdf5 utilities for e2e testing
 package hdf5
 
 import (

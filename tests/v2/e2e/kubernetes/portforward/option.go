@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 
-// package portforward provides a persistent port forwarding daemon for Kubernetes services.
 package portforward
 
 import (

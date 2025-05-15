@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 
-// package kubernetes provides kubernetes e2e tests
 package kubernetes
 
 import (

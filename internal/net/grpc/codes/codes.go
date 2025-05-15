@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package codes provides status codes of grpc
 package codes
 
 import "google.golang.org/grpc/codes"

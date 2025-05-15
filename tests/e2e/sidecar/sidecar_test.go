@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 
-// package sidecar provides e2e tests for sidecar
 package sidecar
 
 import (

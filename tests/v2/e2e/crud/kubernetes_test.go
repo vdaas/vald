@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 
-// package crud provides end-to-end tests using ann-benchmarks datasets.
 package crud
 
 import (

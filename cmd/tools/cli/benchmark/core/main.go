@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Package ngt provides implementation of Go API for https://github.com/yahoojapan/NGT
+// Package main provides benchmark core functionality for NGT
 package main
 
 import (
