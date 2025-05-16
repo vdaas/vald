@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package net provides net functionality for vald's network connection
 package net
 
 import (

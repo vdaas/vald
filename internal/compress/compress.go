@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package compress provides compressor interface
 package compress
 
 import "github.com/vdaas/vald/internal/io"
