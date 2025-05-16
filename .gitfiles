@@ -1726,14 +1726,18 @@ pkg/agent/core/ngt/usecase/agentd.go
 pkg/agent/core/ngt/usecase/agentd_test.go
 pkg/agent/core/ngt/usecase/doc.go
 pkg/agent/doc.go
+pkg/agent/internal/kvs/doc.go
 pkg/agent/internal/kvs/kvs.go
 pkg/agent/internal/kvs/kvs_test.go
 pkg/agent/internal/kvs/option.go
 pkg/agent/internal/kvs/option_test.go
 pkg/agent/internal/memstore/data_manager.go
 pkg/agent/internal/memstore/data_manager_test.go
+pkg/agent/internal/memstore/doc.go
+pkg/agent/internal/metadata/doc.go
 pkg/agent/internal/metadata/metadata.go
 pkg/agent/internal/metadata/metadata_test.go
+pkg/agent/internal/vqueue/doc.go
 pkg/agent/internal/vqueue/option.go
 pkg/agent/internal/vqueue/queue.go
 pkg/agent/internal/vqueue/queue_test.go
@@ -1923,6 +1927,7 @@ pkg/gateway/mirror/usecase/vald_test.go
 pkg/index/doc.go
 pkg/index/job/correction/config/config.go
 pkg/index/job/correction/config/config_test.go
+pkg/index/job/correction/doc.go
 pkg/index/job/correction/service/corrector.go
 pkg/index/job/correction/service/corrector_test.go
 pkg/index/job/correction/service/options.go
@@ -1931,6 +1936,7 @@ pkg/index/job/correction/usecase/corrector.go
 pkg/index/job/correction/usecase/corrector_test.go
 pkg/index/job/creation/config/config.go
 pkg/index/job/creation/config/config_test.go
+pkg/index/job/creation/doc.go
 pkg/index/job/creation/service/indexer.go
 pkg/index/job/creation/service/indexer_test.go
 pkg/index/job/creation/service/options.go
@@ -1939,6 +1945,7 @@ pkg/index/job/creation/usecase/creation.go
 pkg/index/job/creation/usecase/creation_test.go
 pkg/index/job/deletion/config/config.go
 pkg/index/job/deletion/config/config_test.go
+pkg/index/job/deletion/doc.go
 pkg/index/job/deletion/service/deleter.go
 pkg/index/job/deletion/service/deleter_test.go
 pkg/index/job/deletion/service/options.go
@@ -1948,6 +1955,7 @@ pkg/index/job/deletion/usecase/deletion_test.go
 pkg/index/job/doc.go
 pkg/index/job/readreplica/rotate/config/config.go
 pkg/index/job/readreplica/rotate/config/config_test.go
+pkg/index/job/readreplica/rotate/doc.go
 pkg/index/job/readreplica/rotate/service/options.go
 pkg/index/job/readreplica/rotate/service/options_test.go
 pkg/index/job/readreplica/rotate/service/rotator.go
@@ -1956,6 +1964,7 @@ pkg/index/job/readreplica/rotate/usecase/rotate.go
 pkg/index/job/readreplica/rotate/usecase/rotate_test.go
 pkg/index/job/save/config/config.go
 pkg/index/job/save/config/config_test.go
+pkg/index/job/save/doc.go
 pkg/index/job/save/service/indexer.go
 pkg/index/job/save/service/indexer_test.go
 pkg/index/job/save/service/options.go
