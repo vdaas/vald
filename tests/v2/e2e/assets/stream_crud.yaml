@@ -167,10 +167,11 @@ strategies:
   #             skip_strict_exist_check: false
   #             timestamp: 0
   #           # expected patterns of test status codes
-  #           expected_status_codes:
-  #             - ok
-  #             - already_exists
-  #             - not_found
+  #           expect:
+  #             status_codes:
+  #               - ok
+  #               - already_exists
+  #               - not_found
   #           # for kubernetes configurations
   #           kubernetes:
   #             kind: "statefulset"
