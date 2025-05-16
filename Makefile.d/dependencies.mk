@@ -55,7 +55,7 @@ go/download:
 go/deps:
 	head -n -1 $(ROOTDIR)/hack/go.mod.default | awk 'NR>=6 && $$0 !~ /(upgrade|latest|master|main)/' | sort
 	sed -i "3s/go [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?/go $(GO_VERSION)/g" $(ROOTDIR)/hack/go.mod.default
-	sed -i 's|\(require github.com/grafana/grafana-foundation-sdk/go v\)[^+]*\(\+cog-v0\.0\.x\)|\1'"$(GRAFANA_VERSION).x"'\2|' $(ROOTDIR)/hack/go.mod.default
+	sed -i 's|\(grafana-foundation-sdk/go v\)[^+]*\(\+cog-v0\.0\.x\)|\1'"$(GRAFANA_VERSION).x"'\2|' $(ROOTDIR)/hack/go.mod.default
 	if $(GO_CLEAN_DEPS); then \
         	rm -rf $(ROOTDIR)/vendor \
         		/go/pkg \
