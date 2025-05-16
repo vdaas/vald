@@ -11,6 +11,4 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// Package status provides statuses and errors returned by grpc handler functions
-// Package status provides statuses and errors returned by grpc handler functions
 package status

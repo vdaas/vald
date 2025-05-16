@@ -11,8 +11,4 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// Package pool provides gRPC connection pool client
-// Package pool provides gRPC connection pool client
-// Package pool provides a lock-free gRPC connection pool client.
-// Package pool provides gRPC client connection pool
 package pool

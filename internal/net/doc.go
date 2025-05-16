@@ -11,8 +11,4 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// Package net provides net functionality for vald's network connection
-// Package net provides net functionality for vald's network connection
-// Package net provides net functionality for vald's network connection
-// Package net provides net functionality for grpc
 package net

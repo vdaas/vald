@@ -11,6 +11,4 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// Package errgroup provides a global wait group for gracefully terminating all goroutines.
-// Package errgroup provides server global wait group for graceful kill all goroutine
 package errgroup

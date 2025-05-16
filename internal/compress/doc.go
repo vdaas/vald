@@ -11,20 +11,4 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// Package compress provides compressor interface
-// Package compress provides compress functions
-// Package compress provides compress functions
-// Package compress provides compress functions
-// Package compress provides compress functions
-// Package compress provides compress functions
-// Package compress provides compress functions
-// Package compress provides compress functions
-// Package compress provides compress functions
-// Package compress provides compress functions
-// Package compress provides compress functions
-// Package compress provides compress functions
-// Package compress provides compress functions
-// Package compress provides compress functions
-// Package compress provides compress functions
-// Package compress provides compress functions
 package compress
