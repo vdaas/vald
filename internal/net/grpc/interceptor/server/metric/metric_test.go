@@ -59,8 +59,8 @@ func Test_attributesFromError(t *testing.T) {
 			},
 			want: want{
 				obj: []attribute.KeyValue{
-					attribute.String(gRPCMethodKeyName, "InsertRPC"),
-					attribute.String(gRPCStatus, codes.OK.String()),
+					attribute.String(GRPCMethodKeyName, "InsertRPC"),
+					attribute.String(GRPCStatus, codes.OK.String()),
 				},
 			},
 		},
@@ -72,8 +72,8 @@ func Test_attributesFromError(t *testing.T) {
 			},
 			want: want{
 				obj: []attribute.KeyValue{
-					attribute.String(gRPCMethodKeyName, "InsertRPC"),
-					attribute.String(gRPCStatus, codes.DeadlineExceeded.String()),
+					attribute.String(GRPCMethodKeyName, "InsertRPC"),
+					attribute.String(GRPCStatus, codes.DeadlineExceeded.String()),
 				},
 			},
 		},
@@ -85,8 +85,8 @@ func Test_attributesFromError(t *testing.T) {
 			},
 			want: want{
 				obj: []attribute.KeyValue{
-					attribute.String(gRPCMethodKeyName, "InsertRPC"),
-					attribute.String(gRPCStatus, codes.InvalidArgument.String()),
+					attribute.String(GRPCMethodKeyName, "InsertRPC"),
+					attribute.String(GRPCStatus, codes.InvalidArgument.String()),
 				},
 			},
 		},
