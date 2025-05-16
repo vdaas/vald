@@ -4,4 +4,4 @@
 //
 //
 
-package src
+package main
