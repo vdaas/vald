@@ -163,9 +163,10 @@ strategies:
               min_num: 10
               ratio: 0
               timeout: 3s
-            expected_status_codes:
-              - ok
-              - not_found
+            expect:
+              status_codes:
+                - ok
+                - not_found
       - name: RolloutRestartAgentPods
         executions:
           - name: RolloutRestart
@@ -205,7 +206,8 @@ strategies:
             modification:
               skip_strict_exist_check: false
               timestamp: 0
-            # expected patterns of test status codes
-            expected_status_codes:
-              - ok
-              - not_found
+            expect:
+              # expected patterns of test status codes
+              status_codes:
+                - ok
+                - not_found
