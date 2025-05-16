@@ -24,8 +24,8 @@ import (
 )
 
 const (
-	metricsName        = "backoff_retry_count"
-	metricsDescription = "Backoff retry count"
+	MetricsName        = "backoff_retry_count"
+	MetricsDescription = "Backoff retry count"
 )
 
 type backoffMetrics struct {
@@ -42,8 +42,8 @@ func (*backoffMetrics) View() ([]metrics.View, error) {
 	return []metrics.View{
 		view.NewView(
 			view.Instrument{
-				Name:        metricsName,
-				Description: metricsDescription,
+				Name:        MetricsName,
+				Description: MetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -54,8 +54,8 @@ func (*backoffMetrics) View() ([]metrics.View, error) {
 
 func (bm *backoffMetrics) Register(m metrics.Meter) (err error) {
 	retryCount, err := m.Int64ObservableGauge(
-		metricsName,
-		metrics.WithDescription(metricsDescription),
+		MetricsName,
+		metrics.WithDescription(MetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {

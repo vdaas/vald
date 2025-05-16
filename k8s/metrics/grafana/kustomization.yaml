@@ -13,13 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-ignore:
-  - "apis/docs/v1/docs.md"
-  - "apis/grpc/**/*.pb.go"
-  - "apis/grpc/**/*.pb.json.go"
-  - "apis/swagger/**/*.swagger.json"
-  - "rust/libs/proto/**/*.v1.rs"
-  - "rust/libs/proto/**/*.v1.tonic.rs"
-  # Using YAML dashbouard outputs as snapshot test for now
-  # k8s/metrics/grafana/dashboards/*.yaml
-  - "hack/grafana/gen/**/*.go"
+resources:
+  - configmap.yaml
+  - deployment.yaml
+  - svc.yaml
+images:
+  - name: grafana/grafana
+    newTag: 11.6.1-ubuntu

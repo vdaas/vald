@@ -24,8 +24,8 @@ import (
 )
 
 const (
-	metricsName        = "gateway_mirror_connecting_target"
-	metricsDescription = "Target to which the mirror gateway is connecting"
+	MetricsName        = "gateway_mirror_connecting_target"
+	MetricsDescription = "Target to which the mirror gateway is connecting"
 
 	targetAddrKey = "addr"
 )
@@ -44,8 +44,8 @@ func (*mirrorMetrics) View() ([]metrics.View, error) {
 	return []metrics.View{
 		view.NewView(
 			view.Instrument{
-				Name:        metricsName,
-				Description: metricsDescription,
+				Name:        MetricsName,
+				Description: MetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -56,8 +56,8 @@ func (*mirrorMetrics) View() ([]metrics.View, error) {
 
 func (mm *mirrorMetrics) Register(m metrics.Meter) error {
 	targetCount, err := m.Int64ObservableGauge(
-		metricsName,
-		metrics.WithDescription(metricsDescription),
+		MetricsName,
+		metrics.WithDescription(MetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
