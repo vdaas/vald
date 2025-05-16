@@ -24,18 +24,16 @@ import (
 )
 
 const (
-	IndexCountMetricsName = "agent_core_ngt_index_count"
+	IndexCountMetricsName        = "agent_core_ngt_index_count"
 	IndexCountMetricsDescription = "Agent NGT index count"
 
-
-	UncommittedIndexCountMetricsName = "agent_core_ngt_uncommitted_index_count"
+	UncommittedIndexCountMetricsName        = "agent_core_ngt_uncommitted_index_count"
 	UncommittedIndexCountMetricsDescription = "Agent NGT index count"
 
-
-	InsertVQueueCountMetricsName = "agent_core_ngt_insert_vqueue_count"
+	InsertVQueueCountMetricsName        = "agent_core_ngt_insert_vqueue_count"
 	InsertVQueueCountMetricsDescription = "Agent NGT insert vqueue count"
 
-	DeleteVQueueCountMetricsName = "agent_core_ngt_delete_vqueue_count"
+	DeleteVQueueCountMetricsName        = "agent_core_ngt_delete_vqueue_count"
 	DeleteVQueueCountMetricsDescription = "Agent NGT delete vqueue count"
 
 	CompletedCreateIndexTotalMetricsName        = "agent_core_ngt_completed_create_index_total"
@@ -44,14 +42,13 @@ const (
 	ExecutedProactiveGCTotalMetricsName        = "agent_core_ngt_executed_proactive_gc_total"
 	ExecutedProactiveGCTotalMetricsDescription = "The cumulative count of proactive GC execution"
 
-
-	IsIndexingMetricsName = "agent_core_ngt_is_indexing"
+	IsIndexingMetricsName        = "agent_core_ngt_is_indexing"
 	IsIndexingMetricsDescription = "Currently indexing or no"
 
 	IsSavingMetricsName        = "agent_core_ngt_is_saving"
 	IsSavingMetricsDescription = "Currently saving or not"
 
-	BrokenIndexStoreCountMetricsName = "agent_core_ngt_broken_index_store_count"
+	BrokenIndexStoreCountMetricsName        = "agent_core_ngt_broken_index_store_count"
 	BrokenIndexStoreCountMetricsDescription = "How many broken index generations have been stored"
 
 	MedianIndegreeMetricsName        = "agent_core_ngt_median_indegree"
