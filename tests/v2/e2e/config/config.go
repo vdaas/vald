@@ -22,6 +22,7 @@
 package config
 
 import (
+	"encoding/json"
 	"strconv"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -68,15 +69,15 @@ type Operation struct {
 
 // Execution represents the execution details for a given operation.
 type Execution struct {
-	*BaseConfig         `                    yaml:",inline,omitempty"               json:",inline,omitempty"`
-	TimeConfig          `                    yaml:",inline,omitempty"               json:",inline,omitempty"`
-	Name                string              `yaml:"name"                            json:"name,omitempty"`
-	Type                OperationType       `yaml:"type"                            json:"type,omitempty"`
-	Mode                OperationMode       `yaml:"mode"                            json:"mode,omitempty"`
-	Search              *SearchQuery        `yaml:"search,omitempty"                json:"search,omitempty"`
-	Kubernetes          *KubernetesConfig   `yaml:"kubernetes,omitempty"            json:"kubernetes,omitempty"`
-	Modification        *ModificationConfig `yaml:"modification,omitempty"          json:"modification,omitempty"`
-	ExpectedStatusCodes StatusCodes         `yaml:"expected_status_codes,omitempty" json:"expected_status_codes,omitempty"`
+	*BaseConfig  `                    yaml:",inline,omitempty"      json:",inline,omitempty"`
+	TimeConfig   `                    yaml:",inline,omitempty"      json:",inline,omitempty"`
+	Name         string              `yaml:"name"                   json:"name,omitempty"`
+	Type         OperationType       `yaml:"type"                   json:"type,omitempty"`
+	Mode         OperationMode       `yaml:"mode"                   json:"mode,omitempty"`
+	Search       *SearchQuery        `yaml:"search,omitempty"       json:"search,omitempty"`
+	Kubernetes   *KubernetesConfig   `yaml:"kubernetes,omitempty"   json:"kubernetes,omitempty"`
+	Modification *ModificationConfig `yaml:"modification,omitempty" json:"modification,omitempty"`
+	Expect       *Expect             `yaml:"expect,omitempty"       json:"expect,omitempty"`
 }
 
 // TimeConfig holds time-related configuration values.
@@ -145,6 +146,12 @@ type Port string
 // Dataset holds dataset-related configuration.
 type Dataset struct {
 	Name string `yaml:"name" json:"name,omitempty"`
+}
+
+// Expect holds expected results for executions.
+type Expect struct {
+	StatusCodes StatusCodes       `yaml:"status_codes,omitempty" json:"status_codes,omitempty"`
+	Results     []json.RawMessage `yaml:"results,omitempty"      json:"results,omitempty"`
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -300,8 +307,8 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 				}
 			}
 		}
-		if e.ExpectedStatusCodes != nil {
-			if e.ExpectedStatusCodes, err = e.ExpectedStatusCodes.Bind(); err != nil {
+		if e.Expect != nil {
+			if e.Expect.StatusCodes, err = e.Expect.StatusCodes.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind StatusCodes for Execution %s of type %s", e.Name, e.Type)
 			}
 		}
