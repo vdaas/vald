@@ -21,7 +21,7 @@ import (
 	"github.com/grafana/grafana-foundation-sdk/go/stat"
 	"github.com/grafana/grafana-foundation-sdk/go/timeseries"
 	"github.com/grafana/promql-builder/go/promql"
-	"github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt/public_const"
+	"github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt"
 )
 
 func addOverviewIndexPanel(builder *dashboard.DashboardBuilder) {
@@ -29,7 +29,7 @@ func addOverviewIndexPanel(builder *dashboard.DashboardBuilder) {
 		WithPanel(stat.NewPanelBuilder().
 			Title("Indices").
 			WithTarget(prometheusQuery(
-				promql.Sum(promql.Vector(public_const.IndexCountMetricsName).
+				promql.Sum(promql.Vector(ngt.IndexCountMetricsName).
 					Label(namespaceKey, namespaceVariable).
 					LabelMatchRegexp(nameKey, nameVariable).
 					LabelMatchRegexp(podKey, "$ValdAgentPodName")).String(),

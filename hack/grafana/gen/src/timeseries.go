@@ -20,7 +20,7 @@ import (
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
 	"github.com/grafana/grafana-foundation-sdk/go/timeseries"
 	"github.com/grafana/promql-builder/go/promql"
-	"github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt/public_const"
+	"github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt"
 	"github.com/vdaas/vald/internal/observability/metrics/mem"
 	"github.com/vdaas/vald/internal/observability/metrics/mem/index"
 	"github.com/vdaas/vald/internal/observability/metrics/runtime/goroutine"
@@ -161,7 +161,7 @@ func addIndexPanel(dashboard *dashboard.DashboardBuilder) {
 		Span(widthHalf).Height(heightTall).
 		WithTarget(prometheusQuery(
 			promql.Sum(addBasicLabel(
-				promql.Vector(public_const.IndexCountMetricsName))).String(),
+				promql.Vector(ngt.IndexCountMetricsName))).String(),
 		).Format("time_series").LegendFormat("indices"))
 	dashboard.WithPanel(panel)
 }
@@ -171,7 +171,7 @@ func addUncommitedIndexPanel(dashboard *dashboard.DashboardBuilder) {
 		Title("Uncommitted Indices").
 		Span(widthHalf).Height(heightTall).
 		WithTarget(prometheusQuery(
-			promql.Sum(addBasicLabel(promql.Vector(public_const.UncommittedIndexCountMetricsName))).String(),
+			promql.Sum(addBasicLabel(promql.Vector(ngt.UncommittedIndexCountMetricsName))).String(),
 		).Format("time_series").LegendFormat("uncommitted-indices"))
 	dashboard.WithPanel(panel)
 }
@@ -198,7 +198,7 @@ func addIndexPerPodPanel(dashboard *dashboard.DashboardBuilder) {
 		Span(widthHalf).Height(heightTall).
 		WithTarget(prometheusQuery(
 			promql.Sum(addBasicLabel(promql.Vector(
-				public_const.IndexCountMetricsName))).
+				ngt.IndexCountMetricsName))).
 				By([]string{"target_pod"}).String(),
 		).Format("time_series").LegendFormat("{{hostname}}"))
 	dashboard.WithPanel(panel)

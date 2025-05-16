@@ -21,7 +21,7 @@ import (
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
 	"github.com/grafana/grafana-foundation-sdk/go/stat"
 	"github.com/grafana/promql-builder/go/promql"
-	"github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt/public_const"
+	"github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
 )
 
@@ -31,7 +31,7 @@ func addAgentPanels(builder *dashboard.DashboardBuilder) {
 			Title("Indices").
 			WithTarget(prometheusQuery(
 				promql.Sum(
-					addBasicLabel(promql.Vector(public_const.IndexCountMetricsName)),
+					addBasicLabel(promql.Vector(ngt.IndexCountMetricsName)),
 				).String(),
 			).Format("table")).
 			Thresholds(
@@ -44,7 +44,7 @@ func addAgentPanels(builder *dashboard.DashboardBuilder) {
 			Title("Indexing Pods").
 			WithTarget(prometheusQuery(
 				promql.Sum(
-					addBasicLabel(promql.Vector(public_const.IsIndexingMetricsName)),
+					addBasicLabel(promql.Vector(ngt.IsIndexingMetricsName)),
 				).String(),
 			).Format("table")).
 			Thresholds(
@@ -57,7 +57,7 @@ func addAgentPanels(builder *dashboard.DashboardBuilder) {
 			Title("Uncommitted Indices").
 			WithTarget(prometheusQuery(
 				promql.Sum(
-					addBasicLabel(promql.Vector(public_const.UncommittedIndexCountMetricsName)),
+					addBasicLabel(promql.Vector(ngt.UncommittedIndexCountMetricsName)),
 				).String(),
 			).Format("table")).
 			Thresholds(
@@ -70,7 +70,7 @@ func addAgentPanels(builder *dashboard.DashboardBuilder) {
 			Title("Insert Vqueue").
 			WithTarget(prometheusQuery(
 				promql.Sum(
-					addBasicLabel(promql.Vector(public_const.InsertVQueueCountMetricsName)),
+					addBasicLabel(promql.Vector(ngt.InsertVQueueCountMetricsName)),
 				).String(),
 			).Format("table")).
 			Thresholds(
@@ -83,7 +83,7 @@ func addAgentPanels(builder *dashboard.DashboardBuilder) {
 			Title("Delete Vqueue").
 			WithTarget(prometheusQuery(
 				promql.Sum(
-					addBasicLabel(promql.Vector(public_const.DeleteVQueueCountMetricsName)),
+					addBasicLabel(promql.Vector(ngt.DeleteVQueueCountMetricsName)),
 				).String(),
 			).Format("table")).
 			Thresholds(
@@ -100,7 +100,7 @@ func addAgentPanels(builder *dashboard.DashboardBuilder) {
 			Title("Broken Index Store Count").
 			WithTarget(prometheusQuery(
 				promql.Sum(
-					addBasicLabel(promql.Vector(public_const.BrokenIndexStoreCountMetricsName)),
+					addBasicLabel(promql.Vector(ngt.BrokenIndexStoreCountMetricsName)),
 				).String(),
 			).Format("table")).
 			Span(widthOneEighth).Height(heightShort))

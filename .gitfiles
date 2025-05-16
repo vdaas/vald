@@ -1300,7 +1300,6 @@ internal/observability/metrics/agent/core/faiss/faiss.go
 internal/observability/metrics/agent/core/faiss/faiss_test.go
 internal/observability/metrics/agent/core/ngt/ngt.go
 internal/observability/metrics/agent/core/ngt/ngt_test.go
-internal/observability/metrics/agent/core/ngt/public_const/public_const.go
 internal/observability/metrics/agent/sidecar/sidecar.go
 internal/observability/metrics/agent/sidecar/sidecar_test.go
 internal/observability/metrics/backoff/backoff.go
