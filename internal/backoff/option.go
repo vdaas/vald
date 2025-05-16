@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package backoff provides backoff function controller
 package backoff
 
 import (

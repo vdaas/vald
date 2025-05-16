@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package dump provides http request/response dump logic
 package dump
 
 import (

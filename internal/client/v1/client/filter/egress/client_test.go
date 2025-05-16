@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package egress provides egress filter client logic
 package egress
 
 // NOT IMPLEMENTED BELOW

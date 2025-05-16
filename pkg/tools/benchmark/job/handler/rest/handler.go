@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package rest provides rest api logic
 package rest
 
 type Handler any

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package pool provides a lock-free gRPC connection pool client.
 // This re-implementation maintains the public Conn interface unchanged while
 // using atomic operations for efficient, lock-free connection management.
 // Additional features such as DNS lookup, port scanning, and metrics collection are incorporated.
