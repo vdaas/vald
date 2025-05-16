@@ -493,6 +493,7 @@ cmd/agent/sidecar/doc.go
 cmd/agent/sidecar/main.go
 cmd/agent/sidecar/main_test.go
 cmd/discoverer/doc.go
+cmd/discoverer/k8s/doc.go
 cmd/discoverer/k8s/main.go
 cmd/discoverer/k8s/main_test.go
 cmd/discoverer/k8s/sample.yaml
@@ -538,6 +539,7 @@ cmd/manager/index/doc.go
 cmd/manager/index/main.go
 cmd/manager/index/main_test.go
 cmd/manager/index/sample.yaml
+cmd/tools/benchmark/doc.go
 cmd/tools/benchmark/job/main.go
 cmd/tools/benchmark/job/main_test.go
 cmd/tools/benchmark/job/sample.yaml
@@ -546,6 +548,8 @@ cmd/tools/benchmark/operator/main_test.go
 cmd/tools/benchmark/operator/sample.yaml
 cmd/tools/cli/benchmark/core/main.go
 cmd/tools/cli/benchmark/core/main_test.go
+cmd/tools/cli/doc.go
+cmd/tools/cli/vdctl/doc.go
 cmd/tools/cli/vdctl/main.go
 cmd/tools/cli/vdctl/main_test.go
 cmd/tools/doc.go
@@ -704,6 +708,7 @@ hack/benchmark/core/benchmark/strategy/strategy_test.go
 hack/benchmark/core/benchmark/strategy/util.go
 hack/benchmark/core/benchmark/strategy/util_test.go
 hack/benchmark/core/ngt/ngt_bench_test.go
+hack/benchmark/doc.go
 hack/benchmark/e2e/agent/core/ngt/ngt_bench_test.go
 hack/benchmark/internal/assets/assets.go
 hack/benchmark/internal/assets/assets_test.go
@@ -746,12 +751,16 @@ hack/benchmark/metrics/metrics.go
 hack/benchmark/src/singleflight/singleflight_bench_test.go
 hack/cspell/main.go
 hack/cspell/main_test.go
+hack/doc.go
+hack/docker/doc.go
 hack/docker/gen/main.go
+hack/git/doc.go
 hack/git/hooks/pre-commit
 hack/go.mod.default
 hack/gorules/rules.go
 hack/gorules/rules_test.go
 hack/gorules/testdata/tests.go
+hack/grafana/doc.go
 hack/grafana/gen/src/agent.go
 hack/grafana/gen/src/benchmark.go
 hack/grafana/gen/src/common.go
@@ -772,6 +781,7 @@ hack/license/gen/main.go
 hack/license/gen/main_test.go
 hack/tools/deadlink/index.html
 hack/tools/deadlink/main.go
+hack/tools/doc.go
 hack/tools/kvsdb/main.go
 hack/tools/metrics/main.go
 hack/tools/metrics/main_test.go
