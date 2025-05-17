@@ -340,19 +340,15 @@ func (c *client) updateDiscoveryInfo(ctx context.Context) (connected []string, e
 }
 
 func (c *client) discoverNodes(ctx context.Context) (nodes *payload.Info_Nodes, err error) {
-	_, err = c.dscClient.RoundRobin(grpc.WithGRPCMethod(ctx, "discoverer.v1.Discoverer/Nodes"), func(ctx context.Context,
+	nodes, err = grpc.RoundRobin(c.dscClient, grpc.WithGRPCMethod(ctx, "discoverer.v1.Discoverer/Nodes"), func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption,
-	) (any, error) {
-		nodes, err = discoverer.NewDiscovererClient(conn).
+	) (*payload.Info_Nodes, error) {
+		return discoverer.NewDiscovererClient(conn).
 			Nodes(ctx, &payload.Discoverer_Request{
 				Namespace: c.namespace,
 				Name:      c.name,
 				Node:      c.nodeName,
 			}, copts...)
-		if err != nil {
-			return nil, err
-		}
-		return nodes, nil
 	})
 	if err != nil {
 		return nil, err
