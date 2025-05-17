@@ -16,12 +16,11 @@
 time_zone: UTC
 logging:
   format: raw
-  level: debug
+  level: info
   logger: glg
 dataset:
   name: _E2E_DATASET_PATH_
 kubernetes:
-  kube_config: $HOME/.kube/config
   port_forward:
     enabled: true
     local_port: 8082
@@ -83,11 +82,9 @@ target:
       dialer:
         dual_stack_enabled: true
         keepalive: true
-        timeout: 30s
+        timeout: 200s
       dns:
-        cache_enabled: true
-        cache_expiration: 1h
-        refresh_duration: 30m
+        cache_enabled: false
       network: tcp
       socket_option:
         ip_recover_destination_addr: false
@@ -107,7 +104,7 @@ target:
         key: /path/to/key
     read_buffer_size: 0
     shared_write_buffer: false
-    timeout: 30s
+    timeout: 200s
     user_agent: Vald-gRPC
     write_buffer_size: 0
   tls:
@@ -153,7 +150,7 @@ strategies:
   #               min_num: 2
   #               ration: 0
   #               nprobe: 0
-  #               timeout: 30s
+  #               timeout: 3s
   #             - k: 20
   #               radius: -1
   #               epsilon: 0.05
@@ -193,9 +190,10 @@ strategies:
         executions:
           - name: Insert
             type: insert
-            mode: unary
-            parallelism: 10
-            num: 300
+            mode: multiple
+            parallelism: 4
+            bulk_size: 10
+            num: 10000
             qps: 30
             wait: 2m
           - mode: unary
@@ -208,33 +206,37 @@ strategies:
         executions:
           - name: Search with ConcurrentQueue
             type: search
-            mode: unary
-            parallelism: 10
-            num: 10
+            mode: multiple
+            bulk_size: 10
+            parallelism: 4
+            num: 100
             search:
               timeout: 30s
               algorithm: cq
           - name: Search with SortSlice
             type: search
-            mode: unary
-            parallelism: 10
-            num: 10
+            mode: multiple
+            bulk_size: 10
+            parallelism: 4
+            num: 100
             search:
               timeout: 30s
               algorithm: ss
           - name: Search with SortPoolSlice
             type: search
-            mode: unary
-            parallelism: 10
-            num: 10
+            mode: multiple
+            bulk_size: 10
+            parallelism: 4
+            num: 100
             search:
               timeout: 30s
               algorithm: ps
           - name: Search with PairingHeap
             type: search
-            mode: unary
-            parallelism: 10
-            num: 10
+            mode: multiple
+            bulk_size: 10
+            parallelism: 4
+            num: 100
             search:
               timeout: 30s
               algorithm: ph
@@ -242,33 +244,37 @@ strategies:
         executions:
           - name: SearchByID with ConcurrentQueue
             type: search_by_id
-            mode: unary
-            parallelism: 10
-            num: 10
+            mode: multiple
+            bulk_size: 10
+            parallelism: 4
+            num: 100
             search:
               timeout: 30s
               algorithm: cq
           - name: SearchByID with SortSlice
             type: search_by_id
-            mode: unary
-            parallelism: 10
-            num: 10
+            mode: multiple
+            bulk_size: 10
+            parallelism: 4
+            num: 100
             search:
               timeout: 30s
               algorithm: ss
           - name: SearchByID with SortPoolSlice
             type: search_by_id
-            mode: unary
-            parallelism: 10
-            num: 10
+            mode: multiple
+            bulk_size: 10
+            parallelism: 4
+            num: 100
             search:
               timeout: 30s
               algorithm: ps
           - name: SearchByID with PairingHeap
             type: search_by_id
-            mode: unary
-            parallelism: 10
-            num: 10
+            mode: multiple
+            bulk_size: 10
+            parallelism: 4
+            num: 100
             search:
               timeout: 30s
               algorithm: ph
@@ -276,69 +282,77 @@ strategies:
         executions:
           - name: LinearSearch with ConcurrentQueue
             type: linear_search
-            mode: unary
-            parallelism: 10
-            num: 10
+            mode: multiple
+            bulk_size: 10
+            parallelism: 4
+            num: 100
             search:
-              timeout: 30s
+              timeout: 1000s
               algorithm: cq
           - name: LinearSearch with SortSlice
             type: linear_search
-            mode: unary
-            parallelism: 10
-            num: 10
+            mode: multiple
+            bulk_size: 10
+            parallelism: 4
+            num: 100
             search:
-              timeout: 30s
+              timeout: 1000s
               algorithm: ss
           - name: LinearSearch with SortPoolSlice
             type: linear_search
-            mode: unary
-            parallelism: 10
-            num: 10
+            mode: multiple
+            bulk_size: 10
+            parallelism: 4
+            num: 100
             search:
-              timeout: 30s
+              timeout: 1000s
               algorithm: ps
           - name: LinearSearch with PairingHeap
             type: linear_search
-            mode: unary
-            parallelism: 10
-            num: 10
+            mode: multiple
+            bulk_size: 10
+            parallelism: 4
+            num: 100
             search:
-              timeout: 30s
+              timeout: 1000s
               algorithm: ph
       - name: LinearSearchByID Operation
         executions:
           - name: LinearSearchByID with ConcurrentQueue
             type: linear_search_by_id
-            mode: unary
-            parallelism: 10
-            num: 10
+            mode: multiple
+            bulk_size: 10
+            parallelism: 4
+            num: 100
             search:
-              timeout: 30s
+              timeout: 1000s
               algorithm: cq
           - name: LinearSearchByID with SortSlice
             type: linear_search_by_id
-            mode: unary
-            parallelism: 10
-            num: 10
+            mode: multiple
+            bulk_size: 10
+            parallelism: 4
+            num: 100
             search:
-              timeout: 30s
+              timeout: 1000s
               algorithm: ss
           - name: LinearSearchByID with SortPoolSlice
             type: linear_search_by_id
-            mode: unary
-            parallelism: 10
-            num: 10
+            mode: multiple
+            bulk_size: 10
+            parallelism: 4
+            num: 100
             search:
-              timeout: 30s
+              timeout: 1000s
               algorithm: ps
           - name: LinearSearchByID with PairingHeap
             type: linear_search_by_id
-            mode: unary
-            parallelism: 10
-            num: 10
+            mode: multiple
+            bulk_size: 10
+            parallelism: 4
+            num: 100
             search:
-              timeout: 30s
+              timeout: 1000s
               algorithm: ph
   - concurrency: 1
     name: GetObject/Exists/GetTimestamp Opeation
@@ -348,21 +362,21 @@ strategies:
           - name: GetObject
             type: object
             mode: unary
-            parallelism: 10
+            parallelism: 4
             num: 10
       - name: Exists Operation
         executions:
           - name: Exists
             type: exists
             mode: unary
-            parallelism: 10
+            parallelism: 4
             num: 10
       - name: GetTimestamp Operation
         executions:
           - name: GetTimestamp
             type: timestamp
             mode: unary
-            parallelism: 10
+            parallelism: 4
             num: 10
   - concurrency: 1
     name: Update -> Index Detail
@@ -371,8 +385,9 @@ strategies:
         executions:
           - name: Update
             type: update
-            mode: unary
-            parallelism: 10
+            mode: multiple
+            bulk_size: 10
+            parallelism: 4
             num: 100
             offset: 100
             wait: 2m
@@ -386,9 +401,10 @@ strategies:
         executions:
           - name: Remove
             type: remove
-            mode: unary
-            parallelism: 10
-            num: 100
+            mode: multiple
+            bulk_size: 100
+            parallelism: 4
+            num: 1000
           - name: IndexStatistics
             type: index_statistics
             mode: unary
@@ -396,8 +412,9 @@ strategies:
         executions:
           - name: Upsert
             type: upsert
-            mode: unary
-            parallelism: 10
+            mode: multiple
+            bulk_size: 10
+            parallelism: 4
             num: 100
           - name: IndexDetail
             type: index_detail
@@ -417,10 +434,11 @@ strategies:
             mode: unary
             type: index_detail
           - name: Upsert
-            parallelism: 10
-            mode: unary
+            parallelism: 4
+            mode: multiple
+            bulk_size: 10
             num: 100
-            offset: 200
+            offset: 20000
             type: upsert
             wait: 2m
           - name: IndexDetail
