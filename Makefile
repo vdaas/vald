@@ -543,12 +543,10 @@ format: \
 	format/proto \
 	format/json \
 	format/md \
-	dockerfile \
-	remove/empty/file
-	@$(MAKE) license
+	remove/empty/file \
+	license
+	@$(MAKE) dockerfile format/go format/go/test
 	@$(MAKE) format/yaml
-	@$(MAKE) format/go
-	@$(MAKE) format/go/test
 
 .PHONY: remove/empty/file
 ## removes empty file such as just includes \r \n space tab
