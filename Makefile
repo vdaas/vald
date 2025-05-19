@@ -542,14 +542,13 @@ update: \
 format: \
 	dockerfile \
 	license \
-	format/proto \
 	format/go \
+	format/go/test \
+	format/proto \
 	format/json \
 	format/md \
 	format/yaml \
-	remove/empty/file \
-	format/go \
-	format/go/test
+	remove/empty/file
 
 .PHONY: remove/empty/file
 ## removes empty file such as just includes \r \n space tab
