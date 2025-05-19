@@ -543,10 +543,10 @@ format: \
 	format/proto \
 	format/json \
 	format/md \
-	format/yaml \
+	dockerfile \
 	remove/empty/file
-	@$(MAKE) dockerfile
 	@$(MAKE) license
+	@$(MAKE) format/yaml
 	@$(MAKE) format/go
 	@$(MAKE) format/go/test
 
