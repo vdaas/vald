@@ -20,3 +20,6 @@ ignore:
   - "apis/swagger/**/*.swagger.json"
   - "rust/libs/proto/**/*.v1.rs"
   - "rust/libs/proto/**/*.v1.tonic.rs"
+  # Using YAML dashbouard outputs as snapshot test for now
+  # k8s/metrics/grafana/dashboards/*.yaml
+  - "hack/grafana/gen/**/*.go"
