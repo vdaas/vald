@@ -172,7 +172,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *DiscovererClient) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if !reflect.DeepEqual(got, w.want.Bind()) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
@@ -202,9 +202,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 			}
 		}(),
 		func() test {
-			c := new(GRPCClient)
-			ac := new(GRPCClient)
-
+			c := new(GRPCClient).Bind()
+			ac := new(GRPCClient).Bind()
 			return test{
 				name: "return DiscovererClient when the bind successes and Client and AgentClientOptions is not nil",
 				fields: fields{
@@ -213,30 +212,25 @@ func TestDiscovererClient_Bind(t *testing.T) {
 					AgentClientOptions: ac,
 				},
 				want: want{
-					want: &DiscovererClient{
+					want: (&DiscovererClient{
 						Duration: "10ms",
 						Client: &GRPCClient{
-							ConnectionPool: new(ConnectionPool),
 							DialOption: &DialOption{
 								Insecure: true,
 							},
-							TLS: new(TLS),
 						},
 						AgentClientOptions: &GRPCClient{
-							ConnectionPool: new(ConnectionPool),
 							DialOption: &DialOption{
 								Insecure: true,
 							},
-							TLS: new(TLS),
 						},
-					},
+					}).Bind(),
 				},
 			}
 		}(),
 		func() test {
 			key := "DURATION_FOR_TEST_DISCOVERER_CLIENT_BIND"
 			val := "10ms"
-
 			return test{
 				name: "return DiscovererClient when the bind successes and the data is loaded from the environment variable",
 				fields: fields{

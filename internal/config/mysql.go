@@ -100,7 +100,7 @@ func (m *MySQL) Opts() ([]mysql.Option, error) {
 	}
 
 	if m.TLS != nil && m.TLS.Enabled {
-		tls, err := tls.New(m.TLS.Opts()...)
+		tls, err := tls.NewClientConfig(m.TLS.Opts()...)
 		if err != nil {
 			return nil, err
 		}

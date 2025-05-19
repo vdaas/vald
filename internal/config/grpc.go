@@ -77,8 +77,8 @@ type DialOption struct {
 type ConnectionPool struct {
 	ResolveDNS           bool   `json:"enable_dns_resolver"     yaml:"enable_dns_resolver"`
 	EnableRebalance      bool   `json:"enable_rebalance"        yaml:"enable_rebalance"`
-	RebalanceDuration    string `json:"rebalance_duration"      yaml:"rebalance_duration"`
 	Size                 int    `json:"size"                    yaml:"size"`
+	RebalanceDuration    string `json:"rebalance_duration"      yaml:"rebalance_duration"`
 	OldConnCloseDuration string `json:"old_conn_close_duration" yaml:"old_conn_close_duration"`
 }
 
@@ -91,11 +91,11 @@ type GRPCClientKeepalive struct {
 
 // newGRPCClientConfig returns the GRPCClient with DailOption with insecure is true.
 func newGRPCClientConfig() *GRPCClient {
-	return &GRPCClient{
+	return (&GRPCClient{
 		DialOption: &DialOption{
 			Insecure: true,
 		},
-	}
+	}).Bind()
 }
 
 // Bind binds the actual data from the GRPCClient receiver fields.
@@ -128,14 +128,12 @@ func (g *GRPCClient) Bind() *GRPCClient {
 		g.DialOption = new(DialOption)
 	}
 
-	if g.TLS != nil &&
-		g.TLS.Enabled &&
-		g.TLS.Cert != "" &&
-		g.TLS.Key != "" {
+	if g.TLS != nil && g.TLS.Enabled {
 		g.TLS.Bind()
 	} else {
 		g.TLS = &TLS{
-			Enabled: false,
+			Enabled:            false,
+			InsecureSkipVerify: true,
 		}
 		g.DialOption.Insecure = true
 	}

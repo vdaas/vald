@@ -1132,11 +1132,22 @@ spec:
                               type: string
                             cert:
                               type: string
+                            client_auth:
+                              enum:
+                                - Auto
+                                - None
+                                - Request
+                                - RequireAny
+                                - VerifyIfGiven
+                                - RequireAndVerify
+                              type: string
                             enabled:
                               type: boolean
                             insecure_skip_verify:
                               type: boolean
                             key:
+                              type: string
+                            server_name:
                               type: string
                           type: object
                       type: object
@@ -1300,11 +1311,22 @@ spec:
                                           type: string
                                         cert:
                                           type: string
+                                        client_auth:
+                                          enum:
+                                            - Auto
+                                            - None
+                                            - Request
+                                            - RequireAny
+                                            - VerifyIfGiven
+                                            - RequireAndVerify
+                                          type: string
                                         enabled:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
                                         key:
+                                          type: string
+                                        server_name:
                                           type: string
                                       type: object
                                   type: object
@@ -2108,11 +2130,22 @@ spec:
                                   type: string
                                 cert:
                                   type: string
+                                client_auth:
+                                  enum:
+                                    - Auto
+                                    - None
+                                    - Request
+                                    - RequireAny
+                                    - VerifyIfGiven
+                                    - RequireAndVerify
+                                  type: string
                                 enabled:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
                                 key:
+                                  type: string
+                                server_name:
                                   type: string
                               type: object
                           type: object
@@ -2334,11 +2367,22 @@ spec:
                                           type: string
                                         cert:
                                           type: string
+                                        client_auth:
+                                          enum:
+                                            - Auto
+                                            - None
+                                            - Request
+                                            - RequireAny
+                                            - VerifyIfGiven
+                                            - RequireAndVerify
+                                          type: string
                                         enabled:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
                                         key:
+                                          type: string
+                                        server_name:
                                           type: string
                                       type: object
                                   type: object
@@ -2367,11 +2411,22 @@ spec:
                                   type: string
                                 cert:
                                   type: string
+                                client_auth:
+                                  enum:
+                                    - Auto
+                                    - None
+                                    - Request
+                                    - RequireAny
+                                    - VerifyIfGiven
+                                    - RequireAndVerify
+                                  type: string
                                 enabled:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
                                 key:
+                                  type: string
+                                server_name:
                                   type: string
                               type: object
                             wait_for_ready:
@@ -3082,11 +3137,22 @@ spec:
                               type: string
                             cert:
                               type: string
+                            client_auth:
+                              enum:
+                                - Auto
+                                - None
+                                - Request
+                                - RequireAny
+                                - VerifyIfGiven
+                                - RequireAndVerify
+                              type: string
                             enabled:
                               type: boolean
                             insecure_skip_verify:
                               type: boolean
                             key:
+                              type: string
+                            server_name:
                               type: string
                           type: object
                       type: object
@@ -3218,11 +3284,22 @@ spec:
                                   type: string
                                 cert:
                                   type: string
+                                client_auth:
+                                  enum:
+                                    - Auto
+                                    - None
+                                    - Request
+                                    - RequireAny
+                                    - VerifyIfGiven
+                                    - RequireAndVerify
+                                  type: string
                                 enabled:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
                                 key:
+                                  type: string
+                                server_name:
                                   type: string
                               type: object
                           type: object
@@ -4049,11 +4126,22 @@ spec:
                               type: string
                             cert:
                               type: string
+                            client_auth:
+                              enum:
+                                - Auto
+                                - None
+                                - Request
+                                - RequireAny
+                                - VerifyIfGiven
+                                - RequireAndVerify
+                              type: string
                             enabled:
                               type: boolean
                             insecure_skip_verify:
                               type: boolean
                             key:
+                              type: string
+                            server_name:
                               type: string
                           type: object
                       type: object
@@ -4333,11 +4421,22 @@ spec:
                                                   type: string
                                                 cert:
                                                   type: string
+                                                client_auth:
+                                                  enum:
+                                                    - Auto
+                                                    - None
+                                                    - Request
+                                                    - RequireAny
+                                                    - VerifyIfGiven
+                                                    - RequireAndVerify
+                                                  type: string
                                                 enabled:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
                                                 key:
+                                                  type: string
+                                                server_name:
                                                   type: string
                                               type: object
                                           type: object
@@ -4366,11 +4465,22 @@ spec:
                                           type: string
                                         cert:
                                           type: string
+                                        client_auth:
+                                          enum:
+                                            - Auto
+                                            - None
+                                            - Request
+                                            - RequireAny
+                                            - VerifyIfGiven
+                                            - RequireAndVerify
+                                          type: string
                                         enabled:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
                                         key:
+                                          type: string
+                                        server_name:
                                           type: string
                                       type: object
                                     wait_for_ready:
@@ -4540,11 +4650,22 @@ spec:
                                               type: string
                                             cert:
                                               type: string
+                                            client_auth:
+                                              enum:
+                                                - Auto
+                                                - None
+                                                - Request
+                                                - RequireAny
+                                                - VerifyIfGiven
+                                                - RequireAndVerify
+                                              type: string
                                             enabled:
                                               type: boolean
                                             insecure_skip_verify:
                                               type: boolean
                                             key:
+                                              type: string
+                                            server_name:
                                               type: string
                                           type: object
                                       type: object
@@ -4573,11 +4694,22 @@ spec:
                                       type: string
                                     cert:
                                       type: string
+                                    client_auth:
+                                      enum:
+                                        - Auto
+                                        - None
+                                        - Request
+                                        - RequireAny
+                                        - VerifyIfGiven
+                                        - RequireAndVerify
+                                      type: string
                                     enabled:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
                                     key:
+                                      type: string
+                                    server_name:
                                       type: string
                                   type: object
                                 wait_for_ready:
@@ -4740,11 +4872,22 @@ spec:
                                                   type: string
                                                 cert:
                                                   type: string
+                                                client_auth:
+                                                  enum:
+                                                    - Auto
+                                                    - None
+                                                    - Request
+                                                    - RequireAny
+                                                    - VerifyIfGiven
+                                                    - RequireAndVerify
+                                                  type: string
                                                 enabled:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
                                                 key:
+                                                  type: string
+                                                server_name:
                                                   type: string
                                               type: object
                                           type: object
@@ -4773,11 +4916,22 @@ spec:
                                           type: string
                                         cert:
                                           type: string
+                                        client_auth:
+                                          enum:
+                                            - Auto
+                                            - None
+                                            - Request
+                                            - RequireAny
+                                            - VerifyIfGiven
+                                            - RequireAndVerify
+                                          type: string
                                         enabled:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
                                         key:
+                                          type: string
+                                        server_name:
                                           type: string
                                       type: object
                                     wait_for_ready:
@@ -5587,11 +5741,22 @@ spec:
                                   type: string
                                 cert:
                                   type: string
+                                client_auth:
+                                  enum:
+                                    - Auto
+                                    - None
+                                    - Request
+                                    - RequireAny
+                                    - VerifyIfGiven
+                                    - RequireAndVerify
+                                  type: string
                                 enabled:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
                                 key:
+                                  type: string
+                                server_name:
                                   type: string
                               type: object
                           type: object
@@ -5864,11 +6029,22 @@ spec:
                                                   type: string
                                                 cert:
                                                   type: string
+                                                client_auth:
+                                                  enum:
+                                                    - Auto
+                                                    - None
+                                                    - Request
+                                                    - RequireAny
+                                                    - VerifyIfGiven
+                                                    - RequireAndVerify
+                                                  type: string
                                                 enabled:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
                                                 key:
+                                                  type: string
+                                                server_name:
                                                   type: string
                                               type: object
                                           type: object
@@ -5897,11 +6073,22 @@ spec:
                                           type: string
                                         cert:
                                           type: string
+                                        client_auth:
+                                          enum:
+                                            - Auto
+                                            - None
+                                            - Request
+                                            - RequireAny
+                                            - VerifyIfGiven
+                                            - RequireAndVerify
+                                          type: string
                                         enabled:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
                                         key:
+                                          type: string
+                                        server_name:
                                           type: string
                                       type: object
                                     wait_for_ready:
@@ -6062,11 +6249,22 @@ spec:
                                                   type: string
                                                 cert:
                                                   type: string
+                                                client_auth:
+                                                  enum:
+                                                    - Auto
+                                                    - None
+                                                    - Request
+                                                    - RequireAny
+                                                    - VerifyIfGiven
+                                                    - RequireAndVerify
+                                                  type: string
                                                 enabled:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
                                                 key:
+                                                  type: string
+                                                server_name:
                                                   type: string
                                               type: object
                                           type: object
@@ -6095,11 +6293,22 @@ spec:
                                           type: string
                                         cert:
                                           type: string
+                                        client_auth:
+                                          enum:
+                                            - Auto
+                                            - None
+                                            - Request
+                                            - RequireAny
+                                            - VerifyIfGiven
+                                            - RequireAndVerify
+                                          type: string
                                         enabled:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
                                         key:
+                                          type: string
+                                        server_name:
                                           type: string
                                       type: object
                                     wait_for_ready:
@@ -6262,11 +6471,22 @@ spec:
                                                   type: string
                                                 cert:
                                                   type: string
+                                                client_auth:
+                                                  enum:
+                                                    - Auto
+                                                    - None
+                                                    - Request
+                                                    - RequireAny
+                                                    - VerifyIfGiven
+                                                    - RequireAndVerify
+                                                  type: string
                                                 enabled:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
                                                 key:
+                                                  type: string
+                                                server_name:
                                                   type: string
                                               type: object
                                           type: object
@@ -6295,11 +6515,22 @@ spec:
                                           type: string
                                         cert:
                                           type: string
+                                        client_auth:
+                                          enum:
+                                            - Auto
+                                            - None
+                                            - Request
+                                            - RequireAny
+                                            - VerifyIfGiven
+                                            - RequireAndVerify
+                                          type: string
                                         enabled:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
                                         key:
+                                          type: string
+                                        server_name:
                                           type: string
                                       type: object
                                     wait_for_ready:
@@ -7099,11 +7330,22 @@ spec:
                                   type: string
                                 cert:
                                   type: string
+                                client_auth:
+                                  enum:
+                                    - Auto
+                                    - None
+                                    - Request
+                                    - RequireAny
+                                    - VerifyIfGiven
+                                    - RequireAndVerify
+                                  type: string
                                 enabled:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
                                 key:
+                                  type: string
+                                server_name:
                                   type: string
                               type: object
                           type: object
@@ -7386,11 +7628,22 @@ spec:
                                               type: string
                                             cert:
                                               type: string
+                                            client_auth:
+                                              enum:
+                                                - Auto
+                                                - None
+                                                - Request
+                                                - RequireAny
+                                                - VerifyIfGiven
+                                                - RequireAndVerify
+                                              type: string
                                             enabled:
                                               type: boolean
                                             insecure_skip_verify:
                                               type: boolean
                                             key:
+                                              type: string
+                                            server_name:
                                               type: string
                                           type: object
                                       type: object
@@ -7419,11 +7672,22 @@ spec:
                                       type: string
                                     cert:
                                       type: string
+                                    client_auth:
+                                      enum:
+                                        - Auto
+                                        - None
+                                        - Request
+                                        - RequireAny
+                                        - VerifyIfGiven
+                                        - RequireAndVerify
+                                      type: string
                                     enabled:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
                                     key:
+                                      type: string
+                                    server_name:
                                       type: string
                                   type: object
                                 wait_for_ready:
@@ -7492,11 +7756,22 @@ spec:
                                       type: string
                                     cert:
                                       type: string
+                                    client_auth:
+                                      enum:
+                                        - Auto
+                                        - None
+                                        - Request
+                                        - RequireAny
+                                        - VerifyIfGiven
+                                        - RequireAndVerify
+                                      type: string
                                     enabled:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
                                     key:
+                                      type: string
+                                    server_name:
                                       type: string
                                   type: object
                               type: object
@@ -8291,11 +8566,22 @@ spec:
                                   type: string
                                 cert:
                                   type: string
+                                client_auth:
+                                  enum:
+                                    - Auto
+                                    - None
+                                    - Request
+                                    - RequireAny
+                                    - VerifyIfGiven
+                                    - RequireAndVerify
+                                  type: string
                                 enabled:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
                                 key:
+                                  type: string
+                                server_name:
                                   type: string
                               type: object
                           type: object
@@ -8614,11 +8900,22 @@ spec:
                                                   type: string
                                                 cert:
                                                   type: string
+                                                client_auth:
+                                                  enum:
+                                                    - Auto
+                                                    - None
+                                                    - Request
+                                                    - RequireAny
+                                                    - VerifyIfGiven
+                                                    - RequireAndVerify
+                                                  type: string
                                                 enabled:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
                                                 key:
+                                                  type: string
+                                                server_name:
                                                   type: string
                                               type: object
                                           type: object
@@ -8647,11 +8944,22 @@ spec:
                                           type: string
                                         cert:
                                           type: string
+                                        client_auth:
+                                          enum:
+                                            - Auto
+                                            - None
+                                            - Request
+                                            - RequireAny
+                                            - VerifyIfGiven
+                                            - RequireAndVerify
+                                          type: string
                                         enabled:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
                                         key:
+                                          type: string
+                                        server_name:
                                           type: string
                                       type: object
                                     wait_for_ready:
@@ -8812,11 +9120,22 @@ spec:
                                                   type: string
                                                 cert:
                                                   type: string
+                                                client_auth:
+                                                  enum:
+                                                    - Auto
+                                                    - None
+                                                    - Request
+                                                    - RequireAny
+                                                    - VerifyIfGiven
+                                                    - RequireAndVerify
+                                                  type: string
                                                 enabled:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
                                                 key:
+                                                  type: string
+                                                server_name:
                                                   type: string
                                               type: object
                                           type: object
@@ -8845,11 +9164,22 @@ spec:
                                           type: string
                                         cert:
                                           type: string
+                                        client_auth:
+                                          enum:
+                                            - Auto
+                                            - None
+                                            - Request
+                                            - RequireAny
+                                            - VerifyIfGiven
+                                            - RequireAndVerify
+                                          type: string
                                         enabled:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
                                         key:
+                                          type: string
+                                        server_name:
                                           type: string
                                       type: object
                                     wait_for_ready:
@@ -9020,11 +9350,22 @@ spec:
                                               type: string
                                             cert:
                                               type: string
+                                            client_auth:
+                                              enum:
+                                                - Auto
+                                                - None
+                                                - Request
+                                                - RequireAny
+                                                - VerifyIfGiven
+                                                - RequireAndVerify
+                                              type: string
                                             enabled:
                                               type: boolean
                                             insecure_skip_verify:
                                               type: boolean
                                             key:
+                                              type: string
+                                            server_name:
                                               type: string
                                           type: object
                                       type: object
@@ -9053,11 +9394,22 @@ spec:
                                       type: string
                                     cert:
                                       type: string
+                                    client_auth:
+                                      enum:
+                                        - Auto
+                                        - None
+                                        - Request
+                                        - RequireAny
+                                        - VerifyIfGiven
+                                        - RequireAndVerify
+                                      type: string
                                     enabled:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
                                     key:
+                                      type: string
+                                    server_name:
                                       type: string
                                   type: object
                                 wait_for_ready:
@@ -9754,11 +10106,22 @@ spec:
                                       type: string
                                     cert:
                                       type: string
+                                    client_auth:
+                                      enum:
+                                        - Auto
+                                        - None
+                                        - Request
+                                        - RequireAny
+                                        - VerifyIfGiven
+                                        - RequireAndVerify
+                                      type: string
                                     enabled:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
                                     key:
+                                      type: string
+                                    server_name:
                                       type: string
                                   type: object
                               type: object
@@ -9991,11 +10354,22 @@ spec:
                                                   type: string
                                                 cert:
                                                   type: string
+                                                client_auth:
+                                                  enum:
+                                                    - Auto
+                                                    - None
+                                                    - Request
+                                                    - RequireAny
+                                                    - VerifyIfGiven
+                                                    - RequireAndVerify
+                                                  type: string
                                                 enabled:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
                                                 key:
+                                                  type: string
+                                                server_name:
                                                   type: string
                                               type: object
                                           type: object
@@ -10024,11 +10398,22 @@ spec:
                                           type: string
                                         cert:
                                           type: string
+                                        client_auth:
+                                          enum:
+                                            - Auto
+                                            - None
+                                            - Request
+                                            - RequireAny
+                                            - VerifyIfGiven
+                                            - RequireAndVerify
+                                          type: string
                                         enabled:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
                                         key:
+                                          type: string
+                                        server_name:
                                           type: string
                                       type: object
                                     wait_for_ready:
@@ -10189,11 +10574,22 @@ spec:
                                                   type: string
                                                 cert:
                                                   type: string
+                                                client_auth:
+                                                  enum:
+                                                    - Auto
+                                                    - None
+                                                    - Request
+                                                    - RequireAny
+                                                    - VerifyIfGiven
+                                                    - RequireAndVerify
+                                                  type: string
                                                 enabled:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
                                                 key:
+                                                  type: string
+                                                server_name:
                                                   type: string
                                               type: object
                                           type: object
@@ -10222,11 +10618,22 @@ spec:
                                           type: string
                                         cert:
                                           type: string
+                                        client_auth:
+                                          enum:
+                                            - Auto
+                                            - None
+                                            - Request
+                                            - RequireAny
+                                            - VerifyIfGiven
+                                            - RequireAndVerify
+                                          type: string
                                         enabled:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
                                         key:
+                                          type: string
+                                        server_name:
                                           type: string
                                       type: object
                                     wait_for_ready:
@@ -10929,11 +11336,22 @@ spec:
                                       type: string
                                     cert:
                                       type: string
+                                    client_auth:
+                                      enum:
+                                        - Auto
+                                        - None
+                                        - Request
+                                        - RequireAny
+                                        - VerifyIfGiven
+                                        - RequireAndVerify
+                                      type: string
                                     enabled:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
                                     key:
+                                      type: string
+                                    server_name:
                                       type: string
                                   type: object
                               type: object
@@ -11165,11 +11583,22 @@ spec:
                                                   type: string
                                                 cert:
                                                   type: string
+                                                client_auth:
+                                                  enum:
+                                                    - Auto
+                                                    - None
+                                                    - Request
+                                                    - RequireAny
+                                                    - VerifyIfGiven
+                                                    - RequireAndVerify
+                                                  type: string
                                                 enabled:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
                                                 key:
+                                                  type: string
+                                                server_name:
                                                   type: string
                                               type: object
                                           type: object
@@ -11198,11 +11627,22 @@ spec:
                                           type: string
                                         cert:
                                           type: string
+                                        client_auth:
+                                          enum:
+                                            - Auto
+                                            - None
+                                            - Request
+                                            - RequireAny
+                                            - VerifyIfGiven
+                                            - RequireAndVerify
+                                          type: string
                                         enabled:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
                                         key:
+                                          type: string
+                                        server_name:
                                           type: string
                                       type: object
                                     wait_for_ready:
@@ -11363,11 +11803,22 @@ spec:
                                                   type: string
                                                 cert:
                                                   type: string
+                                                client_auth:
+                                                  enum:
+                                                    - Auto
+                                                    - None
+                                                    - Request
+                                                    - RequireAny
+                                                    - VerifyIfGiven
+                                                    - RequireAndVerify
+                                                  type: string
                                                 enabled:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
                                                 key:
+                                                  type: string
+                                                server_name:
                                                   type: string
                                               type: object
                                           type: object
@@ -11396,11 +11847,22 @@ spec:
                                           type: string
                                         cert:
                                           type: string
+                                        client_auth:
+                                          enum:
+                                            - Auto
+                                            - None
+                                            - Request
+                                            - RequireAny
+                                            - VerifyIfGiven
+                                            - RequireAndVerify
+                                          type: string
                                         enabled:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
                                         key:
+                                          type: string
+                                        server_name:
                                           type: string
                                       type: object
                                     wait_for_ready:
@@ -12105,11 +12567,22 @@ spec:
                                       type: string
                                     cert:
                                       type: string
+                                    client_auth:
+                                      enum:
+                                        - Auto
+                                        - None
+                                        - Request
+                                        - RequireAny
+                                        - VerifyIfGiven
+                                        - RequireAndVerify
+                                      type: string
                                     enabled:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
                                     key:
+                                      type: string
+                                    server_name:
                                       type: string
                                   type: object
                               type: object
@@ -12330,11 +12803,22 @@ spec:
                                                   type: string
                                                 cert:
                                                   type: string
+                                                client_auth:
+                                                  enum:
+                                                    - Auto
+                                                    - None
+                                                    - Request
+                                                    - RequireAny
+                                                    - VerifyIfGiven
+                                                    - RequireAndVerify
+                                                  type: string
                                                 enabled:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
                                                 key:
+                                                  type: string
+                                                server_name:
                                                   type: string
                                               type: object
                                           type: object
@@ -12363,11 +12847,22 @@ spec:
                                           type: string
                                         cert:
                                           type: string
+                                        client_auth:
+                                          enum:
+                                            - Auto
+                                            - None
+                                            - Request
+                                            - RequireAny
+                                            - VerifyIfGiven
+                                            - RequireAndVerify
+                                          type: string
                                         enabled:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
                                         key:
+                                          type: string
+                                        server_name:
                                           type: string
                                       type: object
                                     wait_for_ready:
@@ -12528,11 +13023,22 @@ spec:
                                                   type: string
                                                 cert:
                                                   type: string
+                                                client_auth:
+                                                  enum:
+                                                    - Auto
+                                                    - None
+                                                    - Request
+                                                    - RequireAny
+                                                    - VerifyIfGiven
+                                                    - RequireAndVerify
+                                                  type: string
                                                 enabled:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
                                                 key:
+                                                  type: string
+                                                server_name:
                                                   type: string
                                               type: object
                                           type: object
@@ -12561,11 +13067,22 @@ spec:
                                           type: string
                                         cert:
                                           type: string
+                                        client_auth:
+                                          enum:
+                                            - Auto
+                                            - None
+                                            - Request
+                                            - RequireAny
+                                            - VerifyIfGiven
+                                            - RequireAndVerify
+                                          type: string
                                         enabled:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
                                         key:
+                                          type: string
+                                        server_name:
                                           type: string
                                       type: object
                                     wait_for_ready:
@@ -13494,11 +14011,22 @@ spec:
                                       type: string
                                     cert:
                                       type: string
+                                    client_auth:
+                                      enum:
+                                        - Auto
+                                        - None
+                                        - Request
+                                        - RequireAny
+                                        - VerifyIfGiven
+                                        - RequireAndVerify
+                                      type: string
                                     enabled:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
                                     key:
+                                      type: string
+                                    server_name:
                                       type: string
                                   type: object
                               type: object
@@ -14257,11 +14785,22 @@ spec:
                                           type: string
                                         cert:
                                           type: string
+                                        client_auth:
+                                          enum:
+                                            - Auto
+                                            - None
+                                            - Request
+                                            - RequireAny
+                                            - VerifyIfGiven
+                                            - RequireAndVerify
+                                          type: string
                                         enabled:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
                                         key:
+                                          type: string
+                                        server_name:
                                           type: string
                                       type: object
                                   type: object
@@ -14512,11 +15051,22 @@ spec:
                                                   type: string
                                                 cert:
                                                   type: string
+                                                client_auth:
+                                                  enum:
+                                                    - Auto
+                                                    - None
+                                                    - Request
+                                                    - RequireAny
+                                                    - VerifyIfGiven
+                                                    - RequireAndVerify
+                                                  type: string
                                                 enabled:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
                                                 key:
+                                                  type: string
+                                                server_name:
                                                   type: string
                                               type: object
                                           type: object
@@ -14545,11 +15095,22 @@ spec:
                                           type: string
                                         cert:
                                           type: string
+                                        client_auth:
+                                          enum:
+                                            - Auto
+                                            - None
+                                            - Request
+                                            - RequireAny
+                                            - VerifyIfGiven
+                                            - RequireAndVerify
+                                          type: string
                                         enabled:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
                                         key:
+                                          type: string
+                                        server_name:
                                           type: string
                                       type: object
                                     wait_for_ready:
@@ -14710,11 +15271,22 @@ spec:
                                                   type: string
                                                 cert:
                                                   type: string
+                                                client_auth:
+                                                  enum:
+                                                    - Auto
+                                                    - None
+                                                    - Request
+                                                    - RequireAny
+                                                    - VerifyIfGiven
+                                                    - RequireAndVerify
+                                                  type: string
                                                 enabled:
                                                   type: boolean
                                                 insecure_skip_verify:
                                                   type: boolean
                                                 key:
+                                                  type: string
+                                                server_name:
                                                   type: string
                                               type: object
                                           type: object
@@ -14743,11 +15315,22 @@ spec:
                                           type: string
                                         cert:
                                           type: string
+                                        client_auth:
+                                          enum:
+                                            - Auto
+                                            - None
+                                            - Request
+                                            - RequireAny
+                                            - VerifyIfGiven
+                                            - RequireAndVerify
+                                          type: string
                                         enabled:
                                           type: boolean
                                         insecure_skip_verify:
                                           type: boolean
                                         key:
+                                          type: string
+                                        server_name:
                                           type: string
                                       type: object
                                     wait_for_ready:
@@ -15450,11 +16033,22 @@ spec:
                                       type: string
                                     cert:
                                       type: string
+                                    client_auth:
+                                      enum:
+                                        - Auto
+                                        - None
+                                        - Request
+                                        - RequireAny
+                                        - VerifyIfGiven
+                                        - RequireAndVerify
+                                      type: string
                                     enabled:
                                       type: boolean
                                     insecure_skip_verify:
                                       type: boolean
                                     key:
+                                      type: string
+                                    server_name:
                                       type: string
                                   type: object
                               type: object
@@ -16076,11 +16670,22 @@ spec:
                                   type: string
                                 cert:
                                   type: string
+                                client_auth:
+                                  enum:
+                                    - Auto
+                                    - None
+                                    - Request
+                                    - RequireAny
+                                    - VerifyIfGiven
+                                    - RequireAndVerify
+                                  type: string
                                 enabled:
                                   type: boolean
                                 insecure_skip_verify:
                                   type: boolean
                                 key:
+                                  type: string
+                                server_name:
                                   type: string
                               type: object
                           type: object

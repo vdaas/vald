@@ -18,7 +18,6 @@
 package cassandra
 
 import (
-	"crypto/tls"
 	"math"
 	"time"
 
@@ -27,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/timeutil"
+	"github.com/vdaas/vald/internal/tls"
 )
 
 // Option represents the functional option for client.
