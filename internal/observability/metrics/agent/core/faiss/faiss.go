@@ -23,32 +23,32 @@ import (
 )
 
 const (
-	indexCountMetricsName        = "agent_core_faiss_index_count"
-	indexCountMetricsDescription = "Agent Faiss index count"
+	IndexCountMetricsName        = "agent_core_faiss_index_count"
+	IndexCountMetricsDescription = "Agent Faiss index count"
 
-	uncommittedIndexCountMetricsName        = "agent_core_faiss_uncommitted_index_count"
-	uncommittedIndexCountMetricsDescription = "Agent Faiss index count"
+	UncommittedIndexCountMetricsName        = "agent_core_faiss_uncommitted_index_count"
+	UncommittedIndexCountMetricsDescription = "Agent Faiss index count"
 
-	insertVQueueCountMetricsName        = "agent_core_faiss_insert_vqueue_count"
-	insertVQueueCountMetricsDescription = "Agent Faiss insert vqueue count"
+	InsertVQueueCountMetricsName        = "agent_core_faiss_insert_vqueue_count"
+	InsertVQueueCountMetricsDescription = "Agent Faiss insert vqueue count"
 
-	deleteVQueueCountMetricsName        = "agent_core_faiss_delete_vqueue_count"
-	deleteVQueueCountMetricsDescription = "Agent Faiss delete vqueue count"
+	DeleteVQueueCountMetricsName        = "agent_core_faiss_delete_vqueue_count"
+	DeleteVQueueCountMetricsDescription = "Agent Faiss delete vqueue count"
 
-	completedCreateIndexTotalMetricsName        = "agent_core_faiss_completed_create_index_total"
-	completedCreateIndexTotalMetricsDescription = "The cumulative count of completed create index execution"
+	CompletedCreateIndexTotalMetricsName        = "agent_core_faiss_completed_create_index_total"
+	CompletedCreateIndexTotalMetricsDescription = "The cumulative count of completed create index execution"
 
-	executedProactiveGCTotalMetricsName        = "agent_core_faiss_executed_proactive_gc_total"
-	executedProactiveGCTotalMetricsDescription = "The cumulative count of proactive GC execution"
+	ExecutedProactiveGCTotalMetricsName        = "agent_core_faiss_executed_proactive_gc_total"
+	ExecutedProactiveGCTotalMetricsDescription = "The cumulative count of proactive GC execution"
 
-	isIndexingMetricsName        = "agent_core_faiss_is_indexing"
-	isIndexingMetricsDescription = "Currently indexing or no"
+	IsIndexingMetricsName        = "agent_core_faiss_is_indexing"
+	IsIndexingMetricsDescription = "Currently indexing or no"
 
-	isSavingMetricsName        = "agent_core_faiss_is_saving"
-	isSavingMetricsDescription = "Currently saving or not"
+	IsSavingMetricsName        = "agent_core_faiss_is_saving"
+	IsSavingMetricsDescription = "Currently saving or not"
 
-	trainCountMetricsName        = "agent_core_faiss_train_count"
-	trainCountMetricsDescription = "Agent Faiss train count"
+	TrainCountMetricsName        = "agent_core_faiss_train_count"
+	TrainCountMetricsDescription = "Agent Faiss train count"
 )
 
 type faissMetrics struct {
@@ -65,8 +65,8 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 	return []metrics.View{
 		view.NewView(
 			view.Instrument{
-				Name:        indexCountMetricsName,
-				Description: indexCountMetricsDescription,
+				Name:        IndexCountMetricsName,
+				Description: IndexCountMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -74,8 +74,8 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        uncommittedIndexCountMetricsName,
-				Description: uncommittedIndexCountMetricsDescription,
+				Name:        UncommittedIndexCountMetricsName,
+				Description: UncommittedIndexCountMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -83,8 +83,8 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        insertVQueueCountMetricsName,
-				Description: insertVQueueCountMetricsDescription,
+				Name:        InsertVQueueCountMetricsName,
+				Description: InsertVQueueCountMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -92,8 +92,8 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        deleteVQueueCountMetricsName,
-				Description: deleteVQueueCountMetricsDescription,
+				Name:        DeleteVQueueCountMetricsName,
+				Description: DeleteVQueueCountMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -101,8 +101,8 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        completedCreateIndexTotalMetricsName,
-				Description: completedCreateIndexTotalMetricsDescription,
+				Name:        CompletedCreateIndexTotalMetricsName,
+				Description: CompletedCreateIndexTotalMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -110,8 +110,8 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        executedProactiveGCTotalMetricsName,
-				Description: executedProactiveGCTotalMetricsDescription,
+				Name:        ExecutedProactiveGCTotalMetricsName,
+				Description: ExecutedProactiveGCTotalMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -119,8 +119,8 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        isIndexingMetricsName,
-				Description: isIndexingMetricsDescription,
+				Name:        IsIndexingMetricsName,
+				Description: IsIndexingMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -128,8 +128,8 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        isSavingMetricsName,
-				Description: isSavingMetricsDescription,
+				Name:        IsSavingMetricsName,
+				Description: IsSavingMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -137,8 +137,8 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        trainCountMetricsName,
-				Description: trainCountMetricsDescription,
+				Name:        TrainCountMetricsName,
+				Description: TrainCountMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
@@ -149,8 +149,8 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 
 func (f *faissMetrics) Register(m metrics.Meter) error {
 	indexCount, err := m.Int64ObservableGauge(
-		indexCountMetricsName,
-		metrics.WithDescription(indexCountMetricsDescription),
+		IndexCountMetricsName,
+		metrics.WithDescription(IndexCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -158,8 +158,8 @@ func (f *faissMetrics) Register(m metrics.Meter) error {
 	}
 
 	uncommittedIndexCount, err := m.Int64ObservableGauge(
-		uncommittedIndexCountMetricsName,
-		metrics.WithDescription(uncommittedIndexCountMetricsDescription),
+		UncommittedIndexCountMetricsName,
+		metrics.WithDescription(UncommittedIndexCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -167,8 +167,8 @@ func (f *faissMetrics) Register(m metrics.Meter) error {
 	}
 
 	insertVQueueCount, err := m.Int64ObservableGauge(
-		insertVQueueCountMetricsName,
-		metrics.WithDescription(insertVQueueCountMetricsDescription),
+		InsertVQueueCountMetricsName,
+		metrics.WithDescription(InsertVQueueCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -176,8 +176,8 @@ func (f *faissMetrics) Register(m metrics.Meter) error {
 	}
 
 	deleteVQueueCount, err := m.Int64ObservableGauge(
-		deleteVQueueCountMetricsName,
-		metrics.WithDescription(deleteVQueueCountMetricsDescription),
+		DeleteVQueueCountMetricsName,
+		metrics.WithDescription(DeleteVQueueCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -185,8 +185,8 @@ func (f *faissMetrics) Register(m metrics.Meter) error {
 	}
 
 	completedCreateIndexTotal, err := m.Int64ObservableGauge(
-		completedCreateIndexTotalMetricsName,
-		metrics.WithDescription(completedCreateIndexTotalMetricsDescription),
+		CompletedCreateIndexTotalMetricsName,
+		metrics.WithDescription(CompletedCreateIndexTotalMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -194,8 +194,8 @@ func (f *faissMetrics) Register(m metrics.Meter) error {
 	}
 
 	executedProactiveGCTotal, err := m.Int64ObservableGauge(
-		executedProactiveGCTotalMetricsName,
-		metrics.WithDescription(executedProactiveGCTotalMetricsDescription),
+		ExecutedProactiveGCTotalMetricsName,
+		metrics.WithDescription(ExecutedProactiveGCTotalMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -203,8 +203,8 @@ func (f *faissMetrics) Register(m metrics.Meter) error {
 	}
 
 	isIndexing, err := m.Int64ObservableGauge(
-		isIndexingMetricsName,
-		metrics.WithDescription(isIndexingMetricsDescription),
+		IsIndexingMetricsName,
+		metrics.WithDescription(IsIndexingMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -212,8 +212,8 @@ func (f *faissMetrics) Register(m metrics.Meter) error {
 	}
 
 	isSaving, err := m.Int64ObservableGauge(
-		isSavingMetricsName,
-		metrics.WithDescription(isSavingMetricsDescription),
+		IsSavingMetricsName,
+		metrics.WithDescription(IsSavingMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -221,8 +221,8 @@ func (f *faissMetrics) Register(m metrics.Meter) error {
 	}
 
 	trainCount, err := m.Int64ObservableGauge(
-		trainCountMetricsName,
-		metrics.WithDescription(trainCountMetricsDescription),
+		TrainCountMetricsName,
+		metrics.WithDescription(TrainCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {

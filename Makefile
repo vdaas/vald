@@ -94,6 +94,7 @@ FAISS_VERSION             := $(eval FAISS_VERSION := $(shell cat versions/FAISS_
 USEARCH_VERSION           := $(eval USEARCH_VERSION := $(shell cat versions/USEARCH_VERSION))$(USEARCH_VERSION)
 GOLANGCILINT_VERSION      := $(eval GOLANGCILINT_VERSION := $(shell cat versions/GOLANGCILINT_VERSION))$(GOLANGCILINT_VERSION)
 GO_VERSION                := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
+GRAFANA_VERSION           := $(eval GRAFANA_VERSION := $(shell cat versions/GRAFANA_VERSION))$(GRAFANA_VERSION)
 HDF5_VERSION              := $(eval HDF5_VERSION := $(shell cat versions/HDF5_VERSION))$(HDF5_VERSION)
 HELM_DOCS_VERSION         := $(eval HELM_DOCS_VERSION := $(shell cat versions/HELM_DOCS_VERSION))$(HELM_DOCS_VERSION)
 HELM_VERSION              := $(eval HELM_VERSION := $(shell cat versions/HELM_VERSION))$(HELM_VERSION)
@@ -487,6 +488,14 @@ license:
 ## generate dockerfiles
 dockerfile:
 	$(call gen-dockerfile,$(ROOTDIR),$(MAINTAINER))
+
+.PHONY: dashboard
+## generate dashboards
+dashboard: k8s/metrics/grafana/dashboards/00-vald-cluster-overview.yaml
+
+# To cache the generated dashboards, making a generated file target
+k8s/metrics/grafana/dashboards/00-vald-cluster-overview.yaml: $(shell find hack/grafana/gen -type f) versions/GRAFANA_VERSION
+	$(call gen-dashboard,$(ROOTDIR),$(MAINTAINER))
 
 .PHONY: workflow
 ## generate workflows
