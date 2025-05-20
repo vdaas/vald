@@ -83,8 +83,8 @@ jobs:
               git checkout ${BRANCH_NAME}
               git checkout -b ${BACKPORT_BRANCH_NAME}
 
-              # Force cherry-pick. The conflicts will be modified within the backport PR.
-              git cherry-pick ${GITHUB_SHA} || (git add -A && git cherry-pick --continue --no-edit)
+              # Force cherry-pick. Automatically resolve conflicts in go.mod and go.sum files.
+              git cherry-pick ${GITHUB_SHA} || (git checkout --theirs go.mod go.sum 2>/dev/null || true && git add -A && git cherry-pick --continue --no-edit)
               git push origin ${BACKPORT_BRANCH_NAME}
 
               gh pr create --base ${BRANCH_NAME} \
