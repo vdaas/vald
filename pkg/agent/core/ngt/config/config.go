@@ -75,6 +75,8 @@ func NewConfig(path string) (cfg *Data, err error) {
 	return cfg, nil
 }
 
+const AgentNGTInfo = "agent_core_ngt_info"
+
 // func FakeData() {
 // 	d := Data{
 // 		Version: "v0.0.1",
