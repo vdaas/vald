@@ -86,7 +86,7 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        TotalAllocMetricsDescription,
+				Name:        TotalAllocMetricsName,
 				Description: TotalAllocMetricsDescription,
 			},
 			view.Stream{
@@ -216,7 +216,7 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 	}
 
 	totalAlloc, err := m.Int64ObservableGauge(
-		TotalAllocMetricsDescription,
+		TotalAllocMetricsName,
 		metrics.WithDescription(TotalAllocMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
 	)

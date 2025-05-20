@@ -25,7 +25,7 @@ import (
 
 const (
 	LatencyMetricsName        = "server_latency"
-	LatencyMetricsDesctiption = "Server latency in milliseconds, by method"
+	LatencyMetricsDescription = "Server latency in milliseconds, by method"
 
 	CompletedRPCsMetricsName        = "server_completed_rpcs"
 	CompletedRPCsMetricsDescription = "Count of RPCs by method and status"
@@ -49,7 +49,7 @@ func (*grpcServerMetrics) View() ([]metrics.View, error) {
 		view.NewView(
 			view.Instrument{
 				Name:        LatencyMetricsName,
-				Description: LatencyMetricsDesctiption,
+				Description: LatencyMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationExplicitBucketHistogram{
