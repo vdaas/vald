@@ -77,12 +77,8 @@ func (c *client) Register(
 		}
 	}()
 
-	_, err = c.c.RoundRobin(ctx, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
-		res, err = mirror.NewMirrorClient(conn).Register(ctx, in, append(copts, opts...)...)
-		if err != nil {
-			return nil, err
-		}
-		return res, nil
+	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (*payload.Mirror_Targets, error) {
+		return mirror.NewMirrorClient(conn).Register(ctx, in, append(copts, opts...)...)
 	})
 	if err != nil {
 		return nil, err
