@@ -138,12 +138,11 @@ func (c *client) FilterDistance(
 			span.End()
 		}
 	}()
-	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (any, error) {
-		res, err = egress.NewFilterClient(conn).FilterDistance(ctx, in, append(copts, opts...)...)
-		return nil, err
+	) (*payload.Object_Distance, error) {
+		return egress.NewFilterClient(conn).FilterDistance(ctx, in, append(copts, opts...)...)
 	})
 	if err != nil {
 		return nil, err
@@ -212,12 +211,11 @@ func (c *client) FilterVector(
 			span.End()
 		}
 	}()
-	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (any, error) {
-		res, err = egress.NewFilterClient(conn).FilterVector(ctx, in, append(copts, opts...)...)
-		return nil, err
+	) (*payload.Object_Vector, error) {
+		return egress.NewFilterClient(conn).FilterVector(ctx, in, append(copts, opts...)...)
 	})
 	if err != nil {
 		return nil, err

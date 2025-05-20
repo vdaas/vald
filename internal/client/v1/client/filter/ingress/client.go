@@ -138,12 +138,11 @@ func (c *client) GenVector(
 			span.End()
 		}
 	}()
-	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (any, error) {
-		res, err = ingress.NewFilterClient(conn).GenVector(ctx, in, append(copts, opts...)...)
-		return nil, err
+	) (*payload.Object_Vector, error) {
+		return ingress.NewFilterClient(conn).GenVector(ctx, in, append(copts, opts...)...)
 	})
 	if err != nil {
 		return nil, err
@@ -160,12 +159,11 @@ func (c *client) FilterVector(
 			span.End()
 		}
 	}()
-	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (any, error) {
-		res, err = ingress.NewFilterClient(conn).FilterVector(ctx, in, append(copts, opts...)...)
-		return nil, err
+	) (*payload.Object_Vector, error) {
+		return ingress.NewFilterClient(conn).FilterVector(ctx, in, append(copts, opts...)...)
 	})
 	if err != nil {
 		return nil, err
