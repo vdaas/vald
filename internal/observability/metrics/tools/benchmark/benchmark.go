@@ -157,7 +157,7 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 
 	appliedBenchJobCount, err := m.Int64ObservableCounter(
 		AppliedBenchmarkJobCount,
-		metrics.WithDescription(AppliedScenarioCountDescription),
+		metrics.WithDescription(AppliedBenchmarkJobCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -165,7 +165,7 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 	}
 	runningBenchJobCount, err := m.Int64ObservableCounter(
 		RunningBenchmarkJobCount,
-		metrics.WithDescription(RunningScenarioCountDescription),
+		metrics.WithDescription(RunningBenchmarkJobCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
@@ -173,7 +173,7 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 	}
 	completeBenchJobCount, err := m.Int64ObservableCounter(
 		CompleteBenchmarkJobCount,
-		metrics.WithDescription(CompleteScenarioCountDescription),
+		metrics.WithDescription(CompleteBenchmarkJobCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
