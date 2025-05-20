@@ -108,6 +108,9 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --fix-missing nodejs \
     && npm install -g npm@latest \
+    && curl -fsSL https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash - \
+    && apt-get install -y --no-install-recommends --fix-missing git-lfs \
+    && git lfs install \
     && apt-get clean \
     && apt-get autoclean -y \
     && apt-get autoremove -y \
