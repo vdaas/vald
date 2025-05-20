@@ -531,16 +531,13 @@ update: \
 .PHONY: format
 ## format go codes
 format: \
-	dockerfile \
-	license \
 	format/proto \
-	format/go \
 	format/json \
 	format/md \
-	format/yaml \
 	remove/empty/file \
-	format/go \
-	format/go/test
+	license
+	@$(MAKE) dockerfile format/go format/go/test
+	@$(MAKE) format/yaml
 
 .PHONY: remove/empty/file
 ## removes empty file such as just includes \r \n space tab
