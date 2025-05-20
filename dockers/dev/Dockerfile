@@ -109,7 +109,6 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --fix-missing nodejs \
     && npm install -g npm@latest \
-    && git lfs install \
     && apt-get clean \
     && apt-get autoclean -y \
     && apt-get autoremove -y \
