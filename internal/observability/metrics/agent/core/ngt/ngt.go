@@ -28,7 +28,7 @@ const (
 	IndexCountMetricsDescription = "Agent NGT index count"
 
 	UncommittedIndexCountMetricsName        = "agent_core_ngt_uncommitted_index_count"
-	UncommittedIndexCountMetricsDescription = "Agent NGT index count"
+	UncommittedIndexCountMetricsDescription = "Agent NGT uncommitted index count"
 
 	InsertVQueueCountMetricsName        = "agent_core_ngt_insert_vqueue_count"
 	InsertVQueueCountMetricsDescription = "Agent NGT insert vqueue count"
