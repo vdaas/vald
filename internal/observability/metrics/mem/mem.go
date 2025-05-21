@@ -116,7 +116,7 @@ const (
 	VmpeakMetricsDescription = "peak virtual memory size"
 
 	VmsizeMetricsName        = "vmsize_bytes"
-	VmsizeMetricsDescription = "toal program size"
+	VmsizeMetricsDescription = "total program size"
 
 	VmdataMetricsName        = "vmdata_bytes"
 	VmdataMetricsDescription = "size of private data segments"
