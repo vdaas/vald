@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package redis provides implementation of Go API for redis interface
+// Package cassandra provides implementation of Go API for cassandra interface
 package cassandra

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// This package is wrapping package of "https://github.com/aws/aws-sdk-go".
 package reader
 
 import (

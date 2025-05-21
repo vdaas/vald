@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package info provides hash functionality
+// Package hash provides hash functionality
 package hash

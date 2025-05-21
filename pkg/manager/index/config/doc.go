@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-// Package setting stores all server application settings
+// Package config stores all server application settings
 package config
