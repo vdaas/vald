@@ -20,6 +20,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -30,6 +31,8 @@ import (
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	igrpc "github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
@@ -133,7 +136,7 @@ func (e *export) Start(ctx context.Context) error {
 
 func (e *export) doExportIndex(
 	ctx context.Context,
-) (errs error) {
+) (err error) {
 	ctx, span := trace.StartSpan(igrpc.WrapGRPCMethod(ctx, grpcMethodName), apiName+"/service/index.doExportIndex")
 	defer func() {
 		if span != nil {
@@ -157,31 +160,55 @@ func (e *export) doExportIndex(
 	ctx, cancel := context.WithCancelCause(egctx)
 	defer cancel(nil)
 
+	var (
+		emu  sync.Mutex
+		errs = make([]error, 0, e.streamListConcurrency*2) // concurrency * recv+send
+	)
+
+	finalize := func() (err error) {
+		err = eg.Wait()
+		if err != nil {
+			emu.Lock()
+			errs = append(errs, err)
+			emu.Unlock()
+		}
+		errs := errors.RemoveDuplicates(errs)
+		emu.Lock()
+		err = errors.Join(errs...)
+		emu.Unlock()
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse BidirectionalStream final gRPC error response")
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, msg)
+		}
+
+		if err != nil {
+			log.Errorf("exporter returned error status errgroup returned error: %v", ctx.Err())
+			return err
+		}
+
+		return nil
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
-			if !errors.Is(ctx.Err(), context.Canceled) {
-				log.Errorf("context done unexpectedly: %v", ctx.Err())
-			}
-			if !errors.Is(context.Cause(ctx), io.EOF) {
-				log.Errorf("context canceled due to %v", ctx.Err())
-			}
-			err = eg.Wait()
-			if err != nil {
-				log.Errorf("exporter returned error status errgroup returned error: %v", ctx.Err())
-			} else {
-				log.Infof("exporter finished")
-			}
-			return nil
+			return finalize()
 		default:
 			res, err := stream.Recv()
 			if err != nil {
-				if errors.Is(err, io.EOF) {
-					cancel(io.EOF)
-				} else {
-					cancel(errors.ErrStreamListObjectStreamFinishedUnexpectedly(err))
+				if err != io.EOF && !errors.Is(err, io.EOF) {
+					err = errors.Wrap(err, "BidirectionalStream Recv returned error")
+					emu.Lock()
+					errs = append(errs, err)
+					emu.Unlock()
+					log.Errorf("failed to receive stream message: %v", err)
 				}
-			} else if res != nil && res.GetVector() != nil && res.GetVector().GetId() != "" {
+				return finalize()
+			}
+
+			if res != nil && res.GetVector() != nil && res.GetVector().GetId() != "" {
 				eg.Go(safety.RecoverFunc(func() (err error) {
 					objVec := res.GetVector()
 					log.Infof("received object vector id: %s, timestamp: %d", objVec.GetId(), objVec.GetTimestamp())
