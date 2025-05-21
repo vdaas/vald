@@ -792,7 +792,7 @@ data:
               "refId": ""
             }
           ],
-          "title": "toal program size",
+          "title": "total program size",
           "transparent": false,
           "gridPos": {
             "h": 8,
