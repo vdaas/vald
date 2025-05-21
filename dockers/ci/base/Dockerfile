@@ -84,6 +84,7 @@ RUN --mount=type=bind,target=.,rw \
     pkg-config \
     file \
     gawk \
+    git-lfs \
     gnupg2 \
     graphviz \
     jq \

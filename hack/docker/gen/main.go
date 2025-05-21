@@ -480,6 +480,7 @@ var (
 	devContainerDeps = []string{
 		"file",
 		"gawk",
+		"git-lfs",
 		"gnupg2",
 		"graphviz",
 		"jq",
