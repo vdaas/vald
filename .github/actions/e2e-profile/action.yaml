@@ -1,0 +1,143 @@
+#
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Profile for E2E test"
+description: "An action to profile for E2E test"
+inputs:
+  dispatch_user:
+    required: true
+  dispatch_token:
+    required: true
+# profefe needs to be deployed
+runs:
+  using: "composite"
+  steps:
+    - name: Get profiles
+      shell: bash
+      run: |
+        mkdir -p profiles
+        kubectl port-forward deployment/profefe 10100:10100 &
+        PF_PID=$!
+        sleep 3
+        # Ensure the port-forward is killed when this step exits
+        trap "kill $PF_PID" EXIT
+        for svc in vald-agent-ngt vald-lb-gateway vald-discoverer vald-manager-index
+        do
+          for t in heap cpu goroutine threadcreate
+          do
+            curl "http://localhost:10100/api/0/profiles/merge?service=${svc}&type=${t}&from=2021-07-01T00:00:00&to=2030-07-01T00:00:00" \
+              --output profiles/${svc}-${t}.pb
+          done
+        done
+    - uses: actions/upload-artifact@v4
+      with:
+        name: profiles
+        path: profiles/*
+    - uses: actions/cache@v4
+      id: cache
+      with:
+        path: ./profiles-main
+        key: ${{ runner.os }}-profiles-main-${{ github.sha }}
+        restore-keys: ${{ runner.os }}-profiles-main-
+    - name: Update cache
+      shell: bash
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        mkdir -p profiles-main
+        cp -f profiles/* profiles-main/
+        cp -f versions/VALD_VERSION profiles-main/
+    - name: Generate graphs
+      shell: bash
+      run: |
+        tag="unknown"
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          tag="pr-${{ github.event.pull_request.number }}"
+        elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          tag="main-${{ github.sha }}"
+        elif [[ "${{ github.ref }}" == refs/heads/release/* ]]; then
+          version=$(echo ${{ github.ref }} | sed 's/refs\/heads\/release\///')
+          tag="v${version}-${{ github.sha }}"
+        elif [[ -f profiles-main/VALD_VERSION && -s profiles-main/VALD_VERSION ]]; then
+          tag=$(cat profiles-main/VALD_VERSION)
+        fi
+
+        mkdir -p graphs
+        for svc in vald-agent-ngt vald-lb-gateway vald-discoverer vald-manager-index
+        do
+          for t in heap cpu goroutine threadcreate
+          do
+            echo "generating: graphs/${svc}-${t}-${GITHUB_SHA::6}.svg"
+            go tool pprof --svg profiles/${svc}-${t}.pb > graphs/${svc}-${t}-${GITHUB_SHA::6}.svg
+            echo "generating: graphs/${svc}-${t}-${GITHUB_SHA::6}.png"
+            go tool pprof --png profiles/${svc}-${t}.pb > graphs/${svc}-${t}-${GITHUB_SHA::6}.png
+            if [ -f profiles-main/${svc}-${t}.pb ]; then
+              echo "generating: graphs/${svc}-${t}-main-${GITHUB_SHA::6}.svg"
+              go tool pprof --svg -base=profiles-main/${svc}-${t}.pb profiles/${svc}-${t}.pb > graphs/${svc}-${t}-diff-${tag}-${GITHUB_SHA::6}.svg
+              echo "generating: graphs/${svc}-${t}-main-${GITHUB_SHA::6}.png"
+              go tool pprof --png -base=profiles-main/${svc}-${t}.pb profiles/${svc}-${t}.pb > graphs/${svc}-${t}-diff-${tag}-${GITHUB_SHA::6}.png
+            else
+              echo "skipping: profiles-main/${svc}-${t}.pb does not exist."
+            fi
+          done
+        done
+    - uses: actions/upload-artifact@v4
+      with:
+        name: graphs
+        path: graphs/*
+    - name: Upload to vald-ci-images repository
+      shell: bash
+      run: |
+        CLONE_DIR=$(mktemp -d)
+        git clone --depth 1 https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/vdaas-ci/vald-ci-images.git $CLONE_DIR
+        cp -r graphs $CLONE_DIR/${GITHUB_SHA::6}
+        cd $CLONE_DIR
+        git config user.email "vald@vdaas.org"
+        git config user.name "vdaas-ci"
+        git add .
+        git commit -m ":robot: Add ${GITHUB_SHA::6}"
+        git push https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/vdaas-ci/vald-ci-images.git --set-upstream main
+      env:
+        GITHUB_USER: ${{ inputs.dispatch_user }}
+        GITHUB_TOKEN: ${{ inputs.dispatch_token }}
+    - name: Comment
+      shell: bash
+      run: |
+        base="https://raw.githubusercontent.com/vdaas-ci/vald-ci-images/main/${GITHUB_SHA::6}"
+        body="<table><tr><th>type</th>"
+        for svc in vald-agent-ngt vald-lb-gateway vald-discoverer vald-manager-index
+        do
+          body="$body<th>$svc</th>"
+        done
+        body="$body</tr>"
+        for t in cpu heap
+        do
+          body="$body<tr><td>${t}</td>"
+          for svc in vald-agent-ngt vald-lb-gateway vald-discoverer vald-manager-index
+          do
+            body="$body<td><img src=\\\"$base/${svc}-${t}-${GITHUB_SHA::6}.png\\\" width=\\\"100%\\\"></td>"
+          done
+          body="$body</tr>"
+        done
+        body="$body</table>"
+        curl --include --verbose --fail \
+        -H "Accept: application/json" \
+        -H "Content-Type:application/json" \
+        -H "Authorization: token ${GITHUB_TOKEN}" \
+        --request POST \
+        --data "{\"body\": \"# Profile Report\n$body\n<a href=\\\"https://github.com/vdaas-ci/vald-ci-images/tree/main/${GITHUB_SHA::6}\\\">other images</a>\"}" \
+        $API_URL
+      env:
+        GITHUB_TOKEN: ${{ inputs.dispatch_token }}
+        API_URL: ${{ github.event.pull_request.comments_url }}
