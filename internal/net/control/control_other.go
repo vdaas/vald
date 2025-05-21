@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 
-// Package control provides network socket option
 package control
 
 var SetsockoptInt = func(fd, level, opt int, value int) (err error) {

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package observer provides storage observer
 package observer
 
 // NOT IMPLEMENTED BELOW

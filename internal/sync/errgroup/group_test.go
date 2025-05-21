@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package errgroup provides server global wait group for graceful kill all goroutine
 package errgroup
 
 import (

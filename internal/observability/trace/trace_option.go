@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package trace provides trace function.
 package trace
 
 type TraceOption func(*tracer) error

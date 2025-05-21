@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package usearch provides Go API implementation for USearch library. https://github.com/unum-cloud/usearch
 package usearch
 
 import (

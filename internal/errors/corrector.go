@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package errors provides error types and function
 package errors
 
 // ErrIndexReplicaOne represents an error that nothing to correct when index replica is 1.

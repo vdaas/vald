@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package model defines object structure
 package model
 
 type Distance struct {

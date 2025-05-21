@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package logging provides gRPC interceptors for access logging
 package logging
 
 import (

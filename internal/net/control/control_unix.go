@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 
-// Package control provides network socket option
 package control
 
 import "golang.org/x/sys/unix"

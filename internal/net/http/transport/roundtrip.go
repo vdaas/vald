@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package transport provides http transport roundtrip option
 package transport
 
 import (

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package compress provides compress functions
 package compress
 
 import (

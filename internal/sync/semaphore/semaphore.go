@@ -29,7 +29,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-// Package semaphore provides a weighted semaphore implementation.
 package semaphore
 
 import (

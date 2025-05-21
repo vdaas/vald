@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package grpc provides grpc server logic
 package grpc
 
 import "github.com/vdaas/vald/pkg/agent/sidecar/service/observer"

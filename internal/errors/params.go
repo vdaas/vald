@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package errors provides error types and function
 package errors
 
 var ErrArgumentParserNotFound = New("argument parser not found")
