@@ -130,6 +130,12 @@ strategies:
     operations:
       - name: Insert Operation
         executions:
+          - mode: unary
+            name: IndexInfo
+            type: index_info
+            expect:
+              results:
+                - {}
           - name: Insert
             type: insert
             mode: unary
@@ -140,6 +146,9 @@ strategies:
           - mode: unary
             name: IndexInfo
             type: index_info
+            expect:
+              results:
+                - stored: 60000
   - name: Search_with_RolloutRestartAgent
     concurrency: 2
     operations:
