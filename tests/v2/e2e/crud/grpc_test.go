@@ -21,6 +21,9 @@ package crud
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"reflect"
 	"slices"
 	"strconv"
 	"sync/atomic"
@@ -35,6 +38,8 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/tests/v2/e2e/config"
+
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 // Type aliases for generic search functions.
@@ -74,8 +79,16 @@ func handleGRPCStatusCodeError(
 	t.Helper()
 	if err != nil {
 		err = errors.Wrapf(err, "Code: %s", code.String())
-		if len(plan.ExpectedStatusCodes) != 0 && !plan.ExpectedStatusCodes.Equals(code.String()) {
-			err = errors.Wrapf(err, "unexpected gRPC response received expected: %v", plan.ExpectedStatusCodes)
+		if plan.Expect == nil {
+			return nil
+		}
+		if len(plan.Expect.StatusCodes) != 0 && !plan.Expect.StatusCodes.Equals(code.String()) {
+			err = errors.Wrapf(err, "unexpected gRPC response received expected: %v", plan.Expect.StatusCodes)
+			t.Error(err.Error())
+			return err
+		}
+		if len(plan.Expect.Results) != 0 {
+			err = errors.New("Execution failed with an error even though result is expected")
 			t.Error(err.Error())
 			return err
 		}
@@ -99,6 +112,34 @@ func handleGRPCCallError(t *testing.T, err error, plan *config.Execution) error 
 	return nil
 }
 
+// resultsEqual checks the equality of results and expected JSON.
+func resultsEqual(expected []json.RawMessage, res proto.Message) error {
+	marshaller := protojson.MarshalOptions{
+		UseProtoNames:   true, // フィールド名は proto の定義通り
+		EmitUnpopulated: false,
+	}
+	protoJSON, err := marshaller.Marshal(res)
+	if err != nil {
+		return fmt.Errorf("failed to marshal proto: %w", err)
+	}
+	var resObj interface{}
+	if err := json.Unmarshal(protoJSON, &resObj); err != nil {
+		return fmt.Errorf("invalid JSON from proto: %w", err)
+	}
+	err = fmt.Errorf("unexpected gRPC response received")
+	for _, e := range expected {
+		var exObj interface{}
+		if err := json.Unmarshal(e, &exObj); err != nil {
+			return err
+		}
+		if reflect.DeepEqual(exObj, resObj) {
+			return nil
+		}
+		err = errors.Wrapf(err, "expected: %#v, got: %#v", exObj, resObj)
+	}
+	return err
+}
+
 func single[Q, R proto.Message](
 	t *testing.T,
 	ctx context.Context,
@@ -118,6 +159,14 @@ func single[Q, R proto.Message](
 		// Handle the error using the centralized error handler.
 		if err = handleGRPCCallError(t, err, plan); err != nil {
 			t.Error(err.Error())
+			return
+		}
+	}
+
+	if plan.Expect != nil && len(plan.Expect.Results) != 0 {
+		err = resultsEqual(plan.Expect.Results, res)
+		if err != nil {
+			t.Fatal(err.Error())
 			return
 		}
 	}
@@ -255,6 +304,12 @@ func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](
 		if err != nil {
 			// Handle the error using the centralized error handler.
 			if err = handleGRPCCallError(t, err, plan); err != nil {
+				t.Error(err.Error())
+				return true
+			}
+		}
+		if plan.Expect != nil && len(plan.Expect.Results) != 0 {
+			if err = resultsEqual(plan.Expect.Results, res); err != nil {
 				t.Error(err.Error())
 				return true
 			}
