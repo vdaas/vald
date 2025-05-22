@@ -1,0 +1,4186 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Vald Search APIs</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+/* From extension marp-team.marp-vscode */
+#__marp-vscode {
+  all: revert;
+}
+
+/* Override VS Code default CSS rules reverting to initial
+   https://github.com/microsoft/vscode/blob/master/src/vs/workbench/contrib/webview/browser/pre/main.js#L53 */
+body.marp-vscode {
+  padding: 0;
+}
+
+body.marp-vscode img {
+  max-width: unset;
+  max-height: unset;
+}
+
+body.marp-vscode a,
+body.marp-vscode a:hover,
+body.marp-vscode code {
+  color: unset;
+}
+
+body.marp-vscode blockquote {
+  background: unset;
+  border-color: unset;
+}
+
+@media screen {
+  body.marp-vscode {
+    overflow-y: scroll;
+
+    /* stylelint-disable-next-line selector-class-pattern */
+    &.showEditorSelection {
+      --marp-vscode-highlight-color: rgb(255 255 255 / 40%);
+
+      &.vscode-light {
+        --marp-vscode-highlight-color: rgb(0 0 0 / 15%);
+      }
+
+      &.vscode-high-contrast {
+        --marp-vscode-highlight-color: rgb(255 160 0 / 70%);
+      }
+    }
+  }
+
+  #__marp-vscode [data-marp-vscode-slide-wrapper] {
+    margin: 20px;
+    position: relative;
+
+    &.code-active-line,
+    &:has(.code-active-line) {
+      &::before {
+        position: absolute;
+        content: '';
+        inset: -7px;
+        border: 3px solid var(--marp-vscode-highlight-color, transparent);
+        pointer-events: none;
+      }
+    }
+  }
+
+  #__marp-vscode svg[data-marpit-svg] {
+    box-shadow: 0 5px 10px rgb(0 0 0 / 25%);
+    display: block;
+    margin: 0;
+  }
+
+  /* Based on https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+  #code-csp-warning {
+    background-color: #444;
+    box-shadow: 1px 1px 1px rgb(0 0 0 / 25%);
+    color: white;
+    cursor: pointer;
+    font-family: sans-serif;
+    font-size: 12px;
+    line-height: 22px;
+    margin: 16px;
+    padding: 6px;
+    position: fixed;
+    right: 0;
+    text-align: center;
+    top: 0;
+    word-wrap: break-word;
+  }
+
+  #code-csp-warning:hover {
+    text-decoration: none;
+    background-color: #007acc;
+    box-shadow: 2px 2px 2px rgb(0 0 0 / 25%);
+  }
+}
+
+@media print {
+  body.marp-vscode #code-csp-warning {
+    display: none;
+  }
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="vald-search-apis">Vald Search APIs</h1>
+<h2 id="overview">Overview</h2>
+<p>Search Service is responsible for searching vectors similar to the user request vector from <code>vald-agent</code>.</p>
+<pre><code class="language-rpc">service Search {
+  rpc Search(payload.v1.Search.Request) returns (payload.v1.Search.Response) {}
+
+  rpc SearchByID(payload.v1.Search.IDRequest)
+      returns (payload.v1.Search.Response) {}
+
+  rpc StreamSearch(stream payload.v1.Search.Request)
+      returns (stream payload.v1.Search.StreamResponse) {}
+
+  rpc StreamSearchByID(stream payload.v1.Search.IDRequest)
+      returns (stream payload.v1.Search.StreamResponse) {}
+
+  rpc MultiSearch(payload.v1.Search.MultiRequest)
+      returns (payload.v1.Search.Responses) {}
+
+  rpc MultiSearchByID(payload.v1.Search.MultiIDRequest)
+      returns (payload.v1.Search.Responses) {}
+
+  rpc LinearSearch(payload.v1.Search.Request) returns (payload.v1.Search.Response) {}
+
+  rpc LinearSearchByID(payload.v1.Search.IDRequest)
+      returns (payload.v1.Search.Response) {}
+
+  rpc StreamLinearSearch(stream payload.v1.Search.Request)
+      returns (stream payload.v1.Search.StreamResponse) {}
+
+  rpc StreamLinearSearchByID(stream payload.v1.Search.IDRequest)
+      returns (stream payload.v1.Search.StreamResponse) {}
+
+  rpc MultiLinearSearch(payload.v1.Search.MultiRequest)
+      returns (payload.v1.Search.Responses) {}
+
+  rpc MultiLinearSearchByID(payload.v1.Search.MultiIDRequest)
+      returns (payload.v1.Search.Responses) {}
+}
+</code></pre>
+<h2 id="search-rpc">Search RPC</h2>
+<p>Search RPC is the method to search vector(s) similar to the request vector.</p>
+<h3 id="input">Input</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.Request</code></p>
+<pre><code class="language-rpc">message Search {
+  message Request {
+    repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    AggregationAlgorithm aggregation_algorithm = 9;
+  }
+}
+
+enum AggregationAlgorithm {
+  Unknown = 0;
+  ConcurrentQueue = 1;
+  SortSlice = 2;
+  SortPoolSlice = 3;
+  PairingHeap = 4;
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.Request</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">vector</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left">repeated(Array[float])</td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The vector data. Its dimension is between 2 and 65,536.</td>
+</tr>
+<tr>
+<td style="text-align:center">config</td>
+<td style="text-align:left">Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The configuration of the search request.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Config</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The maximum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">radius</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The search radius.</td>
+</tr>
+<tr>
+<td style="text-align:center">epsilon</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The search coefficient (default value is <code>0.1</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">timeout</td>
+<td style="text-align:left">int64</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Search timeout in nanoseconds (default value is <code>5s</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">ingress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Ingress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">egress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Egress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">min_num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The minimum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">aggregation_algorithm</td>
+<td style="text-align:left">AggregationAlgorithm</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The search aggregation algorithm option (default value is <code>ConcurrentQueue</code>).</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="output">Output</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.Response</code>.</p>
+<pre><code class="language-rpc">message Search {
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.Response</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">results</td>
+<td style="text-align:left">Object.Distance</td>
+<td style="text-align:left">repeated(Array[Object.Distance])</td>
+<td style="text-align:left">Search results.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Object.Distance</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The vector ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">distance</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The distance between the result vector and the request vector.</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="status-code">Status Code</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">code</th>
+<th style="text-align:left">name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:left">OK</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">CANCELLED</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:left">NOT_FOUND</td>
+</tr>
+<tr>
+<td style="text-align:center">10</td>
+<td style="text-align:left">ABORTED</td>
+</tr>
+<tr>
+<td style="text-align:center">13</td>
+<td style="text-align:left">INTERNAL</td>
+</tr>
+</tbody>
+</table>
+<p>Please refer to <a href="../status.html">Response Status Code</a> for more details.</p>
+<h3 id="troubleshooting">Troubleshooting</h3>
+<p>The request process may not be completed when the response code is NOT <code>0 (OK)</code>.</p>
+<p>Here are some common reasons and how to resolve each error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">name</th>
+<th style="text-align:left">common reason</th>
+<th style="text-align:left">how to resolve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">CANCELLED</td>
+<td style="text-align:left">Executed cancel() of rpc from client/server-side or network problems between client and server.</td>
+<td style="text-align:left">Check the code, especially around timeout and connection management, and fix if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+<td style="text-align:left">The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid.</td>
+<td style="text-align:left">Check Agent config, request payload, and fix request payload or Agent config.</td>
+</tr>
+<tr>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+<td style="text-align:left">The RPC timeout setting is too short on the client/server side.</td>
+<td style="text-align:left">Check the gRPC timeout setting on both the client and server sides and fix it if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">NOT_FOUND</td>
+<td style="text-align:left">Search result is empty or insufficient to request result length.</td>
+<td style="text-align:left">Send a request with another vector or set min_num to a smaller value.</td>
+</tr>
+<tr>
+<td style="text-align:left">INTERNAL</td>
+<td style="text-align:left">Target Vald cluster or network route has some critical error.</td>
+<td style="text-align:left">Check target Vald cluster first and check network route including ingress as second.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="searchbyid-rpc">SearchByID RPC</h2>
+<p>SearchByID RPC is the method to search similar vectors using a user-defined vector ID.<br>
+The vector with the same requested ID should be indexed into the <code>vald-agent</code> before searching.</p>
+<h3 id="input-1">Input</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.IDRequest</code></p>
+<pre><code class="language-rpc">message Search {
+  message IDRequest {
+    string id = 1;
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    AggregationAlgorithm aggregation_algorithm = 9;
+  }
+}
+
+enum AggregationAlgorithm {
+  Unknown = 0;
+  ConcurrentQueue = 1;
+  SortSlice = 2;
+  SortPoolSlice = 3;
+  PairingHeap = 4;
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.IDRequest</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The vector ID to be searched.</td>
+</tr>
+<tr>
+<td style="text-align:center">config</td>
+<td style="text-align:left">Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The configuration of the search request.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Config</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The maximum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">radius</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The search radius.</td>
+</tr>
+<tr>
+<td style="text-align:center">epsilon</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The search coefficient (default value is <code>0.1</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">timeout</td>
+<td style="text-align:left">int64</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Search timeout in nanoseconds (default value is <code>5s</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">ingress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Ingress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">egress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Egress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">min_num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The minimum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">aggregation_algorithm</td>
+<td style="text-align:left">AggregationAlgorithm</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The search aggregation algorithm option (default value is <code>ConcurrentQueue</code>).</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="output-1">Output</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.Response</code>.</p>
+<pre><code class="language-rpc">message Search {
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.Response</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">results</td>
+<td style="text-align:left">Object.Distance</td>
+<td style="text-align:left">repeated(Array[Object.Distance])</td>
+<td style="text-align:left">Search results.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Object.Distance</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The vector ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">distance</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The distance between the result vector and the request vector.</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="status-code-1">Status Code</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">code</th>
+<th style="text-align:left">name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:left">OK</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">CANCELLED</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:left">NOT_FOUND</td>
+</tr>
+<tr>
+<td style="text-align:center">10</td>
+<td style="text-align:left">ABORTED</td>
+</tr>
+<tr>
+<td style="text-align:center">13</td>
+<td style="text-align:left">INTERNAL</td>
+</tr>
+</tbody>
+</table>
+<p>Please refer to <a href="../status.html">Response Status Code</a> for more details.</p>
+<h3 id="troubleshooting-1">Troubleshooting</h3>
+<p>The request process may not be completed when the response code is NOT <code>0 (OK)</code>.</p>
+<p>Here are some common reasons and how to resolve each error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">name</th>
+<th style="text-align:left">common reason</th>
+<th style="text-align:left">how to resolve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">CANCELLED</td>
+<td style="text-align:left">Executed cancel() of rpc from client/server-side or network problems between client and server.</td>
+<td style="text-align:left">Check the code, especially around timeout and connection management, and fix if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+<td style="text-align:left">The Requested vector's ID is empty, or some request payload is invalid.</td>
+<td style="text-align:left">Check request payload and fix request payload.</td>
+</tr>
+<tr>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+<td style="text-align:left">The RPC timeout setting is too short on the client/server side.</td>
+<td style="text-align:left">Check the gRPC timeout setting on both the client and server sides and fix it if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">NOT_FOUND</td>
+<td style="text-align:left">The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length.</td>
+<td style="text-align:left">Send a request with another vector or set min_num to a smaller value.</td>
+</tr>
+<tr>
+<td style="text-align:left">INTERNAL</td>
+<td style="text-align:left">Target Vald cluster or network route has some critical error.</td>
+<td style="text-align:left">Check target Vald cluster first and check network route including ingress as second.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="streamsearch-rpc">StreamSearch RPC</h2>
+<p>StreamSearch RPC is the method to search vectors with multi queries(vectors) using the <a href="https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc">bidirectional streaming RPC</a>.<br>
+Using the bidirectional streaming RPC, the search request can be communicated in any order between the client and server.
+Each Search request and response are independent.</p>
+<h3 id="input-2">Input</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.Request stream</code></p>
+<pre><code class="language-rpc">message Search {
+  message Request {
+    repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    AggregationAlgorithm aggregation_algorithm = 9;
+  }
+}
+
+enum AggregationAlgorithm {
+  Unknown = 0;
+  ConcurrentQueue = 1;
+  SortSlice = 2;
+  SortPoolSlice = 3;
+  PairingHeap = 4;
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.Request</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">vector</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left">repeated(Array[float])</td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The vector data. Its dimension is between 2 and 65,536.</td>
+</tr>
+<tr>
+<td style="text-align:center">config</td>
+<td style="text-align:left">Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The configuration of the search request.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Config</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The maximum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">radius</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The search radius.</td>
+</tr>
+<tr>
+<td style="text-align:center">epsilon</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The search coefficient (default value is <code>0.1</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">timeout</td>
+<td style="text-align:left">int64</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Search timeout in nanoseconds (default value is <code>5s</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">ingress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Ingress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">egress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Egress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">min_num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The minimum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">aggregation_algorithm</td>
+<td style="text-align:left">AggregationAlgorithm</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The search aggregation algorithm option (default value is <code>ConcurrentQueue</code>).</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="output-2">Output</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.StreamResponse</code>.</p>
+<pre><code class="language-rpc">message Search {
+  message StreamResponse {
+    oneof payload {
+      Response response = 1;
+      google.rpc.Status status = 2;
+    }
+  }
+
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.StreamResponse</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">response</td>
+<td style="text-align:left">Response</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The search result response.</td>
+</tr>
+<tr>
+<td style="text-align:center">status</td>
+<td style="text-align:left">google.rpc.Status</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The status of Google RPC.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Response</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">results</td>
+<td style="text-align:left">Object.Distance</td>
+<td style="text-align:left">repeated(Array[Object.Distance])</td>
+<td style="text-align:left">Search results.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Object.Distance</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The vector ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">distance</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The distance between the result vector and the request vector.</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="status-code-2">Status Code</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">code</th>
+<th style="text-align:left">name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:left">OK</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">CANCELLED</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:left">NOT_FOUND</td>
+</tr>
+<tr>
+<td style="text-align:center">10</td>
+<td style="text-align:left">ABORTED</td>
+</tr>
+<tr>
+<td style="text-align:center">13</td>
+<td style="text-align:left">INTERNAL</td>
+</tr>
+</tbody>
+</table>
+<p>Please refer to <a href="../status.html">Response Status Code</a> for more details.</p>
+<h3 id="troubleshooting-2">Troubleshooting</h3>
+<p>The request process may not be completed when the response code is NOT <code>0 (OK)</code>.</p>
+<p>Here are some common reasons and how to resolve each error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">name</th>
+<th style="text-align:left">common reason</th>
+<th style="text-align:left">how to resolve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">CANCELLED</td>
+<td style="text-align:left">Executed cancel() of rpc from client/server-side or network problems between client and server.</td>
+<td style="text-align:left">Check the code, especially around timeout and connection management, and fix if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+<td style="text-align:left">The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid.</td>
+<td style="text-align:left">Check Agent config, request payload, and fix request payload or Agent config.</td>
+</tr>
+<tr>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+<td style="text-align:left">The RPC timeout setting is too short on the client/server side.</td>
+<td style="text-align:left">Check the gRPC timeout setting on both the client and server sides and fix it if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">NOT_FOUND</td>
+<td style="text-align:left">Search result is empty or insufficient to request result length.</td>
+<td style="text-align:left">Send a request with another vector or set min_num to a smaller value.</td>
+</tr>
+<tr>
+<td style="text-align:left">INTERNAL</td>
+<td style="text-align:left">Target Vald cluster or network route has some critical error.</td>
+<td style="text-align:left">Check target Vald cluster first and check network route including ingress as second.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="streamsearchbyid-rpc">StreamSearchByID RPC</h2>
+<p>StreamSearchByID RPC is the method to search vectors with multi queries(IDs) using the <a href="https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc">bidirectional streaming RPC</a>.<br>
+Using the bidirectional streaming RPC, the search request can be communicated in any order between the client and server.
+Each SearchByID request and response are independent.</p>
+<h3 id="input-3">Input</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.IDRequest stream</code></p>
+<pre><code class="language-rpc">message Search {
+  message IDRequest {
+    string id = 1;
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    AggregationAlgorithm aggregation_algorithm = 9;
+  }
+}
+
+enum AggregationAlgorithm {
+  Unknown = 0;
+  ConcurrentQueue = 1;
+  SortSlice = 2;
+  SortPoolSlice = 3;
+  PairingHeap = 4;
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.IDRequest</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The vector ID to be searched.</td>
+</tr>
+<tr>
+<td style="text-align:center">config</td>
+<td style="text-align:left">Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The configuration of the search request.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Config</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The maximum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">radius</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The search radius.</td>
+</tr>
+<tr>
+<td style="text-align:center">epsilon</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The search coefficient (default value is <code>0.1</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">timeout</td>
+<td style="text-align:left">int64</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Search timeout in nanoseconds (default value is <code>5s</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">ingress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Ingress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">egress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Egress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">min_num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The minimum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">aggregation_algorithm</td>
+<td style="text-align:left">AggregationAlgorithm</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The search aggregation algorithm option (default value is <code>ConcurrentQueue</code>).</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="output-3">Output</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.StreamResponse</code>.</p>
+<pre><code class="language-rpc">message Search {
+  message StreamResponse {
+    oneof payload {
+      Response response = 1;
+      google.rpc.Status status = 2;
+    }
+  }
+
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.StreamResponse</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">response</td>
+<td style="text-align:left">Response</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The search result response.</td>
+</tr>
+<tr>
+<td style="text-align:center">status</td>
+<td style="text-align:left">google.rpc.Status</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The status of Google RPC.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Response</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">results</td>
+<td style="text-align:left">Object.Distance</td>
+<td style="text-align:left">repeated(Array[Object.Distance])</td>
+<td style="text-align:left">Search results.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Object.Distance</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The vector ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">distance</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The distance between the result vector and the request vector.</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="status-code-3">Status Code</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">code</th>
+<th style="text-align:left">name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:left">OK</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">CANCELLED</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:left">NOT_FOUND</td>
+</tr>
+<tr>
+<td style="text-align:center">10</td>
+<td style="text-align:left">ABORTED</td>
+</tr>
+<tr>
+<td style="text-align:center">13</td>
+<td style="text-align:left">INTERNAL</td>
+</tr>
+</tbody>
+</table>
+<p>Please refer to <a href="../status.html">Response Status Code</a> for more details.</p>
+<h3 id="troubleshooting-3">Troubleshooting</h3>
+<p>The request process may not be completed when the response code is NOT <code>0 (OK)</code>.</p>
+<p>Here are some common reasons and how to resolve each error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">name</th>
+<th style="text-align:left">common reason</th>
+<th style="text-align:left">how to resolve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">CANCELLED</td>
+<td style="text-align:left">Executed cancel() of rpc from client/server-side or network problems between client and server.</td>
+<td style="text-align:left">Check the code, especially around timeout and connection management, and fix if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+<td style="text-align:left">The Requested vector's ID is empty, or some request payload is invalid.</td>
+<td style="text-align:left">Check request payload and fix request payload.</td>
+</tr>
+<tr>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+<td style="text-align:left">The RPC timeout setting is too short on the client/server side.</td>
+<td style="text-align:left">Check the gRPC timeout setting on both the client and server sides and fix it if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">NOT_FOUND</td>
+<td style="text-align:left">The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length.</td>
+<td style="text-align:left">Send a request with another vector or set min_num to a smaller value.</td>
+</tr>
+<tr>
+<td style="text-align:left">INTERNAL</td>
+<td style="text-align:left">Target Vald cluster or network route has some critical error.</td>
+<td style="text-align:left">Check target Vald cluster first and check network route including ingress as second.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="multisearch-rpc">MultiSearch RPC</h2>
+<p>MultiSearch RPC is the method to search vectors with multiple vectors in <strong>1</strong> request.</p>
+<div class="notice">
+gRPC has a message size limitation.<br>
+Please be careful that the size of the request exceeds the limit.
+</div>
+<h3 id="input-4">Input</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.MultiRequest</code></p>
+<pre><code class="language-rpc">message Search {
+  message MultiRequest {
+    repeated Request requests = 1;
+  }
+
+  message Request {
+    repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    AggregationAlgorithm aggregation_algorithm = 9;
+  }
+}
+
+enum AggregationAlgorithm {
+  Unknown = 0;
+  ConcurrentQueue = 1;
+  SortSlice = 2;
+  SortPoolSlice = 3;
+  PairingHeap = 4;
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.MultiRequest</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">requests</td>
+<td style="text-align:left">repeated(Array[Request])</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The search request list.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Request</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">vector</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left">repeated(Array[float])</td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The vector data. Its dimension is between 2 and 65,536.</td>
+</tr>
+<tr>
+<td style="text-align:center">config</td>
+<td style="text-align:left">Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The configuration of the search request.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Config</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The maximum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">radius</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The search radius.</td>
+</tr>
+<tr>
+<td style="text-align:center">epsilon</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The search coefficient (default value is <code>0.1</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">timeout</td>
+<td style="text-align:left">int64</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Search timeout in nanoseconds (default value is <code>5s</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">ingress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Ingress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">egress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Egress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">min_num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The minimum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">aggregation_algorithm</td>
+<td style="text-align:left">AggregationAlgorithm</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The search aggregation algorithm option (default value is <code>ConcurrentQueue</code>).</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="output-4">Output</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.Responses</code>.</p>
+<pre><code class="language-rpc">message Search {
+  message Responses {
+    repeated Response responses = 1;
+  }
+
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.Responses</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">responses</td>
+<td style="text-align:left">Response</td>
+<td style="text-align:left">repeated(Array[Response])</td>
+<td style="text-align:left">The list of search results response.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Response</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">results</td>
+<td style="text-align:left">Object.Distance</td>
+<td style="text-align:left">repeated(Array[Object.Distance])</td>
+<td style="text-align:left">Search results.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Object.Distance</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The vector ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">distance</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The distance between the result vector and the request vector.</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="status-code-4">Status Code</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">code</th>
+<th style="text-align:left">name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:left">OK</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">CANCELLED</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:left">NOT_FOUND</td>
+</tr>
+<tr>
+<td style="text-align:center">10</td>
+<td style="text-align:left">ABORTED</td>
+</tr>
+<tr>
+<td style="text-align:center">13</td>
+<td style="text-align:left">INTERNAL</td>
+</tr>
+</tbody>
+</table>
+<p>Please refer to <a href="../status.html">Response Status Code</a> for more details.</p>
+<h3 id="troubleshooting-4">Troubleshooting</h3>
+<p>The request process may not be completed when the response code is NOT <code>0 (OK)</code>.</p>
+<p>Here are some common reasons and how to resolve each error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">name</th>
+<th style="text-align:left">common reason</th>
+<th style="text-align:left">how to resolve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">CANCELLED</td>
+<td style="text-align:left">Executed cancel() of rpc from client/server-side or network problems between client and server.</td>
+<td style="text-align:left">Check the code, especially around timeout and connection management, and fix if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+<td style="text-align:left">The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid.</td>
+<td style="text-align:left">Check Agent config, request payload, and fix request payload or Agent config.</td>
+</tr>
+<tr>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+<td style="text-align:left">The RPC timeout setting is too short on the client/server side.</td>
+<td style="text-align:left">Check the gRPC timeout setting on both the client and server sides and fix it if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">NOT_FOUND</td>
+<td style="text-align:left">Search result is empty or insufficient to request result length.</td>
+<td style="text-align:left">Send a request with another vector or set min_num to a smaller value.</td>
+</tr>
+<tr>
+<td style="text-align:left">INTERNAL</td>
+<td style="text-align:left">Target Vald cluster or network route has some critical error.</td>
+<td style="text-align:left">Check target Vald cluster first and check network route including ingress as second.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="multisearchbyid-rpc">MultiSearchByID RPC</h2>
+<p>MultiSearchByID RPC is the method to search vectors with multiple IDs in <strong>1</strong> request.</p>
+<div class="notice">
+gRPC has a message size limitation.<br>
+Please be careful that the size of the request exceeds the limit.
+</div>
+<h3 id="input-5">Input</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.MultiIDRequest stream</code></p>
+<pre><code class="language-rpc">message Search {
+
+  message MultiIDRequest {
+      repeated IDRequest requests = 1;
+  }
+
+  message IDRequest {
+    string id = 1;
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    float radius = 3;
+    float epsilon = 4;
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    AggregationAlgorithm aggregation_algorithm = 9;
+  }
+}
+
+enum AggregationAlgorithm {
+  Unknown = 0;
+  ConcurrentQueue = 1;
+  SortSlice = 2;
+  SortPoolSlice = 3;
+  PairingHeap = 4;
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.MultiIDRequest</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">requests</td>
+<td style="text-align:left">IDRequest</td>
+<td style="text-align:left">repeated(Array[IDRequest])</td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The searchByID request list.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.IDRequest</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The vector ID to be searched.</td>
+</tr>
+<tr>
+<td style="text-align:center">config</td>
+<td style="text-align:left">Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The configuration of the search request.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Config</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The maximum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">radius</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The search radius.</td>
+</tr>
+<tr>
+<td style="text-align:center">epsilon</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The search coefficient (default value is <code>0.1</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">timeout</td>
+<td style="text-align:left">int64</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Search timeout in nanoseconds (default value is <code>5s</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">ingress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Ingress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">egress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Egress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">min_num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The minimum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">aggregation_algorithm</td>
+<td style="text-align:left">AggregationAlgorithm</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The search aggregation algorithm option (default value is <code>ConcurrentQueue</code>).</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="output-5">Output</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.Responses</code>.</p>
+<pre><code class="language-rpc">message Search {
+  message Responses {
+    repeated Response responses = 1;
+  }
+
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.Responses</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">responses</td>
+<td style="text-align:left">Response</td>
+<td style="text-align:left">repeated(Array[Response])</td>
+<td style="text-align:left">The list of search results response.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Response</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">results</td>
+<td style="text-align:left">Object.Distance</td>
+<td style="text-align:left">repeated(Array[Object.Distance])</td>
+<td style="text-align:left">Search results.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Object.Distance</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The vector ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">distance</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The distance between the result vector and the request vector.</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="status-code-5">Status Code</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">code</th>
+<th style="text-align:left">name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:left">OK</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">CANCELLED</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:left">NOT_FOUND</td>
+</tr>
+<tr>
+<td style="text-align:center">10</td>
+<td style="text-align:left">ABORTED</td>
+</tr>
+<tr>
+<td style="text-align:center">13</td>
+<td style="text-align:left">INTERNAL</td>
+</tr>
+</tbody>
+</table>
+<p>Please refer to <a href="../status.html">Response Status Code</a> for more details.</p>
+<h3 id="troubleshooting-5">Troubleshooting</h3>
+<p>The request process may not be completed when the response code is NOT <code>0 (OK)</code>.</p>
+<p>Here are some common reasons and how to resolve each error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">name</th>
+<th style="text-align:left">common reason</th>
+<th style="text-align:left">how to resolve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">CANCELLED</td>
+<td style="text-align:left">Executed cancel() of rpc from client/server-side or network problems between client and server.</td>
+<td style="text-align:left">Check the code, especially around timeout and connection management, and fix if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+<td style="text-align:left">The Requested vector's ID is empty, or some request payload is invalid.</td>
+<td style="text-align:left">Check request payload and fix request payload.</td>
+</tr>
+<tr>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+<td style="text-align:left">The RPC timeout setting is too short on the client/server side.</td>
+<td style="text-align:left">Check the gRPC timeout setting on both the client and server sides and fix it if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">NOT_FOUND</td>
+<td style="text-align:left">The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length.</td>
+<td style="text-align:left">Send a request with another vector or set min_num to a smaller value.</td>
+</tr>
+<tr>
+<td style="text-align:left">INTERNAL</td>
+<td style="text-align:left">Target Vald cluster or network route has some critical error.</td>
+<td style="text-align:left">Check target Vald cluster first and check network route including ingress as second.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="linearsearch-rpc">LinearSearch RPC</h2>
+<p>LinearSearch RPC is the method to linear search vector(s) similar to the request vector.</p>
+<h3 id="input-6">Input</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.Request</code></p>
+<pre><code class="language-rpc">message Search {
+  message Request {
+    repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    AggregationAlgorithm aggregation_algorithm = 9;
+  }
+}
+
+enum AggregationAlgorithm {
+  Unknown = 0;
+  ConcurrentQueue = 1;
+  SortSlice = 2;
+  SortPoolSlice = 3;
+  PairingHeap = 4;
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.Request</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">vector</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left">repeated(Array[float])</td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The vector data. Its dimension is between 2 and 65,536.</td>
+</tr>
+<tr>
+<td style="text-align:center">config</td>
+<td style="text-align:left">Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The configuration of the search request.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Config</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The maximum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">timeout</td>
+<td style="text-align:left">int64</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Search timeout in nanoseconds (default value is <code>5s</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">ingress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Ingress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">egress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Egress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">min_num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The minimum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">aggregation_algorithm</td>
+<td style="text-align:left">AggregationAlgorithm</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The search aggregation algorithm option (default value is <code>ConcurrentQueue</code>).</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="output-6">Output</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.Response</code>.</p>
+<pre><code class="language-rpc">message Search {
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.Response</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">results</td>
+<td style="text-align:left">Object.Distance</td>
+<td style="text-align:left">repeated(Array[Object.Distance])</td>
+<td style="text-align:left">Search results.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Object.Distance</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The vector ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">distance</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The distance between the result vector and the request vector.</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="status-code-6">Status Code</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">code</th>
+<th style="text-align:left">name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:left">OK</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">CANCELLED</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:left">NOT_FOUND</td>
+</tr>
+<tr>
+<td style="text-align:center">10</td>
+<td style="text-align:left">ABORTED</td>
+</tr>
+<tr>
+<td style="text-align:center">13</td>
+<td style="text-align:left">INTERNAL</td>
+</tr>
+</tbody>
+</table>
+<p>Please refer to <a href="../status.html">Response Status Code</a> for more details.</p>
+<h3 id="troubleshooting-6">Troubleshooting</h3>
+<p>The request process may not be completed when the response code is NOT <code>0 (OK)</code>.</p>
+<p>Here are some common reasons and how to resolve each error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">name</th>
+<th style="text-align:left">common reason</th>
+<th style="text-align:left">how to resolve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">CANCELLED</td>
+<td style="text-align:left">Executed cancel() of rpc from client/server-side or network problems between client and server.</td>
+<td style="text-align:left">Check the code, especially around timeout and connection management, and fix if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+<td style="text-align:left">The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid.</td>
+<td style="text-align:left">Check Agent config, request payload, and fix request payload or Agent config.</td>
+</tr>
+<tr>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+<td style="text-align:left">The RPC timeout setting is too short on the client/server side.</td>
+<td style="text-align:left">Check the gRPC timeout setting on both the client and server sides and fix it if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">NOT_FOUND</td>
+<td style="text-align:left">Search result is empty or insufficient to request result length.</td>
+<td style="text-align:left">Send a request with another vector or set min_num to a smaller value.</td>
+</tr>
+<tr>
+<td style="text-align:left">INTERNAL</td>
+<td style="text-align:left">Target Vald cluster or network route has some critical error.</td>
+<td style="text-align:left">Check target Vald cluster first and check network route including ingress as second.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="linearsearchbyid-rpc">LinearSearchByID RPC</h2>
+<p>LinearSearchByID RPC is the method to linear search similar vectors using a user-defined vector ID.<br>
+The vector with the same requested ID should be indexed into the <code>vald-agent</code> before searching.
+You will get a <code>NOT_FOUND</code> error if the vector isn't stored.</p>
+<h3 id="input-7">Input</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.IDRequest</code></p>
+<pre><code class="language-rpc">message Search {
+  message IDRequest {
+    string id = 1;
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    AggregationAlgorithm aggregation_algorithm = 9;
+  }
+}
+
+enum AggregationAlgorithm {
+  Unknown = 0;
+  ConcurrentQueue = 1;
+  SortSlice = 2;
+  SortPoolSlice = 3;
+  PairingHeap = 4;
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.IDRequest</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The vector ID to be searched.</td>
+</tr>
+<tr>
+<td style="text-align:center">config</td>
+<td style="text-align:left">Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The configuration of the search request.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Config</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The maximum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">timeout</td>
+<td style="text-align:left">int64</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Search timeout in nanoseconds (default value is <code>5s</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">ingress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Ingress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">egress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Egress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">min_num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The minimum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">aggregation_algorithm</td>
+<td style="text-align:left">AggregationAlgorithm</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The search aggregation algorithm option (default value is <code>ConcurrentQueue</code>).</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="output-7">Output</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.Response</code>.</p>
+<pre><code class="language-rpc">message Search {
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.Response</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">results</td>
+<td style="text-align:left">Object.Distance</td>
+<td style="text-align:left">repeated(Array[Object.Distance])</td>
+<td style="text-align:left">Search results.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Object.Distance</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The vector ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">distance</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The distance between the result vector and the request vector.</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="status-code-7">Status Code</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">code</th>
+<th style="text-align:left">name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:left">OK</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">CANCELLED</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:left">NOT_FOUND</td>
+</tr>
+<tr>
+<td style="text-align:center">10</td>
+<td style="text-align:left">ABORTED</td>
+</tr>
+<tr>
+<td style="text-align:center">13</td>
+<td style="text-align:left">INTERNAL</td>
+</tr>
+</tbody>
+</table>
+<p>Please refer to <a href="../status.html">Response Status Code</a> for more details.</p>
+<h3 id="troubleshooting-7">Troubleshooting</h3>
+<p>The request process may not be completed when the response code is NOT <code>0 (OK)</code>.</p>
+<p>Here are some common reasons and how to resolve each error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">name</th>
+<th style="text-align:left">common reason</th>
+<th style="text-align:left">how to resolve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">CANCELLED</td>
+<td style="text-align:left">Executed cancel() of rpc from client/server-side or network problems between client and server.</td>
+<td style="text-align:left">Check the code, especially around timeout and connection management, and fix if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+<td style="text-align:left">The Requested vector's ID is empty, or some request payload is invalid.</td>
+<td style="text-align:left">Check request payload and fix request payload.</td>
+</tr>
+<tr>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+<td style="text-align:left">The RPC timeout setting is too short on the client/server side.</td>
+<td style="text-align:left">Check the gRPC timeout setting on both the client and server sides and fix it if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">NOT_FOUND</td>
+<td style="text-align:left">The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length.</td>
+<td style="text-align:left">Send a request with another vector or set min_num to a smaller value.</td>
+</tr>
+<tr>
+<td style="text-align:left">INTERNAL</td>
+<td style="text-align:left">Target Vald cluster or network route has some critical error.</td>
+<td style="text-align:left">Check target Vald cluster first and check network route including ingress as second.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="streamlinearsearch-rpc">StreamLinearSearch RPC</h2>
+<p>StreamLinearSearch RPC is the method to linear search vectors with multi queries(vectors) using the <a href="https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc">bidirectional streaming RPC</a>.<br>
+Using the bidirectional streaming RPC, the linear search request can be communicated in any order between the client and server.
+Each LinearSearch request and response are independent.</p>
+<h3 id="input-8">Input</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.Request stream</code></p>
+<pre><code class="language-rpc">message Search {
+  message Request {
+    repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    AggregationAlgorithm aggregation_algorithm = 9;
+  }
+}
+
+enum AggregationAlgorithm {
+  Unknown = 0;
+  ConcurrentQueue = 1;
+  SortSlice = 2;
+  SortPoolSlice = 3;
+  PairingHeap = 4;
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.Request</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">vector</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left">repeated(Array[float])</td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The vector data. Its dimension is between 2 and 65,536.</td>
+</tr>
+<tr>
+<td style="text-align:center">config</td>
+<td style="text-align:left">Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The configuration of the search request.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Config</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The maximum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">timeout</td>
+<td style="text-align:left">int64</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Search timeout in nanoseconds (default value is <code>5s</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">ingress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Ingress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">egress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Egress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">min_num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The minimum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">aggregation_algorithm</td>
+<td style="text-align:left">AggregationAlgorithm</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The search aggregation algorithm option (default value is <code>ConcurrentQueue</code>).</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="output-8">Output</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.StreamResponse</code>.</p>
+<pre><code class="language-rpc">message Search {
+  message StreamResponse {
+    oneof payload {
+      Response response = 1;
+      google.rpc.Status status = 2;
+    }
+  }
+
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.StreamResponse</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">response</td>
+<td style="text-align:left">Response</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The search result response.</td>
+</tr>
+<tr>
+<td style="text-align:center">status</td>
+<td style="text-align:left">google.rpc.Status</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The status of Google RPC.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Response</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">results</td>
+<td style="text-align:left">Object.Distance</td>
+<td style="text-align:left">repeated(Array[Object.Distance])</td>
+<td style="text-align:left">Search results.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Object.Distance</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The vector ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">distance</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The distance between the result vector and the request vector.</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="status-code-8">Status Code</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">code</th>
+<th style="text-align:left">name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:left">OK</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">CANCELLED</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:left">NOT_FOUND</td>
+</tr>
+<tr>
+<td style="text-align:center">10</td>
+<td style="text-align:left">ABORTED</td>
+</tr>
+<tr>
+<td style="text-align:center">13</td>
+<td style="text-align:left">INTERNAL</td>
+</tr>
+</tbody>
+</table>
+<p>Please refer to <a href="../status.html">Response Status Code</a> for more details.</p>
+<h3 id="troubleshooting-8">Troubleshooting</h3>
+<p>The request process may not be completed when the response code is NOT <code>0 (OK)</code>.</p>
+<p>Here are some common reasons and how to resolve each error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">name</th>
+<th style="text-align:left">common reason</th>
+<th style="text-align:left">how to resolve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">CANCELLED</td>
+<td style="text-align:left">Executed cancel() of rpc from client/server-side or network problems between client and server.</td>
+<td style="text-align:left">Check the code, especially around timeout and connection management, and fix if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+<td style="text-align:left">The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid.</td>
+<td style="text-align:left">Check Agent config, request payload, and fix request payload or Agent config.</td>
+</tr>
+<tr>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+<td style="text-align:left">The RPC timeout setting is too short on the client/server side.</td>
+<td style="text-align:left">Check the gRPC timeout setting on both the client and server sides and fix it if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">NOT_FOUND</td>
+<td style="text-align:left">Search result is empty or insufficient to request result length.</td>
+<td style="text-align:left">Send a request with another vector or set min_num to a smaller value.</td>
+</tr>
+<tr>
+<td style="text-align:left">INTERNAL</td>
+<td style="text-align:left">Target Vald cluster or network route has some critical error.</td>
+<td style="text-align:left">Check target Vald cluster first and check network route including ingress as second.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="streamlinearsearchbyid-rpc">StreamLinearSearchByID RPC</h2>
+<p>StreamLinearSearchByID RPC is the method to linear search vectors with multi queries(IDs) using the <a href="https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc">bidirectional streaming RPC</a>.<br>
+Using the bidirectional streaming RPC, the linear search request can be communicated in any order between the client and server.
+Each LinearSearchByID request and response are independent.</p>
+<h3 id="input-9">Input</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.IDRequest stream</code></p>
+<pre><code class="language-rpc">message Search {
+  message IDRequest {
+    string id = 1;
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    AggregationAlgorithm aggregation_algorithm = 9;
+  }
+}
+
+enum AggregationAlgorithm {
+  Unknown = 0;
+  ConcurrentQueue = 1;
+  SortSlice = 2;
+  SortPoolSlice = 3;
+  PairingHeap = 4;
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.IDRequest</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The vector ID to be searched.</td>
+</tr>
+<tr>
+<td style="text-align:center">config</td>
+<td style="text-align:left">Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The configuration of the search request.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Config</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The maximum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">timeout</td>
+<td style="text-align:left">int64</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Search timeout in nanoseconds (default value is <code>5s</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">ingress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Ingress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">egress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Egress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">min_num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The minimum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">aggregation_algorithm</td>
+<td style="text-align:left">AggregationAlgorithm</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The search aggregation algorithm option (default value is <code>ConcurrentQueue</code>).</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="output-9">Output</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.StreamResponse</code>.</p>
+<pre><code class="language-rpc">message Search {
+  message StreamResponse {
+    oneof payload {
+      Response response = 1;
+      google.rpc.Status status = 2;
+    }
+  }
+
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.StreamResponse</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">response</td>
+<td style="text-align:left">Response</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The search result response.</td>
+</tr>
+<tr>
+<td style="text-align:center">status</td>
+<td style="text-align:left">google.rpc.Status</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The status of Google RPC.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Response</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">results</td>
+<td style="text-align:left">Object.Distance</td>
+<td style="text-align:left">repeated(Array[Object.Distance])</td>
+<td style="text-align:left">Search results.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Object.Distance</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The vector ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">distance</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The distance between the result vector and the request vector.</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="status-code-9">Status Code</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">code</th>
+<th style="text-align:left">name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:left">OK</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">CANCELLED</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:left">NOT_FOUND</td>
+</tr>
+<tr>
+<td style="text-align:center">10</td>
+<td style="text-align:left">ABORTED</td>
+</tr>
+<tr>
+<td style="text-align:center">13</td>
+<td style="text-align:left">INTERNAL</td>
+</tr>
+</tbody>
+</table>
+<p>Please refer to <a href="../status.html">Response Status Code</a> for more details.</p>
+<h3 id="troubleshooting-9">Troubleshooting</h3>
+<p>The request process may not be completed when the response code is NOT <code>0 (OK)</code>.</p>
+<p>Here are some common reasons and how to resolve each error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">name</th>
+<th style="text-align:left">common reason</th>
+<th style="text-align:left">how to resolve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">CANCELLED</td>
+<td style="text-align:left">Executed cancel() of rpc from client/server-side or network problems between client and server.</td>
+<td style="text-align:left">Check the code, especially around timeout and connection management, and fix if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+<td style="text-align:left">The Requested vector's ID is empty, or some request payload is invalid.</td>
+<td style="text-align:left">Check request payload and fix request payload.</td>
+</tr>
+<tr>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+<td style="text-align:left">The RPC timeout setting is too short on the client/server side.</td>
+<td style="text-align:left">Check the gRPC timeout setting on both the client and server sides and fix it if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">NOT_FOUND</td>
+<td style="text-align:left">The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length.</td>
+<td style="text-align:left">Send a request with another vector or set min_num to a smaller value.</td>
+</tr>
+<tr>
+<td style="text-align:left">INTERNAL</td>
+<td style="text-align:left">Target Vald cluster or network route has some critical error.</td>
+<td style="text-align:left">Check target Vald cluster first and check network route including ingress as second.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="multilinearsearch-rpc">MultiLinearSearch RPC</h2>
+<p>MultiLinearSearch RPC is the method to linear search vectors with multiple vectors in <strong>1</strong> request.</p>
+<div class="notice">
+gRPC has a message size limitation.<br>
+Please be careful that the size of the request exceeds the limit.
+</div>
+<h3 id="input-10">Input</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.MultiRequest</code></p>
+<pre><code class="language-rpc">message Search {
+  message MultiRequest {
+    repeated Request requests = 1;
+  }
+
+  message Request {
+    repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    AggregationAlgorithm aggregation_algorithm = 9;
+  }
+}
+
+enum AggregationAlgorithm {
+  Unknown = 0;
+  ConcurrentQueue = 1;
+  SortSlice = 2;
+  SortPoolSlice = 3;
+  PairingHeap = 4;
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.MultiRequest</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">requests</td>
+<td style="text-align:left">repeated(Array[Request])</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The search request list</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Request</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">vector</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left">repeated(Array[float])</td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The vector data. Its dimension is between 2 and 65,536.</td>
+</tr>
+<tr>
+<td style="text-align:center">config</td>
+<td style="text-align:left">Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The configuration of the search request.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Config</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The maximum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">timeout</td>
+<td style="text-align:left">int64</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Search timeout in nanoseconds (default value is <code>5s</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">ingress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Ingress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">egress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Egress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">min_num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The minimum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">aggregation_algorithm</td>
+<td style="text-align:left">AggregationAlgorithm</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The search aggregation algorithm option (default value is <code>ConcurrentQueue</code>).</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="output-10">Output</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.Responses</code>.</p>
+<pre><code class="language-rpc">message Search {
+  message Responses {
+    repeated Response responses = 1;
+  }
+
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.Responses</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">responses</td>
+<td style="text-align:left">Response</td>
+<td style="text-align:left">repeated(Array[Response])</td>
+<td style="text-align:left">The list of search results response</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Response</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">results</td>
+<td style="text-align:left">Object.Distance</td>
+<td style="text-align:left">repeated(Array[Object.Distance])</td>
+<td style="text-align:left">Search results.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Object.Distance</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The vector ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">distance</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The distance between the result vector and the request vector.</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="status-code-10">Status Code</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">code</th>
+<th style="text-align:left">name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:left">OK</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">CANCELLED</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:left">NOT_FOUND</td>
+</tr>
+<tr>
+<td style="text-align:center">10</td>
+<td style="text-align:left">ABORTED</td>
+</tr>
+<tr>
+<td style="text-align:center">13</td>
+<td style="text-align:left">INTERNAL</td>
+</tr>
+</tbody>
+</table>
+<p>Please refer to <a href="../status.html">Response Status Code</a> for more details.</p>
+<h3 id="troubleshooting-10">Troubleshooting</h3>
+<p>The request process may not be completed when the response code is NOT <code>0 (OK)</code>.</p>
+<p>Here are some common reasons and how to resolve each error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">name</th>
+<th style="text-align:left">common reason</th>
+<th style="text-align:left">how to resolve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">CANCELLED</td>
+<td style="text-align:left">Executed cancel() of rpc from client/server-side or network problems between client and server.</td>
+<td style="text-align:left">Check the code, especially around timeout and connection management, and fix if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+<td style="text-align:left">The Dimension of the request vector is NOT the same as Vald Agent's config, or some request payload is invalid.</td>
+<td style="text-align:left">Check Agent config, request payload, and fix request payload or Agent config.</td>
+</tr>
+<tr>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+<td style="text-align:left">The RPC timeout setting is too short on the client/server side.</td>
+<td style="text-align:left">Check the gRPC timeout setting on both the client and server sides and fix it if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">NOT_FOUND</td>
+<td style="text-align:left">Search result is empty or insufficient to request result length.</td>
+<td style="text-align:left">Send a request with another vector or set min_num to a smaller value.</td>
+</tr>
+<tr>
+<td style="text-align:left">INTERNAL</td>
+<td style="text-align:left">Target Vald cluster or network route has some critical error.</td>
+<td style="text-align:left">Check target Vald cluster first and check network route including ingress as second.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="multilinearsearchbyid-rpc">MultiLinearSearchByID RPC</h2>
+<p>MultiLinearSearchByID RPC is the method to linear search vectors with multiple IDs in <strong>1</strong> request.</p>
+<div class="notice">
+gRPC has a message size limitation.<br>
+Please be careful that the size of the request exceeds the limit.
+</div>
+<h3 id="input-11">Input</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.MultiIDRequest stream</code></p>
+<pre><code class="language-rpc">message Search {
+
+  message MultiIDRequest {
+      repeated IDRequest requests = 1;
+  }
+
+  message IDRequest {
+    string id = 1;
+    Config config = 2;
+  }
+
+  message Config {
+    string request_id = 1;
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    int64 timeout = 5;
+    Filter.Config ingress_filters = 6;
+    Filter.Config egress_filters = 7;
+    uint32 min_num = 8;
+    AggregationAlgorithm aggregation_algorithm = 9;
+  }
+}
+
+enum AggregationAlgorithm {
+  Unknown = 0;
+  ConcurrentQueue = 1;
+  SortSlice = 2;
+  SortPoolSlice = 3;
+  PairingHeap = 4;
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.MultiIDRequest</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">requests</td>
+<td style="text-align:left">IDRequest</td>
+<td style="text-align:left">repeated(Array[IDRequest])</td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The searchByID request list.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.IDRequest</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The vector ID to be searched.</td>
+</tr>
+<tr>
+<td style="text-align:center">config</td>
+<td style="text-align:left">Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The configuration of the search request.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Config</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:center">required</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center">*</td>
+<td style="text-align:left">The maximum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">timeout</td>
+<td style="text-align:left">int64</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Search timeout in nanoseconds (default value is <code>5s</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">ingress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Ingress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">egress_filters</td>
+<td style="text-align:left">Filter.Config</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">Egress Filter configuration.</td>
+</tr>
+<tr>
+<td style="text-align:center">min_num</td>
+<td style="text-align:left">uint32</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The minimum number of results to be returned.</td>
+</tr>
+<tr>
+<td style="text-align:center">aggregation_algorithm</td>
+<td style="text-align:left">AggregationAlgorithm</td>
+<td style="text-align:left"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">The search aggregation algorithm option (default value is <code>ConcurrentQueue</code>).</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="output-11">Output</h3>
+<ul>
+<li>
+<p>the scheme of <code>payload.v1.Search.Responses</code>.</p>
+<pre><code class="language-rpc">message Search {
+  message Responses {
+    repeated Response responses = 1;
+  }
+
+  message Response {
+    string request_id = 1;
+    repeated Object.Distance results = 2;
+  }
+}
+
+message Object {
+  message Distance {
+    string id = 1;
+    float distance = 2;
+  }
+}
+</code></pre>
+<ul>
+<li>
+<p>Search.Responses</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">responses</td>
+<td style="text-align:left">Response</td>
+<td style="text-align:left">repeated(Array[Response])</td>
+<td style="text-align:left">The list of search results response.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Search.Response</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">request_id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The unique request ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">results</td>
+<td style="text-align:left">Object.Distance</td>
+<td style="text-align:left">repeated(Array[Object.Distance])</td>
+<td style="text-align:left">Search results.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Object.Distance</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">field</th>
+<th style="text-align:left">type</th>
+<th style="text-align:left">label</th>
+<th style="text-align:left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">id</td>
+<td style="text-align:left">string</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The vector ID.</td>
+</tr>
+<tr>
+<td style="text-align:center">distance</td>
+<td style="text-align:left">float</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">The distance between the result vector and the request vector.</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="status-code-11">Status Code</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">code</th>
+<th style="text-align:left">name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:left">OK</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">CANCELLED</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:left">NOT_FOUND</td>
+</tr>
+<tr>
+<td style="text-align:center">10</td>
+<td style="text-align:left">ABORTED</td>
+</tr>
+<tr>
+<td style="text-align:center">13</td>
+<td style="text-align:left">INTERNAL</td>
+</tr>
+</tbody>
+</table>
+<p>Please refer to <a href="../status.html">Response Status Code</a> for more details.</p>
+<h3 id="troubleshooting-11">Troubleshooting</h3>
+<p>The request process may not be completed when the response code is NOT <code>0 (OK)</code>.</p>
+<p>Here are some common reasons and how to resolve each error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">name</th>
+<th style="text-align:left">common reason</th>
+<th style="text-align:left">how to resolve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">CANCELLED</td>
+<td style="text-align:left">Executed cancel() of rpc from client/server-side or network problems between client and server.</td>
+<td style="text-align:left">Check the code, especially around timeout and connection management, and fix if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">INVALID_ARGUMENT</td>
+<td style="text-align:left">The Requested vector's ID is empty, or some request payload is invalid.</td>
+<td style="text-align:left">Check request payload and fix request payload.</td>
+</tr>
+<tr>
+<td style="text-align:left">DEADLINE_EXCEEDED</td>
+<td style="text-align:left">The RPC timeout setting is too short on the client/server side.</td>
+<td style="text-align:left">Check the gRPC timeout setting on both the client and server sides and fix it if needed.</td>
+</tr>
+<tr>
+<td style="text-align:left">NOT_FOUND</td>
+<td style="text-align:left">The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length.</td>
+<td style="text-align:left">Send a request with another vector or set min_num to a smaller value.</td>
+</tr>
+<tr>
+<td style="text-align:left">INTERNAL</td>
+<td style="text-align:left">Target Vald cluster or network route has some critical error.</td>
+<td style="text-align:left">Check target Vald cluster first and check network route including ingress as second.</td>
+</tr>
+</tbody>
+</table>
+
+            
+            <script async type="text/javascript">
+/* From extension marp-team.marp-vscode */
+(()=>{var W=Object.defineProperty;var K=(w,h,x)=>h in w?W(w,h,{enumerable:!0,configurable:!0,writable:!0,value:x}):w[h]=x;var o=(w,h)=>W(w,"name",{value:h,configurable:!0});var v=(w,h,x)=>K(w,typeof h!="symbol"?h+"":h,x);(()=>{var w={32:(y,S,g)=>{y.exports=g(924)},924:(y,S)=>{"use strict";var g;g={value:!0};const E={h1:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"1"},style:"display: block; font-size: 2em; margin-block-start: 0.67em; margin-block-end: 0.67em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h2:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"2"},style:"display: block; font-size: 1.5em; margin-block-start: 0.83em; margin-block-end: 0.83em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h3:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"3"},style:"display: block; font-size: 1.17em; margin-block-start: 1em; margin-block-end: 1em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h4:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"4"},style:"display: block; margin-block-start: 1.33em; margin-block-end: 1.33em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h5:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"5"},style:"display: block; font-size: 0.83em; margin-block-start: 1.67em; margin-block-end: 1.67em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h6:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"6"},style:"display: block; font-size: 0.67em; margin-block-start: 2.33em; margin-block-end: 2.33em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},span:{proto:o(()=>HTMLSpanElement,"proto")},pre:{proto:o(()=>HTMLElement,"proto"),style:"display: block; font-family: monospace; white-space: pre; margin: 1em 0; --marp-auto-scaling-white-space: pre;"}},A="data-marp-auto-scaling-wrapper",p="data-marp-auto-scaling-svg",c="data-marp-auto-scaling-container",T=class T extends HTMLElement{constructor(){super();v(this,"container");v(this,"containerSize");v(this,"containerObserver");v(this,"svg");v(this,"svgComputedStyle");v(this,"svgPreserveAspectRatio","xMinYMid meet");v(this,"wrapper");v(this,"wrapperSize");v(this,"wrapperObserver");const s=o(t=>([e])=>{const{width:n,height:r}=e.contentRect;this[t]={width:n,height:r},this.updateSVGRect()},"e");this.attachShadow({mode:"open"}),this.containerObserver=new ResizeObserver(s("containerSize")),this.wrapperObserver=new ResizeObserver((...t)=>{s("wrapperSize")(...t),this.flushSvgDisplay()})}static get observedAttributes(){return["data-downscale-only"]}connectedCallback(){this.shadowRoot.innerHTML=`
+<style>
+  svg[${p}] { display: block; width: 100%; height: auto; vertical-align: top; }
+  span[${c}] { display: table; white-space: var(--marp-auto-scaling-white-space, nowrap); width: max-content; }
+</style>
+<div ${A}>
+  <svg part="svg" ${p}>
+    <foreignObject><span ${c}><slot></slot></span></foreignObject>
+  </svg>
+</div>
+    `.split(/\n\s*/).join(""),this.wrapper=this.shadowRoot.querySelector(`div[${A}]`)??void 0;const s=this.svg;this.svg=this.wrapper?.querySelector(`svg[${p}]`)??void 0,this.svg!==s&&(this.svgComputedStyle=this.svg?window.getComputedStyle(this.svg):void 0),this.container=this.svg?.querySelector(`span[${c}]`)??void 0,this.observe()}disconnectedCallback(){this.svg=void 0,this.svgComputedStyle=void 0,this.wrapper=void 0,this.container=void 0,this.observe()}attributeChangedCallback(){this.observe()}flushSvgDisplay(){const{svg:s}=this;s&&(s.style.display="inline",requestAnimationFrame(()=>{s.style.display=""}))}observe(){this.containerObserver.disconnect(),this.wrapperObserver.disconnect(),this.wrapper&&this.wrapperObserver.observe(this.wrapper),this.container&&this.containerObserver.observe(this.container),this.svgComputedStyle&&this.observeSVGStyle(this.svgComputedStyle)}observeSVGStyle(s){const t=o(()=>{const e=(()=>{const n=s.getPropertyValue("--preserve-aspect-ratio");return n?n.trim():`x${(({textAlign:r,direction:l})=>{if(r.endsWith("left"))return"Min";if(r.endsWith("right"))return"Max";if(r==="start"||r==="end"){let d=l==="rtl";return r==="end"&&(d=!d),d?"Max":"Min"}return"Mid"})(s)}YMid meet`})();e!==this.svgPreserveAspectRatio&&(this.svgPreserveAspectRatio=e,this.updateSVGRect()),s===this.svgComputedStyle&&requestAnimationFrame(t)},"t");t()}updateSVGRect(){let s=Math.ceil(this.containerSize?.width??0);const t=Math.ceil(this.containerSize?.height??0);this.dataset.downscaleOnly!==void 0&&(s=Math.max(s,this.wrapperSize?.width??0));const e=this.svg?.querySelector(":scope > foreignObject");if(e?.setAttribute("width",`${s}`),e?.setAttribute("height",`${t}`),this.svg&&(this.svg.setAttribute("viewBox",`0 0 ${s} ${t}`),this.svg.setAttribute("preserveAspectRatio",this.svgPreserveAspectRatio),this.svg.style.height=s<=0||t<=0?"0":""),this.container){const n=this.svgPreserveAspectRatio.toLowerCase();this.container.style.marginLeft=n.startsWith("xmid")||n.startsWith("xmax")?"auto":"0",this.container.style.marginRight=n.startsWith("xmi")?"auto":"0"}}};o(T,"s");let i=T;const m=o((a,{attrs:u={},style:s})=>class extends a{constructor(...t){super(...t);for(const[e,n]of Object.entries(u))this.hasAttribute(e)||this.setAttribute(e,n);this._shadow()}static get observedAttributes(){return["data-auto-scaling"]}connectedCallback(){this._update()}attributeChangedCallback(){this._update()}_shadow(){if(!this.shadowRoot)try{this.attachShadow({mode:"open"})}catch(t){if(!(t instanceof Error&&t.name==="NotSupportedError"))throw t}return this.shadowRoot}_update(){const t=this._shadow();if(t){const e=s?`<style>:host { ${s} }</style>`:"";let n="<slot></slot>";const{autoScaling:r}=this.dataset;r!==void 0&&(n=`<marp-auto-scaling exportparts="svg:auto-scaling" ${r==="downscale-only"?"data-downscale-only":""}>${n}</marp-auto-scaling>`),t.innerHTML=e+n}}},"r");let b;const z=Symbol();let $;const V="marpitSVGPolyfill:setZoomFactor,",C=Symbol(),j=Symbol(),G=o(()=>{const a=navigator.vendor==="Apple Computer, Inc.",u=a?[D]:[],s={then:o(t=>(a?(async()=>{if($===void 0){const e=document.createElement("canvas");e.width=10,e.height=10;const n=e.getContext("2d"),r=new Image(10,10),l=new Promise(d=>{r.addEventListener("load",()=>d())});r.crossOrigin="anonymous",r.src="data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%2210%22%20viewBox%3D%220%200%201%201%22%3E%3CforeignObject%20width%3D%221%22%20height%3D%221%22%20requiredExtensions%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml%22%3E%3Cdiv%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml%22%20style%3D%22width%3A%201px%3B%20height%3A%201px%3B%20background%3A%20red%3B%20position%3A%20relative%22%3E%3C%2Fdiv%3E%3C%2FforeignObject%3E%3C%2Fsvg%3E",await l,n.drawImage(r,0,0),$=n.getImageData(5,5,1,1).data[3]<128}return $})().then(e=>{t?.(e?[D]:[])}):t?.([]),s),"then")};return Object.assign(u,s)},"g");let H,O;function D(a){const u=typeof a=="object"&&a.target||document,s=typeof a=="object"?a.zoom:a;window[j]||(Object.defineProperty(window,j,{configurable:!0,value:!0}),document.body.style.zoom=1.0001,document.body.offsetHeight,document.body.style.zoom=1,window.addEventListener("message",({data:e,origin:n})=>{if(n===window.origin)try{if(e&&typeof e=="string"&&e.startsWith(V)){const[,r]=e.split(","),l=Number.parseFloat(r);Number.isNaN(l)||(O=l)}}catch(r){console.error(r)}}));let t=!1;Array.from(u.querySelectorAll("svg[data-marpit-svg]"),e=>{var n,r,l,d;e.style.transform||(e.style.transform="translateZ(0)");const f=s||O||e.currentScale||1;H!==f&&(H=f,t=f);const P=e.getBoundingClientRect(),{length:Z}=e.children;for(let F=0;F<Z;F+=1){const k=e.children[F];if(k.getScreenCTM){const _=k.getScreenCTM();if(_){const Y=(r=(n=k.x)===null||n===void 0?void 0:n.baseVal.value)!==null&&r!==void 0?r:0,U=(d=(l=k.y)===null||l===void 0?void 0:l.baseVal.value)!==null&&d!==void 0?d:0,J=k.children.length;for(let R=0;R<J;R+=1){const N=k.children[R];if(N.tagName==="SECTION"){const{style:q}=N;q.transformOrigin||(q.transformOrigin=`${-Y}px ${-U}px`),q.transform=`scale(${f}) matrix(${_.a}, ${_.b}, ${_.c}, ${_.d}, ${_.e-P.left}, ${_.f-P.top}) translateZ(0.0001px)`;break}}}}}}),t!==!1&&Array.from(u.querySelectorAll("iframe"),({contentWindow:e})=>{e?.postMessage(`${V}${t}`,window.origin==="null"?"*":window.origin)})}o(D,"u");function B({once:a=!1,target:u=document}={}){const s=function(t=document){if(t[C])return t[C];let e=!0;const n=o(()=>{e=!1,delete t[C]},"i");Object.defineProperty(t,C,{configurable:!0,value:n});let r=[],l=!1;(async()=>{try{r=await G()}finally{l=!0}})();const d=o(()=>{for(const f of r)f({target:t});l&&r.length===0||e&&window.requestAnimationFrame(d)},"r");return d(),n}(u);return a?(s(),()=>{}):s}o(B,"v"),H=1,O=void 0;const I=B,M=Symbol(),L=o((a=document)=>{if(typeof window>"u")throw new Error("Marp Core's browser script is valid only in browser context.");if(((e=document)=>{const n=window[z];n||customElements.define("marp-auto-scaling",i);for(const r of Object.keys(E)){const l=`marp-${r}`,d=E[r].proto();(b??(b=!!document.createElement("div",{is:"marp-auto-scaling"}).outerHTML.startsWith("<div is"),b))&&d!==HTMLElement?n||customElements.define(l,m(d,{style:E[r].style}),{extends:r}):(n||customElements.define(l,m(HTMLElement,E[r])),e.querySelectorAll(`${r}[is="${l}"]`).forEach(f=>{f.outerHTML=f.outerHTML.replace(new RegExp(`^<${r}`,"i"),`<${l}`).replace(new RegExp(`</${r}>$`,"i"),`</${l}>`)}))}window[z]=!0})(a),a[M])return a[M];const u=B({target:a}),s=o(()=>{u(),delete a[M]},"n"),t=Object.assign(s,{cleanup:s,update:o(()=>L(a),"update")});return Object.defineProperty(a,M,{configurable:!0,value:t}),t},"y");S.browser=L,g=L,g=I}},h={};function x(y){var S=h[y];if(S!==void 0)return S.exports;var g=h[y]={exports:{}};return w[y](g,g.exports,x),g.exports}o(x,"__webpack_require__");var Q={};(()=>{"use strict";var y=x(32);function S(){let p,c;const i=o(()=>{const m=document.getElementById("__marp-vscode"),b=!!m;p!==b?(document.body.classList.toggle("marp-vscode",b),b?c=(0,y.browser)():(c?.cleanup(),c=void 0),p=b):b&&c?.update(),p?(m&&g(m),E()):A()},"updateCallback");window.addEventListener("load",()=>window.setTimeout(i,100)),window.addEventListener("vscode.markdown.updateContent",i),i()}o(S,"preview");const g=o(p=>{p.querySelectorAll("[is]").forEach(c=>{if(c.nodeName.includes("-")||document.createElement(c.nodeName).constructor!==c.constructor)return;const{outerHTML:m}=c;c.outerHTML=m,console.debug("[marp-vscode] Custom element has been upgraded forcibly:",m.slice(0,m.indexOf(">")+1||void 0))})},"forceUpgradeCustomElements"),E=o(()=>{const p=document.querySelectorAll("style:not(#__marp-vscode-style,#_defaultStyles,[data-marp-vscode-body])"),c=document.querySelectorAll('link[rel="stylesheet"][href]:not([href*="marp-vscode"])');p.forEach(i=>{i.closest("#__marp-vscode")||(i.dataset.marpVscodeBody=i.textContent??"",i.textContent="")}),c.forEach(i=>{if(i.closest("#__marp-vscode"))return;const{href:m}=i;i.dataset.marpVscodeHref=m,i.removeAttribute("href")})},"removeStyles"),A=o(()=>{const p=document.querySelectorAll("style[data-marp-vscode-body]"),c=document.querySelectorAll("link[data-marp-vscode-href]");p.forEach(i=>{i.textContent=i.dataset.marpVscodeBody||"",delete i.dataset.marpVscodeBody}),c.forEach(i=>{i.href=i.dataset.marpVscodeHref||"",delete i.dataset.marpVscodeHref})},"restoreStyles");S()})()})();})();
+
+</script>
+
+        </body>
+        </html>

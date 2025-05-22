@@ -1,0 +1,63 @@
+/* @theme vald */
+
+@import 'default';
+/* @import url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css'); */
+
+.hljs-property { color: #ff79c6; } /* メソッド名など */
+.hljs-variable { color: #8be9fd; } /* 変数 */
+
+:root {
+    color: rgb(0, 96, 118);
+
+    background-color: rgb(248, 248, 248);
+    /* background: linear-gradient(to right, #ffffff, rgb(248, 248, 248)); */
+    
+    background-image: url(./theme/symbol.svg), url(./theme/symbol_white.svg);
+    background-size: 4%, 50%;
+    background-repeat: no-repeat;
+    background-position: right bottom;
+    background-position: calc(100% - 70px) calc(100% - 25px);
+    /* z-index: 100; */
+}
+/* 
+section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(to right, #ffffff, rgb(248, 248, 248));
+    z-index: -3;
+} */
+
+h1 {
+    color: rgb(0, 96, 118);
+    text-align: center;
+}
+
+section {
+    /* background: linear-gradient(to right, #ffffff, #eeeeee); */
+    padding: 2rem;
+    border-radius: 0.5rem;
+}
+
+header {
+    font-size: 0.5em;
+    font-weight: 600;
+    top: 0.3rem;
+}
+
+footer {
+    color: rgb(0, 186, 177);
+}
+
+.center {
+    text-align: center;
+}
+
+.border {
+    margin-top: 30px;
+    border: solid 1px;
+    border-color: rgb(0, 186, 177);
+}

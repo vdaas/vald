@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Grafana Foundation SDK &#x3092;&#x4f7f;&#x3063;&#x305f;</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+/* From extension marp-team.marp-vscode */
+#__marp-vscode {
+  all: revert;
+}
+
+/* Override VS Code default CSS rules reverting to initial
+   https://github.com/microsoft/vscode/blob/master/src/vs/workbench/contrib/webview/browser/pre/main.js#L53 */
+body.marp-vscode {
+  padding: 0;
+}
+
+body.marp-vscode img {
+  max-width: unset;
+  max-height: unset;
+}
+
+body.marp-vscode a,
+body.marp-vscode a:hover,
+body.marp-vscode code {
+  color: unset;
+}
+
+body.marp-vscode blockquote {
+  background: unset;
+  border-color: unset;
+}
+
+@media screen {
+  body.marp-vscode {
+    overflow-y: scroll;
+
+    /* stylelint-disable-next-line selector-class-pattern */
+    &.showEditorSelection {
+      --marp-vscode-highlight-color: rgb(255 255 255 / 40%);
+
+      &.vscode-light {
+        --marp-vscode-highlight-color: rgb(0 0 0 / 15%);
+      }
+
+      &.vscode-high-contrast {
+        --marp-vscode-highlight-color: rgb(255 160 0 / 70%);
+      }
+    }
+  }
+
+  #__marp-vscode [data-marp-vscode-slide-wrapper] {
+    margin: 20px;
+    position: relative;
+
+    &.code-active-line,
+    &:has(.code-active-line) {
+      &::before {
+        position: absolute;
+        content: '';
+        inset: -7px;
+        border: 3px solid var(--marp-vscode-highlight-color, transparent);
+        pointer-events: none;
+      }
+    }
+  }
+
+  #__marp-vscode svg[data-marpit-svg] {
+    box-shadow: 0 5px 10px rgb(0 0 0 / 25%);
+    display: block;
+    margin: 0;
+  }
+
+  /* Based on https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+  #code-csp-warning {
+    background-color: #444;
+    box-shadow: 1px 1px 1px rgb(0 0 0 / 25%);
+    color: white;
+    cursor: pointer;
+    font-family: sans-serif;
+    font-size: 12px;
+    line-height: 22px;
+    margin: 16px;
+    padding: 6px;
+    position: fixed;
+    right: 0;
+    text-align: center;
+    top: 0;
+    word-wrap: break-word;
+  }
+
+  #code-csp-warning:hover {
+    text-decoration: none;
+    background-color: #007acc;
+    box-shadow: 2px 2px 2px rgb(0 0 0 / 25%);
+  }
+}
+
+@media print {
+  body.marp-vscode #code-csp-warning {
+    display: none;
+  }
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <style id="__marp-vscode-style">div#__marp-vscode > div > svg > foreignObject > section {
+  width: 1280px;
+  height: 720px;
+
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+
+  scroll-snap-align: center center;
+
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}div#__marp-vscode > div > svg > foreignObject > section::after {
+  bottom: 0;
+  content: attr(data-marpit-pagination);
+  padding: inherit;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}div#__marp-vscode > div > svg > foreignObject > section:not([data-marpit-pagination])::after {
+  display: none;
+}/* Normalization */div#__marp-vscode > div > svg > foreignObject > section :is(h1, marp-h1) {
+  font-size: 2em;
+  margin: 0.67em 0;
+}div#__marp-vscode > div > svg > foreignObject > section video::-webkit-media-controls {
+  will-change: transform;
+}@page {
+  size: 1280px 720px;
+  margin: 0;
+}@media print {html, body {
+  background-color: #fff;
+  margin: 0;
+  page-break-inside: avoid;
+  break-inside: avoid-page;
+}
+  div#__marp-vscode > div > svg > foreignObject > section {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  div#__marp-vscode > div > svg > foreignObject > section, div#__marp-vscode > div > svg > foreignObject > section * {
+    -webkit-print-color-adjust: exact !important;
+    animation-delay: 0s !important;
+    animation-duration: 0s !important;
+    color-adjust: exact !important;
+    transition: none !important;
+  }
+
+  div#__marp-vscode > div > svg[data-marpit-svg] {
+    display: block;
+    height: 100vh;
+    width: 100vw;
+  }
+}
+/*!
+ * Marp default theme.
+ *
+ * @theme default
+ * @author Yuki Hattori
+ *
+ * @auto-scaling true
+ * @size 16:9 1280px 720px
+ * @size 4:3 960px 720px
+ */
+div#__marp-vscode > div > svg > foreignObject > section{
+  --base-size-4:calc(var(--marpit-root-font-size, 1rem) * 0.25);
+  --base-size-8:calc(var(--marpit-root-font-size, 1rem) * 0.5);
+  --base-size-16:calc(var(--marpit-root-font-size, 1rem) * 1);
+  --base-size-24:calc(var(--marpit-root-font-size, 1rem) * 1.5);
+  --base-size-40:calc(var(--marpit-root-font-size, 1rem) * 2.5);
+  --base-text-weight-normal:400;
+  --base-text-weight-medium:500;
+  --base-text-weight-semibold:600;
+  --fontStack-monospace:ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+  --fgColor-accent:Highlight;
+}
+div#__marp-vscode > div > svg > foreignObject > section [data-theme=light],div#__marp-vscode > div > svg > foreignObject > section{
+    color-scheme:light;
+    --focus-outlineColor:#0969da;
+    --fgColor-default:#1f2328;
+    --fgColor-muted:#59636e;
+    --fgColor-accent:#0969da;
+    --fgColor-success:#1a7f37;
+    --fgColor-attention:#9a6700;
+    --fgColor-danger:#d1242f;
+    --fgColor-done:#8250df;
+    --bgColor-default:#fff;
+    --bgColor-muted:#f6f8fa;
+    --bgColor-neutral-muted:#818b981f;
+    --bgColor-attention-muted:#fff8c5;
+    --borderColor-default:#d1d9e0;
+    --borderColor-muted:#d1d9e0b3;
+    --borderColor-neutral-muted:#d1d9e0b3;
+    --borderColor-accent-emphasis:#0969da;
+    --borderColor-success-emphasis:#1a7f37;
+    --borderColor-attention-emphasis:#9a6700;
+    --borderColor-danger-emphasis:#cf222e;
+    --borderColor-done-emphasis:#8250df;
+    --color-prettylights-syntax-comment:#59636e;
+    --color-prettylights-syntax-constant:#0550ae;
+    --color-prettylights-syntax-constant-other-reference-link:#0a3069;
+    --color-prettylights-syntax-entity:#6639ba;
+    --color-prettylights-syntax-storage-modifier-import:#1f2328;
+    --color-prettylights-syntax-entity-tag:#0550ae;
+    --color-prettylights-syntax-keyword:#cf222e;
+    --color-prettylights-syntax-string:#0a3069;
+    --color-prettylights-syntax-variable:#953800;
+    --color-prettylights-syntax-brackethighlighter-unmatched:#82071e;
+    --color-prettylights-syntax-brackethighlighter-angle:#59636e;
+    --color-prettylights-syntax-invalid-illegal-text:#f6f8fa;
+    --color-prettylights-syntax-invalid-illegal-bg:#82071e;
+    --color-prettylights-syntax-carriage-return-text:#f6f8fa;
+    --color-prettylights-syntax-carriage-return-bg:#cf222e;
+    --color-prettylights-syntax-string-regexp:#116329;
+    --color-prettylights-syntax-markup-list:#3b2300;
+    --color-prettylights-syntax-markup-heading:#0550ae;
+    --color-prettylights-syntax-markup-italic:#1f2328;
+    --color-prettylights-syntax-markup-bold:#1f2328;
+    --color-prettylights-syntax-markup-deleted-text:#82071e;
+    --color-prettylights-syntax-markup-deleted-bg:#ffebe9;
+    --color-prettylights-syntax-markup-inserted-text:#116329;
+    --color-prettylights-syntax-markup-inserted-bg:#dafbe1;
+    --color-prettylights-syntax-markup-changed-text:#953800;
+    --color-prettylights-syntax-markup-changed-bg:#ffd8b5;
+    --color-prettylights-syntax-markup-ignored-text:#d1d9e0;
+    --color-prettylights-syntax-markup-ignored-bg:#0550ae;
+    --color-prettylights-syntax-meta-diff-range:#8250df;
+    --color-prettylights-syntax-sublimelinter-gutter-mark:#818b98;
+  }
+div#__marp-vscode > div > svg > foreignObject > section [data-theme=dark],div#__marp-vscode > div > svg > foreignObject > section:where(.invert){
+    color-scheme:dark;
+    --focus-outlineColor:#1f6feb;
+    --fgColor-default:#f0f6fc;
+    --fgColor-muted:#9198a1;
+    --fgColor-accent:#4493f8;
+    --fgColor-success:#3fb950;
+    --fgColor-attention:#d29922;
+    --fgColor-danger:#f85149;
+    --fgColor-done:#ab7df8;
+    --bgColor-default:#0d1117;
+    --bgColor-muted:#151b23;
+    --bgColor-neutral-muted:#656c7633;
+    --bgColor-attention-muted:#bb800926;
+    --borderColor-default:#3d444d;
+    --borderColor-muted:#3d444db3;
+    --borderColor-neutral-muted:#3d444db3;
+    --borderColor-accent-emphasis:#1f6feb;
+    --borderColor-success-emphasis:#238636;
+    --borderColor-attention-emphasis:#9e6a03;
+    --borderColor-danger-emphasis:#da3633;
+    --borderColor-done-emphasis:#8957e5;
+    --color-prettylights-syntax-comment:#9198a1;
+    --color-prettylights-syntax-constant:#79c0ff;
+    --color-prettylights-syntax-constant-other-reference-link:#a5d6ff;
+    --color-prettylights-syntax-entity:#d2a8ff;
+    --color-prettylights-syntax-storage-modifier-import:#f0f6fc;
+    --color-prettylights-syntax-entity-tag:#7ee787;
+    --color-prettylights-syntax-keyword:#ff7b72;
+    --color-prettylights-syntax-string:#a5d6ff;
+    --color-prettylights-syntax-variable:#ffa657;
+    --color-prettylights-syntax-brackethighlighter-unmatched:#f85149;
+    --color-prettylights-syntax-brackethighlighter-angle:#9198a1;
+    --color-prettylights-syntax-invalid-illegal-text:#f0f6fc;
+    --color-prettylights-syntax-invalid-illegal-bg:#8e1519;
+    --color-prettylights-syntax-carriage-return-text:#f0f6fc;
+    --color-prettylights-syntax-carriage-return-bg:#b62324;
+    --color-prettylights-syntax-string-regexp:#7ee787;
+    --color-prettylights-syntax-markup-list:#f2cc60;
+    --color-prettylights-syntax-markup-heading:#1f6feb;
+    --color-prettylights-syntax-markup-italic:#f0f6fc;
+    --color-prettylights-syntax-markup-bold:#f0f6fc;
+    --color-prettylights-syntax-markup-deleted-text:#ffdcd7;
+    --color-prettylights-syntax-markup-deleted-bg:#67060c;
+    --color-prettylights-syntax-markup-inserted-text:#aff5b4;
+    --color-prettylights-syntax-markup-inserted-bg:#033a16;
+    --color-prettylights-syntax-markup-changed-text:#ffdfb6;
+    --color-prettylights-syntax-markup-changed-bg:#5a1e02;
+    --color-prettylights-syntax-markup-ignored-text:#f0f6fc;
+    --color-prettylights-syntax-markup-ignored-bg:#1158c7;
+    --color-prettylights-syntax-meta-diff-range:#d2a8ff;
+    --color-prettylights-syntax-sublimelinter-gutter-mark:#3d444d;
+  }
+div#__marp-vscode > div > svg > foreignObject > section{
+  -ms-text-size-adjust:100%;
+  -webkit-text-size-adjust:100%;
+  background-color:var(--bgColor-default);
+  color:var(--fgColor-default);
+  font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+  font-size:16px;
+  line-height:1.5;
+  margin:0;
+  word-wrap:break-word;
+}
+div#__marp-vscode > div > svg > foreignObject > section {
+  --marpit-root-font-size:16px;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h1, marp-h1):hover .anchor .octicon-link:before,div#__marp-vscode > div > svg > foreignObject > section :is(h2, marp-h2):hover .anchor .octicon-link:before,div#__marp-vscode > div > svg > foreignObject > section :is(h3, marp-h3):hover .anchor .octicon-link:before,div#__marp-vscode > div > svg > foreignObject > section :is(h4, marp-h4):hover .anchor .octicon-link:before,div#__marp-vscode > div > svg > foreignObject > section :is(h5, marp-h5):hover .anchor .octicon-link:before,div#__marp-vscode > div > svg > foreignObject > section :is(h6, marp-h6):hover .anchor .octicon-link:before{
+  background-color:currentColor;
+  content:" ";
+  display:inline-block;
+  height:16px;
+  -webkit-mask-image:url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0"/></svg>');
+  mask-image:url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0"/></svg>');
+  width:16px;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section details,div#__marp-vscode > div > svg > foreignObject > section figcaption,div#__marp-vscode > div > svg > foreignObject > section figure{
+  display:block;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section summary{
+  display:list-item;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section [hidden]{
+  display:none !important;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section a{
+  background-color:transparent;
+  color:var(--fgColor-accent);
+  text-decoration:none;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section abbr[title]{
+  border-bottom:none;
+  -webkit-text-decoration:underline dotted;
+  text-decoration:underline dotted;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section b,div#__marp-vscode > div > svg > foreignObject > section strong{
+  font-weight:var(--base-text-weight-semibold, 600);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section dfn{
+  font-style:italic;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h1, marp-h1){
+  border-bottom:1px solid var(--borderColor-muted);
+  font-size:2em;
+  font-weight:var(--base-text-weight-semibold, 600);
+  margin:.67em 0;
+  padding-bottom:.3em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section mark{
+  background-color:var(--bgColor-attention-muted);
+  color:var(--fgColor-default);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section small{
+  font-size:90%;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section sub,div#__marp-vscode > div > svg > foreignObject > section sup{
+  font-size:75%;
+  line-height:0;
+  position:relative;
+  vertical-align:baseline;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section sub{
+  bottom:-.25em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section sup{
+  top:-.5em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section img{
+  border-style:none;
+  box-sizing:content-box;
+  max-width:100%;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section code,div#__marp-vscode > div > svg > foreignObject > section kbd,div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre),div#__marp-vscode > div > svg > foreignObject > section samp{
+  font-family:monospace;
+  font-size:1em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section figure{
+  margin:1em var(--base-size-40);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section hr{
+  background:transparent;
+  background-color:var(--borderColor-default);
+  border:0;
+  box-sizing:content-box;
+  height:.25em;
+  margin:var(--base-size-24) 0;
+  overflow:hidden;
+  padding:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section input{
+  font:inherit;
+  font-family:inherit;
+  font-size:inherit;
+  line-height:inherit;
+  margin:0;
+  overflow:visible;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section [type=button],div#__marp-vscode > div > svg > foreignObject > section [type=reset],div#__marp-vscode > div > svg > foreignObject > section [type=submit]{
+  -webkit-appearance:button;
+  -moz-appearance:button;
+       appearance:button;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section [type=checkbox],div#__marp-vscode > div > svg > foreignObject > section [type=radio]{
+  box-sizing:border-box;
+  padding:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section [type=number]::-webkit-inner-spin-button,div#__marp-vscode > div > svg > foreignObject > section [type=number]::-webkit-outer-spin-button{
+  height:auto;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section [type=search]::-webkit-search-cancel-button,div#__marp-vscode > div > svg > foreignObject > section [type=search]::-webkit-search-decoration{
+  -webkit-appearance:none;
+  appearance:none;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section ::-webkit-input-placeholder{
+  color:inherit;
+  opacity:.54;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section ::-webkit-file-upload-button{
+  -webkit-appearance:button;
+  appearance:button;
+  font:inherit;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section a:hover{
+  text-decoration:underline;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section ::-moz-placeholder{
+  color:var(--fgColor-muted);
+  opacity:1;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section ::placeholder{
+  color:var(--fgColor-muted);
+  opacity:1;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section hr:after,div#__marp-vscode > div > svg > foreignObject > section hr:before{
+  content:"";
+  display:table;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section hr:after{
+  clear:both;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section table{
+  border-collapse:collapse;
+  border-spacing:0;
+  display:block;
+  font-variant:tabular-nums;
+  max-width:100%;
+  overflow:auto;
+  width:-moz-max-content;
+  width:max-content;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section td,div#__marp-vscode > div > svg > foreignObject > section th{
+  padding:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section details summary{
+  cursor:pointer;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section [role=button]:focus,div#__marp-vscode > div > svg > foreignObject > section a:focus,div#__marp-vscode > div > svg > foreignObject > section input[type=checkbox]:focus,div#__marp-vscode > div > svg > foreignObject > section input[type=radio]:focus{
+  box-shadow:none;
+  outline:2px solid var(--focus-outlineColor);
+  outline-offset:-2px;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section [role=button]:focus:not(:focus-visible),div#__marp-vscode > div > svg > foreignObject > section a:focus:not(:focus-visible),div#__marp-vscode > div > svg > foreignObject > section input[type=checkbox]:focus:not(:focus-visible),div#__marp-vscode > div > svg > foreignObject > section input[type=radio]:focus:not(:focus-visible){
+  outline:1px solid transparent;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section [role=button]:focus-visible,div#__marp-vscode > div > svg > foreignObject > section a:focus-visible,div#__marp-vscode > div > svg > foreignObject > section input[type=checkbox]:focus-visible,div#__marp-vscode > div > svg > foreignObject > section input[type=radio]:focus-visible{
+  box-shadow:none;
+  outline:2px solid var(--focus-outlineColor);
+  outline-offset:-2px;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section a:not([class]):focus,div#__marp-vscode > div > svg > foreignObject > section a:not([class]):focus-visible,div#__marp-vscode > div > svg > foreignObject > section input[type=checkbox]:focus,div#__marp-vscode > div > svg > foreignObject > section input[type=checkbox]:focus-visible,div#__marp-vscode > div > svg > foreignObject > section input[type=radio]:focus,div#__marp-vscode > div > svg > foreignObject > section input[type=radio]:focus-visible{
+  outline-offset:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section kbd{
+  background-color:var(--bgColor-muted);
+  border-bottom-color:var(--borderColor-neutral-muted);
+  border:1px solid var(--borderColor-neutral-muted);
+  border-radius:6px;
+  box-shadow:inset 0 -1px 0 var(--borderColor-neutral-muted);
+  color:var(--fgColor-default);
+  display:inline-block;
+  font:11px var(--fontStack-monospace, ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace);
+  line-height:10px;
+  padding:var(--base-size-4);
+  vertical-align:middle;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h1, marp-h1),div#__marp-vscode > div > svg > foreignObject > section :is(h2, marp-h2),div#__marp-vscode > div > svg > foreignObject > section :is(h3, marp-h3),div#__marp-vscode > div > svg > foreignObject > section :is(h4, marp-h4),div#__marp-vscode > div > svg > foreignObject > section :is(h5, marp-h5),div#__marp-vscode > div > svg > foreignObject > section :is(h6, marp-h6){
+  font-weight:var(--base-text-weight-semibold, 600);
+  line-height:1.25;
+  margin-bottom:var(--base-size-16);
+  margin-top:var(--base-size-24);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h2, marp-h2){
+  border-bottom:1px solid var(--borderColor-muted);
+  font-size:1.5em;
+  padding-bottom:.3em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h2, marp-h2),div#__marp-vscode > div > svg > foreignObject > section :is(h3, marp-h3){
+  font-weight:var(--base-text-weight-semibold, 600);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h3, marp-h3){
+  font-size:1.25em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h4, marp-h4){
+  font-size:1em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h4, marp-h4),div#__marp-vscode > div > svg > foreignObject > section :is(h5, marp-h5){
+  font-weight:var(--base-text-weight-semibold, 600);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h5, marp-h5){
+  font-size:.875em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h6, marp-h6){
+  color:var(--fgColor-muted);
+  font-size:.85em;
+  font-weight:var(--base-text-weight-semibold, 600);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section p{
+  margin-bottom:10px;
+  margin-top:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section blockquote{
+  border-left:.25em solid var(--borderColor-default);
+  color:var(--fgColor-muted);
+  margin:0;
+  padding:0 1em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section ol,div#__marp-vscode > div > svg > foreignObject > section ul{
+  margin-bottom:0;
+  margin-top:0;
+  padding-left:2em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section ol ol,div#__marp-vscode > div > svg > foreignObject > section ul ol{
+  list-style-type:lower-roman;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section ol ol ol,div#__marp-vscode > div > svg > foreignObject > section ol ul ol,div#__marp-vscode > div > svg > foreignObject > section ul ol ol,div#__marp-vscode > div > svg > foreignObject > section ul ul ol{
+  list-style-type:lower-alpha;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section dd{
+  margin-left:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section code,div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre),div#__marp-vscode > div > svg > foreignObject > section samp,div#__marp-vscode > div > svg > foreignObject > section tt{
+  font-family:var(--fontStack-monospace, ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace);
+  font-size:12px;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre){
+  margin-bottom:0;
+  margin-top:0;
+  word-wrap:normal;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .octicon{
+  display:inline-block;
+  overflow:visible !important;
+  vertical-align:text-bottom;
+  fill:currentColor;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section input::-webkit-inner-spin-button,div#__marp-vscode > div > svg > foreignObject > section input::-webkit-outer-spin-button{
+  -webkit-appearance:none;
+          appearance:none;
+  margin:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .mr-2{
+  margin-right:var(--base-size-8, 8px) !important;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section:after,div#__marp-vscode > div > svg > foreignObject > section:before{
+  /* content:""; */
+  display:table;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section:after{
+  clear:both;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section>:first-child{
+  margin-top:0 !important;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section>:last-child{
+  margin-bottom:0 !important;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section a:not([href]){
+  color:inherit;
+  text-decoration:none;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .absent{
+  color:var(--fgColor-danger);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .anchor{
+  float:left;
+  line-height:1;
+  margin-left:-20px;
+  padding-right:var(--base-size-4);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .anchor:focus{
+  outline:none;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section blockquote,div#__marp-vscode > div > svg > foreignObject > section details,div#__marp-vscode > div > svg > foreignObject > section dl,div#__marp-vscode > div > svg > foreignObject > section ol,div#__marp-vscode > div > svg > foreignObject > section p,div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre),div#__marp-vscode > div > svg > foreignObject > section table,div#__marp-vscode > div > svg > foreignObject > section ul{
+  margin-bottom:var(--base-size-16);
+  margin-top:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section blockquote>:first-child{
+  margin-top:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section blockquote>:last-child{
+  margin-bottom:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h1, marp-h1) .octicon-link,div#__marp-vscode > div > svg > foreignObject > section :is(h2, marp-h2) .octicon-link,div#__marp-vscode > div > svg > foreignObject > section :is(h3, marp-h3) .octicon-link,div#__marp-vscode > div > svg > foreignObject > section :is(h4, marp-h4) .octicon-link,div#__marp-vscode > div > svg > foreignObject > section :is(h5, marp-h5) .octicon-link,div#__marp-vscode > div > svg > foreignObject > section :is(h6, marp-h6) .octicon-link{
+  color:var(--fgColor-default);
+  vertical-align:middle;
+  visibility:hidden;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h1, marp-h1):hover .anchor,div#__marp-vscode > div > svg > foreignObject > section :is(h2, marp-h2):hover .anchor,div#__marp-vscode > div > svg > foreignObject > section :is(h3, marp-h3):hover .anchor,div#__marp-vscode > div > svg > foreignObject > section :is(h4, marp-h4):hover .anchor,div#__marp-vscode > div > svg > foreignObject > section :is(h5, marp-h5):hover .anchor,div#__marp-vscode > div > svg > foreignObject > section :is(h6, marp-h6):hover .anchor{
+  text-decoration:none;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h1, marp-h1):hover .anchor .octicon-link,div#__marp-vscode > div > svg > foreignObject > section :is(h2, marp-h2):hover .anchor .octicon-link,div#__marp-vscode > div > svg > foreignObject > section :is(h3, marp-h3):hover .anchor .octicon-link,div#__marp-vscode > div > svg > foreignObject > section :is(h4, marp-h4):hover .anchor .octicon-link,div#__marp-vscode > div > svg > foreignObject > section :is(h5, marp-h5):hover .anchor .octicon-link,div#__marp-vscode > div > svg > foreignObject > section :is(h6, marp-h6):hover .anchor .octicon-link{
+  visibility:visible;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h1, marp-h1) code,div#__marp-vscode > div > svg > foreignObject > section :is(h1, marp-h1) tt,div#__marp-vscode > div > svg > foreignObject > section :is(h2, marp-h2) code,div#__marp-vscode > div > svg > foreignObject > section :is(h2, marp-h2) tt,div#__marp-vscode > div > svg > foreignObject > section :is(h3, marp-h3) code,div#__marp-vscode > div > svg > foreignObject > section :is(h3, marp-h3) tt,div#__marp-vscode > div > svg > foreignObject > section :is(h4, marp-h4) code,div#__marp-vscode > div > svg > foreignObject > section :is(h4, marp-h4) tt,div#__marp-vscode > div > svg > foreignObject > section :is(h5, marp-h5) code,div#__marp-vscode > div > svg > foreignObject > section :is(h5, marp-h5) tt,div#__marp-vscode > div > svg > foreignObject > section :is(h6, marp-h6) code,div#__marp-vscode > div > svg > foreignObject > section :is(h6, marp-h6) tt{
+  font-size:inherit;
+  padding:0 .2em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section summary :is(h1, marp-h1),div#__marp-vscode > div > svg > foreignObject > section summary :is(h2, marp-h2),div#__marp-vscode > div > svg > foreignObject > section summary :is(h3, marp-h3),div#__marp-vscode > div > svg > foreignObject > section summary :is(h4, marp-h4),div#__marp-vscode > div > svg > foreignObject > section summary :is(h5, marp-h5),div#__marp-vscode > div > svg > foreignObject > section summary :is(h6, marp-h6){
+  display:inline-block;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section summary :is(h1, marp-h1) .anchor,div#__marp-vscode > div > svg > foreignObject > section summary :is(h2, marp-h2) .anchor,div#__marp-vscode > div > svg > foreignObject > section summary :is(h3, marp-h3) .anchor,div#__marp-vscode > div > svg > foreignObject > section summary :is(h4, marp-h4) .anchor,div#__marp-vscode > div > svg > foreignObject > section summary :is(h5, marp-h5) .anchor,div#__marp-vscode > div > svg > foreignObject > section summary :is(h6, marp-h6) .anchor{
+  margin-left:-40px;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section summary :is(h1, marp-h1),div#__marp-vscode > div > svg > foreignObject > section summary :is(h2, marp-h2){
+  border-bottom:0;
+  padding-bottom:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section ol.no-list,div#__marp-vscode > div > svg > foreignObject > section ul.no-list{
+  list-style-type:none;
+  padding:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section ol[type="a s"]{
+  list-style-type:lower-alpha;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section ol[type="A s"]{
+  list-style-type:upper-alpha;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section ol[type="i s"]{
+  list-style-type:lower-roman;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section ol[type="I s"]{
+  list-style-type:upper-roman;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section div>ol:not([type]),div#__marp-vscode > div > svg > foreignObject > section ol[type="1"]{
+  list-style-type:decimal;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section ol ol,div#__marp-vscode > div > svg > foreignObject > section ol ul,div#__marp-vscode > div > svg > foreignObject > section ul ol,div#__marp-vscode > div > svg > foreignObject > section ul ul{
+  margin-bottom:0;
+  margin-top:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section li>p{
+  margin-top:var(--base-size-16);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section li+li{
+  margin-top:.25em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section dl{
+  padding:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section dl dt{
+  font-size:1em;
+  font-style:italic;
+  font-weight:var(--base-text-weight-semibold, 600);
+  margin-top:var(--base-size-16);
+  padding:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section dl dd{
+  margin-bottom:var(--base-size-16);
+  padding:0 var(--base-size-16);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section table th{
+  font-weight:var(--base-text-weight-semibold, 600);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section table td,div#__marp-vscode > div > svg > foreignObject > section table th{
+  border:1px solid var(--borderColor-default);
+  padding:6px 13px;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section table td>:last-child{
+  margin-bottom:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section table tr{
+  background-color:var(--bgColor-default);
+  border-top:1px solid var(--borderColor-muted);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section table tr:nth-child(2n){
+  background-color:var(--bgColor-muted);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section table img{
+  background-color:transparent;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section img[align=right]{
+  padding-left:20px;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section img[align=left]{
+  padding-right:20px;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .emoji{
+  background-color:transparent;
+  max-width:none;
+  vertical-align:text-top;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(span, marp-span).frame,div#__marp-vscode > div > svg > foreignObject > section :is(span, marp-span).frame>:is(span, marp-span){
+  display:block;
+  overflow:hidden;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(span, marp-span).frame>:is(span, marp-span){
+  border:1px solid var(--borderColor-default);
+  float:left;
+  margin:13px 0 0;
+  padding:7px;
+  width:auto;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(span, marp-span).frame :is(span, marp-span) img{
+  display:block;
+  float:left;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(span, marp-span).frame :is(span, marp-span) :is(span, marp-span){
+  clear:both;
+  color:var(--fgColor-default);
+  display:block;
+  padding:5px 0 0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(span, marp-span).align-center{
+  clear:both;
+  display:block;
+  overflow:hidden;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(span, marp-span).align-center>:is(span, marp-span){
+  display:block;
+  margin:13px auto 0;
+  overflow:hidden;
+  text-align:center;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(span, marp-span).align-center :is(span, marp-span) img{
+  margin:0 auto;
+  text-align:center;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(span, marp-span).align-right{
+  clear:both;
+  display:block;
+  overflow:hidden;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(span, marp-span).align-right>:is(span, marp-span){
+  display:block;
+  margin:13px 0 0;
+  overflow:hidden;
+  text-align:right;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(span, marp-span).align-right :is(span, marp-span) img{
+  margin:0;
+  text-align:right;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(span, marp-span).float-left{
+  display:block;
+  float:left;
+  margin-right:13px;
+  overflow:hidden;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(span, marp-span).float-left :is(span, marp-span){
+  margin:13px 0 0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(span, marp-span).float-right{
+  display:block;
+  float:right;
+  margin-left:13px;
+  overflow:hidden;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(span, marp-span).float-right>:is(span, marp-span){
+  display:block;
+  margin:13px auto 0;
+  overflow:hidden;
+  text-align:right;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section code,div#__marp-vscode > div > svg > foreignObject > section tt{
+  background-color:var(--bgColor-neutral-muted);
+  border-radius:6px;
+  font-size:85%;
+  margin:0;
+  padding:.2em .4em;
+  white-space:break-spaces;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section code br,div#__marp-vscode > div > svg > foreignObject > section tt br{
+  display:none;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section del code{
+  text-decoration:inherit;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section samp{
+  font-size:85%;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) code{
+  font-size:100%;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre)>code{
+  background:transparent;
+  border:0;
+  margin:0;
+  padding:0;
+  white-space:pre;
+  word-break:normal;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .highlight{
+  margin-bottom:var(--base-size-16);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .highlight :is(pre, marp-pre){
+  margin-bottom:0;
+  word-break:normal;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre){
+  background-color:var(--bgColor-muted);
+  border-radius:6px;
+  color:var(--fgColor-default);
+  font-size:85%;
+  line-height:1.45;
+  overflow:auto;
+  padding:var(--base-size-16);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) code,div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) tt{
+  display:inline;
+  line-height:inherit;
+  margin:0;
+  max-width:auto;
+  overflow:visible;
+  padding:0;
+  word-wrap:normal;
+  background-color:transparent;
+  border:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .csv-data td,div#__marp-vscode > div > svg > foreignObject > section .csv-data th{
+  font-size:12px;
+  line-height:1;
+  overflow:hidden;
+  padding:5px;
+  text-align:left;
+  white-space:nowrap;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .csv-data .blob-num{
+  background:var(--bgColor-default);
+  border:0;
+  padding:10px var(--base-size-8) 9px;
+  text-align:right;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .csv-data tr{
+  border-top:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .csv-data th{
+  background:var(--bgColor-muted);
+  border-top:0;
+  font-weight:var(--base-text-weight-semibold, 600);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section [data-footnote-ref]:before{
+  content:"[";
+}
+
+div#__marp-vscode > div > svg > foreignObject > section [data-footnote-ref]:after{
+  content:"]";
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .footnotes{
+  border-top:1px solid var(--borderColor-default);
+  color:var(--fgColor-muted);
+  font-size:12px;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section div#__marp-vscode > div > svg > foreignObject > section section.footnotes {
+  --marpit-root-font-size:12px;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .footnotes ol,div#__marp-vscode > div > svg > foreignObject > section .footnotes ol ul{
+  padding-left:var(--base-size-16);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .footnotes ol ul{
+  display:inline-block;
+  margin-top:var(--base-size-16);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .footnotes li{
+  position:relative;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .footnotes li:target:before{
+  border:2px solid var(--borderColor-accent-emphasis);
+  border-radius:6px;
+  bottom:calc(var(--base-size-8)*-1);
+  content:"";
+  left:calc(var(--base-size-24)*-1);
+  pointer-events:none;
+  position:absolute;
+  right:calc(var(--base-size-8)*-1);
+  top:calc(var(--base-size-8)*-1);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .footnotes li:target{
+  color:var(--fgColor-default);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .footnotes .data-footnote-backref g-emoji{
+  font-family:monospace;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section body:has(:modal){
+  padding-right:var(--dialog-scrollgutter) !important;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-c{
+  color:var(--color-prettylights-syntax-comment);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-c1,div#__marp-vscode > div > svg > foreignObject > section .pl-s .pl-v{
+  color:var(--color-prettylights-syntax-constant);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-e,div#__marp-vscode > div > svg > foreignObject > section .pl-en{
+  color:var(--color-prettylights-syntax-entity);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-s .pl-s1,div#__marp-vscode > div > svg > foreignObject > section .pl-smi{
+  color:var(--color-prettylights-syntax-storage-modifier-import);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-ent{
+  color:var(--color-prettylights-syntax-entity-tag);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-k{
+  color:var(--color-prettylights-syntax-keyword);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-pds,div#__marp-vscode > div > svg > foreignObject > section .pl-s,div#__marp-vscode > div > svg > foreignObject > section .pl-s .pl-pse .pl-s1,div#__marp-vscode > div > svg > foreignObject > section .pl-sr,div#__marp-vscode > div > svg > foreignObject > section .pl-sr .pl-cce,div#__marp-vscode > div > svg > foreignObject > section .pl-sr .pl-sra,div#__marp-vscode > div > svg > foreignObject > section .pl-sr .pl-sre{
+  color:var(--color-prettylights-syntax-string);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-smw,div#__marp-vscode > div > svg > foreignObject > section .pl-v{
+  color:var(--color-prettylights-syntax-variable);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-bu{
+  color:var(--color-prettylights-syntax-brackethighlighter-unmatched);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-ii{
+  background-color:var(--color-prettylights-syntax-invalid-illegal-bg);
+  color:var(--color-prettylights-syntax-invalid-illegal-text);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-c2{
+  background-color:var(--color-prettylights-syntax-carriage-return-bg);
+  color:var(--color-prettylights-syntax-carriage-return-text);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-sr .pl-cce{
+  color:var(--color-prettylights-syntax-string-regexp);
+  font-weight:700;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-ml{
+  color:var(--color-prettylights-syntax-markup-list);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-mh,div#__marp-vscode > div > svg > foreignObject > section .pl-mh .pl-en,div#__marp-vscode > div > svg > foreignObject > section .pl-ms{
+  color:var(--color-prettylights-syntax-markup-heading);
+  font-weight:700;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-mi{
+  color:var(--color-prettylights-syntax-markup-italic);
+  font-style:italic;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-mb{
+  color:var(--color-prettylights-syntax-markup-bold);
+  font-weight:700;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-md{
+  background-color:var(--color-prettylights-syntax-markup-deleted-bg);
+  color:var(--color-prettylights-syntax-markup-deleted-text);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-mi1{
+  background-color:var(--color-prettylights-syntax-markup-inserted-bg);
+  color:var(--color-prettylights-syntax-markup-inserted-text);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-mc{
+  background-color:var(--color-prettylights-syntax-markup-changed-bg);
+  color:var(--color-prettylights-syntax-markup-changed-text);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-mi2{
+  background-color:var(--color-prettylights-syntax-markup-ignored-bg);
+  color:var(--color-prettylights-syntax-markup-ignored-text);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-mdr{
+  color:var(--color-prettylights-syntax-meta-diff-range);
+  font-weight:700;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-ba{
+  color:var(--color-prettylights-syntax-brackethighlighter-angle);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-sg{
+  color:var(--color-prettylights-syntax-sublimelinter-gutter-mark);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .pl-corl{
+  color:var(--color-prettylights-syntax-constant-other-reference-link);
+  text-decoration:underline;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section [role=button]:focus:not(:focus-visible),div#__marp-vscode > div > svg > foreignObject > section [role=tabpanel][tabindex="0"]:focus:not(:focus-visible),div#__marp-vscode > div > svg > foreignObject > section a:focus:not(:focus-visible),div#__marp-vscode > div > svg > foreignObject > section button:focus:not(:focus-visible),div#__marp-vscode > div > svg > foreignObject > section summary:focus:not(:focus-visible){
+  box-shadow:none;
+  outline:none;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section [tabindex="0"]:focus:not(:focus-visible),div#__marp-vscode > div > svg > foreignObject > section details-dialog:focus:not(:focus-visible){
+  outline:none;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section g-emoji{
+  display:inline-block;
+  font-family:Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
+  font-size:1em;
+  font-style:normal !important;
+  font-weight:var(--base-text-weight-normal, 400);
+  line-height:1;
+  min-width:1ch;
+  vertical-align:-.075em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section g-emoji img{
+  height:1em;
+  width:1em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .task-list-item{
+  list-style-type:none;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .task-list-item label{
+  font-weight:var(--base-text-weight-normal, 400);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .task-list-item.enabled label{
+  cursor:pointer;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .task-list-item+.task-list-item{
+  margin-top:var(--base-size-4);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .task-list-item .handle{
+  display:none;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .task-list-item-checkbox{
+  margin:0 .2em .25em -1.4em;
+  vertical-align:middle;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section ul:dir(rtl) .task-list-item-checkbox{
+  margin:0 -1.6em .25em .2em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section ol:dir(rtl) .task-list-item-checkbox{
+  margin:0 -1.6em .25em .2em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .contains-task-list:focus-within .task-list-item-convert-container,div#__marp-vscode > div > svg > foreignObject > section .contains-task-list:hover .task-list-item-convert-container{
+  display:block;
+  height:24px;
+  overflow:visible;
+  width:auto;
+  clip:auto;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section ::-webkit-calendar-picker-indicator{
+  filter:invert(50%);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .markdown-alert{
+  border-left:.25em solid var(--borderColor-default);
+  color:inherit;
+  margin-bottom:var(--base-size-16);
+  padding:var(--base-size-8) var(--base-size-16);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .markdown-alert>:first-child{
+  margin-top:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .markdown-alert>:last-child{
+  margin-bottom:0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .markdown-alert .markdown-alert-title{
+  align-items:center;
+  display:flex;
+  font-weight:var(--base-text-weight-medium, 500);
+  line-height:1;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .markdown-alert.markdown-alert-note{
+  border-left-color:var(--borderColor-accent-emphasis);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .markdown-alert.markdown-alert-note .markdown-alert-title{
+  color:var(--fgColor-accent);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .markdown-alert.markdown-alert-important{
+  border-left-color:var(--borderColor-done-emphasis);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .markdown-alert.markdown-alert-important .markdown-alert-title{
+  color:var(--fgColor-done);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .markdown-alert.markdown-alert-warning{
+  border-left-color:var(--borderColor-attention-emphasis);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .markdown-alert.markdown-alert-warning .markdown-alert-title{
+  color:var(--fgColor-attention);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .markdown-alert.markdown-alert-tip{
+  border-left-color:var(--borderColor-success-emphasis);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .markdown-alert.markdown-alert-tip .markdown-alert-title{
+  color:var(--fgColor-success);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .markdown-alert.markdown-alert-caution{
+  border-left-color:var(--borderColor-danger-emphasis);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .markdown-alert.markdown-alert-caution .markdown-alert-title{
+  color:var(--fgColor-danger);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section>:first-child>.heading-element:first-child{
+  margin-top:0 !important;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .highlight :is(pre, marp-pre):has(+.zeroclipboard-container){
+  min-height:52px;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h1, marp-h1){
+  color:var(--h1-color);
+  font-size:1.6em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h1, marp-h1),div#__marp-vscode > div > svg > foreignObject > section :is(h2, marp-h2){
+  border-bottom:none;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h2, marp-h2){
+  font-size:1.3em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h3, marp-h3){
+  font-size:1.1em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h4, marp-h4){
+  font-size:1.05em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h5, marp-h5){
+  font-size:1em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h6, marp-h6){
+  font-size:.9em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h1, marp-h1) strong,div#__marp-vscode > div > svg > foreignObject > section :is(h2, marp-h2) strong,div#__marp-vscode > div > svg > foreignObject > section :is(h3, marp-h3) strong,div#__marp-vscode > div > svg > foreignObject > section :is(h4, marp-h4) strong,div#__marp-vscode > div > svg > foreignObject > section :is(h5, marp-h5) strong,div#__marp-vscode > div > svg > foreignObject > section :is(h6, marp-h6) strong{
+  color:var(--heading-strong-color);
+  font-weight:inherit;
+}
+div#__marp-vscode > div > svg > foreignObject > section :is(h1, marp-h1)::part(auto-scaling),div#__marp-vscode > div > svg > foreignObject > section :is(h2, marp-h2)::part(auto-scaling),div#__marp-vscode > div > svg > foreignObject > section :is(h3, marp-h3)::part(auto-scaling),div#__marp-vscode > div > svg > foreignObject > section :is(h4, marp-h4)::part(auto-scaling),div#__marp-vscode > div > svg > foreignObject > section :is(h5, marp-h5)::part(auto-scaling),div#__marp-vscode > div > svg > foreignObject > section :is(h6, marp-h6)::part(auto-scaling){
+  max-height:563px;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section hr{
+  height:0;
+  padding-top:.25em;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section img{
+  background-color:transparent;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre){
+  border:1px solid var(--borderColor-default);
+  line-height:1.15;
+  overflow:visible;
+}
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre)::part(auto-scaling){
+  max-height:529px;
+}
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs){
+  color:var(--color-prettylights-syntax-storage-modifier-import);
+}
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-doctag),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-keyword),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-meta .hljs-keyword),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-template-tag),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-template-variable),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-type),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-variable.language_){
+  color:var(--color-prettylights-syntax-keyword);
+}
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-title),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-title.class_),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-title.class_.inherited__),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-title.function_){
+  color:var(--color-prettylights-syntax-entity);
+}
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-attr),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-attribute),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-literal),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-meta),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-number),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-operator),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-selector-attr),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-selector-class),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-selector-id),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-variable){
+  color:var(--color-prettylights-syntax-constant);
+}
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-meta .hljs-string),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-regexp),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-string){
+  color:var(--color-prettylights-syntax-string);
+}
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-built_in),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-symbol){
+  color:var(--color-prettylights-syntax-variable);
+}
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-code),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-comment),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-formula){
+  color:var(--color-prettylights-syntax-comment);
+}
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-name),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-quote),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-selector-pseudo),div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-selector-tag){
+  color:var(--color-prettylights-syntax-entity-tag);
+}
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-subst){
+  color:var(--color-prettylights-syntax-storage-modifier-import);
+}
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-section){
+  color:var(--color-prettylights-syntax-markup-heading);
+  font-weight:700;
+}
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-bullet){
+  color:var(--color-prettylights-syntax-markup-list);
+}
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-emphasis){
+  color:var(--color-prettylights-syntax-markup-italic);
+  font-style:italic;
+}
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-strong){
+  color:var(--color-prettylights-syntax-markup-bold);
+  font-weight:700;
+}
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-addition){
+  background-color:var(--color-prettylights-syntax-markup-inserted-bg);
+  color:var(--color-prettylights-syntax-markup-inserted-text);
+}
+div#__marp-vscode > div > svg > foreignObject > section :is(pre, marp-pre) :where(.hljs-deletion){
+  background-color:var(--color-prettylights-syntax-markup-deleted-bg);
+  color:var(--color-prettylights-syntax-markup-deleted-text);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section footer,div#__marp-vscode > div > svg > foreignObject > section header{
+  color:var(--header-footer-color);
+  font-size:18px;
+  left:30px;
+  margin:0;
+  position:absolute;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section header{
+  top:21px;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section footer{
+  bottom:21px;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section{
+  --h1-color:#246;
+  --header-footer-color:hsla(0,0%,40%,.75);
+  --heading-strong-color:#48c;
+  --paginate-color:#777;
+  --base-size-4:4px;
+  --base-size-8:8px;
+  --base-size-16:16px;
+  --base-size-24:24px;
+  --base-size-40:40px;
+  align-items:stretch;
+  display:block;
+  flex-flow:column nowrap;
+  font-size:29px;
+  height:720px;
+  padding:78.5px;
+  place-content:safe center center;
+  width:1280px;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section {
+  --marpit-root-font-size:29px;
+}
+div#__marp-vscode > div > svg > foreignObject > section:where(.invert){
+  --h1-color:#cee7ff;
+  --header-footer-color:hsla(0,0%,60%,.75);
+  --heading-strong-color:#7bf;
+  --paginate-color:#999;
+}
+div#__marp-vscode > div > svg > foreignObject > section>:last-child,div#__marp-vscode > div > svg > foreignObject > section[data-footer]>:nth-last-child(2){
+  margin-bottom:0;
+}
+div#__marp-vscode > div > svg > foreignObject > section>:first-child,div#__marp-vscode > div > svg > foreignObject > section>header:first-child+*{
+  margin-top:0;
+}
+div#__marp-vscode > div > svg > foreignObject > section:after{
+  bottom:21px;
+  color:var(--paginate-color);
+  font-size:24px;
+  padding:0;
+  position:absolute;
+  right:30px;
+}
+div#__marp-vscode > div > svg > foreignObject > section:after {
+  --marpit-root-font-size:24px;
+}
+div#__marp-vscode > div > svg > foreignObject > section[data-color] :is(h1, marp-h1),div#__marp-vscode > div > svg > foreignObject > section[data-color] :is(h2, marp-h2),div#__marp-vscode > div > svg > foreignObject > section[data-color] :is(h3, marp-h3),div#__marp-vscode > div > svg > foreignObject > section[data-color] :is(h4, marp-h4),div#__marp-vscode > div > svg > foreignObject > section[data-color] :is(h5, marp-h5),div#__marp-vscode > div > svg > foreignObject > section[data-color] :is(h6, marp-h6){
+  color:currentcolor;
+}
+
+div#__marp-vscode > div > svg > foreignObject > :where(section) {
+  container-type: size;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section img[data-marp-twemoji]{
+  background:transparent;
+  height:1em;
+  margin:0 .05em 0 .1em;
+  vertical-align:-.1em;
+  width:1em;
+}
+
+/* @theme vald */
+/* @import url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css'); */
+
+div#__marp-vscode > div > svg > foreignObject > section .hljs-property { color: #ff79c6; } /* メソッド名など */
+div#__marp-vscode > div > svg > foreignObject > section .hljs-variable { color: #8be9fd; } /* 変数 */
+
+div#__marp-vscode > div > svg > foreignObject > :where(section):not([\20 root]) {
+    color: rgb(0, 96, 118);
+
+    background-color: rgb(248, 248, 248);
+    /* background: linear-gradient(to right, #ffffff, rgb(248, 248, 248)); */
+    
+    background-image: url(./theme/symbol.svg), url(./theme/symbol_white.svg);
+    background-size: 4%, 50%;
+    background-repeat: no-repeat;
+    background-position: right bottom;
+    background-position: calc(100% - 70px) calc(100% - 25px);
+    /* z-index: 100; */
+}
+/* 
+section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(to right, #ffffff, rgb(248, 248, 248));
+    z-index: -3;
+} */
+
+div#__marp-vscode > div > svg > foreignObject > section :is(h1, marp-h1) {
+    color: rgb(0, 96, 118);
+    text-align: center;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section {
+    /* background: linear-gradient(to right, #ffffff, #eeeeee); */
+    padding: calc(var(--marpit-root-font-size, 1rem) * 2);
+    border-radius: calc(var(--marpit-root-font-size, 1rem) * 0.5);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section header {
+    font-size: 0.5em;
+    font-weight: 600;
+    top: calc(var(--marpit-root-font-size, 1rem) * 0.3);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section footer {
+    color: rgb(0, 186, 177);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section .center {
+    text-align: center;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section[data-marpit-advanced-background="background"] {
+  columns: initial !important;
+  display: block !important;
+  padding: 0 !important;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section[data-marpit-advanced-background="background"]::before,
+div#__marp-vscode > div > svg > foreignObject > section[data-marpit-advanced-background="background"]::after,
+div#__marp-vscode > div > svg > foreignObject > section[data-marpit-advanced-background="content"]::before,
+div#__marp-vscode > div > svg > foreignObject > section[data-marpit-advanced-background="content"]::after {
+  display: none !important;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section[data-marpit-advanced-background="background"] > div[data-marpit-advanced-background-container] {
+  all: initial;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  overflow: hidden;
+  width: 100%;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section[data-marpit-advanced-background="background"] > div[data-marpit-advanced-background-container][data-marpit-advanced-background-direction="vertical"] {
+  flex-direction: column;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section[data-marpit-advanced-background="background"][data-marpit-advanced-background-split] > div[data-marpit-advanced-background-container] {
+  width: var(--marpit-advanced-background-split, 50%);
+}
+
+div#__marp-vscode > div > svg > foreignObject > section[data-marpit-advanced-background="background"][data-marpit-advanced-background-split="right"] > div[data-marpit-advanced-background-container] {
+  margin-left: calc(100% - var(--marpit-advanced-background-split, 50%));
+}
+
+div#__marp-vscode > div > svg > foreignObject > section[data-marpit-advanced-background="background"] > div[data-marpit-advanced-background-container] > figure {
+  all: initial;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  flex: auto;
+  margin: 0;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section[data-marpit-advanced-background="background"] > div[data-marpit-advanced-background-container] > figure > figcaption {
+	position: absolute;
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  white-space: nowrap;
+  width: 1px;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section[data-marpit-advanced-background="content"],
+div#__marp-vscode > div > svg > foreignObject > section[data-marpit-advanced-background="pseudo"] {
+  background: transparent !important;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section[data-marpit-advanced-background="pseudo"],
+div#__marp-vscode > div > svg[data-marpit-svg] > foreignObject[data-marpit-advanced-background="pseudo"] {
+  pointer-events: none !important;
+}
+
+div#__marp-vscode > div > svg > foreignObject > section[data-marpit-advanced-background-split] {
+  width: 100%;
+  height: 100%;
+}
+</style><div id="__marp-vscode"><div data-marp-vscode-slide-wrapper="" class="code-line" data-line="0"><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720">
+<section id="1" data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="1" style="--paginate:true;--footer:© vdaas/vald;--theme:vald;" data-marpit-pagination-total="15">
+<h1 id="grafana-foundation-sdk-%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%9F" class="code-line" data-line="8">Grafana Foundation SDK を使った</h1>
+<h1 id="grafana-dashboard-as-code" class="code-line" data-line="9">Grafana Dashboard as Code</h1>
+<div class="center">
+Distributed Vector Database Vald / Matts966
+</div>
+<footer>© vdaas/vald</footer>
+</section>
+</foreignObject></svg></div><div data-marp-vscode-slide-wrapper="" class="code-line" data-line="15"><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720">
+<section id="2" data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="2" style="--paginate:true;--footer:© vdaas/vald;--theme:vald;" data-marpit-pagination-total="15">
+<h2 id="grafana%E7%AE%A1%E7%90%86%E3%81%AE%E8%AA%B2%E9%A1%8C" class="code-line" data-line="17">Grafana管理の課題</h2>
+<ul class="code-line" data-line="19">
+<li class="code-line" data-line="19">同じようなパネルをたくさん管理していて、更新する時大変
+<ul class="code-line" data-line="20">
+<li class="code-line" data-line="20">似てるけどコンポーネントごとにメトリクスが違う</li>
+<li class="code-line" data-line="21">繰り返したり条件分岐したい</li>
+</ul>
+</li>
+<li class="code-line" data-line="22">シンプルなパネルでもJSONが大きくなってしまい直接読み書きするのは辛い</li>
+<li class="code-line" data-line="23">exportしているメトリクスのコードが変わったら追従したい、自動生成したい</li>
+<li class="code-line" data-line="24">バージョンを上げた時に簡単に追従したい</li>
+</ul>
+<footer>© vdaas/vald</footer>
+</section>
+</foreignObject></svg></div><div data-marp-vscode-slide-wrapper="" class="code-line" data-line="26"><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720">
+<section id="3" data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="3" style="--paginate:true;--footer:© vdaas/vald;--theme:vald;" data-marpit-pagination-total="15">
+<h2 id="grafana-dashboard-as-code%E3%81%AE%E9%81%B8%E6%8A%9E%E8%82%A2---json%E3%83%99%E3%83%BC%E3%82%B9" class="code-line" data-line="28">Grafana Dashboard as Codeの選択肢 - JSONベース</h2>
+<table class="code-line" data-line="30">
+<thead class="code-line" data-line="30">
+<tr class="code-line" data-line="30">
+<th>方法</th>
+<th>概要</th>
+<th>特徴・注意点</th>
+</tr>
+</thead>
+<tbody class="code-line" data-line="32">
+<tr class="code-line" data-line="32">
+<td>JSON管理</td>
+<td>GUIで作成後にJSON出力</td>
+<td>単純・最小構成向け、再利用や共通化は弱い</td>
+</tr>
+<tr class="code-line" data-line="33">
+<td>Terraform Provider for Grafana</td>
+<td>IaC統合（HCL）</td>
+<td>JSON構造の記述が必要、Terraformに統合できる</td>
+</tr>
+<tr class="code-line" data-line="34">
+<td>Git Sync</td>
+<td>GUI変更を自動でGit同期（Grafana 12以降）</td>
+<td>GUI派に便利、繰り返しや再利用には不向き</td>
+</tr>
+</tbody>
+</table>
+<footer>© vdaas/vald</footer>
+</section>
+</foreignObject></svg></div><div data-marp-vscode-slide-wrapper="" class="code-line" data-line="36"><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720">
+<section id="4" data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="4" style="--paginate:true;--footer:© vdaas/vald;--theme:vald;" data-marpit-pagination-total="15">
+<h2 id="grafana-dashboard-as-code%E3%81%AE%E9%81%B8%E6%8A%9E%E8%82%A2---%E3%82%B3%E3%83%BC%E3%83%89%E3%83%99%E3%83%BC%E3%82%B9" class="code-line" data-line="38">Grafana Dashboard as Codeの選択肢 - コードベース</h2>
+<table class="code-line" data-line="40">
+<thead class="code-line" data-line="40">
+<tr class="code-line" data-line="40">
+<th>方法</th>
+<th>概要</th>
+<th>特徴・注意点</th>
+</tr>
+</thead>
+<tbody class="code-line" data-line="42">
+<tr class="code-line" data-line="42">
+<td>Grizzly</td>
+<td>CLIでリソースとして管理可能</td>
+<td>CLIが便利・Jsonnet使える</td>
+</tr>
+<tr class="code-line" data-line="43">
+<td>Grafonnet</td>
+<td>Jsonnetで生成</td>
+<td>繰り返し処理など対応</td>
+</tr>
+<tr class="code-line" data-line="44">
+<td>Grabana</td>
+<td>Goで記述、宣言的</td>
+<td>唯一JSON逆生成可能、開発は <code>grafana-foundation-sdk</code> に移行傾向</td>
+</tr>
+<tr class="code-line" data-line="45">
+<td>grafana-foundation-sdk</td>
+<td>公式SDK（Go等）</td>
+<td><img class="emoji" draggable="false" alt="⭐" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2b50.svg" data-marp-twemoji=""/>️<strong>本日のお題</strong><img class="emoji" draggable="false" alt="⭐" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2b50.svg" data-marp-twemoji=""/>️</td>
+</tr>
+</tbody>
+</table>
+<footer>© vdaas/vald</footer>
+</section>
+</foreignObject></svg></div><div data-marp-vscode-slide-wrapper="" class="code-line" data-line="109"><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720">
+<section id="5" data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="5" style="--paginate:true;--footer:© vdaas/vald;--theme:vald;" data-marpit-pagination-total="15">
+<h2 id="grafana-foundation-sdk-%E3%81%AE%E6%A6%82%E8%A6%81" class="code-line" data-line="111">grafana-foundation-sdk の概要</h2>
+<ul class="code-line" data-line="113">
+<li class="code-line" data-line="113">Grafana公式が提供する言語ごとのSDK</li>
+<li class="code-line" data-line="114">GrafanaのAPIスキーマをベースに自動生成されている</li>
+<li class="code-line" data-line="115">Go, TypeScript, Python, Java に対応</li>
+</ul>
+<footer>© vdaas/vald</footer>
+</section>
+</foreignObject></svg></div><div data-marp-vscode-slide-wrapper="" class="code-line" data-line="117"><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720">
+<section id="6" data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="6" style="--paginate:true;--footer:© vdaas/vald;--theme:vald;" data-marpit-pagination-total="15">
+<h2 id="%E3%83%A1%E3%83%AA%E3%83%83%E3%83%88%EF%BC%91" class="code-line" data-line="119">メリット１</h2>
+<ul class="code-line" data-line="121">
+<li class="code-line" data-line="121">繰り返しを簡単に表現できる
+<ul class="code-line" data-line="122">
+<li class="code-line" data-line="122">同じようなダッシュボードをコンポーネントごとにつくっている場合などに、関数等で整理しやすい</li>
+<li class="code-line" data-line="123">コンポーネント作成→ダッシュボード作成まで自動化していきたい（できる）</li>
+</ul>
+</li>
+</ul>
+<footer>© vdaas/vald</footer>
+</section>
+</foreignObject></svg></div><div data-marp-vscode-slide-wrapper="" class="code-line" data-line="125"><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720">
+<section id="7" data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="7" style="--paginate:true;--footer:© vdaas/vald;--theme:vald;" data-marpit-pagination-total="15">
+<h2 id="%E3%83%A1%E3%83%AA%E3%83%83%E3%83%88%EF%BC%92" class="code-line" data-line="127">メリット２</h2>
+<p class="code-line" data-line="129">メソッドチェーンで書けるので、補完に沿って書ける</p>
+<p class="code-line" data-line="131"><img src="file:////go/src/github.com/vdaas/vald/k8s/metrics/grafana/image-1.png" alt="alt text" /></p>
+<footer>© vdaas/vald</footer>
+</section>
+</foreignObject></svg></div><div data-marp-vscode-slide-wrapper="" class="code-line" data-line="133"><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720">
+<section id="8" data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="8" style="--paginate:true;--footer:© vdaas/vald;--theme:vald;" data-marpit-pagination-total="15">
+<h2 id="%E3%83%A1%E3%83%AA%E3%83%83%E3%83%88%EF%BC%93" class="code-line" data-line="135">メリット３</h2>
+<ul class="code-line" data-line="137">
+<li class="code-line" data-line="137">公式がAPIスキーマから自動生成しているので
+<ul class="code-line" data-line="138">
+<li class="code-line" data-line="138"><code>go get</code> でタグを切り替えるだけで簡単に最新に追従できる</li>
+<li class="code-line" data-line="139">網羅性が高い</li>
+</ul>
+</li>
+</ul>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="code-line language-sh" data-line="141">go get github.com/grafana/grafana-foundation-sdk/go@v11.6.x+cog-v0.0.x
+</code></pre>
+<footer>© vdaas/vald</footer>
+</section>
+</foreignObject></svg></div><div data-marp-vscode-slide-wrapper="" class="code-line" data-line="145"><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720">
+<section id="9" data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="9" style="--paginate:true;--footer:© vdaas/vald;--theme:vald;" data-marpit-pagination-total="15">
+<h2 id="%E3%83%A1%E3%83%AA%E3%83%83%E3%83%88%EF%BC%94" class="code-line" data-line="147">メリット４</h2>
+<p class="code-line" data-line="149">（Goでダッシュボードもメトリクスも書くなら）<br />
+自前で登録しているメトリクス名を参照でき、二重管理を避けられる</p>
+<footer>© vdaas/vald</footer>
+</section>
+</foreignObject></svg></div><div data-marp-vscode-slide-wrapper="" class="code-line" data-line="152"><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720">
+<section id="10" data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="10" style="--paginate:true;--footer:© vdaas/vald;--theme:vald;" data-marpit-pagination-total="15">
+<h2 id="%E3%83%A1%E3%83%AA%E3%83%83%E3%83%88%EF%BC%95" class="code-line" data-line="154">メリット５</h2>
+<p class="code-line" data-line="156">公式から promql もビルダーが提供されていて、複雑な文字列、括弧の対応の管理を避けられる</p>
+<p class="code-line" data-line="158"><img src="file:////go/src/github.com/vdaas/vald/k8s/metrics/grafana/image-2.png" alt="alt text" /></p>
+<footer>© vdaas/vald</footer>
+</section>
+</foreignObject></svg></div><div data-marp-vscode-slide-wrapper="" class="code-line" data-line="160"><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720">
+<section id="11" data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="11" style="--paginate:true;--footer:© vdaas/vald;--theme:vald;" data-marpit-pagination-total="15">
+<h2 id="%E3%83%87%E3%83%A1%E3%83%AA%E3%83%83%E3%83%88" class="code-line" data-line="162">デメリット</h2>
+<ul class="code-line" data-line="164">
+<li class="code-line" data-line="164">GUIでの操作ができない
+<ul class="code-line" data-line="165">
+<li class="code-line" data-line="165">やるとすると、操作の手順を覚えて関数呼び出しに書き直すイメージ</li>
+<li class="code-line" data-line="166">ここが気になる場合、 Grizzly や Git Sync、自前の自動化がおすすめ</li>
+</ul>
+</li>
+<li class="code-line" data-line="167">grabanaではサポートされていたJSONからのコード生成がない
+<ul class="code-line" data-line="168">
+<li class="code-line" data-line="168">最初導入する時だけはちょっと大変</li>
+</ul>
+</li>
+</ul>
+<footer>© vdaas/vald</footer>
+</section>
+</foreignObject></svg></div><div data-marp-vscode-slide-wrapper="" class="code-line" data-line="170"><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="12" style="--paginate:true;--footer:© vdaas/vald;--theme:vald;--marpit-advanced-background-split:60%;" data-marpit-pagination-total="15" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;image.png&quot;);background-size:contain;"></figure></div></section></foreignObject><foreignObject width="40%" height="720">
+<section id="12" data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="12" style="--paginate:true;--footer:© vdaas/vald;--theme:vald;--marpit-advanced-background-split:60%;" data-marpit-pagination-total="15" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
+<h2 id="%E7%8F%BE%E7%8A%B6-puzzlego-%E3%81%8C%E5%BF%85%E8%A6%81%E3%81%AA%E7%90%86%E7%94%B1" class="code-line" data-line="172">現状 puzzle.go が必要な理由</h2>
+
+<ul class="code-line" data-line="176">
+<li class="code-line" data-line="176">パネルの配置にバグがあるため
+<ul class="code-line" data-line="177">
+<li class="code-line" data-line="177">行や列の位置がズレるなど</li>
+<li class="code-line" data-line="178">自分で整理するコードを書く必要あり</li>
+</ul>
+</li>
+</ul>
+<footer>© vdaas/vald</footer>
+</section>
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="12" style="" data-marpit-pagination-total="15" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg></div><div data-marp-vscode-slide-wrapper="" class="code-line" data-line="180"><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720">
+<section id="13" data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="13" style="--paginate:true;--footer:© vdaas/vald;--theme:vald;" data-marpit-pagination-total="15">
+<h2 id="%E3%81%BE%E3%81%A8%E3%82%81" class="code-line" data-line="182">まとめ</h2>
+<ul class="code-line" data-line="184">
+<li class="code-line" data-line="184">小規模〜個人用途 → Git Sync, Grizzly や JSON エクスポート</li>
+<li class="code-line" data-line="185">柔軟で再利用性重視 → Grabana / Grafonnet / grafana-foundation-sdk</li>
+<li class="code-line" data-line="186">Terraform使ってるなら provider も候補</li>
+<li class="code-line" data-line="187">Go/TypeScript/Python/Javaで自動化していくなら grafana-foundation-sdk がおすすめ</li>
+</ul>
+<footer>© vdaas/vald</footer>
+</section>
+</foreignObject></svg></div><div data-marp-vscode-slide-wrapper="" class="code-line" data-line="189"><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720">
+<section id="14" data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="14" style="--paginate:true;--footer:© vdaas/vald;--theme:vald;" data-marpit-pagination-total="15">
+<h2 id="%E5%8F%82%E8%80%83%E3%83%AA%E3%83%B3%E3%82%AF" class="code-line" data-line="191">参考リンク</h2>
+<ul class="code-line" data-line="193">
+<li class="code-line" data-line="193"><a href="https://blog.kevingomez.fr/2023/03/07/three-years-of-grafana-dashboards-as-code/">Three years of Grafana dashboards as code</a>
+<ul class="code-line" data-line="194">
+<li class="code-line" data-line="194"><code>grabana</code> の作者の方で、今は Grafana Labs で <code>grafana-foundation-sdk</code> を開発されている方のブログ</li>
+</ul>
+</li>
+<li class="code-line" data-line="195"><a href="https://github.com/grafana/grafana-foundation-sdk">grafana-foundation-sdk GitHub</a></li>
+</ul>
+<footer>© vdaas/vald</footer>
+</section>
+</foreignObject></svg></div><div data-marp-vscode-slide-wrapper="" class="code-line" data-line="197"><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="15" style="--paginate:true;--footer:© vdaas/vald;--theme:vald;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="15" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;qr.png&quot;);background-size:auto;"></figure></div></section></foreignObject><foreignObject width="50%" height="720">
+<section id="15" data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="15" style="--paginate:true;--footer:© vdaas/vald;--theme:vald;--marpit-advanced-background-split:50%;" data-marpit-pagination-total="15" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
+<h2 id="contributions-are-welcome" class="code-line" data-line="199">Contributions are Welcome!</h2>
+<footer>© vdaas/vald</footer>
+</section>
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-paginate="true" data-footer="© vdaas/vald" data-theme="vald" data-marpit-pagination="15" style="" data-marpit-pagination-total="15" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg></div></div>
+            
+            <script async type="text/javascript">
+/* From extension marp-team.marp-vscode */
+(()=>{var W=Object.defineProperty;var K=(w,h,x)=>h in w?W(w,h,{enumerable:!0,configurable:!0,writable:!0,value:x}):w[h]=x;var o=(w,h)=>W(w,"name",{value:h,configurable:!0});var v=(w,h,x)=>K(w,typeof h!="symbol"?h+"":h,x);(()=>{var w={32:(y,S,g)=>{y.exports=g(924)},924:(y,S)=>{"use strict";var g;g={value:!0};const E={h1:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"1"},style:"display: block; font-size: 2em; margin-block-start: 0.67em; margin-block-end: 0.67em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h2:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"2"},style:"display: block; font-size: 1.5em; margin-block-start: 0.83em; margin-block-end: 0.83em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h3:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"3"},style:"display: block; font-size: 1.17em; margin-block-start: 1em; margin-block-end: 1em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h4:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"4"},style:"display: block; margin-block-start: 1.33em; margin-block-end: 1.33em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h5:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"5"},style:"display: block; font-size: 0.83em; margin-block-start: 1.67em; margin-block-end: 1.67em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h6:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"6"},style:"display: block; font-size: 0.67em; margin-block-start: 2.33em; margin-block-end: 2.33em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},span:{proto:o(()=>HTMLSpanElement,"proto")},pre:{proto:o(()=>HTMLElement,"proto"),style:"display: block; font-family: monospace; white-space: pre; margin: 1em 0; --marp-auto-scaling-white-space: pre;"}},A="data-marp-auto-scaling-wrapper",p="data-marp-auto-scaling-svg",c="data-marp-auto-scaling-container",T=class T extends HTMLElement{constructor(){super();v(this,"container");v(this,"containerSize");v(this,"containerObserver");v(this,"svg");v(this,"svgComputedStyle");v(this,"svgPreserveAspectRatio","xMinYMid meet");v(this,"wrapper");v(this,"wrapperSize");v(this,"wrapperObserver");const s=o(t=>([e])=>{const{width:n,height:r}=e.contentRect;this[t]={width:n,height:r},this.updateSVGRect()},"e");this.attachShadow({mode:"open"}),this.containerObserver=new ResizeObserver(s("containerSize")),this.wrapperObserver=new ResizeObserver((...t)=>{s("wrapperSize")(...t),this.flushSvgDisplay()})}static get observedAttributes(){return["data-downscale-only"]}connectedCallback(){this.shadowRoot.innerHTML=`
+<style>
+  svg[${p}] { display: block; width: 100%; height: auto; vertical-align: top; }
+  span[${c}] { display: table; white-space: var(--marp-auto-scaling-white-space, nowrap); width: max-content; }
+</style>
+<div ${A}>
+  <svg part="svg" ${p}>
+    <foreignObject><span ${c}><slot></slot></span></foreignObject>
+  </svg>
+</div>
+    `.split(/\n\s*/).join(""),this.wrapper=this.shadowRoot.querySelector(`div[${A}]`)??void 0;const s=this.svg;this.svg=this.wrapper?.querySelector(`svg[${p}]`)??void 0,this.svg!==s&&(this.svgComputedStyle=this.svg?window.getComputedStyle(this.svg):void 0),this.container=this.svg?.querySelector(`span[${c}]`)??void 0,this.observe()}disconnectedCallback(){this.svg=void 0,this.svgComputedStyle=void 0,this.wrapper=void 0,this.container=void 0,this.observe()}attributeChangedCallback(){this.observe()}flushSvgDisplay(){const{svg:s}=this;s&&(s.style.display="inline",requestAnimationFrame(()=>{s.style.display=""}))}observe(){this.containerObserver.disconnect(),this.wrapperObserver.disconnect(),this.wrapper&&this.wrapperObserver.observe(this.wrapper),this.container&&this.containerObserver.observe(this.container),this.svgComputedStyle&&this.observeSVGStyle(this.svgComputedStyle)}observeSVGStyle(s){const t=o(()=>{const e=(()=>{const n=s.getPropertyValue("--preserve-aspect-ratio");return n?n.trim():`x${(({textAlign:r,direction:l})=>{if(r.endsWith("left"))return"Min";if(r.endsWith("right"))return"Max";if(r==="start"||r==="end"){let d=l==="rtl";return r==="end"&&(d=!d),d?"Max":"Min"}return"Mid"})(s)}YMid meet`})();e!==this.svgPreserveAspectRatio&&(this.svgPreserveAspectRatio=e,this.updateSVGRect()),s===this.svgComputedStyle&&requestAnimationFrame(t)},"t");t()}updateSVGRect(){let s=Math.ceil(this.containerSize?.width??0);const t=Math.ceil(this.containerSize?.height??0);this.dataset.downscaleOnly!==void 0&&(s=Math.max(s,this.wrapperSize?.width??0));const e=this.svg?.querySelector(":scope > foreignObject");if(e?.setAttribute("width",`${s}`),e?.setAttribute("height",`${t}`),this.svg&&(this.svg.setAttribute("viewBox",`0 0 ${s} ${t}`),this.svg.setAttribute("preserveAspectRatio",this.svgPreserveAspectRatio),this.svg.style.height=s<=0||t<=0?"0":""),this.container){const n=this.svgPreserveAspectRatio.toLowerCase();this.container.style.marginLeft=n.startsWith("xmid")||n.startsWith("xmax")?"auto":"0",this.container.style.marginRight=n.startsWith("xmi")?"auto":"0"}}};o(T,"s");let i=T;const m=o((a,{attrs:u={},style:s})=>class extends a{constructor(...t){super(...t);for(const[e,n]of Object.entries(u))this.hasAttribute(e)||this.setAttribute(e,n);this._shadow()}static get observedAttributes(){return["data-auto-scaling"]}connectedCallback(){this._update()}attributeChangedCallback(){this._update()}_shadow(){if(!this.shadowRoot)try{this.attachShadow({mode:"open"})}catch(t){if(!(t instanceof Error&&t.name==="NotSupportedError"))throw t}return this.shadowRoot}_update(){const t=this._shadow();if(t){const e=s?`<style>:host { ${s} }</style>`:"";let n="<slot></slot>";const{autoScaling:r}=this.dataset;r!==void 0&&(n=`<marp-auto-scaling exportparts="svg:auto-scaling" ${r==="downscale-only"?"data-downscale-only":""}>${n}</marp-auto-scaling>`),t.innerHTML=e+n}}},"r");let b;const z=Symbol();let $;const V="marpitSVGPolyfill:setZoomFactor,",C=Symbol(),j=Symbol(),G=o(()=>{const a=navigator.vendor==="Apple Computer, Inc.",u=a?[D]:[],s={then:o(t=>(a?(async()=>{if($===void 0){const e=document.createElement("canvas");e.width=10,e.height=10;const n=e.getContext("2d"),r=new Image(10,10),l=new Promise(d=>{r.addEventListener("load",()=>d())});r.crossOrigin="anonymous",r.src="data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%2210%22%20viewBox%3D%220%200%201%201%22%3E%3CforeignObject%20width%3D%221%22%20height%3D%221%22%20requiredExtensions%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml%22%3E%3Cdiv%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml%22%20style%3D%22width%3A%201px%3B%20height%3A%201px%3B%20background%3A%20red%3B%20position%3A%20relative%22%3E%3C%2Fdiv%3E%3C%2FforeignObject%3E%3C%2Fsvg%3E",await l,n.drawImage(r,0,0),$=n.getImageData(5,5,1,1).data[3]<128}return $})().then(e=>{t?.(e?[D]:[])}):t?.([]),s),"then")};return Object.assign(u,s)},"g");let H,O;function D(a){const u=typeof a=="object"&&a.target||document,s=typeof a=="object"?a.zoom:a;window[j]||(Object.defineProperty(window,j,{configurable:!0,value:!0}),document.body.style.zoom=1.0001,document.body.offsetHeight,document.body.style.zoom=1,window.addEventListener("message",({data:e,origin:n})=>{if(n===window.origin)try{if(e&&typeof e=="string"&&e.startsWith(V)){const[,r]=e.split(","),l=Number.parseFloat(r);Number.isNaN(l)||(O=l)}}catch(r){console.error(r)}}));let t=!1;Array.from(u.querySelectorAll("svg[data-marpit-svg]"),e=>{var n,r,l,d;e.style.transform||(e.style.transform="translateZ(0)");const f=s||O||e.currentScale||1;H!==f&&(H=f,t=f);const P=e.getBoundingClientRect(),{length:Z}=e.children;for(let F=0;F<Z;F+=1){const k=e.children[F];if(k.getScreenCTM){const _=k.getScreenCTM();if(_){const Y=(r=(n=k.x)===null||n===void 0?void 0:n.baseVal.value)!==null&&r!==void 0?r:0,U=(d=(l=k.y)===null||l===void 0?void 0:l.baseVal.value)!==null&&d!==void 0?d:0,J=k.children.length;for(let R=0;R<J;R+=1){const N=k.children[R];if(N.tagName==="SECTION"){const{style:q}=N;q.transformOrigin||(q.transformOrigin=`${-Y}px ${-U}px`),q.transform=`scale(${f}) matrix(${_.a}, ${_.b}, ${_.c}, ${_.d}, ${_.e-P.left}, ${_.f-P.top}) translateZ(0.0001px)`;break}}}}}}),t!==!1&&Array.from(u.querySelectorAll("iframe"),({contentWindow:e})=>{e?.postMessage(`${V}${t}`,window.origin==="null"?"*":window.origin)})}o(D,"u");function B({once:a=!1,target:u=document}={}){const s=function(t=document){if(t[C])return t[C];let e=!0;const n=o(()=>{e=!1,delete t[C]},"i");Object.defineProperty(t,C,{configurable:!0,value:n});let r=[],l=!1;(async()=>{try{r=await G()}finally{l=!0}})();const d=o(()=>{for(const f of r)f({target:t});l&&r.length===0||e&&window.requestAnimationFrame(d)},"r");return d(),n}(u);return a?(s(),()=>{}):s}o(B,"v"),H=1,O=void 0;const I=B,M=Symbol(),L=o((a=document)=>{if(typeof window>"u")throw new Error("Marp Core's browser script is valid only in browser context.");if(((e=document)=>{const n=window[z];n||customElements.define("marp-auto-scaling",i);for(const r of Object.keys(E)){const l=`marp-${r}`,d=E[r].proto();(b??(b=!!document.createElement("div",{is:"marp-auto-scaling"}).outerHTML.startsWith("<div is"),b))&&d!==HTMLElement?n||customElements.define(l,m(d,{style:E[r].style}),{extends:r}):(n||customElements.define(l,m(HTMLElement,E[r])),e.querySelectorAll(`${r}[is="${l}"]`).forEach(f=>{f.outerHTML=f.outerHTML.replace(new RegExp(`^<${r}`,"i"),`<${l}`).replace(new RegExp(`</${r}>$`,"i"),`</${l}>`)}))}window[z]=!0})(a),a[M])return a[M];const u=B({target:a}),s=o(()=>{u(),delete a[M]},"n"),t=Object.assign(s,{cleanup:s,update:o(()=>L(a),"update")});return Object.defineProperty(a,M,{configurable:!0,value:t}),t},"y");S.browser=L,g=L,g=I}},h={};function x(y){var S=h[y];if(S!==void 0)return S.exports;var g=h[y]={exports:{}};return w[y](g,g.exports,x),g.exports}o(x,"__webpack_require__");var Q={};(()=>{"use strict";var y=x(32);function S(){let p,c;const i=o(()=>{const m=document.getElementById("__marp-vscode"),b=!!m;p!==b?(document.body.classList.toggle("marp-vscode",b),b?c=(0,y.browser)():(c?.cleanup(),c=void 0),p=b):b&&c?.update(),p?(m&&g(m),E()):A()},"updateCallback");window.addEventListener("load",()=>window.setTimeout(i,100)),window.addEventListener("vscode.markdown.updateContent",i),i()}o(S,"preview");const g=o(p=>{p.querySelectorAll("[is]").forEach(c=>{if(c.nodeName.includes("-")||document.createElement(c.nodeName).constructor!==c.constructor)return;const{outerHTML:m}=c;c.outerHTML=m,console.debug("[marp-vscode] Custom element has been upgraded forcibly:",m.slice(0,m.indexOf(">")+1||void 0))})},"forceUpgradeCustomElements"),E=o(()=>{const p=document.querySelectorAll("style:not(#__marp-vscode-style,#_defaultStyles,[data-marp-vscode-body])"),c=document.querySelectorAll('link[rel="stylesheet"][href]:not([href*="marp-vscode"])');p.forEach(i=>{i.closest("#__marp-vscode")||(i.dataset.marpVscodeBody=i.textContent??"",i.textContent="")}),c.forEach(i=>{if(i.closest("#__marp-vscode"))return;const{href:m}=i;i.dataset.marpVscodeHref=m,i.removeAttribute("href")})},"removeStyles"),A=o(()=>{const p=document.querySelectorAll("style[data-marp-vscode-body]"),c=document.querySelectorAll("link[data-marp-vscode-href]");p.forEach(i=>{i.textContent=i.dataset.marpVscodeBody||"",delete i.dataset.marpVscodeBody}),c.forEach(i=>{i.href=i.dataset.marpVscodeHref||"",delete i.dataset.marpVscodeHref})},"restoreStyles");S()})()})();})();
+
+</script>
+
+        </body>
+        </html>

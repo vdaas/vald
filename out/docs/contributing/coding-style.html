@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Go Style Guide in Vald</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+/* From extension marp-team.marp-vscode */
+#__marp-vscode {
+  all: revert;
+}
+
+/* Override VS Code default CSS rules reverting to initial
+   https://github.com/microsoft/vscode/blob/master/src/vs/workbench/contrib/webview/browser/pre/main.js#L53 */
+body.marp-vscode {
+  padding: 0;
+}
+
+body.marp-vscode img {
+  max-width: unset;
+  max-height: unset;
+}
+
+body.marp-vscode a,
+body.marp-vscode a:hover,
+body.marp-vscode code {
+  color: unset;
+}
+
+body.marp-vscode blockquote {
+  background: unset;
+  border-color: unset;
+}
+
+@media screen {
+  body.marp-vscode {
+    overflow-y: scroll;
+
+    /* stylelint-disable-next-line selector-class-pattern */
+    &.showEditorSelection {
+      --marp-vscode-highlight-color: rgb(255 255 255 / 40%);
+
+      &.vscode-light {
+        --marp-vscode-highlight-color: rgb(0 0 0 / 15%);
+      }
+
+      &.vscode-high-contrast {
+        --marp-vscode-highlight-color: rgb(255 160 0 / 70%);
+      }
+    }
+  }
+
+  #__marp-vscode [data-marp-vscode-slide-wrapper] {
+    margin: 20px;
+    position: relative;
+
+    &.code-active-line,
+    &:has(.code-active-line) {
+      &::before {
+        position: absolute;
+        content: '';
+        inset: -7px;
+        border: 3px solid var(--marp-vscode-highlight-color, transparent);
+        pointer-events: none;
+      }
+    }
+  }
+
+  #__marp-vscode svg[data-marpit-svg] {
+    box-shadow: 0 5px 10px rgb(0 0 0 / 25%);
+    display: block;
+    margin: 0;
+  }
+
+  /* Based on https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+  #code-csp-warning {
+    background-color: #444;
+    box-shadow: 1px 1px 1px rgb(0 0 0 / 25%);
+    color: white;
+    cursor: pointer;
+    font-family: sans-serif;
+    font-size: 12px;
+    line-height: 22px;
+    margin: 16px;
+    padding: 6px;
+    position: fixed;
+    right: 0;
+    text-align: center;
+    top: 0;
+    word-wrap: break-word;
+  }
+
+  #code-csp-warning:hover {
+    text-decoration: none;
+    background-color: #007acc;
+    box-shadow: 2px 2px 2px rgb(0 0 0 / 25%);
+  }
+}
+
+@media print {
+  body.marp-vscode #code-csp-warning {
+    display: none;
+  }
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="go-style-guide-in-vald">Go Style Guide in Vald</h1>
+<h2 id="introduction">Introduction</h2>
+<p>This guideline includes the coding style for all Vald contributors and reviewers.
+Everyone should follow this guideline to keep the style consistent, so everyone can understand and contribute to Vald easier once they learn it.
+You should have the basic knowledge of how to write Go before contributing to Vald.
+If you find any bugs, please create <a href="https://github.com/vdaas/vald/issues/new?assignees=&amp;labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&amp;template=bug_report.md&amp;title=">a GitHub issue</a>, and we will work on it.</p>
+<p>Please also read the <a href="../contributing/contributing-guide.html">Contribution guideline</a> before you start contributing to Vald.</p>
+<h2 id="code-formatting-and-naming-convention">Code Formatting and Naming Convention</h2>
+<p>Code formatting and naming conventions affect coding readability and maintainability.
+Every developer has a different coding style.
+Luckily Go provides tools to format source code and check for potential issues in the source code.
+We recommend using <a href="https://github.com/segmentio/golines">golines</a>, <a href="https://github.com/mvdan/gofumpt">gofumpt</a>, and <a href="https://github.com/golang/tools/tree/master/cmd/goimports">goimports</a> and <a href="https://github.com/cockroachdb/crlfmt">crlfmt</a> to format the source code in Vald and <a href="https://github.com/golangci/golangci-lint">golangci-lint</a> with the <code>--enable-all</code> option.
+We suggest everyone install the plugin for your editor to format the code once you edit the code automatically and use <code>make format/go</code> command if you want to format the source code manually.</p>
+<p>But having tools to format source code does not mean you do not need to care about the formatting of the code, for example:</p>
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody><tr><td>
+<pre><code class="language-go">badStr := <span class="hljs-string">&quot;apiVersion: v1\n&quot;</span> +
+   <span class="hljs-string">&quot;kind: Service\n&quot;</span> +
+   <span class="hljs-string">&quot;metadata:\n&quot;</span> +
+   <span class="hljs-string">&quot;  name: grafana\n&quot;</span> +
+   <span class="hljs-string">&quot;spec:\n&quot;</span> +
+   <span class="hljs-string">&quot;  ports:\n&quot;</span> +
+   <span class="hljs-string">&quot;    - name: grafana\n&quot;</span> +
+   <span class="hljs-string">&quot;      port: 3000\n&quot;</span> +
+   <span class="hljs-string">&quot;      targetPort: 3000\n&quot;</span> +
+   <span class="hljs-string">&quot;      protocol: TCP\n&quot;</span>
+</code></pre>
+</td><td>
+<pre><code class="language-go">goodStr := <span class="hljs-string">`apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+spec:
+  ports:
+    - name: grafana
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+`</span>
+</code></pre>
+</td></tr></tbody></table>
+<h3 id="project-layout">Project Layout</h3>
+<p>The project layout includes the folder and the file structure in the project. We follow the <a href="https://github.com/golang-standards/project-layout">project-layout</a> example in Vald.</p>
+<h3 id="packages">Packages</h3>
+<p>The package defines the context of the objects in the package; for example, the corresponding methods and structs belong to the corresponding package.
+Unlike other languages like Java, in Go, we use the package name to declare which context of the object we are going to use.
+For example, the <a href="https://golang.org/pkg/time/">time package</a> defines all the objects about time, like <code>time.Now()</code> method to get the current time.</p>
+<p>Here are the naming conventions of the package:</p>
+<ul>
+<li>
+<p>All lower case.</p>
+<pre><code class="language-go"><span class="hljs-comment">// bad</span>
+<span class="hljs-keyword">package</span> ioUtil
+
+<span class="hljs-comment">// good</span>
+<span class="hljs-keyword">package</span> ioutil
+</code></pre>
+</li>
+<li>
+<p>No plurals.</p>
+<pre><code class="language-go"><span class="hljs-comment">// bad</span>
+<span class="hljs-keyword">package</span> times
+
+<span class="hljs-comment">// good</span>
+<span class="hljs-keyword">package</span> time
+</code></pre>
+</li>
+<li>
+<p>Should be the same as the folder name.</p>
+</li>
+<li>
+<p>Should keep as simple as it should and contain only one specific context in the package.</p>
+<pre><code class="language-go"><span class="hljs-comment">// bad</span>
+<span class="hljs-keyword">package</span> encode
+
+<span class="hljs-comment">// good</span>
+<span class="hljs-keyword">package</span> base64 <span class="hljs-comment">// inside the encoding/base64 folder</span>
+</code></pre>
+</li>
+<li>
+<p>Should not be too general, for example, <code>util</code> or <code>helper</code>, which will cause all the objects from different contexts to be stored in one package.
+If you want to name the package as <code>util</code>, please define the more specific package name more <code>ioutil</code> or <code>httputil</code>.</p>
+</li>
+</ul>
+<p>All packages should contain a <code>doc.go</code> file under the package to describe what is the package is. For example, under the folder name called <code>cache</code>, should contain a file named <code>doc.go</code>, which contains the package documentation. Here is the example <code>doc.go</code> of the cache package.</p>
+<pre><code>```go
+// Package cache provides an implementation of cache
+package cache
+````
+</code></pre>
+<h3 id="general-style">General style</h3>
+<p>This section describes the general guideline for the Vald programming style, every Vald contributor should keep these general guidelines in mind while working on the implementation of Vald.</p>
+<h4 id="order-of-declaration">Order of declaration</h4>
+<p>Put the higher priority or frequently used declaration on top of other declarations.
+It makes it easier for Vald to read and search its target source code in Vald.</p>
+<p>For example, the interface declaration should have higher priority than the struct or function declaration; hence it should be put above other declarations.</p>
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody><tr><td>
+<pre><code class="language-go"><span class="hljs-keyword">type</span> S <span class="hljs-keyword">struct</span> {}
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *S)</span></span> fn() {}
+
+<span class="hljs-keyword">type</span> I <span class="hljs-keyword">interface</span> {}
+</code></pre>
+</td><td>
+<pre><code class="language-go"><span class="hljs-keyword">type</span> I <span class="hljs-keyword">interface</span> {}
+
+<span class="hljs-keyword">type</span> S <span class="hljs-keyword">struct</span> {}
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *S)</span></span> fn() {}
+</code></pre>
+</td></tr></tbody></table>
+<h4 id="group-similar-definition">Group similar definition</h4>
+<p>Group similar definitions such as a struct or an interface declaration.
+We should not group an interface and a struct declaration in the same block, for example:</p>
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody><tr><td>
+<pre><code class="language-go"><span class="hljs-keyword">type</span> (
+    I <span class="hljs-keyword">interface</span> {}
+    I2 <span class="hljs-keyword">interface</span> {}
+
+    s <span class="hljs-keyword">struct</span> {}
+    s2 <span class="hljs-keyword">struct</span> {}
+)
+</code></pre>
+</td><td>
+<pre><code class="language-go"><span class="hljs-keyword">type</span> (
+    I <span class="hljs-keyword">interface</span> {}
+    I2 <span class="hljs-keyword">interface</span> {}
+)
+
+<span class="hljs-keyword">type</span> (
+    s <span class="hljs-keyword">struct</span> {}
+    s2 <span class="hljs-keyword">struct</span> {}
+)
+</code></pre>
+</td></tr></tbody></table>
+<h3 id="interfaces">Interfaces</h3>
+<p>The interface defines the program interface for usability and future extendability.
+Unlike other languages like Java, Go supports implicit interface implementation.
+The type implements do not need to specify the interface name; to &quot;implement&quot; the interface, the structs only need to define the methods the same as the interface, so please be careful to define the method name inside the interface.</p>
+<p>The interface should be named as:</p>
+<ul>
+<li>
+<p>Use MixedCaps</p>
+<pre><code class="language-go"><span class="hljs-comment">// bad</span>
+<span class="hljs-keyword">type</span> Roundtripper <span class="hljs-keyword">interface</span> {
+  <span class="hljs-comment">// interface definition</span>
+}
+
+<span class="hljs-comment">// good</span>
+<span class="hljs-keyword">type</span> RoundTripper <span class="hljs-keyword">interface</span> {
+  <span class="hljs-comment">// interface definition</span>
+}
+</code></pre>
+</li>
+<li>
+<p>Use understandable common short form.</p>
+<pre><code class="language-go"><span class="hljs-comment">// bad</span>
+<span class="hljs-keyword">type</span> ATSigner <span class="hljs-keyword">interface</span> {
+  <span class="hljs-comment">// interface definition</span>
+}
+
+<span class="hljs-comment">// good</span>
+<span class="hljs-keyword">type</span> AccessTokenSigner <span class="hljs-keyword">interface</span> {
+  <span class="hljs-comment">// interface definition</span>
+}
+
+<span class="hljs-comment">// good</span>
+<span class="hljs-keyword">type</span> HTTPServer <span class="hljs-keyword">interface</span> {
+  <span class="hljs-comment">// interface definition</span>
+}
+</code></pre>
+</li>
+</ul>
+<h3 id="structs">Structs</h3>
+<p>Structs in Go is the object definition; we can attach any fields and methods to the struct. The naming convention is the same as the interface one.
+If the structs are implementing the interface, the structs name should be related to the interface, for example:</p>
+<pre><code class="language-go"><span class="hljs-keyword">type</span> Listener <span class="hljs-keyword">interface</span> {
+   <span class="hljs-comment">// interface definition</span>
+}
+
+<span class="hljs-comment">// Listener instance for file</span>
+<span class="hljs-keyword">type</span> FileListener <span class="hljs-keyword">struct</span> {
+   <span class="hljs-comment">// implement listener interface</span>
+}
+
+<span class="hljs-comment">// Listener instance for HTTP</span>
+<span class="hljs-keyword">type</span> HTTPListener <span class="hljs-keyword">struct</span> {
+   <span class="hljs-comment">// implement listener interface</span>
+}
+</code></pre>
+<h4 id="struct-initialization">Struct initialization</h4>
+<p>There are many ways to initialize structs in Go; based on the use case, we can decide which way to initialize structs in Go.
+To initialize struct, it is suggested to use <code>new(T)</code> instead of <code>&amp;T{}</code> unless you need to initialize with values. For example:</p>
+<pre><code class="language-go"><span class="hljs-keyword">type</span> Something <span class="hljs-keyword">struct</span> {
+    name <span class="hljs-type">string</span>
+}
+
+<span class="hljs-comment">// good</span>
+a := <span class="hljs-built_in">new</span>(Something)
+
+<span class="hljs-comment">// bad</span>
+b := <span class="hljs-built_in">new</span>(Something)
+b.name = <span class="hljs-string">&quot;Mary&quot;</span>
+
+<span class="hljs-comment">// use this syntax instead of b</span>
+c := &amp;Something{
+    name: <span class="hljs-string">&quot;Mary&quot;</span>,
+}
+</code></pre>
+<p>To initialize complex structs, we can use a <a href="https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis">functional option pattern</a>. Please read <a href="https://github.com/vdaas/vald/blob/main/internal/servers/servers.go">server.go</a> and <a href="https://github.com/vdaas/vald/blob/main/internal/servers/option.go">option.go</a> for the reference implementation.
+The options implementation should be separated as another file called <code>option.go</code> to improve the readability of the source code, and the method name should start with <code>With</code> word to differentiate it from other methods.</p>
+<h3 id="variables-and-constant">Variables and Constant</h3>
+<p>The variable and the constant should be named as:</p>
+<ul>
+<li>
+<p>Use MixedCaps</p>
+<pre><code class="language-go"><span class="hljs-comment">// bad</span>
+yamlProcessor := <span class="hljs-built_in">new</span>(something)
+
+<span class="hljs-comment">// good</span>
+yamlProcessor := <span class="hljs-built_in">new</span>(something)
+</code></pre>
+</li>
+<li>
+<p>Use short form.</p>
+<pre><code class="language-go"><span class="hljs-comment">// bad</span>
+yamlString := <span class="hljs-string">&quot;something&quot;</span>
+
+<span class="hljs-comment">// good</span>
+yamlStr := <span class="hljs-string">&quot;something&quot;</span>
+
+<span class="hljs-comment">// in some case it is acceptable and actually if it is easier to read</span>
+s := <span class="hljs-built_in">new</span>(something)
+</code></pre>
+</li>
+</ul>
+<p>The variable and the constant name may lead to misunderstanding or confusion, so if the variable and constant name are different to understand, please write some comments, even if it is a private member.</p>
+<pre><code class="language-go"><span class="hljs-comment">// somebody may not understand this variable, so write a simple comment to the variable definition</span>
+sac := <span class="hljs-built_in">new</span>(something) <span class="hljs-comment">// signed access token</span>
+</code></pre>
+<p>If the multiple variables and the constants have the same grouping, please use the grouping name as the prefix of the variable and constant name.</p>
+<pre><code class="language-go"><span class="hljs-comment">// Same group of variable (error), so add a prefix `Err` to each error variables</span>
+ErrInvalidCacherType = New(<span class="hljs-string">&quot;invalid cacher type&quot;</span>)
+<span class="hljs-comment">// ErrXXXXXXX</span>
+</code></pre>
+<h3 id="methods">Methods</h3>
+<p>In this section, rules also apply to the <code>function</code> (without receiver). The method name should be named as:</p>
+<ul>
+<li>
+<p>Use MixedCaps.</p>
+<pre><code class="language-go"><span class="hljs-comment">// bad</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *something)</span></span> someMethod() {}
+
+<span class="hljs-comment">// bad</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *something)</span></span> some_method() {}
+
+<span class="hljs-comment">// good</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *something)</span></span> someMethod() {}
+</code></pre>
+</li>
+<li>
+<p>Avoid using long function name.</p>
+</li>
+<li>
+<p>Do not use short form unless the function name is too long.</p>
+<pre><code class="language-go"><span class="hljs-comment">// bad</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *something)</span></span> generateRandomNumber() <span class="hljs-type">int</span> {}
+
+<span class="hljs-comment">// good</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *something)</span></span> genRandNum() <span class="hljs-type">int</span> {}
+</code></pre>
+</li>
+<li>
+<p>It should be understandable for everyone even if it is a private method.</p>
+</li>
+</ul>
+<h4 id="getter-and-setter">Getter and Setter</h4>
+<p>The Getter and Setter are almost the same as other languages, but the naming convention of the Getter method is different from other languages. Instead of <code>GetVar1()</code>, the getter of <code>Var1</code> should be the same as the variable named <code>Var1()</code>.</p>
+<pre><code class="language-go"><span class="hljs-comment">// getter of the `signedTok`</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *something)</span></span> SignedTok() <span class="hljs-type">string</span>{
+    <span class="hljs-keyword">return</span> s.signedTok
+}
+
+<span class="hljs-comment">// setter of the `signedTok`</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *something)</span></span> SetSignedTok(st <span class="hljs-type">string</span>) {
+    s.signedTok = st
+}
+</code></pre>
+<h3 id="unused-variables">Unused Variables</h3>
+<p>An unused variable may increase the complexity of the source code.
+It may confuse the developer hence introducing a new bug.
+So please delete the unused variable.</p>
+<p>Generally, the unused variable should be reported during compilation, but in some cases, the compiler may not report an error.
+This is an example of an unused variable declaration that does not cause a compilation error.</p>
+<pre><code class="language-go"><span class="hljs-comment">// In this case, this example are not using `port` field, but dose not cause a compilation error.</span>
+<span class="hljs-comment">// So please delete `port` field of `server`.</span>
+
+<span class="hljs-keyword">type</span> server <span class="hljs-keyword">struct</span> {
+    addr <span class="hljs-type">string</span>
+    port <span class="hljs-type">int</span>  <span class="hljs-comment">// you have to delete this field.</span>
+}
+
+<span class="hljs-comment">// The `port` field of `server` is not used.</span>
+srv := &amp;server {
+    addr: <span class="hljs-string">&quot;192.168.33.10:1234&quot;</span>,
+}
+
+<span class="hljs-keyword">if</span> err := srv.Run(); err != <span class="hljs-literal">nil</span> {
+    log.Fatal(err)
+}
+</code></pre>
+<h3 id="error-handling">Error handling</h3>
+<p>All errors should define in <a href="https://github.com/vdaas/vald/blob/main/internal/errors">internal/errors package</a>. All errors should be start with <code>Err</code> prefix, and all errors should be handle if possible.</p>
+<p>Please use <a href="https://github.com/vdaas/vald/blob/main/internal/sync/errgroup">internal/sync/errgroup</a> for synchronized error handling on multi-goroutine processing.</p>
+<h3 id="error-checking">Error checking</h3>
+<p>All functions return an <code>error</code> if the function can fail.
+It is very important to ensure that error checking is performed.
+To reduce human mistakes that miss the error checking, please check the error using the following style:</p>
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody><tr><td>
+<pre><code class="language-go">err := fn()
+<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+    <span class="hljs-comment">// handle error</span>
+}
+</code></pre>
+</td><td>
+<pre><code class="language-go"><span class="hljs-keyword">if</span> err := fn(); err != <span class="hljs-literal">nil</span> {
+    <span class="hljs-comment">// handle error</span>
+}
+</code></pre>
+</td></tr></tbody></table>
+<p>If you need the value outside the if statement, please use the following style:</p>
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody><tr><td>
+<pre><code class="language-go"><span class="hljs-keyword">if</span> conn, err := net.Dial(<span class="hljs-string">&quot;tcp&quot;</span>, <span class="hljs-string">&quot;localhost:80&quot;</span>);  err != <span class="hljs-literal">nil</span> {
+    <span class="hljs-comment">// handle error</span>
+} <span class="hljs-keyword">else</span> {
+    <span class="hljs-comment">// use the conn</span>
+}
+</code></pre>
+</td><td>
+<pre><code class="language-go">conn, err := net.Dial(<span class="hljs-string">&quot;tcp&quot;</span>, <span class="hljs-string">&quot;localhost:80&quot;</span>)
+<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+    <span class="hljs-comment">// handle error</span>
+}
+<span class="hljs-comment">// use the conn</span>
+</code></pre>
+</td></tr></tbody></table>
+<h3 id="logging">Logging</h3>
+<p>We define our own logging interface in <a href="https://github.com/vdaas/vald/blob/main/internal/log">internal/log package</a>.
+By default, we use <a href="https://github.com/kpango/glg">glg</a> to do the logging internally.
+We defined the following logging levels.</p>
+<table>
+<thead>
+<tr>
+<th>Log level</th>
+<th>Description</th>
+<th>Example situation</th>
+<th>Example message</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DEBUG</td>
+<td>Fine-grained information for debugging and diagnosing the application.<br>Enabling this logging level in the production environment may cause performance issues.</td>
+<td>An entry that will insert into the database with details.<br>An HTTP request and response will send and receive from the server with details.</td>
+<td>User 1 will insert into the database, name: Mary, Age: 19.<br>An HTTP request will send to <a href="http://example.com">http://example.com</a>, with the body:<br>key1:value1, key2:value2.<br>The response of the HTTP request: body: HTTPResponseBody</td>
+</tr>
+<tr>
+<td>INFO</td>
+<td>Normal application behavior to trace what is happening inside the application.</td>
+<td>Inserted entry into the database without details. <br>HTTP requests are sent to the server without details. <br>The server is started or stopped.</td>
+<td>User 1 is inserted into the database.<br>The HTTP request is sent to XXX server successfully.</td>
+</tr>
+<tr>
+<td>WARN</td>
+<td>The message that indicates the application may have an issue or occurring unusual situation,<br>but does not affect the application behavior.<br>Someone should investigate the warning later.</td>
+<td>Failed to insert an entry into the database, but successful with the retry.<br>Failed to update the cache, and the cache is not important.</td>
+<td>User 1 is successfully inserted into the database with retry,<br>retry count: 1, error: ErrMsg1, retry count: 2, error: ErrMsg2</td>
+</tr>
+<tr>
+<td>ERROR</td>
+<td>The message indicates the application has a serious issue or,<br>represents the failure of some important thing going on in the application.<br>It does not cause the application to go down.<br>Someone must investigate the error later.</td>
+<td>Failed to insert an entry into the database, with retry count exceeded.<br>Failed to update the cache, and the cache is not important.</td>
+<td>User 1 is failed to insert in the database with errors:<br>retry count: 1, error: ErrMsg1, retry count: 2, error: ErrMsg2, ....</td>
+</tr>
+<tr>
+<td>FATAL</td>
+<td>The message indicates the application is corrupting or has a serious issue.<br>The application will go down after logging the fatal error. <br>Someone must investigate and resolve the fatality as soon as possible.</td>
+<td>Failed to init the required cache during the application start.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="implementation">Implementation</h2>
+<p>This section includes some examples of general implementation widely used in Vald.
+The implementation may differ based on your use case.</p>
+<h3 id="functional-option">Functional Option</h3>
+<p>The functional option pattern is widely used in Vald.
+You can refer to <a href="#Struct-initialization">this section</a> for more details of the use case of this pattern.</p>
+<p>We provide the following errors to describe the error to apply the option.</p>
+<table>
+<thead>
+<tr>
+<th>Error</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>errors.ErrInvalidOption</td>
+<td>Error to apply the option, and the error is ignorable and the warning log will be printed</td>
+</tr>
+<tr>
+<td>errors.ErrCriticalOption</td>
+<td>Critical error to apply the option, the error cannot be ignored and should be handled</td>
+</tr>
+<tr>
+<td>errors.ErrIgnoredOption</td>
+<td>The option is ignored, and the debug log will be printed</td>
+</tr>
+</tbody>
+</table>
+<p>We strongly recommend the following implementation to set the value using the functional option.</p>
+<p>If an invalid value is set to the functional option, the <code>ErrInvalidOption</code> error defined in the <a href="https://github.com/vdaas/vald/blob/main/internal/errors/option.go">internal/errors/option.go</a> should be returned.</p>
+<p>The name argument (the first argument) of the <code>ErrInvalidOption</code> error should be the same as the functional option name without the <code>With</code> prefix.</p>
+<p>For example, the functional option name <code>WithVersion</code> should return the error with the argument <code>name</code> as <code>version</code>.</p>
+<pre><code class="language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">WithVersion</span><span class="hljs-params">(version <span class="hljs-type">string</span>)</span></span> Option {
+    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(c *client)</span></span> <span class="hljs-type">error</span> {
+        <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(version) == <span class="hljs-number">0</span> {
+            <span class="hljs-keyword">return</span> errors.NewErrInvalidOption(<span class="hljs-string">&quot;version&quot;</span>, version)
+        }
+        c.version = version
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
+    }
+}
+</code></pre>
+<p>We recommend the following implementation to parse the time string and set the time to the target struct.</p>
+<pre><code class="language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">WithTimeout</span><span class="hljs-params">(dur <span class="hljs-type">string</span>)</span></span> Option {
+    <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(c *client)</span></span> <span class="hljs-type">error</span> {
+        <span class="hljs-keyword">if</span> dur == <span class="hljs-string">&quot;&quot;</span> {
+            <span class="hljs-keyword">return</span> errors.NewErrInvalidOption(<span class="hljs-string">&quot;timeout&quot;</span>, dur)
+        }
+        d, err := timeutil.Parse(dur)
+        <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+            <span class="hljs-keyword">return</span> errors.NewErrInvalidOption(<span class="hljs-string">&quot;timeout&quot;</span>, dur, err)
+        }
+        c.timeout = d
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
+    }
+}
+</code></pre>
+<p>We recommend the following implementation to append the value to the slice if the value is not nil.</p>
+<pre><code class="language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">WithHosts</span><span class="hljs-params">(hosts ...<span class="hljs-type">string</span>)</span></span> Option {
+    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(c *client)</span></span> <span class="hljs-type">error</span> {
+        <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(hosts) == <span class="hljs-number">0</span> {
+            <span class="hljs-keyword">return</span> errors.NewErrInvalidOption(<span class="hljs-string">&quot;hosts&quot;</span>, hosts)
+        }
+        <span class="hljs-keyword">if</span> c.hosts == <span class="hljs-literal">nil</span> {
+            c.hosts = hosts
+        } <span class="hljs-keyword">else</span> {
+            c.hosts = <span class="hljs-built_in">append</span>(c.hosts, hosts...)
+        }
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
+    }
+}
+</code></pre>
+<p>If the functional option error is critical, we should return <code>ErrCriticalOption</code> error instead of <code>ErrInvalidOption</code>.</p>
+<pre><code class="language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">WithConnectTimeout</span><span class="hljs-params">(dur <span class="hljs-type">string</span>)</span></span> Option {
+    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(c *client)</span></span> <span class="hljs-type">error</span> {
+        <span class="hljs-keyword">if</span> dur == <span class="hljs-string">&quot;&quot;</span> {
+            <span class="hljs-keyword">return</span> errors.NewErrInvalidOption(<span class="hljs-string">&quot;connectTimeout&quot;</span>, dur)
+        }
+        d, err := timeutil.Parse(dur)
+        <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+            <span class="hljs-keyword">return</span> errors.NewErrCriticalOption(<span class="hljs-string">&quot;connectTimeout&quot;</span>, dur, err)
+        }
+
+        c.connectTimeout = d
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
+    }
+}
+</code></pre>
+<p>We need to handle the error returned from the functional option on the caller side.</p>
+<p>If the option fails to apply, an error wrapped with <code>ErrOptionFailed</code> defined in the <a href="https://github.com/vdaas/vald/blob/main/internal/errors/errors.go">internal/errors/errors.go</a> should be returned.</p>
+<p>We recommend the following implementation to apply the options.</p>
+<pre><code class="language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">New</span><span class="hljs-params">(opts ...Option)</span></span> (Server, <span class="hljs-type">error</span>) {
+    srv := <span class="hljs-built_in">new</span>(server)
+    <span class="hljs-keyword">for</span> _, opt := <span class="hljs-keyword">range</span> opts {
+        <span class="hljs-keyword">if</span> err := opt(srv); err != <span class="hljs-literal">nil</span> {
+            werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+
+            e := <span class="hljs-built_in">new</span>(errors.ErrCriticalOption)
+            <span class="hljs-keyword">if</span> errors.As(err, &amp;e) {
+                log.Error(werr)
+                <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, werr
+            }
+            log.Warn(werr)
+        }
+    }
+}
+</code></pre>
+<h3 id="constructor">Constructor</h3>
+<p>In Vald, the functional option pattern is widely used when we create an object.</p>
+<p>When setting the value with the functional option, the value is validated inside the option method.</p>
+<p>However, we may forget to set the required fields when creating the object; hence the target object will remain nil.
+Therefore, we strongly suggest validating the object during initialization.</p>
+<p>If we forget to set the options method, an error will be returned so we can handle it properly.</p>
+<pre><code class="language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">func</span> <span class="hljs-title">New</span><span class="hljs-params">(opts ...Option)</span></span> (Server, <span class="hljs-type">error</span>) {
+    srv := <span class="hljs-built_in">new</span>(server)
+    <span class="hljs-keyword">for</span> _, opt := <span class="hljs-keyword">range</span> <span class="hljs-built_in">append</span>(defaultOptions, opts...) {
+        <span class="hljs-keyword">if</span> err := opt(srv); err != <span class="hljs-literal">nil</span> {
+            werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+
+            e := <span class="hljs-built_in">new</span>(errors.ErrCriticalOption)
+            <span class="hljs-keyword">if</span> errors.As(err, &amp;e) {
+                log.Error(werr)
+                <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, werr
+            }
+            ue := <span class="hljs-built_in">new</span>(errors.ErrIgnoredOption)
+            <span class="hljs-keyword">if</span> errors.As(err, &amp;ue) {
+                log.Debug(werr)
+            } <span class="hljs-keyword">else</span> {
+                log.Warn(werr)
+            }
+        }
+    }
+
+    <span class="hljs-keyword">if</span> srv.eg == <span class="hljs-literal">nil</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, errors.NewErrInvalidOption(<span class="hljs-string">&quot;eg&quot;</span>, srv.eg)
+    }
+
+    <span class="hljs-keyword">return</span> srv, <span class="hljs-literal">nil</span>
+}
+</code></pre>
+<p>We also recommend that you use the default options and the unexported functional option to set the objects so that we cannot use them externally.</p>
+<pre><code class="language-go"><span class="hljs-keyword">var</span> defaultOptions = []Option {
+    <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(s *server)</span></span> <span class="hljs-type">error</span> {
+        s.ctxio = io.New()
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
+    },
+}
+</code></pre>
+<h2 id="program-comments">Program comments</h2>
+<p>Program comments make it easier to understand the source code.
+We suggest not writing many comments inside the source code unless the source code is very complicated and confusing; otherwise, we should divide the source code into methods to keep readability and usability of the source code.</p>
+<p>Everyone should comment on all the public objects on your source code, like public packages, interfaces, structs, methods, and even public constants and variables.
+The <code>Godoc</code> will be generated based on the comment of the source code.</p>
+<h2 id="documentation">Documentation</h2>
+<p>Documentation is generated from the program comments. Please refer to <a href="https://pkg.go.dev/github.com/vdaas/vald">Godoc</a> for the program documentation.</p>
+<h2 id="internal-packages">Internal packages</h2>
+<p>Vald implements its internal package to extend and customize the standard library and third-party library functionality.
+We should use the internal package instead of the standard library to implement Vald.
+Please refer to <a href="https://pkg.go.dev/github.com/vdaas/vald/internal">Godoc</a> for the internal package document.</p>
+<h2 id="dependency-management-and-build">Dependency management and Build</h2>
+<p>We should use <code>go mod tidy</code> to manage the <code>go.mod</code> file in the project.</p>
+<h2 id="test">Test</h2>
+<p>The testing guideline has three essential rules for coding quality and readability:</p>
+<ol>
+<li>Use Table-Driven-Test</li>
+<li>Keep code coverage over 85%
+<ul>
+<li>test coverage != high testing quality, but low coverage means bad testing quality</li>
+<li>check with the following commands <code>go test -cover ./...</code></li>
+</ul>
+</li>
+<li>Test all use cases and error cases</li>
+</ol>
+<h3 id="table-driven-test">Table-Driven-Test</h3>
+<p>Use table-driven tests with subtests to avoid duplicating code.</p>
+<table>
+<thead><tr><th>Bad</th><th>Good</th></tr></thead>
+<tbody>
+<tr>
+<td>
+<pre><code class="language-go">## <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>
+host, port, err := net.SplitHostPort(<span class="hljs-string">&quot;192.0.2.0:8000&quot;</span>)
+<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+    t.Errorf(<span class="hljs-string">&quot;error is not nil: %v&quot;</span>, err)
+}
+
+<span class="hljs-keyword">if</span> want, got := <span class="hljs-string">&quot;192.0.2.0&quot;</span>, host; want != got {
+    t.Errorf(<span class="hljs-string">&quot;host is not equals. want: %s, but got: %s&quot;</span>, want: %s, got)
+}
+
+<span class="hljs-keyword">if</span> want, got := <span class="hljs-string">&quot;8000&quot;</span>, port; want != got {
+    t.Errorf(<span class="hljs-string">&quot;port is not equals. want: %s, but got: %s&quot;</span>, want: %s, got)
+}
+
+## case2
+host, port, err = net.SplitHostPort(<span class="hljs-string">&quot;192.0.2.0:http&quot;</span>)
+<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+    t.Errorf(<span class="hljs-string">&quot;error is not nil: %v&quot;</span>, err)
+}
+
+<span class="hljs-keyword">if</span> want, got := <span class="hljs-string">&quot;192.0.2.0&quot;</span>, host; want != got {
+    t.Errorf(<span class="hljs-string">&quot;host is not equals. want: %s, but got: %s&quot;</span>, want: %s, got)
+}
+
+<span class="hljs-keyword">if</span> want, got := <span class="hljs-string">&quot;http&quot;</span>, port; want != got {
+    t.Errorf(<span class="hljs-string">&quot;port is not equals. want: %s, but got: %s&quot;</span>, want: %s, got)
+}
+</code></pre>
+</td>
+<td>
+<pre><code class="language-go">tests := []<span class="hljs-keyword">struct</span> {
+    str <span class="hljs-type">string</span>
+    wantHost <span class="hljs-type">string</span>
+    wantPort <span class="hljs-type">string</span>
+} {
+    ## <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>
+    {
+        str: <span class="hljs-string">&quot;192.0.2.0:8000&quot;</span>,
+        wantHost: <span class="hljs-string">&quot;192.0.2.0&quot;</span>,
+        wantPort: <span class="hljs-string">&quot;8000&quot;</span>,
+    },
+    ## <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>
+    {
+        str: <span class="hljs-string">&quot;192.0.2.0:8000&quot;</span>,
+        wantHost: <span class="hljs-string">&quot;192.0.2.0&quot;</span>,
+        wantPort: <span class="hljs-string">&quot;http&quot;</span>,
+    },
+}
+
+<span class="hljs-keyword">for</span> _, tt := <span class="hljs-keyword">range</span> tests {
+    t.Run(tt.str, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(tt *testing.T)</span></span> {
+        host, port, err := net.SplitHostPort(tt.str)
+        <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+            t.Errorf(<span class="hljs-string">&quot;error is not nil: %v&quot;</span>, err)
+        }
+        <span class="hljs-keyword">if</span> want, got := tt.wantHost, host; want != got {
+            t.Errorf(<span class="hljs-string">&quot;host is not equals. want: %s, but got: %s&quot;</span>, want: %s, got)
+        }
+        <span class="hljs-keyword">if</span> want, got := tt.wantPort, port; want != got {
+            t.Errorf(<span class="hljs-string">&quot;port is not equals. want: %s, but got: %s&quot;</span>, want: %s, got)
+        }
+    })
+}
+</code></pre>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Table-Driven-Test makes it easy to add a new test case.</p>
+<p>We define the test case table as <code>map[string]func(*testing.T)test</code>, which is referred to as the test case name and the test case implementation <code>tt</code>.</p>
+<pre><code class="language-go">tests := <span class="hljs-keyword">map</span>[<span class="hljs-type">string</span>]<span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(t *testing.T)</span></span> test {
+    <span class="hljs-string">&quot;test case name&quot;</span>: <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(tt *testing.T)</span></span> test {
+        <span class="hljs-keyword">return</span> test {
+            args: args {
+                host: <span class="hljs-string">&quot;host&quot;</span>,
+                port: <span class="hljs-string">&quot;port&quot;</span>,
+            },
+            field: field {
+                timeout: <span class="hljs-number">1</span> * time.Second,
+            },
+        }
+    }
+}
+</code></pre>
+<h3 id="create-a-table-driven-test">Create a Table-Driven-Test</h3>
+<h4 id="structures">Structures</h4>
+<ol>
+<li>
+<p><code>args</code> structure</p>
+<p>If two or more arguments are passed to the method, create an <code>args</code> structure. If there is only one argument, do not create an <code>args</code> structure.</p>
+<pre><code class="language-go"><span class="hljs-keyword">type</span> args <span class="hljs-keyword">struct</span> {
+    host <span class="hljs-type">string</span>
+    port <span class="hljs-type">string</span>
+}
+</code></pre>
+</li>
+<li>
+<p><code>field</code> structure</p>
+<p>If you create an object and test its methods, create a <code>field</code> struct if the object has two or more fields to initialize. If there is only one field, do not create a <code>field</code> structure.</p>
+<pre><code class="language-go"><span class="hljs-keyword">type</span> field <span class="hljs-keyword">struct</span> {
+    host <span class="hljs-type">string</span>
+    port <span class="hljs-type">string</span>
+}
+</code></pre>
+</li>
+<li>
+<p><code>test</code> structure</p>
+<p><code>test</code> structure has <code>args</code> and <code>field</code> structure and <code>checkFunc</code> function.
+Create a field or an args structure if you need it.
+The <code>checkFunc</code> function is used to check the return value of the function being tested.</p>
+<pre><code class="language-go"><span class="hljs-keyword">type</span> test <span class="hljs-keyword">struct</span> {
+    args args
+    field field
+    checkFunc <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(t *testing.T, err <span class="hljs-type">error</span>)</span></span>
+}
+</code></pre>
+</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<ol>
+<li>
+<p>test case name</p>
+<p>Test case names should be readable, meaningful, and understandable easily.
+If you create a new test, the test name should be named based on the below-naming templates</p>
+<ul>
+<li>Success cases:
+<ul>
+<li>Start with <code>success</code> or <code>{verb} success</code> or <code>success {verb}</code></li>
+<li>End with the condition <code>when {condition}</code> or `with {condition}</li>
+<li>e.g.: <code>set success when the value is default value</code></li>
+</ul>
+</li>
+<li>Fail/Error cases:
+<ul>
+<li>Start with <code>fail</code> or <code>{verb} fail</code> or <code>fail {verb}</code></li>
+<li>End with the condition <code>when {condition}</code> or `with {condition}</li>
+<li>e.g.: <code>fail option setting when value is invalid value(string)</code></li>
+</ul>
+</li>
+<li>Return cases:
+<ul>
+<li>If the test case do not match with <code>Success</code> or <code>Fails</code>, please use <code>Return</code> pattern.</li>
+<li>Start with <code>Returns {Object}</code></li>
+<li>End with the condition <code>when {condition}</code> or `with {condition}</li>
+<li>e.g.: <code>return invalid error when the input is invalid</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>testing arguments</p>
+<p>Input arguments for testing should be a meaningful value.
+We should test with more realistic values to produce a more realistic testing result.</p>
+<p>For example, to test the function with <code>host</code> argument, you should set your hostname (e.g., <code>vald.vdaas.com</code>) as the input value to the <code>host</code> argument.</p>
+</li>
+</ol>
+<p>Example:</p>
+<pre><code class="language-go"><span class="hljs-keyword">type</span> args <span class="hljs-keyword">struct</span> {
+    host <span class="hljs-type">string</span>
+    port <span class="hljs-type">string</span>
+}
+
+<span class="hljs-keyword">type</span> field <span class="hljs-keyword">struct</span> {
+    timeout time.Duration
+}
+
+<span class="hljs-keyword">type</span> want <span class="hljs-keyword">struct</span> {
+    err <span class="hljs-type">error</span>
+}
+
+<span class="hljs-keyword">type</span> test <span class="hljs-keyword">struct</span> {
+    name       <span class="hljs-type">string</span>
+    args       args
+    field      field
+    want       want
+    checkFunc <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(err <span class="hljs-type">error</span>)</span></span> <span class="hljs-type">error</span>
+}
+
+defaultCheckFunc := <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(w want, err <span class="hljs-type">error</span>)</span></span> <span class="hljs-type">error</span> {
+    <span class="hljs-keyword">if</span> err != w.err {
+        <span class="hljs-keyword">return</span> errors.Errorf(<span class="hljs-string">&quot;got error: %v, want: %v&quot;</span>, err, w.err)
+    }
+}
+
+tests := []test {
+    {
+        name: <span class="hljs-string">&quot;success send when host and port are correct value&quot;</span>,
+        args: args {
+            host: <span class="hljs-string">&quot;vdaas.vald.org&quot;</span>,
+            port: <span class="hljs-string">&quot;80&quot;</span>,
+        },
+        field: field {
+            host: <span class="hljs-string">&quot;vdaas.vald.org&quot;</span>,
+            port: <span class="hljs-string">&quot;80&quot;</span>,
+        },
+        want: want {
+            err: <span class="hljs-literal">nil</span>,
+        },
+    },
+}
+
+<span class="hljs-keyword">for</span> _, tc := <span class="hljs-keyword">range</span> tests {
+    test := tc
+    t.Run(test.name, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(tt *testing.T)</span></span> {
+        checkFunc = defaultCheckFunc
+        <span class="hljs-keyword">if</span> test.checkFunc != <span class="hljs-literal">nil</span> {
+            checkFunc = test.checkFunc
+        }
+
+        c := client {
+            timeout: test.field.timeout,
+        }
+        err := c.Send(test.args.addr, test.args.txt)
+        <span class="hljs-keyword">if</span> err := checkFunc(err); err != <span class="hljs-literal">nil</span> {
+            tt.Errorf(<span class="hljs-string">&quot;error = %v&quot;</span>, err)
+        }
+    })
+}
+
+</code></pre>
+<h3 id="generate-test-code">Generate test code</h3>
+<p>We implement our own <a href="https://github.com/cweill/gotests">gotests</a> template to generate test code.
+If you want to install <code>gotest</code> tools, please execute the following command under the project root directory.</p>
+<pre><code class="language-bash">make gotests/install
+</code></pre>
+<p>If you use the following command to generate the missing test code.</p>
+<pre><code class="language-bash">make gotests/gen
+</code></pre>
+<p>After executing the command above, the file <code>*target*_test.go</code> will be generated for each Go source file.
+The test code generated follows the table-driven test format.
+You can implement your test code under the <code>tests</code> variable generated following the table-driven test format.</p>
+<h3 id="customize-test-case">Customize test case</h3>
+<p>We do not suggest modifying the generated code other than the <code>tests</code> variable
+Still, in some cases, you may need to change the generated code to meet your requirement, for example:</p>
+<ol>
+<li>
+<p>init() function</p>
+<p>init() function is executed automatically before the test is started.
+You may need to initialize some singleton before running your test cases.
+For example, Vald uses <a href="https://github.com/kpango/glg">glg</a> library for logging by default; if the logger is not initialized before the test, the nil pointer error may be thrown during the test is running.
+You may need to implement <code>init()</code> function like:</p>
+<pre><code class="language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">init</span><span class="hljs-params">()</span></span> {
+    log.Init()
+}
+</code></pre>
+<p>And place it on the header of the test file.</p>
+</li>
+<li>
+<p>goleak option</p>
+<p>The generated test code will default use the <a href="https://github.com/uber-go/goleak">goleak</a> library to test if there is any goroutine leak.
+Sometimes you may want to skip the detection; for example, Vald uses the <a href="https://github.com/kpango/fastime">fastime</a> library, but the internal goroutine is not closed due to the needs of the library.
+To skip the goleak detection, we need to create the following variable to store the ignore function.</p>
+<pre><code class="language-go"><span class="hljs-keyword">var</span> (
+    <span class="hljs-comment">// goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.</span>
+    goleakIgnoreOptions = []goleak.Option{
+        goleak.IgnoreTopFunction(<span class="hljs-string">&quot;github.com/kpango/fastime.(*fastime).StartTimerD.func1&quot;</span>),
+    }
+)
+</code></pre>
+<p>And use it in <code>VerifyNone()</code> in the test case.</p>
+<pre><code class="language-go"><span class="hljs-keyword">for</span> _, tc := <span class="hljs-keyword">range</span> tests {
+    test := tc
+    t.Run(test.name, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(tt *testing.T)</span></span> {
+        <span class="hljs-comment">// modify the following line</span>
+        <span class="hljs-keyword">defer</span> goleak.VerifyNone(tt, goleakIgnoreOptions...)
+</code></pre>
+<p>In Vald, we implemented <a href="https://github.com/vdaas/vald/blob/main/internal/test/goleak/goleak.go">internal goleak package</a> and wrap the goleak validation logic to ignore the common goleak functions.
+In test implementation, we can easily import the internal goleak package and ignore all the necessary goleak functions by default.</p>
+<pre><code class="language-go"><span class="hljs-comment">// import internal goleak package</span>
+<span class="hljs-keyword">import</span> (
+    <span class="hljs-string">&quot;github.com/vdaas/vald/internal/test/goleak&quot;</span>
+)
+
+...
+<span class="hljs-keyword">for</span> _, tc := <span class="hljs-keyword">range</span> tests {
+    test := tc
+    t.Run(test.name, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(tt *testing.T)</span></span> {
+        <span class="hljs-comment">// use internal goleak to ignore necessary function by default</span>
+        <span class="hljs-keyword">defer</span> goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+</code></pre>
+</li>
+<li>
+<p>goleak usage</p>
+<p>There are two methods for valid goroutine leak:</p>
+<ol>
+<li>Use <code>goleak.VerifyNone()</code> to validate it on each test cases.</li>
+<li>Use <code>goleak.VerifyTestMain()</code> to validate it on each package.</li>
+</ol>
+<p>By default, the goroutine leak validation is executed in each test case.</p>
+<pre><code class="language-go"><span class="hljs-keyword">for</span> _, tc := <span class="hljs-keyword">range</span> tests {
+     test := tc
+     t.Run(test.name, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(tt *testing.T)</span></span> {
+         <span class="hljs-keyword">defer</span> goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+</code></pre>
+<p>In some cases, it may not work as some cleanup or asynchronous processes remaining in the background, and validating it on the test case using <code>goleak.VerifyNone()</code> may cause a false alarm.</p>
+<p>To resolve it, we can consider using <code>goleak.VerifyTestMain()</code> to validate goleak when all test cases are passed in each package.</p>
+<pre><code class="language-go"><span class="hljs-comment">// implement TestMain and verify it at package level</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">TestMain</span><span class="hljs-params">(m *testing.M)</span></span> {
+     goleak.VerifyTestMain(m)
+}
+
+...
+
+<span class="hljs-keyword">for</span> _, tc := <span class="hljs-keyword">range</span> tests {
+     test := tc
+     t.Run(test.name, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(tt *testing.T)</span></span> {
+         <span class="hljs-comment">// use VerifyTestMain() above to detect goroutine leak</span>
+         <span class="hljs-comment">// defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())</span>
+</code></pre>
+<p>Please note that the <code>TestMain()</code> can only implement once in each package, you may need to find the right place to implement this function on the package.</p>
+</li>
+<li>
+<p>Defer function</p>
+<p>By default, the template provides <code>beforeFunc()</code> and <code>afterFunc()</code> to initialize and finalize the test case, but in some cases, it may not support your use case.
+For example, <code>recover()</code> function only works in <code>defer()</code> function.
+If you need to use the <code>recover()</code> function to handle the panic in your test code, you may need to implement your custom <code>defer()</code> function and change the generated test code.</p>
+<p>For example:</p>
+<pre><code class="language-go"><span class="hljs-keyword">for</span> _, tc := <span class="hljs-keyword">range</span> tests {
+     test := tc
+     t.Run(test.name, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(tt *testing.T)</span></span> {
+         <span class="hljs-keyword">defer</span> goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+         <span class="hljs-comment">// insert your defer function here</span>
+         <span class="hljs-keyword">defer</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(w want, tt *testing.T)</span></span> {
+             <span class="hljs-comment">// implement your defer func logic</span>
+             <span class="hljs-keyword">if</span> err:= <span class="hljs-built_in">recover</span>(); err != <span class="hljs-literal">nil</span> {
+                 <span class="hljs-comment">// check the panic</span>
+             }
+         }(test.want, tt)
+
+         <span class="hljs-keyword">if</span> test.beforeFunc != <span class="hljs-literal">nil</span> {
+             test.beforeFunc(test.args)
+         }
+         <span class="hljs-comment">// generated test code</span>
+</code></pre>
+</li>
+<li>
+<p>Unused fields</p>
+<p>By default, the template provides the <code>fields</code> structure to initialize an object of the test target.
+But in some cases, not all <code>fields</code> are needed, so please delete the unnecessary fields.
+For example, the following struct and the corresponding function:</p>
+<pre><code class="language-go"><span class="hljs-keyword">type</span> server <span class="hljs-keyword">struct</span> {
+    addr <span class="hljs-type">string</span>
+    port <span class="hljs-type">int</span>
+}
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *server)</span></span> Addr() <span class="hljs-type">string</span> {
+    <span class="hljs-keyword">return</span> s.addr
+}
+</code></pre>
+<p>And the generated test code is:</p>
+<pre><code class="language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">Test_server_Addr</span><span class="hljs-params">(t *testing.T)</span></span> {
+    <span class="hljs-keyword">type</span> fields <span class="hljs-keyword">struct</span> {
+        addr <span class="hljs-type">string</span>
+        port <span class="hljs-type">int</span>
+    }
+    <span class="hljs-keyword">type</span> want <span class="hljs-keyword">struct</span> {
+        <span class="hljs-comment">// generated test code</span>
+</code></pre>
+<p>Since the <code>port</code> variable is not used in this test case, you can delete the <code>port</code> definition in the test case.</p>
+<pre><code class="language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">Test_server_Addr</span><span class="hljs-params">(t *testing.T)</span></span> {
+    <span class="hljs-keyword">type</span> fields <span class="hljs-keyword">struct</span> {
+        addr <span class="hljs-type">string</span>
+        <span class="hljs-comment">// port int   &lt;-- this line should be deleted</span>
+    }
+    <span class="hljs-keyword">type</span> want <span class="hljs-keyword">struct</span> {
+        <span class="hljs-comment">// generated test code</span>
+</code></pre>
+</li>
+<li>
+<p>Context</p>
+<p>If the target function accepts context as an input argument, the test code generated will include it in <code>args</code>.</p>
+<pre><code class="language-go"> <span class="hljs-keyword">type</span> args <span class="hljs-keyword">struct</span> {
+     ctx context.Context
+ }
+ ...
+</code></pre>
+<p>But in test implementation, it is hard to manage the context lifecycle.
+We want to guarantee the context is closed after each test is executed to avoid any missing termination of the process.</p>
+<p>In Vald, we suggest customizing the test implementation from the generated test code to create the context and manage the lifecycle in every test.</p>
+<p>We can remove the context from the <code>args</code> struct and create the context in the test execution code.</p>
+<pre><code class="language-go"> <span class="hljs-comment">// we can remove the ctx from args list</span>
+ <span class="hljs-keyword">type</span> args <span class="hljs-keyword">struct</span> {
+     <span class="hljs-comment">// ctx context.Context</span>
+ }
+ ...
+
+ <span class="hljs-keyword">for</span> _, tc := <span class="hljs-keyword">range</span> tests {
+     test := tc
+     t.Run(test.name, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(tt *testing.T)</span></span> {
+         <span class="hljs-comment">// create context here</span>
+         ctx, cancel := context.WithCancel(context.Background())
+         <span class="hljs-comment">// handle the context lifecycle by canceling the context after the test is executed</span>
+         <span class="hljs-keyword">defer</span> cancel()
+
+         ...
+
+         <span class="hljs-comment">// use the context created above</span>
+         got, gotErr := someFunc(ctx)
+
+         ...
+</code></pre>
+</li>
+<li>
+<p>Struct initialization</p>
+<p>By default, when testing the function of the struct, the target struct initialization is implemented by setting the data from the <code>fields</code> defined in the test case.
+This initialization method has a few disadvantages:</p>
+<ol>
+<li>When there are many fields in the struct, it is hard to set them all.</li>
+<li>The default value is the zero value of the type, not the struct default value from the struct initialization function.</li>
+</ol>
+<p>To resolve these problems, we can modify the test implementation to use the struct initialization function instead of setting the struct fields on the test cases.</p>
+<p>For example, the current implementation may look like this:</p>
+<pre><code class="language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">Test_server_SaveIndex</span><span class="hljs-params">(t *testing.T)</span></span> {
+     ...
+
+     <span class="hljs-comment">// all the fields to initialize the target struct</span>
+     <span class="hljs-keyword">type</span> fields <span class="hljs-keyword">struct</span> {
+         name              <span class="hljs-type">string</span>
+         ip                <span class="hljs-type">string</span>
+         ngt               service.NGT
+         eg                errgroup.Group
+         streamConcurrency <span class="hljs-type">int</span>
+     }
+
+     ...
+
+     <span class="hljs-keyword">for</span> _, tc := <span class="hljs-keyword">range</span> tests {
+         test := tc
+         t.Run(test.name, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(tt *testing.T)</span></span> {
+             tt.Parallel()
+             ...
+
+             <span class="hljs-comment">// we initialize the target struct using fields defined in test case</span>
+             s := &amp;server{
+                 name:              test.fields.name,
+                 ip:                test.fields.ip,
+                 ngt:               test.fields.ngt,
+                 eg:                test.fields.eg,
+                 streamConcurrency: test.fields.streamConcurrency,
+                 <span class="hljs-comment">// we may have more fields defined in the struct,</span>
+                 <span class="hljs-comment">// and we need to set them all here</span>
+             }
+
+             gotRes, err := s.SaveIndex(test.args.ctx, test.args.in1)
+             ...
+</code></pre>
+<p>We can customize the implementation to use the struct initialization function.</p>
+<pre><code class="language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">Test_server_SaveIndex</span><span class="hljs-params">(t *testing.T)</span></span> {
+     ...
+
+     <span class="hljs-comment">// we customize the fields to initialize the target struct</span>
+     <span class="hljs-keyword">type</span> fields <span class="hljs-keyword">struct</span> {
+         <span class="hljs-comment">// options to configure server struct</span>
+         srvOpts []Option
+
+         <span class="hljs-comment">// options to configure ngt</span>
+         svcCfg  *config.NGT
+         svcOpts []service.Option
+     }
+
+     ...
+
+     <span class="hljs-keyword">for</span> _, tc := <span class="hljs-keyword">range</span> tests {
+         test := tc
+         t.Run(test.name, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(tt *testing.T)</span></span> {
+             tt.Parallel()
+             ...
+
+             <span class="hljs-comment">// initialize required fields of server struct</span>
+             eg, _ := errgroup.New(ctx)
+             ngt, err := service.New(test.fields.svcCfg, <span class="hljs-built_in">append</span>(test.fields.svcOpts, service.WithErrGroup(eg))...)
+             <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+                 tt.Errorf(<span class="hljs-string">&quot;failed to init ngt service, error = %v&quot;</span>, err)
+             }
+
+             <span class="hljs-comment">// we use the struct initialization function instead of setting the fields,</span>
+             <span class="hljs-comment">// by combining the use of the functional option, we can configure the struct,</span>
+             <span class="hljs-comment">// and the default values of the struct will be set automatically if we are not defining it.</span>
+             s, err := New(<span class="hljs-built_in">append</span>(test.fields.srvOpts, WithNGT(ngt), WithErrGroup(eg))...)
+             <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+                 tt.Errorf(<span class="hljs-string">&quot;failed to init server, error= %v&quot;</span>, err)
+             }
+
+             gotRes, err := s.SaveIndex(test.args.ctx, test.args.in1)
+             ...
+</code></pre>
+</li>
+</ol>
+<h3 id="parallel-test">Parallel test</h3>
+<p>In Vald, we use parallel tests to accelerate the execution of tests by default.
+There are two layers of enabling parallel tests.</p>
+<ol>
+<li>Parallel for the test function</li>
+<li>Parallel for the subtests in the test function</li>
+</ol>
+<p>The generated test case will enable these two parallel modes by default. It is implemented by:</p>
+<pre><code class="language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">Test_server_CreateIndex</span><span class="hljs-params">(t *testing.T)</span></span> {
+    t.Parallel() <span class="hljs-comment">// parallel for the test function</span>
+    <span class="hljs-keyword">type</span> args <span class="hljs-keyword">struct</span> {
+
+    ...
+
+    <span class="hljs-keyword">for</span> _, tc := <span class="hljs-keyword">range</span> tests {
+        test := tc
+        t.Run(test.name, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(tt *testing.T)</span></span> {
+            tt.Parallel() <span class="hljs-comment">// parallel for subtests</span>
+    ...
+</code></pre>
+<p>Be careful of using the parallel test, avoid using share object used in the test, to avoid race detector to detect the race in test and fail the test.</p>
+<h3 id="helper-function">Helper function</h3>
+<p>In golang testing package, they defined the helper functions in testing types to indicate the current function is a test helper function and skip printing the file and line information to the output.</p>
+<p>In Vald, we can apply it to the different helper functions like <code>beforeFunc()</code> or <code>afterFunc()</code> defined in the test case struct.</p>
+<pre><code class="language-go"><span class="hljs-keyword">type</span> test <span class="hljs-keyword">struct</span> {
+    ...
+    beforeFunc <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(*testing.T)</span></span> <span class="hljs-comment">// helper function to initialize testing</span>
+    afterFunc  <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(*testing.T)</span></span> <span class="hljs-comment">// helper function to cleanup</span>
+}
+
+tests := []test {
+    {
+        name: <span class="hljs-string">&quot;send success when host and port are correct value&quot;</span>,
+        args: args {
+            host: <span class="hljs-string">&quot;vdaas.vald.org&quot;</span>,
+            port: <span class="hljs-string">&quot;80&quot;</span>,
+        },
+        field: field {
+            host: <span class="hljs-string">&quot;vdaas.vald.org&quot;</span>,
+            port: <span class="hljs-string">&quot;80&quot;</span>,
+        },
+        beforeFunc: <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(t *testing.T)</span></span> {
+            t.Helper() <span class="hljs-comment">// indicate the current function is helper function</span>
+            <span class="hljs-comment">/* initialization logic of testing environment */</span>
+        },
+        want: want {
+            err: <span class="hljs-literal">nil</span>,
+        },
+        afterFunc: <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(t *testing.T)</span></span> {
+            t.Helper() <span class="hljs-comment">// indicate the current function is helper function</span>
+            <span class="hljs-comment">/* cleanup logic */</span>
+        }
+    },
+}
+</code></pre>
+<h3 id="using-mock">Using Mock</h3>
+<p>In Vald, we use a lot of external libraries, and there are a lot of dependencies between libraries.</p>
+<p>As a result, due to the complexity, it has become hard to determine whether or not to mock dependencies.</p>
+<h4 id="condition">Condition</h4>
+<p>When dependencies have the following factor, you can decide to mock the dependencies.</p>
+<ul>
+<li>Incomplete implementation</li>
+<li>I/O
+<ul>
+<li>e.g., Network access, disk operation, etc.</li>
+</ul>
+</li>
+<li>Hardware dependent
+<ul>
+<li>e.g., CPU, Memory usage, disk I/O, etc.</li>
+</ul>
+</li>
+<li>Hard to create the error of dependencies</li>
+<li>Difficult to initialize
+<ul>
+<li>e.g., Random number and time, file I/O initialization, environment dependent, etc.</li>
+</ul>
+</li>
+<li>The test result may change in each runtime
+<ul>
+<li>e.g., the only test result may change in each runtime, System call inside implementation, etc.</li>
+</ul>
+</li>
+</ul>
+<h4 id="risk">Risk</h4>
+<p>Before applying mock to the object, you should understand the following risks.</p>
+<ul>
+<li>We <strong>do not</strong> know whether the dependencies are correctly implemented or not.</li>
+<li>We cannot notice the changes in dependencies.</li>
+</ul>
+<h4 id="implementation-1">Implementation</h4>
+<p>The implementation of the mock object should be:</p>
+<ul>
+<li>Same package as the mock target.</li>
+<li>File name is <code>xxx_mock.go</code></li>
+<li>Struct name is <code>Mock{Interface name}</code></li>
+</ul>
+<p>For example, we decided to mock the following implementation <code>Encoder</code>.</p>
+<pre><code class="language-go"><span class="hljs-keyword">package</span> json
+
+<span class="hljs-keyword">type</span> Encoder <span class="hljs-keyword">interface</span> {
+    Encode(any) ([]<span class="hljs-type">byte</span>, <span class="hljs-type">error</span>)
+}
+</code></pre>
+<pre><code class="language-go"><span class="hljs-keyword">type</span> encoder <span class="hljs-keyword">struct</span> {
+    encoder json.Encoder
+}
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(e *encoder)</span></span> Encode(obj any) ([]<span class="hljs-type">byte</span>, <span class="hljs-type">error</span>) {
+    <span class="hljs-keyword">return</span> e.encoder.Encode(obj)
+}
+</code></pre>
+<p>The following is an example of mock implementation:</p>
+<pre><code class="language-go"><span class="hljs-keyword">package</span> json
+
+<span class="hljs-keyword">type</span> MockEncoder <span class="hljs-keyword">struct</span> {
+    EncoderFunc <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(any)</span></span> ([]<span class="hljs-type">byte</span>, <span class="hljs-type">error</span>)
+}
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(m *MockEncoder)</span></span> Encode(obj any) ([]<span class="hljs-type">byte</span>, <span class="hljs-type">error</span>) {
+    <span class="hljs-keyword">return</span> m.EncodeFunc(obj)
+}
+</code></pre>
+<p>The following is an example implementation of test code to create the mock object and mock the implementation.</p>
+<pre><code class="language-go">tests := []test {
+    {
+        name: <span class="hljs-string">&quot;returns (byte{}, nil) when encode success&quot;</span>
+        fields: fields {
+            encoding: &amp;json.MockEncoder {
+                EncoderFunc: <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(any)</span></span> ([]<span class="hljs-type">byte</span>, <span class="hljs-type">error</span>) {
+                    <span class="hljs-keyword">return</span> []<span class="hljs-type">byte</span>{}, <span class="hljs-literal">nil</span>
+                },
+            },
+        }
+        ......
+    }
+}
+</code></pre>
+<h2 id="testing-policy">Testing policy</h2>
+<p>In Vald, the implementation code is divided into different packages based on the context of the implementation.</p>
+<p>Based on the context of the package, we decided to apply different testing policies on each package to fit their needs.</p>
+<h3 id="internal-package">Internal package</h3>
+<p>Internal package <code>./internal</code> contains internal used library code. It is written to be reusable to solve common problems.</p>
+<p>It is very important to make sure that the commonly used library code works correctly, so we decided to apply C1 coverage (branch coverage) to the <code>./internal</code> package.</p>
+<p>C1 coverage means to cover the test on each condition and ensure each condition (true and false) is evaluated on the test code.</p>
+<h3 id="pkg-package">Pkg package</h3>
+<p>Pkg package <code>./pkg</code> contains the business logic of the component in Vald.</p>
+<p>In the <code>./pkg</code> package, the business logic implementation is divided into each component, and then in each component package, the specific business logic is divided into different packages.</p>
+<p>Here is a common example of the package structure in <code>./pkg</code> package.</p>
+<ul>
+<li>./pkg/{component}/config</li>
+<li>./pkg/{component}/handler</li>
+<li>./pkg/{component}/router</li>
+<li>./pkg/{component}/service</li>
+<li>./pkg/{component}/usecase</li>
+</ul>
+<p>For example, the implementation of the use case layer of the Vald LB gateway will be <code>./pkg/gateway/lb/usecase</code>.</p>
+<p>Since each package has its purpose, we decided to apply different strategies to each package to fit its purpose.</p>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Testing strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>./pkg/{component}/config</td>
+<td>Only test if config file can be read and the corresponding value is set</td>
+</tr>
+<tr>
+<td>./pkg/{component}/handler/rest</td>
+<td>No need to test</td>
+</tr>
+<tr>
+<td>./pkg/{component}/handler/grpc</td>
+<td>Basically no test, other than testing bugfix (Detailed tests of business logic should be written in E2E tests)</td>
+</tr>
+<tr>
+<td>./pkg/{component}/router</td>
+<td>No need to test</td>
+</tr>
+<tr>
+<td>./pkg/{component}/service</td>
+<td>Test only interface functions</td>
+</tr>
+<tr>
+<td>./pkg/{component}/usecase</td>
+<td>Test only New() function</td>
+</tr>
+</tbody>
+</table>
+<p>For the rest of the <code>./pkg</code> packages, we decided to implement the unit test for the exported function only.</p>
+<p>Please follow the <a href="../unit-test-guideline.html">unit test guideline</a> for more details on how to implement good unit test.</p>
+
+            
+            <script async type="text/javascript">
+/* From extension marp-team.marp-vscode */
+(()=>{var W=Object.defineProperty;var K=(w,h,x)=>h in w?W(w,h,{enumerable:!0,configurable:!0,writable:!0,value:x}):w[h]=x;var o=(w,h)=>W(w,"name",{value:h,configurable:!0});var v=(w,h,x)=>K(w,typeof h!="symbol"?h+"":h,x);(()=>{var w={32:(y,S,g)=>{y.exports=g(924)},924:(y,S)=>{"use strict";var g;g={value:!0};const E={h1:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"1"},style:"display: block; font-size: 2em; margin-block-start: 0.67em; margin-block-end: 0.67em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h2:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"2"},style:"display: block; font-size: 1.5em; margin-block-start: 0.83em; margin-block-end: 0.83em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h3:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"3"},style:"display: block; font-size: 1.17em; margin-block-start: 1em; margin-block-end: 1em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h4:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"4"},style:"display: block; margin-block-start: 1.33em; margin-block-end: 1.33em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h5:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"5"},style:"display: block; font-size: 0.83em; margin-block-start: 1.67em; margin-block-end: 1.67em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h6:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"6"},style:"display: block; font-size: 0.67em; margin-block-start: 2.33em; margin-block-end: 2.33em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},span:{proto:o(()=>HTMLSpanElement,"proto")},pre:{proto:o(()=>HTMLElement,"proto"),style:"display: block; font-family: monospace; white-space: pre; margin: 1em 0; --marp-auto-scaling-white-space: pre;"}},A="data-marp-auto-scaling-wrapper",p="data-marp-auto-scaling-svg",c="data-marp-auto-scaling-container",T=class T extends HTMLElement{constructor(){super();v(this,"container");v(this,"containerSize");v(this,"containerObserver");v(this,"svg");v(this,"svgComputedStyle");v(this,"svgPreserveAspectRatio","xMinYMid meet");v(this,"wrapper");v(this,"wrapperSize");v(this,"wrapperObserver");const s=o(t=>([e])=>{const{width:n,height:r}=e.contentRect;this[t]={width:n,height:r},this.updateSVGRect()},"e");this.attachShadow({mode:"open"}),this.containerObserver=new ResizeObserver(s("containerSize")),this.wrapperObserver=new ResizeObserver((...t)=>{s("wrapperSize")(...t),this.flushSvgDisplay()})}static get observedAttributes(){return["data-downscale-only"]}connectedCallback(){this.shadowRoot.innerHTML=`
+<style>
+  svg[${p}] { display: block; width: 100%; height: auto; vertical-align: top; }
+  span[${c}] { display: table; white-space: var(--marp-auto-scaling-white-space, nowrap); width: max-content; }
+</style>
+<div ${A}>
+  <svg part="svg" ${p}>
+    <foreignObject><span ${c}><slot></slot></span></foreignObject>
+  </svg>
+</div>
+    `.split(/\n\s*/).join(""),this.wrapper=this.shadowRoot.querySelector(`div[${A}]`)??void 0;const s=this.svg;this.svg=this.wrapper?.querySelector(`svg[${p}]`)??void 0,this.svg!==s&&(this.svgComputedStyle=this.svg?window.getComputedStyle(this.svg):void 0),this.container=this.svg?.querySelector(`span[${c}]`)??void 0,this.observe()}disconnectedCallback(){this.svg=void 0,this.svgComputedStyle=void 0,this.wrapper=void 0,this.container=void 0,this.observe()}attributeChangedCallback(){this.observe()}flushSvgDisplay(){const{svg:s}=this;s&&(s.style.display="inline",requestAnimationFrame(()=>{s.style.display=""}))}observe(){this.containerObserver.disconnect(),this.wrapperObserver.disconnect(),this.wrapper&&this.wrapperObserver.observe(this.wrapper),this.container&&this.containerObserver.observe(this.container),this.svgComputedStyle&&this.observeSVGStyle(this.svgComputedStyle)}observeSVGStyle(s){const t=o(()=>{const e=(()=>{const n=s.getPropertyValue("--preserve-aspect-ratio");return n?n.trim():`x${(({textAlign:r,direction:l})=>{if(r.endsWith("left"))return"Min";if(r.endsWith("right"))return"Max";if(r==="start"||r==="end"){let d=l==="rtl";return r==="end"&&(d=!d),d?"Max":"Min"}return"Mid"})(s)}YMid meet`})();e!==this.svgPreserveAspectRatio&&(this.svgPreserveAspectRatio=e,this.updateSVGRect()),s===this.svgComputedStyle&&requestAnimationFrame(t)},"t");t()}updateSVGRect(){let s=Math.ceil(this.containerSize?.width??0);const t=Math.ceil(this.containerSize?.height??0);this.dataset.downscaleOnly!==void 0&&(s=Math.max(s,this.wrapperSize?.width??0));const e=this.svg?.querySelector(":scope > foreignObject");if(e?.setAttribute("width",`${s}`),e?.setAttribute("height",`${t}`),this.svg&&(this.svg.setAttribute("viewBox",`0 0 ${s} ${t}`),this.svg.setAttribute("preserveAspectRatio",this.svgPreserveAspectRatio),this.svg.style.height=s<=0||t<=0?"0":""),this.container){const n=this.svgPreserveAspectRatio.toLowerCase();this.container.style.marginLeft=n.startsWith("xmid")||n.startsWith("xmax")?"auto":"0",this.container.style.marginRight=n.startsWith("xmi")?"auto":"0"}}};o(T,"s");let i=T;const m=o((a,{attrs:u={},style:s})=>class extends a{constructor(...t){super(...t);for(const[e,n]of Object.entries(u))this.hasAttribute(e)||this.setAttribute(e,n);this._shadow()}static get observedAttributes(){return["data-auto-scaling"]}connectedCallback(){this._update()}attributeChangedCallback(){this._update()}_shadow(){if(!this.shadowRoot)try{this.attachShadow({mode:"open"})}catch(t){if(!(t instanceof Error&&t.name==="NotSupportedError"))throw t}return this.shadowRoot}_update(){const t=this._shadow();if(t){const e=s?`<style>:host { ${s} }</style>`:"";let n="<slot></slot>";const{autoScaling:r}=this.dataset;r!==void 0&&(n=`<marp-auto-scaling exportparts="svg:auto-scaling" ${r==="downscale-only"?"data-downscale-only":""}>${n}</marp-auto-scaling>`),t.innerHTML=e+n}}},"r");let b;const z=Symbol();let $;const V="marpitSVGPolyfill:setZoomFactor,",C=Symbol(),j=Symbol(),G=o(()=>{const a=navigator.vendor==="Apple Computer, Inc.",u=a?[D]:[],s={then:o(t=>(a?(async()=>{if($===void 0){const e=document.createElement("canvas");e.width=10,e.height=10;const n=e.getContext("2d"),r=new Image(10,10),l=new Promise(d=>{r.addEventListener("load",()=>d())});r.crossOrigin="anonymous",r.src="data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%2210%22%20viewBox%3D%220%200%201%201%22%3E%3CforeignObject%20width%3D%221%22%20height%3D%221%22%20requiredExtensions%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml%22%3E%3Cdiv%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml%22%20style%3D%22width%3A%201px%3B%20height%3A%201px%3B%20background%3A%20red%3B%20position%3A%20relative%22%3E%3C%2Fdiv%3E%3C%2FforeignObject%3E%3C%2Fsvg%3E",await l,n.drawImage(r,0,0),$=n.getImageData(5,5,1,1).data[3]<128}return $})().then(e=>{t?.(e?[D]:[])}):t?.([]),s),"then")};return Object.assign(u,s)},"g");let H,O;function D(a){const u=typeof a=="object"&&a.target||document,s=typeof a=="object"?a.zoom:a;window[j]||(Object.defineProperty(window,j,{configurable:!0,value:!0}),document.body.style.zoom=1.0001,document.body.offsetHeight,document.body.style.zoom=1,window.addEventListener("message",({data:e,origin:n})=>{if(n===window.origin)try{if(e&&typeof e=="string"&&e.startsWith(V)){const[,r]=e.split(","),l=Number.parseFloat(r);Number.isNaN(l)||(O=l)}}catch(r){console.error(r)}}));let t=!1;Array.from(u.querySelectorAll("svg[data-marpit-svg]"),e=>{var n,r,l,d;e.style.transform||(e.style.transform="translateZ(0)");const f=s||O||e.currentScale||1;H!==f&&(H=f,t=f);const P=e.getBoundingClientRect(),{length:Z}=e.children;for(let F=0;F<Z;F+=1){const k=e.children[F];if(k.getScreenCTM){const _=k.getScreenCTM();if(_){const Y=(r=(n=k.x)===null||n===void 0?void 0:n.baseVal.value)!==null&&r!==void 0?r:0,U=(d=(l=k.y)===null||l===void 0?void 0:l.baseVal.value)!==null&&d!==void 0?d:0,J=k.children.length;for(let R=0;R<J;R+=1){const N=k.children[R];if(N.tagName==="SECTION"){const{style:q}=N;q.transformOrigin||(q.transformOrigin=`${-Y}px ${-U}px`),q.transform=`scale(${f}) matrix(${_.a}, ${_.b}, ${_.c}, ${_.d}, ${_.e-P.left}, ${_.f-P.top}) translateZ(0.0001px)`;break}}}}}}),t!==!1&&Array.from(u.querySelectorAll("iframe"),({contentWindow:e})=>{e?.postMessage(`${V}${t}`,window.origin==="null"?"*":window.origin)})}o(D,"u");function B({once:a=!1,target:u=document}={}){const s=function(t=document){if(t[C])return t[C];let e=!0;const n=o(()=>{e=!1,delete t[C]},"i");Object.defineProperty(t,C,{configurable:!0,value:n});let r=[],l=!1;(async()=>{try{r=await G()}finally{l=!0}})();const d=o(()=>{for(const f of r)f({target:t});l&&r.length===0||e&&window.requestAnimationFrame(d)},"r");return d(),n}(u);return a?(s(),()=>{}):s}o(B,"v"),H=1,O=void 0;const I=B,M=Symbol(),L=o((a=document)=>{if(typeof window>"u")throw new Error("Marp Core's browser script is valid only in browser context.");if(((e=document)=>{const n=window[z];n||customElements.define("marp-auto-scaling",i);for(const r of Object.keys(E)){const l=`marp-${r}`,d=E[r].proto();(b??(b=!!document.createElement("div",{is:"marp-auto-scaling"}).outerHTML.startsWith("<div is"),b))&&d!==HTMLElement?n||customElements.define(l,m(d,{style:E[r].style}),{extends:r}):(n||customElements.define(l,m(HTMLElement,E[r])),e.querySelectorAll(`${r}[is="${l}"]`).forEach(f=>{f.outerHTML=f.outerHTML.replace(new RegExp(`^<${r}`,"i"),`<${l}`).replace(new RegExp(`</${r}>$`,"i"),`</${l}>`)}))}window[z]=!0})(a),a[M])return a[M];const u=B({target:a}),s=o(()=>{u(),delete a[M]},"n"),t=Object.assign(s,{cleanup:s,update:o(()=>L(a),"update")});return Object.defineProperty(a,M,{configurable:!0,value:t}),t},"y");S.browser=L,g=L,g=I}},h={};function x(y){var S=h[y];if(S!==void 0)return S.exports;var g=h[y]={exports:{}};return w[y](g,g.exports,x),g.exports}o(x,"__webpack_require__");var Q={};(()=>{"use strict";var y=x(32);function S(){let p,c;const i=o(()=>{const m=document.getElementById("__marp-vscode"),b=!!m;p!==b?(document.body.classList.toggle("marp-vscode",b),b?c=(0,y.browser)():(c?.cleanup(),c=void 0),p=b):b&&c?.update(),p?(m&&g(m),E()):A()},"updateCallback");window.addEventListener("load",()=>window.setTimeout(i,100)),window.addEventListener("vscode.markdown.updateContent",i),i()}o(S,"preview");const g=o(p=>{p.querySelectorAll("[is]").forEach(c=>{if(c.nodeName.includes("-")||document.createElement(c.nodeName).constructor!==c.constructor)return;const{outerHTML:m}=c;c.outerHTML=m,console.debug("[marp-vscode] Custom element has been upgraded forcibly:",m.slice(0,m.indexOf(">")+1||void 0))})},"forceUpgradeCustomElements"),E=o(()=>{const p=document.querySelectorAll("style:not(#__marp-vscode-style,#_defaultStyles,[data-marp-vscode-body])"),c=document.querySelectorAll('link[rel="stylesheet"][href]:not([href*="marp-vscode"])');p.forEach(i=>{i.closest("#__marp-vscode")||(i.dataset.marpVscodeBody=i.textContent??"",i.textContent="")}),c.forEach(i=>{if(i.closest("#__marp-vscode"))return;const{href:m}=i;i.dataset.marpVscodeHref=m,i.removeAttribute("href")})},"removeStyles"),A=o(()=>{const p=document.querySelectorAll("style[data-marp-vscode-body]"),c=document.querySelectorAll("link[data-marp-vscode-href]");p.forEach(i=>{i.textContent=i.dataset.marpVscodeBody||"",delete i.dataset.marpVscodeBody}),c.forEach(i=>{i.href=i.dataset.marpVscodeHref||"",delete i.dataset.marpVscodeHref})},"restoreStyles");S()})()})();})();
+
+</script>
+
+        </body>
+        </html>

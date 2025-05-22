@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Observability Configuration</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+/* From extension marp-team.marp-vscode */
+#__marp-vscode {
+  all: revert;
+}
+
+/* Override VS Code default CSS rules reverting to initial
+   https://github.com/microsoft/vscode/blob/master/src/vs/workbench/contrib/webview/browser/pre/main.js#L53 */
+body.marp-vscode {
+  padding: 0;
+}
+
+body.marp-vscode img {
+  max-width: unset;
+  max-height: unset;
+}
+
+body.marp-vscode a,
+body.marp-vscode a:hover,
+body.marp-vscode code {
+  color: unset;
+}
+
+body.marp-vscode blockquote {
+  background: unset;
+  border-color: unset;
+}
+
+@media screen {
+  body.marp-vscode {
+    overflow-y: scroll;
+
+    /* stylelint-disable-next-line selector-class-pattern */
+    &.showEditorSelection {
+      --marp-vscode-highlight-color: rgb(255 255 255 / 40%);
+
+      &.vscode-light {
+        --marp-vscode-highlight-color: rgb(0 0 0 / 15%);
+      }
+
+      &.vscode-high-contrast {
+        --marp-vscode-highlight-color: rgb(255 160 0 / 70%);
+      }
+    }
+  }
+
+  #__marp-vscode [data-marp-vscode-slide-wrapper] {
+    margin: 20px;
+    position: relative;
+
+    &.code-active-line,
+    &:has(.code-active-line) {
+      &::before {
+        position: absolute;
+        content: '';
+        inset: -7px;
+        border: 3px solid var(--marp-vscode-highlight-color, transparent);
+        pointer-events: none;
+      }
+    }
+  }
+
+  #__marp-vscode svg[data-marpit-svg] {
+    box-shadow: 0 5px 10px rgb(0 0 0 / 25%);
+    display: block;
+    margin: 0;
+  }
+
+  /* Based on https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+  #code-csp-warning {
+    background-color: #444;
+    box-shadow: 1px 1px 1px rgb(0 0 0 / 25%);
+    color: white;
+    cursor: pointer;
+    font-family: sans-serif;
+    font-size: 12px;
+    line-height: 22px;
+    margin: 16px;
+    padding: 6px;
+    position: fixed;
+    right: 0;
+    text-align: center;
+    top: 0;
+    word-wrap: break-word;
+  }
+
+  #code-csp-warning:hover {
+    text-decoration: none;
+    background-color: #007acc;
+    box-shadow: 2px 2px 2px rgb(0 0 0 / 25%);
+  }
+}
+
+@media print {
+  body.marp-vscode #code-csp-warning {
+    display: none;
+  }
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="observability-configuration">Observability Configuration</h1>
+<p>Observability for the Vald cluster helps to check each Vald component status by monitoring metrics, logs, and traces.
+By enabling observability, you can monitor and visualize the number of indexes, the timing of creating indexes, the number of RPC, CPU resource usage, Memory resource usage, events, etc.</p>
+<p>This page shows the best practice for applying observing features by constructing an observability environment and setting the Vald Helm chart.</p>
+<h2 id="architecture">Architecture</h2>
+<p>Vald conforms <a href="https://opentelemetry.io/docs/reference/specification/protocol/otlp/">OpenTelemetry Protocol</a> and does NOT depend on any commercial data format.</p>
+<img src="file:////go/src/github.com/vdaas/vald/assets/docs/guides/observability-configuration/architecture.png" />
+<p>OpenTelemetry Collector handles receiving / processing / exporting the telemetry data, which does NOT depend on the vendors' format.
+All Vald components can send OTLP-compliant telemetry data, like metrics, traces, or logs, to the OpenTelemetry Collector.
+The telemetry data is used to monitor or visualize with the observing tools.</p>
+<h2 id="build-an-observing-environment">Build an observing environment</h2>
+<p>The recommended observability environment consists of the following:</p>
+<ul>
+<li>Cert-Manager</li>
+<li>Jaeger Operator and Jaeger</li>
+<li>Prometheus Operator and Prometheus</li>
+<li>Grafana</li>
+<li>OpenTelemetry Operator and OpenTelemetry Collector</li>
+</ul>
+<p>Vald provides <a href="https://github.com/vdaas/vald/tree/main/k8s/metrics">the default manifests</a> and <a href="https://github.com/vdaas/vald/blob/main/Makefile.d/k8s.mk">the make commands</a> for deploying those components.
+Please refer to the following sections to deploy each component.</p>
+<div class="notice">
+You can change parameters such as the export host by editing the manifest for your demands.
+</div>
+<h3 id="cert-manager">Cert-Manager</h3>
+<p>A <code>Cert-Manager</code> is required to enable to use of operators on the Kubernetes Cluster.</p>
+<pre><code class="language-bash">make k8s/external/cert-manager/deploy
+</code></pre>
+<h3 id="jaeger-operator-and-jaeger">Jaeger Operator and Jaeger</h3>
+<p>Jaeger is helpful for monitoring trace data. It can be available by running the following:</p>
+<pre><code class="language-bash">make k8s/metrics/jaeger/deploy
+</code></pre>
+<h3 id="prometheus-operator-and-prometheus">Prometheus Operator and Prometheus</h3>
+<p>Vald recommends using Prometheus as a backend service by the following command to monitor the metrics data.</p>
+<pre><code class="language-bash">make k8s/metrics/prometheus/operator/deploy
+</code></pre>
+<h3 id="grafana">Grafana</h3>
+<p>Vald recommends using Grafana to visualize metrics data.</p>
+<pre><code class="language-bash">make k8s/metrics/grafana/deploy
+</code></pre>
+<h3 id="opentelemetry-operator-and-opentelemetry-collector">OpenTelemetry Operator and OpenTelemetry Collector</h3>
+<p>Vald uses OpenTelemetry Collector to get the telemetry data and export it to monitor backend components.
+The following command deploys OpenTelemetry Collector via OpenTelemetry Collector.</p>
+<div class="warn">
+Before executing the following command, please ensure the Prometheus operator runs healthy.
+</div>
+<pre><code class="language-bash">make k8s/otel/operator/deploy k8s/otel/collector/deploy
+</code></pre>
+<h3 id="deploy-observability-components-with-a-simple-command">Deploy Observability components with a simple command</h3>
+<p>If you would like to deploy observability components with a simple command, please use the following command.</p>
+<pre><code class="language-bash">make k8s/external/cert-manager/deploy k8s/monitoring/deploy
+</code></pre>
+<h2 id="configure-helm-chart">Configure Helm chart</h2>
+<p>This section shows how to set <code>values.yaml</code> to enable each Vald component to send its own telemetry data.</p>
+<p>The setting points are the following:</p>
+<ol>
+<li>Enable observability feature</li>
+<li>Enable sending system metrics</li>
+<li>Enable sending trace data</li>
+<li>Set OpenTelemetry parameters</li>
+</ol>
+<div class="notice">
+The general settings are described for convenience, but individual settings are possible for each component by editing `[component].observability`. 
+</div>
+<h3 id="enable-observability-feature">Enable observability feature</h3>
+<p>To enable the observability feature, you must set <code>defaults.observability.enabled</code> as <code>true</code>.</p>
+<pre><code class="language-yaml"><span class="hljs-attr">defaults:</span>
+  <span class="hljs-attr">observability:</span>
+    <span class="hljs-comment"># enable observability</span>
+    <span class="hljs-attr">enabled:</span> <span class="hljs-literal">true</span>
+</code></pre>
+<h3 id="enable-sending-system-metrics">Enable sending system metrics</h3>
+<p>Each Vald component sends the system metrics by editing <code>defaults.observability.metrics</code>.
+All metrics are enabled by default.
+Vald recommends using default values unless there is a specific reason.</p>
+<pre><code class="language-yaml"><span class="hljs-attr">defaults:</span>
+  <span class="hljs-attr">observability:</span>
+    <span class="hljs-comment"># enable version info metrics</span>
+    <span class="hljs-attr">metrics:</span>
+      <span class="hljs-attr">enable_version_info:</span> <span class="hljs-literal">true</span>
+      <span class="hljs-comment"># If the enable_version_info setting is true, this information will be added to the keys of the version info metrics.</span>
+      <span class="hljs-attr">version_info_labels:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;vald_version&quot;</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;server_name&quot;</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;git_commit&quot;</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;build_time&quot;</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;go_version&quot;</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;go_os&quot;</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;go_arch&quot;</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;algorithm_info&quot;</span>
+      <span class="hljs-comment"># enable memory metrics</span>
+      <span class="hljs-attr">enable_memory:</span> <span class="hljs-literal">true</span>
+      <span class="hljs-comment"># enable goroutine metrics</span>
+      <span class="hljs-attr">enable_goroutine:</span> <span class="hljs-literal">true</span>
+      <span class="hljs-comment"># enable cgo metrics</span>
+      <span class="hljs-attr">enable_cgo:</span> <span class="hljs-literal">true</span>
+</code></pre>
+<h3 id="enable-sending-trace-data">Enable sending trace data</h3>
+<p>Please set <code>defaults.observability.trace.enabled</code> as <code>true</code> to enable sending trace data.
+The default value is <code>false</code>.</p>
+<pre><code class="language-yaml"><span class="hljs-attr">defaults:</span>
+  <span class="hljs-attr">observability:</span>
+    <span class="hljs-attr">trace:</span>
+      <span class="hljs-comment"># enable to send trace data</span>
+      <span class="hljs-attr">enabled:</span> <span class="hljs-literal">true</span>
+</code></pre>
+<h3 id="opentelemetry-settings">OpenTelemetry settings</h3>
+<p>This section shows the detailed settings for sending telemetry data.</p>
+<h4 id="specify-opentelemetry-collector-endpoint">Specify OpenTelemetry Collector endpoint</h4>
+<p>To send the telemetry data, you must set the OpenTelemetry Collector's endpoint to <code>defaults.observability.otlp.collector_endpoint</code>.
+The default value is not set.</p>
+<div class="warn">
+It is required to send telemetry data.
+</div>
+<pre><code class="language-yaml"><span class="hljs-attr">defaults:</span>
+  <span class="hljs-attr">observability:</span>
+    <span class="hljs-attr">otlp:</span>
+      <span class="hljs-attr">collector_endpoint:</span> <span class="hljs-string">&quot;opentelemetry-collector-collector.default.svc.cluster.local:4317&quot;</span>
+</code></pre>
+<h4 id="specify-the-telemetry-attribute">Specify the Telemetry attribute</h4>
+<p>You can add the component information to the attribute of telemetry data by editing <code>defaults.observability.otlp.attribute</code>.
+E.g., when setting <code>vald-agent-ngt-0</code> as <code>agent.observability.otlp.attribute.pod_name</code>, <code>target_pod: vald-agent-ngt-0</code> will be added to the attribute.
+These attributes are set auto by the environment values, so Vald recommends using default values unless there is a specific reason.</p>
+<pre><code class="language-yaml"><span class="hljs-attr">defaults:</span>
+  <span class="hljs-attr">observability:</span>
+    <span class="hljs-attr">otlp:</span>
+      <span class="hljs-attr">attribute:</span>
+        <span class="hljs-comment"># deployed namespace</span>
+        <span class="hljs-attr">namespace:</span> <span class="hljs-string">vald</span>
+        <span class="hljs-comment"># pod name</span>
+        <span class="hljs-attr">pod_name:</span> <span class="hljs-string">vald-agent-ngt-0</span>
+        <span class="hljs-comment"># deployed node name</span>
+        <span class="hljs-attr">node_name:</span> <span class="hljs-string">kube-worker01</span>
+        <span class="hljs-comment"># service name</span>
+        <span class="hljs-attr">service_name:</span> <span class="hljs-string">vald-agent-ngt</span>
+</code></pre>
+<h4 id="customize-send-configuration">Customize send configuration</h4>
+<p>You can modify the sending telemetry data behavior by changing the <code>default.observability.otlp</code> parameters.</p>
+<pre><code class="language-yaml"><span class="hljs-attr">defaults:</span>
+  <span class="hljs-attr">observability:</span>
+    <span class="hljs-attr">otlp:</span>
+      <span class="hljs-comment"># Maximum duration for constructing a batch from the queue. The Processor forcefully sends available spans when timeout is reached.</span>
+      <span class="hljs-attr">trace_batch_timeout:</span> <span class="hljs-string">&quot;1s&quot;</span>
+      <span class="hljs-comment"># Maximum duration for exporting trace spans</span>
+      <span class="hljs-attr">trace_export_timeout:</span> <span class="hljs-string">&quot;1m&quot;</span>
+      <span class="hljs-comment"># Maximum batch size of trace spans.</span>
+      <span class="hljs-attr">trace_max_export_batch_size:</span> <span class="hljs-number">1024</span>
+      <span class="hljs-comment"># Maximum queue size to buffer trace spans for delayed processing.</span>
+      <span class="hljs-attr">trace_max_queue_size:</span> <span class="hljs-number">256</span>
+      <span class="hljs-comment"># Export interval for metrics</span>
+      <span class="hljs-attr">metrics_export_interval:</span> <span class="hljs-string">&quot;1s&quot;</span>
+      <span class="hljs-comment"># Maximum duration for exporting metrics</span>
+      <span class="hljs-attr">metrics_export_timeout:</span> <span class="hljs-string">&quot;1m&quot;</span>
+</code></pre>
+<h4 id="grpc-configuration">gRPC Configuration</h4>
+<p>The interceptor configuration is required to send the metrics and trace data related to gRPC.
+You can add the interceptor to the server-side and client-side by editing <code>defaults.server_config.servers.grpc.server.grpc.interceptors</code> parameters.</p>
+<pre><code class="language-yaml"><span class="hljs-attr">defaults:</span>
+  <span class="hljs-attr">server_config:</span>
+    <span class="hljs-attr">servers:</span>
+      <span class="hljs-attr">grpc:</span>
+        <span class="hljs-attr">server:</span>
+          <span class="hljs-attr">grpc:</span>
+            <span class="hljs-comment"># gRPC Server interceptor.</span>
+            <span class="hljs-attr">interceptors:</span>
+              <span class="hljs-bullet">-</span> <span class="hljs-string">TraceInterceptor</span>
+              <span class="hljs-bullet">-</span> <span class="hljs-string">MetricInterceptor</span>
+  <span class="hljs-attr">grpc:</span>
+    <span class="hljs-comment"># gRPC Client interceptor.</span>
+    <span class="hljs-attr">client:</span>
+      <span class="hljs-attr">dial_option:</span>
+        <span class="hljs-attr">interceptors:</span>
+          <span class="hljs-bullet">-</span> <span class="hljs-string">TraceInterceptor</span>
+</code></pre>
+<h2 id="monitoring-telemetry-data">Monitoring telemetry data</h2>
+<p>Telemetry data can be monitored using Grafana, Jaeger, etc.
+Vald publishes <a href="https://github.com/vdaas/vald/blob/main/charts/vald/values/dev-observability.yaml">the sample manifest</a>, which enables Grafana and Jaeger.</p>
+<p>You can apply it after creating an observability environment.</p>
+<div class="notice">
+The default manifests don't set ingress host.<BR>
+You can monitor the browser by port forwarding or define the ingress host by yourself.
+</div>
+<h2 id="cleanup">Cleanup</h2>
+<p>Lastly, the Vald cluster will be removed by executing the following command.</p>
+<pre><code class="language-bash">helm uninstall vald
+</code></pre>
+<p>Also, the observability components will be removed by executing the following command.</p>
+<pre><code class="language-bash">make k8s/monitoring/delete k8s/external/cert-manager/delete
+</code></pre>
+<p>And the observability components can also be removed by executing the following command.</p>
+<pre><code class="language-bash">make k8s/otel/collector/delete \
+  k8s/otel/operator/delete \
+  k8s/metrics/grafana/delete \
+  k8s/metrics/jaeger/delete \
+  k8s/metrics/prometheus/operator/delete \
+  k8s/external/cert-manager/delete
+</code></pre>
+
+            
+            <script async type="text/javascript">
+/* From extension marp-team.marp-vscode */
+(()=>{var W=Object.defineProperty;var K=(w,h,x)=>h in w?W(w,h,{enumerable:!0,configurable:!0,writable:!0,value:x}):w[h]=x;var o=(w,h)=>W(w,"name",{value:h,configurable:!0});var v=(w,h,x)=>K(w,typeof h!="symbol"?h+"":h,x);(()=>{var w={32:(y,S,g)=>{y.exports=g(924)},924:(y,S)=>{"use strict";var g;g={value:!0};const E={h1:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"1"},style:"display: block; font-size: 2em; margin-block-start: 0.67em; margin-block-end: 0.67em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h2:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"2"},style:"display: block; font-size: 1.5em; margin-block-start: 0.83em; margin-block-end: 0.83em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h3:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"3"},style:"display: block; font-size: 1.17em; margin-block-start: 1em; margin-block-end: 1em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h4:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"4"},style:"display: block; margin-block-start: 1.33em; margin-block-end: 1.33em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h5:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"5"},style:"display: block; font-size: 0.83em; margin-block-start: 1.67em; margin-block-end: 1.67em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h6:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"6"},style:"display: block; font-size: 0.67em; margin-block-start: 2.33em; margin-block-end: 2.33em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},span:{proto:o(()=>HTMLSpanElement,"proto")},pre:{proto:o(()=>HTMLElement,"proto"),style:"display: block; font-family: monospace; white-space: pre; margin: 1em 0; --marp-auto-scaling-white-space: pre;"}},A="data-marp-auto-scaling-wrapper",p="data-marp-auto-scaling-svg",c="data-marp-auto-scaling-container",T=class T extends HTMLElement{constructor(){super();v(this,"container");v(this,"containerSize");v(this,"containerObserver");v(this,"svg");v(this,"svgComputedStyle");v(this,"svgPreserveAspectRatio","xMinYMid meet");v(this,"wrapper");v(this,"wrapperSize");v(this,"wrapperObserver");const s=o(t=>([e])=>{const{width:n,height:r}=e.contentRect;this[t]={width:n,height:r},this.updateSVGRect()},"e");this.attachShadow({mode:"open"}),this.containerObserver=new ResizeObserver(s("containerSize")),this.wrapperObserver=new ResizeObserver((...t)=>{s("wrapperSize")(...t),this.flushSvgDisplay()})}static get observedAttributes(){return["data-downscale-only"]}connectedCallback(){this.shadowRoot.innerHTML=`
+<style>
+  svg[${p}] { display: block; width: 100%; height: auto; vertical-align: top; }
+  span[${c}] { display: table; white-space: var(--marp-auto-scaling-white-space, nowrap); width: max-content; }
+</style>
+<div ${A}>
+  <svg part="svg" ${p}>
+    <foreignObject><span ${c}><slot></slot></span></foreignObject>
+  </svg>
+</div>
+    `.split(/\n\s*/).join(""),this.wrapper=this.shadowRoot.querySelector(`div[${A}]`)??void 0;const s=this.svg;this.svg=this.wrapper?.querySelector(`svg[${p}]`)??void 0,this.svg!==s&&(this.svgComputedStyle=this.svg?window.getComputedStyle(this.svg):void 0),this.container=this.svg?.querySelector(`span[${c}]`)??void 0,this.observe()}disconnectedCallback(){this.svg=void 0,this.svgComputedStyle=void 0,this.wrapper=void 0,this.container=void 0,this.observe()}attributeChangedCallback(){this.observe()}flushSvgDisplay(){const{svg:s}=this;s&&(s.style.display="inline",requestAnimationFrame(()=>{s.style.display=""}))}observe(){this.containerObserver.disconnect(),this.wrapperObserver.disconnect(),this.wrapper&&this.wrapperObserver.observe(this.wrapper),this.container&&this.containerObserver.observe(this.container),this.svgComputedStyle&&this.observeSVGStyle(this.svgComputedStyle)}observeSVGStyle(s){const t=o(()=>{const e=(()=>{const n=s.getPropertyValue("--preserve-aspect-ratio");return n?n.trim():`x${(({textAlign:r,direction:l})=>{if(r.endsWith("left"))return"Min";if(r.endsWith("right"))return"Max";if(r==="start"||r==="end"){let d=l==="rtl";return r==="end"&&(d=!d),d?"Max":"Min"}return"Mid"})(s)}YMid meet`})();e!==this.svgPreserveAspectRatio&&(this.svgPreserveAspectRatio=e,this.updateSVGRect()),s===this.svgComputedStyle&&requestAnimationFrame(t)},"t");t()}updateSVGRect(){let s=Math.ceil(this.containerSize?.width??0);const t=Math.ceil(this.containerSize?.height??0);this.dataset.downscaleOnly!==void 0&&(s=Math.max(s,this.wrapperSize?.width??0));const e=this.svg?.querySelector(":scope > foreignObject");if(e?.setAttribute("width",`${s}`),e?.setAttribute("height",`${t}`),this.svg&&(this.svg.setAttribute("viewBox",`0 0 ${s} ${t}`),this.svg.setAttribute("preserveAspectRatio",this.svgPreserveAspectRatio),this.svg.style.height=s<=0||t<=0?"0":""),this.container){const n=this.svgPreserveAspectRatio.toLowerCase();this.container.style.marginLeft=n.startsWith("xmid")||n.startsWith("xmax")?"auto":"0",this.container.style.marginRight=n.startsWith("xmi")?"auto":"0"}}};o(T,"s");let i=T;const m=o((a,{attrs:u={},style:s})=>class extends a{constructor(...t){super(...t);for(const[e,n]of Object.entries(u))this.hasAttribute(e)||this.setAttribute(e,n);this._shadow()}static get observedAttributes(){return["data-auto-scaling"]}connectedCallback(){this._update()}attributeChangedCallback(){this._update()}_shadow(){if(!this.shadowRoot)try{this.attachShadow({mode:"open"})}catch(t){if(!(t instanceof Error&&t.name==="NotSupportedError"))throw t}return this.shadowRoot}_update(){const t=this._shadow();if(t){const e=s?`<style>:host { ${s} }</style>`:"";let n="<slot></slot>";const{autoScaling:r}=this.dataset;r!==void 0&&(n=`<marp-auto-scaling exportparts="svg:auto-scaling" ${r==="downscale-only"?"data-downscale-only":""}>${n}</marp-auto-scaling>`),t.innerHTML=e+n}}},"r");let b;const z=Symbol();let $;const V="marpitSVGPolyfill:setZoomFactor,",C=Symbol(),j=Symbol(),G=o(()=>{const a=navigator.vendor==="Apple Computer, Inc.",u=a?[D]:[],s={then:o(t=>(a?(async()=>{if($===void 0){const e=document.createElement("canvas");e.width=10,e.height=10;const n=e.getContext("2d"),r=new Image(10,10),l=new Promise(d=>{r.addEventListener("load",()=>d())});r.crossOrigin="anonymous",r.src="data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%2210%22%20viewBox%3D%220%200%201%201%22%3E%3CforeignObject%20width%3D%221%22%20height%3D%221%22%20requiredExtensions%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml%22%3E%3Cdiv%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml%22%20style%3D%22width%3A%201px%3B%20height%3A%201px%3B%20background%3A%20red%3B%20position%3A%20relative%22%3E%3C%2Fdiv%3E%3C%2FforeignObject%3E%3C%2Fsvg%3E",await l,n.drawImage(r,0,0),$=n.getImageData(5,5,1,1).data[3]<128}return $})().then(e=>{t?.(e?[D]:[])}):t?.([]),s),"then")};return Object.assign(u,s)},"g");let H,O;function D(a){const u=typeof a=="object"&&a.target||document,s=typeof a=="object"?a.zoom:a;window[j]||(Object.defineProperty(window,j,{configurable:!0,value:!0}),document.body.style.zoom=1.0001,document.body.offsetHeight,document.body.style.zoom=1,window.addEventListener("message",({data:e,origin:n})=>{if(n===window.origin)try{if(e&&typeof e=="string"&&e.startsWith(V)){const[,r]=e.split(","),l=Number.parseFloat(r);Number.isNaN(l)||(O=l)}}catch(r){console.error(r)}}));let t=!1;Array.from(u.querySelectorAll("svg[data-marpit-svg]"),e=>{var n,r,l,d;e.style.transform||(e.style.transform="translateZ(0)");const f=s||O||e.currentScale||1;H!==f&&(H=f,t=f);const P=e.getBoundingClientRect(),{length:Z}=e.children;for(let F=0;F<Z;F+=1){const k=e.children[F];if(k.getScreenCTM){const _=k.getScreenCTM();if(_){const Y=(r=(n=k.x)===null||n===void 0?void 0:n.baseVal.value)!==null&&r!==void 0?r:0,U=(d=(l=k.y)===null||l===void 0?void 0:l.baseVal.value)!==null&&d!==void 0?d:0,J=k.children.length;for(let R=0;R<J;R+=1){const N=k.children[R];if(N.tagName==="SECTION"){const{style:q}=N;q.transformOrigin||(q.transformOrigin=`${-Y}px ${-U}px`),q.transform=`scale(${f}) matrix(${_.a}, ${_.b}, ${_.c}, ${_.d}, ${_.e-P.left}, ${_.f-P.top}) translateZ(0.0001px)`;break}}}}}}),t!==!1&&Array.from(u.querySelectorAll("iframe"),({contentWindow:e})=>{e?.postMessage(`${V}${t}`,window.origin==="null"?"*":window.origin)})}o(D,"u");function B({once:a=!1,target:u=document}={}){const s=function(t=document){if(t[C])return t[C];let e=!0;const n=o(()=>{e=!1,delete t[C]},"i");Object.defineProperty(t,C,{configurable:!0,value:n});let r=[],l=!1;(async()=>{try{r=await G()}finally{l=!0}})();const d=o(()=>{for(const f of r)f({target:t});l&&r.length===0||e&&window.requestAnimationFrame(d)},"r");return d(),n}(u);return a?(s(),()=>{}):s}o(B,"v"),H=1,O=void 0;const I=B,M=Symbol(),L=o((a=document)=>{if(typeof window>"u")throw new Error("Marp Core's browser script is valid only in browser context.");if(((e=document)=>{const n=window[z];n||customElements.define("marp-auto-scaling",i);for(const r of Object.keys(E)){const l=`marp-${r}`,d=E[r].proto();(b??(b=!!document.createElement("div",{is:"marp-auto-scaling"}).outerHTML.startsWith("<div is"),b))&&d!==HTMLElement?n||customElements.define(l,m(d,{style:E[r].style}),{extends:r}):(n||customElements.define(l,m(HTMLElement,E[r])),e.querySelectorAll(`${r}[is="${l}"]`).forEach(f=>{f.outerHTML=f.outerHTML.replace(new RegExp(`^<${r}`,"i"),`<${l}`).replace(new RegExp(`</${r}>$`,"i"),`</${l}>`)}))}window[z]=!0})(a),a[M])return a[M];const u=B({target:a}),s=o(()=>{u(),delete a[M]},"n"),t=Object.assign(s,{cleanup:s,update:o(()=>L(a),"update")});return Object.defineProperty(a,M,{configurable:!0,value:t}),t},"y");S.browser=L,g=L,g=I}},h={};function x(y){var S=h[y];if(S!==void 0)return S.exports;var g=h[y]={exports:{}};return w[y](g,g.exports,x),g.exports}o(x,"__webpack_require__");var Q={};(()=>{"use strict";var y=x(32);function S(){let p,c;const i=o(()=>{const m=document.getElementById("__marp-vscode"),b=!!m;p!==b?(document.body.classList.toggle("marp-vscode",b),b?c=(0,y.browser)():(c?.cleanup(),c=void 0),p=b):b&&c?.update(),p?(m&&g(m),E()):A()},"updateCallback");window.addEventListener("load",()=>window.setTimeout(i,100)),window.addEventListener("vscode.markdown.updateContent",i),i()}o(S,"preview");const g=o(p=>{p.querySelectorAll("[is]").forEach(c=>{if(c.nodeName.includes("-")||document.createElement(c.nodeName).constructor!==c.constructor)return;const{outerHTML:m}=c;c.outerHTML=m,console.debug("[marp-vscode] Custom element has been upgraded forcibly:",m.slice(0,m.indexOf(">")+1||void 0))})},"forceUpgradeCustomElements"),E=o(()=>{const p=document.querySelectorAll("style:not(#__marp-vscode-style,#_defaultStyles,[data-marp-vscode-body])"),c=document.querySelectorAll('link[rel="stylesheet"][href]:not([href*="marp-vscode"])');p.forEach(i=>{i.closest("#__marp-vscode")||(i.dataset.marpVscodeBody=i.textContent??"",i.textContent="")}),c.forEach(i=>{if(i.closest("#__marp-vscode"))return;const{href:m}=i;i.dataset.marpVscodeHref=m,i.removeAttribute("href")})},"removeStyles"),A=o(()=>{const p=document.querySelectorAll("style[data-marp-vscode-body]"),c=document.querySelectorAll("link[data-marp-vscode-href]");p.forEach(i=>{i.textContent=i.dataset.marpVscodeBody||"",delete i.dataset.marpVscodeBody}),c.forEach(i=>{i.href=i.dataset.marpVscodeHref||"",delete i.dataset.marpVscodeHref})},"restoreStyles");S()})()})();})();
+
+</script>
+
+        </body>
+        </html>

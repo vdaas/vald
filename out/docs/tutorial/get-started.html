@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Get Started</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+/* From extension marp-team.marp-vscode */
+#__marp-vscode {
+  all: revert;
+}
+
+/* Override VS Code default CSS rules reverting to initial
+   https://github.com/microsoft/vscode/blob/master/src/vs/workbench/contrib/webview/browser/pre/main.js#L53 */
+body.marp-vscode {
+  padding: 0;
+}
+
+body.marp-vscode img {
+  max-width: unset;
+  max-height: unset;
+}
+
+body.marp-vscode a,
+body.marp-vscode a:hover,
+body.marp-vscode code {
+  color: unset;
+}
+
+body.marp-vscode blockquote {
+  background: unset;
+  border-color: unset;
+}
+
+@media screen {
+  body.marp-vscode {
+    overflow-y: scroll;
+
+    /* stylelint-disable-next-line selector-class-pattern */
+    &.showEditorSelection {
+      --marp-vscode-highlight-color: rgb(255 255 255 / 40%);
+
+      &.vscode-light {
+        --marp-vscode-highlight-color: rgb(0 0 0 / 15%);
+      }
+
+      &.vscode-high-contrast {
+        --marp-vscode-highlight-color: rgb(255 160 0 / 70%);
+      }
+    }
+  }
+
+  #__marp-vscode [data-marp-vscode-slide-wrapper] {
+    margin: 20px;
+    position: relative;
+
+    &.code-active-line,
+    &:has(.code-active-line) {
+      &::before {
+        position: absolute;
+        content: '';
+        inset: -7px;
+        border: 3px solid var(--marp-vscode-highlight-color, transparent);
+        pointer-events: none;
+      }
+    }
+  }
+
+  #__marp-vscode svg[data-marpit-svg] {
+    box-shadow: 0 5px 10px rgb(0 0 0 / 25%);
+    display: block;
+    margin: 0;
+  }
+
+  /* Based on https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+  #code-csp-warning {
+    background-color: #444;
+    box-shadow: 1px 1px 1px rgb(0 0 0 / 25%);
+    color: white;
+    cursor: pointer;
+    font-family: sans-serif;
+    font-size: 12px;
+    line-height: 22px;
+    margin: 16px;
+    padding: 6px;
+    position: fixed;
+    right: 0;
+    text-align: center;
+    top: 0;
+    word-wrap: break-word;
+  }
+
+  #code-csp-warning:hover {
+    text-decoration: none;
+    background-color: #007acc;
+    box-shadow: 2px 2px 2px rgb(0 0 0 / 25%);
+  }
+}
+
+@media print {
+  body.marp-vscode #code-csp-warning {
+    display: none;
+  }
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="get-started">Get Started</h1>
+<p>Vald is a highly scalable distributed fast approximate nearest neighbor dense vector search engine.<br>
+Vald is designed and implemented based on Cloud-Native architecture.</p>
+<p>This tutorial shows how to deploy and run the Vald components on your Kubernetes cluster.
+And, Fashion-MNIST is used as an example of a dataset.</p>
+<h2 id="overview">Overview</h2>
+<p>The below image shows the architecture image about the deployment result of <code>Get Started</code>.<br>
+The 4 kinds of components, <code>Vald LB Gateway</code>, <code>Vald Discoverer</code>, <code>Vald Agent</code>, and <code>Vald Index Manager</code> will be deployed to the Kubernetes.
+For more information about Vald's architecture, please refer to <a href="../overview/architecture.html">Architecture</a>.</p>
+<img src="file:////go/src/github.com/vdaas/vald/assets/docs/tutorial/getstarted.svg" />
+<p>The 5 steps to Get Started with Vald:</p>
+<ol>
+<li><a href="#Requirements">Check and Satisfy the Requirements</a></li>
+<li><a href="#Prepare-the-Kubernetes-Cluster">Prepare Kubernetes Cluster</a></li>
+<li><a href="#Deploy-Vald-on-Kubernetes-Cluster">Deploy Vald on Kubernetes Cluster</a></li>
+<li><a href="#Run-Example-Code">Run Example Code</a></li>
+<li><a href="#Cleanup">Cleanup</a></li>
+</ol>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>Kubernetes: v1.19 ~</li>
+<li>Go: v1.15 ~</li>
+<li>Helm: v3 ~</li>
+<li>libhdf5 (<em>only required for get started</em>)</li>
+</ul>
+<p>Helm is used to deploying Vald on your Kubernetes and HDF5 is used to decode the sample data file to run the example.<br>
+If Helm or HDF5 is not installed, please install <a href="https://helm.sh/docs/intro/install">Helm</a> and <a href="https://www.hdfgroup.org/">HDF5</a>.</p>
+<details><summary>Installation command for Helm</summary><br>
+<pre><code class="language-bash">curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+</code></pre>
+</details>
+<details><summary>Installation command for HDF5</summary><br>
+<pre><code class="language-bash"><span class="hljs-comment"># yum</span>
+yum install -y hdf5-devel
+
+<span class="hljs-comment"># apt</span>
+apt-get install libhdf5-serial-dev
+
+<span class="hljs-comment"># homebrew</span>
+brew install hdf5
+</code></pre>
+</details>
+<h2 id="prepare-the-kubernetes-cluster">Prepare the Kubernetes Cluster</h2>
+<p>This tutorial requires the Kubernetes cluster.<br>
+Vald runs on public Cloud Kubernetes Services such as GKE, EKS.
+In the sense of trying to <code>Get Started</code>, <a href="https://k3d.io/">k3d</a> or <a href="https://kind.sigs.k8s.io/">kind</a> are easy Kubernetes tools to use.</p>
+<p>This tutorial uses Kubernetes Ingress and <a href="https://github.com/kubernetes-sigs/metrics-server">Kubernetes Metrics Server</a> for running Vald.<br>
+Please make sure these functions are available.<br></p>
+<p>The configuration of Kubernetes Ingress is depended on your Kubernetes cluster's provider.
+Please refer to on yourself.</p>
+<p>In the following example, we create the Kubernetes cluster using <a href="https://k3d.io/">k3d</a>, that the internal port 80 (where the traefik ingress controller is listening on) is exposed on the host system.</p>
+<pre><code class="language-bash">k3d cluster create -p 8081:80@loadbalancer
+</code></pre>
+<p>The way to deploy Kubernetes Metrics Service is here:</p>
+<pre><code class="language-bash">kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml &amp;&amp; \
+kubectl <span class="hljs-built_in">wait</span> -n kube-system --<span class="hljs-keyword">for</span>=condition=ready pod -l k8s-app=metrics-server --<span class="hljs-built_in">timeout</span>=600s
+</code></pre>
+<h2 id="deploy-vald-on-kubernetes-cluster">Deploy Vald on Kubernetes Cluster</h2>
+<p>This chapter shows how to deploy Vald using Helm and run it on your Kubernetes cluster.<br>
+In this tutorial, you will deploy the basic configuration of Vald that is consisted of vald-agent-ngt, vald-lb-gateway, vald-discoverer, and vald-manager-index.<br></p>
+<div class="caution">
+For vald-discoverer to work correctly, if you deploy multiple Vald clusters in the same Kubernetes cluster, please deploy one Vald cluster in one namespace.
+</div>
+<ol>
+<li>
+<p>Clone the repository</p>
+<pre><code class="language-bash">git <span class="hljs-built_in">clone</span> https://github.com/vdaas/vald.git &amp;&amp; \
+<span class="hljs-built_in">cd</span> vald
+</code></pre>
+</li>
+<li>
+<p>Confirm which cluster to deploy</p>
+<pre><code class="language-bash">kubectl cluster-info
+</code></pre>
+</li>
+<li>
+<p>Edit Configurations</p>
+<p>Set the parameters for connecting to the vald-lb-gateway through Kubernetes ingress from the external network.
+Please set these parameters.</p>
+<pre><code class="language-bash">vim example/helm/values.yaml
+===
+<span class="hljs-comment">## vald-lb-gateway settings</span>
+gateway:
+  lb:
+    ...
+    ingress:
+      enabled: <span class="hljs-literal">true</span>
+      <span class="hljs-comment"># <span class="hljs-doctag">TODO:</span> Set your ingress host.</span>
+      host: localhost
+      <span class="hljs-comment"># <span class="hljs-doctag">TODO:</span> Set annotations which you have to set for your Ingress resource.</span>
+      annotations:
+        ...
+</code></pre>
+<p>Note:<br>
+If you decided to use port-forward instead of ingress, please set <code>gateway.lb.ingress.enabled</code> to <code>false</code>.</p>
+</li>
+<li>
+<p>Deploy Vald using Helm</p>
+<p>Add vald repo into the helm repo.</p>
+<pre><code class="language-bash">helm repo add vald https://vald.vdaas.org/charts
+</code></pre>
+<p>Deploy vald on your Kubernetes cluster.</p>
+<pre><code class="language-bash">helm install vald vald/vald --values example/helm/values.yaml
+</code></pre>
+</li>
+<li>
+<p>Verify</p>
+<p>When finish deploying Vald, you can check the Vald's pods status following command.</p>
+<pre><code class="language-bash">kubectl get pods
+</code></pre>
+<details><summary>Example output</summary><br>
+If the deployment is successful, all Vald components should be running.
+<pre><code class="language-bash">NAME                                       READY   STATUS      RESTARTS   AGE
+vald-agent-ngt-0                           1/1     Running     0          7m12s
+vald-agent-ngt-1                           1/1     Running     0          7m12s
+vald-agent-ngt-2                           1/1     Running     0          7m12s
+vald-agent-ngt-3                           1/1     Running     0          7m12s
+vald-agent-ngt-4                           1/1     Running     0          7m12s
+vald-discoverer-7f9f697dbb-q44qh           1/1     Running     0          7m11s
+vald-lb-gateway-6b7b9f6948-4z5md           1/1     Running     0          7m12s
+vald-lb-gateway-6b7b9f6948-68g94           1/1     Running     0          6m56s
+vald-lb-gateway-6b7b9f6948-cvspq           1/1     Running     0          6m56s
+vald-manager-index-74c7b5ddd6-jrnlw        1/1     Running     0          7m12s
+</code></pre>
+</details>
+<pre><code class="language-bash">kubectl get ingress
+</code></pre>
+<details><summary>Example output</summary><br>
+<pre><code class="language-bash">NAME                      CLASS     HOSTS       ADDRESS        PORTS   AGE
+vald-lb-gateway-ingress   traefik   localhost   192.168.16.2   80      7m43s
+</code></pre>
+</details>
+<pre><code class="language-bash">kubectl get svc
+</code></pre>
+<details><summary>Example output</summary><br>
+<pre><code class="language-bash">NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)             AGE
+kubernetes           ClusterIP   10.43.0.1    &lt;none&gt;        443/TCP             9m29s
+vald-agent-ngt       ClusterIP   None         &lt;none&gt;        8081/TCP,3001/TCP   8m48s
+vald-discoverer      ClusterIP   None         &lt;none&gt;        8081/TCP,3001/TCP   8m48s
+vald-manager-index   ClusterIP   None         &lt;none&gt;        8081/TCP,3001/TCP   8m48s
+vald-lb-gateway      ClusterIP   None         &lt;none&gt;        8081/TCP,3001/TCP   8m48s
+</code></pre>
+</details>
+</li>
+</ol>
+<h2 id="run-example-code">Run Example Code</h2>
+<p>In this chapter, you will execute insert, search, and delete vectors to your Vald cluster using the example code.<br>
+The <a href="https://github.com/zalandoresearch/fashion-mnist">Fashion-MNIST</a> is used as a dataset for indexing and search query.</p>
+<p>The example code is implemented in Go and using <a href="https://github.com/vdaas/vald-client-go">vald-client-go</a>, one of the official Vald client libraries, for requesting to Vald cluster.
+Vald provides multiple language client libraries such as Go, Java, Node.js, Python, etc.
+If you are interested, please refer to <a href="../user-guides/sdks.html">SDKs</a>.<br></p>
+<ol>
+<li>
+<p>Port Forward(option)</p>
+<p>If you do not use Kubernetes Ingress, port-forward is required to make requests from your local environment.</p>
+<pre><code class="language-bash">kubectl port-forward deployment/vald-lb-gateway 8081:8081
+</code></pre>
+</li>
+<li>
+<p>Download dataset</p>
+<p>Download <a href="https://github.com/zalandoresearch/fashion-mnist">Fashion-MNIST</a> that is used as a dataset for indexing and search query.</p>
+<p>Move to the working directory</p>
+<pre><code class="language-bash"><span class="hljs-built_in">cd</span> example/client
+</code></pre>
+<p>Download Fashion-MNIST testing dataset</p>
+<pre><code class="language-bash">wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
+</code></pre>
+</li>
+<li>
+<p>Run Example</p>
+<p>We use <a href="https://github.com/vdaas/vald/blob/main/example/client/main.go"><code>example/client/main.go</code></a> to run the example.<br>
+This example will insert and index 400 vectors into the Vald from the Fashion-MNIST dataset via <a href="https://grpc.io/">gRPC</a>.
+And then after waiting for indexing, it will request for searching the nearest vector 10 times.
+You will get the 10 nearest neighbor vectors for each search query.<br>
+Run example codes by executing the below command.</p>
+<pre><code class="language-bash">go run main.go
+</code></pre>
+<details><summary>The detailed explanation of example code is here</summary><br>
+This will execute 6 steps.
+<ol>
+<li>
+<p>init</p>
+<ul>
+<li>
+<p>Import packages</p>
+  <details><summary>example code</summary><br>
+<pre><code class="language-go"><span class="hljs-keyword">package</span> main
+
+<span class="hljs-keyword">import</span> (
+    <span class="hljs-string">&quot;context&quot;</span>
+    <span class="hljs-string">&quot;encoding/json&quot;</span>
+    <span class="hljs-string">&quot;flag&quot;</span>
+    <span class="hljs-string">&quot;time&quot;</span>
+
+    <span class="hljs-string">&quot;github.com/kpango/fuid&quot;</span>
+    <span class="hljs-string">&quot;github.com/kpango/glg&quot;</span>
+    <span class="hljs-string">&quot;github.com/vdaas/vald-client-go/v1/payload&quot;</span>
+    <span class="hljs-string">&quot;github.com/vdaas/vald-client-go/v1/vald&quot;</span>
+    <span class="hljs-string">&quot;gonum.org/v1/hdf5&quot;</span>
+    <span class="hljs-string">&quot;google.golang.org/grpc&quot;</span>
+    <span class="hljs-string">&quot;google.golang.org/grpc/credentials/insecure&quot;</span>
+)
+</code></pre>
+  </details>
+</li>
+<li>
+<p>Set variables</p>
+<ul>
+<li>
+<p>The constant number of training datasets and test datasets.</p>
+  <details><summary>example code</summary><br>
+<pre><code class="language-go"><span class="hljs-keyword">const</span> (
+    insertCount = <span class="hljs-number">400</span>
+    testCount = <span class="hljs-number">20</span>
+)
+</code></pre>
+  </details>
+</li>
+<li>
+<p>The variables for configuration.</p>
+  <details><summary>example code</summary><br>
+<pre><code class="language-go"><span class="hljs-keyword">const</span> (
+    datasetPath         <span class="hljs-type">string</span>
+    grpcServerAddr      <span class="hljs-type">string</span>
+    indexingWaitSeconds <span class="hljs-type">uint</span>
+)
+</code></pre>
+  </details>
+</li>
+</ul>
+</li>
+<li>
+<p>Recognition parameters.</p>
+  <details><summary>example code</summary><br>
+<pre><code class="language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">init</span><span class="hljs-params">()</span></span> {
+    flag.StringVar(&amp;datasetPath, <span class="hljs-string">&quot;path&quot;</span>, <span class="hljs-string">&quot;fashion-mnist-784-euclidean.hdf5&quot;</span>, <span class="hljs-string">&quot;set dataset path&quot;</span>)
+    flag.StringVar(&amp;grpcServerAddr, <span class="hljs-string">&quot;addr&quot;</span>, <span class="hljs-string">&quot;127.0.0.1:8081&quot;</span>, <span class="hljs-string">&quot;set gRPC server address&quot;</span>)
+    flag.UintVar(&amp;indexingWaitSeconds, <span class="hljs-string">&quot;wait&quot;</span>, <span class="hljs-number">60</span>, <span class="hljs-string">&quot;set indexing wait seconds&quot;</span>)
+    flag.Parse()
+}
+</code></pre>
+  </details>
+</li>
+</ul>
+</li>
+<li>
+<p>load</p>
+<ul>
+<li>
+<p>Loading from Fashion-MNIST dataset and set id for each vector that is loaded. This step will return the training dataset, test dataset, and ids list of ids when loading is completed with success.</p>
+  <details><summary>example code</summary><br>
+<pre><code class="language-go">ids, train, test, err := load(datasetPath)
+<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+    glg.Fatal(err)
+}
+</code></pre>
+  </details>
+</li>
+</ul>
+</li>
+<li>
+<p>Create the gRPC connection and Vald client with gRPC connection.</p>
+<details><summary>example code</summary><br>
+<pre><code class="language-go">ctx := context.Background()
+
+conn, err := grpc.NewClient(grpcServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+    glg.Fatal(err)
+}
+
+client := vald.NewValdClient(conn)
+</code></pre>
+</details>
+</li>
+<li>
+<p>Insert and Index</p>
+<ul>
+<li>
+<p>Insert and Indexing 400 training datasets to the Vald agent.</p>
+  <details><summary>example code</summary><br>
+<pre><code class="language-go"><span class="hljs-keyword">for</span> i := <span class="hljs-keyword">range</span> ids [:insertCount] {
+    _, err := client.Insert(ctx, &amp;payload.Insert_Request{
+        Vector: &amp;payload.Object_Vector{
+            Id:     ids[i],
+            Vector: train[i],
+        },
+        Config: &amp;payload.Insert_Config{
+            SkipStrictExistCheck: <span class="hljs-literal">true</span>,
+        },
+    })
+    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+        glg.Fatal(err)
+    }
+    <span class="hljs-keyword">if</span> i%<span class="hljs-number">10</span> == <span class="hljs-number">0</span> {
+        glg.Infof(<span class="hljs-string">&quot;Inserted %d&quot;</span>, i)
+    }
+}
+</code></pre>
+  </details>
+</li>
+<li>
+<p>Wait until indexing finish.</p>
+  <details><summary>example code</summary><br>
+<pre><code class="language-go">wt := time.Duration(indexingWaitSeconds) * time.Second
+glg.Infof(<span class="hljs-string">&quot;Wait %s for indexing to finish&quot;</span>, wt)
+time.Sleep(wt)
+</code></pre>
+  </details>
+</li>
+</ul>
+</li>
+<li>
+<p>Search</p>
+<ul>
+<li>
+<p>Search 10 neighbor vectors for each 20 test datasets and return a list of the neighbor vectors.</p>
+</li>
+<li>
+<p>When getting approximate vectors, the Vald client sends search config and vector to the server via gRPC.</p>
+  <details><summary>example code</summary><br>
+<pre><code class="language-go">glg.Infof(<span class="hljs-string">&quot;Start search %d times&quot;</span>, testCount)
+<span class="hljs-keyword">for</span> i, vec := <span class="hljs-keyword">range</span> test[:testCount] {
+    res, err := client.Search(ctx, &amp;payload.Search_Request){
+        Vector: vec,
+        Config: &amp;payload.Search_Config{
+            Num: <span class="hljs-number">10</span>,
+            Radius: <span class="hljs-number">-1</span>,
+            Epsilon: <span class="hljs-number">0.1</span>,
+            Timeout: <span class="hljs-number">100000000</span>,
+        }
+    }
+    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+        glg.Fatal(err)
+    }
+
+    b, _ := json.MarshalIndent(res.GetResults(), <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-string">&quot; &quot;</span>)
+    glg.Infof(<span class="hljs-string">&quot;%d - Results : %s\n\n&quot;</span>, i+<span class="hljs-number">1</span>, <span class="hljs-type">string</span>(b))
+    time.Sleep(<span class="hljs-number">1</span> * time.Second)
+}
+</code></pre>
+  </details>
+</li>
+</ul>
+</li>
+<li>
+<p>Remove</p>
+<ul>
+<li>
+<p>Remove 200 indexed training datasets from the Vald agent.</p>
+  <details><summary>example code</summary><br>
+<pre><code class="language-go"><span class="hljs-keyword">for</span> i := <span class="hljs-keyword">range</span> ids [:removeCount] {
+    _, err := client.Remove(ctx, &amp;payload.Remove_Request{
+        Id: &amp;payload.Object_ID{
+            Id: ids[i],
+        },
+    })
+    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+        glg.Fatal(err)
+    }
+    <span class="hljs-keyword">if</span> i%<span class="hljs-number">10</span> == <span class="hljs-number">0</span> {
+        glg.Infof(<span class="hljs-string">&quot;Removed %d&quot;</span>, i)
+    }
+}
+</code></pre>
+  </details>
+</li>
+</ul>
+</li>
+<li>
+<p>Flush</p>
+<ul>
+<li>
+<p>Remove all remaining training datasets from the Vald agent.</p>
+  <details><summary>example code</summary><br>
+<pre><code class="language-go">_, err := client.Flush(ctx, &amp;payload.Flush_Request{})
+<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+    glg.Fatal(err)
+}
+</code></pre>
+  </details>
+</li>
+</ul>
+</li>
+</ol>
+</li>
+</ol>
+<h2 id="cleanup">Cleanup</h2>
+<p>In the last, you can remove the deployed Vald Cluster by executing the below command.</p>
+<pre><code class="language-bash">helm uninstall vald
+</code></pre>
+<h2 id="next-steps">Next Steps</h2>
+<p>Congratulation! You completely entered the Vald World!</p>
+<p>If you want, you can try other tutorials such as:</p>
+<ul>
+<li><a href="../tutorial/vald-agent-standalone-on-k8s.html">Vald Agent Standalone on k8s</a></li>
+<li><a href="../tutorial/vald-agent-standalone-on-docker.html">Vald Agent on Docker</a></li>
+</ul>
+<p>For more information, we recommend you to check:</p>
+<ul>
+<li><a href="../user-guides/configuration.html">Configuration</a></li>
+<li><a href="../user-guides/operations.html">Operations</a></li>
+</ul>
+
+            
+            <script async type="text/javascript">
+/* From extension marp-team.marp-vscode */
+(()=>{var W=Object.defineProperty;var K=(w,h,x)=>h in w?W(w,h,{enumerable:!0,configurable:!0,writable:!0,value:x}):w[h]=x;var o=(w,h)=>W(w,"name",{value:h,configurable:!0});var v=(w,h,x)=>K(w,typeof h!="symbol"?h+"":h,x);(()=>{var w={32:(y,S,g)=>{y.exports=g(924)},924:(y,S)=>{"use strict";var g;g={value:!0};const E={h1:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"1"},style:"display: block; font-size: 2em; margin-block-start: 0.67em; margin-block-end: 0.67em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h2:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"2"},style:"display: block; font-size: 1.5em; margin-block-start: 0.83em; margin-block-end: 0.83em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h3:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"3"},style:"display: block; font-size: 1.17em; margin-block-start: 1em; margin-block-end: 1em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h4:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"4"},style:"display: block; margin-block-start: 1.33em; margin-block-end: 1.33em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h5:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"5"},style:"display: block; font-size: 0.83em; margin-block-start: 1.67em; margin-block-end: 1.67em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h6:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"6"},style:"display: block; font-size: 0.67em; margin-block-start: 2.33em; margin-block-end: 2.33em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},span:{proto:o(()=>HTMLSpanElement,"proto")},pre:{proto:o(()=>HTMLElement,"proto"),style:"display: block; font-family: monospace; white-space: pre; margin: 1em 0; --marp-auto-scaling-white-space: pre;"}},A="data-marp-auto-scaling-wrapper",p="data-marp-auto-scaling-svg",c="data-marp-auto-scaling-container",T=class T extends HTMLElement{constructor(){super();v(this,"container");v(this,"containerSize");v(this,"containerObserver");v(this,"svg");v(this,"svgComputedStyle");v(this,"svgPreserveAspectRatio","xMinYMid meet");v(this,"wrapper");v(this,"wrapperSize");v(this,"wrapperObserver");const s=o(t=>([e])=>{const{width:n,height:r}=e.contentRect;this[t]={width:n,height:r},this.updateSVGRect()},"e");this.attachShadow({mode:"open"}),this.containerObserver=new ResizeObserver(s("containerSize")),this.wrapperObserver=new ResizeObserver((...t)=>{s("wrapperSize")(...t),this.flushSvgDisplay()})}static get observedAttributes(){return["data-downscale-only"]}connectedCallback(){this.shadowRoot.innerHTML=`
+<style>
+  svg[${p}] { display: block; width: 100%; height: auto; vertical-align: top; }
+  span[${c}] { display: table; white-space: var(--marp-auto-scaling-white-space, nowrap); width: max-content; }
+</style>
+<div ${A}>
+  <svg part="svg" ${p}>
+    <foreignObject><span ${c}><slot></slot></span></foreignObject>
+  </svg>
+</div>
+    `.split(/\n\s*/).join(""),this.wrapper=this.shadowRoot.querySelector(`div[${A}]`)??void 0;const s=this.svg;this.svg=this.wrapper?.querySelector(`svg[${p}]`)??void 0,this.svg!==s&&(this.svgComputedStyle=this.svg?window.getComputedStyle(this.svg):void 0),this.container=this.svg?.querySelector(`span[${c}]`)??void 0,this.observe()}disconnectedCallback(){this.svg=void 0,this.svgComputedStyle=void 0,this.wrapper=void 0,this.container=void 0,this.observe()}attributeChangedCallback(){this.observe()}flushSvgDisplay(){const{svg:s}=this;s&&(s.style.display="inline",requestAnimationFrame(()=>{s.style.display=""}))}observe(){this.containerObserver.disconnect(),this.wrapperObserver.disconnect(),this.wrapper&&this.wrapperObserver.observe(this.wrapper),this.container&&this.containerObserver.observe(this.container),this.svgComputedStyle&&this.observeSVGStyle(this.svgComputedStyle)}observeSVGStyle(s){const t=o(()=>{const e=(()=>{const n=s.getPropertyValue("--preserve-aspect-ratio");return n?n.trim():`x${(({textAlign:r,direction:l})=>{if(r.endsWith("left"))return"Min";if(r.endsWith("right"))return"Max";if(r==="start"||r==="end"){let d=l==="rtl";return r==="end"&&(d=!d),d?"Max":"Min"}return"Mid"})(s)}YMid meet`})();e!==this.svgPreserveAspectRatio&&(this.svgPreserveAspectRatio=e,this.updateSVGRect()),s===this.svgComputedStyle&&requestAnimationFrame(t)},"t");t()}updateSVGRect(){let s=Math.ceil(this.containerSize?.width??0);const t=Math.ceil(this.containerSize?.height??0);this.dataset.downscaleOnly!==void 0&&(s=Math.max(s,this.wrapperSize?.width??0));const e=this.svg?.querySelector(":scope > foreignObject");if(e?.setAttribute("width",`${s}`),e?.setAttribute("height",`${t}`),this.svg&&(this.svg.setAttribute("viewBox",`0 0 ${s} ${t}`),this.svg.setAttribute("preserveAspectRatio",this.svgPreserveAspectRatio),this.svg.style.height=s<=0||t<=0?"0":""),this.container){const n=this.svgPreserveAspectRatio.toLowerCase();this.container.style.marginLeft=n.startsWith("xmid")||n.startsWith("xmax")?"auto":"0",this.container.style.marginRight=n.startsWith("xmi")?"auto":"0"}}};o(T,"s");let i=T;const m=o((a,{attrs:u={},style:s})=>class extends a{constructor(...t){super(...t);for(const[e,n]of Object.entries(u))this.hasAttribute(e)||this.setAttribute(e,n);this._shadow()}static get observedAttributes(){return["data-auto-scaling"]}connectedCallback(){this._update()}attributeChangedCallback(){this._update()}_shadow(){if(!this.shadowRoot)try{this.attachShadow({mode:"open"})}catch(t){if(!(t instanceof Error&&t.name==="NotSupportedError"))throw t}return this.shadowRoot}_update(){const t=this._shadow();if(t){const e=s?`<style>:host { ${s} }</style>`:"";let n="<slot></slot>";const{autoScaling:r}=this.dataset;r!==void 0&&(n=`<marp-auto-scaling exportparts="svg:auto-scaling" ${r==="downscale-only"?"data-downscale-only":""}>${n}</marp-auto-scaling>`),t.innerHTML=e+n}}},"r");let b;const z=Symbol();let $;const V="marpitSVGPolyfill:setZoomFactor,",C=Symbol(),j=Symbol(),G=o(()=>{const a=navigator.vendor==="Apple Computer, Inc.",u=a?[D]:[],s={then:o(t=>(a?(async()=>{if($===void 0){const e=document.createElement("canvas");e.width=10,e.height=10;const n=e.getContext("2d"),r=new Image(10,10),l=new Promise(d=>{r.addEventListener("load",()=>d())});r.crossOrigin="anonymous",r.src="data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%2210%22%20viewBox%3D%220%200%201%201%22%3E%3CforeignObject%20width%3D%221%22%20height%3D%221%22%20requiredExtensions%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml%22%3E%3Cdiv%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml%22%20style%3D%22width%3A%201px%3B%20height%3A%201px%3B%20background%3A%20red%3B%20position%3A%20relative%22%3E%3C%2Fdiv%3E%3C%2FforeignObject%3E%3C%2Fsvg%3E",await l,n.drawImage(r,0,0),$=n.getImageData(5,5,1,1).data[3]<128}return $})().then(e=>{t?.(e?[D]:[])}):t?.([]),s),"then")};return Object.assign(u,s)},"g");let H,O;function D(a){const u=typeof a=="object"&&a.target||document,s=typeof a=="object"?a.zoom:a;window[j]||(Object.defineProperty(window,j,{configurable:!0,value:!0}),document.body.style.zoom=1.0001,document.body.offsetHeight,document.body.style.zoom=1,window.addEventListener("message",({data:e,origin:n})=>{if(n===window.origin)try{if(e&&typeof e=="string"&&e.startsWith(V)){const[,r]=e.split(","),l=Number.parseFloat(r);Number.isNaN(l)||(O=l)}}catch(r){console.error(r)}}));let t=!1;Array.from(u.querySelectorAll("svg[data-marpit-svg]"),e=>{var n,r,l,d;e.style.transform||(e.style.transform="translateZ(0)");const f=s||O||e.currentScale||1;H!==f&&(H=f,t=f);const P=e.getBoundingClientRect(),{length:Z}=e.children;for(let F=0;F<Z;F+=1){const k=e.children[F];if(k.getScreenCTM){const _=k.getScreenCTM();if(_){const Y=(r=(n=k.x)===null||n===void 0?void 0:n.baseVal.value)!==null&&r!==void 0?r:0,U=(d=(l=k.y)===null||l===void 0?void 0:l.baseVal.value)!==null&&d!==void 0?d:0,J=k.children.length;for(let R=0;R<J;R+=1){const N=k.children[R];if(N.tagName==="SECTION"){const{style:q}=N;q.transformOrigin||(q.transformOrigin=`${-Y}px ${-U}px`),q.transform=`scale(${f}) matrix(${_.a}, ${_.b}, ${_.c}, ${_.d}, ${_.e-P.left}, ${_.f-P.top}) translateZ(0.0001px)`;break}}}}}}),t!==!1&&Array.from(u.querySelectorAll("iframe"),({contentWindow:e})=>{e?.postMessage(`${V}${t}`,window.origin==="null"?"*":window.origin)})}o(D,"u");function B({once:a=!1,target:u=document}={}){const s=function(t=document){if(t[C])return t[C];let e=!0;const n=o(()=>{e=!1,delete t[C]},"i");Object.defineProperty(t,C,{configurable:!0,value:n});let r=[],l=!1;(async()=>{try{r=await G()}finally{l=!0}})();const d=o(()=>{for(const f of r)f({target:t});l&&r.length===0||e&&window.requestAnimationFrame(d)},"r");return d(),n}(u);return a?(s(),()=>{}):s}o(B,"v"),H=1,O=void 0;const I=B,M=Symbol(),L=o((a=document)=>{if(typeof window>"u")throw new Error("Marp Core's browser script is valid only in browser context.");if(((e=document)=>{const n=window[z];n||customElements.define("marp-auto-scaling",i);for(const r of Object.keys(E)){const l=`marp-${r}`,d=E[r].proto();(b??(b=!!document.createElement("div",{is:"marp-auto-scaling"}).outerHTML.startsWith("<div is"),b))&&d!==HTMLElement?n||customElements.define(l,m(d,{style:E[r].style}),{extends:r}):(n||customElements.define(l,m(HTMLElement,E[r])),e.querySelectorAll(`${r}[is="${l}"]`).forEach(f=>{f.outerHTML=f.outerHTML.replace(new RegExp(`^<${r}`,"i"),`<${l}`).replace(new RegExp(`</${r}>$`,"i"),`</${l}>`)}))}window[z]=!0})(a),a[M])return a[M];const u=B({target:a}),s=o(()=>{u(),delete a[M]},"n"),t=Object.assign(s,{cleanup:s,update:o(()=>L(a),"update")});return Object.defineProperty(a,M,{configurable:!0,value:t}),t},"y");S.browser=L,g=L,g=I}},h={};function x(y){var S=h[y];if(S!==void 0)return S.exports;var g=h[y]={exports:{}};return w[y](g,g.exports,x),g.exports}o(x,"__webpack_require__");var Q={};(()=>{"use strict";var y=x(32);function S(){let p,c;const i=o(()=>{const m=document.getElementById("__marp-vscode"),b=!!m;p!==b?(document.body.classList.toggle("marp-vscode",b),b?c=(0,y.browser)():(c?.cleanup(),c=void 0),p=b):b&&c?.update(),p?(m&&g(m),E()):A()},"updateCallback");window.addEventListener("load",()=>window.setTimeout(i,100)),window.addEventListener("vscode.markdown.updateContent",i),i()}o(S,"preview");const g=o(p=>{p.querySelectorAll("[is]").forEach(c=>{if(c.nodeName.includes("-")||document.createElement(c.nodeName).constructor!==c.constructor)return;const{outerHTML:m}=c;c.outerHTML=m,console.debug("[marp-vscode] Custom element has been upgraded forcibly:",m.slice(0,m.indexOf(">")+1||void 0))})},"forceUpgradeCustomElements"),E=o(()=>{const p=document.querySelectorAll("style:not(#__marp-vscode-style,#_defaultStyles,[data-marp-vscode-body])"),c=document.querySelectorAll('link[rel="stylesheet"][href]:not([href*="marp-vscode"])');p.forEach(i=>{i.closest("#__marp-vscode")||(i.dataset.marpVscodeBody=i.textContent??"",i.textContent="")}),c.forEach(i=>{if(i.closest("#__marp-vscode"))return;const{href:m}=i;i.dataset.marpVscodeHref=m,i.removeAttribute("href")})},"removeStyles"),A=o(()=>{const p=document.querySelectorAll("style[data-marp-vscode-body]"),c=document.querySelectorAll("link[data-marp-vscode-href]");p.forEach(i=>{i.textContent=i.dataset.marpVscodeBody||"",delete i.dataset.marpVscodeBody}),c.forEach(i=>{i.href=i.dataset.marpVscodeHref||"",delete i.dataset.marpVscodeHref})},"restoreStyles");S()})()})();})();
+
+</script>
+
+        </body>
+        </html>

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Contributing to Vald</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+/* From extension marp-team.marp-vscode */
+#__marp-vscode {
+  all: revert;
+}
+
+/* Override VS Code default CSS rules reverting to initial
+   https://github.com/microsoft/vscode/blob/master/src/vs/workbench/contrib/webview/browser/pre/main.js#L53 */
+body.marp-vscode {
+  padding: 0;
+}
+
+body.marp-vscode img {
+  max-width: unset;
+  max-height: unset;
+}
+
+body.marp-vscode a,
+body.marp-vscode a:hover,
+body.marp-vscode code {
+  color: unset;
+}
+
+body.marp-vscode blockquote {
+  background: unset;
+  border-color: unset;
+}
+
+@media screen {
+  body.marp-vscode {
+    overflow-y: scroll;
+
+    /* stylelint-disable-next-line selector-class-pattern */
+    &.showEditorSelection {
+      --marp-vscode-highlight-color: rgb(255 255 255 / 40%);
+
+      &.vscode-light {
+        --marp-vscode-highlight-color: rgb(0 0 0 / 15%);
+      }
+
+      &.vscode-high-contrast {
+        --marp-vscode-highlight-color: rgb(255 160 0 / 70%);
+      }
+    }
+  }
+
+  #__marp-vscode [data-marp-vscode-slide-wrapper] {
+    margin: 20px;
+    position: relative;
+
+    &.code-active-line,
+    &:has(.code-active-line) {
+      &::before {
+        position: absolute;
+        content: '';
+        inset: -7px;
+        border: 3px solid var(--marp-vscode-highlight-color, transparent);
+        pointer-events: none;
+      }
+    }
+  }
+
+  #__marp-vscode svg[data-marpit-svg] {
+    box-shadow: 0 5px 10px rgb(0 0 0 / 25%);
+    display: block;
+    margin: 0;
+  }
+
+  /* Based on https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+  #code-csp-warning {
+    background-color: #444;
+    box-shadow: 1px 1px 1px rgb(0 0 0 / 25%);
+    color: white;
+    cursor: pointer;
+    font-family: sans-serif;
+    font-size: 12px;
+    line-height: 22px;
+    margin: 16px;
+    padding: 6px;
+    position: fixed;
+    right: 0;
+    text-align: center;
+    top: 0;
+    word-wrap: break-word;
+  }
+
+  #code-csp-warning:hover {
+    text-decoration: none;
+    background-color: #007acc;
+    box-shadow: 2px 2px 2px rgb(0 0 0 / 25%);
+  }
+}
+
+@media print {
+  body.marp-vscode #code-csp-warning {
+    display: none;
+  }
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="contributing-to-vald">Contributing to Vald</h1>
+<p>Vald is an open source project.</p>
+<p>We appreciate your help!</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#contributing-issue">Contributing Issue</a>
+<ul>
+<li><a href="#bug-report">Bug Report</a></li>
+<li><a href="#proposal">Proposal</a></li>
+<li><a href="#feature-request">Feature Request</a></li>
+<li><a href="#security-issue-report">Security Issue Report</a></li>
+</ul>
+</li>
+<li><a href="#contributing-source-code">Contributing Source Code</a>
+<ul>
+<li><a href="#before-contributing-source-code">Before contributing source code</a></li>
+<li><a href="#how-to-contribute-source-code">How to contribute source code</a></li>
+<li><a href="#how-to-contribute-unit-test-code">How to contribute unit test code</a></li>
+<li><a href="#branch-naming-convention">Branch naming convention</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="contributing-issue">Contributing Issue</h2>
+<p>We use <a href="https://github.com/vdaas/vald/issues">Github Issues</a> to track issues within this repository.
+If you can determine the problem you are facing is a bug or issue, you can easily submit the issues.</p>
+<p>If you are unsure whether you have found a bug or security-related issues, please consider asking in the <a href="https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA">Vald Slack</a> first.
+If the behavior you are seeing is confirmed as a bug or issue, it can easily be re-raised in the issue tracker.</p>
+<h3 id="bug-report">Bug Report</h3>
+<p>A bug is a demonstrable problem that produces an incorrect result or behaves in unintended ways.<br></p>
+<p>Bug reports are helpful for developers who maintain the Vald project.<br>
+A good bug report should not leave others needing to constantly ask you for more information.<br>
+Please try to write as detailed as possible in your bug report.</p>
+<p>When filing an issue, make sure to answer these five questions:</p>
+<ol>
+<li>What version of Vald are you using (vald docker image version)?</li>
+<li>What operating system and processor architecture are you using?</li>
+<li>What did you do?</li>
+<li>What did you expect to see?</li>
+<li>What did you see instead?</li>
+</ol>
+<p>Please submit the bug report <a href="https://github.com/vdaas/vald/issues/new?assignees=&amp;labels=type%2Fbug%2C+priority%2Fmedium%2C+team%2Fcore&amp;template=bug_report.md&amp;title=">here</a></p>
+<h3 id="proposal">Proposal</h3>
+<p>The Vald is being developed based on the design-driven process.<br>
+The significant change to the library or the architecture should be discussed first.</p>
+<p>We may ask for detailed documentation before your proposal is accepted.<br>
+Your proposal will be reviewed, discussed, and decided whether it is accepted or declined.</p>
+<p>Please submit the proposal <a href="https://github.com/vdaas/vald/issues/new?assignees=&amp;labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&amp;template=feature_request.md&amp;title=">here</a></p>
+<h3 id="feature-request">Feature Request</h3>
+<p>Feature request is welcome.</p>
+<p>Before opening an issue, please make sure your idea fits the project.<br>
+You can request the feature and convince the project maintainers to accept your feature request.</p>
+<p>Please provide the problem and solution associated with the feature request in as much detail as possible.</p>
+<p>NOTE: If you’d like to contribute to the new feature which may affect the current Vald architecture or design, you should discuss it with the Vald team first.</p>
+<p>Please submit the feature request <a href="https://github.com/vdaas/vald/issues/new?assignees=&amp;labels=type%2Ffeature%2C+priority%2Flow%2C+team%2Fcore&amp;template=feature_request.md&amp;title=">here</a></p>
+<h3 id="security-issue-report">Security Issue Report</h3>
+<p>The Vald team and community have a serious concern about security issues.</p>
+<p>Sensitive security-related issues should be reported to the security channel in <a href="https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA">Vald Slack</a>.</p>
+<p>We appreciate your efforts to disclose your findings.<br>
+If the security issue is caused by a third-party module, we will contact the module owner and ask for a fix.</p>
+<p>We will consider using another third-party module if the vulnerable module is not actively maintained anymore.</p>
+<p>Please submit the security issue report <a href="https://github.com/vdaas/vald/issues/new?assignees=&amp;labels=type%2Fsecurity%2C+priority%2Fmedium%2C+team%2Fcore%2C+team%2Fsre&amp;template=security_issue_report.md&amp;title=">here</a></p>
+<h2 id="contributing-source-code">Contributing Source Code</h2>
+<p>Please refer to our <a href="./docs/contributing/development.html">development documentation</a> for information on setting up a development environment.</p>
+<h3 id="before-contributing-source-code">Before contributing source code</h3>
+<p>Follow these steps to make a contribution to any of our open source repositories:</p>
+<ol>
+<li>
+<p>Ensure that you have completed our <a href="https://cla-assistant.io/vdaas/vald">CLA Agreement</a></p>
+</li>
+<li>
+<p>Set your name and email (these should match the information on your submitted CLA)</p>
+<pre><code class="language-bash">git config --global user.name <span class="hljs-string">&quot;Firstname Lastname&quot;</span>
+git config --global user.email <span class="hljs-string">&quot;your_email@example.com&quot;</span>
+</code></pre>
+</li>
+</ol>
+<h3 id="how-to-contribute-source-code">How to contribute source code</h3>
+<ol>
+<li>Fork the repository ( <a href="https://github.com/vdaas/vald/fork">https://github.com/vdaas/vald/fork</a> )</li>
+<li>Create your feature branch (git checkout -b <a href="#Branch-naming-convention"><code>[type]/[area]/[description]</code></a>)</li>
+<li>Commit your changes on your branch (git commit -am 'Add some feature')</li>
+<li>Run tests (make test)</li>
+<li>Push to the forked branch (git push origin my-new-feature)</li>
+<li>Create new Pull Request</li>
+</ol>
+<p>Each pull request and commit should be small enough to contain only one purpose.</p>
+<p>Your pull request is much more likely to be accepted if:</p>
+<ul>
+<li>
+<p>Your pull request includes tests</p>
+</li>
+<li>
+<p>Your pull request includes benchmark results</p>
+</li>
+<li>
+<p>Your pull request is small and focused with a clear message that conveys the intent of your change</p>
+</li>
+</ul>
+<h3 id="how-to-contribute-unit-test-code">How to contribute unit test code</h3>
+<p>To contribute unit test code, the steps are almost the same as <a href="#how-to-contribute-source-code">contribute source code</a>, but there are some extra steps when implementing a test function which is not implemented before:</p>
+<ol>
+<li>Execute <code>make gotests/gen</code> command under Vald repository</li>
+<li>Move the test function which you would like to implement above the placeholder <code>// NOT IMPLEMENTED BELOW</code></li>
+<li>Uncomment and implement the test function</li>
+</ol>
+<p>Vald implmentes unit test code to ensure the quality of Vald.
+Each implementation file comes with its unit test file, with <code>*_test.go</code> postfix.
+In Vald, unit test files are looks like:</p>
+<pre><code class="language-go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">Test_implementedTest</span><span class="hljs-params">(t *testing.T)</span></span> {
+    <span class="hljs-comment">// this unit test is implemented</span>
+}
+
+<span class="hljs-comment">// NOT IMPLEMENTED BELOW</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// func Test_notImplementedTest(t *testing.T) {</span>
+<span class="hljs-comment">//     // this unit test function is not implemented yet</span>
+<span class="hljs-comment">// }</span>
+</code></pre>
+<p>Vald defines a placeholder <code>// NOT IMPLEMENTED BELOW</code> to separate the implemented unit test from the unimplemented unit test.
+Everything before the placeholder are already implemented, and everything below are not implemented yet.</p>
+<p>If no test functions are implemented in the test file, the placeholder will be placed below the package definition.</p>
+<pre><code class="language-go"><span class="hljs-keyword">package</span> test
+
+<span class="hljs-comment">// NOT IMPLEMENTED BELOW</span>
+<span class="hljs-comment">// func Test_unimplementedTest(t *testing.T) {</span>
+<span class="hljs-comment">//     // this unit test function is not implemented yet</span>
+<span class="hljs-comment">// }</span>
+
+<span class="hljs-comment">// func Test_unimplementedTest2(t *testing.T) {</span>
+<span class="hljs-comment">//     // this unit test function is not implemented yet</span>
+<span class="hljs-comment">// }</span>
+</code></pre>
+<p>If all test functions are implemented, the placeholder will be placed on the bottom of the file.</p>
+<pre><code class="language-go"><span class="hljs-keyword">package</span> test
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">Test_implementedTest</span><span class="hljs-params">(t *testing.T)</span></span> {
+    <span class="hljs-comment">// this unit test is implemented</span>
+}
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">Test_implementedTest2</span><span class="hljs-params">(t *testing.T)</span></span> {
+    <span class="hljs-comment">// this unit test is implemented</span>
+}
+
+<span class="hljs-comment">// NOT IMPLEMENTED BELOW</span>
+</code></pre>
+<div class="notice">
+This implementation structure is generated by the <code class="bash" data-lang="bash">make gotests/gen</code> command for all unit test files by applying the custom unit test template using <a href="https://github.com/cweill/gotests">gotests</a>.
+<br>
+When the test template is updated, the generated unit test functions will not be updated accordingly, so we need this unit test structure to help us regenerate the implementation with the latest template.
+For the implemented unit test, we cannot deal with it by executing  <code class="bash" data-lang="bash">make gotests/gen</code> command.
+But we don't have to update implemented test soon.
+</div>
+<h3 id="branch-naming-convention">Branch naming convention</h3>
+<p>Name your branches with prefixes: <code>[type]/[area]/[description]</code></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Field</th>
+<th style="text-align:left">Explanation</th>
+<th style="text-align:left">Naming Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">type</td>
+<td style="text-align:left">The PR type</td>
+<td style="text-align:left">The type of PR can be feature, bug, refactoring, benchmark, security, documentation, dependencies, ci, test, or etc...</td>
+</tr>
+<tr>
+<td style="text-align:left">area</td>
+<td style="text-align:left">Area of context</td>
+<td style="text-align:left">The area of PR can be gateway, agent, agent-sidecar, lb-gateway, or etc...</td>
+</tr>
+<tr>
+<td style="text-align:left">description</td>
+<td style="text-align:left">Summarized description of your branch</td>
+<td style="text-align:left">The description must be hyphenated. Please use [a-zA-Z0-9] and hyphen as characters, and do not use any other characters.</td>
+</tr>
+</tbody>
+</table>
+<p>(*) If you changed multiple areas, please list each area with &quot;-&quot;.</p>
+<p>For example, when you add a new feature for internal/servers, the name of the branch will be <code>feature/internal/add-newfeature-for-servers</code>.</p>
+
+            
+            <script async type="text/javascript">
+/* From extension marp-team.marp-vscode */
+(()=>{var W=Object.defineProperty;var K=(w,h,x)=>h in w?W(w,h,{enumerable:!0,configurable:!0,writable:!0,value:x}):w[h]=x;var o=(w,h)=>W(w,"name",{value:h,configurable:!0});var v=(w,h,x)=>K(w,typeof h!="symbol"?h+"":h,x);(()=>{var w={32:(y,S,g)=>{y.exports=g(924)},924:(y,S)=>{"use strict";var g;g={value:!0};const E={h1:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"1"},style:"display: block; font-size: 2em; margin-block-start: 0.67em; margin-block-end: 0.67em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h2:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"2"},style:"display: block; font-size: 1.5em; margin-block-start: 0.83em; margin-block-end: 0.83em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h3:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"3"},style:"display: block; font-size: 1.17em; margin-block-start: 1em; margin-block-end: 1em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h4:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"4"},style:"display: block; margin-block-start: 1.33em; margin-block-end: 1.33em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h5:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"5"},style:"display: block; font-size: 0.83em; margin-block-start: 1.67em; margin-block-end: 1.67em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h6:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"6"},style:"display: block; font-size: 0.67em; margin-block-start: 2.33em; margin-block-end: 2.33em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},span:{proto:o(()=>HTMLSpanElement,"proto")},pre:{proto:o(()=>HTMLElement,"proto"),style:"display: block; font-family: monospace; white-space: pre; margin: 1em 0; --marp-auto-scaling-white-space: pre;"}},A="data-marp-auto-scaling-wrapper",p="data-marp-auto-scaling-svg",c="data-marp-auto-scaling-container",T=class T extends HTMLElement{constructor(){super();v(this,"container");v(this,"containerSize");v(this,"containerObserver");v(this,"svg");v(this,"svgComputedStyle");v(this,"svgPreserveAspectRatio","xMinYMid meet");v(this,"wrapper");v(this,"wrapperSize");v(this,"wrapperObserver");const s=o(t=>([e])=>{const{width:n,height:r}=e.contentRect;this[t]={width:n,height:r},this.updateSVGRect()},"e");this.attachShadow({mode:"open"}),this.containerObserver=new ResizeObserver(s("containerSize")),this.wrapperObserver=new ResizeObserver((...t)=>{s("wrapperSize")(...t),this.flushSvgDisplay()})}static get observedAttributes(){return["data-downscale-only"]}connectedCallback(){this.shadowRoot.innerHTML=`
+<style>
+  svg[${p}] { display: block; width: 100%; height: auto; vertical-align: top; }
+  span[${c}] { display: table; white-space: var(--marp-auto-scaling-white-space, nowrap); width: max-content; }
+</style>
+<div ${A}>
+  <svg part="svg" ${p}>
+    <foreignObject><span ${c}><slot></slot></span></foreignObject>
+  </svg>
+</div>
+    `.split(/\n\s*/).join(""),this.wrapper=this.shadowRoot.querySelector(`div[${A}]`)??void 0;const s=this.svg;this.svg=this.wrapper?.querySelector(`svg[${p}]`)??void 0,this.svg!==s&&(this.svgComputedStyle=this.svg?window.getComputedStyle(this.svg):void 0),this.container=this.svg?.querySelector(`span[${c}]`)??void 0,this.observe()}disconnectedCallback(){this.svg=void 0,this.svgComputedStyle=void 0,this.wrapper=void 0,this.container=void 0,this.observe()}attributeChangedCallback(){this.observe()}flushSvgDisplay(){const{svg:s}=this;s&&(s.style.display="inline",requestAnimationFrame(()=>{s.style.display=""}))}observe(){this.containerObserver.disconnect(),this.wrapperObserver.disconnect(),this.wrapper&&this.wrapperObserver.observe(this.wrapper),this.container&&this.containerObserver.observe(this.container),this.svgComputedStyle&&this.observeSVGStyle(this.svgComputedStyle)}observeSVGStyle(s){const t=o(()=>{const e=(()=>{const n=s.getPropertyValue("--preserve-aspect-ratio");return n?n.trim():`x${(({textAlign:r,direction:l})=>{if(r.endsWith("left"))return"Min";if(r.endsWith("right"))return"Max";if(r==="start"||r==="end"){let d=l==="rtl";return r==="end"&&(d=!d),d?"Max":"Min"}return"Mid"})(s)}YMid meet`})();e!==this.svgPreserveAspectRatio&&(this.svgPreserveAspectRatio=e,this.updateSVGRect()),s===this.svgComputedStyle&&requestAnimationFrame(t)},"t");t()}updateSVGRect(){let s=Math.ceil(this.containerSize?.width??0);const t=Math.ceil(this.containerSize?.height??0);this.dataset.downscaleOnly!==void 0&&(s=Math.max(s,this.wrapperSize?.width??0));const e=this.svg?.querySelector(":scope > foreignObject");if(e?.setAttribute("width",`${s}`),e?.setAttribute("height",`${t}`),this.svg&&(this.svg.setAttribute("viewBox",`0 0 ${s} ${t}`),this.svg.setAttribute("preserveAspectRatio",this.svgPreserveAspectRatio),this.svg.style.height=s<=0||t<=0?"0":""),this.container){const n=this.svgPreserveAspectRatio.toLowerCase();this.container.style.marginLeft=n.startsWith("xmid")||n.startsWith("xmax")?"auto":"0",this.container.style.marginRight=n.startsWith("xmi")?"auto":"0"}}};o(T,"s");let i=T;const m=o((a,{attrs:u={},style:s})=>class extends a{constructor(...t){super(...t);for(const[e,n]of Object.entries(u))this.hasAttribute(e)||this.setAttribute(e,n);this._shadow()}static get observedAttributes(){return["data-auto-scaling"]}connectedCallback(){this._update()}attributeChangedCallback(){this._update()}_shadow(){if(!this.shadowRoot)try{this.attachShadow({mode:"open"})}catch(t){if(!(t instanceof Error&&t.name==="NotSupportedError"))throw t}return this.shadowRoot}_update(){const t=this._shadow();if(t){const e=s?`<style>:host { ${s} }</style>`:"";let n="<slot></slot>";const{autoScaling:r}=this.dataset;r!==void 0&&(n=`<marp-auto-scaling exportparts="svg:auto-scaling" ${r==="downscale-only"?"data-downscale-only":""}>${n}</marp-auto-scaling>`),t.innerHTML=e+n}}},"r");let b;const z=Symbol();let $;const V="marpitSVGPolyfill:setZoomFactor,",C=Symbol(),j=Symbol(),G=o(()=>{const a=navigator.vendor==="Apple Computer, Inc.",u=a?[D]:[],s={then:o(t=>(a?(async()=>{if($===void 0){const e=document.createElement("canvas");e.width=10,e.height=10;const n=e.getContext("2d"),r=new Image(10,10),l=new Promise(d=>{r.addEventListener("load",()=>d())});r.crossOrigin="anonymous",r.src="data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%2210%22%20viewBox%3D%220%200%201%201%22%3E%3CforeignObject%20width%3D%221%22%20height%3D%221%22%20requiredExtensions%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml%22%3E%3Cdiv%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml%22%20style%3D%22width%3A%201px%3B%20height%3A%201px%3B%20background%3A%20red%3B%20position%3A%20relative%22%3E%3C%2Fdiv%3E%3C%2FforeignObject%3E%3C%2Fsvg%3E",await l,n.drawImage(r,0,0),$=n.getImageData(5,5,1,1).data[3]<128}return $})().then(e=>{t?.(e?[D]:[])}):t?.([]),s),"then")};return Object.assign(u,s)},"g");let H,O;function D(a){const u=typeof a=="object"&&a.target||document,s=typeof a=="object"?a.zoom:a;window[j]||(Object.defineProperty(window,j,{configurable:!0,value:!0}),document.body.style.zoom=1.0001,document.body.offsetHeight,document.body.style.zoom=1,window.addEventListener("message",({data:e,origin:n})=>{if(n===window.origin)try{if(e&&typeof e=="string"&&e.startsWith(V)){const[,r]=e.split(","),l=Number.parseFloat(r);Number.isNaN(l)||(O=l)}}catch(r){console.error(r)}}));let t=!1;Array.from(u.querySelectorAll("svg[data-marpit-svg]"),e=>{var n,r,l,d;e.style.transform||(e.style.transform="translateZ(0)");const f=s||O||e.currentScale||1;H!==f&&(H=f,t=f);const P=e.getBoundingClientRect(),{length:Z}=e.children;for(let F=0;F<Z;F+=1){const k=e.children[F];if(k.getScreenCTM){const _=k.getScreenCTM();if(_){const Y=(r=(n=k.x)===null||n===void 0?void 0:n.baseVal.value)!==null&&r!==void 0?r:0,U=(d=(l=k.y)===null||l===void 0?void 0:l.baseVal.value)!==null&&d!==void 0?d:0,J=k.children.length;for(let R=0;R<J;R+=1){const N=k.children[R];if(N.tagName==="SECTION"){const{style:q}=N;q.transformOrigin||(q.transformOrigin=`${-Y}px ${-U}px`),q.transform=`scale(${f}) matrix(${_.a}, ${_.b}, ${_.c}, ${_.d}, ${_.e-P.left}, ${_.f-P.top}) translateZ(0.0001px)`;break}}}}}}),t!==!1&&Array.from(u.querySelectorAll("iframe"),({contentWindow:e})=>{e?.postMessage(`${V}${t}`,window.origin==="null"?"*":window.origin)})}o(D,"u");function B({once:a=!1,target:u=document}={}){const s=function(t=document){if(t[C])return t[C];let e=!0;const n=o(()=>{e=!1,delete t[C]},"i");Object.defineProperty(t,C,{configurable:!0,value:n});let r=[],l=!1;(async()=>{try{r=await G()}finally{l=!0}})();const d=o(()=>{for(const f of r)f({target:t});l&&r.length===0||e&&window.requestAnimationFrame(d)},"r");return d(),n}(u);return a?(s(),()=>{}):s}o(B,"v"),H=1,O=void 0;const I=B,M=Symbol(),L=o((a=document)=>{if(typeof window>"u")throw new Error("Marp Core's browser script is valid only in browser context.");if(((e=document)=>{const n=window[z];n||customElements.define("marp-auto-scaling",i);for(const r of Object.keys(E)){const l=`marp-${r}`,d=E[r].proto();(b??(b=!!document.createElement("div",{is:"marp-auto-scaling"}).outerHTML.startsWith("<div is"),b))&&d!==HTMLElement?n||customElements.define(l,m(d,{style:E[r].style}),{extends:r}):(n||customElements.define(l,m(HTMLElement,E[r])),e.querySelectorAll(`${r}[is="${l}"]`).forEach(f=>{f.outerHTML=f.outerHTML.replace(new RegExp(`^<${r}`,"i"),`<${l}`).replace(new RegExp(`</${r}>$`,"i"),`</${l}>`)}))}window[z]=!0})(a),a[M])return a[M];const u=B({target:a}),s=o(()=>{u(),delete a[M]},"n"),t=Object.assign(s,{cleanup:s,update:o(()=>L(a),"update")});return Object.defineProperty(a,M,{configurable:!0,value:t}),t},"y");S.browser=L,g=L,g=I}},h={};function x(y){var S=h[y];if(S!==void 0)return S.exports;var g=h[y]={exports:{}};return w[y](g,g.exports,x),g.exports}o(x,"__webpack_require__");var Q={};(()=>{"use strict";var y=x(32);function S(){let p,c;const i=o(()=>{const m=document.getElementById("__marp-vscode"),b=!!m;p!==b?(document.body.classList.toggle("marp-vscode",b),b?c=(0,y.browser)():(c?.cleanup(),c=void 0),p=b):b&&c?.update(),p?(m&&g(m),E()):A()},"updateCallback");window.addEventListener("load",()=>window.setTimeout(i,100)),window.addEventListener("vscode.markdown.updateContent",i),i()}o(S,"preview");const g=o(p=>{p.querySelectorAll("[is]").forEach(c=>{if(c.nodeName.includes("-")||document.createElement(c.nodeName).constructor!==c.constructor)return;const{outerHTML:m}=c;c.outerHTML=m,console.debug("[marp-vscode] Custom element has been upgraded forcibly:",m.slice(0,m.indexOf(">")+1||void 0))})},"forceUpgradeCustomElements"),E=o(()=>{const p=document.querySelectorAll("style:not(#__marp-vscode-style,#_defaultStyles,[data-marp-vscode-body])"),c=document.querySelectorAll('link[rel="stylesheet"][href]:not([href*="marp-vscode"])');p.forEach(i=>{i.closest("#__marp-vscode")||(i.dataset.marpVscodeBody=i.textContent??"",i.textContent="")}),c.forEach(i=>{if(i.closest("#__marp-vscode"))return;const{href:m}=i;i.dataset.marpVscodeHref=m,i.removeAttribute("href")})},"removeStyles"),A=o(()=>{const p=document.querySelectorAll("style[data-marp-vscode-body]"),c=document.querySelectorAll("link[data-marp-vscode-href]");p.forEach(i=>{i.textContent=i.dataset.marpVscodeBody||"",delete i.dataset.marpVscodeBody}),c.forEach(i=>{i.href=i.dataset.marpVscodeHref||"",delete i.dataset.marpVscodeHref})},"restoreStyles");S()})()})();})();
+
+</script>
+
+        </body>
+        </html>

@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Building gRPC proto</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+/* From extension marp-team.marp-vscode */
+#__marp-vscode {
+  all: revert;
+}
+
+/* Override VS Code default CSS rules reverting to initial
+   https://github.com/microsoft/vscode/blob/master/src/vs/workbench/contrib/webview/browser/pre/main.js#L53 */
+body.marp-vscode {
+  padding: 0;
+}
+
+body.marp-vscode img {
+  max-width: unset;
+  max-height: unset;
+}
+
+body.marp-vscode a,
+body.marp-vscode a:hover,
+body.marp-vscode code {
+  color: unset;
+}
+
+body.marp-vscode blockquote {
+  background: unset;
+  border-color: unset;
+}
+
+@media screen {
+  body.marp-vscode {
+    overflow-y: scroll;
+
+    /* stylelint-disable-next-line selector-class-pattern */
+    &.showEditorSelection {
+      --marp-vscode-highlight-color: rgb(255 255 255 / 40%);
+
+      &.vscode-light {
+        --marp-vscode-highlight-color: rgb(0 0 0 / 15%);
+      }
+
+      &.vscode-high-contrast {
+        --marp-vscode-highlight-color: rgb(255 160 0 / 70%);
+      }
+    }
+  }
+
+  #__marp-vscode [data-marp-vscode-slide-wrapper] {
+    margin: 20px;
+    position: relative;
+
+    &.code-active-line,
+    &:has(.code-active-line) {
+      &::before {
+        position: absolute;
+        content: '';
+        inset: -7px;
+        border: 3px solid var(--marp-vscode-highlight-color, transparent);
+        pointer-events: none;
+      }
+    }
+  }
+
+  #__marp-vscode svg[data-marpit-svg] {
+    box-shadow: 0 5px 10px rgb(0 0 0 / 25%);
+    display: block;
+    margin: 0;
+  }
+
+  /* Based on https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+  #code-csp-warning {
+    background-color: #444;
+    box-shadow: 1px 1px 1px rgb(0 0 0 / 25%);
+    color: white;
+    cursor: pointer;
+    font-family: sans-serif;
+    font-size: 12px;
+    line-height: 22px;
+    margin: 16px;
+    padding: 6px;
+    position: fixed;
+    right: 0;
+    text-align: center;
+    top: 0;
+    word-wrap: break-word;
+  }
+
+  #code-csp-warning:hover {
+    text-decoration: none;
+    background-color: #007acc;
+    box-shadow: 2px 2px 2px rgb(0 0 0 / 25%);
+  }
+}
+
+@media print {
+  body.marp-vscode #code-csp-warning {
+    display: none;
+  }
+}
+
+</style>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+<link href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="building-grpc-proto">Building gRPC proto</h1>
+<p>This page shows how to build gRPC proto file for calling API to your Vald Cluster.</p>
+<div class="notice">
+Vald provides the official client libraries (see: <a href="https://vald.vdaas.org/docs/user-guides/sdks">SDK document</a>).
+If you can use one of the SDKs we recommend using it.
+</div>
+<h2 id="target-proto-files">Target proto files</h2>
+<p>Vald defines the proto file for each API.
+Let's check the below table for the details.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">API service name</th>
+<th style="text-align:center">proto</th>
+<th style="text-align:center">dependencies</th>
+<th style="text-align:left">usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Insert</td>
+<td style="text-align:center"><a href="https://github.com/vdaas/vald/blob/main/apis/proto/v1/vald/insert.proto">insert.proto</a></td>
+<td style="text-align:center"><a href="https://github.com/vdaas/vald/blob/main/apis/proto/v1/payload/payload.proto">payload.proto</a><br><a href="https://github.com/googleapis/googleapis/blob/master/google/api/annotations.proto">annotation.proto</a></td>
+<td style="text-align:left">Insert vectors into Vald Agent</td>
+</tr>
+<tr>
+<td style="text-align:center">Update</td>
+<td style="text-align:center"><a href="https://github.com/vdaas/vald/blob/main/apis/proto/v1/vald/update.proto">update.proto</a></td>
+<td style="text-align:center"><a href="https://github.com/vdaas/vald/blob/main/apis/proto/v1/payload/payload.proto">payload.proto</a><br><a href="https://github.com/googleapis/googleapis/blob/master/google/api/annotations.proto">annotation.proto</a></td>
+<td style="text-align:left">Update vectors stored in Vald Agent</td>
+</tr>
+<tr>
+<td style="text-align:center">Upsert</td>
+<td style="text-align:center"><a href="https://github.com/vdaas/vald/blob/main/apis/proto/v1/vald/upsert.proto">upsert.proto</a></td>
+<td style="text-align:center"><a href="https://github.com/vdaas/vald/blob/main/apis/proto/v1/payload/payload.proto">payload.proto</a><br><a href="https://github.com/googleapis/googleapis/blob/master/google/api/annotations.proto">annotation.proto</a></td>
+<td style="text-align:left">Update vectors stored Vald Agent or Insert vectors into Vald Agent</td>
+</tr>
+<tr>
+<td style="text-align:center">Search</td>
+<td style="text-align:center"><a href="https://github.com/vdaas/vald/blob/main/apis/proto/v1/vald/search.proto">search.proto</a></td>
+<td style="text-align:center"><a href="https://github.com/vdaas/vald/blob/main/apis/proto/v1/payload/payload.proto">payload.proto</a><br><a href="https://github.com/googleapis/googleapis/blob/master/google/api/annotations.proto">annotation.proto</a></td>
+<td style="text-align:left">Search similar vectors with query</td>
+</tr>
+<tr>
+<td style="text-align:center">Remove</td>
+<td style="text-align:center"><a href="https://github.com/vdaas/vald/blob/main/apis/proto/v1/vald/remove.proto">remove.proto</a></td>
+<td style="text-align:center"><a href="https://github.com/vdaas/vald/blob/main/apis/proto/v1/payload/payload.proto">payload.proto</a><br><a href="https://github.com/googleapis/googleapis/blob/master/google/api/annotations.proto">annotation.proto</a></td>
+<td style="text-align:left">Remove stored vectors from Vald Agent</td>
+</tr>
+<tr>
+<td style="text-align:center">Object</td>
+<td style="text-align:center"><a href="https://github.com/vdaas/vald/blob/main/apis/proto/v1/vald/object.proto">object.proto</a></td>
+<td style="text-align:center"><a href="https://github.com/vdaas/vald/blob/main/apis/proto/v1/payload/payload.proto">payload.proto</a><br><a href="https://github.com/googleapis/googleapis/blob/master/google/api/annotations.proto">annotation.proto</a></td>
+<td style="text-align:left">Get object information of vector stored in Vald Agent</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-build-protobuf">How to build protobuf</h2>
+<h3 id="the-way-to-build-proto-files">The way to build proto files</h3>
+<p>Let's build proto files using your favorite programming language.</p>
+<p>There are 3 steps to building API proto:</p>
+<ol>
+<li>
+<p>Install gRPC tools</p>
+<ul>
+<li>gRPC official document provides <a href="https://grpc.io/docs/languages/">the way to install for each language</a>.<br>
+If your favorite programming language is not there, you can find 3rd party tools for building.</li>
+</ul>
+</li>
+<li>
+<p>Download Vald api proto files and external dependence</p>
+<ul>
+<li><a href="https://github.com/vdaas/vald/tree/main/apis/proto/v1/vald">vald api proto</a></li>
+<li><a href="https://github.com/vdaas/vald/tree/main/apis/proto/v1/payload">vald payload proto</a></li>
+<li><a href="https://github.com/googleapis/googleapis">googleapis</a></li>
+<li><a href="https://github.com/envoyproxy/protoc-gen-validate">PGV</a></li>
+</ul>
+</li>
+<li>
+<p>Choose proto file(s) and build</p>
+</li>
+</ol>
+<h3 id="example-build-proto-files-in-rust">Example: Build proto files in Rust</h3>
+<p>This section shows the example steps for building proto files using Rust.</p>
+<p>There are many tools for building proto in Rust, we use <a href="https://github.com/hyperium/tonic">tonic</a> as an example.</p>
+<ol>
+<li>
+<p>Check version</p>
+<p>This example runs in this environment.</p>
+<pre><code class="language-bash">$ cargo version
+cargo 1.58.0 (7f08ace4f 2021-11-24)
+$ rustc -V
+rustc 1.58.0 (02072b482 2022-01-11)
+$ rustup -V
+rustup 1.24.3 (ce5817a94 2021-05-31)
+info: This is the version <span class="hljs-keyword">for</span> the rustup toolchain manager, not the rustc compiler.
+info: The currently active `rustc` version is `rustc 1.57.0 (f1edd0429 2021-11-29)`
+$ rustup show
+Default host: x86_64-unknown-linux-gnu
+rustup home:  /home/user/.rustup
+
+stable-x86_64-unknown-linux-gnu (default)
+rustc 1.58.0 (02072b482 2022-01-11)
+</code></pre>
+</li>
+<li>
+<p>Create project</p>
+<pre><code class="language-bash">cargo new --lib vald-grpc
+</code></pre>
+</li>
+<li>
+<p>Edit <code>Cargo.toml</code></p>
+<pre><code class="language-bash"><span class="hljs-built_in">cd</span> vald-grpc &amp;&amp; \
+vim Cargo.toml
+---
+[package]
+name = <span class="hljs-string">&quot;vald-grpc&quot;</span>
+version = <span class="hljs-string">&quot;0.1.0&quot;</span>
+edition = <span class="hljs-string">&quot;2021&quot;</span>
+
+<span class="hljs-comment"># See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html</span>
+
+[[bin]]
+name = <span class="hljs-string">&quot;client&quot;</span>
+path = <span class="hljs-string">&quot;src/client.rs&quot;</span>
+
+[dependencies]
+tonic = <span class="hljs-string">&quot;0.6.2&quot;</span>
+tokio = <span class="hljs-string">&quot;1.15&quot;</span>
+prost = <span class="hljs-string">&quot;0.9&quot;</span>
+prost-types = <span class="hljs-string">&quot;0.9&quot;</span>
+hdf5 = <span class="hljs-string">&quot;0.8.1&quot;</span>
+chrono = <span class="hljs-string">&quot;^0.4&quot;</span>
+
+[build-dependencies]
+tonic-build = <span class="hljs-string">&quot;0.6.2&quot;</span>
+</code></pre>
+</li>
+<li>
+<p>Download Vald proto files and dependence proto files</p>
+<pre><code class="language-bash">// create proto file root <span class="hljs-built_in">dir</span>
+<span class="hljs-built_in">mkdir</span> -p proto
+</code></pre>
+<pre><code class="language-bash">// download vald proto files
+git <span class="hljs-built_in">clone</span> https://github.com/vdaas/vald \
+&amp;&amp; <span class="hljs-built_in">cp</span> -R vald/apis/proto/v1/vald proto/vald \
+&amp;&amp; <span class="hljs-built_in">cp</span> -R vald/apis/proto/v1/payload proto/payload \
+&amp;&amp; <span class="hljs-built_in">rm</span> -rf vald
+</code></pre>
+<pre><code class="language-bash">// download googleapis
+git <span class="hljs-built_in">clone</span> https://github.com/googleapis/googleapis \
+&amp;&amp; <span class="hljs-built_in">cp</span> -R googleapis/google proto/google \
+&amp;&amp; <span class="hljs-built_in">rm</span> -rf googleapis
+</code></pre>
+<pre><code class="language-bash">// download protoc-gen-validate
+git <span class="hljs-built_in">clone</span> https://github.com/envoyproxy/protoc-gen-validate \
+&amp;&amp; <span class="hljs-built_in">mv</span> protoc-gen-validate proto/protoc-gen-validate
+</code></pre>
+</li>
+<li>
+<p>Fixing import path</p>
+<pre><code class="language-bash">find proto/vald -<span class="hljs-built_in">type</span> f -name <span class="hljs-string">&quot;*.proto&quot;</span> | xargs sed -i <span class="hljs-string">&quot;s/apis\/proto\/v1\///g&quot;</span> &amp;&amp; \
+find proto/vald -<span class="hljs-built_in">type</span> f -name <span class="hljs-string">&quot;*.proto&quot;</span> | xargs sed -i <span class="hljs-string">&quot;s/github\.com\/googleapis\/googleapis\///g&quot;</span> &amp;&amp; \
+find proto/payload -<span class="hljs-built_in">type</span> f -name <span class="hljs-string">&quot;*.proto&quot;</span> | xargs sed -i <span class="hljs-string">&quot;s/github\.com\/googleapis\/googleapis\///g&quot;</span> &amp;&amp; \
+find proto/payload -<span class="hljs-built_in">type</span> f -name <span class="hljs-string">&quot;*.proto&quot;</span> | xargs sed -i <span class="hljs-string">&quot;s/github\.com\/envoyproxy\///g&quot;</span>
+</code></pre>
+</li>
+<li>
+<p>Implement <code>build.rs</code> and Build proto</p>
+<ol>
+<li>
+<p><code>build.rs</code></p>
+<pre><code class="language-rust"><span class="hljs-keyword">fn</span> <span class="hljs-title function_">main</span>() <span class="hljs-punctuation">-&gt;</span> <span class="hljs-type">Result</span>&lt;(), <span class="hljs-type">Box</span>&lt;<span class="hljs-keyword">dyn</span> std::error::Error&gt;&gt; {
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">insert_proto</span> = <span class="hljs-string">&quot;./proto/vald/insert.proto&quot;</span>;
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">update_proto</span> = <span class="hljs-string">&quot;./proto/vald/update.proto&quot;</span>;
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">upsert_proto</span> = <span class="hljs-string">&quot;./proto/vald/upsert.proto&quot;</span>;
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">search_proto</span> = <span class="hljs-string">&quot;./proto/vald/search.proto&quot;</span>;
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">remove_proto</span> = <span class="hljs-string">&quot;./proto/vald/remove.proto&quot;</span>;
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">object_proto</span> = <span class="hljs-string">&quot;./proto/vald/object.proto&quot;</span>;
+
+    tonic_build::<span class="hljs-title function_ invoke__">configure</span>()
+        .<span class="hljs-title function_ invoke__">build_client</span>(<span class="hljs-literal">true</span>)
+        .<span class="hljs-title function_ invoke__">out_dir</span>(<span class="hljs-string">&quot;./src/proto&quot;</span>)
+        .<span class="hljs-title function_ invoke__">compile</span>(
+            &amp;[
+                insert_proto,
+                update_proto,
+                upsert_proto,
+                search_proto,
+                remove_proto,
+                object_proto,
+            ],
+            &amp;[<span class="hljs-string">&quot;./proto&quot;</span>],
+        )
+        .<span class="hljs-title function_ invoke__">unwrap_or_else</span>(|e| <span class="hljs-built_in">panic!</span>(<span class="hljs-string">&quot;protobuf compile error: {}&quot;</span>, e));
+    <span class="hljs-title function_ invoke__">Ok</span>(())
+}
+</code></pre>
+</li>
+<li>
+<p>build proto</p>
+<pre><code class="language-bash">cargo build
+</code></pre>
+</li>
+</ol>
+</li>
+<li>
+<p>Edit <code>Cargo.toml</code></p>
+<pre><code class="language-bash"><span class="hljs-built_in">cd</span> vald-grpc &amp;&amp; \
+vim Cargo.toml
+---
+[package]
+...
+
+[[bin]]
+name = <span class="hljs-string">&quot;client&quot;</span>
+path = <span class="hljs-string">&quot;src/client.rs&quot;</span>
+...
+</code></pre>
+</li>
+<li>
+<p>Implement code using client</p>
+<ol>
+<li>
+<p><code>lib.rs</code></p>
+<p>Import build proto in <code>src/lib.rs</code></p>
+<pre><code class="language-rust"><span class="hljs-keyword">pub</span> <span class="hljs-keyword">mod</span> vald {
+    <span class="hljs-keyword">pub</span> <span class="hljs-keyword">mod</span> v1 {
+        include!(<span class="hljs-string">&quot;./proto/vald.v1.rs&quot;</span>);
+    }
+}
+
+<span class="hljs-keyword">pub</span> <span class="hljs-keyword">mod</span> payload {
+    <span class="hljs-keyword">pub</span> <span class="hljs-keyword">mod</span> v1 {
+        include!(<span class="hljs-string">&quot;./proto/payload.v1.rs&quot;</span>);
+    }
+}
+
+<span class="hljs-keyword">pub</span> <span class="hljs-keyword">mod</span> google {
+    <span class="hljs-keyword">pub</span> <span class="hljs-keyword">mod</span> rpc {
+        include!(<span class="hljs-string">&quot;./proto/google.rpc.rs&quot;</span>);
+    }
+    <span class="hljs-keyword">pub</span> <span class="hljs-keyword">mod</span> api {
+        include!(<span class="hljs-string">&quot;./proto/google.api.rs&quot;</span>);
+    }
+    <span class="hljs-keyword">pub</span> <span class="hljs-keyword">mod</span> protobuf {
+        include!(<span class="hljs-string">&quot;./proto/google.protobuf.rs&quot;</span>);
+    }
+}
+</code></pre>
+</li>
+<li>
+<p><code>src/client.rs</code></p>
+<p>There are 4 steps in <code>src/client.rs</code>:</p>
+<ol>
+<li>Load dataset</li>
+<li>Insert vector to Vald cluster</li>
+<li>Search nearest neighbor vectors from Vald cluster after indexing finished</li>
+<li>Remove indexed vectors from Vald cluster</li>
+</ol>
+<p>The example is here:</p>
+<pre><code class="language-rust"><span class="hljs-comment">// import packages</span>
+<span class="hljs-keyword">use</span> chrono::Utc;
+<span class="hljs-keyword">use</span> hdf5::{File, <span class="hljs-type">Result</span>};
+<span class="hljs-keyword">use</span> std::thread::sleep;
+<span class="hljs-keyword">use</span> std::time;
+<span class="hljs-keyword">use</span> tonic::transport::Endpoint;
+
+<span class="hljs-comment">// import vald protos</span>
+<span class="hljs-keyword">use</span> vald_sample_rust_client::payload::v1::insert;
+<span class="hljs-keyword">use</span> vald_sample_rust_client::payload::v1::object;
+<span class="hljs-keyword">use</span> vald_sample_rust_client::payload::v1::remove;
+<span class="hljs-keyword">use</span> vald_sample_rust_client::payload::v1::search;
+<span class="hljs-keyword">use</span> vald_sample_rust_client::vald::v1::insert_client;
+<span class="hljs-keyword">use</span> vald_sample_rust_client::vald::v1::remove_client;
+<span class="hljs-keyword">use</span> vald_sample_rust_client::vald::v1::search_client;
+
+<span class="hljs-comment">// Dataset file name</span>
+<span class="hljs-keyword">static</span> FILE: &amp;<span class="hljs-type">str</span> = <span class="hljs-string">&quot;fashion-mnist-784-euclidean.hdf5&quot;</span>;
+<span class="hljs-comment">// Dataset name</span>
+<span class="hljs-keyword">static</span> DATASET: &amp;<span class="hljs-type">str</span> = <span class="hljs-string">&quot;train&quot;</span>;
+<span class="hljs-comment">// set Vald cluster host</span>
+<span class="hljs-keyword">static</span> HOST: &amp;<span class="hljs-type">str</span> = <span class="hljs-string">&quot;http://localhost:8080&quot;</span>;
+<span class="hljs-comment">// Time duration for waiting to finish `CreateIndex` and `SaveIndex`</span>
+<span class="hljs-keyword">static</span> DURATION: <span class="hljs-type">u64</span> = <span class="hljs-number">15</span>;
+
+<span class="hljs-comment">// load data</span>
+<span class="hljs-keyword">fn</span> <span class="hljs-title function_">read_file</span>() <span class="hljs-punctuation">-&gt;</span> <span class="hljs-type">Result</span>&lt;<span class="hljs-type">Vec</span>&lt;<span class="hljs-type">Vec</span>&lt;<span class="hljs-type">f32</span>&gt;&gt;&gt; {
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">file</span> = File::<span class="hljs-title function_ invoke__">open</span>(FILE).<span class="hljs-title function_ invoke__">unwrap_or_else</span>(|e| <span class="hljs-built_in">panic!</span>(<span class="hljs-string">&quot;[ERR] failed to read file: {}&quot;</span>, e));
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">data</span> = file
+        .<span class="hljs-title function_ invoke__">dataset</span>(DATASET)
+        .<span class="hljs-title function_ invoke__">unwrap_or_else</span>(|e| <span class="hljs-built_in">panic!</span>(<span class="hljs-string">&quot;[ERR] failed to get dataset: {}&quot;</span>, e));
+    <span class="hljs-keyword">let</span> <span class="hljs-keyword">mut </span><span class="hljs-variable">vector</span> = Vec::<span class="hljs-title function_ invoke__">new</span>();
+    <span class="hljs-keyword">for</span> <span class="hljs-variable">train</span> <span class="hljs-keyword">in</span> data.read_2d::&lt;<span class="hljs-type">f32</span>&gt;()?.<span class="hljs-title function_ invoke__">outer_iter</span>() {
+        <span class="hljs-keyword">let</span> <span class="hljs-keyword">mut </span><span class="hljs-variable">vec</span>: <span class="hljs-type">Vec</span>&lt;<span class="hljs-type">f32</span>&gt; = Vec::<span class="hljs-title function_ invoke__">new</span>();
+        vec.<span class="hljs-title function_ invoke__">append</span>(&amp;<span class="hljs-keyword">mut</span> train.<span class="hljs-title function_ invoke__">to_vec</span>());
+        vector.<span class="hljs-title function_ invoke__">push</span>(vec);
+        <span class="hljs-keyword">if</span> vector.<span class="hljs-title function_ invoke__">len</span>() == <span class="hljs-number">500</span> {
+            <span class="hljs-keyword">break</span>;
+        }
+    }
+    <span class="hljs-title function_ invoke__">Ok</span>(vector)
+}
+
+<span class="hljs-meta">#[tokio::main(flavor = <span class="hljs-string">&quot;current_thread&quot;</span>)]</span>
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">main</span>() <span class="hljs-punctuation">-&gt;</span> <span class="hljs-type">Result</span>&lt;(), <span class="hljs-type">Box</span>&lt;<span class="hljs-keyword">dyn</span> std::error::Error&gt;&gt; {
+    <span class="hljs-built_in">print!</span>(<span class="hljs-string">&quot;[Start] Load {} file\n&quot;</span>, FILE);
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">vec</span> = <span class="hljs-title function_ invoke__">read_file</span>()?;
+    <span class="hljs-built_in">print!</span>(<span class="hljs-string">&quot;[End] Success to load {} file\n&quot;</span>, FILE);
+
+    <span class="hljs-built_in">print!</span>(<span class="hljs-string">&quot;[Start] Insert phase\n&quot;</span>);
+    <span class="hljs-comment">// create insert client</span>
+    <span class="hljs-keyword">let</span> <span class="hljs-keyword">mut </span><span class="hljs-variable">insert_client</span> =
+        insert_client::InsertClient::<span class="hljs-title function_ invoke__">connect</span>(Endpoint::<span class="hljs-title function_ invoke__">from_static</span>(HOST)).<span class="hljs-keyword">await</span>?;
+    <span class="hljs-keyword">let</span> <span class="hljs-keyword">mut </span><span class="hljs-variable">ids</span>: <span class="hljs-type">Vec</span>&lt;<span class="hljs-type">String</span>&gt; = Vec::<span class="hljs-title function_ invoke__">new</span>();
+    <span class="hljs-keyword">for</span> <span class="hljs-variable">v</span> <span class="hljs-keyword">in</span> vec.<span class="hljs-title function_ invoke__">iter</span>() {
+        <span class="hljs-keyword">let</span> <span class="hljs-variable">id</span> = Utc::<span class="hljs-title function_ invoke__">now</span>().<span class="hljs-title function_ invoke__">timestamp_nanos</span>().<span class="hljs-title function_ invoke__">to_string</span>();
+        ids.<span class="hljs-title function_ invoke__">push</span>(id.<span class="hljs-title function_ invoke__">to_string</span>());
+        <span class="hljs-comment">// insert vector</span>
+        <span class="hljs-keyword">let</span> <span class="hljs-variable">_</span> = insert_client
+            .<span class="hljs-title function_ invoke__">insert</span>(insert::Request {
+                vector: <span class="hljs-title function_ invoke__">Some</span>(object::Vector {
+                    id: id.<span class="hljs-title function_ invoke__">to_string</span>(),
+                    vector: v.<span class="hljs-title function_ invoke__">to_vec</span>(),
+                }),
+                config: <span class="hljs-title function_ invoke__">Some</span>(insert::Config {
+                    skip_strict_exist_check: <span class="hljs-literal">true</span>,
+                    filters: <span class="hljs-literal">None</span>,
+                    timestamp: Utc::<span class="hljs-title function_ invoke__">now</span>().<span class="hljs-title function_ invoke__">timestamp</span>(),
+                }),
+            })
+            .<span class="hljs-keyword">await</span>?;
+    }
+    <span class="hljs-built_in">print!</span>(<span class="hljs-string">&quot;[End] Finish Insert Phase\n&quot;</span>);
+
+    <span class="hljs-built_in">print!</span>(<span class="hljs-string">&quot;[Sleep] Waiting SaveIndex is completed...\n&quot;</span>);
+    <span class="hljs-title function_ invoke__">sleep</span>(time::Duration::<span class="hljs-title function_ invoke__">from_secs</span>(DURATION));
+
+    <span class="hljs-built_in">print!</span>(<span class="hljs-string">&quot;[Start] Search phase\n&quot;</span>);
+    <span class="hljs-comment">// create search client</span>
+    <span class="hljs-keyword">let</span> <span class="hljs-keyword">mut </span><span class="hljs-variable">search_client</span> =
+        search_client::SearchClient::<span class="hljs-title function_ invoke__">connect</span>(Endpoint::<span class="hljs-title function_ invoke__">from_static</span>(HOST)).<span class="hljs-keyword">await</span>?;
+    <span class="hljs-keyword">for</span> <span class="hljs-variable">id</span> <span class="hljs-keyword">in</span> ids.<span class="hljs-title function_ invoke__">clone</span>() {
+        <span class="hljs-comment">// search nearest neighbor vectors using searchById method</span>
+        <span class="hljs-keyword">let</span> <span class="hljs-variable">res</span> = search_client
+            .<span class="hljs-title function_ invoke__">search_by_id</span>(search::IdRequest {
+                id: id.<span class="hljs-title function_ invoke__">to_string</span>(),
+                config: <span class="hljs-title function_ invoke__">Some</span>(search::Config {
+                    request_id: id.<span class="hljs-title function_ invoke__">to_string</span>(),
+                    num: <span class="hljs-number">10</span>,
+                    radius: -<span class="hljs-number">1.0</span>,
+                    epsilon: -<span class="hljs-number">1.0</span>,
+                    timeout: <span class="hljs-number">500</span>,
+                    ingress_filters: <span class="hljs-literal">None</span>,
+                    egress_filters: <span class="hljs-literal">None</span>,
+                }),
+            })
+            .<span class="hljs-keyword">await</span>?;
+        <span class="hljs-built_in">print!</span>(<span class="hljs-string">&quot;[Id]: {:?}\n&quot;</span>, id.<span class="hljs-title function_ invoke__">to_string</span>());
+        <span class="hljs-built_in">print!</span>(<span class="hljs-string">&quot;[Result]: {:#?}\n&quot;</span>, res.<span class="hljs-title function_ invoke__">into_inner</span>().results);
+    }
+    <span class="hljs-built_in">print!</span>(<span class="hljs-string">&quot;[End] Finish Search Phase\n&quot;</span>);
+
+    <span class="hljs-built_in">print!</span>(<span class="hljs-string">&quot;[Start] Remove phase\n&quot;</span>);
+    <span class="hljs-comment">// create remove client</span>
+    <span class="hljs-keyword">let</span> <span class="hljs-keyword">mut </span><span class="hljs-variable">remove_client</span> =
+        remove_client::RemoveClient::<span class="hljs-title function_ invoke__">connect</span>(Endpoint::<span class="hljs-title function_ invoke__">from_static</span>(HOST)).<span class="hljs-keyword">await</span>?;
+    <span class="hljs-keyword">for</span> <span class="hljs-variable">id</span> <span class="hljs-keyword">in</span> ids.<span class="hljs-title function_ invoke__">clone</span>() {
+        <span class="hljs-comment">// remove vectors</span>
+        <span class="hljs-keyword">let</span> <span class="hljs-variable">_</span> = remove_client
+            .<span class="hljs-title function_ invoke__">remove</span>(remove::Request {
+                id: <span class="hljs-title function_ invoke__">Some</span>(object::Id { id: id.<span class="hljs-title function_ invoke__">to_string</span>() }),
+                config: <span class="hljs-literal">None</span>,
+            })
+            .<span class="hljs-keyword">await</span>?;
+    }
+    <span class="hljs-built_in">print!</span>(<span class="hljs-string">&quot;[End] Finish Remove phase\n&quot;</span>);
+
+    <span class="hljs-title function_ invoke__">Ok</span>(())
+}
+</code></pre>
+</li>
+</ol>
+</li>
+<li>
+<p>Build</p>
+<p>Build implemented codes before running example code.</p>
+<pre><code class="language-bash">cargo build
+</code></pre>
+</li>
+<li>
+<p>Running example</p>
+<p>After creating Vald cluster, you can run an example code by the following command.</p>
+<pre><code class="language-bash">cargo run src/client.rs
+</code></pre>
+</li>
+</ol>
+
+            <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
+            <script async type="text/javascript">
+/* From extension marp-team.marp-vscode */
+(()=>{var W=Object.defineProperty;var K=(w,h,x)=>h in w?W(w,h,{enumerable:!0,configurable:!0,writable:!0,value:x}):w[h]=x;var o=(w,h)=>W(w,"name",{value:h,configurable:!0});var v=(w,h,x)=>K(w,typeof h!="symbol"?h+"":h,x);(()=>{var w={32:(y,S,g)=>{y.exports=g(924)},924:(y,S)=>{"use strict";var g;g={value:!0};const E={h1:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"1"},style:"display: block; font-size: 2em; margin-block-start: 0.67em; margin-block-end: 0.67em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h2:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"2"},style:"display: block; font-size: 1.5em; margin-block-start: 0.83em; margin-block-end: 0.83em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h3:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"3"},style:"display: block; font-size: 1.17em; margin-block-start: 1em; margin-block-end: 1em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h4:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"4"},style:"display: block; margin-block-start: 1.33em; margin-block-end: 1.33em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h5:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"5"},style:"display: block; font-size: 0.83em; margin-block-start: 1.67em; margin-block-end: 1.67em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},h6:{proto:o(()=>HTMLHeadingElement,"proto"),attrs:{role:"heading","aria-level":"6"},style:"display: block; font-size: 0.67em; margin-block-start: 2.33em; margin-block-end: 2.33em; margin-inline-start: 0px; margin-inline-end: 0px; font-weight: bold;"},span:{proto:o(()=>HTMLSpanElement,"proto")},pre:{proto:o(()=>HTMLElement,"proto"),style:"display: block; font-family: monospace; white-space: pre; margin: 1em 0; --marp-auto-scaling-white-space: pre;"}},A="data-marp-auto-scaling-wrapper",p="data-marp-auto-scaling-svg",c="data-marp-auto-scaling-container",T=class T extends HTMLElement{constructor(){super();v(this,"container");v(this,"containerSize");v(this,"containerObserver");v(this,"svg");v(this,"svgComputedStyle");v(this,"svgPreserveAspectRatio","xMinYMid meet");v(this,"wrapper");v(this,"wrapperSize");v(this,"wrapperObserver");const s=o(t=>([e])=>{const{width:n,height:r}=e.contentRect;this[t]={width:n,height:r},this.updateSVGRect()},"e");this.attachShadow({mode:"open"}),this.containerObserver=new ResizeObserver(s("containerSize")),this.wrapperObserver=new ResizeObserver((...t)=>{s("wrapperSize")(...t),this.flushSvgDisplay()})}static get observedAttributes(){return["data-downscale-only"]}connectedCallback(){this.shadowRoot.innerHTML=`
+<style>
+  svg[${p}] { display: block; width: 100%; height: auto; vertical-align: top; }
+  span[${c}] { display: table; white-space: var(--marp-auto-scaling-white-space, nowrap); width: max-content; }
+</style>
+<div ${A}>
+  <svg part="svg" ${p}>
+    <foreignObject><span ${c}><slot></slot></span></foreignObject>
+  </svg>
+</div>
+    `.split(/\n\s*/).join(""),this.wrapper=this.shadowRoot.querySelector(`div[${A}]`)??void 0;const s=this.svg;this.svg=this.wrapper?.querySelector(`svg[${p}]`)??void 0,this.svg!==s&&(this.svgComputedStyle=this.svg?window.getComputedStyle(this.svg):void 0),this.container=this.svg?.querySelector(`span[${c}]`)??void 0,this.observe()}disconnectedCallback(){this.svg=void 0,this.svgComputedStyle=void 0,this.wrapper=void 0,this.container=void 0,this.observe()}attributeChangedCallback(){this.observe()}flushSvgDisplay(){const{svg:s}=this;s&&(s.style.display="inline",requestAnimationFrame(()=>{s.style.display=""}))}observe(){this.containerObserver.disconnect(),this.wrapperObserver.disconnect(),this.wrapper&&this.wrapperObserver.observe(this.wrapper),this.container&&this.containerObserver.observe(this.container),this.svgComputedStyle&&this.observeSVGStyle(this.svgComputedStyle)}observeSVGStyle(s){const t=o(()=>{const e=(()=>{const n=s.getPropertyValue("--preserve-aspect-ratio");return n?n.trim():`x${(({textAlign:r,direction:l})=>{if(r.endsWith("left"))return"Min";if(r.endsWith("right"))return"Max";if(r==="start"||r==="end"){let d=l==="rtl";return r==="end"&&(d=!d),d?"Max":"Min"}return"Mid"})(s)}YMid meet`})();e!==this.svgPreserveAspectRatio&&(this.svgPreserveAspectRatio=e,this.updateSVGRect()),s===this.svgComputedStyle&&requestAnimationFrame(t)},"t");t()}updateSVGRect(){let s=Math.ceil(this.containerSize?.width??0);const t=Math.ceil(this.containerSize?.height??0);this.dataset.downscaleOnly!==void 0&&(s=Math.max(s,this.wrapperSize?.width??0));const e=this.svg?.querySelector(":scope > foreignObject");if(e?.setAttribute("width",`${s}`),e?.setAttribute("height",`${t}`),this.svg&&(this.svg.setAttribute("viewBox",`0 0 ${s} ${t}`),this.svg.setAttribute("preserveAspectRatio",this.svgPreserveAspectRatio),this.svg.style.height=s<=0||t<=0?"0":""),this.container){const n=this.svgPreserveAspectRatio.toLowerCase();this.container.style.marginLeft=n.startsWith("xmid")||n.startsWith("xmax")?"auto":"0",this.container.style.marginRight=n.startsWith("xmi")?"auto":"0"}}};o(T,"s");let i=T;const m=o((a,{attrs:u={},style:s})=>class extends a{constructor(...t){super(...t);for(const[e,n]of Object.entries(u))this.hasAttribute(e)||this.setAttribute(e,n);this._shadow()}static get observedAttributes(){return["data-auto-scaling"]}connectedCallback(){this._update()}attributeChangedCallback(){this._update()}_shadow(){if(!this.shadowRoot)try{this.attachShadow({mode:"open"})}catch(t){if(!(t instanceof Error&&t.name==="NotSupportedError"))throw t}return this.shadowRoot}_update(){const t=this._shadow();if(t){const e=s?`<style>:host { ${s} }</style>`:"";let n="<slot></slot>";const{autoScaling:r}=this.dataset;r!==void 0&&(n=`<marp-auto-scaling exportparts="svg:auto-scaling" ${r==="downscale-only"?"data-downscale-only":""}>${n}</marp-auto-scaling>`),t.innerHTML=e+n}}},"r");let b;const z=Symbol();let $;const V="marpitSVGPolyfill:setZoomFactor,",C=Symbol(),j=Symbol(),G=o(()=>{const a=navigator.vendor==="Apple Computer, Inc.",u=a?[D]:[],s={then:o(t=>(a?(async()=>{if($===void 0){const e=document.createElement("canvas");e.width=10,e.height=10;const n=e.getContext("2d"),r=new Image(10,10),l=new Promise(d=>{r.addEventListener("load",()=>d())});r.crossOrigin="anonymous",r.src="data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%2210%22%20viewBox%3D%220%200%201%201%22%3E%3CforeignObject%20width%3D%221%22%20height%3D%221%22%20requiredExtensions%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml%22%3E%3Cdiv%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml%22%20style%3D%22width%3A%201px%3B%20height%3A%201px%3B%20background%3A%20red%3B%20position%3A%20relative%22%3E%3C%2Fdiv%3E%3C%2FforeignObject%3E%3C%2Fsvg%3E",await l,n.drawImage(r,0,0),$=n.getImageData(5,5,1,1).data[3]<128}return $})().then(e=>{t?.(e?[D]:[])}):t?.([]),s),"then")};return Object.assign(u,s)},"g");let H,O;function D(a){const u=typeof a=="object"&&a.target||document,s=typeof a=="object"?a.zoom:a;window[j]||(Object.defineProperty(window,j,{configurable:!0,value:!0}),document.body.style.zoom=1.0001,document.body.offsetHeight,document.body.style.zoom=1,window.addEventListener("message",({data:e,origin:n})=>{if(n===window.origin)try{if(e&&typeof e=="string"&&e.startsWith(V)){const[,r]=e.split(","),l=Number.parseFloat(r);Number.isNaN(l)||(O=l)}}catch(r){console.error(r)}}));let t=!1;Array.from(u.querySelectorAll("svg[data-marpit-svg]"),e=>{var n,r,l,d;e.style.transform||(e.style.transform="translateZ(0)");const f=s||O||e.currentScale||1;H!==f&&(H=f,t=f);const P=e.getBoundingClientRect(),{length:Z}=e.children;for(let F=0;F<Z;F+=1){const k=e.children[F];if(k.getScreenCTM){const _=k.getScreenCTM();if(_){const Y=(r=(n=k.x)===null||n===void 0?void 0:n.baseVal.value)!==null&&r!==void 0?r:0,U=(d=(l=k.y)===null||l===void 0?void 0:l.baseVal.value)!==null&&d!==void 0?d:0,J=k.children.length;for(let R=0;R<J;R+=1){const N=k.children[R];if(N.tagName==="SECTION"){const{style:q}=N;q.transformOrigin||(q.transformOrigin=`${-Y}px ${-U}px`),q.transform=`scale(${f}) matrix(${_.a}, ${_.b}, ${_.c}, ${_.d}, ${_.e-P.left}, ${_.f-P.top}) translateZ(0.0001px)`;break}}}}}}),t!==!1&&Array.from(u.querySelectorAll("iframe"),({contentWindow:e})=>{e?.postMessage(`${V}${t}`,window.origin==="null"?"*":window.origin)})}o(D,"u");function B({once:a=!1,target:u=document}={}){const s=function(t=document){if(t[C])return t[C];let e=!0;const n=o(()=>{e=!1,delete t[C]},"i");Object.defineProperty(t,C,{configurable:!0,value:n});let r=[],l=!1;(async()=>{try{r=await G()}finally{l=!0}})();const d=o(()=>{for(const f of r)f({target:t});l&&r.length===0||e&&window.requestAnimationFrame(d)},"r");return d(),n}(u);return a?(s(),()=>{}):s}o(B,"v"),H=1,O=void 0;const I=B,M=Symbol(),L=o((a=document)=>{if(typeof window>"u")throw new Error("Marp Core's browser script is valid only in browser context.");if(((e=document)=>{const n=window[z];n||customElements.define("marp-auto-scaling",i);for(const r of Object.keys(E)){const l=`marp-${r}`,d=E[r].proto();(b??(b=!!document.createElement("div",{is:"marp-auto-scaling"}).outerHTML.startsWith("<div is"),b))&&d!==HTMLElement?n||customElements.define(l,m(d,{style:E[r].style}),{extends:r}):(n||customElements.define(l,m(HTMLElement,E[r])),e.querySelectorAll(`${r}[is="${l}"]`).forEach(f=>{f.outerHTML=f.outerHTML.replace(new RegExp(`^<${r}`,"i"),`<${l}`).replace(new RegExp(`</${r}>$`,"i"),`</${l}>`)}))}window[z]=!0})(a),a[M])return a[M];const u=B({target:a}),s=o(()=>{u(),delete a[M]},"n"),t=Object.assign(s,{cleanup:s,update:o(()=>L(a),"update")});return Object.defineProperty(a,M,{configurable:!0,value:t}),t},"y");S.browser=L,g=L,g=I}},h={};function x(y){var S=h[y];if(S!==void 0)return S.exports;var g=h[y]={exports:{}};return w[y](g,g.exports,x),g.exports}o(x,"__webpack_require__");var Q={};(()=>{"use strict";var y=x(32);function S(){let p,c;const i=o(()=>{const m=document.getElementById("__marp-vscode"),b=!!m;p!==b?(document.body.classList.toggle("marp-vscode",b),b?c=(0,y.browser)():(c?.cleanup(),c=void 0),p=b):b&&c?.update(),p?(m&&g(m),E()):A()},"updateCallback");window.addEventListener("load",()=>window.setTimeout(i,100)),window.addEventListener("vscode.markdown.updateContent",i),i()}o(S,"preview");const g=o(p=>{p.querySelectorAll("[is]").forEach(c=>{if(c.nodeName.includes("-")||document.createElement(c.nodeName).constructor!==c.constructor)return;const{outerHTML:m}=c;c.outerHTML=m,console.debug("[marp-vscode] Custom element has been upgraded forcibly:",m.slice(0,m.indexOf(">")+1||void 0))})},"forceUpgradeCustomElements"),E=o(()=>{const p=document.querySelectorAll("style:not(#__marp-vscode-style,#_defaultStyles,[data-marp-vscode-body])"),c=document.querySelectorAll('link[rel="stylesheet"][href]:not([href*="marp-vscode"])');p.forEach(i=>{i.closest("#__marp-vscode")||(i.dataset.marpVscodeBody=i.textContent??"",i.textContent="")}),c.forEach(i=>{if(i.closest("#__marp-vscode"))return;const{href:m}=i;i.dataset.marpVscodeHref=m,i.removeAttribute("href")})},"removeStyles"),A=o(()=>{const p=document.querySelectorAll("style[data-marp-vscode-body]"),c=document.querySelectorAll("link[data-marp-vscode-href]");p.forEach(i=>{i.textContent=i.dataset.marpVscodeBody||"",delete i.dataset.marpVscodeBody}),c.forEach(i=>{i.href=i.dataset.marpVscodeHref||"",delete i.dataset.marpVscodeHref})},"restoreStyles");S()})()})();})();
+
+</script>
+
+        </body>
+        </html>
