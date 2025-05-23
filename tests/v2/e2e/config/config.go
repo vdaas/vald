@@ -42,7 +42,7 @@ import (
 
 // Data represents the complete configuration for the application.
 type Data struct {
-	config.GlobalConfig `json:",inline,omitempty" yaml:",inline,omitempty"`
+	config.GlobalConfig `json:",inline" yaml:",inline"`
 	Target              *config.GRPCClient `json:"target,omitempty"          yaml:"target,omitempty"`
 	Strategies          []*Strategy        `json:"strategies,omitempty"      yaml:"strategies,omitempty"`
 	Dataset             *Dataset           `json:"dataset,omitempty"         yaml:"dataset,omitempty"`
@@ -53,7 +53,7 @@ type Data struct {
 
 // Strategy represents a test strategy.
 type Strategy struct {
-	TimeConfig  `             yaml:",inline,omitempty"    json:",inline,omitempty"`
+	TimeConfig  `             yaml:",inline"              json:",inline"`
 	Name        string       `yaml:"name"                 json:"name,omitempty"`
 	Concurrency uint64       `yaml:"concurrency"          json:"concurrency,omitempty"`
 	Operations  []*Operation `yaml:"operations,omitempty" json:"operations,omitempty"`
@@ -61,15 +61,15 @@ type Strategy struct {
 
 // Operation represents an individual operation configuration.
 type Operation struct {
-	TimeConfig `             yaml:",inline,omitempty"    json:",inline,omitempty"`
+	TimeConfig `             yaml:",inline"              json:",inline"`
 	Name       string       `yaml:"name,omitempty"       json:"name,omitempty"`
 	Executions []*Execution `yaml:"executions,omitempty" json:"executions,omitempty"`
 }
 
 // Execution represents the execution details for a given operation.
 type Execution struct {
-	*BaseConfig         `                    yaml:",inline,omitempty"               json:",inline,omitempty"`
-	TimeConfig          `                    yaml:",inline,omitempty"               json:",inline,omitempty"`
+	*BaseConfig         `                    yaml:",inline"                         json:",inline"`
+	TimeConfig          `                    yaml:",inline"                         json:",inline"`
 	Name                string              `yaml:"name"                            json:"name,omitempty"`
 	Type                OperationType       `yaml:"type"                            json:"type,omitempty"`
 	Mode                OperationMode       `yaml:"mode"                            json:"mode,omitempty"`

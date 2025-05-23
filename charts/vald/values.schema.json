@@ -1778,12 +1778,28 @@
               "properties": {
                 "ca": { "type": "string", "description": "TLS ca path" },
                 "cert": { "type": "string", "description": "TLS cert path" },
+                "client_auth": {
+                  "type": "string",
+                  "description": "client auth type",
+                  "enum": [
+                    "Auto",
+                    "None",
+                    "Request",
+                    "RequireAny",
+                    "VerifyIfGiven",
+                    "RequireAndVerify"
+                  ]
+                },
                 "enabled": { "type": "boolean", "description": "TLS enabled" },
                 "insecure_skip_verify": {
                   "type": "boolean",
                   "description": "enable/disable skip SSL certificate verification"
                 },
-                "key": { "type": "string", "description": "TLS key path" }
+                "key": { "type": "string", "description": "TLS key path" },
+                "server_name": {
+                  "type": "string",
+                  "description": "SSL Server Name"
+                }
               }
             }
           }
@@ -2066,6 +2082,18 @@
                               "type": "string",
                               "description": "TLS cert path"
                             },
+                            "client_auth": {
+                              "type": "string",
+                              "description": "client auth type",
+                              "enum": [
+                                "Auto",
+                                "None",
+                                "Request",
+                                "RequireAny",
+                                "VerifyIfGiven",
+                                "RequireAndVerify"
+                              ]
+                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
@@ -2077,6 +2105,10 @@
                             "key": {
                               "type": "string",
                               "description": "TLS key path"
+                            },
+                            "server_name": {
+                              "type": "string",
+                              "description": "SSL Server Name"
                             }
                           }
                         }
@@ -3481,6 +3513,18 @@
                       "type": "string",
                       "description": "TLS cert path"
                     },
+                    "client_auth": {
+                      "type": "string",
+                      "description": "client auth type",
+                      "enum": [
+                        "Auto",
+                        "None",
+                        "Request",
+                        "RequireAny",
+                        "VerifyIfGiven",
+                        "RequireAndVerify"
+                      ]
+                    },
                     "enabled": {
                       "type": "boolean",
                       "description": "TLS enabled"
@@ -3489,7 +3533,11 @@
                       "type": "boolean",
                       "description": "enable/disable skip SSL certificate verification"
                     },
-                    "key": { "type": "string", "description": "TLS key path" }
+                    "key": { "type": "string", "description": "TLS key path" },
+                    "server_name": {
+                      "type": "string",
+                      "description": "SSL Server Name"
+                    }
                   }
                 }
               }
@@ -3847,6 +3895,18 @@
                               "type": "string",
                               "description": "TLS cert path"
                             },
+                            "client_auth": {
+                              "type": "string",
+                              "description": "client auth type",
+                              "enum": [
+                                "Auto",
+                                "None",
+                                "Request",
+                                "RequireAny",
+                                "VerifyIfGiven",
+                                "RequireAndVerify"
+                              ]
+                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
@@ -3858,6 +3918,10 @@
                             "key": {
                               "type": "string",
                               "description": "TLS key path"
+                            },
+                            "server_name": {
+                              "type": "string",
+                              "description": "SSL Server Name"
                             }
                           }
                         }
@@ -3900,6 +3964,18 @@
                       "type": "string",
                       "description": "TLS cert path"
                     },
+                    "client_auth": {
+                      "type": "string",
+                      "description": "client auth type",
+                      "enum": [
+                        "Auto",
+                        "None",
+                        "Request",
+                        "RequireAny",
+                        "VerifyIfGiven",
+                        "RequireAndVerify"
+                      ]
+                    },
                     "enabled": {
                       "type": "boolean",
                       "description": "TLS enabled"
@@ -3908,7 +3984,11 @@
                       "type": "boolean",
                       "description": "enable/disable skip SSL certificate verification"
                     },
-                    "key": { "type": "string", "description": "TLS key path" }
+                    "key": { "type": "string", "description": "TLS key path" },
+                    "server_name": {
+                      "type": "string",
+                      "description": "SSL Server Name"
+                    }
                   }
                 },
                 "wait_for_ready": { "type": "boolean" }
@@ -5139,12 +5219,28 @@
               "properties": {
                 "ca": { "type": "string", "description": "TLS ca path" },
                 "cert": { "type": "string", "description": "TLS cert path" },
+                "client_auth": {
+                  "type": "string",
+                  "description": "client auth type",
+                  "enum": [
+                    "Auto",
+                    "None",
+                    "Request",
+                    "RequireAny",
+                    "VerifyIfGiven",
+                    "RequireAndVerify"
+                  ]
+                },
                 "enabled": { "type": "boolean", "description": "TLS enabled" },
                 "insecure_skip_verify": {
                   "type": "boolean",
                   "description": "enable/disable skip SSL certificate verification"
                 },
-                "key": { "type": "string", "description": "TLS key path" }
+                "key": { "type": "string", "description": "TLS key path" },
+                "server_name": {
+                  "type": "string",
+                  "description": "SSL Server Name"
+                }
               }
             }
           }
@@ -5340,6 +5436,18 @@
                       "type": "string",
                       "description": "TLS cert path"
                     },
+                    "client_auth": {
+                      "type": "string",
+                      "description": "client auth type",
+                      "enum": [
+                        "Auto",
+                        "None",
+                        "Request",
+                        "RequireAny",
+                        "VerifyIfGiven",
+                        "RequireAndVerify"
+                      ]
+                    },
                     "enabled": {
                       "type": "boolean",
                       "description": "TLS enabled"
@@ -5348,7 +5456,11 @@
                       "type": "boolean",
                       "description": "enable/disable skip SSL certificate verification"
                     },
-                    "key": { "type": "string", "description": "TLS key path" }
+                    "key": { "type": "string", "description": "TLS key path" },
+                    "server_name": {
+                      "type": "string",
+                      "description": "SSL Server Name"
+                    }
                   }
                 }
               }
@@ -6750,12 +6862,28 @@
               "properties": {
                 "ca": { "type": "string", "description": "TLS ca path" },
                 "cert": { "type": "string", "description": "TLS cert path" },
+                "client_auth": {
+                  "type": "string",
+                  "description": "client auth type",
+                  "enum": [
+                    "Auto",
+                    "None",
+                    "Request",
+                    "RequireAny",
+                    "VerifyIfGiven",
+                    "RequireAndVerify"
+                  ]
+                },
                 "enabled": { "type": "boolean", "description": "TLS enabled" },
                 "insecure_skip_verify": {
                   "type": "boolean",
                   "description": "enable/disable skip SSL certificate verification"
                 },
-                "key": { "type": "string", "description": "TLS key path" }
+                "key": { "type": "string", "description": "TLS key path" },
+                "server_name": {
+                  "type": "string",
+                  "description": "SSL Server Name"
+                }
               }
             }
           }
@@ -7186,6 +7314,18 @@
                                       "type": "string",
                                       "description": "TLS cert path"
                                     },
+                                    "client_auth": {
+                                      "type": "string",
+                                      "description": "client auth type",
+                                      "enum": [
+                                        "Auto",
+                                        "None",
+                                        "Request",
+                                        "RequireAny",
+                                        "VerifyIfGiven",
+                                        "RequireAndVerify"
+                                      ]
+                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
@@ -7197,6 +7337,10 @@
                                     "key": {
                                       "type": "string",
                                       "description": "TLS key path"
+                                    },
+                                    "server_name": {
+                                      "type": "string",
+                                      "description": "SSL Server Name"
                                     }
                                   }
                                 }
@@ -7242,6 +7386,18 @@
                               "type": "string",
                               "description": "TLS cert path"
                             },
+                            "client_auth": {
+                              "type": "string",
+                              "description": "client auth type",
+                              "enum": [
+                                "Auto",
+                                "None",
+                                "Request",
+                                "RequireAny",
+                                "VerifyIfGiven",
+                                "RequireAndVerify"
+                              ]
+                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
@@ -7253,6 +7409,10 @@
                             "key": {
                               "type": "string",
                               "description": "TLS key path"
+                            },
+                            "server_name": {
+                              "type": "string",
+                              "description": "SSL Server Name"
                             }
                           }
                         },
@@ -7546,6 +7706,18 @@
                                   "type": "string",
                                   "description": "TLS cert path"
                                 },
+                                "client_auth": {
+                                  "type": "string",
+                                  "description": "client auth type",
+                                  "enum": [
+                                    "Auto",
+                                    "None",
+                                    "Request",
+                                    "RequireAny",
+                                    "VerifyIfGiven",
+                                    "RequireAndVerify"
+                                  ]
+                                },
                                 "enabled": {
                                   "type": "boolean",
                                   "description": "TLS enabled"
@@ -7557,6 +7729,10 @@
                                 "key": {
                                   "type": "string",
                                   "description": "TLS key path"
+                                },
+                                "server_name": {
+                                  "type": "string",
+                                  "description": "SSL Server Name"
                                 }
                               }
                             }
@@ -7602,6 +7778,18 @@
                           "type": "string",
                           "description": "TLS cert path"
                         },
+                        "client_auth": {
+                          "type": "string",
+                          "description": "client auth type",
+                          "enum": [
+                            "Auto",
+                            "None",
+                            "Request",
+                            "RequireAny",
+                            "VerifyIfGiven",
+                            "RequireAndVerify"
+                          ]
+                        },
                         "enabled": {
                           "type": "boolean",
                           "description": "TLS enabled"
@@ -7613,6 +7801,10 @@
                         "key": {
                           "type": "string",
                           "description": "TLS key path"
+                        },
+                        "server_name": {
+                          "type": "string",
+                          "description": "SSL Server Name"
                         }
                       }
                     },
@@ -7901,6 +8093,18 @@
                                       "type": "string",
                                       "description": "TLS cert path"
                                     },
+                                    "client_auth": {
+                                      "type": "string",
+                                      "description": "client auth type",
+                                      "enum": [
+                                        "Auto",
+                                        "None",
+                                        "Request",
+                                        "RequireAny",
+                                        "VerifyIfGiven",
+                                        "RequireAndVerify"
+                                      ]
+                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
@@ -7912,6 +8116,10 @@
                                     "key": {
                                       "type": "string",
                                       "description": "TLS key path"
+                                    },
+                                    "server_name": {
+                                      "type": "string",
+                                      "description": "SSL Server Name"
                                     }
                                   }
                                 }
@@ -7957,6 +8165,18 @@
                               "type": "string",
                               "description": "TLS cert path"
                             },
+                            "client_auth": {
+                              "type": "string",
+                              "description": "client auth type",
+                              "enum": [
+                                "Auto",
+                                "None",
+                                "Request",
+                                "RequireAny",
+                                "VerifyIfGiven",
+                                "RequireAndVerify"
+                              ]
+                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
@@ -7968,6 +8188,10 @@
                             "key": {
                               "type": "string",
                               "description": "TLS key path"
+                            },
+                            "server_name": {
+                              "type": "string",
+                              "description": "SSL Server Name"
                             }
                           }
                         },
@@ -9355,6 +9579,18 @@
                       "type": "string",
                       "description": "TLS cert path"
                     },
+                    "client_auth": {
+                      "type": "string",
+                      "description": "client auth type",
+                      "enum": [
+                        "Auto",
+                        "None",
+                        "Request",
+                        "RequireAny",
+                        "VerifyIfGiven",
+                        "RequireAndVerify"
+                      ]
+                    },
                     "enabled": {
                       "type": "boolean",
                       "description": "TLS enabled"
@@ -9363,7 +9599,11 @@
                       "type": "boolean",
                       "description": "enable/disable skip SSL certificate verification"
                     },
-                    "key": { "type": "string", "description": "TLS key path" }
+                    "key": { "type": "string", "description": "TLS key path" },
+                    "server_name": {
+                      "type": "string",
+                      "description": "SSL Server Name"
+                    }
                   }
                 }
               }
@@ -9781,6 +10021,18 @@
                                       "type": "string",
                                       "description": "TLS cert path"
                                     },
+                                    "client_auth": {
+                                      "type": "string",
+                                      "description": "client auth type",
+                                      "enum": [
+                                        "Auto",
+                                        "None",
+                                        "Request",
+                                        "RequireAny",
+                                        "VerifyIfGiven",
+                                        "RequireAndVerify"
+                                      ]
+                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
@@ -9792,6 +10044,10 @@
                                     "key": {
                                       "type": "string",
                                       "description": "TLS key path"
+                                    },
+                                    "server_name": {
+                                      "type": "string",
+                                      "description": "SSL Server Name"
                                     }
                                   }
                                 }
@@ -9837,6 +10093,18 @@
                               "type": "string",
                               "description": "TLS cert path"
                             },
+                            "client_auth": {
+                              "type": "string",
+                              "description": "client auth type",
+                              "enum": [
+                                "Auto",
+                                "None",
+                                "Request",
+                                "RequireAny",
+                                "VerifyIfGiven",
+                                "RequireAndVerify"
+                              ]
+                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
@@ -9848,6 +10116,10 @@
                             "key": {
                               "type": "string",
                               "description": "TLS key path"
+                            },
+                            "server_name": {
+                              "type": "string",
+                              "description": "SSL Server Name"
                             }
                           }
                         },
@@ -10132,6 +10404,18 @@
                                       "type": "string",
                                       "description": "TLS cert path"
                                     },
+                                    "client_auth": {
+                                      "type": "string",
+                                      "description": "client auth type",
+                                      "enum": [
+                                        "Auto",
+                                        "None",
+                                        "Request",
+                                        "RequireAny",
+                                        "VerifyIfGiven",
+                                        "RequireAndVerify"
+                                      ]
+                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
@@ -10143,6 +10427,10 @@
                                     "key": {
                                       "type": "string",
                                       "description": "TLS key path"
+                                    },
+                                    "server_name": {
+                                      "type": "string",
+                                      "description": "SSL Server Name"
                                     }
                                   }
                                 }
@@ -10188,6 +10476,18 @@
                               "type": "string",
                               "description": "TLS cert path"
                             },
+                            "client_auth": {
+                              "type": "string",
+                              "description": "client auth type",
+                              "enum": [
+                                "Auto",
+                                "None",
+                                "Request",
+                                "RequireAny",
+                                "VerifyIfGiven",
+                                "RequireAndVerify"
+                              ]
+                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
@@ -10199,6 +10499,10 @@
                             "key": {
                               "type": "string",
                               "description": "TLS key path"
+                            },
+                            "server_name": {
+                              "type": "string",
+                              "description": "SSL Server Name"
                             }
                           }
                         },
@@ -10484,6 +10788,18 @@
                                       "type": "string",
                                       "description": "TLS cert path"
                                     },
+                                    "client_auth": {
+                                      "type": "string",
+                                      "description": "client auth type",
+                                      "enum": [
+                                        "Auto",
+                                        "None",
+                                        "Request",
+                                        "RequireAny",
+                                        "VerifyIfGiven",
+                                        "RequireAndVerify"
+                                      ]
+                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
@@ -10495,6 +10811,10 @@
                                     "key": {
                                       "type": "string",
                                       "description": "TLS key path"
+                                    },
+                                    "server_name": {
+                                      "type": "string",
+                                      "description": "SSL Server Name"
                                     }
                                   }
                                 }
@@ -10540,6 +10860,18 @@
                               "type": "string",
                               "description": "TLS cert path"
                             },
+                            "client_auth": {
+                              "type": "string",
+                              "description": "client auth type",
+                              "enum": [
+                                "Auto",
+                                "None",
+                                "Request",
+                                "RequireAny",
+                                "VerifyIfGiven",
+                                "RequireAndVerify"
+                              ]
+                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
@@ -10551,6 +10883,10 @@
                             "key": {
                               "type": "string",
                               "description": "TLS key path"
+                            },
+                            "server_name": {
+                              "type": "string",
+                              "description": "SSL Server Name"
                             }
                           }
                         },
@@ -11925,6 +12261,18 @@
                       "type": "string",
                       "description": "TLS cert path"
                     },
+                    "client_auth": {
+                      "type": "string",
+                      "description": "client auth type",
+                      "enum": [
+                        "Auto",
+                        "None",
+                        "Request",
+                        "RequireAny",
+                        "VerifyIfGiven",
+                        "RequireAndVerify"
+                      ]
+                    },
                     "enabled": {
                       "type": "boolean",
                       "description": "TLS enabled"
@@ -11933,7 +12281,11 @@
                       "type": "boolean",
                       "description": "enable/disable skip SSL certificate verification"
                     },
-                    "key": { "type": "string", "description": "TLS key path" }
+                    "key": { "type": "string", "description": "TLS key path" },
+                    "server_name": {
+                      "type": "string",
+                      "description": "SSL Server Name"
+                    }
                   }
                 }
               }
@@ -12367,6 +12719,18 @@
                                   "type": "string",
                                   "description": "TLS cert path"
                                 },
+                                "client_auth": {
+                                  "type": "string",
+                                  "description": "client auth type",
+                                  "enum": [
+                                    "Auto",
+                                    "None",
+                                    "Request",
+                                    "RequireAny",
+                                    "VerifyIfGiven",
+                                    "RequireAndVerify"
+                                  ]
+                                },
                                 "enabled": {
                                   "type": "boolean",
                                   "description": "TLS enabled"
@@ -12378,6 +12742,10 @@
                                 "key": {
                                   "type": "string",
                                   "description": "TLS key path"
+                                },
+                                "server_name": {
+                                  "type": "string",
+                                  "description": "SSL Server Name"
                                 }
                               }
                             }
@@ -12423,6 +12791,18 @@
                           "type": "string",
                           "description": "TLS cert path"
                         },
+                        "client_auth": {
+                          "type": "string",
+                          "description": "client auth type",
+                          "enum": [
+                            "Auto",
+                            "None",
+                            "Request",
+                            "RequireAny",
+                            "VerifyIfGiven",
+                            "RequireAndVerify"
+                          ]
+                        },
                         "enabled": {
                           "type": "boolean",
                           "description": "TLS enabled"
@@ -12434,6 +12814,10 @@
                         "key": {
                           "type": "string",
                           "description": "TLS key path"
+                        },
+                        "server_name": {
+                          "type": "string",
+                          "description": "SSL Server Name"
                         }
                       }
                     },
@@ -12554,6 +12938,18 @@
                           "type": "string",
                           "description": "TLS cert path"
                         },
+                        "client_auth": {
+                          "type": "string",
+                          "description": "client auth type",
+                          "enum": [
+                            "Auto",
+                            "None",
+                            "Request",
+                            "RequireAny",
+                            "VerifyIfGiven",
+                            "RequireAndVerify"
+                          ]
+                        },
                         "enabled": {
                           "type": "boolean",
                           "description": "TLS enabled"
@@ -12565,6 +12961,10 @@
                         "key": {
                           "type": "string",
                           "description": "TLS key path"
+                        },
+                        "server_name": {
+                          "type": "string",
+                          "description": "SSL Server Name"
                         }
                       }
                     }
@@ -13937,6 +14337,18 @@
                       "type": "string",
                       "description": "TLS cert path"
                     },
+                    "client_auth": {
+                      "type": "string",
+                      "description": "client auth type",
+                      "enum": [
+                        "Auto",
+                        "None",
+                        "Request",
+                        "RequireAny",
+                        "VerifyIfGiven",
+                        "RequireAndVerify"
+                      ]
+                    },
                     "enabled": {
                       "type": "boolean",
                       "description": "TLS enabled"
@@ -13945,7 +14357,11 @@
                       "type": "boolean",
                       "description": "enable/disable skip SSL certificate verification"
                     },
-                    "key": { "type": "string", "description": "TLS key path" }
+                    "key": { "type": "string", "description": "TLS key path" },
+                    "server_name": {
+                      "type": "string",
+                      "description": "SSL Server Name"
+                    }
                   }
                 }
               }
@@ -14426,6 +14842,18 @@
                                       "type": "string",
                                       "description": "TLS cert path"
                                     },
+                                    "client_auth": {
+                                      "type": "string",
+                                      "description": "client auth type",
+                                      "enum": [
+                                        "Auto",
+                                        "None",
+                                        "Request",
+                                        "RequireAny",
+                                        "VerifyIfGiven",
+                                        "RequireAndVerify"
+                                      ]
+                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
@@ -14437,6 +14865,10 @@
                                     "key": {
                                       "type": "string",
                                       "description": "TLS key path"
+                                    },
+                                    "server_name": {
+                                      "type": "string",
+                                      "description": "SSL Server Name"
                                     }
                                   }
                                 }
@@ -14482,6 +14914,18 @@
                               "type": "string",
                               "description": "TLS cert path"
                             },
+                            "client_auth": {
+                              "type": "string",
+                              "description": "client auth type",
+                              "enum": [
+                                "Auto",
+                                "None",
+                                "Request",
+                                "RequireAny",
+                                "VerifyIfGiven",
+                                "RequireAndVerify"
+                              ]
+                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
@@ -14493,6 +14937,10 @@
                             "key": {
                               "type": "string",
                               "description": "TLS key path"
+                            },
+                            "server_name": {
+                              "type": "string",
+                              "description": "SSL Server Name"
                             }
                           }
                         },
@@ -14777,6 +15225,18 @@
                                       "type": "string",
                                       "description": "TLS cert path"
                                     },
+                                    "client_auth": {
+                                      "type": "string",
+                                      "description": "client auth type",
+                                      "enum": [
+                                        "Auto",
+                                        "None",
+                                        "Request",
+                                        "RequireAny",
+                                        "VerifyIfGiven",
+                                        "RequireAndVerify"
+                                      ]
+                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
@@ -14788,6 +15248,10 @@
                                     "key": {
                                       "type": "string",
                                       "description": "TLS key path"
+                                    },
+                                    "server_name": {
+                                      "type": "string",
+                                      "description": "SSL Server Name"
                                     }
                                   }
                                 }
@@ -14833,6 +15297,18 @@
                               "type": "string",
                               "description": "TLS cert path"
                             },
+                            "client_auth": {
+                              "type": "string",
+                              "description": "client auth type",
+                              "enum": [
+                                "Auto",
+                                "None",
+                                "Request",
+                                "RequireAny",
+                                "VerifyIfGiven",
+                                "RequireAndVerify"
+                              ]
+                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
@@ -14844,6 +15320,10 @@
                             "key": {
                               "type": "string",
                               "description": "TLS key path"
+                            },
+                            "server_name": {
+                              "type": "string",
+                              "description": "SSL Server Name"
                             }
                           }
                         },
@@ -15140,6 +15620,18 @@
                                   "type": "string",
                                   "description": "TLS cert path"
                                 },
+                                "client_auth": {
+                                  "type": "string",
+                                  "description": "client auth type",
+                                  "enum": [
+                                    "Auto",
+                                    "None",
+                                    "Request",
+                                    "RequireAny",
+                                    "VerifyIfGiven",
+                                    "RequireAndVerify"
+                                  ]
+                                },
                                 "enabled": {
                                   "type": "boolean",
                                   "description": "TLS enabled"
@@ -15151,6 +15643,10 @@
                                 "key": {
                                   "type": "string",
                                   "description": "TLS key path"
+                                },
+                                "server_name": {
+                                  "type": "string",
+                                  "description": "SSL Server Name"
                                 }
                               }
                             }
@@ -15196,6 +15692,18 @@
                           "type": "string",
                           "description": "TLS cert path"
                         },
+                        "client_auth": {
+                          "type": "string",
+                          "description": "client auth type",
+                          "enum": [
+                            "Auto",
+                            "None",
+                            "Request",
+                            "RequireAny",
+                            "VerifyIfGiven",
+                            "RequireAndVerify"
+                          ]
+                        },
                         "enabled": {
                           "type": "boolean",
                           "description": "TLS enabled"
@@ -15207,6 +15715,10 @@
                         "key": {
                           "type": "string",
                           "description": "TLS key path"
+                        },
+                        "server_name": {
+                          "type": "string",
+                          "description": "SSL Server Name"
                         }
                       }
                     },
@@ -16441,6 +16953,18 @@
                           "type": "string",
                           "description": "TLS cert path"
                         },
+                        "client_auth": {
+                          "type": "string",
+                          "description": "client auth type",
+                          "enum": [
+                            "Auto",
+                            "None",
+                            "Request",
+                            "RequireAny",
+                            "VerifyIfGiven",
+                            "RequireAndVerify"
+                          ]
+                        },
                         "enabled": {
                           "type": "boolean",
                           "description": "TLS enabled"
@@ -16452,6 +16976,10 @@
                         "key": {
                           "type": "string",
                           "description": "TLS key path"
+                        },
+                        "server_name": {
+                          "type": "string",
+                          "description": "SSL Server Name"
                         }
                       }
                     }
@@ -16838,6 +17366,18 @@
                                       "type": "string",
                                       "description": "TLS cert path"
                                     },
+                                    "client_auth": {
+                                      "type": "string",
+                                      "description": "client auth type",
+                                      "enum": [
+                                        "Auto",
+                                        "None",
+                                        "Request",
+                                        "RequireAny",
+                                        "VerifyIfGiven",
+                                        "RequireAndVerify"
+                                      ]
+                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
@@ -16849,6 +17389,10 @@
                                     "key": {
                                       "type": "string",
                                       "description": "TLS key path"
+                                    },
+                                    "server_name": {
+                                      "type": "string",
+                                      "description": "SSL Server Name"
                                     }
                                   }
                                 }
@@ -16894,6 +17438,18 @@
                               "type": "string",
                               "description": "TLS cert path"
                             },
+                            "client_auth": {
+                              "type": "string",
+                              "description": "client auth type",
+                              "enum": [
+                                "Auto",
+                                "None",
+                                "Request",
+                                "RequireAny",
+                                "VerifyIfGiven",
+                                "RequireAndVerify"
+                              ]
+                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
@@ -16905,6 +17461,10 @@
                             "key": {
                               "type": "string",
                               "description": "TLS key path"
+                            },
+                            "server_name": {
+                              "type": "string",
+                              "description": "SSL Server Name"
                             }
                           }
                         },
@@ -17189,6 +17749,18 @@
                                       "type": "string",
                                       "description": "TLS cert path"
                                     },
+                                    "client_auth": {
+                                      "type": "string",
+                                      "description": "client auth type",
+                                      "enum": [
+                                        "Auto",
+                                        "None",
+                                        "Request",
+                                        "RequireAny",
+                                        "VerifyIfGiven",
+                                        "RequireAndVerify"
+                                      ]
+                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
@@ -17200,6 +17772,10 @@
                                     "key": {
                                       "type": "string",
                                       "description": "TLS key path"
+                                    },
+                                    "server_name": {
+                                      "type": "string",
+                                      "description": "SSL Server Name"
                                     }
                                   }
                                 }
@@ -17245,6 +17821,18 @@
                               "type": "string",
                               "description": "TLS cert path"
                             },
+                            "client_auth": {
+                              "type": "string",
+                              "description": "client auth type",
+                              "enum": [
+                                "Auto",
+                                "None",
+                                "Request",
+                                "RequireAny",
+                                "VerifyIfGiven",
+                                "RequireAndVerify"
+                              ]
+                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
@@ -17256,6 +17844,10 @@
                             "key": {
                               "type": "string",
                               "description": "TLS key path"
+                            },
+                            "server_name": {
+                              "type": "string",
+                              "description": "SSL Server Name"
                             }
                           }
                         },
@@ -18497,6 +19089,18 @@
                           "type": "string",
                           "description": "TLS cert path"
                         },
+                        "client_auth": {
+                          "type": "string",
+                          "description": "client auth type",
+                          "enum": [
+                            "Auto",
+                            "None",
+                            "Request",
+                            "RequireAny",
+                            "VerifyIfGiven",
+                            "RequireAndVerify"
+                          ]
+                        },
                         "enabled": {
                           "type": "boolean",
                           "description": "TLS enabled"
@@ -18508,6 +19112,10 @@
                         "key": {
                           "type": "string",
                           "description": "TLS key path"
+                        },
+                        "server_name": {
+                          "type": "string",
+                          "description": "SSL Server Name"
                         }
                       }
                     }
@@ -18890,6 +19498,18 @@
                                       "type": "string",
                                       "description": "TLS cert path"
                                     },
+                                    "client_auth": {
+                                      "type": "string",
+                                      "description": "client auth type",
+                                      "enum": [
+                                        "Auto",
+                                        "None",
+                                        "Request",
+                                        "RequireAny",
+                                        "VerifyIfGiven",
+                                        "RequireAndVerify"
+                                      ]
+                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
@@ -18901,6 +19521,10 @@
                                     "key": {
                                       "type": "string",
                                       "description": "TLS key path"
+                                    },
+                                    "server_name": {
+                                      "type": "string",
+                                      "description": "SSL Server Name"
                                     }
                                   }
                                 }
@@ -18946,6 +19570,18 @@
                               "type": "string",
                               "description": "TLS cert path"
                             },
+                            "client_auth": {
+                              "type": "string",
+                              "description": "client auth type",
+                              "enum": [
+                                "Auto",
+                                "None",
+                                "Request",
+                                "RequireAny",
+                                "VerifyIfGiven",
+                                "RequireAndVerify"
+                              ]
+                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
@@ -18957,6 +19593,10 @@
                             "key": {
                               "type": "string",
                               "description": "TLS key path"
+                            },
+                            "server_name": {
+                              "type": "string",
+                              "description": "SSL Server Name"
                             }
                           }
                         },
@@ -19241,6 +19881,18 @@
                                       "type": "string",
                                       "description": "TLS cert path"
                                     },
+                                    "client_auth": {
+                                      "type": "string",
+                                      "description": "client auth type",
+                                      "enum": [
+                                        "Auto",
+                                        "None",
+                                        "Request",
+                                        "RequireAny",
+                                        "VerifyIfGiven",
+                                        "RequireAndVerify"
+                                      ]
+                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
@@ -19252,6 +19904,10 @@
                                     "key": {
                                       "type": "string",
                                       "description": "TLS key path"
+                                    },
+                                    "server_name": {
+                                      "type": "string",
+                                      "description": "SSL Server Name"
                                     }
                                   }
                                 }
@@ -19297,6 +19953,18 @@
                               "type": "string",
                               "description": "TLS cert path"
                             },
+                            "client_auth": {
+                              "type": "string",
+                              "description": "client auth type",
+                              "enum": [
+                                "Auto",
+                                "None",
+                                "Request",
+                                "RequireAny",
+                                "VerifyIfGiven",
+                                "RequireAndVerify"
+                              ]
+                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
@@ -19308,6 +19976,10 @@
                             "key": {
                               "type": "string",
                               "description": "TLS key path"
+                            },
+                            "server_name": {
+                              "type": "string",
+                              "description": "SSL Server Name"
                             }
                           }
                         },
@@ -20553,6 +21225,18 @@
                           "type": "string",
                           "description": "TLS cert path"
                         },
+                        "client_auth": {
+                          "type": "string",
+                          "description": "client auth type",
+                          "enum": [
+                            "Auto",
+                            "None",
+                            "Request",
+                            "RequireAny",
+                            "VerifyIfGiven",
+                            "RequireAndVerify"
+                          ]
+                        },
                         "enabled": {
                           "type": "boolean",
                           "description": "TLS enabled"
@@ -20564,6 +21248,10 @@
                         "key": {
                           "type": "string",
                           "description": "TLS key path"
+                        },
+                        "server_name": {
+                          "type": "string",
+                          "description": "SSL Server Name"
                         }
                       }
                     }
@@ -20946,6 +21634,18 @@
                                       "type": "string",
                                       "description": "TLS cert path"
                                     },
+                                    "client_auth": {
+                                      "type": "string",
+                                      "description": "client auth type",
+                                      "enum": [
+                                        "Auto",
+                                        "None",
+                                        "Request",
+                                        "RequireAny",
+                                        "VerifyIfGiven",
+                                        "RequireAndVerify"
+                                      ]
+                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
@@ -20957,6 +21657,10 @@
                                     "key": {
                                       "type": "string",
                                       "description": "TLS key path"
+                                    },
+                                    "server_name": {
+                                      "type": "string",
+                                      "description": "SSL Server Name"
                                     }
                                   }
                                 }
@@ -21002,6 +21706,18 @@
                               "type": "string",
                               "description": "TLS cert path"
                             },
+                            "client_auth": {
+                              "type": "string",
+                              "description": "client auth type",
+                              "enum": [
+                                "Auto",
+                                "None",
+                                "Request",
+                                "RequireAny",
+                                "VerifyIfGiven",
+                                "RequireAndVerify"
+                              ]
+                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
@@ -21013,6 +21729,10 @@
                             "key": {
                               "type": "string",
                               "description": "TLS key path"
+                            },
+                            "server_name": {
+                              "type": "string",
+                              "description": "SSL Server Name"
                             }
                           }
                         },
@@ -21297,6 +22017,18 @@
                                       "type": "string",
                                       "description": "TLS cert path"
                                     },
+                                    "client_auth": {
+                                      "type": "string",
+                                      "description": "client auth type",
+                                      "enum": [
+                                        "Auto",
+                                        "None",
+                                        "Request",
+                                        "RequireAny",
+                                        "VerifyIfGiven",
+                                        "RequireAndVerify"
+                                      ]
+                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
@@ -21308,6 +22040,10 @@
                                     "key": {
                                       "type": "string",
                                       "description": "TLS key path"
+                                    },
+                                    "server_name": {
+                                      "type": "string",
+                                      "description": "SSL Server Name"
                                     }
                                   }
                                 }
@@ -21353,6 +22089,18 @@
                               "type": "string",
                               "description": "TLS cert path"
                             },
+                            "client_auth": {
+                              "type": "string",
+                              "description": "client auth type",
+                              "enum": [
+                                "Auto",
+                                "None",
+                                "Request",
+                                "RequireAny",
+                                "VerifyIfGiven",
+                                "RequireAndVerify"
+                              ]
+                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
@@ -21364,6 +22112,10 @@
                             "key": {
                               "type": "string",
                               "description": "TLS key path"
+                            },
+                            "server_name": {
+                              "type": "string",
+                              "description": "SSL Server Name"
                             }
                           }
                         },
@@ -22917,6 +23669,18 @@
                           "type": "string",
                           "description": "TLS cert path"
                         },
+                        "client_auth": {
+                          "type": "string",
+                          "description": "client auth type",
+                          "enum": [
+                            "Auto",
+                            "None",
+                            "Request",
+                            "RequireAny",
+                            "VerifyIfGiven",
+                            "RequireAndVerify"
+                          ]
+                        },
                         "enabled": {
                           "type": "boolean",
                           "description": "TLS enabled"
@@ -22928,6 +23692,10 @@
                         "key": {
                           "type": "string",
                           "description": "TLS key path"
+                        },
+                        "server_name": {
+                          "type": "string",
+                          "description": "SSL Server Name"
                         }
                       }
                     }
@@ -24252,6 +25020,18 @@
                               "type": "string",
                               "description": "TLS cert path"
                             },
+                            "client_auth": {
+                              "type": "string",
+                              "description": "client auth type",
+                              "enum": [
+                                "Auto",
+                                "None",
+                                "Request",
+                                "RequireAny",
+                                "VerifyIfGiven",
+                                "RequireAndVerify"
+                              ]
+                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
@@ -24263,6 +25043,10 @@
                             "key": {
                               "type": "string",
                               "description": "TLS key path"
+                            },
+                            "server_name": {
+                              "type": "string",
+                              "description": "SSL Server Name"
                             }
                           }
                         }
@@ -24677,6 +25461,18 @@
                                       "type": "string",
                                       "description": "TLS cert path"
                                     },
+                                    "client_auth": {
+                                      "type": "string",
+                                      "description": "client auth type",
+                                      "enum": [
+                                        "Auto",
+                                        "None",
+                                        "Request",
+                                        "RequireAny",
+                                        "VerifyIfGiven",
+                                        "RequireAndVerify"
+                                      ]
+                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
@@ -24688,6 +25484,10 @@
                                     "key": {
                                       "type": "string",
                                       "description": "TLS key path"
+                                    },
+                                    "server_name": {
+                                      "type": "string",
+                                      "description": "SSL Server Name"
                                     }
                                   }
                                 }
@@ -24733,6 +25533,18 @@
                               "type": "string",
                               "description": "TLS cert path"
                             },
+                            "client_auth": {
+                              "type": "string",
+                              "description": "client auth type",
+                              "enum": [
+                                "Auto",
+                                "None",
+                                "Request",
+                                "RequireAny",
+                                "VerifyIfGiven",
+                                "RequireAndVerify"
+                              ]
+                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
@@ -24744,6 +25556,10 @@
                             "key": {
                               "type": "string",
                               "description": "TLS key path"
+                            },
+                            "server_name": {
+                              "type": "string",
+                              "description": "SSL Server Name"
                             }
                           }
                         },
@@ -25028,6 +25844,18 @@
                                       "type": "string",
                                       "description": "TLS cert path"
                                     },
+                                    "client_auth": {
+                                      "type": "string",
+                                      "description": "client auth type",
+                                      "enum": [
+                                        "Auto",
+                                        "None",
+                                        "Request",
+                                        "RequireAny",
+                                        "VerifyIfGiven",
+                                        "RequireAndVerify"
+                                      ]
+                                    },
                                     "enabled": {
                                       "type": "boolean",
                                       "description": "TLS enabled"
@@ -25039,6 +25867,10 @@
                                     "key": {
                                       "type": "string",
                                       "description": "TLS key path"
+                                    },
+                                    "server_name": {
+                                      "type": "string",
+                                      "description": "SSL Server Name"
                                     }
                                   }
                                 }
@@ -25084,6 +25916,18 @@
                               "type": "string",
                               "description": "TLS cert path"
                             },
+                            "client_auth": {
+                              "type": "string",
+                              "description": "client auth type",
+                              "enum": [
+                                "Auto",
+                                "None",
+                                "Request",
+                                "RequireAny",
+                                "VerifyIfGiven",
+                                "RequireAndVerify"
+                              ]
+                            },
                             "enabled": {
                               "type": "boolean",
                               "description": "TLS enabled"
@@ -25095,6 +25939,10 @@
                             "key": {
                               "type": "string",
                               "description": "TLS key path"
+                            },
+                            "server_name": {
+                              "type": "string",
+                              "description": "SSL Server Name"
                             }
                           }
                         },
@@ -26336,6 +27184,18 @@
                           "type": "string",
                           "description": "TLS cert path"
                         },
+                        "client_auth": {
+                          "type": "string",
+                          "description": "client auth type",
+                          "enum": [
+                            "Auto",
+                            "None",
+                            "Request",
+                            "RequireAny",
+                            "VerifyIfGiven",
+                            "RequireAndVerify"
+                          ]
+                        },
                         "enabled": {
                           "type": "boolean",
                           "description": "TLS enabled"
@@ -26347,6 +27207,10 @@
                         "key": {
                           "type": "string",
                           "description": "TLS key path"
+                        },
+                        "server_name": {
+                          "type": "string",
+                          "description": "SSL Server Name"
                         }
                       }
                     }
@@ -27453,6 +28317,18 @@
                       "type": "string",
                       "description": "TLS cert path"
                     },
+                    "client_auth": {
+                      "type": "string",
+                      "description": "client auth type",
+                      "enum": [
+                        "Auto",
+                        "None",
+                        "Request",
+                        "RequireAny",
+                        "VerifyIfGiven",
+                        "RequireAndVerify"
+                      ]
+                    },
                     "enabled": {
                       "type": "boolean",
                       "description": "TLS enabled"
@@ -27461,7 +28337,11 @@
                       "type": "boolean",
                       "description": "enable/disable skip SSL certificate verification"
                     },
-                    "key": { "type": "string", "description": "TLS key path" }
+                    "key": { "type": "string", "description": "TLS key path" },
+                    "server_name": {
+                      "type": "string",
+                      "description": "SSL Server Name"
+                    }
                   }
                 }
               }

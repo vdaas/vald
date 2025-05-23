@@ -92,10 +92,8 @@ type Compressor struct {
 
 // Bind binds the actual data from the Compressor receiver field.
 func (c *Compressor) Bind() *Compressor {
-	c.CompressCore = *c.CompressCore.Bind()
-
+	c.CompressCore.Bind()
 	c.QueueCheckDuration = GetActualValue(c.QueueCheckDuration)
-
 	return c
 }
 
@@ -115,11 +113,11 @@ type CompressorRegisterer struct {
 func (cr *CompressorRegisterer) Bind() *CompressorRegisterer {
 	cr.QueueCheckDuration = GetActualValue(cr.QueueCheckDuration)
 
-	if cr.Compressor != nil {
-		cr.Compressor = cr.Compressor.Bind()
-	} else {
+	if cr.Compressor == nil {
 		cr.Compressor = new(BackupManager)
 	}
+	// Assuming BackupManager.Bind() is compliant and cr.Compressor is now non-nil
+	cr.Compressor.Bind()
 
 	return cr
 }

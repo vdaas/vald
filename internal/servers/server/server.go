@@ -19,7 +19,6 @@ package server
 
 import (
 	"context"
-	"crypto/tls"
 	"net/http"
 	"os"
 	"reflect"
@@ -41,6 +40,7 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/tls"
 	"golang.org/x/net/http2"
 )
 

@@ -59,20 +59,29 @@ func (g *Gateway) Bind() *Gateway {
 
 	g.NodeName = GetActualValue(g.NodeName)
 
-	if g.Discoverer != nil {
-		g.Discoverer = g.Discoverer.Bind()
+	if g.Discoverer == nil {
+		g.Discoverer = new(DiscovererClient)
 	}
-	if g.Meta != nil {
-		g.Meta = g.Meta.Bind()
-	} else {
+	// Assuming DiscovererClient.Bind() is compliant and g.Discoverer is now non-nil
+	g.Discoverer.Bind()
+
+	if g.Meta == nil {
 		g.Meta = new(Meta)
 	}
-	if g.BackupManager != nil {
-		g.BackupManager = g.BackupManager.Bind()
-	}
+	// Assuming Meta.Bind() is compliant and g.Meta is now non-nil
+	g.Meta.Bind()
 
-	if g.EgressFilter != nil {
-		g.EgressFilter = g.EgressFilter.Bind()
+	if g.BackupManager == nil {
+		g.BackupManager = new(BackupManager)
 	}
+	// Assuming BackupManager.Bind() is compliant and g.BackupManager is now non-nil
+	g.BackupManager.Bind()
+
+	if g.EgressFilter == nil {
+		g.EgressFilter = new(EgressFilter)
+	}
+	// Assuming EgressFilter.Bind() is compliant and g.EgressFilter is now non-nil
+	g.EgressFilter.Bind()
+
 	return g
 }

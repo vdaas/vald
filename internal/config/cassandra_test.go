@@ -439,9 +439,9 @@ func TestCassandra_Opts(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			cert := testdata.GetTestdataPath("tls/dummyServer.crt")
-			key := testdata.GetTestdataPath("tls/dummyServer.key")
-			ca := testdata.GetTestdataPath("tls/dummyCa.pem")
+			cert := testdata.GetTestdataPath("tls/server.crt")
+			key := testdata.GetTestdataPath("tls/server.key")
+			ca := testdata.GetTestdataPath("tls/ca.pem")
 			return test{
 				name: "return 45 cassandra.Option when no error occurred",
 				fields: fields{
@@ -645,9 +645,9 @@ func TestCassandra_Opts(t *testing.T) {
 			}
 		}(),
 		func() test {
-			cert := testdata.GetTestdataPath("tls/dummyServer.crt")
-			key := testdata.GetTestdataPath("tls/dummyServer.key")
-			ca := testdata.GetTestdataPath("tls/dummyCa.pem")
+			cert := testdata.GetTestdataPath("tls/server.crt")
+			key := testdata.GetTestdataPath("tls/server.key")
+			ca := testdata.GetTestdataPath("tls/ca.pem")
 			return test{
 				name: "return nil and err when net.NewDialer returns error",
 				fields: fields{
