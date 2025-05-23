@@ -36,7 +36,9 @@ type IngressFilter struct {
 
 // Bind binds the actual data from the EgressFilter receiver field.
 func (e *EgressFilter) Bind() *EgressFilter {
-	if e.Client != nil {
+	if e.Client == nil {
+		e.Client = newGRPCClientConfig() // newGRPCClientConfig calls Bind internally
+	} else {
 		e.Client.Bind()
 	}
 	if e.DistanceFilters != nil {
@@ -50,7 +52,9 @@ func (e *EgressFilter) Bind() *EgressFilter {
 
 // Bind binds the actual data from the IngressFilter receiver field.
 func (i *IngressFilter) Bind() *IngressFilter {
-	if i.Client != nil {
+	if i.Client == nil {
+		i.Client = newGRPCClientConfig() // newGRPCClientConfig calls Bind internally
+	} else {
 		i.Client.Bind()
 	}
 
