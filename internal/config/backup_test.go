@@ -117,7 +117,7 @@ func TestBackupManager_Bind(t *testing.T) {
 					},
 				},
 				want: want{
-					want: &BackupManager{
+					want: (&BackupManager{
 						Client: &GRPCClient{
 							Addrs:               addrs,
 							HealthCheckDuration: healthcheck,
@@ -127,7 +127,7 @@ func TestBackupManager_Bind(t *testing.T) {
 							DialOption:          dialOpts,
 							TLS:                 tls,
 						},
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -136,13 +136,13 @@ func TestBackupManager_Bind(t *testing.T) {
 				name:   "return BackupManager when the b.Client is nil",
 				fields: fields{},
 				want: want{
-					want: &BackupManager{
+					want: (&BackupManager{
 						Client: &GRPCClient{
 							DialOption: &DialOption{
 								Insecure: true,
 							},
 						},
-					},
+					}).Bind(),
 				},
 			}
 		}(),

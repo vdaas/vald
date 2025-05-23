@@ -51,11 +51,11 @@ func Test_newGRPCClientConfig(t *testing.T) {
 		{
 			name: "return GRPCClient when called newGRPCClientConfig()",
 			want: want{
-				want: &GRPCClient{
+				want: (&GRPCClient{
 					DialOption: &DialOption{
 						Insecure: true,
 					},
-				},
+				}).Bind(),
 			},
 		},
 	}
