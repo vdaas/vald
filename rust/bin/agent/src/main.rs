@@ -23,6 +23,7 @@ use proto::payload::v1::search;
 use qbg::index::Index;
 use qbg::property::Property;
 use std::collections::HashMap;
+use std::time::Duration;
 
 mod handler;
 
@@ -367,6 +368,31 @@ impl algorithm::ANN for QBGService {
     }
 }
 
+fn parse_duration_from_string(input: &str) -> Option<Duration> {
+    if input.len() < 2 {
+        return None;
+    }
+    let last_char = match input.chars().last() {
+        Some(c) => c,
+        None => return None,
+    };
+    if last_char.is_numeric() {
+        return None;
+    }
+
+    let (value, unit) = input.split_at(input.len() - 1);
+    let num: u64 = match value.parse() {
+        Ok(n) => n,
+        Err(_) => return None,
+    };
+    match unit {
+        "s" => Some(Duration::from_secs(num)),
+        "m" => Some(Duration::from_secs(num * 60)),
+        "h" => Some(Duration::from_secs(num * 60 * 60)),
+        _ => None,
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = "0.0.0.0:8081".parse()?;
@@ -376,7 +402,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .unwrap();
     let _logger =
         flexi_logger::Logger::try_with_str(settings.get::<String>("logging.level")?)?.start()?;
-    let service = QBGService::new(settings);
+    let service = QBGService::new(settings.clone());
     let agent = handler::Agent::new(
         service,
         "agent-qbg",
@@ -386,8 +412,69 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         10,
     );
 
-    tonic::transport::Server::builder()
-        .add_service(proto::core::v1::agent_server::AgentServer::new(agent))
+    let mut grpc_key = String::new();
+    for i in 0..settings.get_array("server_config.servers")?.len() {
+        let name = settings.get::<String>(format!("server_config.servers[{i}].name").as_str())?;
+        match name.as_str() {
+            "grpc" => {
+                grpc_key = format!("server_config.servers[{i}]");
+            }
+            _ => {}
+        }
+    }
+
+    let mut builder = tonic::transport::Server::builder();
+
+    if let Some(duration) = parse_duration_from_string(
+        settings
+            .get::<String>(format!("{grpc_key}.grpc.keepalive.max_conn_age").as_str())?
+            .as_str(),
+    ) {
+        builder = builder.max_connection_age(duration);
+    }
+    if let Some(duration) = parse_duration_from_string(
+        settings
+            .get::<String>(format!("{grpc_key}.grpc.connection_timeout").as_str())?
+            .as_str(),
+    ) {
+        builder = builder.timeout(duration);
+    }
+
+    builder
+        .initial_stream_window_size(
+            settings.get::<u32>(format!("{grpc_key}.grpc.initial_window_size").as_str())?,
+        )
+        .initial_connection_window_size(
+            settings.get::<u32>(format!("{grpc_key}.grpc.initial_conn_window_size").as_str())?,
+        )
+        .http2_keepalive_interval(parse_duration_from_string(
+            settings
+                .get::<String>(format!("{grpc_key}.grpc.keepalive.time").as_str())?
+                .as_str(),
+        ))
+        .http2_keepalive_timeout(parse_duration_from_string(
+            settings
+                .get::<String>(format!("{grpc_key}.grpc.keepalive.timeout").as_str())?
+                .as_str(),
+        ))
+        .http2_max_header_list_size(
+            settings.get::<u32>(format!("{grpc_key}.grpc.max_header_list_size").as_str())?,
+        )
+        .max_concurrent_streams(
+            settings.get::<u32>(format!("{grpc_key}.grpc.max_concurrent_streams").as_str())?,
+        )
+        .add_service(
+            proto::core::v1::agent_server::AgentServer::new(agent)
+                .max_decoding_message_size(
+                    settings.get::<usize>(
+                        format!("{grpc_key}.grpc.max_receive_message_size").as_str(),
+                    )?,
+                )
+                .max_encoding_message_size(
+                    settings
+                        .get::<usize>(format!("{grpc_key}.grpc.max_send_message_size").as_str())?,
+                ),
+        )
         .serve(addr)
         .await?;
 
