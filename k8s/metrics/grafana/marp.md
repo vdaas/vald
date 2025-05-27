@@ -10,12 +10,16 @@ footer: © vdaas/vald
 # Grafana Dashboard as Code
 
 <div class="center">
-OSSベクトルデータベースValdチーム Matts966
+Vald: Cloud Native Distributed Vector Database
+</div>
+
+<div class="center">
+Matts966
 </div>
 
 <div class="center">
 <img class="border" src="image-6.png" />
-<p>↑資料URL</p>
+<p>資料URL</p>
 </div>
 
 ---
@@ -32,14 +36,14 @@ OSSベクトルデータベースValdチーム Matts966
 
 ## Grafanaボード管理の課題
 
-- 似たボード・パネルをたくさん管理
-  - コンポーネント毎に微妙に違う
+- コンポーネント毎にボード・パネルをたくさん管理
+  - コンポーネントかなり違うものの共通化の余地あり
     - 繰り返し、条件分岐したい
   - パネル毎にアップグレード作業
 - JSONでバージョン管理はしていたものの
-  - シンプルなパネルでもexportされたJSONは大きくなってしまい、直接読み書きするのが難しい
+  - シンプルなパネルでもGUIからexportされたJSONは大きくなってしまい、直接読み書きするのが難しい
 
-![bg contain right 30%](image-3.png)
+![bg contain right:20%](image-3.png)
 
 ---
 
@@ -170,7 +174,11 @@ go get github.com/grafana/grafana-foundation-sdk/go@v11.6.x+cog-v0.0.x
 
 - 公式から promql もビルダーが提供されていて、複雑な文字列、括弧の対応の管理を避けられる
 
+<div class="center">
+
 ![alt text](image-2.png)
+
+</div>
 
 ---
 
@@ -204,14 +212,14 @@ go get github.com/grafana/grafana-foundation-sdk/go@v11.6.x+cog-v0.0.x
 
 ![alt text](image-4.png)
 
-![bg fit right:50%](image-5.png)
+![bg fit right:60%](image-5.png)
 
 ---
 
 ## おすすめの選び方
 
 - 繰り返しが少ない → Grafana12の新機能でGUIから反映できるGit Sync
-- 再利用性重視 → `grafana-foundation-sdk`
+- 共通基盤開発など再利用性重視 → `grafana-foundation-sdk`
   - 今後Go/TypeScript/Python/Javaで自動化していくなら `grafana-foundation-sdk` がおすすめ
 
 ---
