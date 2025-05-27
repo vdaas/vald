@@ -34,6 +34,7 @@
 .github/actions/e2e-deploy-vald-helm-operator/action.yaml
 .github/actions/e2e-deploy-vald-readreplica/action.yaml
 .github/actions/e2e-deploy-vald/action.yaml
+.github/actions/e2e-profile/action.yaml
 .github/actions/notify-slack/action.yaml
 .github/actions/scan-docker-image/action.yaml
 .github/actions/setup-e2e/action.yaml
@@ -46,6 +47,9 @@
 .github/chatops_permissions.yaml
 .github/codeql/codeql-config.yaml
 .github/conflint.yaml
+.github/e2e/multi_crud.yaml
+.github/e2e/stream_crud.yaml
+.github/e2e/unary_crud.yaml
 .github/helm/values/vald-mirror-target.yaml
 .github/helm/values/values-agent-sidecar.yaml
 .github/helm/values/values-chaos.yaml
@@ -106,6 +110,7 @@
 .github/workflows/e2e-code-bench-agent.yaml
 .github/workflows/e2e-max-dim.yaml
 .github/workflows/e2e-profiling.yaml
+.github/workflows/e2e.v2.yaml
 .github/workflows/e2e.yaml
 .github/workflows/format.yaml
 .github/workflows/fossa.yaml
