@@ -121,7 +121,7 @@ where
                 latency: end_nanos - start_nanos,
                 trace_id: "".to_string(),
             };
-            let response = match result {
+            match result {
                 Ok(res) => {
                     let status = res.headers().get("grpc-status");
                     if status.is_none() {
@@ -134,14 +134,13 @@ where
                             .unwrap_or("internal error");
                         warn!("{}, {:?}, {:?}", RPC_FAILED_MESSAGE, entity, message);
                     }
-                    res
+                    return Ok(res);
                 }
                 Err(e) => {
                     warn!("{}, {:?}, {:?}", RPC_FAILED_MESSAGE, entity, e);
                     return Err(e);
                 }
             };
-            Ok(response)
         })
     }
 }
