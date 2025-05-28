@@ -85,9 +85,15 @@ where
         Box::pin(async move {
             // Do extra async work here...
             let (service, method) = if let Some(pos) = path.rfind('/') {
-                (&path[..pos], &path[(pos + 1)..])
+                let service_part = &path[..pos];
+                let method_part = &path[(pos + 1)..];
+                if let Some(service_pos) = service_part.rfind('/') {
+                    (&service_part[(service_pos + 1)..], method_part)
+                } else {
+                    (service_part.trim_start_matches('/'), method_part)
+                }
             } else {
-                (path.as_str(), "")
+                ("", path.trim_start_matches('/'))
             };
             let kind = if method.to_lowercase().contains("stream") {
                 GRPC_KIND_STREAM
@@ -95,9 +101,13 @@ where
                 GRPC_KIND_UNARY
             };
 
-            let start = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+            let start = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap_or_default();
             let result = inner.call(req).await;
-            let end = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+            let end = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap_or_default();
             let start_nanos = start.as_secs() as i64 * 1_000_000_000 + start.subsec_nanos() as i64;
             let end_nanos = end.as_secs() as i64 * 1_000_000_000 + end.subsec_nanos() as i64;
             let entity = AccessLogEntity {
@@ -117,7 +127,11 @@ where
                     if status.is_none() {
                         debug!("{}, {:?}", RPC_COMPLETED_MESSAGE, entity);
                     } else {
-                        let message = res.headers()["grpc-message"].to_str().unwrap();
+                        let message = res
+                            .headers()
+                            .get("grpc-message")
+                            .and_then(|v| v.to_str().ok())
+                            .unwrap_or("internal error");
                         warn!("{}, {:?}, {:?}", RPC_FAILED_MESSAGE, entity, message);
                     }
                     res
