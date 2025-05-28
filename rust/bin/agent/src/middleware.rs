@@ -137,7 +137,7 @@ where
                     res
                 }
                 Err(e) => {
-                    warn!("{} {:?} {:?}", RPC_FAILED_MESSAGE, entity, e);
+                    warn!("{}, {:?}, {:?}", RPC_FAILED_MESSAGE, entity, e);
                     return Err(e);
                 }
             };
