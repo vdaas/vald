@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package ingress provides ingress filter client logic
 package ingress
 
 // NOT IMPLEMENTED BELOW
