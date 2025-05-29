@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package safety provides safety functionality like revcover
 package safety
 
 import (

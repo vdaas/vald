@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package file provides file I/O functionality
 package file
 
 import (

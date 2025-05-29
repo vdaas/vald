@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package proto provides proto file logic
 package proto
 
 import (
