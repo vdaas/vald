@@ -48,7 +48,7 @@ impl Agent {
             ip: ip.to_string(),
             resource_type: resource_type.to_string(),
             api_name: api_name.to_string(),
-            stream_concurrency: stream_concurrency
+            stream_concurrency: stream_concurrency,
         }
     }
 }
