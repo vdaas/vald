@@ -26,6 +26,7 @@ use std::collections::HashMap;
 use std::time::Duration;
 
 mod handler;
+mod middleware;
 
 #[derive(Debug)]
 struct _MockService {
@@ -424,7 +425,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let mut builder = tonic::transport::Server::builder();
-
     if let Some(duration) = parse_duration_from_string(
         settings
             .get::<String>(format!("{grpc_key}.grpc.keepalive.max_conn_age").as_str())?
@@ -439,6 +439,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     ) {
         builder = builder.timeout(duration);
     }
+
+    let mut accessloginterceptor: Option<()> = None;
+    for i in 0..settings
+        .get_array(format!("{grpc_key}.grpc.interceptors").as_str())?
+        .len()
+    {
+        let name = settings.get::<String>(format!("{grpc_key}.grpc.interceptors[{i}]").as_str())?;
+        match name.to_lowercase().as_str() {
+            "accessloginterceptor" | "accesslog" => accessloginterceptor = Some(()),
+            _ => {}
+        }
+    }
+    let layer = tower::ServiceBuilder::new()
+        .option_layer(accessloginterceptor.map(|_| middleware::AccessLogMiddlewareLayer::default()))
+        .into_inner();
 
     builder
         .initial_stream_window_size(
@@ -463,6 +478,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .max_concurrent_streams(
             settings.get::<u32>(format!("{grpc_key}.grpc.max_concurrent_streams").as_str())?,
         )
+        .layer(layer)
         .add_service(
             proto::core::v1::agent_server::AgentServer::new(agent)
                 .max_decoding_message_size(
