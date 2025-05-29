@@ -47,7 +47,7 @@ func TestMeta_Bind(t *testing.T) {
 		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *Meta) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if !reflect.DeepEqual(got, w.want.Bind()) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
@@ -64,20 +64,20 @@ func TestMeta_Bind(t *testing.T) {
 				fields: fields{
 					Host: host,
 					Port: port,
-					Client: &GRPCClient{
+					Client: (&GRPCClient{
 						DialOption: &DialOption{
 							Insecure: true,
 						},
-					},
+					}).Bind(),
 					EnableCache:               enableCache,
 					CacheExpiration:           cacheExpiration,
 					ExpiredCacheCheckDuration: expiredCacheCheckDuration,
 				},
 				want: want{
-					want: &Meta{
+					want: (&Meta{
 						Host: host,
 						Port: port,
-						Client: &GRPCClient{
+						Client: (&GRPCClient{
 							Addrs: []string{
 								host + ":" + strconv.FormatUint(uint64(port), 10),
 							},
@@ -88,11 +88,11 @@ func TestMeta_Bind(t *testing.T) {
 							TLS: &TLS{
 								Enabled: false,
 							},
-						},
+						}).Bind(),
 						EnableCache:               enableCache,
 						CacheExpiration:           cacheExpiration,
 						ExpiredCacheCheckDuration: expiredCacheCheckDuration,
-					},
+					}).Bind(),
 				},
 			}
 		}(),

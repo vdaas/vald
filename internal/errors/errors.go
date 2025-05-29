@@ -353,8 +353,9 @@ func (e *joinError) Error() (str string) {
 		sb.Reset()
 		sbPool.Put(sb)
 	}()
-	sb.Grow(len(e.errs) * 16)
-	for i, err := range e.errs {
+	errs := RemoveDuplicates(e.errs)
+	sb.Grow(len(errs) * 16)
+	for i, err := range errs {
 		if i > 0 {
 			sb.WriteByte('\n')
 		}
@@ -365,6 +366,10 @@ func (e *joinError) Error() (str string) {
 	}
 	str = sb.String()
 	return str
+}
+
+func (e *joinError) String() (str string) {
+	return e.Error()
 }
 
 func (e *joinError) Unwrap() []error {

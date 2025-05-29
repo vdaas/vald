@@ -56,9 +56,11 @@ func (c *GlobalConfig) Bind() *GlobalConfig {
 	c.Version = GetActualValue(c.Version)
 	c.TZ = GetActualValue(c.TZ)
 
-	if c.Logging != nil {
-		c.Logging = c.Logging.Bind()
+	if c.Logging == nil {
+		c.Logging = new(Logging)
 	}
+	// Assuming Logging.Bind() is compliant and c.Logging is now non-nil
+	c.Logging.Bind()
 	return c
 }
 
