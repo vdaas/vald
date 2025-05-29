@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package cache provides implementation of cache
 package cache
 
 import (
