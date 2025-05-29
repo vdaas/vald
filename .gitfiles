@@ -1987,6 +1987,7 @@ rust/bin/agent/src/handler/search.rs
 rust/bin/agent/src/handler/update.rs
 rust/bin/agent/src/handler/upsert.rs
 rust/bin/agent/src/main.rs
+rust/bin/agent/src/middleware.rs
 rust/bin/meta/Cargo.toml
 rust/bin/meta/src/handler.rs
 rust/bin/meta/src/handler/meta.rs

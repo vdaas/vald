@@ -15,12 +15,12 @@
 //
 
 use futures::StreamExt;
-use tonic_types::{ErrorDetails, FieldViolation};
 use std::{collections::HashMap, sync::Arc};
-use tokio::sync::Mutex;
-use tonic::{Request, Response, Status, Streaming};
-use tokio_stream::wrappers::ReceiverStream;
 use tokio::sync::mpsc;
+use tokio::sync::Mutex;
+use tokio_stream::wrappers::ReceiverStream;
+use tonic::{Request, Response, Status, Streaming};
+use tonic_types::{ErrorDetails, FieldViolation};
 
 #[macro_export]
 macro_rules! stream_type {
@@ -109,12 +109,16 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::middleware::AccessLogMiddlewareLayer;
+
     use super::*;
 
     use bytes::{Buf, BufMut, Bytes, BytesMut};
     use prost::Message;
     use proto::{
-        payload::v1::object::{Id, StreamVector, Vector, VectorRequest, TimestampRequest, Timestamp, list},
+        payload::v1::object::{
+            list, Id, StreamVector, Timestamp, TimestampRequest, Vector, VectorRequest,
+        },
         vald::v1::{object_client, object_server},
     };
     use std::{
@@ -126,7 +130,9 @@ mod tests {
     };
     use tokio::time::sleep;
     use tonic::{
-        codec::{DecodeBuf, Decoder}, transport::{Channel, Server}, Request, Response, Status
+        codec::{DecodeBuf, Decoder},
+        transport::{Channel, Server},
+        Request, Response, Status,
     };
 
     // tonic-mock uses old version of http_body, so we need to implement below ourselves.
@@ -184,11 +190,11 @@ mod tests {
                 Poll::Ready(None)
             }
         }
-    
+
         fn is_end_stream(&self) -> bool {
             self.is_empty()
         }
-    
+
         fn size_hint(&self) -> http_body::SizeHint {
             let mut hint = http_body::SizeHint::new();
             let remaining = self.data.iter().map(|b| b.len()).sum::<usize>();
@@ -227,7 +233,7 @@ mod tests {
         let body = MockBody::new(messages);
         let streaming = Streaming::new_request(decoder, body, None, None);
         let request = Request::new(streaming);
-        
+
         let process_fn = |n: i32| async move {
             sleep(Duration::from_millis(10)).await;
             Ok(n * 2)
@@ -281,7 +287,7 @@ mod tests {
 
     #[derive(Default)]
     struct EchoServer {}
-    
+
     #[tonic::async_trait]
     impl object_server::Object for EchoServer {
         type StreamGetObjectStream = crate::stream_type!(StreamVector);
@@ -309,14 +315,17 @@ mod tests {
             bidirectional_stream(request, 10, |_| async move {
                 sleep(Duration::from_millis(10)).await;
                 Ok(StreamVector::default())
-            }).await
+            })
+            .await
         }
 
-        async fn get_timestamp(&self, _: Request<TimestampRequest>) -> Result<Response<Timestamp>, Status> {
+        async fn get_timestamp(
+            &self,
+            _: Request<TimestampRequest>,
+        ) -> Result<Response<Timestamp>, Status> {
             todo!()
         }
     }
-
 
     async fn bidirectional_stream_over_network(
         startup_duration: Duration,
@@ -329,15 +338,27 @@ mod tests {
         tokio::spawn(async move {
             sleep(startup_duration).await;
             for i in 0..10 {
-                tx.send(VectorRequest { id: Some(Id{id: format!("id-{}", i)}), filters: None }).await.unwrap();
+                tx.send(VectorRequest {
+                    id: Some(Id {
+                        id: format!("id-{}", i),
+                    }),
+                    filters: None,
+                })
+                .await
+                .unwrap();
                 sleep(send_duration).await;
             }
         });
 
         let addr = "[::1]:50051".parse().unwrap();
         let echo_server = EchoServer::default();
+        let accessloginterceptor: Option<()> = Some(());
+        let layer = tower::ServiceBuilder::new()
+            .option_layer(accessloginterceptor.map(|_| AccessLogMiddlewareLayer::default()))
+            .into_inner();
         tokio::spawn(async move {
             Server::builder()
+                .layer(layer)
                 .add_service(object_server::ObjectServer::new(echo_server))
                 .serve(addr)
                 .await
@@ -351,7 +372,10 @@ mod tests {
             .await
             .unwrap();
         let mut client = object_client::ObjectClient::new(channel);
-        let response = client.stream_get_object(Request::new(request_stream)).await.unwrap();
+        let response = client
+            .stream_get_object(Request::new(request_stream))
+            .await
+            .unwrap();
         let mut response_stream = response.into_inner();
         let mut received_vectors = Vec::new();
         while let Some(res) = response_stream.next().await {
@@ -369,11 +393,27 @@ mod tests {
 
     #[tokio::test]
     async fn test_bidirectional_stream_over_network() {
-        bidirectional_stream_over_network(Duration::from_millis(1000), Duration::from_millis(0), Duration::from_millis(0), Duration::from_millis(1000)).await;
+        let _logger = flexi_logger::Logger::try_with_str("debug")
+            .unwrap()
+            .start()
+            .unwrap();
+        bidirectional_stream_over_network(
+            Duration::from_millis(1000),
+            Duration::from_millis(0),
+            Duration::from_millis(0),
+            Duration::from_millis(1000),
+        )
+        .await;
     }
 
     #[tokio::test]
     async fn test_bidirectional_stream_over_network_with_duration() {
-        bidirectional_stream_over_network(Duration::from_millis(1000), Duration::from_millis(100), Duration::from_millis(100), Duration::from_millis(1000)).await;
+        bidirectional_stream_over_network(
+            Duration::from_millis(1000),
+            Duration::from_millis(100),
+            Duration::from_millis(100),
+            Duration::from_millis(1000),
+        )
+        .await;
     }
 }
