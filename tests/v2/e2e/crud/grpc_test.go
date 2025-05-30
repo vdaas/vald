@@ -86,10 +86,6 @@ func handleGRPCWithStatusCode(
 		return nil
 	}
 
-	if err == nil {
-		err = errors.New("unexpected gRPC response received")
-	}
-
 	var protoJSON []byte
 	if res != nil {
 		marshaller := protojson.MarshalOptions{
@@ -102,42 +98,43 @@ func handleGRPCWithStatusCode(
 		}
 	}
 
+	errs := make([]error, 0, len(plan.Expect)+1)
+	if err != nil {
+		errs = append(errs, err)
+	}
 	for _, expect := range plan.Expect {
-		if !expect.StatusCode.Equals(code.String()) {
-			err = errors.Wrapf(err, "unexpected gRPC response received expected: %s, got: %s", expect.StatusCode, code)
+		if expect.StatusCode != "" && !expect.StatusCode.Equals(code.String()) {
+			errs = append(errs, fmt.Errorf("unexpected gRPC response received expected: %s, got: %s", expect.StatusCode, code))
 			continue
 		}
 		if expect.Path != "" {
-			if len(protoJSON) == 0 {
-				err = errors.Wrapf(err, "no response received to evaluate JSONPath: %s", expect.Path)
-				continue
-			}
 			val, err := jsonpath.JSONPathEval(protoJSON, expect.Path)
 			if err != nil {
-				err = errors.Wrapf(err, "failed to evaluate JSONPath: %s, error: %v", expect.Path, err)
+				errs = append(errs, fmt.Errorf("failed to evaluate JSONPath: %s, JSON: %s", expect.Path, protoJSON))
 				continue
 			}
 			switch expect.Op {
 			case config.Eq:
 				if !reflect.DeepEqual(val, expect.Value) {
-					err = errors.Wrapf(err, "unexpected value for JSONPath %s: expected %v, got %v", expect.Path, expect.Value, val)
+					errs = append(errs, fmt.Errorf("unexpected value for JSONPath %s: expected %v, got %v", expect.Path, expect.Value, val))
 					continue
 				}
 			case config.Gt:
 				if a, b, ok := compare(val, expect.Value); !ok || a <= b {
-					err = errors.Wrapf(err, "expected %v > %v at %s", val, expect.Value, expect.Path)
+					errs = append(errs, fmt.Errorf("expected %v > %v at %s", val, expect.Value, expect.Path))
 					continue
 				}
 			case config.Lt:
 				if a, b, ok := compare(val, expect.Value); !ok || a >= b {
-					err = errors.Wrapf(err, "expected %v < %v at %s", val, expect.Value, expect.Path)
+					errs = append(errs, fmt.Errorf("expected %v < %v at %s", val, expect.Value, expect.Path))
 					continue
 				}
 			}
 		}
 		return nil
 	}
-	return err
+
+	return errors.Join(errs...)
 }
 
 // handleGRPCCall centralizes the gRPC error handling, logging and assertion.
