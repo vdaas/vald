@@ -21,7 +21,6 @@ package crud
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"slices"
@@ -31,6 +30,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/iter"
+	"github.com/vdaas/vald/internal/jsonpath"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
@@ -38,7 +38,6 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/tests/v2/e2e/config"
-
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -73,71 +72,88 @@ func printCallback[M proto.Message](unwrap func(t *testing.T, msg M) any) callba
 	}
 }
 
-func handleGRPCStatusCodeError(
-	t *testing.T, err error, code codes.Code, plan *config.Execution,
-) error {
-	t.Helper()
-	if err != nil {
-		err = errors.Wrapf(err, "Code: %s", code.String())
-		if plan.Expect == nil {
-			return nil
-		}
-		if len(plan.Expect.StatusCodes) != 0 && !plan.Expect.StatusCodes.Equals(code.String()) {
-			err = errors.Wrapf(err, "unexpected gRPC response received expected: %v", plan.Expect.StatusCodes)
-			t.Error(err.Error())
-			return err
-		}
-		if len(plan.Expect.Results) != 0 {
-			err = errors.New("Execution failed with an error even though result is expected")
-			t.Error(err.Error())
-			return err
-		}
-	}
-	return nil
+func compare(a, b any) (float64, float64, bool) {
+	aT, ok1 := a.(float64)
+	bT, ok2 := b.(float64)
+	return aT, bT, ok1 && ok2
 }
 
-// handleGRPCCallError centralizes the gRPC error handling and logging.
+func handleGRPCWithStatusCode(
+	t *testing.T, err error, code codes.Code, res proto.Message, plan *config.Execution,
+) error {
+	t.Helper()
+	if len(plan.Expect) == 0 {
+		return nil
+	}
+
+	if err == nil {
+		err = errors.New("unexpected gRPC response received")
+	}
+
+	var protoJSON []byte
+	if res != nil {
+		marshaller := protojson.MarshalOptions{
+			UseProtoNames:   true,
+			EmitUnpopulated: false,
+		}
+		protoJSON, err = marshaller.Marshal(res)
+		if err != nil {
+			return fmt.Errorf("failed to marshal proto: %w", err)
+		}
+	}
+
+	for _, expect := range plan.Expect {
+		if !expect.StatusCode.Equals(code.String()) {
+			err = errors.Wrapf(err, "unexpected gRPC response received expected: %s, got: %s", expect.StatusCode, code)
+			continue
+		}
+		if expect.Path != "" {
+			if len(protoJSON) == 0 {
+				err = errors.Wrapf(err, "no response received to evaluate JSONPath: %s", expect.Path)
+				continue
+			}
+			val, err := jsonpath.JSONPathEval(protoJSON, expect.Path)
+			if err != nil {
+				err = errors.Wrapf(err, "failed to evaluate JSONPath: %s, error: %v", expect.Path, err)
+				continue
+			}
+			switch expect.Op {
+			case config.Eq:
+				if !reflect.DeepEqual(val, expect.Value) {
+					err = errors.Wrapf(err, "unexpected value for JSONPath %s: expected %v, got %v", expect.Path, expect.Value, val)
+					continue
+				}
+			case config.Gt:
+				if a, b, ok := compare(val, expect.Value); !ok || a <= b {
+					err = errors.Wrapf(err, "expected %v > %v at %s", val, expect.Value, expect.Path)
+					continue
+				}
+			case config.Lt:
+				if a, b, ok := compare(val, expect.Value); !ok || a >= b {
+					err = errors.Wrapf(err, "expected %v < %v at %s", val, expect.Value, expect.Path)
+					continue
+				}
+			}
+		}
+		return nil
+	}
+	return err
+}
+
+// handleGRPCCall centralizes the gRPC error handling, logging and assertion.
 // It compares the error's status code with the expected codes from the plan.
 // If the error is expected, it logs a message; otherwise, it logs an error.
-func handleGRPCCallError(t *testing.T, err error, plan *config.Execution) error {
+// If the results do not match, it logs an error.
+func handleGRPCCall(t *testing.T, err error, res proto.Message, plan *config.Execution) error {
 	t.Helper()
+	var code codes.Code
 	if err != nil {
 		if st, ok := status.FromError(err); ok && st != nil {
 			err = errors.Wrapf(err, "gRPC Status received: %s", st.String())
-			return handleGRPCStatusCodeError(t, err, st.Code(), plan)
+			code = st.Code()
 		}
-		t.Errorf("failed to execute gRPC call error: %v", err)
-		return err
 	}
-	return nil
-}
-
-// resultsEqual checks the equality of results and expected JSON.
-func resultsEqual(expected []json.RawMessage, res proto.Message) error {
-	marshaller := protojson.MarshalOptions{
-		UseProtoNames:   true, // フィールド名は proto の定義通り
-		EmitUnpopulated: false,
-	}
-	protoJSON, err := marshaller.Marshal(res)
-	if err != nil {
-		return fmt.Errorf("failed to marshal proto: %w", err)
-	}
-	var resObj interface{}
-	if err := json.Unmarshal(protoJSON, &resObj); err != nil {
-		return fmt.Errorf("invalid JSON from proto: %w", err)
-	}
-	err = fmt.Errorf("unexpected gRPC response received")
-	for _, e := range expected {
-		var exObj interface{}
-		if err := json.Unmarshal(e, &exObj); err != nil {
-			return err
-		}
-		if reflect.DeepEqual(exObj, resObj) {
-			return nil
-		}
-		err = errors.Wrapf(err, "expected: %#v, got: %#v", exObj, resObj)
-	}
-	return err
+	return handleGRPCWithStatusCode(t, err, code, res, plan)
 }
 
 func single[Q, R proto.Message](
@@ -155,20 +171,9 @@ func single[Q, R proto.Message](
 	}
 	// Execute the modify gRPC call.
 	res, err := call(ctx, req)
-	if err != nil {
-		// Handle the error using the centralized error handler.
-		if err = handleGRPCCallError(t, err, plan); err != nil {
-			t.Error(err.Error())
-			return
-		}
-	}
-
-	if plan.Expect != nil && len(plan.Expect.Results) != 0 {
-		err = resultsEqual(plan.Expect.Results, res)
-		if err != nil {
-			t.Fatal(err.Error())
-			return
-		}
+	if err = handleGRPCCall(t, err, res, plan); err != nil {
+		t.Error(err.Error())
+		return
 	}
 
 	for _, cb := range callback {
@@ -301,18 +306,10 @@ func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](
 		idx.Add(1)
 		return query, true
 	}, func(res R, err error) bool {
-		if err != nil {
-			// Handle the error using the centralized error handler.
-			if err = handleGRPCCallError(t, err, plan); err != nil {
-				t.Error(err.Error())
-				return true
-			}
-		}
-		if plan.Expect != nil && len(plan.Expect.Results) != 0 {
-			if err = resultsEqual(plan.Expect.Results, res); err != nil {
-				t.Error(err.Error())
-				return true
-			}
+		// Handle the error using the centralized error handler.
+		if err = handleGRPCCall(t, err, res, plan); err != nil {
+			t.Error(err.Error())
+			return true
 		}
 		id := sidx.Add(1) - 1
 		for _, cb := range callbacks {

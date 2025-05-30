@@ -130,12 +130,17 @@ strategies:
     operations:
       - name: Insert Operation
         executions:
+          - name: Flush
+            mode: unary
+            type: flush
+            wait: 2m
           - mode: unary
             name: IndexInfo
             type: index_info
             expect:
-              results:
-                - {}
+              - path: "$.length()"
+                op: eq
+                value: 0
           - name: Insert
             type: insert
             mode: unary
@@ -147,8 +152,10 @@ strategies:
             name: IndexInfo
             type: index_info
             expect:
-              results:
-                - stored: 60000
+              - status_code: ok
+                path: $.stored
+                op: gt
+                value: 30000
   - name: Search_with_RolloutRestartAgent
     concurrency: 2
     operations:
@@ -173,9 +180,8 @@ strategies:
               ratio: 0
               timeout: 3s
             expect:
-              status_codes:
-                - ok
-                - not_found
+              - status_code: ok
+              - status_code: not_found
       - name: RolloutRestartAgentPods
         executions:
           - name: RolloutRestart
@@ -217,6 +223,5 @@ strategies:
               timestamp: 0
             expect:
               # expected patterns of test status codes
-              status_codes:
-                - ok
-                - not_found
+              - status_code: ok
+              - status_code: not_found
