@@ -38,16 +38,12 @@ func JSONPathEval(jsonData []byte, path string) (any, error) {
 	parts := strings.Split(path, ".")[1:]
 
 	current := data
-	for i, part := range parts {
+	for _, part := range parts {
 		switch typed := current.(type) {
 		case map[string]any:
 			if part == "length()" {
-				if arr, ok := current.([]any); ok {
-					return len(arr), nil
-				}
-				return nil, fmt.Errorf("cannot get length of non-array at part %v", strings.Join(parts[:i], "."))
+				return len(typed), nil
 			}
-
 			val, exists := typed[part]
 			if !exists {
 				return nil, fmt.Errorf("key '%s' not found", part)

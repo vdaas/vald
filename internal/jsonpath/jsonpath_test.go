@@ -29,40 +29,62 @@ func TestJSONPathEval(t *testing.T) {
 	}`)
 
 	tests := []struct {
+		json     []byte
 		name     string
 		path     string
 		expected any
 		wantErr  bool
 	}{
 		{
+			json:     []byte("{}"),
+			name:     "empty length",
+			path:     "$.length()",
+			expected: 0,
+			wantErr:  false,
+		},
+		{
+			json: 	  jsonStr,
 			name:     "root",
 			path:     "$",
 			expected: jsonStr,
 			wantErr:  false,
 		},
 		{
+			json: 	  jsonStr,
+			name:     "access map length",
+			path:     "$.length()",
+			expected: 2,
+			wantErr:  false,
+		},
+		{
+			json: 	  jsonStr,
 			name:     "access array",
 			path:     ".test",
 			expected: []any{float64(1), float64(2), float64(3)},
 			wantErr:  false,
 		},
 		{
-			name:     "access length",
+			json: 	  jsonStr,
+			name:     "access array length",
 			path:     ".test.length()",
 			expected: 3,
 			wantErr:  false,
 		},
 		{
+			json: 	  jsonStr,
 			name:    "missing key",
 			path:    ".missing",
 			wantErr: true,
 		},
 		{
-			name:    "length on non-array",
-			path:    "$.obj.length()",
-			wantErr: true,
+			json: 	  jsonStr,
+			name:     "length on non-array",
+			path:     "$.obj.length()",
+			expected: 1,
+			wantErr:  false,
 		},
 		{
+			json: 	  jsonStr,
 			name:     "nested key access",
 			path:     ".obj.key",
 			expected: "value",
@@ -72,7 +94,7 @@ func TestJSONPathEval(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := JSONPathEval(jsonStr, tt.path)
+			got, err := JSONPathEval(tt.json, tt.path)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("got error = %v, wantErr = %v", err, tt.wantErr)
 				if err != nil {

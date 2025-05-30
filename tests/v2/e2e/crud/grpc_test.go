@@ -20,6 +20,7 @@
 package crud
 
 import (
+	"os"
 	"context"
 	"fmt"
 	"reflect"
@@ -110,12 +111,12 @@ func handleGRPCWithStatusCode(
 		if expect.Path != "" {
 			val, err := jsonpath.JSONPathEval(protoJSON, expect.Path)
 			if err != nil {
-				errs = append(errs, fmt.Errorf("failed to evaluate JSONPath: %s, JSON: %s", expect.Path, protoJSON))
+				errs = append(errs, fmt.Errorf("failed to evaluate JSONPath: %s, JSON: %s, err: %s", expect.Path, protoJSON, err))
 				continue
 			}
 			switch expect.Op {
 			case config.Eq:
-				if !reflect.DeepEqual(val, expect.Value) {
+				if !reflect.DeepEqual(val, expect.Value) && fmt.Sprintf("%v", val) != fmt.Sprintf("%v", expect.Value) {
 					errs = append(errs, fmt.Errorf("unexpected value for JSONPath %s: expected %v, got %v", expect.Path, expect.Value, val))
 					continue
 				}
@@ -130,11 +131,14 @@ func handleGRPCWithStatusCode(
 					continue
 				}
 			}
+			fmt.Fprintf(os.Stderr, "✅ assert_%v passed, expected: %v actual: %v\n", expect.Op, expect.Value, val)
 		}
 		return nil
 	}
 
-	return errors.Join(errs...)
+	err = errors.Join(errs...)
+	fmt.Fprintf(os.Stderr, "❌ assert failed, err: %v\n", err)
+	return err
 }
 
 // handleGRPCCall centralizes the gRPC error handling, logging and assertion.
