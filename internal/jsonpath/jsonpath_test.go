@@ -43,10 +43,10 @@ func TestJSONPathEval(t *testing.T) {
 			wantErr:  false,
 		},
 		{
-			json:     jsonStr,
+			json:     []byte("{}"),
 			name:     "root",
 			path:     "$",
-			expected: jsonStr,
+			expected: map[string]any{},
 			wantErr:  false,
 		},
 		{

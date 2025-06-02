@@ -138,9 +138,8 @@ strategies:
             name: IndexInfo
             type: index_info
             expect:
-              - path: "$.length()"
-                op: eq
-                value: 0
+              - path: "$"
+                value: {}
           - name: Insert
             type: insert
             mode: unary

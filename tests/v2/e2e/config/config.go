@@ -263,6 +263,17 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 	}
 	e.Name = config.GetActualValue(e.Name)
 	e.TimeConfig.Bind()
+	if e.Expect != nil {
+		for i, ex := range e.Expect {
+			if ex.StatusCode, err = ex.StatusCode.Bind(); err != nil {
+				return nil, errors.Wrapf(err, "failed to bind StatusCodes for Execution %s of type %s", e.Name, e.Type)
+			}
+			if ex.Op, err = ex.Op.Bind(); err != nil {
+				return nil, errors.Wrapf(err, "failed to bind Expect.Op for Execution %s of type %s", e.Name, e.Type)
+			}
+			e.Expect[i] = ex
+		}
+	}
 	switch e.Type {
 	case OpSearch,
 		OpSearchByID,
@@ -305,13 +316,6 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 			if e.Modification != nil {
 				if e.Modification, err = e.Modification.Bind(); err != nil {
 					return nil, errors.Wrapf(err, "failed to bind ModificationConfig for Execution %s of type %s", e.Name, e.Type)
-				}
-			}
-		}
-		if e.Expect != nil {
-			for _, ex := range e.Expect {
-				if ex.StatusCode, err = ex.StatusCode.Bind(); err != nil {
-					return nil, errors.Wrapf(err, "failed to bind StatusCodes for Execution %s of type %s", e.Name, e.Type)
 				}
 			}
 		}
@@ -457,6 +461,19 @@ func (om OperationMode) Bind() (bound OperationMode, err error) {
 	default:
 		return OperationOther, nil
 	}
+}
+
+// Bind expands environment variables for StatusCode.
+func (op Operator) Bind() (bound Operator, err error) {
+	switch trimStringForCompare(config.GetActualValue(op)) {
+	case Lt:
+		return Lt, nil
+	case Gt:
+		return Gt, nil
+	case Eq, "":
+		return Eq, nil
+	}
+	return op, errors.New("Unsupported operator: " + string(op))
 }
 
 // Bind expands environment variables for StatusCode.

@@ -32,7 +32,7 @@ func JSONPathEval(jsonData []byte, path string) (any, error) {
 	}
 
 	if !strings.Contains(path, ".") {
-		return jsonData, nil
+		return data, nil
 	}
 
 	parts := strings.Split(path, ".")[1:]
