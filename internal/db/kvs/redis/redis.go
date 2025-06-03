@@ -18,7 +18,6 @@ package redis
 
 import (
 	"context"
-	"crypto/tls"
 	"reflect"
 	"time"
 
@@ -27,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/tls"
 )
 
 // Nil is a type alias of redis.Nil.

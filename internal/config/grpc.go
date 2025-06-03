@@ -76,9 +76,16 @@ type DialOption struct {
 type ConnectionPool struct {
 	ResolveDNS           bool   `json:"enable_dns_resolver"     yaml:"enable_dns_resolver"`
 	EnableRebalance      bool   `json:"enable_rebalance"        yaml:"enable_rebalance"`
-	RebalanceDuration    string `json:"rebalance_duration"      yaml:"rebalance_duration"`
 	Size                 int    `json:"size"                    yaml:"size"`
+	RebalanceDuration    string `json:"rebalance_duration"      yaml:"rebalance_duration"`
 	OldConnCloseDuration string `json:"old_conn_close_duration" yaml:"old_conn_close_duration"`
+}
+
+// Bind binds the actual data from the ConnectionPool receiver fields.
+func (cp *ConnectionPool) Bind() *ConnectionPool {
+	cp.RebalanceDuration = GetActualValue(cp.RebalanceDuration)
+	cp.OldConnCloseDuration = GetActualValue(cp.OldConnCloseDuration)
+	return cp
 }
 
 // GRPCClientKeepalive represents the configurations for gRPC keep-alive.
@@ -90,11 +97,11 @@ type GRPCClientKeepalive struct {
 
 // newGRPCClientConfig returns the GRPCClient with DailOption with insecure is true.
 func newGRPCClientConfig() *GRPCClient {
-	return &GRPCClient{
+	return (&GRPCClient{
 		DialOption: &DialOption{
 			Insecure: true,
 		},
-	}
+	}).Bind()
 }
 
 // Bind binds the actual data from the GRPCClient receiver fields.
@@ -102,39 +109,46 @@ func (g *GRPCClient) Bind() *GRPCClient {
 	g.Addrs = GetActualValues(g.Addrs)
 	g.HealthCheckDuration = GetActualValue(g.HealthCheckDuration)
 
-	if g.ConnectionPool != nil {
-		g.ConnectionPool.RebalanceDuration = GetActualValue(g.ConnectionPool.RebalanceDuration)
-		g.ConnectionPool.OldConnCloseDuration = GetActualValue(g.ConnectionPool.OldConnCloseDuration)
-	} else {
+	if g.ConnectionPool == nil {
 		g.ConnectionPool = new(ConnectionPool)
 	}
+	if g.ConnectionPool != nil {
+		g.ConnectionPool.Bind()
+	}
 
+	if g.Backoff == nil {
+		g.Backoff = new(Backoff)
+	}
 	if g.Backoff != nil {
 		g.Backoff.Bind()
 	}
 
+	if g.CircuitBreaker == nil {
+		g.CircuitBreaker = new(CircuitBreaker)
+	}
 	if g.CircuitBreaker != nil {
 		g.CircuitBreaker.Bind()
 	}
 
+	if g.CallOption == nil {
+		g.CallOption = new(CallOption)
+	}
 	if g.CallOption != nil {
 		g.CallOption.Bind()
 	}
 
-	if g.DialOption != nil {
+	if g.DialOption != nil { // This part is already compliant due to else clause
 		g.DialOption.Bind()
 	} else {
 		g.DialOption = new(DialOption)
 	}
 
-	if g.TLS != nil &&
-		g.TLS.Enabled &&
-		g.TLS.Cert != "" &&
-		g.TLS.Key != "" {
+	if g.TLS != nil && g.TLS.Enabled {
 		g.TLS.Bind()
 	} else {
 		g.TLS = &TLS{
-			Enabled: false,
+			Enabled:            false,
+			InsecureSkipVerify: true,
 		}
 		g.DialOption.Insecure = true
 	}
@@ -165,6 +179,20 @@ func (d *DialOption) Bind() *DialOption {
 	d.MinimumConnectionTimeout = GetActualValue(d.MinimumConnectionTimeout)
 	d.Timeout = GetActualValue(d.Timeout)
 	d.UserAgent = GetActualValue(d.UserAgent)
+
+	if d.Net == nil {
+		d.Net = new(Net)
+	}
+	if d.Net != nil {
+		d.Net.Bind()
+	}
+
+	if d.Keepalive == nil {
+		d.Keepalive = new(GRPCClientKeepalive)
+	}
+	if d.Keepalive != nil {
+		d.Keepalive.Bind()
+	}
 	return d
 }
 

@@ -18,7 +18,6 @@ package server
 
 import (
 	"context"
-	"crypto/tls"
 	"net/http"
 	"os"
 	"reflect"
@@ -40,6 +39,7 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/tls"
 	"golang.org/x/net/http2"
 )
 
@@ -454,13 +454,9 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		defer scancel()
 		s.http.srv.SetKeepAlivesEnabled(false)
 		err := s.http.srv.Shutdown(sctx)
-		if err != nil && err != http.ErrServerClosed && err != grpc.ErrServerStopped {
-			rerr = errors.Join(rerr, err)
-		}
 		if errors.IsNot(err, http.ErrServerClosed, grpc.ErrServerStopped, context.Canceled, context.DeadlineExceeded) {
 			rerr = errors.Join(rerr, err)
 		}
-
 		err = sctx.Err()
 		if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
 			rerr = errors.Join(rerr, err)
@@ -472,5 +468,5 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 
 	s.wg.Wait()
 
-	return
+	return nil
 }
