@@ -114,10 +114,10 @@ impl VQueue {
 
     /// Returns the current time in nanoseconds.
     fn now_ns() -> i64 {
-        let dur = SystemTime::now()
+        SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .expect("Time went backwards");
-        dur.as_nanos() as i64
+            .unwrap_or_else(|_| std::time::Duration::from_secs(0))
+            .as_nanos() as i64
     }
 
     /// Loads the insert entry for the specified key.
@@ -408,17 +408,17 @@ impl Queue for VQueue {
         if uuid.trim().is_empty() {
             return Err(QueueError::InvalidUuid);
         }
-        if let Some((_vec, its)) = self.get_vector(uuid)? {
-            if let Ok(Some(dts)) = self.pop_delete(uuid) {
-                if VQueue::newer(dts, its) {
+        if let Some(didx) = self.load_dvq(uuid) {
+            let dts = didx.timestamp;
+            if let Some(idx) = self.load_ivq(uuid) {
+                if VQueue::newer(dts, idx.timestamp) {
                     return Ok(Some(dts));
                 }
+                return Ok(None);
             }
-            return Ok(None);
-        } else if let Some(didx) = self.load_dvq(uuid) {
-            return Ok(Some(didx.timestamp));
+            return Ok(Some(dts));
         }
-        Ok(None)
+        return Ok(None);
     }
 }
 
@@ -485,5 +485,35 @@ mod tests {
         })
         .unwrap();
         assert_eq!(seen.len(), 2);
+    }
+
+    #[test]
+    fn test_concurrent_access() {
+        use std::thread;
+        let q = Arc::new(VQueue::new());
+        let handles: Vec<_> = (0..10)
+            .map(|i| {
+                let q_clone = q.clone();
+                thread::spawn(move || {
+                    let vec = Arc::new(vec![i as f32]);
+                    q_clone.push_insert(format!("key{}", i), vec, None)
+                })
+            })
+            .collect();
+
+        for handle in handles {
+            handle.join().unwrap().unwrap();
+        }
+        assert_eq!(q.ivq_len(), 10);
+    }
+
+    #[test]
+    fn test_timestamp_ordering() {
+        let q = VQueue::new();
+        let vec = Arc::new(vec![1.0]);
+
+        // Test that older timestamps are rejected
+        assert!(q.push_insert("key1".into(), vec.clone(), Some(100)).is_ok());
+        assert!(q.push_insert("key1".into(), vec.clone(), Some(50)).is_err());
     }
 }
