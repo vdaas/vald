@@ -1170,6 +1170,8 @@ internal/io/io.go
 internal/io/io_test.go
 internal/iter/doc.go
 internal/iter/iter.go
+internal/jsonpath/jsonpath.go
+internal/jsonpath/jsonpath_test.go
 internal/k8s/client/client.go
 internal/k8s/client/client_test.go
 internal/k8s/client/doc.go
