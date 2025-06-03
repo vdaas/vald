@@ -199,8 +199,7 @@ strategies:
             name: IndexInfo
             type: index_info
             expect:
-              - path: $
-                value: {}
+              - value: {}
           - name: Insert
             type: insert
             mode: unary

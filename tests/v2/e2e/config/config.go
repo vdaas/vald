@@ -466,11 +466,9 @@ func (om OperationMode) Bind() (bound OperationMode, err error) {
 // Bind expands environment variables for StatusCode.
 func (op Operator) Bind() (bound Operator, err error) {
 	switch trimStringForCompare(config.GetActualValue(op)) {
-	case Lt:
-		return Lt, nil
-	case Gt:
-		return Gt, nil
-	case Eq, "":
+	case Le, Lt, Ge, Gt, Eq, Ne:
+		return op, nil
+	case "":
 		return Eq, nil
 	}
 	return op, errors.New("Unsupported operator: " + string(op))

@@ -133,6 +133,9 @@ type Operator string
 
 const (
 	Eq Operator = "eq"
+	Ne Operator = "ne"
+	Ge Operator = "ge"
 	Gt Operator = "gt"
+	Le Operator = "le"
 	Lt Operator = "lt"
 )

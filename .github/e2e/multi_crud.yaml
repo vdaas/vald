@@ -468,5 +468,4 @@ strategies:
             mode: unary
             type: index_info
             expect:
-              - path: "$"
-                value: {}
+              - value: {}

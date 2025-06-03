@@ -108,27 +108,47 @@ func handleGRPCWithStatusCode(
 			errs = append(errs, fmt.Errorf("unexpected gRPC response received expected: %s, got: %s", expect.StatusCode, code))
 			continue
 		}
-		if expect.Path != "" {
+		if expect.Value != nil {
 			val, err := jsonpath.JSONPathEval(protoJSON, expect.Path)
 			if err != nil {
 				errs = append(errs, fmt.Errorf("failed to evaluate JSONPath: %s, JSON: %s, err: %s", expect.Path, protoJSON, err))
 				continue
 			}
-			switch expect.Op {
-			case config.Eq:
-				if !reflect.DeepEqual(val, expect.Value) && fmt.Sprintf("%v", val) != fmt.Sprintf("%v", expect.Value) {
-					errs = append(errs, fmt.Errorf("unexpected value for JSONPath %s: expected %v, got %v", expect.Path, expect.Value, val))
+			commonErr := fmt.Errorf("assert_%v failed, JSONPath: %s, expected: %v actual: %v", expect.Op, expect.Path, expect.Value, val)
+			switch op := expect.Op; op {
+			case config.Eq, config.Ne:
+				isMatched := reflect.DeepEqual(val, expect.Value) || fmt.Sprintf("%v", val) == fmt.Sprintf("%v", expect.Value)
+				if isMatched && op == config.Ne || !isMatched && op == config.Eq {
+					errs = append(errs, commonErr)
 					continue
 				}
-			case config.Gt:
-				if a, b, ok := compare(val, expect.Value); !ok || a <= b {
-					errs = append(errs, fmt.Errorf("expected %v > %v at %s", val, expect.Value, expect.Path))
+			case config.Gt, config.Ge, config.Lt, config.Le:
+				a, b, ok := compare(val, expect.Value)
+				if !ok {
+					errs = append(errs, commonErr)
 					continue
 				}
-			case config.Lt:
-				if a, b, ok := compare(val, expect.Value); !ok || a >= b {
-					errs = append(errs, fmt.Errorf("expected %v < %v at %s", val, expect.Value, expect.Path))
-					continue
+				switch op {
+				case config.Gt:
+					if a <= b {
+						errs = append(errs, commonErr)
+						continue
+					}
+				case config.Ge:
+					if a < b {
+						errs = append(errs, commonErr)
+						continue
+					}
+				case config.Lt:
+					if a >= b {
+						errs = append(errs, commonErr)
+						continue
+					}
+				case config.Le:
+					if a > b {
+						errs = append(errs, commonErr)
+						continue
+					}
 				}
 			default:
 				errs = append(errs, fmt.Errorf("unsupported operator '%s' for JSONPath %s", expect.Op, expect.Path))
