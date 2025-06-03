@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package middleware provides rest.Func Middleware
 package middleware
 
 import (

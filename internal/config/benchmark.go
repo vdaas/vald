@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 // BenchmarkJob represents the configuration for the internal benchmark search job.

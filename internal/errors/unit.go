@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package errors provides error types and function
 package errors
 
 // ErrParseUnitFailed represents a function to generate an error that failed to parse unit.

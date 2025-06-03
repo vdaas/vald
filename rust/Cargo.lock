@@ -29,6 +29,7 @@ dependencies = [
  "config",
  "flexi_logger",
  "futures",
+ "http",
  "http-body",
  "log",
  "prost",
@@ -39,6 +40,7 @@ dependencies = [
  "tokio-stream",
  "tonic",
  "tonic-types",
+ "tower 0.5.2",
 ]
 
 [[package]]
