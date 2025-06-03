@@ -24,4 +24,5 @@ members = [
 	"libs/kvs",
 	"libs/observability",
 	"libs/proto",
+	"libs/vqueue",
 ]
