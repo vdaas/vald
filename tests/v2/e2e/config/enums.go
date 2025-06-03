@@ -53,8 +53,6 @@ const (
 
 type StatusCode string
 
-type StatusCodes []StatusCode
-
 const (
 	StatusCodeOK                 StatusCode = "ok"
 	StatusCodeCanceled           StatusCode = "canceled"
@@ -129,4 +127,15 @@ const (
 	KubernetesStatusNotReady      KubernetesStatus = "notready"
 	KubernetesStatusBound         KubernetesStatus = "bound"
 	KubernetesStatusLoadBalancing KubernetesStatus = "loadbalancing"
+)
+
+type Operator string
+
+const (
+	Eq Operator = "eq"
+	Ne Operator = "ne"
+	Ge Operator = "ge"
+	Gt Operator = "gt"
+	Le Operator = "le"
+	Lt Operator = "lt"
 )

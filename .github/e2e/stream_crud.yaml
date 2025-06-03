@@ -164,10 +164,10 @@ strategies:
   #             skip_strict_exist_check: false
   #             timestamp: 0
   #           # expected patterns of test status codes
-  #           expected_status_codes:
-  #             - ok
-  #             - already_exists
-  #             - not_found
+  #           expect:
+  #             - status_code: ok
+  #             - status_code: already_exists
+  #             - status_code: not_found
   #           # for kubernetes configurations
   #           kubernetes:
   #             kind: "statefulset"
@@ -183,6 +183,10 @@ strategies:
             name: IndexProperty
             type: index_property
             wait: 3s
+            expect:
+              - status_code: ok
+                path: $.details.length()
+                value: 3
   - concurrency: 1
     name: Initial Insert and Wait
     operations:
@@ -198,6 +202,11 @@ strategies:
           - mode: unary
             name: IndexInfo
             type: index_info
+            expect:
+              - status_code: ok
+                path: $.stored
+                op: gt
+                value: 5000
   - concurrency: 2
     name: Parallel Search Opeation (Search, SearchByID, LinearSearch, LinearSearchByID) x (ConcurrentQueue, SortSlice, SortPoolSlice, PairingHeap) = 16
     operations:
@@ -437,3 +446,5 @@ strategies:
           - name: IndexInfo
             mode: unary
             type: index_info
+            expect:
+              - value: {}
