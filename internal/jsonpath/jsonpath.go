@@ -51,6 +51,15 @@ func recEval(data any, parts []string) (any, error) {
 		if part == "length()" {
 			return len(typed), nil
 		}
+		if part == "sum()" {
+			var sum float64
+			for _, v := range typed {
+				if num, ok := v.(float64); ok {
+					sum += num
+				}
+			}
+			return sum, nil
+		}
 		if part == "*" {
 			// Return all keys if part is '*'
 			result := make([]any, len(typed))
@@ -78,6 +87,15 @@ func recEval(data any, parts []string) (any, error) {
 	case []any:
 		if part == "length()" {
 			return len(typed), nil
+		}
+		if part == "sum()" {
+			var sum float64
+			for _, v := range typed {
+				if num, ok := v.(float64); ok {
+					sum += num
+				}
+			}
+			return sum, nil
 		}
 		if part == "*" {
 			// Map over all elements in the array

@@ -204,8 +204,8 @@ strategies:
             type: index_info
             expect:
               - status_code: ok
-                path: $.*
-                value: [30000]
+                path: $.sum()
+                value: 30000
   - concurrency: 1
     name: Index Correction -> Check the number of Replica
     operations:
@@ -233,8 +233,8 @@ strategies:
             type: index_info
             expect:
               - status_code: ok
-                path: $.*
-                value: [30000]
+                path: $.sum()
+                value: 30000
   - concurrency: 1
     name: Kill an Agent -> Index Correction -> Check the number of Replica
     operations:
@@ -254,7 +254,7 @@ strategies:
             type: index_info
             expect:
               - status_code: ok
-                path: $.*.0
+                path: $.sum()
                 op: lt
                 value: 30000
           - name: IndexCorrection
@@ -280,5 +280,5 @@ strategies:
             type: index_info
             expect:
               - status_code: ok
-                path: $.*
-                value: [30000]
+                path: $.sum()
+                value: 30000

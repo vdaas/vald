@@ -33,7 +33,10 @@ func TestJSONPathEval(t *testing.T) {
 		"array": [
 			{"A": "value1"},
 			{"B": "value2"}
-		]
+		],
+		"info": {
+			"stored": 100
+		}
 	}`)
 
 	tests := []struct {
@@ -61,7 +64,7 @@ func TestJSONPathEval(t *testing.T) {
 			json:     jsonStr,
 			name:     "access map length",
 			path:     "$.length()",
-			expected: 4,
+			expected: 5,
 			wantErr:  false,
 		},
 		{
@@ -131,6 +134,13 @@ func TestJSONPathEval(t *testing.T) {
 			name:     "array index",
 			path:     ".test.0",
 			expected: 1.0,
+			wantErr:  false,
+		},
+		{
+			json:     jsonStr,
+			name:     "sum",
+			path:     ".info.sum()",
+			expected: 100.0,
 			wantErr:  false,
 		},
 	}
