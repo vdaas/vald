@@ -25,7 +25,15 @@ import (
 func TestJSONPathEval(t *testing.T) {
 	jsonStr := []byte(`{
 		"test": [1, 2, 3],
-		"obj": {"key": "value"}
+		"obj": {"key": "value"},
+		"counts": {
+			"A": { "stored": 10 },
+			"B": { "stored": 5, "uncommited": 5 }
+		},
+		"array": [
+			{"A": "value1"},
+			{"B": "value2"}
+		]
 	}`)
 
 	tests := []struct {
@@ -53,7 +61,7 @@ func TestJSONPathEval(t *testing.T) {
 			json:     jsonStr,
 			name:     "access map length",
 			path:     "$.length()",
-			expected: 2,
+			expected: 4,
 			wantErr:  false,
 		},
 		{
@@ -88,6 +96,36 @@ func TestJSONPathEval(t *testing.T) {
 			name:     "nested key access",
 			path:     ".obj.key",
 			expected: "value",
+			wantErr:  false,
+		},
+		{
+			json:     jsonStr,
+			name:     "* for map",
+			path:     ".obj.*",
+			expected: []any{"value"},
+			wantErr:  false,
+		},
+		{
+			json:     jsonStr,
+			name:     "*.key",
+			path:     ".counts.*.stored",
+			expected: []any{10.0, 5.0},
+			wantErr:  false,
+		},
+		{
+			json:     jsonStr,
+			name:     "*.*",
+			path:     ".counts.*.*",
+			expected: []any{10.0, 5.0, 5.0},
+
+			wantErr:  false,
+		},
+		{
+			json:     jsonStr,
+			name:     "*.* for array",
+			path:     ".array.*.*",
+			expected: []any{"value1", "value2"},
+
 			wantErr:  false,
 		},
 	}
