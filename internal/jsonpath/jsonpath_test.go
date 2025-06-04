@@ -117,7 +117,6 @@ func TestJSONPathEval(t *testing.T) {
 			name:     "*.*",
 			path:     ".counts.*.*",
 			expected: []any{10.0, 5.0, 5.0},
-
 			wantErr: false,
 		},
 		{
@@ -125,7 +124,13 @@ func TestJSONPathEval(t *testing.T) {
 			name:     "*.* for array",
 			path:     ".array.*.*",
 			expected: []any{"value1", "value2"},
-
+			wantErr: false,
+		},
+		{
+			json:     jsonStr,
+			name:     "array index",
+			path:     ".test.0",
+			expected: 1.0,
 			wantErr: false,
 		},
 	}

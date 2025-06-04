@@ -254,9 +254,9 @@ strategies:
             type: index_info
             expect:
               - status_code: ok
-                path: $.*
+                path: $.*.0
                 op: lt
-                value: [30000]
+                value: 30000
           - name: IndexCorrection
             type: kubernetes
             mode: other

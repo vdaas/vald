@@ -20,6 +20,7 @@ package jsonpath
 import (
 	"fmt"
 	"sort"
+	"strconv"
 
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/strings"
@@ -89,6 +90,17 @@ func recEval(data any, parts []string) (any, error) {
 				result[i] = res
 			}
 			return flatten(result), nil
+		}
+		idx, err := strconv.Atoi(part)
+		if err == nil {
+			if idx < 0 {
+				idx += len(typed) // Handle negative indices
+			}
+			if idx < 0 || idx >= len(typed) {
+				return nil, fmt.Errorf("index %d out of range for array of length %d", idx, len(typed))
+			}
+			val := typed[idx]
+			return recEval(val, rest)
 		}
 
 		return nil, fmt.Errorf("unexpected array when accessing '%s'", part)
