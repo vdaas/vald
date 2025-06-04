@@ -21,6 +21,8 @@ package crud
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"testing"
 
 	"github.com/vdaas/vald/internal/log"
@@ -133,11 +135,19 @@ func (r *runner) processKubernetes(t *testing.T, ctx context.Context, plan *conf
 		if !ok {
 			t.Errorf("failed to wait for %s: %v", plan.Kubernetes.Kind, err)
 		}
+	case config.KubernetesActionCreate:
+		if plan.Kubernetes.Kind == config.Job {
+			err = kubernetes.Create(ctx, kubernetes.Job(r.k8s, plan.Kubernetes.Namespace), kubernetes.CronJob(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "failed to create job from cronjob: %v", err)
+				t.Errorf("failed to create job from cronjob: %v\n", err)
+			}
+			return
+		}
+		t.Errorf("kubernetes action create is only supported for creating job from cronjob")
 	case config.KubernetesActionExec:
 		t.Errorf("kubernetes action %s is not supported yet", plan.Kubernetes.Action)
 	case config.KubernetesActionApply:
-		t.Errorf("kubernetes action %s is not supported yet", plan.Kubernetes.Action)
-	case config.KubernetesActionCreate:
 		t.Errorf("kubernetes action %s is not supported yet", plan.Kubernetes.Action)
 	case config.KubernetesActionPatch:
 		t.Errorf("kubernetes action %s is not supported yet", plan.Kubernetes.Action)

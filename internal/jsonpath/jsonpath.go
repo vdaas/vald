@@ -29,7 +29,7 @@ func flatten(input []any) []any {
 	var out []any
 	for _, item := range input {
 		if inner, ok := item.([]any); ok {
-			out = append(out, flatten(inner)...) // 再帰的 flatten
+			out = append(out, flatten(inner)...)
 		} else {
 			out = append(out, item)
 		}
