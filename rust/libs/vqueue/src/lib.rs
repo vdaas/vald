@@ -212,8 +212,8 @@ impl Queue for VQueue {
             return Err(QueueError::InvalidUuid);
         }
         if let Some((_, idx)) = self.il.remove(uuid) {
+            self.ic.fetch_sub(1, AtomicOrdering::SeqCst);
             if idx.timestamp != 0 {
-                self.ic.fetch_sub(1, AtomicOrdering::SeqCst);
                 if let Some(vec_arc) = idx.vector {
                     return Ok(Some((vec_arc, idx.timestamp)));
                 }
@@ -272,7 +272,7 @@ impl Queue for VQueue {
             return Ok(None);
         }
         if its == 0 {
-            return Ok(Some((Arc::new(Vec::new()), 0, dts))); // no insert, only delete
+            return Ok(None); // No insert vector available
         }
         if dts == 0 || VQueue::newer(its, dts) {
             if let Some(idx) = self.load_ivq(uuid) {
