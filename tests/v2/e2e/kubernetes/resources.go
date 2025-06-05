@@ -16,11 +16,12 @@
 // limitations under the License.
 //
 
-// package kubernetes provides kubernetes e2e tests
 package kubernetes
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
@@ -115,6 +116,12 @@ type WorkloadControllerResourceClient[T Object, L ObjectList, C NamedObject] int
 	WorkloadResourceClient[T, L, C]
 	PodTemplateInterface[T]
 	PodAnnotationInterface[T]
+	CreateJob(
+		ctx context.Context,
+		from string,
+		gopts metav1.GetOptions,
+		copts metav1.CreateOptions,
+	) (*batchv1.Job, error)
 }
 
 type (
@@ -613,4 +620,29 @@ func (b *baseClient[T, L, C]) SetPodAnnotations(
 		return obj, err
 	}
 	return b.Update(ctx, obj, uopts)
+}
+
+func (b *baseClient[T, L, C]) CreateJob(
+	ctx context.Context, from string, gopts metav1.GetOptions, copts metav1.CreateOptions,
+) (*batchv1.Job, error) {
+	cobj, err := b.Get(ctx, from, gopts)
+	if err != nil {
+		return nil, err
+	}
+	tmpl, err := b.GetPodTemplate(cobj)
+	if err != nil {
+		return nil, err
+	}
+	if tmpl == nil {
+		return nil, errors.ErrPodTemplateNotFound
+	}
+	return Job(b.GetClient(), b.GetNamespace()).Create(ctx, &batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("%s-%s", from, time.Now().Format("2006-01-02-15-04-05")),
+			Namespace: b.GetNamespace(),
+		},
+		Spec: batchv1.JobSpec{
+			Template: *tmpl,
+		},
+	}, copts)
 }
