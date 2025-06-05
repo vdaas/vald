@@ -125,7 +125,7 @@ func handleGRPCWithStatusCode(
 			case config.Gt, config.Ge, config.Lt, config.Le:
 				a, b, ok := compare(val, expect.Value)
 				if !ok {
-					errs = append(errs, commonErr)
+					errs = append(errs, fmt.Errorf("assert_%v failed, cannot compare values, JSONPath: %s, expected: %v actual: %v", expect.Op, expect.Path, expect.Value, val))
 					continue
 				}
 				switch op {

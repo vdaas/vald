@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 
-// package kubernetes provides kubernetes e2e tests
 package kubernetes
 
 import (
@@ -98,7 +97,17 @@ func WaitForStatus[T Object, L ObjectList, C NamedObject, I ResourceInterface[T,
 		case <-ticker.C:
 			obj, err = client.Get(ctx, name, metav1.GetOptions{})
 			if err != nil {
+<<<<<<< HEAD
 				return obj, false, err
+=======
+				return false, err
+			}
+			matched = true
+			items, err := extractItems[T](l)
+			// if no resources found yet, keep polling
+			if len(items) == 0 {
+				return false, errors.New("No resource matched for labelSelector: " + labelSelector)
+>>>>>>> 756801964 ([VALD-325] E2E V2: Index Correction Job (#3000))
 			}
 			status, info, err := CheckResourceState(obj)
 			if err != nil {

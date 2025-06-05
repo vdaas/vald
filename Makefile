@@ -548,6 +548,12 @@ format: \
 	@$(MAKE) dockerfile format/go format/go/test
 	@$(MAKE) format/yaml
 
+.PHONY: format/diff
+## format diff
+format/diff:
+	@$(MAKE) format/go/diff
+	@$(MAKE) format/yaml/diff
+
 .PHONY: remove/empty/file
 ## removes empty file such as just includes \r \n space tab
 remove/empty/file: \
@@ -592,6 +598,25 @@ format/go/test: \
 		$(GOBIN)/gofumpt -w {}'
 	@echo "Go test file formatting complete."
 
+.PHONY: format/go/diff
+## run golines, gofumpt, goimports for go diff files
+format/go/diff: \
+	crlfmt/install \
+	golines/install \
+	gofumpt/install \
+	strictgoimports/install \
+	goimports/install \
+	files
+	@echo "Formatting Go Test files..."
+	@git diff --name-only --diff-filter=ACM HEAD | grep -e ".go$$" | xargs -I {} -P$(CORES) bash -c '\
+	        echo "Formatting Go file {}" && \
+		$(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH) {} && \
+		$(GOBIN)/strictgoimports -w {} && \
+		$(GOBIN)/goimports -w {} && \
+		$(GOBIN)/crlfmt -w -diff=false {} && \
+		$(GOBIN)/gofumpt -w {}'
+	@echo "Go file formatting complete."
+
 .PHONY: format/yaml
 format/yaml: \
 	prettier/install\
@@ -599,6 +624,18 @@ format/yaml: \
 	files
 	@echo "Formatting YAML files..."
 	- @cat $(ROOTDIR)/.gitfiles | grep -E '\.ya?ml\b' | grep -Ev '(templates|s3)' | xargs -I {} -P$(CORES) bash -c '\
+		echo "Formatting YAML file {}" && \
+		yamlfmt {} && \
+		prettier --write {}'
+	@echo "YAML file formatting complete."
+
+.PHONY: format/yaml/diff
+format/yaml/diff: \
+	prettier/install\
+	yamlfmt/install \
+	files
+	@echo "Formatting YAML files..."
+	- @git diff --name-only --diff-filter=ACM HEAD | grep -E '\.ya?ml\b' | grep -Ev '(templates|s3)' | xargs -I {} -P$(CORES) bash -c '\
 		echo "Formatting YAML file {}" && \
 		yamlfmt {} && \
 		prettier --write {}'
