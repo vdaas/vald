@@ -117,11 +117,12 @@ type ModificationConfig struct {
 
 // KubernetesConfig holds Kubernetes-specific settings.
 type KubernetesConfig struct {
-	Kind      KubernetesKind   `yaml:"kind"      json:"kind,omitempty"`
-	Namespace string           `yaml:"namespace" json:"namespace,omitempty"`
-	Name      string           `yaml:"name"      json:"name,omitempty"`
-	Action    KubernetesAction `yaml:"action"    json:"action,omitempty"`
-	Status    KubernetesStatus `yaml:"status"    json:"status,omitempty"`
+	Kind          KubernetesKind   `yaml:"kind"           json:"kind,omitempty"`
+	Namespace     string           `yaml:"namespace"      json:"namespace,omitempty"`
+	Name          string           `yaml:"name"           json:"name,omitempty"`
+	LabelSelector string           `yaml:"label_selector" json:"label_selector,omitempty"`
+	Action        KubernetesAction `yaml:"action"         json:"action,omitempty"`
+	Status        KubernetesStatus `yaml:"status"         json:"status,omitempty"`
 }
 
 // Kubernetes holds configuration for Kubernetes environments.
@@ -607,6 +608,7 @@ func (k *KubernetesConfig) Bind() (bound *KubernetesConfig, err error) {
 	}
 	k.Namespace = config.GetActualValue(k.Namespace)
 	k.Name = config.GetActualValue(k.Name)
+	k.LabelSelector = config.GetActualValue(k.LabelSelector)
 	if k.Action, err = k.Action.Bind(); err != nil {
 		return nil, err
 	}
@@ -616,9 +618,14 @@ func (k *KubernetesConfig) Bind() (bound *KubernetesConfig, err error) {
 	if k.Status, err = k.Status.Bind(); err != nil {
 		return nil, err
 	}
-	if k.Namespace == "" || k.Name == "" || k.Action == "" || k.Kind == "" {
-		return nil, errors.Errorf("kubernetes config: namespace: %s, name: %s, action: %s, and kind: %s must be provided",
-			k.Namespace, k.Name, k.Action, k.Kind)
+	if k.Namespace == "" || (k.Name == "" && k.LabelSelector == "") || k.Action == "" || k.Kind == "" {
+		return nil, errors.Errorf("kubernetes config: namespace: %s, name: %s or label_selector: %s, action: %s, and kind: %s must be provided",
+			k.Namespace, k.Name, k.LabelSelector, k.Action, k.Kind)
+	}
+	if k.LabelSelector != "" {
+		if k.Action != KubernetesActionWait {
+			return nil, errors.Errorf("kubernetes config: label_selector is currently only supported for wait action")
+		}
 	}
 	return k, nil
 }
