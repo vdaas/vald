@@ -137,7 +137,8 @@ func (r *runner) processKubernetes(t *testing.T, ctx context.Context, plan *conf
 		}
 	case config.KubernetesActionCreate:
 		if plan.Kubernetes.Kind == config.Job {
-			err = kubernetes.Create(ctx, kubernetes.Job(r.k8s, plan.Kubernetes.Namespace), kubernetes.CronJob(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name)
+			cronJob := kubernetes.CronJob(r.k8s, plan.Kubernetes.Namespace)
+			_, err = cronJob.CreateJob(ctx, plan.Kubernetes.Name, kubernetes.EmptyGetOptions, kubernetes.EmptyCreateOptions)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "failed to create job from cronjob: %v", err)
 				t.Errorf("failed to create job from cronjob: %v\n", err)

@@ -2315,7 +2315,6 @@ tests/v2/e2e/crud/search_test.go
 tests/v2/e2e/crud/strategy_test.go
 tests/v2/e2e/hdf5/hdf5.go
 tests/v2/e2e/kubernetes/client.go
-tests/v2/e2e/kubernetes/create.go
 tests/v2/e2e/kubernetes/doc.go
 tests/v2/e2e/kubernetes/portforward/option.go
 tests/v2/e2e/kubernetes/portforward/portforward.go
