@@ -40,29 +40,32 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: [stream, unary, multi]
+        scenario: [stream_crud, unary_crud, multi_crud]
         deployment: [helm-chart, helm-operator]
         environment: ["null"]
         include:
-          - mode: stream
+          - scenario: index_correction
             deployment: helm-chart
             environment: management
-          - mode: stream
+          - scenario: stream_crud
+            deployment: helm-chart
+            environment: management
+          - scenario: stream_crud
             deployment: helm-chart
             environment: mirror
-          - mode: stream
+          - scenario: stream_crud
             deployment: helm-chart
             environment: profile
-          - mode: stream
+          - scenario: stream_crud
             deployment: helm-chart
             environment: failure
-          - mode: stream
+          - scenario: stream_crud
             deployment: helm-chart
             environment: kill
-          - mode: stream
+          - scenario: stream_crud
             deployment: helm-chart
             environment: partition
-          - mode: stream
+          - scenario: stream_crud
             deployment: helm-chart
             environment: bandwidth
     runs-on: ubuntu-latest
@@ -170,7 +173,7 @@ jobs:
           if [[ "${{ matrix.environment }}" == "mirror" ]]; then
             export E2E_TARGET_NAMESPACE=vald-01
           fi
-          make e2e/v2 E2E_CONFIG=$(pwd)/.github/e2e/${{ matrix.mode }}_crud.yaml
+          make e2e/v2 E2E_CONFIG=$(pwd)/.github/e2e/${{ matrix.scenario }}.yaml
 
       - uses: ./.github/actions/e2e-profile
         if: ${{ matrix.environment == 'profile' }}
