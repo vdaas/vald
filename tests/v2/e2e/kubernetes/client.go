@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 
-// package kubernetes provides kubernetes client functions
 package kubernetes
 
 import (

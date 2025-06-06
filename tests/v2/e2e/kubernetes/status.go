@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 
-// package kubernetes provides kubernetes e2e tests
 package kubernetes
 
 import (
@@ -149,7 +148,7 @@ func WaitForStatus[T Object, L ObjectList, C NamedObject, I ResourceInterface[T,
 			items, err := extractItems[T](l)
 			// if no resources found yet, keep polling
 			if len(items) == 0 {
-				continue
+				return false, errors.New("No resource matched for labelSelector: " + labelSelector)
 			}
 			if err != nil {
 				return false, errors.Wrap(err, "failed to extract items")
