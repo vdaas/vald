@@ -18,7 +18,6 @@ package grpc
 
 import (
 	"context"
-	"crypto/tls"
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/circuitbreaker"
@@ -30,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
+	"github.com/vdaas/vald/internal/tls"
 	"google.golang.org/grpc"
 	gbackoff "google.golang.org/grpc/backoff"
 	"google.golang.org/grpc/credentials"
@@ -633,8 +633,7 @@ func WithClientInterceptors(names ...string) Option {
 			switch strings.ToLower(name) {
 			case "traceinterceptor", "trace":
 				g.dopts = append(g.dopts,
-					grpc.WithUnaryInterceptor(trace.UnaryClientInterceptor()),
-					grpc.WithStreamInterceptor(trace.StreamClientInterceptor()),
+					WithStatsHandler(trace.NewStatsHandler()),
 				)
 			case "metricinterceptor", "metric":
 				uci, sci, err := metric.ClientMetricInterceptors()

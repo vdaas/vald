@@ -17,7 +17,6 @@
 package net
 
 import (
-	"crypto/tls"
 	"reflect"
 	"testing"
 	"time"
@@ -25,6 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/cache/gache"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/tls"
 )
 
 func TestWithDNSCache(t *testing.T) {

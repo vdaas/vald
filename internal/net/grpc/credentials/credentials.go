@@ -17,8 +17,7 @@
 package credentials
 
 import (
-	"crypto/tls"
-
+	"github.com/vdaas/vald/internal/tls"
 	"google.golang.org/grpc/credentials"
 )
 
