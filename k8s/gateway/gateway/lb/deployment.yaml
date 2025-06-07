@@ -27,6 +27,7 @@ metadata:
     app.kubernetes.io/component: gateway-lb
 spec:
   progressDeadlineSeconds: 600
+  replicas: 3
   revisionHistoryLimit: 2
   selector:
     matchLabels:
