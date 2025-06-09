@@ -26,6 +26,12 @@ const GRPC_KIND_UNARY: &str = "unary";
 const GRPC_KIND_STREAM: &str = "stream";
 const RPC_COMPLETED_MESSAGE: &str = "rpc completed";
 const RPC_FAILED_MESSAGE: &str = "rpc failed";
+const VALD_ORG: &str = "vald.vdaas.org";
+const LATENCY_METRICS_NAME: &str = "server_latency";
+const COMPLETED_RPCS_METRICS_NAME: &str = "server_completed_rpcs";
+const MILLISECONDS: &str = "ms";
+const GRPCMETHOD_KEY_NAME: &str = "grpc_server_method";
+const GRPCSTATUS: &str = "grpc_server_status";
 
 #[derive(Debug)]
 struct AccessLogEntity {
@@ -46,6 +52,9 @@ struct AccessLogGRPCEntity {
 #[derive(Debug, Clone, Default)]
 pub struct AccessLogMiddlewareLayer {}
 
+#[derive(Debug, Clone, Default)]
+pub struct MetricMiddlewareLayer {}
+
 impl<S> Layer<S> for AccessLogMiddlewareLayer {
     type Service = AccessLogMiddleware<S>;
 
@@ -54,8 +63,21 @@ impl<S> Layer<S> for AccessLogMiddlewareLayer {
     }
 }
 
+impl<S> Layer<S> for MetricMiddlewareLayer {
+    type Service = MetricMiddleware<S>;
+
+    fn layer(&self, service: S) -> Self::Service {
+        MetricMiddleware { inner: service }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct AccessLogMiddleware<S> {
+    inner: S,
+}
+
+#[derive(Debug, Clone)]
+pub struct MetricMiddleware<S> {
     inner: S,
 }
 
@@ -138,6 +160,104 @@ where
                 }
                 Err(e) => {
                     warn!("{}, {:?}, {:?}", RPC_FAILED_MESSAGE, entity, e);
+                    return Err(e);
+                }
+            };
+        })
+    }
+}
+
+fn grpc_status_to_string(grpc_status: &str) -> &str {
+    match grpc_status {
+        "0" => "OK",
+        "1" => "Canceled",
+        "2" => "Unknown",
+        "3" => "InvalidArgument",
+        "4" => "DeadlineExceeded",
+        "5" => "NotFound",
+        "6" => "AlreadyExists",
+        "7" => "PermissionDenied",
+        "8" => "ResourceExhausted",
+        "9" => "FailedPrecondition",
+        "10" => "Aborted",
+        "11" => "OutOfRange",
+        "12" => "Unimplemented",
+        "13" => "Internal",
+        "14" => "Unavailable",
+        "15" => "DataLoss",
+        "16" => "Unauthenticated",
+        _ => "InvalidStatus",
+    }
+}
+
+impl<S, ReqBody, ResBody> Service<http::Request<ReqBody>> for MetricMiddleware<S>
+where
+    S: Service<http::Request<ReqBody>, Response = http::Response<ResBody>> + Clone + Send + 'static,
+    S::Future: Send + 'static,
+    S::Error: std::fmt::Debug,
+    ReqBody: Send + 'static,
+{
+    type Response = S::Response;
+    type Error = S::Error;
+    type Future = BoxFuture<'static, Result<Self::Response, Self::Error>>;
+
+    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        self.inner.poll_ready(cx)
+    }
+
+    fn call(&mut self, req: http::Request<ReqBody>) -> Self::Future {
+        let clone = self.inner.clone();
+        let mut inner = std::mem::replace(&mut self.inner, clone);
+
+        let path = req.uri().path().to_string().clone();
+        Box::pin(async move {
+            let meter = opentelemetry::global::meter(VALD_ORG);
+            let latency_histogram = meter
+                .f64_histogram(LATENCY_METRICS_NAME)
+                .with_description("Server latency in milliseconds, by method")
+                .with_unit(MILLISECONDS)
+                .build();
+            let completed_rpc_cnt = meter
+                .u64_counter(COMPLETED_RPCS_METRICS_NAME)
+                .with_description("Count of RPCs by method and status")
+                .with_unit(MILLISECONDS)
+                .build();
+
+            let start = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap_or_default();
+            let result = inner.call(req).await;
+            let end = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap_or_default();
+            let start_nanos =
+                (start.as_secs() as i64 * 1_000_000_000 + start.subsec_nanos() as i64) as f64;
+            let end_nanos =
+                (end.as_secs() as i64 * 1_000_000_000 + end.subsec_nanos() as i64) as f64;
+            match result {
+                Ok(res) => {
+                    let status = res.headers().get("grpc-status");
+                    let grpc_status_str = status.and_then(|v| v.to_str().ok()).unwrap_or("0");
+                    let code = grpc_status_to_string(grpc_status_str).to_string();
+                    let attributes = [
+                        opentelemetry::KeyValue::new(GRPCMETHOD_KEY_NAME, path),
+                        opentelemetry::KeyValue::new(GRPCSTATUS, code),
+                    ];
+                    latency_histogram
+                        .record((end_nanos - start_nanos) / 1_000_000 as f64, &attributes);
+                    completed_rpc_cnt.add(1, &attributes);
+                    return Ok(res);
+                }
+                Err(e) => {
+                    let attributes = [
+                        opentelemetry::KeyValue::new(GRPCMETHOD_KEY_NAME, path),
+                        opentelemetry::KeyValue::new(
+                            GRPCSTATUS,
+                            http::StatusCode::INTERNAL_SERVER_ERROR.as_str().to_string(),
+                        ),
+                    ];
+                    latency_histogram.record(end_nanos - start_nanos, &attributes);
+                    completed_rpc_cnt.add(1, &attributes);
                     return Err(e);
                 }
             };
