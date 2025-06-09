@@ -263,9 +263,7 @@ make init
 ## Contributors
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-
-[![All Contributors](https://img.shields.io/badge/all_contributors-22-orange.svg?style=flat-square)](#contributors)
-
+[![All Contributors](https://img.shields.io/badge/all_contributors-23-orange.svg?style=flat-square)](#contributors)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
@@ -304,6 +302,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://nononotyaya.net/"><img src="https://avatars.githubusercontent.com/u/23948752?v=4?s=100" width="100px;" alt="irokaru"/><br /><sub><b>irokaru</b></sub></a><br /><a href="https://github.com/vdaas/vald/issues?q=author%3Airokaru" title="Bug reports">🐛</a> <a href="https://github.com/vdaas/vald/commits?author=irokaru" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Kynea0b"><img src="https://avatars.githubusercontent.com/u/52264064?v=4?s=100" width="100px;" alt="Kynea0b"/><br /><sub><b>Kynea0b</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=Kynea0b" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
