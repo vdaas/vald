@@ -83,7 +83,7 @@ runs:
     - uses: ./.github/actions/setup-k3d
       if: ${{ inputs.require_k3d == 'true' }}
       with:
-        agents: 2
+        agents: 3
         ingress_port: ${{ inputs.ingress_port }}
     - name: Setup Minikube environment
       if: ${{ inputs.require_minikube == 'true' }}

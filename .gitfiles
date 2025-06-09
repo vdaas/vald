@@ -47,6 +47,7 @@
 .github/chatops_permissions.yaml
 .github/codeql/codeql-config.yaml
 .github/conflint.yaml
+.github/e2e/index_correction.yaml
 .github/e2e/multi_crud.yaml
 .github/e2e/stream_crud.yaml
 .github/e2e/unary_crud.yaml
@@ -1170,6 +1171,8 @@ internal/io/io.go
 internal/io/io_test.go
 internal/iter/doc.go
 internal/iter/iter.go
+internal/jsonpath/jsonpath.go
+internal/jsonpath/jsonpath_test.go
 internal/k8s/client/client.go
 internal/k8s/client/client_test.go
 internal/k8s/client/doc.go
@@ -2294,6 +2297,7 @@ tests/e2e/performance/max_vector_dim_test.go
 tests/e2e/pkg/agent/core/ngt/service/ngt_e2s_test.go
 tests/e2e/sidecar/sidecar_test.go
 tests/performance/max_vector_dim_test.go
+tests/v2/e2e/assets/index_correction.yaml
 tests/v2/e2e/assets/multi_crud.yaml
 tests/v2/e2e/assets/rollout.yaml
 tests/v2/e2e/assets/stream_crud.yaml
@@ -2311,6 +2315,7 @@ tests/v2/e2e/crud/search_test.go
 tests/v2/e2e/crud/strategy_test.go
 tests/v2/e2e/hdf5/hdf5.go
 tests/v2/e2e/kubernetes/client.go
+tests/v2/e2e/kubernetes/doc.go
 tests/v2/e2e/kubernetes/portforward/option.go
 tests/v2/e2e/kubernetes/portforward/portforward.go
 tests/v2/e2e/kubernetes/resources.go

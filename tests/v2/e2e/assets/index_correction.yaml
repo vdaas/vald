@@ -133,7 +133,6 @@ strategies:
           - name: Flush
             mode: unary
             type: flush
-            wait: 2m
           - mode: unary
             name: IndexInfo
             type: index_info
@@ -143,83 +142,87 @@ strategies:
             type: insert
             mode: unary
             parallelism: 10
-            num: 60000
-            qps: 3000
+            num: 1000
+            qps: 10
             wait: 2m
           - mode: unary
             name: IndexInfo
             type: index_info
             expect:
               - status_code: ok
-                path: $.stored
-                op: gt
-                value: 30000
-  - name: Search_with_RolloutRestartAgent
-    concurrency: 2
+                path: $.*
+                value: 3000
+  - concurrency: 1
+    name: Index Correction -> Check the number of Replica
     operations:
-      - name: Search
+      - name: IndexCorrection
         executions:
-          - name: Search
-            type: search
-            mode: unary
-            parallelism: 100
-            num: 100000
-            qps: 3000
-            offset: 0
-            wait: 2m
-            timeout: ""
-            # for search configurations
-            search:
-              k: 10
-              radius: -1
-              epsilon: 0.05
-              algorithm: cq
-              min_num: 10
-              ratio: 0
-              timeout: 3s
-            expect:
-              - status_code: ok
-              - status_code: not_found
-      - name: RolloutRestartAgentPods
-        executions:
-          - name: RolloutRestart
-            type: kubernetes
-            mode: other
-            delay: "40s"
-            kubernetes:
-              kind: "statefulset"
-              namespace: "default"
-              name: "vald-agent"
-              action: rollout
-          - name: WaitForAgentReady
+          - name: IndexCorrection
             type: kubernetes
             mode: other
             kubernetes:
-              kind: "statefulset"
-              namespace: "default"
-              name: "vald-agent"
+              kind: job
+              namespace: default
+              name: vald-index-correction
+              action: create
+          - name: Wait
+            type: kubernetes
+            mode: other
+            kubernetes:
+              kind: pod
+              namespace: default
+              label_selector: "app=vald-index-correction"
               action: wait
-              status: available
-  - name: RemoveVectors
-    operations:
-      - name: Remove
-        delay: ""
-        wait: ""
-        timeout: ""
-        executions:
-          - name: Remove
-            type: remove
-            mode: stream
-            parallelism: 0
-            num: 60000
-            offset: 0
-            bulk_size: 20
-            wait: "2m"
-            # for modification like (Insert, Update, Upsert, Remove, RemoveByTimestamp)
-            modification:
-              skip_strict_exist_check: false
-              timestamp: 0
+              status: completed
+          - mode: unary
+            name: IndexInfo
+            type: index_info
             expect:
-              # expected patterns of test status codes
               - status_code: ok
-              - status_code: not_found
+                path: $.*
+                value: 3000
+  - concurrency: 1
+    name: Kill an agent -> Index Correction -> Check the number of Replica
+    operations:
+      - name: IndexCorrection
+        executions:
+          - name: KillAgent
+            type: kubernetes
+            mode: other
+            kubernetes:
+              kind: pod
+              namespace: default
+              name: vald-agent-0
+              action: delete
+          - mode: unary
+            name: IndexInfo
+            type: index_info
+            expect:
+              - status_code: ok
+                path: $.*
+                op: lt
+                value: 3000
+          - name: IndexCorrection
+            type: kubernetes
+            mode: other
+            kubernetes:
+              kind: job
+              namespace: default
+              name: vald-index-correction
+              action: create
+          - name: Wait
+            type: kubernetes
+            mode: other
+            kubernetes:
+              kind: pod
+              namespace: default
+              label_selector: "app=vald-index-correction"
+              status: completed
+              action: wait
+          - mode: unary
+            name: IndexInfo
+            type: index_info
+            expect:
+              - status_code: ok
+                path: $.*
+                value: 3000

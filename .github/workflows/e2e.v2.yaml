@@ -40,29 +40,32 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: [stream, unary, multi]
+        scenario: [stream_crud, unary_crud, multi_crud]
         deployment: [helm-chart, helm-operator]
         environment: ["null"]
         include:
-          - mode: stream
+          - scenario: index_correction
             deployment: helm-chart
             environment: management
-          - mode: stream
+          - scenario: stream_crud
+            deployment: helm-chart
+            environment: management
+          - scenario: stream_crud
             deployment: helm-chart
             environment: mirror
-          - mode: stream
+          - scenario: stream_crud
             deployment: helm-chart
             environment: profile
-          - mode: stream
+          - scenario: stream_crud
             deployment: helm-chart
             environment: failure
-          - mode: stream
+          - scenario: stream_crud
             deployment: helm-chart
             environment: kill
-          - mode: stream
+          - scenario: stream_crud
             deployment: helm-chart
             environment: partition
-          - mode: stream
+          - scenario: stream_crud
             deployment: helm-chart
             environment: bandwidth
     runs-on: ubuntu-latest
@@ -89,7 +92,7 @@ jobs:
         if: ${{ matrix.deployment == 'helm-chart' && matrix.environment != 'mirror' }}
         uses: ./.github/actions/e2e-deploy-vald
         with:
-          helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }} --set agent.minReplicas=2"
+          helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}"
           values: .github/helm/values/values-${{ contains('profile', matrix.environment) && matrix.environment || 'lb' }}.yaml
           wait_for_selector: "app=vald-lb-gateway"
       - name: Deploy Vald-01
@@ -97,7 +100,7 @@ jobs:
         uses: ./.github/actions/e2e-deploy-vald
         with:
           namespace: vald-01
-          helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }} --set agent.minReplicas=2"
+          helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}"
           values: .github/helm/values/values-mirror-01.yaml
           wait_for_selector: app=vald-mirror-gateway
       - name: Deploy Vald-02
@@ -105,7 +108,7 @@ jobs:
         uses: ./.github/actions/e2e-deploy-vald
         with:
           namespace: vald-02
-          helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }} --set agent.minReplicas=2"
+          helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}"
           values: .github/helm/values/values-mirror-02.yaml
           wait_for_selector: app=vald-mirror-gateway
       - name: Deploy Mirror Target
@@ -144,7 +147,7 @@ jobs:
         if: ${{ matrix.deployment == 'helm-operator' }}
         uses: ./.github/actions/e2e-deploy-vald-helm-operator
         with:
-          helm_extra_options: "${{ steps.vald_helm_operator.outputs.HELM_EXTRA_OPTIONS }} --set agent.minReplicas=2"
+          helm_extra_options: "${{ steps.vald_helm_operator.outputs.HELM_EXTRA_OPTIONS }}"
           valdrelease: ./.github/valdrelease/valdrelease.yaml
           wait_for_selector: app=vald-lb-gateway
 
@@ -170,7 +173,7 @@ jobs:
           if [[ "${{ matrix.environment }}" == "mirror" ]]; then
             export E2E_TARGET_NAMESPACE=vald-01
           fi
-          make e2e/v2 E2E_CONFIG=$(pwd)/.github/e2e/${{ matrix.mode }}_crud.yaml
+          make e2e/v2 E2E_CONFIG=$(pwd)/.github/e2e/${{ matrix.scenario }}.yaml
 
       - uses: ./.github/actions/e2e-profile
         if: ${{ matrix.environment == 'profile' }}

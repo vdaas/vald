@@ -105,9 +105,9 @@ func (r *runner) processObject(
 						return
 					}
 					if res != nil && res.GetStatus() != nil {
-						_ = handleGRPCStatusCodeError(t, err, codes.Code(res.GetStatus().GetCode()), plan)
+						_ = handleGRPCWithStatusCode(t, err, codes.Code(res.GetStatus().GetCode()), res, plan)
 					} else {
-						handleGRPCCallError(t, err, plan)
+						handleGRPCCall(t, err, res, plan)
 					}
 					break
 				}

@@ -21,6 +21,8 @@ package crud
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"testing"
 
 	"github.com/vdaas/vald/internal/log"
@@ -111,33 +113,42 @@ func (r *runner) processKubernetes(t *testing.T, ctx context.Context, plan *conf
 		var ok bool
 		switch plan.Kubernetes.Kind {
 		case config.ConfigMap:
-			_, ok, err = kubernetes.WaitForStatus(ctx, kubernetes.ConfigMap(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.Status.Status())
+			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.ConfigMap(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
 		case config.CronJob:
-			_, ok, err = kubernetes.WaitForStatus(ctx, kubernetes.CronJob(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.Status.Status())
+			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.CronJob(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
 		case config.DaemonSet:
-			_, ok, err = kubernetes.WaitForStatus(ctx, kubernetes.DaemonSet(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.Status.Status())
+			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.DaemonSet(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
 		case config.Deployment:
-			_, ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Deployment(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.Status.Status())
+			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Deployment(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
 		case config.Job:
-			_, ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Job(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.Status.Status())
+			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Job(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
 		case config.Pod:
-			_, ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Pod(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.Status.Status())
+			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Pod(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
 		case config.Secret:
-			_, ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Secret(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.Status.Status())
+			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Secret(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
 		case config.Service:
-			_, ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Service(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.Status.Status())
+			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.Service(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
 		case config.StatefulSet:
-			_, ok, err = kubernetes.WaitForStatus(ctx, kubernetes.StatefulSet(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.Status.Status())
+			ok, err = kubernetes.WaitForStatus(ctx, kubernetes.StatefulSet(r.k8s, plan.Kubernetes.Namespace), plan.Kubernetes.Name, plan.Kubernetes.LabelSelector, plan.Kubernetes.Status.Status())
 		default:
 		}
 		if !ok {
 			t.Errorf("failed to wait for %s: %v", plan.Kubernetes.Kind, err)
 		}
+	case config.KubernetesActionCreate:
+		if plan.Kubernetes.Kind == config.Job {
+			cronJob := kubernetes.CronJob(r.k8s, plan.Kubernetes.Namespace)
+			_, err = cronJob.CreateJob(ctx, plan.Kubernetes.Name, kubernetes.EmptyGetOptions, kubernetes.EmptyCreateOptions)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "failed to create job from cronjob: %v", err)
+				t.Errorf("failed to create job from cronjob: %v\n", err)
+			}
+			return
+		}
+		t.Errorf("kubernetes action create is only supported for creating job from cronjob")
 	case config.KubernetesActionExec:
 		t.Errorf("kubernetes action %s is not supported yet", plan.Kubernetes.Action)
 	case config.KubernetesActionApply:
-		t.Errorf("kubernetes action %s is not supported yet", plan.Kubernetes.Action)
-	case config.KubernetesActionCreate:
 		t.Errorf("kubernetes action %s is not supported yet", plan.Kubernetes.Action)
 	case config.KubernetesActionPatch:
 		t.Errorf("kubernetes action %s is not supported yet", plan.Kubernetes.Action)

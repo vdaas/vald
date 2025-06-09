@@ -68,15 +68,15 @@ type Operation struct {
 
 // Execution represents the execution details for a given operation.
 type Execution struct {
-	*BaseConfig         `                    yaml:",inline,omitempty"               json:",inline,omitempty"`
-	TimeConfig          `                    yaml:",inline,omitempty"               json:",inline,omitempty"`
-	Name                string              `yaml:"name"                            json:"name,omitempty"`
-	Type                OperationType       `yaml:"type"                            json:"type,omitempty"`
-	Mode                OperationMode       `yaml:"mode"                            json:"mode,omitempty"`
-	Search              *SearchQuery        `yaml:"search,omitempty"                json:"search,omitempty"`
-	Kubernetes          *KubernetesConfig   `yaml:"kubernetes,omitempty"            json:"kubernetes,omitempty"`
-	Modification        *ModificationConfig `yaml:"modification,omitempty"          json:"modification,omitempty"`
-	ExpectedStatusCodes StatusCodes         `yaml:"expected_status_codes,omitempty" json:"expected_status_codes,omitempty"`
+	*BaseConfig  `                    yaml:",inline,omitempty"      json:",inline,omitempty"`
+	TimeConfig   `                    yaml:",inline,omitempty"      json:",inline,omitempty"`
+	Name         string              `yaml:"name"                   json:"name,omitempty"`
+	Type         OperationType       `yaml:"type"                   json:"type,omitempty"`
+	Mode         OperationMode       `yaml:"mode"                   json:"mode,omitempty"`
+	Search       *SearchQuery        `yaml:"search,omitempty"       json:"search,omitempty"`
+	Kubernetes   *KubernetesConfig   `yaml:"kubernetes,omitempty"   json:"kubernetes,omitempty"`
+	Modification *ModificationConfig `yaml:"modification,omitempty" json:"modification,omitempty"`
+	Expect       []Expect            `yaml:"expect,omitempty"       json:"expect,omitempty"`
 }
 
 // TimeConfig holds time-related configuration values.
@@ -117,11 +117,12 @@ type ModificationConfig struct {
 
 // KubernetesConfig holds Kubernetes-specific settings.
 type KubernetesConfig struct {
-	Kind      KubernetesKind   `yaml:"kind"      json:"kind,omitempty"`
-	Namespace string           `yaml:"namespace" json:"namespace,omitempty"`
-	Name      string           `yaml:"name"      json:"name,omitempty"`
-	Action    KubernetesAction `yaml:"action"    json:"action,omitempty"`
-	Status    KubernetesStatus `yaml:"status"    json:"status,omitempty"`
+	Kind          KubernetesKind   `yaml:"kind"           json:"kind,omitempty"`
+	Namespace     string           `yaml:"namespace"      json:"namespace,omitempty"`
+	Name          string           `yaml:"name"           json:"name,omitempty"`
+	LabelSelector string           `yaml:"label_selector" json:"label_selector,omitempty"`
+	Action        KubernetesAction `yaml:"action"         json:"action,omitempty"`
+	Status        KubernetesStatus `yaml:"status"         json:"status,omitempty"`
 }
 
 // Kubernetes holds configuration for Kubernetes environments.
@@ -145,6 +146,14 @@ type Port string
 // Dataset holds dataset-related configuration.
 type Dataset struct {
 	Name string `yaml:"name" json:"name,omitempty"`
+}
+
+// Expect holds expected results for executions.
+type Expect struct {
+	StatusCode StatusCode `yaml:"status_code,omitempty" json:"status_code,omitempty"`
+	Path       string     `yaml:"path,omitempty"        json:"path,omitempty"`
+	Op         Operator   `yaml:"op,omitempty"          json:"op,omitempty"`
+	Value      any        `yaml:"value,omitempty"       json:"value,omitempty"`
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -255,6 +264,17 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 	}
 	e.Name = config.GetActualValue(e.Name)
 	e.TimeConfig.Bind()
+	if e.Expect != nil {
+		for i, ex := range e.Expect {
+			if ex.StatusCode, err = ex.StatusCode.Bind(); err != nil {
+				return nil, errors.Wrapf(err, "failed to bind StatusCodes for Execution %s of type %s", e.Name, e.Type)
+			}
+			if ex.Op, err = ex.Op.Bind(); err != nil {
+				return nil, errors.Wrapf(err, "failed to bind Expect.Op for Execution %s of type %s", e.Name, e.Type)
+			}
+			e.Expect[i] = ex
+		}
+	}
 	switch e.Type {
 	case OpSearch,
 		OpSearchByID,
@@ -298,11 +318,6 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 				if e.Modification, err = e.Modification.Bind(); err != nil {
 					return nil, errors.Wrapf(err, "failed to bind ModificationConfig for Execution %s of type %s", e.Name, e.Type)
 				}
-			}
-		}
-		if e.ExpectedStatusCodes != nil {
-			if e.ExpectedStatusCodes, err = e.ExpectedStatusCodes.Bind(); err != nil {
-				return nil, errors.Wrapf(err, "failed to bind StatusCodes for Execution %s of type %s", e.Name, e.Type)
 			}
 		}
 	case OpIndexInfo,
@@ -450,6 +465,17 @@ func (om OperationMode) Bind() (bound OperationMode, err error) {
 }
 
 // Bind expands environment variables for StatusCode.
+func (op Operator) Bind() (bound Operator, err error) {
+	switch trimStringForCompare(config.GetActualValue(op)) {
+	case Le, Lt, Ge, Gt, Eq, Ne:
+		return op, nil
+	case "":
+		return Eq, nil
+	}
+	return op, errors.New("Unsupported operator: " + string(op))
+}
+
+// Bind expands environment variables for StatusCode.
 func (sc StatusCode) Bind() (bound StatusCode, err error) {
 	switch trimStringForCompare(config.GetActualValue(sc)) {
 	case StatusCodeOK:
@@ -488,18 +514,6 @@ func (sc StatusCode) Bind() (bound StatusCode, err error) {
 		return StatusCodeUnauthenticated, nil
 	}
 	return bound, nil
-}
-
-// Bind binds each StatusCode in StatusCodes.
-func (sc StatusCodes) Bind() (bound StatusCodes, err error) {
-	for i, code := range sc {
-		var bcode StatusCode
-		if bcode, err = code.Bind(); err != nil {
-			return nil, err
-		}
-		sc[i] = bcode
-	}
-	return sc, nil
 }
 
 // Bind expands environment variables for KubernetesKind.
@@ -594,6 +608,7 @@ func (k *KubernetesConfig) Bind() (bound *KubernetesConfig, err error) {
 	}
 	k.Namespace = config.GetActualValue(k.Namespace)
 	k.Name = config.GetActualValue(k.Name)
+	k.LabelSelector = config.GetActualValue(k.LabelSelector)
 	if k.Action, err = k.Action.Bind(); err != nil {
 		return nil, err
 	}
@@ -603,9 +618,14 @@ func (k *KubernetesConfig) Bind() (bound *KubernetesConfig, err error) {
 	if k.Status, err = k.Status.Bind(); err != nil {
 		return nil, err
 	}
-	if k.Namespace == "" || k.Name == "" || k.Action == "" || k.Kind == "" {
-		return nil, errors.Errorf("kubernetes config: namespace: %s, name: %s, action: %s, and kind: %s must be provided",
-			k.Namespace, k.Name, k.Action, k.Kind)
+	if k.Namespace == "" || (k.Name == "" && k.LabelSelector == "") || k.Action == "" || k.Kind == "" {
+		return nil, errors.Errorf("kubernetes config: namespace: %s, name: %s or label_selector: %s, action: %s, and kind: %s must be provided",
+			k.Namespace, k.Name, k.LabelSelector, k.Action, k.Kind)
+	}
+	if k.LabelSelector != "" {
+		if k.Action != KubernetesActionWait {
+			return nil, errors.Errorf("kubernetes config: label_selector is currently only supported for wait action")
+		}
 	}
 	return k, nil
 }
@@ -759,16 +779,6 @@ func (sc StatusCode) Status() codes.Code {
 // String returns the string representation of StatusCode.
 func (sc StatusCode) String() string {
 	return string(sc)
-}
-
-// Equals checks if any StatusCode in StatusCodes equals the given string.
-func (sc StatusCodes) Equals(c string) bool {
-	for _, s := range sc {
-		if s.Equals(c) {
-			return true
-		}
-	}
-	return false
 }
 
 // Port returns the numeric value of the Port.
