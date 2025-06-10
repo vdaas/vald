@@ -263,9 +263,7 @@ make init
 ## Contributors
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-
-[![All Contributors](https://img.shields.io/badge/all_contributors-22-orange.svg?style=flat-square)](#contributors)
-
+[![All Contributors](https://img.shields.io/badge/all_contributors-23-orange.svg?style=flat-square)](#contributors)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
@@ -304,6 +302,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://nononotyaya.net/"><img src="https://avatars.githubusercontent.com/u/23948752?v=4?s=100" width="100px;" alt="irokaru"/><br /><sub><b>irokaru</b></sub></a><br /><a href="https://github.com/vdaas/vald/issues?q=author%3Airokaru" title="Bug reports">🐛</a> <a href="https://github.com/vdaas/vald/commits?author=irokaru" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Matts966"><img src="https://avatars.githubusercontent.com/u/28551465?v=4?s=100" width="100px;" alt="Matts966"/><br /><sub><b>Matts966</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=Matts966" title="Code">💻</a> <a href="#infra-Matts966" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#maintenance-Matts966" title="Maintenance">🚧</a> <a href="https://github.com/vdaas/vald/pulls?q=is%3Apr+reviewed-by%3AMatts966" title="Reviewed Pull Requests">👀</a></td>
     </tr>
   </tbody>
 </table>
