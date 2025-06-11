@@ -13,16 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-[workspace]
-members = [
-	"bin/meta",
-	"bin/agent",
-	"libs/algorithm",
-	"libs/algorithms/ngt",
-	"libs/algorithms/qbg",
-	"libs/algorithms/faiss",
-	"libs/kvs",
-	"libs/observability",
-	"libs/proto",
-	"libs/vqueue",
-]
+[package]
+name = "vqueue"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+dashmap = "6.1.0"
