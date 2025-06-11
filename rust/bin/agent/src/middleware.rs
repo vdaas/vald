@@ -256,7 +256,8 @@ where
                             grpc_status_to_string("13").to_string(),
                         ),
                     ];
-                    latency_histogram.record(end_nanos - start_nanos, &attributes);
+                    latency_histogram
+                        .record((end_nanos - start_nanos) / 1_000_000 as f64, &attributes);
                     completed_rpc_cnt.add(1, &attributes);
                     return Err(e);
                 }
