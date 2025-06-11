@@ -264,7 +264,7 @@ make init
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 
-[![All Contributors](https://img.shields.io/badge/all_contributors-21-orange.svg?style=flat-square)](#contributors)
+[![All Contributors](https://img.shields.io/badge/all_contributors-23-orange.svg?style=flat-square)](#contributors)
 
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
@@ -301,6 +301,10 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/smorihira"><img src="https://avatars.githubusercontent.com/u/105629359?v=4?s=100" width="100px;" alt="Shunya Morihira (森平 隼矢)"/><br /><sub><b>Shunya Morihira (森平 隼矢)</b></sub></a><br /><a href="#tool-smorihira" title="Tools">🔧</a> <a href="https://github.com/vdaas/vald/commits?author=smorihira" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/iammytoo"><img src="https://avatars.githubusercontent.com/u/64457274?v=4?s=100" width="100px;" alt="miyamoto"/><br /><sub><b>miyamoto</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=iammytoo" title="Code">💻</a> <a href="#research-iammytoo" title="Research">🔬</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://www.highpon.com/"><img src="https://avatars.githubusercontent.com/u/54130718?v=4?s=100" width="100px;" alt="s-shiraki"/><br /><sub><b>s-shiraki</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=highpon" title="Tests">⚠️</a> <a href="https://github.com/vdaas/vald/commits?author=highpon" title="Code">💻</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://nononotyaya.net/"><img src="https://avatars.githubusercontent.com/u/23948752?v=4?s=100" width="100px;" alt="irokaru"/><br /><sub><b>irokaru</b></sub></a><br /><a href="https://github.com/vdaas/vald/issues?q=author%3Airokaru" title="Bug reports">🐛</a> <a href="https://github.com/vdaas/vald/commits?author=irokaru" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Matts966"><img src="https://avatars.githubusercontent.com/u/28551465?v=4?s=100" width="100px;" alt="Matts966"/><br /><sub><b>Matts966</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=Matts966" title="Code">💻</a> <a href="#infra-Matts966" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#maintenance-Matts966" title="Maintenance">🚧</a> <a href="https://github.com/vdaas/vald/pulls?q=is%3Apr+reviewed-by%3AMatts966" title="Reviewed Pull Requests">👀</a></td>
     </tr>
   </tbody>
 </table>
