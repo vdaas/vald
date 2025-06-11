@@ -253,7 +253,7 @@ where
                         opentelemetry::KeyValue::new(GRPCMETHOD_KEY_NAME, path),
                         opentelemetry::KeyValue::new(
                             GRPCSTATUS,
-                            http::StatusCode::INTERNAL_SERVER_ERROR.as_str().to_string(),
+                            grpc_status_to_string("13").to_string(),
                         ),
                     ];
                     latency_histogram.record(end_nanos - start_nanos, &attributes);
