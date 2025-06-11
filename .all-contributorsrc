@@ -224,6 +224,28 @@
         "test",
         "code"
       ]
+    },
+    {
+      "login": "irokaru",
+      "name": "irokaru",
+      "avatar_url": "https://avatars.githubusercontent.com/u/23948752?v=4",
+      "profile": "https://nononotyaya.net/",
+      "contributions": [
+        "bug",
+        "code"
+      ]
+    },
+    {
+      "login": "Matts966",
+      "name": "Matts966",
+      "avatar_url": "https://avatars.githubusercontent.com/u/28551465?v=4",
+      "profile": "https://github.com/Matts966",
+      "contributions": [
+        "code",
+        "infra",
+        "maintenance",
+        "review"
+      ]
     }
   ],
   "contributorsPerLine": 7,
