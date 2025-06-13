@@ -161,8 +161,8 @@ PROTO_MIRROR_API_DOCS := $(PROTO_MIRROR_APIS:$(ROOTDIR)/apis/proto/v1/mirror/%.p
 
 LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
 
-NGT_LDFLAGS = -fopenmp -lopenblas -llapack
-FAISS_LDFLAGS = $(NGT_LDFLAGS) -lgfortran
+NGT_LDFLAGS = -fopenmp -lopenblas -llapack -lgfortran
+FAISS_LDFLAGS = $(NGT_LDFLAGS)
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl -lm
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 TEST_LDFLAGS = $(LDFLAGS) $(CGO_LDFLAGS)
@@ -926,3 +926,4 @@ include Makefile.d/minikube.mk
 include Makefile.d/proto.mk
 include Makefile.d/test.mk
 include Makefile.d/tools.mk
+include Makefile.d/tls.mk

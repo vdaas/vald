@@ -17,85 +17,45 @@
 package config
 
 import (
-	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/test/goleak"
+	"github.com/vdaas/vald/internal/test"
 )
 
 func TestClient_Bind(t *testing.T) {
-	type fields struct {
-		Net       *Net
-		Transport *Transport
-	}
-	type want struct {
-		want *Client
-	}
-	type test struct {
-		name       string
-		fields     fields
-		want       want
-		checkFunc  func(want, *Client) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-	defaultCheckFunc := func(w want, got *Client) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+	if err := test.Run(t.Context(), t, func(tt *testing.T, args *Client) (c *Client, err error) {
+		tt.Helper()
+		if args == nil {
+			args = new(Client)
 		}
-		return nil
-	}
-	tests := []test{
+		c = args.Bind()
+		return c, nil
+	}, []test.Case[*Client, *Client]{
 		{
-			name: "return Client when the bind successes and net and transport is nil",
-			want: want{
-				want: new(Client),
+			Name: "returns Client when no argument found",
+			Want: test.Result[*Client]{
+				Val: new(Client).Bind(),
 			},
 		},
 		{
-			name: "return Client when the bind successes and net and transport is not nil",
-			fields: fields{
+			Name: "return Client when the bind successes and net and transport is not nil",
+			Args: (&Client{
 				Net:       new(Net),
 				Transport: new(Transport),
-			},
-			want: want{
-				want: &Client{
+			}),
+			Want: test.Result[*Client]{
+				Val: (&Client{
 					Net: new(Net),
 					Transport: &Transport{
 						RoundTripper: new(RoundTripper),
 						Backoff:      new(Backoff),
 					},
-				},
+				}).Bind(),
+				Err: nil,
 			},
 		},
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			c := &Client{
-				Net:       test.fields.Net,
-				Transport: test.fields.Transport,
-			}
-
-			got := c.Bind()
-			if err := checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
+	}...); err != nil {
+		t.Error(err)
 	}
 }
 

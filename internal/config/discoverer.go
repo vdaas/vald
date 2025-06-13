@@ -148,14 +148,10 @@ func (d *Discoverer) Bind() *Discoverer {
 	d.DiscoveryDuration = GetActualValue(d.DiscoveryDuration)
 	if d.Net != nil {
 		d.Net.Bind()
-	} else {
-		d.Net = new(Net)
 	}
 
 	if d.Selectors != nil {
 		d.Selectors.Bind()
-	} else {
-		d.Selectors = new(Selectors)
 	}
 
 	return d
@@ -163,22 +159,37 @@ func (d *Discoverer) Bind() *Discoverer {
 
 // Bind binds the actual data from the Selectors receiver field.
 func (s *Selectors) Bind() *Selectors {
-	if s == nil {
-		s = new(Selectors)
+	// Initialization of s itself should be handled by the parent struct's Bind method.
+	if s.Pod == nil {
+		s.Pod = new(Selector)
 	}
-	s.Pod = s.Pod.Bind()
-	s.Node = s.Node.Bind()
-	s.PodMetrics = s.PodMetrics.Bind()
-	s.NodeMetrics = s.NodeMetrics.Bind()
-	s.Service = s.Service.Bind()
+	s.Pod.Bind()
+
+	if s.Node == nil {
+		s.Node = new(Selector)
+	}
+	s.Node.Bind()
+
+	if s.PodMetrics == nil {
+		s.PodMetrics = new(Selector)
+	}
+	s.PodMetrics.Bind()
+
+	if s.NodeMetrics == nil {
+		s.NodeMetrics = new(Selector)
+	}
+	s.NodeMetrics.Bind()
+
+	if s.Service == nil {
+		s.Service = new(Selector)
+	}
+	s.Service.Bind()
 	return s
 }
 
 // Bind binds the actual data from the Selector receiver field.
 func (s *Selector) Bind() *Selector {
-	if s == nil {
-		return new(Selector)
-	}
+	// Initialization of s itself should be handled by the parent struct's Bind method.
 	for k, v := range s.Labels {
 		s.Labels[k] = GetActualValue(v)
 	}
@@ -189,9 +200,7 @@ func (s *Selector) Bind() *Selector {
 }
 
 func (r *ReadReplica) Bind() *ReadReplica {
-	if r == nil {
-		return new(ReadReplica)
-	}
+	// Initialization of r itself should be handled by the parent struct's Bind method.
 	r.IDKey = GetActualValue(r.IDKey)
 	return r
 }
