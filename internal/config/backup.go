@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 // BackupManager represents the configuration for backup manager.
@@ -25,7 +24,7 @@ type BackupManager struct {
 // Bind binds the actual data from the BackupManager receiver fields.
 func (b *BackupManager) Bind() *BackupManager {
 	if b.Client != nil {
-		b.Client = b.Client.Bind()
+		b.Client.Bind()
 	} else {
 		b.Client = newGRPCClientConfig()
 	}

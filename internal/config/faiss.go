@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 // Faiss represent the faiss core configuration for server.
@@ -83,20 +82,6 @@ type Faiss struct {
 	KVSDB *KVSDB `json:"kvsdb,omitempty" yaml:"kvsdb"`
 }
 
-//// KVSDB represent the faiss vector bidirectional kv store configuration
-// type KVSDB struct {
-// 	// Concurrency represents kvsdb range loop processing concurrency
-// 	Concurrency int `json:"concurrency,omitempty" yaml:"concurrency,omitempty"`
-// }
-//// VQueue represent the faiss vector queue buffer size
-// type VQueue struct {
-// 	// InsertBufferPoolSize represents insert time ordered slice buffer size
-// 	InsertBufferPoolSize int `json:"insert_buffer_pool_size,omitempty" yaml:"insert_buffer_pool_size"`
-//
-// 	// DeleteBufferPoolSize represents delete time ordered slice buffer size
-// 	DeleteBufferPoolSize int `json:"delete_buffer_pool_size,omitempty" yaml:"delete_buffer_pool_size"`
-// }
-
 // Bind returns Faiss object whose some string value is filed value or environment value.
 func (f *Faiss) Bind() *Faiss {
 	f.IndexPath = GetActualValue(f.IndexPath)
@@ -112,9 +97,12 @@ func (f *Faiss) Bind() *Faiss {
 	if f.VQueue == nil {
 		f.VQueue = new(VQueue)
 	}
+	f.VQueue.Bind() // Call Bind on VQueue
+
 	if f.KVSDB == nil {
 		f.KVSDB = new(KVSDB)
 	}
+	f.KVSDB.Bind() // Call Bind on KVSDB
 
 	return f
 }

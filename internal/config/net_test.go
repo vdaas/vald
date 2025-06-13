@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 import (
@@ -818,9 +817,9 @@ func TestNet_Opts(t *testing.T) {
 				},
 				TLS: &TLS{
 					Enabled: true,
-					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
-					Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
-					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+					Cert:    testdata.GetTestdataPath("tls/server.crt"),
+					Key:     testdata.GetTestdataPath("tls/server.key"),
+					CA:      testdata.GetTestdataPath("tls/ca.pem"),
 				},
 			},
 			want: want{

@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 // Indexer represents the Indexer configurations.
@@ -70,8 +69,11 @@ func (im *Indexer) Bind() *Indexer {
 	im.AutoSaveIndexWaitDuration = GetActualValue(im.AutoSaveIndexWaitDuration)
 	im.NodeName = GetActualValue(im.NodeName)
 
-	if im.Discoverer != nil {
-		im.Discoverer = im.Discoverer.Bind()
+	if im.Discoverer == nil {
+		im.Discoverer = new(DiscovererClient)
 	}
+	// Assuming DiscovererClient.Bind() is compliant and im.Discoverer is now non-nil
+	im.Discoverer.Bind()
+
 	return im
 }

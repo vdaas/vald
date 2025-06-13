@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 import (
@@ -61,13 +60,11 @@ func TestDiscoverer_Bind(t *testing.T) {
 					DiscoveryDuration: "10ms",
 				},
 				want: want{
-					want: &Discoverer{
+					want: (&Discoverer{
 						Name:              "discoverer",
 						Namespace:         "vald",
 						DiscoveryDuration: "10ms",
-						Net:               new(Net),
-						Selectors:         new(Selectors),
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -78,16 +75,13 @@ func TestDiscoverer_Bind(t *testing.T) {
 					Name:              "discoverer",
 					Namespace:         "vald",
 					DiscoveryDuration: "10ms",
-					Net:               new(Net),
 				},
 				want: want{
-					want: &Discoverer{
+					want: (&Discoverer{
 						Name:              "discoverer",
 						Namespace:         "vald",
 						DiscoveryDuration: "10ms",
-						Net:               new(Net),
-						Selectors:         new(Selectors),
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -112,13 +106,11 @@ func TestDiscoverer_Bind(t *testing.T) {
 					}
 				},
 				want: want{
-					want: &Discoverer{
+					want: (&Discoverer{
 						Name:              "discoverer",
 						Namespace:         "vald",
 						DiscoveryDuration: "10ms",
-						Net:               new(Net),
-						Selectors:         new(Selectors),
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -185,58 +177,28 @@ func TestDiscovererClient_Bind(t *testing.T) {
 					Duration: "10ms",
 				},
 				want: want{
-					want: &DiscovererClient{
+					want: (&DiscovererClient{
 						Duration: "10ms",
-						Client: &GRPCClient{
-							DialOption: &DialOption{
-								Insecure: true,
-							},
-						},
-						AgentClientOptions: &GRPCClient{
-							DialOption: &DialOption{
-								Insecure: true,
-							},
-						},
-					},
+					}).Bind(),
 				},
 			}
 		}(),
 		func() test {
-			c := new(GRPCClient)
-			ac := new(GRPCClient)
-
 			return test{
 				name: "return DiscovererClient when the bind successes and Client and AgentClientOptions is not nil",
 				fields: fields{
-					Duration:           "10ms",
-					Client:             c,
-					AgentClientOptions: ac,
+					Duration: "10ms",
 				},
 				want: want{
-					want: &DiscovererClient{
+					want: (&DiscovererClient{
 						Duration: "10ms",
-						Client: &GRPCClient{
-							ConnectionPool: new(ConnectionPool),
-							DialOption: &DialOption{
-								Insecure: true,
-							},
-							TLS: new(TLS),
-						},
-						AgentClientOptions: &GRPCClient{
-							ConnectionPool: new(ConnectionPool),
-							DialOption: &DialOption{
-								Insecure: true,
-							},
-							TLS: new(TLS),
-						},
-					},
+					}).Bind(),
 				},
 			}
 		}(),
 		func() test {
 			key := "DURATION_FOR_TEST_DISCOVERER_CLIENT_BIND"
 			val := "10ms"
-
 			return test{
 				name: "return DiscovererClient when the bind successes and the data is loaded from the environment variable",
 				fields: fields{
@@ -247,7 +209,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 					t.Setenv(key, val)
 				},
 				want: want{
-					want: &DiscovererClient{
+					want: (&DiscovererClient{
 						Duration: "10ms",
 						Client: &GRPCClient{
 							DialOption: &DialOption{
@@ -259,7 +221,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 								Insecure: true,
 							},
 						},
-					},
+					}).Bind(),
 				},
 			}
 		}(),

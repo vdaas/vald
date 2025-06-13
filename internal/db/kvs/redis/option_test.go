@@ -14,12 +14,10 @@
 // limitations under the License.
 //
 
-// Package redis provides implementation of Go API for redis interface
 package redis
 
 import (
 	"context"
-	"crypto/tls"
 	"reflect"
 	"testing"
 	"time"
@@ -28,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"github.com/vdaas/vald/internal/tls"
 )
 
 func TestWithDialer(t *testing.T) {

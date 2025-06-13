@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 import (
@@ -74,15 +73,14 @@ func TestGateway_Bind(t *testing.T) {
 					IndexReplica:   ireplica,
 				},
 				want: want{
-					want: &Gateway{
+					want: (&Gateway{
 						AgentPort:      port,
 						AgentName:      name,
 						AgentNamespace: ns,
 						AgentDNS:       dns,
 						NodeName:       node,
 						IndexReplica:   ireplica,
-						Meta:           &Meta{},
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -103,8 +101,6 @@ func TestGateway_Bind(t *testing.T) {
 				CacheExpiration:           "3m",
 				ExpiredCacheCheckDuration: "10m",
 			}
-			bmanager := &BackupManager{}
-			efilter := &EgressFilter{}
 			return test{
 				name: "return Gateway when all of params are set",
 				fields: fields{
@@ -116,54 +112,18 @@ func TestGateway_Bind(t *testing.T) {
 					IndexReplica:   ireplica,
 					Discoverer:     disc,
 					Meta:           meta,
-					BackupManager:  bmanager,
-					EgressFilter:   efilter,
 				},
 				want: want{
-					want: &Gateway{
+					want: (&Gateway{
 						AgentPort:      port,
 						AgentName:      name,
 						AgentNamespace: ns,
 						AgentDNS:       dns,
 						NodeName:       node,
 						IndexReplica:   ireplica,
-						Discoverer: &DiscovererClient{
-							Duration: "10m",
-							Client: &GRPCClient{
-								DialOption: &DialOption{
-									Insecure: true,
-								},
-							},
-							AgentClientOptions: &GRPCClient{
-								DialOption: &DialOption{
-									Insecure: true,
-								},
-							},
-						},
-						Meta: &Meta{
-							Host: "vald-meta.svc.local",
-							Port: 8081,
-							Client: &GRPCClient{
-								Addrs: []string{
-									"vald-meta.svc.local:8081",
-								},
-								DialOption: &DialOption{
-									Insecure: true,
-								},
-							},
-							EnableCache:               true,
-							CacheExpiration:           "3m",
-							ExpiredCacheCheckDuration: "10m",
-						},
-						BackupManager: &BackupManager{
-							Client: &GRPCClient{
-								DialOption: &DialOption{
-									Insecure: true,
-								},
-							},
-						},
-						EgressFilter: &EgressFilter{},
-					},
+						Discoverer:     disc,
+						Meta:           meta,
+					}).Bind(),
 				},
 			}
 		}(),
@@ -194,15 +154,14 @@ func TestGateway_Bind(t *testing.T) {
 					}
 				},
 				want: want{
-					want: &Gateway{
+					want: (&Gateway{
 						AgentPort:      8081,
 						AgentName:      "vald-agent-ngt-0",
 						AgentNamespace: "vald",
 						AgentDNS:       "vald-agent-ngt.svc.local",
 						NodeName:       "vald-prod",
 						IndexReplica:   3,
-						Meta:           &Meta{},
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -211,9 +170,7 @@ func TestGateway_Bind(t *testing.T) {
 				name:   "return Gateway when all params are not set",
 				fields: fields{},
 				want: want{
-					want: &Gateway{
-						Meta: &Meta{},
-					},
+					want: new(Gateway).Bind(),
 				},
 			}
 		}(),

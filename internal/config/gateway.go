@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 // Gateway represents the list of configurations for gateway.
@@ -60,19 +59,20 @@ func (g *Gateway) Bind() *Gateway {
 	g.NodeName = GetActualValue(g.NodeName)
 
 	if g.Discoverer != nil {
-		g.Discoverer = g.Discoverer.Bind()
+		g.Discoverer.Bind()
 	}
+
 	if g.Meta != nil {
-		g.Meta = g.Meta.Bind()
-	} else {
-		g.Meta = new(Meta)
+		g.Meta.Bind()
 	}
+
 	if g.BackupManager != nil {
-		g.BackupManager = g.BackupManager.Bind()
+		g.BackupManager.Bind()
 	}
 
 	if g.EgressFilter != nil {
-		g.EgressFilter = g.EgressFilter.Bind()
+		g.EgressFilter.Bind()
 	}
+
 	return g
 }

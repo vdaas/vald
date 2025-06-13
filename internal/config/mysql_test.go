@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 import (
@@ -305,9 +304,9 @@ func TestMySQL_Opts(t *testing.T) {
 				MaxIdleConns:         50,
 				TLS: &TLS{
 					Enabled: true,
-					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
-					Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
-					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+					Cert:    testdata.GetTestdataPath("tls/server.crt"),
+					Key:     testdata.GetTestdataPath("tls/server.key"),
+					CA:      testdata.GetTestdataPath("tls/ca.pem"),
 				},
 				Net: new(Net),
 			},
@@ -334,9 +333,9 @@ func TestMySQL_Opts(t *testing.T) {
 				MaxIdleConns:         50,
 				TLS: &TLS{
 					Enabled: true,
-					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
-					Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
-					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+					Cert:    testdata.GetTestdataPath("tls/server.crt"),
+					Key:     testdata.GetTestdataPath("tls/server.key"),
+					CA:      testdata.GetTestdataPath("tls/ca.pem"),
 				},
 				Net: new(Net),
 			},
@@ -363,9 +362,9 @@ func TestMySQL_Opts(t *testing.T) {
 				MaxIdleConns:         50,
 				TLS: &TLS{
 					Enabled: true,
-					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
-					Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
-					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+					Cert:    testdata.GetTestdataPath("tls/server.crt"),
+					Key:     testdata.GetTestdataPath("tls/server.key"),
+					CA:      testdata.GetTestdataPath("tls/ca.pem"),
 				},
 				Net: new(Net),
 			},
@@ -391,9 +390,9 @@ func TestMySQL_Opts(t *testing.T) {
 				MaxIdleConns:         50,
 				TLS: &TLS{
 					Enabled: true,
-					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
-					Key:     "tls/dummyServer.key",
-					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+					Cert:    testdata.GetTestdataPath("tls/server.crt"),
+					Key:     "tls/server.key",
+					CA:      testdata.GetTestdataPath("tls/ca.pem"),
 				},
 				Net: new(Net),
 			},
@@ -401,7 +400,7 @@ func TestMySQL_Opts(t *testing.T) {
 				want: nil,
 				err: &fs.PathError{
 					Op:   "open",
-					Path: "tls/dummyServer.key",
+					Path: "tls/server.key",
 					Err:  syscall.Errno(0x2),
 				},
 			},
@@ -424,9 +423,9 @@ func TestMySQL_Opts(t *testing.T) {
 				MaxIdleConns:         50,
 				TLS: &TLS{
 					Enabled: true,
-					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
-					Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
-					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+					Cert:    testdata.GetTestdataPath("tls/server.crt"),
+					Key:     testdata.GetTestdataPath("tls/server.key"),
+					CA:      testdata.GetTestdataPath("tls/ca.pem"),
 				},
 				Net: &Net{
 					DNS: &DNS{
@@ -459,9 +458,9 @@ func TestMySQL_Opts(t *testing.T) {
 				MaxIdleConns:         50,
 				TLS: &TLS{
 					Enabled: true,
-					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
-					Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
-					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
+					Cert:    testdata.GetTestdataPath("tls/server.crt"),
+					Key:     testdata.GetTestdataPath("tls/server.key"),
+					CA:      testdata.GetTestdataPath("tls/ca.pem"),
 				},
 				Net: &Net{
 					DNS: &DNS{

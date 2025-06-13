@@ -14,12 +14,10 @@
 // limitations under the License.
 //
 
-// Package redis provides implementation of Go API for redis interface
 package cassandra
 
 import (
 	"context"
-	"crypto/tls"
 	"reflect"
 	"testing"
 	"time"
@@ -29,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"github.com/vdaas/vald/internal/tls"
 )
 
 type queryObserverImpl struct{}

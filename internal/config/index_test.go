@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 import (
@@ -73,7 +72,7 @@ func TestIndexer_Bind(t *testing.T) {
 					NodeName:               "vald-01-worker",
 				},
 				want: want{
-					want: &Indexer{
+					want: (&Indexer{
 						AgentPort:              8081,
 						AgentName:              "vald-agent-ngt",
 						AgentNamespace:         "vald",
@@ -84,7 +83,7 @@ func TestIndexer_Bind(t *testing.T) {
 						AutoIndexLength:        100,
 						CreationPoolSize:       10000,
 						NodeName:               "vald-01-worker",
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -105,7 +104,7 @@ func TestIndexer_Bind(t *testing.T) {
 					Discoverer:             new(DiscovererClient),
 				},
 				want: want{
-					want: &Indexer{
+					want: (&Indexer{
 						AgentPort:              8081,
 						AgentName:              "vald-agent-ngt",
 						AgentNamespace:         "vald",
@@ -128,7 +127,7 @@ func TestIndexer_Bind(t *testing.T) {
 								},
 							},
 						},
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -164,7 +163,7 @@ func TestIndexer_Bind(t *testing.T) {
 					}
 				},
 				want: want{
-					want: &Indexer{
+					want: (&Indexer{
 						AgentPort:              8081,
 						AgentName:              "vald-agent-ngt",
 						AgentNamespace:         "vald",
@@ -175,7 +174,7 @@ func TestIndexer_Bind(t *testing.T) {
 						AutoIndexLength:        100,
 						CreationPoolSize:       10000,
 						NodeName:               "vald-01-worker",
-					},
+					}).Bind(),
 				},
 			}
 		}(),

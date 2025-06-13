@@ -130,6 +130,15 @@ strategies:
     operations:
       - name: Insert Operation
         executions:
+          - name: Flush
+            mode: unary
+            type: flush
+            wait: 2m
+          - mode: unary
+            name: IndexInfo
+            type: index_info
+            expect:
+              - value: {}
           - name: Insert
             type: insert
             mode: unary
@@ -140,6 +149,11 @@ strategies:
           - mode: unary
             name: IndexInfo
             type: index_info
+            expect:
+              - status_code: ok
+                path: $.stored
+                op: gt
+                value: 30000
   - name: Search_with_RolloutRestartAgent
     concurrency: 2
     operations:
@@ -163,9 +177,9 @@ strategies:
               min_num: 10
               ratio: 0
               timeout: 3s
-            expected_status_codes:
-              - ok
-              - not_found
+            expect:
+              - status_code: ok
+              - status_code: not_found
       - name: RolloutRestartAgentPods
         executions:
           - name: RolloutRestart
@@ -205,7 +219,7 @@ strategies:
             modification:
               skip_strict_exist_check: false
               timestamp: 0
-            # expected patterns of test status codes
-            expected_status_codes:
-              - ok
-              - not_found
+            expect:
+              # expected patterns of test status codes
+              - status_code: ok
+              - status_code: not_found

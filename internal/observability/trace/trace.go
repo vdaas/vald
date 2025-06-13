@@ -14,17 +14,12 @@
 // limitations under the License.
 //
 
-// Package trace provides trace functions.
 package trace
 
 import (
 	"context"
-	"reflect"
 
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -40,12 +35,6 @@ var (
 
 type Span = trace.Span
 
-type Tracer interface {
-	Start(ctx context.Context) error
-}
-
-type tracer struct{}
-
 func StartSpan(
 	ctx context.Context, name string, opts ...trace.SpanStartOption,
 ) (context.Context, Span) {
@@ -54,30 +43,4 @@ func StartSpan(
 	}
 
 	return otel.Tracer(tracerName).Start(ctx, name, opts...)
-}
-
-func New(opts ...TraceOption) (Tracer, error) {
-	t := &tracer{}
-
-	for _, opt := range append(traceDefaultOpts, opts...) {
-		if err := opt(t); err != nil {
-			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(err))
-
-			e := &errors.ErrCriticalOption{}
-			if errors.As(oerr, &e) {
-				log.Error(oerr)
-				return nil, oerr
-			}
-			log.Warn(oerr)
-		}
-	}
-
-	enabled = true
-
-	return t, nil
-}
-
-func (*tracer) Start(context.Context) error {
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
-	return nil
 }

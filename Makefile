@@ -162,8 +162,8 @@ PROTO_MIRROR_API_DOCS := $(PROTO_MIRROR_APIS:$(ROOTDIR)/apis/proto/v1/mirror/%.p
 
 LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
 
-NGT_LDFLAGS = -fopenmp -lopenblas -llapack
-FAISS_LDFLAGS = $(NGT_LDFLAGS) -lgfortran
+NGT_LDFLAGS = -fopenmp -lopenblas -llapack -lgfortran
+FAISS_LDFLAGS = $(NGT_LDFLAGS)
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl -lm
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 TEST_LDFLAGS = $(LDFLAGS) $(CGO_LDFLAGS)
@@ -549,6 +549,12 @@ format: \
 	@$(MAKE) dockerfile format/go format/go/test
 	@$(MAKE) format/yaml
 
+.PHONY: format/diff
+## format diff
+format/diff:
+	@$(MAKE) format/go/diff
+	@$(MAKE) format/yaml/diff
+
 .PHONY: remove/empty/file
 ## removes empty file such as just includes \r \n space tab
 remove/empty/file: \
@@ -593,6 +599,25 @@ format/go/test: \
 		$(GOBIN)/gofumpt -w {}'
 	@echo "Go test file formatting complete."
 
+.PHONY: format/go/diff
+## run golines, gofumpt, goimports for go diff files
+format/go/diff: \
+	crlfmt/install \
+	golines/install \
+	gofumpt/install \
+	strictgoimports/install \
+	goimports/install \
+	files
+	@echo "Formatting Go Test files..."
+	@git diff --name-only --diff-filter=ACM HEAD | grep -e ".go$$" | xargs -I {} -P$(CORES) bash -c '\
+	        echo "Formatting Go file {}" && \
+		$(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH) {} && \
+		$(GOBIN)/strictgoimports -w {} && \
+		$(GOBIN)/goimports -w {} && \
+		$(GOBIN)/crlfmt -w -diff=false {} && \
+		$(GOBIN)/gofumpt -w {}'
+	@echo "Go file formatting complete."
+
 .PHONY: format/yaml
 format/yaml: \
 	prettier/install\
@@ -600,6 +625,18 @@ format/yaml: \
 	files
 	@echo "Formatting YAML files..."
 	- @cat $(ROOTDIR)/.gitfiles | grep -E '\.ya?ml\b' | grep -Ev '(templates|s3)' | xargs -I {} -P$(CORES) bash -c '\
+		echo "Formatting YAML file {}" && \
+		yamlfmt {} && \
+		prettier --write {}'
+	@echo "YAML file formatting complete."
+
+.PHONY: format/yaml/diff
+format/yaml/diff: \
+	prettier/install\
+	yamlfmt/install \
+	files
+	@echo "Formatting YAML files..."
+	- @git diff --name-only --diff-filter=ACM HEAD | grep -E '\.ya?ml\b' | grep -Ev '(templates|s3)' | xargs -I {} -P$(CORES) bash -c '\
 		echo "Formatting YAML file {}" && \
 		yamlfmt {} && \
 		prettier --write {}'
@@ -890,3 +927,4 @@ include Makefile.d/minikube.mk
 include Makefile.d/proto.mk
 include Makefile.d/test.mk
 include Makefile.d/tools.mk
+include Makefile.d/tls.mk

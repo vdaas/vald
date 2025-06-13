@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 import (
@@ -142,7 +141,7 @@ func (r *Redis) Opts() (opts []redis.Option, err error) {
 	}
 
 	if r.TLS != nil && r.TLS.Enabled {
-		tls, err := tls.New(r.TLS.Opts()...)
+		tls, err := tls.NewClientConfig(r.TLS.Opts()...)
 		if err != nil {
 			return nil, err
 		}

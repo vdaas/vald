@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 // Corrector represents the index correction configurations.
@@ -63,11 +62,17 @@ func (c *Corrector) Bind() *Corrector {
 	c.KVSBackgroundCompactionInterval = GetActualValue(c.KVSBackgroundCompactionInterval)
 	c.KVSBackgroundSyncInterval = GetActualValue(c.KVSBackgroundSyncInterval)
 
-	if c.Discoverer != nil {
-		c.Discoverer = c.Discoverer.Bind()
+	if c.Discoverer == nil {
+		c.Discoverer = new(DiscovererClient)
 	}
-	if c.Gateway != nil {
-		c.Gateway = c.Gateway.Bind()
+	// Assuming DiscovererClient.Bind() is compliant and c.Discoverer is now non-nil
+	c.Discoverer.Bind()
+
+	if c.Gateway == nil {
+		c.Gateway = new(GRPCClient) // Using new() for consistency here as per re-evaluation.
 	}
+	// Assuming GRPCClient.Bind() is compliant and c.Gateway is now non-nil
+	c.Gateway.Bind()
+
 	return c
 }

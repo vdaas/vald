@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package vqueue manages the vector cache layer for reducing FFI overhead for fast Agent processing.
 package vqueue
 
 import (

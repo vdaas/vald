@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 import (
@@ -227,12 +226,12 @@ func TestBlob_Bind(t *testing.T) {
 					Bucket:      "test.vald",
 				},
 				want: want{
-					want: &Blob{
+					want: (&Blob{
 						StorageType:  "s3",
 						Bucket:       "test.vald",
 						S3:           new(S3Config),
 						CloudStorage: new(CloudStorageConfig),
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -253,12 +252,12 @@ func TestBlob_Bind(t *testing.T) {
 					CloudStorage: cloudStorage,
 				},
 				want: want{
-					want: &Blob{
+					want: (&Blob{
 						StorageType:  "s3",
 						Bucket:       "test.vald",
 						S3:           s3,
 						CloudStorage: cloudStorage,
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -283,12 +282,12 @@ func TestBlob_Bind(t *testing.T) {
 					}
 				},
 				want: want{
-					want: &Blob{
+					want: (&Blob{
 						StorageType:  "s3",
 						Bucket:       "test.vald",
 						S3:           new(S3Config),
 						CloudStorage: new(CloudStorageConfig),
-					},
+					}).Bind(),
 				},
 			}
 		}(),

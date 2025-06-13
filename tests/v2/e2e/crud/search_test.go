@@ -219,6 +219,7 @@ func checkUnarySearchResponse(
 	neighbors iter.Cycle[[][]int, []int],
 ) func(t *testing.T, idx uint64, res *payload.Search_Response, err error) bool {
 	return func(t *testing.T, idx uint64, res *payload.Search_Response, err error) bool {
+		t.Helper()
 		rc := calculateRecall(t, neighbors.At(idx), res)
 		t.Logf("request id %s searched recall: %f, payload %s", res.GetRequestId(), rc, res.String())
 		return true
@@ -229,6 +230,7 @@ func checkMultiSearchResponse(
 	neighbors iter.Cycle[[][]int, []int],
 ) func(t *testing.T, idx uint64, res *payload.Search_Responses, err error) bool {
 	return func(t *testing.T, idx uint64, res *payload.Search_Responses, err error) bool {
+		t.Helper()
 		// For each response in the bulk response, log the recall.
 		for _, r := range res.GetResponses() {
 			if !checkUnarySearchResponse(neighbors)(t, getIndexFromSearchResponse(t, r), r, err) {
@@ -243,13 +245,14 @@ func checkStreamSearchResponse(
 	neighbors iter.Cycle[[][]int, []int],
 ) func(t *testing.T, idx uint64, res *payload.Search_StreamResponse, err error) bool {
 	return func(t *testing.T, idx uint64, res *payload.Search_StreamResponse, err error) bool {
+		t.Helper()
 		if err != nil {
 			st := res.GetStatus()
 			t.Error(st.String())
 		}
 		r := res.GetResponse()
 		if r == nil {
-			t.Error("search stream response is nil")
+			t.Error("search stream response is nil, it can be timeout")
 			return true
 		}
 		return checkUnarySearchResponse(neighbors)(t, getIndexFromSearchResponse(t, r), r, err)

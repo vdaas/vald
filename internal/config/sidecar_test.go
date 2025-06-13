@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 import (
@@ -89,7 +88,7 @@ func TestAgentSidecar_Bind(t *testing.T) {
 					},
 				},
 				want: want{
-					want: &AgentSidecar{
+					want: (&AgentSidecar{
 						Mode:               mode,
 						WatchDir:           watchDir,
 						AutoBackupDuration: autoBackupDuration,
@@ -110,7 +109,7 @@ func TestAgentSidecar_Bind(t *testing.T) {
 						Client: &Client{
 							Net: new(Net),
 						},
-					},
+					}).Bind(),
 				},
 			}
 		}(),

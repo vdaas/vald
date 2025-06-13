@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 import (
@@ -166,7 +165,7 @@ func (t *Net) Opts() ([]net.DialerOption, error) {
 	}
 
 	if t.TLS != nil && t.TLS.Enabled {
-		cfg, err := tls.New(t.TLS.Opts()...)
+		cfg, err := tls.NewClientConfig(t.TLS.Opts()...)
 		if err != nil {
 			return nil, err
 		}

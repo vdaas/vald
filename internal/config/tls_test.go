@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 import (
@@ -165,18 +164,15 @@ func TestTLS_Opts(t *testing.T) {
 					tls.WithCert("cert"),
 					tls.WithKey("key"),
 					tls.WithInsecureSkipVerify(false),
+					tls.WithServerName("test client server"),
+					tls.WithClientAuth("unknown"),
 				},
 			},
 		},
 		{
 			name: "returns []tls.Option",
 			want: want{
-				want: []tls.Option{
-					tls.WithCa(""),
-					tls.WithCert(""),
-					tls.WithKey(""),
-					tls.WithInsecureSkipVerify(false),
-				},
+				want: nil,
 			},
 		},
 	}

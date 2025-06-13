@@ -14,16 +14,15 @@
 // limitations under the License.
 //
 
-// Package credentials provides generic functionality for grpc credentials setting
 package credentials
 
 import (
-	"crypto/tls"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"github.com/vdaas/vald/internal/tls"
 	"google.golang.org/grpc/credentials"
 )
 

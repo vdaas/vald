@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 import "github.com/vdaas/vald/internal/net"
@@ -36,12 +35,16 @@ func (m *Meta) Bind() *Meta {
 	m.ExpiredCacheCheckDuration = GetActualValue(m.ExpiredCacheCheckDuration)
 
 	if m.Client != nil {
+		if len(m.Host) != 0 {
+			m.Client.Addrs = append(m.Client.Addrs, net.JoinHostPort(m.Host, m.Port))
+		}
 		m.Client.Bind()
 	} else {
 		m.Client = newGRPCClientConfig()
+		if len(m.Host) != 0 {
+			m.Client.Addrs = []string{net.JoinHostPort(m.Host, m.Port)}
+		}
 	}
-	if len(m.Host) != 0 {
-		m.Client.Addrs = append(m.Client.Addrs, net.JoinHostPort(m.Host, m.Port))
-	}
+
 	return m
 }

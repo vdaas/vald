@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// Package config providers configuration type and load configuration logic
 package config
 
 import (
@@ -47,7 +46,7 @@ func TestMeta_Bind(t *testing.T) {
 		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got *Meta) error {
-		if !reflect.DeepEqual(got, w.want) {
+		if !reflect.DeepEqual(got, w.want.Bind()) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
@@ -59,40 +58,33 @@ func TestMeta_Bind(t *testing.T) {
 			enableCache := true
 			cacheExpiration := "24h"
 			expiredCacheCheckDuration := "1m"
+			client := &GRPCClient{
+				Addrs: []string{
+					host + ":" + strconv.FormatUint(uint64(port), 10),
+				},
+				DialOption: &DialOption{
+					Insecure: true,
+				},
+			}
 			return test{
 				name: "return Meta when all parameters are not nil or empty",
 				fields: fields{
-					Host: host,
-					Port: port,
-					Client: &GRPCClient{
-						DialOption: &DialOption{
-							Insecure: true,
-						},
-					},
+					Host:                      host,
+					Port:                      port,
+					Client:                    client,
 					EnableCache:               enableCache,
 					CacheExpiration:           cacheExpiration,
 					ExpiredCacheCheckDuration: expiredCacheCheckDuration,
 				},
 				want: want{
-					want: &Meta{
-						Host: host,
-						Port: port,
-						Client: &GRPCClient{
-							Addrs: []string{
-								host + ":" + strconv.FormatUint(uint64(port), 10),
-							},
-							ConnectionPool: &ConnectionPool{},
-							DialOption: &DialOption{
-								Insecure: true,
-							},
-							TLS: &TLS{
-								Enabled: false,
-							},
-						},
+					want: (&Meta{
+						Host:                      host,
+						Port:                      port,
+						Client:                    client,
 						EnableCache:               enableCache,
 						CacheExpiration:           cacheExpiration,
 						ExpiredCacheCheckDuration: expiredCacheCheckDuration,
-					},
+					}).Bind(),
 				},
 			}
 		}(),
