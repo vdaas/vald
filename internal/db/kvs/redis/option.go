@@ -18,12 +18,12 @@ package redis
 
 import (
 	"context"
-	"crypto/tls"
 	"time"
 
 	redis "github.com/go-redis/redis/v8"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/timeutil"
+	"github.com/vdaas/vald/internal/tls"
 )
 
 // Option represents the functional option for redisClient.

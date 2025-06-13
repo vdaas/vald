@@ -18,7 +18,6 @@ package mysql
 
 import (
 	"context"
-	"crypto/tls"
 	"database/sql"
 	"os"
 	"reflect"
@@ -32,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"github.com/vdaas/vald/internal/tls"
 )
 
 func TestMain(m *testing.M) {

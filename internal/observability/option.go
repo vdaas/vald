@@ -17,7 +17,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/observability/exporter"
 	"github.com/vdaas/vald/internal/observability/metrics"
-	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -62,17 +61,6 @@ func WithExporters(exps ...exporter.Exporter) Option {
 				o.exporters = append(o.exporters, exps...)
 			}
 		}
-		return nil
-	}
-}
-
-// WithTracer returns an option that sets the tracer.
-func WithTracer(tr trace.Tracer) Option {
-	return func(o *observability) error {
-		if tr == nil {
-			return errors.NewErrInvalidOption("tracer", tr)
-		}
-		o.tracer = tr
 		return nil
 	}
 }
