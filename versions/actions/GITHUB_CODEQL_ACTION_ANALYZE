@@ -1,5 +1,1 @@
-<<<<<<< HEAD
-3.28.13
-=======
 3.29.0
->>>>>>> 7ba3c441e ([BUGFIX] use client config for tls dialer (#2938))
