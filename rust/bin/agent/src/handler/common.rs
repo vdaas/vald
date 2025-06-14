@@ -109,7 +109,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::middleware::AccessLogMiddlewareLayer;
+    use crate::middleware::{AccessLogMiddlewareLayer, MetricMiddlewareLayer};
 
     use super::*;
 
@@ -353,8 +353,10 @@ mod tests {
         let addr = "[::1]:50051".parse().unwrap();
         let echo_server = EchoServer::default();
         let accessloginterceptor: Option<()> = Some(());
+        let metricinterceptor: Option<()> = Some(());
         let layer = tower::ServiceBuilder::new()
             .option_layer(accessloginterceptor.map(|_| AccessLogMiddlewareLayer::default()))
+            .option_layer(metricinterceptor.map(|_| MetricMiddlewareLayer::default()))
             .into_inner();
         tokio::spawn(async move {
             Server::builder()
