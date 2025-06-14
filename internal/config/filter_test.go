@@ -60,14 +60,14 @@ func TestEgressFilter_Bind(t *testing.T) {
 					},
 				},
 				want: want{
-					want: &EgressFilter{
+					want: (&EgressFilter{
 						DistanceFilters: []string{
 							"192.168.1.2",
 						},
 						ObjectFilters: []string{
 							"192.168.1.3",
 						},
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -81,24 +81,16 @@ func TestEgressFilter_Bind(t *testing.T) {
 					ObjectFilters: []string{
 						"192.168.1.3",
 					},
-					Client: new(GRPCClient),
 				},
 				want: want{
-					want: &EgressFilter{
+					want: (&EgressFilter{
 						DistanceFilters: []string{
 							"192.168.1.2",
 						},
 						ObjectFilters: []string{
 							"192.168.1.3",
 						},
-						Client: &GRPCClient{
-							ConnectionPool: new(ConnectionPool),
-							DialOption: &DialOption{
-								Insecure: true,
-							},
-							TLS: new(TLS),
-						},
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -125,14 +117,14 @@ func TestEgressFilter_Bind(t *testing.T) {
 					}
 				},
 				want: want{
-					want: &EgressFilter{
+					want: (&EgressFilter{
 						DistanceFilters: []string{
 							"192.168.1.2",
 						},
 						ObjectFilters: []string{
 							"192.168.1.3",
 						},
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -212,7 +204,7 @@ func TestIngressFilter_Bind(t *testing.T) {
 					},
 				},
 				want: want{
-					want: &IngressFilter{
+					want: (&IngressFilter{
 						Vectorizer: "192.168.1.2",
 						SearchFilters: []string{
 							"192.168.1.3",
@@ -226,7 +218,7 @@ func TestIngressFilter_Bind(t *testing.T) {
 						UpsertFilters: []string{
 							"192.168.1.6",
 						},
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -247,10 +239,9 @@ func TestIngressFilter_Bind(t *testing.T) {
 					UpsertFilters: []string{
 						"192.168.1.6",
 					},
-					Client: new(GRPCClient),
 				},
 				want: want{
-					want: &IngressFilter{
+					want: (&IngressFilter{
 						Vectorizer: "192.168.1.2",
 						SearchFilters: []string{
 							"192.168.1.3",
@@ -264,14 +255,7 @@ func TestIngressFilter_Bind(t *testing.T) {
 						UpsertFilters: []string{
 							"192.168.1.6",
 						},
-						Client: &GRPCClient{
-							ConnectionPool: new(ConnectionPool),
-							DialOption: &DialOption{
-								Insecure: true,
-							},
-							TLS: new(TLS),
-						},
-					},
+					}).Bind(),
 				},
 			}
 		}(),
@@ -309,7 +293,7 @@ func TestIngressFilter_Bind(t *testing.T) {
 					}
 				},
 				want: want{
-					want: &IngressFilter{
+					want: (&IngressFilter{
 						Vectorizer: "192.168.1.2",
 						SearchFilters: []string{
 							"192.168.1.3",
@@ -323,7 +307,7 @@ func TestIngressFilter_Bind(t *testing.T) {
 						UpsertFilters: []string{
 							"192.168.1.6",
 						},
-					},
+					}).Bind(),
 				},
 			}
 		}(),

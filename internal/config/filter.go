@@ -37,6 +37,8 @@ type IngressFilter struct {
 func (e *EgressFilter) Bind() *EgressFilter {
 	if e.Client != nil {
 		e.Client.Bind()
+	} else {
+		e.Client = newGRPCClientConfig() // newGRPCClientConfig calls Bind internally
 	}
 	if e.DistanceFilters != nil {
 		e.DistanceFilters = GetActualValues(e.DistanceFilters)
@@ -51,6 +53,8 @@ func (e *EgressFilter) Bind() *EgressFilter {
 func (i *IngressFilter) Bind() *IngressFilter {
 	if i.Client != nil {
 		i.Client.Bind()
+	} else {
+		i.Client = newGRPCClientConfig() // newGRPCClientConfig calls Bind internally
 	}
 
 	i.Vectorizer = GetActualValue(i.Vectorizer)

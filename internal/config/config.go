@@ -57,7 +57,7 @@ func (c *GlobalConfig) Bind() *GlobalConfig {
 	c.TZ = GetActualValue(c.TZ)
 
 	if c.Logging != nil {
-		c.Logging = c.Logging.Bind()
+		c.Logging.Bind()
 	}
 	return c
 }

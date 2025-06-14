@@ -17,12 +17,12 @@
 package net
 
 import (
-	"crypto/tls"
 	"time"
 
 	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/timeutil"
+	"github.com/vdaas/vald/internal/tls"
 )
 
 // DialerOption represent the functional option for dialer.

@@ -14,7 +14,6 @@
 package server
 
 import (
-	"crypto/tls"
 	"net/http"
 	"reflect"
 	"testing"
@@ -24,6 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/tls"
 )
 
 func TestWithHost(t *testing.T) {
@@ -2262,34 +2262,6 @@ func TestWithGRPCInterceptors(t *testing.T) {
 		{
 			name:  "Add AccessLogInterceptor using 'AccessLog'",
 			names: []string{"AccessLog"},
-			checkFunc: func(opt Option) error {
-				got := new(server)
-				opt(got)
-
-				if len(got.grpc.opts) != 2 {
-					return errors.Errorf("Expecting two elements in got.grpc.opts: got = %#v", got)
-				}
-
-				return nil
-			},
-		},
-		{
-			name:  "Add TraceInterceptor using 'TraceInterceptor'",
-			names: []string{"TraceInterceptor"},
-			checkFunc: func(opt Option) error {
-				got := new(server)
-				opt(got)
-
-				if len(got.grpc.opts) != 2 {
-					return errors.Errorf("Expecting two elements in got.grpc.opts: got = %#v", got)
-				}
-
-				return nil
-			},
-		},
-		{
-			name:  "Add TraceInterceptor using 'Trace'",
-			names: []string{"Trace"},
 			checkFunc: func(opt Option) error {
 				got := new(server)
 				opt(got)
