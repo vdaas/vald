@@ -4234,15 +4234,9 @@ checksum = "b7401a30af6cb5818bb64852270bb722533397edcfc7344954a38f420819ece2"
 
 [[package]]
 name = "syn"
-<<<<<<< HEAD
 version = "2.0.103"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e4307e30089d6fd6aff212f2da3a1f9e32f3223b1f010fb09b7c95f90f3ca1e8"
-=======
-version = "2.0.102"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f6397daf94fa90f058bd0fd88429dd9e5738999cca8d701813c80723add80462"
->>>>>>> 7ba3c441e ([BUGFIX] use client config for tls dialer (#2938))
 dependencies = [
  "proc-macro2",
  "quote",
