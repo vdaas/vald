@@ -252,7 +252,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 				return ctx.Err()
 			case <-prTick.C:
 				if g.enablePoolRebalance {
-					err = g.rangeConns(ctx, func(addr string, p pool.Conn) bool {
+					err = g.rangeConns(ctx, func(rctx context.Context, addr string, p pool.Conn) bool {
 						// if addr or pool is nil or empty the registration of conns is invalid let's disconnect them
 						if addr == "" || p == nil {
 							disconnectTargets = append(disconnectTargets, addr)
@@ -261,7 +261,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 						log.Debugf("rebalancing pool connection for gRPC %s addr: %s, detail: %s", g.name, addr, p.String())
 						var err error
 						// for rebalancing connection we don't need to check connection health
-						p, err = p.Connect(ctx)
+						p, err = p.Connect(rctx)
 						if errors.IsNot(err, context.Canceled,
 							context.DeadlineExceeded,
 							errors.ErrCircuitBreakerOpenState,
@@ -277,7 +277,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 							return true
 						}
 						// if connection pool could not recover we should try next connection loop
-						if err != nil || p == nil || !p.IsHealthy(ctx) {
+						if err != nil || p == nil || !p.IsHealthy(rctx) {
 							g.crl.Store(addr, false)
 							return true
 						}
@@ -286,21 +286,21 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 					})
 				}
 			case <-hcTick.C:
-				err = g.rangeConns(ctx, func(addr string, p pool.Conn) bool {
+				err = g.rangeConns(ctx, func(rctx context.Context, addr string, p pool.Conn) bool {
 					// if addr or pool is nil or empty the registration of conns is invalid let's disconnect them
 					if addr == "" || p == nil {
 						disconnectTargets = append(disconnectTargets, addr)
 						return true
 					}
 					// for health check we don't need to reconnect when connection is healthy
-					if p.IsHealthy(ctx) {
+					if p.IsHealthy(rctx) {
 						return true
 					}
 					log.Debugf("unheallthy connection detected for gRPC addr: %s trying to reconnect. detail: %s", g.name, addr, p.String())
 					// if connection is not ip direct or unhealthy let's re-connect
 					var err error
 					// if not healthy we should try reconnect
-					p, err = p.Reconnect(ctx, false)
+					p, err = p.Reconnect(rctx, false)
 					if errors.IsNot(err, context.Canceled,
 						context.DeadlineExceeded,
 						errors.ErrCircuitBreakerOpenState,
@@ -316,7 +316,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 						return true
 					}
 					// if connection pool could not recover we should try next connection loop
-					if err != nil || p == nil || !p.IsHealthy(ctx) {
+					if err != nil || p == nil || !p.IsHealthy(rctx) {
 						g.crl.Store(addr, false)
 						return true
 					}
@@ -417,8 +417,8 @@ func (g *gRPCClient) Range(
 	if g.conns.Len() == 0 {
 		return errors.ErrGRPCClientConnNotFound("*")
 	}
-	err = g.rangeConns(ctx, func(addr string, p pool.Conn) bool {
-		ssctx, sspan := trace.StartSpan(sctx, apiName+"/Client.Range/"+addr)
+	err = g.rangeConns(sctx, func(rctx context.Context, addr string, p pool.Conn) bool {
+		ssctx, sspan := trace.StartSpan(rctx, apiName+"/Client.Range/"+addr)
 		defer func() {
 			if sspan != nil {
 				sspan.End()
@@ -473,24 +473,24 @@ func (g *gRPCClient) RangeConcurrent(
 		}
 	}()
 	if concurrency <= 1 {
-		return g.Range(ctx, f)
+		return g.Range(sctx, f)
 	}
 	eg, egctx := errgroup.New(sctx)
 	eg.SetLimit(concurrency)
 	if g.conns.Len() == 0 {
 		return errors.ErrGRPCClientConnNotFound("*")
 	}
-	err = g.rangeConns(ctx, func(addr string, p pool.Conn) bool {
+	err = g.rangeConns(egctx, func(rctx context.Context, addr string, p pool.Conn) bool {
 		eg.Go(safety.RecoverFunc(func() (err error) {
-			ssctx, sspan := trace.StartSpan(egctx, apiName+"/Client.RangeConcurrent/"+addr)
+			ssctx, sspan := trace.StartSpan(rctx, apiName+"/Client.RangeConcurrent/"+addr)
 			defer func() {
 				if sspan != nil {
 					sspan.End()
 				}
 			}()
 			select {
-			case <-egctx.Done():
-				err = egctx.Err()
+			case <-ssctx.Done():
+				err = ssctx.Err()
 				if errors.IsAny(err, context.Canceled, context.DeadlineExceeded) {
 					return err
 				}
@@ -720,7 +720,7 @@ func (g *gRPCClient) RoundRobin(
 	}
 
 	do := func() (data any, err error) {
-		cerr := g.rangeConns(ctx, func(addr string, p pool.Conn) bool {
+		cerr := g.rangeConns(ctx, func(ctx context.Context, addr string, p pool.Conn) bool {
 			select {
 			case <-ctx.Done():
 				err = ctx.Err()
@@ -1092,7 +1092,7 @@ func (g *gRPCClient) Disconnect(ctx context.Context, addr string) error {
 
 func (g *gRPCClient) ConnectedAddrs(ctx context.Context) (addrs []string) {
 	addrs = make([]string, 0, g.conns.Len())
-	if err := g.rangeConns(ctx, func(addr string, p pool.Conn) bool {
+	if err := g.rangeConns(ctx, func(_ context.Context, addr string, _ pool.Conn) bool {
 		addrs = append(addrs, addr)
 		return true
 	}); err != nil {
@@ -1105,8 +1105,8 @@ func (g *gRPCClient) Close(ctx context.Context) (err error) {
 	if g.stopMonitor != nil {
 		g.stopMonitor()
 	}
-	g.rangeConns(ctx, func(addr string, p pool.Conn) bool {
-		derr := g.Disconnect(ctx, addr)
+	g.rangeConns(ctx, func(rctx context.Context, addr string, _ pool.Conn) bool {
+		derr := g.Disconnect(rctx, addr)
 		if errors.IsNot(derr, errors.ErrGRPCClientConnNotFound(addr)) {
 			err = errors.Join(err, derr)
 		}
@@ -1115,17 +1115,35 @@ func (g *gRPCClient) Close(ctx context.Context) (err error) {
 	return err
 }
 
-func (g *gRPCClient) rangeConns(ctx context.Context, fn func(addr string, p pool.Conn) bool) error {
+func (g *gRPCClient) rangeConns(
+	ctx context.Context, fn func(ctx context.Context, addr string, p pool.Conn) bool,
+) error {
 	if g == nil || g.conns.Len() == 0 {
+		if g != nil {
+			log.Warnf("rangeConns returns Client Conn Not Found Error at beginning, len: %d,\tsize: %d", g.conns.Len(), g.conns.Size())
+		} else {
+			log.Warn("rangeConns returns Client Not Found Error at beginning")
+		}
 		return errors.ErrGRPCClientConnNotFound("*")
 	}
+	var cnt int
 	g.conns.Range(func(addr string, p pool.Conn) bool {
 		select {
 		case <-ctx.Done():
+			log.Warnf("processing for addr %s canceled due to %v", addr, ctx.Err())
 			return false
 		default:
-			return fn(addr, p)
+			cnt++
+			return fn(ctx, addr, p)
 		}
 	})
+	if cnt == 0 {
+		if g != nil {
+			log.Warnf("rangeConns returns Client Conn Not Found Error at ending, len: %d,\tsize: %d", g.conns.Len(), g.conns.Size())
+		} else {
+			log.Warn("rangeConns returns Client Not Found Error at ending")
+		}
+		return errors.ErrGRPCClientConnNotFound("*")
+	}
 	return nil
 }
