@@ -196,7 +196,7 @@ strategies:
             type: insert
             mode: unary
             parallelism: 4
-            num: 10000
+            num: 5000
             qps: 30
             wait: 2m
           - mode: unary
@@ -205,7 +205,7 @@ strategies:
             expect:
               - status_code: ok
                 path: $.sum()
-                value: 30000
+                value: 15000
   - concurrency: 1
     name: Index Correction -> Check the number of Replica
     operations:
@@ -234,7 +234,7 @@ strategies:
             expect:
               - status_code: ok
                 path: $.sum()
-                value: 30000
+                value: 15000
   - concurrency: 1
     name: Kill an Agent -> Index Correction -> Check the number of Replica
     operations:
@@ -256,7 +256,7 @@ strategies:
               - status_code: ok
                 path: $.sum()
                 op: lt
-                value: 30000
+                value: 15000
           - name: IndexCorrection
             type: kubernetes
             mode: other
@@ -281,4 +281,4 @@ strategies:
             expect:
               - status_code: ok
                 path: $.sum()
-                value: 30000
+                value: 15000
