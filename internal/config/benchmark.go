@@ -159,7 +159,7 @@ type ObjectConfig struct {
 }
 
 func (cfg *ObjectConfig) Bind() *ObjectConfig {
-	cfg.FilterConfig.Bind()
+	cfg.FilterConfig = *cfg.FilterConfig.Bind()
 	return cfg
 }
 
@@ -181,9 +181,7 @@ type FilterConfig struct {
 
 func (cfg *FilterConfig) Bind() *FilterConfig {
 	for i := 0; i < len(cfg.Targets); i++ {
-		if cfg.Targets[i] != nil {
-			cfg.Targets[i].Bind()
-		}
+		cfg.Targets[i] = cfg.Targets[i].Bind()
 	}
 	return cfg
 }
@@ -195,37 +193,35 @@ func (b *BenchmarkJob) Bind() *BenchmarkJob {
 	b.BeforeJobNamespace = GetActualValue(b.BeforeJobNamespace)
 
 	if b.Target != nil {
-		b.Target.Bind()
+		b.Target = b.Target.Bind()
 	}
 	if b.Dataset != nil {
-		b.Dataset.Bind()
+		b.Dataset = b.Dataset.Bind()
 	}
 	if b.InsertConfig != nil {
-		b.InsertConfig.Bind()
+		b.InsertConfig = b.InsertConfig.Bind()
 	}
 	if b.UpdateConfig != nil {
-		b.UpdateConfig.Bind()
+		b.UpdateConfig = b.UpdateConfig.Bind()
 	}
 	if b.UpsertConfig != nil {
-		b.UpsertConfig.Bind()
+		b.UpsertConfig = b.UpsertConfig.Bind()
 	}
 	if b.SearchConfig != nil {
-		b.SearchConfig.Bind()
+		b.SearchConfig = b.SearchConfig.Bind()
 	}
 	if b.RemoveConfig != nil {
-		b.RemoveConfig.Bind()
+		b.RemoveConfig = b.RemoveConfig.Bind()
 	}
 	if b.ObjectConfig != nil {
-		b.ObjectConfig.Bind()
+		b.ObjectConfig = b.ObjectConfig.Bind()
 	}
 	if b.ClientConfig != nil {
-		b.ClientConfig.Bind()
+		b.ClientConfig = b.ClientConfig.Bind()
 	}
 	if len(b.Rules) > 0 {
 		for i := 0; i < len(b.Rules); i++ {
-			if b.Rules[i] != nil {
-				b.Rules[i].Bind()
-			}
+			b.Rules[i] = b.Rules[i].Bind()
 		}
 	}
 	return b
@@ -233,19 +229,6 @@ func (b *BenchmarkJob) Bind() *BenchmarkJob {
 
 // Bind binds the actual data from the BenchmarkScenario receiver fields.
 func (b *BenchmarkScenario) Bind() *BenchmarkScenario {
-	if b.Target != nil {
-		b.Target.Bind()
-	}
-	if b.Dataset != nil {
-		b.Dataset.Bind()
-	}
-	if len(b.Jobs) > 0 {
-		for i := range b.Jobs {
-			if b.Jobs[i] != nil {
-				b.Jobs[i].Bind()
-			}
-		}
-	}
 	return b
 }
 

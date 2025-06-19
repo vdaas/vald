@@ -74,7 +74,6 @@ RUN --mount=type=bind,target=.,rw \
     liblapack-dev \
     libomp-dev \
     libopenblas-dev \
-    gfortran \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \

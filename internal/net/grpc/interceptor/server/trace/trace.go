@@ -13,6 +13,15 @@
 // limitations under the License.
 package trace
 
-import "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+import (
+	"github.com/vdaas/vald/internal/net/grpc"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+)
 
-var NewStatsHandler = otelgrpc.NewServerHandler
+func TraceInterceptor() grpc.UnaryServerInterceptor {
+	return otelgrpc.UnaryServerInterceptor()
+}
+
+func TraceStreamInterceptor() grpc.StreamServerInterceptor {
+	return otelgrpc.StreamServerInterceptor()
+}

@@ -672,12 +672,6 @@ defaults:
       # @schema {"name": "defaults.server_config.tls.insecure_skip_verify", "type": "boolean"}
       # defaults.server_config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
       insecure_skip_verify: false
-      # @schema {"name": "defaults.server_config.tls.server_name", "type": "string"}
-      # defaults.server_config.tls.server_name -- SSL Server Name
-      server_name: ""
-      # @schema {"name": "defaults.server_config.tls.client_auth", "type": "string", "enum": ["Auto", "None", "Request", "RequireAny", "VerifyIfGiven", "RequireAndVerify"]}
-      # defaults.server_config.tls.client_auth -- client auth type
-      client_auth: None
   # @schema {"name": "defaults.grpc", "type": "object"}
   grpc:
     # @schema {"name": "defaults.grpc.client", "type": "object", "anchor": "grpc.client"}
@@ -866,10 +860,6 @@ defaults:
             ca: /path/to/ca
             # defaults.grpc.client.dial_option.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
             insecure_skip_verify: false
-            # defaults.grpc.client.dial_option.net.tls.server_name -- SSL Server Name
-            server_name: ""
-            # defaults.grpc.client.dial_option.net.tls.client_auth -- client auth type
-            client_auth: None
           # @schema {"name": "defaults.grpc.client.dial_option.net.socket_option", "alias": "socket_option"}
           socket_option:
             # defaults.grpc.client.dial_option.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -913,10 +903,6 @@ defaults:
         ca: /path/to/ca
         # defaults.grpc.client.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
         insecure_skip_verify: false
-        # defaults.grpc.client.tls.server_name -- SSL Server Name
-        server_name: ""
-        # defaults.grpc.client.tls.client_auth -- client auth type
-        client_auth: None
   # @schema {"name": "defaults.observability", "type": "object", "anchor": "observability"}
   observability:
     # @schema {"name": "defaults.observability.enabled", "type": "boolean"}
@@ -1868,10 +1854,6 @@ gateway:
           ca: /path/to/ca
           # gateway.mirror.gateway_config.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
           insecure_skip_verify: false
-          # gateway.mirror.gateway_config.net.tls.server_name -- SSL Server Name
-          server_name: ""
-          # gateway.mirror.gateway_config.net.tls.client_auth -- client auth type
-          client_auth: None
         # @schema {"name": "gateway.mirror.gateway_config.net.socket_option", "alias": "socket_option"}
         socket_option:
           # gateway.mirror.gateway_config.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -2692,10 +2674,6 @@ agent:
             ca: /path/to/ca
             # agent.sidecar.config.client.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
             insecure_skip_verify: false
-            # agent.sidecar.config.client.net.tls.server_name -- SSL Server Name
-            server_name: ""
-            # agent.sidecar.config.client.net.tls.client_auth -- client auth type
-            client_auth: None
           # @schema {"name": "agent.sidecar.config.client.net.socket_option", "alias": "socket_option"}
           socket_option:
             # agent.sidecar.config.client.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -3076,10 +3054,6 @@ discoverer:
         ca: /path/to/ca
         # discoverer.discoverer.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
         insecure_skip_verify: false
-        # discoverer.discoverer.net.tls.server_name -- SSL Server Name
-        server_name: ""
-        # discoverer.discoverer.net.tls.client_auth -- client auth type
-        client_auth: None
       # @schema {"name": "discoverer.discoverer.net.socket_option", "alias": "socket_option"}
       socket_option:
         # discoverer.discoverer.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality

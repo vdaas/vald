@@ -27,7 +27,6 @@ metadata:
     app.kubernetes.io/component: gateway-lb
 spec:
   progressDeadlineSeconds: 600
-  replicas: 3
   revisionHistoryLimit: 2
   selector:
     matchLabels:
@@ -46,7 +45,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: gateway-lb
       annotations:
-        checksum/configmap: e8c5cdcabdc147fb255ea8154e12818423149c678423f4832fdeb936134fdd2c
+        checksum/configmap: ca5261742ed9fd4a5bd4882dde8ad95206a701ed87f6dfdbb74cdae9eba84287
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-lb-gateway

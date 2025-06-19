@@ -18,6 +18,7 @@ package redis
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"os"
 	"reflect"
@@ -31,7 +32,6 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
-	"github.com/vdaas/vald/internal/tls"
 )
 
 // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
