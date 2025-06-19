@@ -18,6 +18,7 @@ package cassandra
 
 import (
 	"context"
+	"crypto/tls"
 	"os"
 	"reflect"
 	"testing"
@@ -31,7 +32,6 @@ import (
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
-	"github.com/vdaas/vald/internal/tls"
 )
 
 // default comparator option for client.

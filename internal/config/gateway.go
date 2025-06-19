@@ -59,20 +59,19 @@ func (g *Gateway) Bind() *Gateway {
 	g.NodeName = GetActualValue(g.NodeName)
 
 	if g.Discoverer != nil {
-		g.Discoverer.Bind()
+		g.Discoverer = g.Discoverer.Bind()
 	}
-
 	if g.Meta != nil {
-		g.Meta.Bind()
+		g.Meta = g.Meta.Bind()
+	} else {
+		g.Meta = new(Meta)
 	}
-
 	if g.BackupManager != nil {
-		g.BackupManager.Bind()
+		g.BackupManager = g.BackupManager.Bind()
 	}
 
 	if g.EgressFilter != nil {
-		g.EgressFilter.Bind()
+		g.EgressFilter = g.EgressFilter.Bind()
 	}
-
 	return g
 }

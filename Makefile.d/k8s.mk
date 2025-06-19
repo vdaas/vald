@@ -61,15 +61,6 @@ k8s/manifest/update: \
 	mv $(TEMP_DIR)/vald/templates/index/job/readreplica/rotate $(ROOTDIR)/k8s/index/job/readreplica/rotate
 	rm -rf $(TEMP_DIR)
 
-.PHONY: clean-empty-yaml
-## cleanup empty yamls
-clean-empty-yaml:
-	@find . -type f \( -name "*.yaml" -o -name "*.yml" \) -print0 | \
-	xargs -0 -I{} sh -c '\
-	  if ! grep -qEv "^(\\s*#|---|\\s*)$$" "{}"; then \
-	    echo "Deleting {}"; rm "{}"; \
-	  fi'
-
 .PHONY: k8s/manifest/helm-operator/clean
 ## clean k8s manifests for helm-operator
 k8s/manifest/helm-operator/clean:

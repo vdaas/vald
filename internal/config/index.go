@@ -69,11 +69,8 @@ func (im *Indexer) Bind() *Indexer {
 	im.AutoSaveIndexWaitDuration = GetActualValue(im.AutoSaveIndexWaitDuration)
 	im.NodeName = GetActualValue(im.NodeName)
 
-	if im.Discoverer == nil {
-		im.Discoverer = new(DiscovererClient)
+	if im.Discoverer != nil {
+		im.Discoverer = im.Discoverer.Bind()
 	}
-	// Assuming DiscovererClient.Bind() is compliant and im.Discoverer is now non-nil
-	im.Discoverer.Bind()
-
 	return im
 }

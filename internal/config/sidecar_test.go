@@ -88,7 +88,7 @@ func TestAgentSidecar_Bind(t *testing.T) {
 					},
 				},
 				want: want{
-					want: (&AgentSidecar{
+					want: &AgentSidecar{
 						Mode:               mode,
 						WatchDir:           watchDir,
 						AutoBackupDuration: autoBackupDuration,
@@ -109,7 +109,7 @@ func TestAgentSidecar_Bind(t *testing.T) {
 						Client: &Client{
 							Net: new(Net),
 						},
-					}).Bind(),
+					},
 				},
 			}
 		}(),

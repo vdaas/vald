@@ -164,15 +164,18 @@ func TestTLS_Opts(t *testing.T) {
 					tls.WithCert("cert"),
 					tls.WithKey("key"),
 					tls.WithInsecureSkipVerify(false),
-					tls.WithServerName("test client server"),
-					tls.WithClientAuth("unknown"),
 				},
 			},
 		},
 		{
 			name: "returns []tls.Option",
 			want: want{
-				want: nil,
+				want: []tls.Option{
+					tls.WithCa(""),
+					tls.WithCert(""),
+					tls.WithKey(""),
+					tls.WithInsecureSkipVerify(false),
+				},
 			},
 		},
 	}

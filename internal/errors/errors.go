@@ -17,10 +17,12 @@
 package errors
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"reflect"
 	"runtime"
+	"slices"
 
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
@@ -98,8 +100,8 @@ var (
 	// When the input error is not nil, it will return the error based on the input error.
 	Wrap = func(err error, msg string) error {
 		if err != nil {
-			if msg != "" && err.Error() != msg && !Is(err, New(msg)) {
-				return Errorf("%s: %w", msg, err)
+			if msg != "" && err.Error() != msg {
+				return fmt.Errorf("%s: %w", msg, err)
 			}
 			return err
 		}
@@ -161,7 +163,7 @@ func Is(err, target error) (same bool) {
 	if target == nil || err == nil {
 		return err == target
 	}
-	return is(err, target)
+	return is(err, target, reflect.TypeOf(target).Comparable())
 }
 
 func IsAny(err error, targets ...error) (same bool) {
@@ -169,7 +171,7 @@ func IsAny(err error, targets ...error) (same bool) {
 		return false
 	}
 	for _, target := range targets {
-		if target != nil && is(err, target) {
+		if Is(err, target) {
 			return true
 		}
 	}
@@ -181,15 +183,14 @@ func IsNot(err error, targets ...error) (same bool) {
 		return err != nil
 	}
 	for _, target := range targets {
-		if target != nil && is(err, target) {
+		if Is(err, target) {
 			return false
 		}
 	}
 	return true
 }
 
-func is(err, target error) (same bool) {
-	targetComparable := reflect.TypeOf(target).Comparable()
+func is(err, target error, targetComparable bool) (same bool) {
 	for {
 		if targetComparable && (err == target ||
 			err.Error() == target.Error() ||
@@ -210,7 +211,7 @@ func is(err, target error) (same bool) {
 			}
 		case interface{ Unwrap() []error }:
 			for _, err = range x.Unwrap() {
-				if is(err, target) {
+				if is(err, target, targetComparable) {
 					return true
 				}
 			}
@@ -259,7 +260,7 @@ func Join(errs ...error) error {
 	case 2:
 		switch {
 		case errs[0] != nil && errs[1] != nil:
-			if errs[0] == errs[1] || is(errs[0], errs[1]) {
+			if errs[0] == errs[1] || errors.Is(errs[0], errs[1]) {
 				return errs[0]
 			}
 			var es []error
@@ -273,10 +274,10 @@ func Join(errs ...error) error {
 			}
 			switch x := errs[0].(type) {
 			case *joinError:
-				x.errs = RemoveDuplicates(append(x.errs, es...))
+				x.errs = append(x.errs, es...)
 				return x
 			case interface{ Unwrap() []error }:
-				return &joinError{errs: RemoveDuplicates(append(x.Unwrap(), es...))}
+				return &joinError{errs: append(x.Unwrap(), es...)}
 			default:
 				return &joinError{errs: []error{errs[0], errs[1]}}
 			}
@@ -305,7 +306,11 @@ func Join(errs ...error) error {
 			errs: make([]error, 0, l),
 		}
 	}
-	e.errs = RemoveDuplicates(append(e.errs, errs...))
+	for _, err := range errs {
+		if err != nil {
+			e.errs = append(e.errs, err)
+		}
+	}
 	if len(e.errs) == 0 {
 		return nil
 	}
@@ -313,39 +318,13 @@ func Join(errs ...error) error {
 }
 
 func RemoveDuplicates(errs []error) []error {
-	switch len(errs) {
-	case 0:
-		return nil
-	case 1:
+	if len(errs) < 2 {
 		return errs
-	case 2:
-		switch {
-		case errs[0] != nil && errs[1] != nil:
-			if Is(errs[0], errs[1]) {
-				return errs[:1]
-			}
-			return errs
-		case errs[0] != nil:
-			return errs[:1]
-		case errs[1] != nil:
-			return errs[1:]
-		}
-		return nil
 	}
-	seen := make(map[string]bool, len(errs))
-	defer clear(seen)
-	var idx uint64
-	for _, err := range errs {
-		if err != nil {
-			key := err.Error()
-			if !seen[key] {
-				seen[key] = true
-				errs[idx] = err
-				idx++
-			}
-		}
-	}
-	return errs[:idx]
+	slices.SortStableFunc(errs, func(l error, r error) int {
+		return cmp.Compare(l.Error(), r.Error())
+	})
+	return slices.CompactFunc(errs, Is)
 }
 
 type joinError struct {
@@ -383,11 +362,8 @@ func (e *joinError) Error() (str string) {
 	if sb.Len() == 0 {
 		return ""
 	}
-	return sb.String()
-}
-
-func (e *joinError) String() (str string) {
-	return e.Error()
+	str = sb.String()
+	return str
 }
 
 func (e *joinError) Unwrap() []error {

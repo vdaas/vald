@@ -470,6 +470,8 @@ var (
 		"liblapack-dev",
 		"libomp-dev",
 		"libopenblas-dev",
+	}
+	faissBuildDeps = []string{
 		"gfortran",
 	}
 	rustBuildDeps = []string{
@@ -673,10 +675,12 @@ func main() {
 			Preprocess:    []string{ngtPreprocess},
 		},
 		"vald-" + agentFaiss: {
-			AppName:       "faiss",
-			PackageDir:    agent + "/core/faiss",
-			ExtraPackages: append(clangBuildDeps, ngtBuildDeps...),
-			Preprocess:    []string{faissPreprocess},
+			AppName:    "faiss",
+			PackageDir: agent + "/core/faiss",
+			ExtraPackages: append(clangBuildDeps,
+				append(ngtBuildDeps,
+					faissBuildDeps...)...),
+			Preprocess: []string{faissPreprocess},
 		},
 		"vald-" + agent: {
 			AppName:       agent,
@@ -684,7 +688,9 @@ func main() {
 			ContainerType: Rust,
 			RuntimeImage:  "gcr.io/distroless/cc-debian12",
 			ExtraPackages: append(clangBuildDeps,
-				append(ngtBuildDeps, rustBuildDeps...)...),
+				append(ngtBuildDeps,
+					append(faissBuildDeps,
+						rustBuildDeps...)...)...),
 			Preprocess: []string{
 				ngtPreprocess,
 				faissPreprocess,
@@ -796,8 +802,9 @@ func main() {
 			RuntimeUser:   defaultBuildUser,
 			ExtraPackages: append([]string{"npm"}, append(clangBuildDeps,
 				append(ngtBuildDeps,
-					append(rustBuildDeps,
-						devContainerDeps...)...)...)...),
+					append(faissBuildDeps,
+						append(rustBuildDeps,
+							devContainerDeps...)...)...)...)...),
 			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess, usearchPreprocess),
 			Entrypoints: []string{"/bin/bash"},
 		},
@@ -811,8 +818,9 @@ func main() {
 			PackageDir:    "dev",
 			ExtraPackages: append(clangBuildDeps,
 				append(ngtBuildDeps,
-					append(rustBuildDeps,
-						devContainerDeps...)...)...),
+					append(faissBuildDeps,
+						append(rustBuildDeps,
+							devContainerDeps...)...)...)...),
 			Preprocess: append(devContainerPreprocess,
 				append(ciContainerPreprocess,
 					ngtPreprocess,

@@ -24,7 +24,7 @@ type BackupManager struct {
 // Bind binds the actual data from the BackupManager receiver fields.
 func (b *BackupManager) Bind() *BackupManager {
 	if b.Client != nil {
-		b.Client.Bind()
+		b.Client = b.Client.Bind()
 	} else {
 		b.Client = newGRPCClientConfig()
 	}

@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/metrics/runtime/cgo"
 	"github.com/vdaas/vald/internal/observability/metrics/runtime/goroutine"
 	"github.com/vdaas/vald/internal/observability/metrics/version"
+	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -40,6 +41,7 @@ type Observability interface {
 type observability struct {
 	eg        errgroup.Group
 	exporters []exporter.Exporter
+	tracer    trace.Tracer
 	metrics   []metrics.Metric
 }
 
@@ -61,6 +63,14 @@ func NewWithConfig(cfg *config.Observability, ms ...metrics.Metric) (Observabili
 		if cfg.Metrics.EnableVersionInfo {
 			ms = append(ms, version.New(cfg.Metrics.VersionInfoLabels...))
 		}
+	}
+
+	if cfg.Trace.Enabled {
+		tr, err := trace.New()
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, WithTracer(tr))
 	}
 
 	if cfg.OTLP != nil {
@@ -126,6 +136,12 @@ func (o *observability) PreStart(ctx context.Context) error {
 	meter := metrics.GetMeter()
 	for _, m := range o.metrics {
 		if err := m.Register(meter); err != nil {
+			return err
+		}
+	}
+
+	if o.tracer != nil {
+		if err := o.tracer.Start(ctx); err != nil {
 			return err
 		}
 	}
