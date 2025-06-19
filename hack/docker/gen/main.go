@@ -470,7 +470,6 @@ var (
 		"liblapack-dev",
 		"libomp-dev",
 		"libopenblas-dev",
-		"gfortran",
 	}
 	rustBuildDeps = []string{
 		"pkg-config",

@@ -80,7 +80,6 @@ RUN --mount=type=bind,target=.,rw \
     liblapack-dev \
     libomp-dev \
     libopenblas-dev \
-    gfortran \
     pkg-config \
     file \
     gawk \
