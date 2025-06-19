@@ -15,6 +15,7 @@ package grpc
 
 import (
 	"context"
+	"math"
 
 	"github.com/vdaas/vald/internal/net/grpc/pool"
 	"github.com/vdaas/vald/internal/observability/attribute"
@@ -95,7 +96,9 @@ func (gm *grpcServerMetrics) Register(m metrics.Meter) error {
 				return nil
 			}
 			for name, cnt := range ms {
-				o.ObserveInt64(healthyConn, cnt, api.WithAttributes(attribute.String(gm.poolTargetAddrKey, name)))
+				if cnt <= math.MaxInt64 {
+					o.ObserveInt64(healthyConn, int64(cnt), api.WithAttributes(attribute.String(gm.poolTargetAddrKey, name)))
+				}
 			}
 			return nil
 		}, healthyConn,
