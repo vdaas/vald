@@ -50,11 +50,11 @@ func Test_newGRPCClientConfig(t *testing.T) {
 		{
 			name: "return GRPCClient when called newGRPCClientConfig()",
 			want: want{
-				want: (&GRPCClient{
+				want: &GRPCClient{
 					DialOption: &DialOption{
 						Insecure: true,
 					},
-				}).Bind(),
+				},
 			},
 		},
 	}
@@ -124,13 +124,17 @@ func TestGRPCClient_Bind(t *testing.T) {
 					HealthCheckDuration: healthcheck,
 				},
 				want: want{
-					want: (&GRPCClient{
+					want: &GRPCClient{
 						Addrs:               addrs,
 						HealthCheckDuration: healthcheck,
+						ConnectionPool:      &ConnectionPool{},
+						DialOption: &DialOption{
+							Insecure: true,
+						},
 						TLS: &TLS{
 							Enabled: false,
 						},
-					}).Bind(),
+					},
 				},
 			}
 		}(),
@@ -177,6 +181,7 @@ func TestGRPCClient_Bind(t *testing.T) {
 				EnableBackoff:               true,
 				Insecure:                    true,
 				Timeout:                     "5m",
+				Net:                         &Net{},
 				Keepalive: &GRPCClientKeepalive{
 					Time:                "100s",
 					Timeout:             "300s",
@@ -201,7 +206,7 @@ func TestGRPCClient_Bind(t *testing.T) {
 					TLS:                 tls,
 				},
 				want: want{
-					want: (&GRPCClient{
+					want: &GRPCClient{
 						Addrs:               addrs,
 						HealthCheckDuration: healthcheck,
 						ConnectionPool:      connectionPool,
@@ -209,7 +214,7 @@ func TestGRPCClient_Bind(t *testing.T) {
 						CallOption:          callOpts,
 						DialOption:          dialOpts,
 						TLS:                 tls,
-					}).Bind(),
+					},
 				},
 			}
 		}(),
@@ -232,10 +237,17 @@ func TestGRPCClient_Bind(t *testing.T) {
 					t.Setenv(key, value)
 				},
 				want: want{
-					want: (&GRPCClient{
+					want: &GRPCClient{
 						Addrs:               addrs,
 						HealthCheckDuration: value,
-					}).Bind(),
+						ConnectionPool:      &ConnectionPool{},
+						DialOption: &DialOption{
+							Insecure: true,
+						},
+						TLS: &TLS{
+							Enabled: false,
+						},
+					},
 				},
 			}
 		}(),
@@ -244,7 +256,15 @@ func TestGRPCClient_Bind(t *testing.T) {
 				name:   "return GRPCClient when all parameters are not set",
 				fields: fields{},
 				want: want{
-					want: new(GRPCClient).Bind(),
+					want: &GRPCClient{
+						ConnectionPool: &ConnectionPool{},
+						DialOption: &DialOption{
+							Insecure: true,
+						},
+						TLS: &TLS{
+							Enabled: false,
+						},
+					},
 				},
 			}
 		}(),
@@ -555,7 +575,7 @@ func TestDialOption_Bind(t *testing.T) {
 					Keepalive:                   keepAlive,
 				},
 				want: want{
-					want: (&DialOption{
+					want: &DialOption{
 						WriteBufferSize:             writeBufferSize,
 						ReadBufferSize:              readBufferSize,
 						InitialWindowSize:           initialWindowSize,
@@ -571,7 +591,7 @@ func TestDialOption_Bind(t *testing.T) {
 						Timeout:                     timeout,
 						Net:                         net,
 						Keepalive:                   keepAlive,
-					}).Bind(),
+					},
 				},
 			}
 		}(),
@@ -594,10 +614,10 @@ func TestDialOption_Bind(t *testing.T) {
 					}
 				},
 				want: want{
-					want: (&DialOption{
+					want: &DialOption{
 						BackoffMaxDelay: "3m",
 						Timeout:         "3m",
-					}).Bind(),
+					},
 				},
 			}
 		}(),
@@ -606,7 +626,7 @@ func TestDialOption_Bind(t *testing.T) {
 				name:   "return DialOption when all parameters are not set",
 				fields: fields{},
 				want: want{
-					want: new(DialOption).Bind(),
+					want: &DialOption{},
 				},
 			}
 		}(),
@@ -738,9 +758,9 @@ func TestGRPCClient_Opts(t *testing.T) {
 						},
 						TLS: &TLS{
 							Enabled: true,
-							Cert:    testdata.GetTestdataPath("tls/server.crt"),
-							Key:     testdata.GetTestdataPath("tls/server.key"),
-							CA:      testdata.GetTestdataPath("tls/ca.pem"),
+							Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+							Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+							CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
 						},
 					},
 					Keepalive: &GRPCClientKeepalive{
@@ -751,9 +771,9 @@ func TestGRPCClient_Opts(t *testing.T) {
 				},
 				TLS: &TLS{
 					Enabled: true,
-					Cert:    testdata.GetTestdataPath("tls/server.crt"),
-					Key:     testdata.GetTestdataPath("tls/server.key"),
-					CA:      testdata.GetTestdataPath("tls/ca.pem"),
+					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+					Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
 				},
 			},
 			want: want{
@@ -819,9 +839,9 @@ func TestGRPCClient_Opts(t *testing.T) {
 						},
 						TLS: &TLS{
 							Enabled: true,
-							Cert:    testdata.GetTestdataPath("tls/server.crt"),
-							Key:     testdata.GetTestdataPath("tls/server.key"),
-							CA:      testdata.GetTestdataPath("tls/ca.pem"),
+							Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+							Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+							CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
 						},
 					},
 					Keepalive: &GRPCClientKeepalive{
@@ -832,9 +852,9 @@ func TestGRPCClient_Opts(t *testing.T) {
 				},
 				TLS: &TLS{
 					Enabled: true,
-					Cert:    testdata.GetTestdataPath("tls/server.crt"),
-					Key:     testdata.GetTestdataPath("tls/server.key"),
-					CA:      testdata.GetTestdataPath("tls/ca.pem"),
+					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+					Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
 				},
 			},
 			want: want{
@@ -901,9 +921,9 @@ func TestGRPCClient_Opts(t *testing.T) {
 						},
 						TLS: &TLS{
 							Enabled: true,
-							Cert:    testdata.GetTestdataPath("tls/server.crt"),
-							Key:     testdata.GetTestdataPath("tls/server.key"),
-							CA:      testdata.GetTestdataPath("tls/ca.pem"),
+							Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+							Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+							CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
 						},
 					},
 					Keepalive: &GRPCClientKeepalive{
@@ -914,9 +934,9 @@ func TestGRPCClient_Opts(t *testing.T) {
 				},
 				TLS: &TLS{
 					Enabled: true,
-					Cert:    testdata.GetTestdataPath("tls/server.crt"),
+					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
 					Key:     "tls/dummy/Server.key",
-					CA:      testdata.GetTestdataPath("tls/ca.pem"),
+					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
 				},
 			},
 			want: want{
@@ -997,9 +1017,9 @@ func TestGRPCClient_Opts(t *testing.T) {
 				},
 				TLS: &TLS{
 					Enabled: true,
-					Cert:    testdata.GetTestdataPath("tls/server.crt"),
-					Key:     testdata.GetTestdataPath("tls/server.key"),
-					CA:      testdata.GetTestdataPath("tls/ca.pem"),
+					Cert:    testdata.GetTestdataPath("tls/dummyServer.crt"),
+					Key:     testdata.GetTestdataPath("tls/dummyServer.key"),
+					CA:      testdata.GetTestdataPath("tls/dummyCa.pem"),
 				},
 			},
 			want: want{

@@ -56,15 +56,9 @@ func (g *LB) Bind() *LB {
 	g.AgentDNS = GetActualValue(g.AgentDNS)
 	g.NodeName = GetActualValue(g.NodeName)
 
-	// Bind for the value struct field. Its Bind method has a pointer receiver.
-	g.ReadReplicaClient.Bind()
-
-	if g.Discoverer == nil {
-		g.Discoverer = new(DiscovererClient)
+	if g.Discoverer != nil {
+		g.Discoverer = g.Discoverer.Bind()
 	}
-	// Assuming DiscovererClient.Bind() is compliant and g.Discoverer is now non-nil
-	g.Discoverer.Bind()
-
 	return g
 }
 

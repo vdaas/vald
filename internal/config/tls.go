@@ -32,12 +32,6 @@ type TLS struct {
 	// CA represent the CA certificate environment variable key used to start server.
 	CA string `json:"ca" yaml:"ca"`
 
-	// ServerName represents the tls Server SNI.
-	ServerName string `json:"server_name" yaml:"server_name"`
-
-	// ClientAuth represents the tls ClientAuth Type for Server
-	ClientAuth string `json:"client_auth" yaml:"client_auth"`
-
 	// InsecureSkipVerify represent enable/disable skip SSL certificate verification
 	InsecureSkipVerify bool `json:"insecure_skip_verify" yaml:"insecure_skip_verify"`
 }
@@ -47,23 +41,15 @@ func (t *TLS) Bind() *TLS {
 	t.Cert = GetActualValue(t.Cert)
 	t.Key = GetActualValue(t.Key)
 	t.CA = GetActualValue(t.CA)
-	t.ServerName = GetActualValue(t.ServerName)
-	t.ClientAuth = GetActualValue(t.ClientAuth)
 	return t
 }
 
 // Opts returns []tls.Option object whose every value is field value.
 func (t *TLS) Opts() []tls.Option {
-	if !t.Enabled {
-		return nil
-	}
-	t = t.Bind()
 	return []tls.Option{
 		tls.WithCa(t.CA),
 		tls.WithCert(t.Cert),
 		tls.WithKey(t.Key),
 		tls.WithInsecureSkipVerify(t.InsecureSkipVerify),
-		tls.WithServerName(t.ServerName),
-		tls.WithClientAuth(t.ClientAuth),
 	}
 }

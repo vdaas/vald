@@ -62,17 +62,11 @@ func (c *Corrector) Bind() *Corrector {
 	c.KVSBackgroundCompactionInterval = GetActualValue(c.KVSBackgroundCompactionInterval)
 	c.KVSBackgroundSyncInterval = GetActualValue(c.KVSBackgroundSyncInterval)
 
-	if c.Discoverer == nil {
-		c.Discoverer = new(DiscovererClient)
+	if c.Discoverer != nil {
+		c.Discoverer = c.Discoverer.Bind()
 	}
-	// Assuming DiscovererClient.Bind() is compliant and c.Discoverer is now non-nil
-	c.Discoverer.Bind()
-
-	if c.Gateway == nil {
-		c.Gateway = new(GRPCClient) // Using new() for consistency here as per re-evaluation.
+	if c.Gateway != nil {
+		c.Gateway = c.Gateway.Bind()
 	}
-	// Assuming GRPCClient.Bind() is compliant and c.Gateway is now non-nil
-	c.Gateway.Bind()
-
 	return c
 }

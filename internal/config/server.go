@@ -66,10 +66,8 @@ type Server struct {
 
 // HTTP represents the configuration for HTTP.
 type HTTP struct {
-	HTTP2 *HTTP2 `json:"http2"               yaml:"http2"`
-	// ShutdownDuration represents the duration for the http server to shutdown.
-	ShutdownDuration string `json:"shutdown_duration"   yaml:"shutdown_duration"`
-	// HandlerTimeout represents the timeout duration for http handlers.
+	HTTP2             *HTTP2 `json:"http2"               yaml:"http2"`
+	ShutdownDuration  string `json:"shutdown_duration"   yaml:"shutdown_duration"`
 	HandlerTimeout    string `json:"handler_timeout"     yaml:"handler_timeout"`
 	IdleTimeout       string `json:"idle_timeout"        yaml:"idle_timeout"`
 	ReadHeaderTimeout string `json:"read_header_timeout" yaml:"read_header_timeout"`
@@ -88,12 +86,6 @@ type HTTP2 struct {
 	MaxDecoderHeaderTableSize    uint32 `json:"max_decoder_header_table_size,omitempty"    yaml:"max_decoder_header_table_size"`
 	MaxEncoderHeaderTableSize    uint32 `json:"max_encoder_header_table_size,omitempty"    yaml:"max_encoder_header_table_size"`
 	MaxReadFrameSize             uint32 `json:"max_read_frame_size,omitempty"              yaml:"max_read_frame_size"`
-}
-
-// Bind binds the actual data from the HTTP2 receiver fields.
-func (h *HTTP2) Bind() *HTTP2 {
-	// No fields to bind as per rules
-	return h
 }
 
 // GRPC represents the configuration for gPRC.
@@ -153,6 +145,7 @@ func (s *Servers) Bind() *Servers {
 			check[srv.Name] = struct{}{}
 		}
 	}
+
 	s.FullShutdownDuration = GetActualValue(s.FullShutdownDuration)
 
 	sus := make([]string, 0, len(s.StartUpStrategy))
@@ -171,7 +164,7 @@ func (s *Servers) Bind() *Servers {
 	}
 	s.ShutdownStrategy = sds
 
-	if s.TLS != nil { // This handling is compliant as per previous similar cases
+	if s.TLS != nil {
 		s.TLS.Bind()
 	} else {
 		s.TLS = &TLS{
@@ -199,25 +192,14 @@ func (h *HTTP) Bind() *HTTP {
 	h.ReadTimeout = GetActualValue(h.ReadTimeout)
 	h.WriteTimeout = GetActualValue(h.WriteTimeout)
 	h.IdleTimeout = GetActualValue(h.IdleTimeout)
-
-	if h.HTTP2 == nil {
-		h.HTTP2 = new(HTTP2)
-	}
-	if h.HTTP2 != nil {
-		h.HTTP2.Bind()
-	}
 	return h
 }
 
 // Bind binds the actual value from the GRPC struct field.
 func (g *GRPC) Bind() *GRPC {
 	g.ConnectionTimeout = GetActualValue(g.ConnectionTimeout)
-	g.Interceptors = GetActualValues(g.Interceptors)
-	if g.Keepalive == nil {
-		g.Keepalive = new(GRPCKeepalive)
-	}
-	if g.Keepalive != nil {
-		g.Keepalive.Bind()
+	for i, ic := range g.Interceptors {
+		g.Interceptors[i] = GetActualValue(ic)
 	}
 	return g
 }
@@ -249,11 +231,12 @@ func (s *Server) Bind() *Server {
 	if s.GRPC != nil {
 		s.GRPC.Bind()
 	}
-	// Applying the consistent pattern:
-	if s.SocketOption == nil {
+
+	if s.SocketOption != nil {
+		s.SocketOption.Bind()
+	} else {
 		s.SocketOption = new(SocketOption)
 	}
-	s.SocketOption.Bind()
 	return s
 }
 

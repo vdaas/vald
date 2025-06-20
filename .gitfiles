@@ -103,6 +103,7 @@
 .github/workflows/dockers-index-correction-image.yaml
 .github/workflows/dockers-index-creation-image.yaml
 .github/workflows/dockers-index-deletion-image.yaml
+.github/workflows/dockers-index-exportation-image.yaml
 .github/workflows/dockers-index-operator-image.yaml
 .github/workflows/dockers-index-save-image.yaml
 .github/workflows/dockers-manager-index-image.yaml
@@ -530,6 +531,8 @@ cmd/index/job/deletion/doc.go
 cmd/index/job/deletion/main.go
 cmd/index/job/deletion/main_test.go
 cmd/index/job/deletion/sample.yaml
+cmd/index/job/exportation/main.go
+cmd/index/job/exportation/sample.yaml
 cmd/index/job/readreplica/rotate/doc.go
 cmd/index/job/readreplica/rotate/main.go
 cmd/index/job/readreplica/rotate/main_test.go
@@ -591,6 +594,7 @@ dockers/gateway/mirror/Dockerfile
 dockers/index/job/correction/Dockerfile
 dockers/index/job/creation/Dockerfile
 dockers/index/job/deletion/Dockerfile
+dockers/index/job/exportation/Dockerfile
 dockers/index/job/readreplica/rotate/Dockerfile
 dockers/index/job/save/Dockerfile
 dockers/index/operator/Dockerfile
@@ -920,6 +924,7 @@ internal/config/index_creation.go
 internal/config/index_creation_test.go
 internal/config/index_deleter.go
 internal/config/index_deleter_test.go
+internal/config/index_exporter.go
 internal/config/index_operator.go
 internal/config/index_operator_test.go
 internal/config/index_save.go
@@ -1672,6 +1677,9 @@ k8s/index/job/creation/configmap.yaml
 k8s/index/job/creation/cronjob.yaml
 k8s/index/job/deletion/configmap.yaml
 k8s/index/job/deletion/cronjob.yaml
+k8s/index/job/exportation/configmap.yaml
+k8s/index/job/exportation/cronjob.yaml
+k8s/index/job/exportation/pvc.yaml
 k8s/index/job/save/configmap.yaml
 k8s/index/job/save/cronjob.yaml
 k8s/index/operator/configmap.yaml
@@ -2085,6 +2093,10 @@ pkg/index/job/deletion/service/options_test.go
 pkg/index/job/deletion/usecase/deletion.go
 pkg/index/job/deletion/usecase/deletion_test.go
 pkg/index/job/deletion/usecase/doc.go
+pkg/index/job/exportation/config/config.go
+pkg/index/job/exportation/service/exporter.go
+pkg/index/job/exportation/service/options.go
+pkg/index/job/exportation/usecase/exportation.go
 pkg/index/job/readreplica/rotate/config/config.go
 pkg/index/job/readreplica/rotate/config/config_test.go
 pkg/index/job/readreplica/rotate/config/doc.go
