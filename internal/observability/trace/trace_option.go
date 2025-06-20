@@ -14,15 +14,8 @@
 // limitations under the License.
 //
 
-package credentials
+package trace
 
-import (
-	"crypto/tls"
+type TraceOption func(*tracer) error
 
-	"google.golang.org/grpc/credentials"
-)
-
-// NewTLS returns the TLS credentials.
-func NewTLS(c *tls.Config) credentials.TransportCredentials {
-	return credentials.NewTLS(c)
-}
+var traceDefaultOpts = []TraceOption{}

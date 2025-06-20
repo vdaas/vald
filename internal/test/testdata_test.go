@@ -47,11 +47,11 @@ func TestGetTestdataPath(t *testing.T) {
 		{
 			name: "returns the result of combining the given path and test directory",
 			args: args{
-				filename: "tls/ca.pem",
+				filename: "tls/dummyCa.pem",
 			},
 			want: want{
 				want: func() string {
-					return baseDir() + "/internal/test/data/tls/ca.pem"
+					return baseDir() + "/internal/test/data/tls/dummyCa.pem"
 				}(),
 			},
 		},

@@ -483,11 +483,11 @@ func TestCompressorRegisterer_Bind(t *testing.T) {
 					QueueCheckDuration: "5ms",
 				},
 				want: want{
-					want: (&CompressorRegisterer{
+					want: &CompressorRegisterer{
 						ConcurrentLimit:    10,
 						QueueCheckDuration: "5ms",
 						Compressor:         new(BackupManager),
-					}).Bind(),
+					},
 				},
 			}
 		}(),
@@ -502,11 +502,11 @@ func TestCompressorRegisterer_Bind(t *testing.T) {
 					QueueCheckDuration: "_" + key + "_",
 				},
 				want: want{
-					want: (&CompressorRegisterer{
+					want: &CompressorRegisterer{
 						ConcurrentLimit:    10,
 						QueueCheckDuration: "5ms",
 						Compressor:         new(BackupManager),
-					}).Bind(),
+					},
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
@@ -525,11 +525,11 @@ func TestCompressorRegisterer_Bind(t *testing.T) {
 					Compressor:         bm,
 				},
 				want: want{
-					want: (&CompressorRegisterer{
+					want: &CompressorRegisterer{
 						ConcurrentLimit:    10,
 						QueueCheckDuration: "5ms",
 						Compressor:         bm,
-					}).Bind(),
+					},
 				},
 			}
 		}(),

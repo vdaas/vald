@@ -58,16 +58,15 @@ func (m *Mirror) Bind() *Mirror {
 	m.Colocation = GetActualValue(m.Colocation)
 	m.Group = GetActualValue(m.Group)
 
-	if m.Net == nil {
-		m.Net = new(Net)
-	}
-	// Assuming Net.Bind() is compliant and m.Net is now non-nil
-	m.Net.Bind()
-
-	if m.Client == nil {
-		m.Client = newGRPCClientConfig() // newGRPCClientConfig calls Bind internally
+	if m.Net != nil {
+		m.Net = m.Net.Bind()
 	} else {
-		m.Client.Bind() // Call Bind on existing client
+		m.Net = new(Net).Bind()
+	}
+	if m.Client != nil {
+		m.Client = m.Client.Bind()
+	} else {
+		m.Client = new(GRPCClient).Bind()
 	}
 	return m
 }

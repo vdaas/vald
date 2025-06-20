@@ -18,6 +18,7 @@ package client
 
 import (
 	"context"
+	"crypto/tls"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -32,7 +33,6 @@ import (
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
-	"github.com/vdaas/vald/internal/tls"
 )
 
 var (
