@@ -134,9 +134,7 @@ func (e *export) Start(ctx context.Context) error {
 	return err
 }
 
-func (e *export) doExportIndex(
-	ctx context.Context,
-) (err error) {
+func (e *export) doExportIndex(ctx context.Context) (err error) {
 	ctx, span := trace.StartSpan(igrpc.WrapGRPCMethod(ctx, grpcMethodName), apiName+"/service/index.doExportIndex")
 	defer func() {
 		if span != nil {
