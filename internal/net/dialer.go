@@ -242,7 +242,7 @@ func (d *dialer) cachedDialer(ctx context.Context, network, addr string) (conn C
 	if !ok {
 		var nport uint16
 		var isV4, isV6 bool
-		host, nport, _, isV4, isV6, err = Parse(addr)
+		host, nport, _, isV4, isV6, err = Parse(ctx, addr)
 		if err != nil {
 			return nil, err
 		}

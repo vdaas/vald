@@ -181,43 +181,63 @@ func IsTCP(network string) bool {
 		rip == TCP6
 }
 
-// Parse parses the hostname, IPv4 or IPv6 address and return the hostname/IP, port number,
-// whether the address is local IP and IPv4 or IPv6, and any parsing error occurred.
-// The address should contains the port number, otherwise an error will return.
-func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool, err error) {
+// Parse parses the hostname, IPv4 or IPv6 address and returns
+// - host/IP
+// - port number
+// - isLocal
+// - isIPv4
+// - isIPv6
+// - any error occurred during parsing.
+func Parse(ctx context.Context, addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool, err error) {
 	host, port, err = SplitHostPort(addr)
-	if err != nil {
-		if !errors.Is(err, errors.Errorf("address %s: missing port in address", addr)) {
-			log.Warnf("failed to parse addr %s\terror: %v", addr, err)
-		}
-		host = addr
+	if err != nil && !errors.Is(err, errors.Errorf("address %s: missing port in address", addr)) {
+		log.Warnf("failed to parse addr %s\terror: %v", addr, err)
 	}
 
-	ip, nerr := netip.ParseAddr(host)
-	if nerr != nil {
-		ips, err := DefaultResolver.LookupIPAddr(context.Background(), host)
-		if err != nil || ips == nil || len(ips) == 0 {
-			log.Debugf("host: %s,\tport: %d,\tip: %#v,\tParseAddr error: %v, LookupIPAddr error:", host, port, ip, nerr, err)
+	var ip netip.Addr
+	var ipIsLiteral bool
+
+	// Step 1: Check if the host is a literal IP (user-provided)
+	stdIP := net.ParseIP(host)
+	if stdIP != nil {
+		ipIsLiteral = true
+		host = stdIP.String()
+	}
+	// Step 2: Try parsing as netip and resolve DNS if necessary
+	var perr error
+	ip, perr = netip.ParseAddr(host)
+	if perr != nil {
+		if err != nil {
+			err = errors.Join(err, perr)
 		} else {
-			ip, nerr = netip.ParseAddr(ips[0].String())
-			if nerr != nil {
-				log.Debugf("host: %s,\tport: %d,\tip: %#v,\tParseAddr error: %v", host, port, ip, nerr)
+			err = perr
+		}
+		ips, rerr := DefaultResolver.LookupIPAddr(ctx, host)
+		if rerr != nil {
+			if err != nil {
+				err = errors.Join(err, perr)
+			} else {
+				err = perr
+			}
+		} else if len(ips) == 0 {
+			log.Debugf("host: %s, port: %d, parse error: %v, resolve error: %v", host, port, perr, rerr)
+		} else {
+			ip, perr = netip.ParseAddr(ips[0].IP.String())
+			if perr != nil {
+				if err != nil {
+					err = errors.Join(err, perr)
+				} else {
+					err = perr
+				}
 			}
 		}
 	}
 
-	// return host and port and flags
-	return host, port,
-		// check is local ip or not
-		IsLocal(host) || nerr == nil && ip.IsLoopback(),
-		// check is IPv4 or not
-		// ic < 2,
-		nerr == nil && ip.Is4(),
-		// check is IPv6 or not
-		// ic >= 2,
-		nerr == nil && (ip.Is6() || ip.Is4In6()),
-		// Split error
-		err
+	isIPv4 = ipIsLiteral && ip.Is4()
+	isIPv6 = ipIsLiteral && (ip.Is6() || ip.Is4In6())
+	isLocal = ipIsLiteral && ip.IsLoopback() || IsLocal(host)
+
+	return host, port, isLocal, isIPv4, isIPv6, err
 }
 
 // DialContext is a wrapper function of the net.Dial function.
@@ -236,13 +256,14 @@ func JoinHostPort(host string, port uint16) string {
 // SplitHostPort splits the address, and return the host/IP address and the port number,
 // and any error occurred.
 // If it is the loopback address, it will return the loopback address and corresponding port number.
-// IPv6 loopback address is not supported yet.
-// For more information, please read https://github.com/vdaas/vald/projects/3#card-43504189
+// Falls back to default port and local IP if not provided.
+// Example: ":8080" → "127.0.0.1", 8080
 func SplitHostPort(hostport string) (host string, port uint16, err error) {
 	if !strings.HasPrefix(hostport, "::") && strings.HasPrefix(hostport, ":") {
 		hostport = localIPv4 + hostport
 	}
-	host, portStr, err := net.SplitHostPort(hostport)
+	var portStr string
+	host, portStr, err = net.SplitHostPort(hostport)
 	if err != nil {
 		host = hostport
 		port = defaultPort

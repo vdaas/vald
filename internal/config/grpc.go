@@ -277,7 +277,7 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 			grpc.WithWriteBufferSize(g.DialOption.WriteBufferSize),
 		)
 
-		if g.DialOption.Net != nil &&
+		if g.DialOption.Net != nil && g.DialOption.Net.Dialer != nil &&
 			len(g.DialOption.Net.Dialer.Timeout) != 0 {
 			if g.DialOption.Net.TLS != nil && g.DialOption.Net.TLS.Enabled {
 				opts = append(opts,

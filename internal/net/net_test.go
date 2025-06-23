@@ -235,6 +235,7 @@ func TestDialContext(t *testing.T) {
 func TestParse(t *testing.T) {
 	t.Parallel()
 	type args struct {
+		ctx  context.Context
 		addr string
 	}
 	type want struct {
@@ -310,7 +311,7 @@ func TestParse(t *testing.T) {
 				wantHost: "localhost",
 				wantPort: uint16(8080),
 				isV4:     false,
-				isV6:     true,
+				isV6:     false,
 				isLocal:  true,
 			},
 		},
@@ -392,7 +393,7 @@ func TestParse(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			gotHost, gotPort, gotIsLocal, gotIsV4, gotIsV6, err := Parse(test.args.addr)
+			gotHost, gotPort, gotIsLocal, gotIsV4, gotIsV6, err := Parse(context.Background(), test.args.addr)
 			if err := checkFunc(test.want, gotHost, gotPort, gotIsLocal, gotIsV4, gotIsV6, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
