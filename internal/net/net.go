@@ -184,7 +184,9 @@ func IsTCP(network string) bool {
 // Parse parses the hostname, IPv4 or IPv6 address and return the hostname/IP, port number,
 // whether the address is local IP and IPv4 or IPv6, and any parsing error occurred.
 // The address should contains the port number, otherwise an error will return.
-func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool, err error) {
+func Parse(
+	ctx context.Context, addr string,
+) (host string, port uint16, isLocal, isIPv4, isIPv6 bool, err error) {
 	host, port, err = SplitHostPort(addr)
 	if err != nil {
 		if !errors.Is(err, errors.Errorf("address %s: missing port in address", addr)) {
@@ -195,7 +197,7 @@ func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool,
 
 	ip, nerr := netip.ParseAddr(host)
 	if nerr != nil {
-		ips, err := DefaultResolver.LookupIPAddr(context.Background(), host)
+		ips, err := DefaultResolver.LookupIPAddr(ctx, host)
 		if err != nil || ips == nil || len(ips) == 0 {
 			log.Debugf("host: %s,\tport: %d,\tip: %#v,\tParseAddr error: %v, LookupIPAddr error:", host, port, ip, nerr, err)
 		} else {

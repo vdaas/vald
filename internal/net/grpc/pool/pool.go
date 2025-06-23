@@ -159,7 +159,7 @@ type pool struct {
 const defaultPoolSize = uint64(4)
 
 // Global metrics are stored in a sync.Map (key: address, value: healthy connection count).
-var metrics sync.Map[string, int64]
+var metrics sync.Map[string, uint64]
 
 // New creates a new connection pool with the provided options.
 // It parses the target address, initializes the connection slots, and performs an initial dial check.
@@ -185,7 +185,7 @@ func New(ctx context.Context, opts ...Option) (Conn, error) {
 	// Parse the address to extract host and port.
 	var err error
 	var isIPv4, isIPv6 bool
-	p.host, p.port, _, isIPv4, isIPv6, err = net.Parse(p.addr)
+	p.host, p.port, _, isIPv4, isIPv6, err = net.Parse(ctx, p.addr)
 	p.isIPAddr = isIPv4 || isIPv6
 	if err != nil {
 		log.Warnf("failed to parse addr %s: %s", p.addr, err)
@@ -697,7 +697,7 @@ func (p *pool) IsHealthy(ctx context.Context) bool {
 	if sz == 0 {
 		return false
 	}
-	healthyCount := int64(0)
+	healthyCount := uint64(0)
 	err := p.loop(ctx, func(ctx context.Context, idx uint64, pc *poolConn) bool {
 		if pc != nil {
 			state, healthy := p.isHealthy(ctx, idx, pc.conn)
@@ -713,6 +713,28 @@ func (p *pool) IsHealthy(ctx context.Context) bool {
 				log.Debugf("unhealthy connection detected for %s pool %d/%d len %d is unhealthy (state: %s)",
 					pc.addr, idx+1, p.Size(), p.Len(), state.String())
 			}
+		} else {
+			newConn, err := p.dial(ctx, idx, p.addr)
+			if err == nil && newConn != nil {
+				state, healthy := p.isHealthy(ctx, idx, newConn)
+				addr := newConn.Target()
+				if healthy {
+					healthyCount++
+					pc = &poolConn{conn: newConn, addr: addr}
+					p.store(idx, pc)
+					cnt, ok := metrics.Load(pc.addr)
+					if ok {
+						metrics.Store(pc.addr, cnt+1)
+					} else {
+						metrics.Store(pc.addr, 1)
+					}
+				} else {
+					log.Debugf("unhealthy nil connection target %s detected for pool %d/%d len %d is unhealthy (state: %s)",
+						addr, idx+1, p.Size(), p.Len(), state.String())
+				}
+			} else {
+				log.Debugf("nil pool connection detected for %s pool %d/%d len %d is unhealthy", p.addr, idx+1, p.Size(), p.Len())
+			}
 		}
 		return true
 	})
@@ -725,7 +747,7 @@ func (p *pool) IsHealthy(ctx context.Context) bool {
 		return false
 	}
 	if p.isIPAddr {
-		return healthyCount == int64(sz)
+		return healthyCount == sz
 	}
 	return healthyCount > 0
 }
@@ -831,9 +853,9 @@ func (p *pool) scanGRPCPort(ctx context.Context) (port uint16, err error) {
 }
 
 // Metrics returns a map of healthy connection counts per target address.
-func Metrics(ctx context.Context) map[string]int64 {
-	result := make(map[string]int64, metrics.Len())
-	metrics.Range(func(addr string, count int64) bool {
+func Metrics(ctx context.Context) map[string]uint64 {
+	result := make(map[string]uint64, metrics.Len())
+	metrics.Range(func(addr string, count uint64) bool {
 		if addr != "" {
 			result[addr] = count
 		}
@@ -860,13 +882,9 @@ func (p *pool) isHealthy(
 	case connectivity.Connecting:
 		return state, true
 	case connectivity.Idle:
-		log.Debugf("gRPC target %s's pool connection %d/%d status is Idle waiting for target\tstatus: %s\ttrying to re-connect...", conn.Target(), idx+1, p.Size(), state.String())
+		log.Debugf("gRPC target %s's pool connection %d/%d status is Idle\tstate: %s\twill re-connect...", conn.Target(), idx+1, p.Size(), state.String())
 		conn.Connect()
-		if conn.WaitForStateChange(ctx, state) {
-			return p.isHealthy(ctx, idx, conn)
-		}
-		log.Errorf("gRPC target %s's pool connection %d/%d status is not recovered from idle\tstatus: %s", conn.Target(), idx+1, p.Size(), state.String())
-		return state, false
+		return state, true
 	case connectivity.Shutdown, connectivity.TransientFailure:
 		log.Errorf("gRPC target %s's pool connection %d/%d is unhealthy (state: %s)", conn.Target(), idx+1, p.Size(), state.String())
 		return state, false
