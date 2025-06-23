@@ -34,7 +34,7 @@ server_config:
         initial_conn_window_size: 2097152
         initial_window_size: 1048576
         interceptors:
-        - RecoverInterceptor
+          - RecoverInterceptor
         keepalive:
           max_conn_age: ""
           max_conn_age_grace: ""
