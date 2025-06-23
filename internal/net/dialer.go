@@ -32,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/net/quic"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/tls"
 )
@@ -161,9 +162,15 @@ func (d *dialer) lookup(ctx context.Context, host string) (dc *dialerCache, err 
 
 	ips, err := d.lookupIPAddrs(ctx, host)
 	if err != nil {
+		if d.enableDNSCache {
+			d.dnsCache.Delete(host)
+		}
 		return nil, err
 	}
 	if len(ips) == 0 {
+		if d.enableDNSCache {
+			d.dnsCache.Delete(host)
+		}
 		return nil, errors.ErrLookupIPAddrNotFound(host)
 	}
 
@@ -186,25 +193,19 @@ func (d *dialer) lookupIPAddrs(ctx context.Context, host string) (ips []string, 
 	}()
 
 	var rsv *net.Resolver
-	if d.der == nil || d.der.Resolver == nil {
-		rsv = DefaultResolver
-	} else {
+	if d.der != nil && d.der.Resolver != nil {
 		rsv = d.der.Resolver
 	}
-
-	r, err := rsv.LookupIPAddr(ctx, host)
-	if err != nil {
-		return nil, err
-	}
-
+	r, err := lookupNetIP(ctx, rsv, host)
 	if len(r) == 0 {
 		return nil, errors.ErrLookupIPAddrNotFound(host)
 	}
-
 	ips = make([]string, 0, len(r))
-
 	for _, ip := range r {
-		ips = append(ips, ip.String())
+		if ip.Is4In6() {
+			ip = ip.Unmap()
+		}
+		ips = append(ips, ip.StringExpanded())
 	}
 	return ips, nil
 }
@@ -242,8 +243,17 @@ func (d *dialer) cachedDialer(ctx context.Context, network, addr string) (conn C
 	if !ok {
 		var nport uint16
 		var isV4, isV6 bool
-		host, nport, _, isV4, isV6, err = Parse(addr)
+		host, nport, _, isV4, isV6, err = Parse(ctx, addr)
 		if err != nil {
+			if d.enableDNSCache {
+				idx := strings.LastIndex(addr, ":")
+				if idx >= 0 {
+					host = addr[:idx]
+				} else {
+					host = addr
+				}
+				d.dnsCache.Delete(host)
+			}
 			return nil, err
 		}
 		if nport != 0 {
@@ -281,7 +291,12 @@ func (d *dialer) cachedDialer(ctx context.Context, network, addr string) (conn C
 			select {
 			case <-to.C:
 				d.dnsCache.Delete(host)
-				return d.dial(ctx, network, addr)
+				conn, err = d.dial(ctx, network, addr)
+				if err != nil {
+					d.dnsCache.Delete(host)
+					return nil, err
+				}
+				return conn, nil
 			default:
 				if dc, err := d.lookup(ctx, host); err == nil {
 					for i := uint32(0); i < dc.Len(); i++ {
@@ -307,7 +322,12 @@ func (d *dialer) cachedDialer(ctx context.Context, network, addr string) (conn C
 			}
 		}
 	}
-	return d.dial(ctx, network, addr)
+	conn, err = d.dial(ctx, network, addr)
+	if err != nil && d.enableDNSCache {
+		d.dnsCache.Delete(host)
+		return nil, err
+	}
+	return conn, err
 }
 
 func isQUICDial(network, addr string) bool {
@@ -471,7 +491,7 @@ func (d *dialer) tlsHandshake(
 
 func (d *dialer) cacheExpireHook(ctx context.Context, addr string, dc *dialerCache) {
 	if err := safety.RecoverFunc(func() (err error) {
-		_, err = d.lookup(ctx, addr)
+		dc, err = d.lookup(ctx, addr)
 		return
 	})(); err != nil {
 		if dc != nil {
