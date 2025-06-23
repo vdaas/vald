@@ -1043,6 +1043,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 					addr:    addr + ":80",
 				},
 				opts: []DialerOption{
+					WithEnableDNSCache(),
 					WithDNSCache(c),
 				},
 				beforeFunc: func(t *testing.T) {
@@ -1298,7 +1299,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 
 			gotConn, gotErr := d.cachedDialer(ctx, test.args.network, test.args.addr)
 			if err := checkFunc(d, ctx, test.want, gotConn, gotErr); err != nil {
-				tt.Errorf("error = %v", err)
+				tt.Errorf("error = %v, got(error: %v, conn: %v)", err, gotErr, gotConn)
 			}
 
 			// call without defer to ensure the server is closed before checking with goleak
