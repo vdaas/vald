@@ -39,7 +39,7 @@ var defaultNextProtos = []string{
 
 var defaultOptions = func() []Option {
 	return []Option{
-		WithInsecureSkipVerify(false),
+		WithInsecureSkipVerify(true),
 		WithTLSConfig(&tls.Config{
 			MinVersion:             tls.VersionTLS12,
 			NextProtos:             defaultNextProtos,
