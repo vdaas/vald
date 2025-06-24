@@ -37,6 +37,8 @@ spec:
           memory: 50Mi
       gateway_config:
         index_replica: 3
+      tls:
+        insecure_skip_verify: true
   agent:
     minReplicas: 3
     maxReplicas: 10
