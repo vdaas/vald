@@ -29,6 +29,7 @@ type Embedder interface {
 	Search(ctx context.Context, doc string) (*payload.Search_Response, error)
 	Commit(ctx context.Context, in *payload.Control_CreateIndexRequest, opts ...grpc.CallOption) error
 	Embed(ctx context.Context, doc string) (*payload.Object_Vector, error)
+	SetLLM(llm LLM) Embedder
 }
 
 type embedder struct {
@@ -46,6 +47,11 @@ func New(opt ...Option) (Embedder, error) {
 	}
 	// TODO: Validate fields
 	return e, nil
+}
+
+func (e *embedder) SetLLM(llm LLM) Embedder {
+	e.llm = llm
+	return e
 }
 
 func (e *embedder) Insert(ctx context.Context, id, doc string) (*payload.Object_Location, error) {

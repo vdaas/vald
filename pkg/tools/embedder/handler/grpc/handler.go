@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/pkg/tools/embedder/service"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 )
 
 type Server interface {
@@ -38,6 +39,7 @@ type server struct {
 	name     string
 	ip       string
 	embedder service.Embedder
+	client   vald.Client
 	embedder.UnimplementedEmbedderServer
 }
 
