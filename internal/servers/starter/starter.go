@@ -63,7 +63,11 @@ func New(sopts ...Option) (Server, error) {
 
 	if ss.cfg.TLS != nil && ss.cfg.TLS.Enabled {
 		var err error
-		cfg, err = tls.NewServerConfig(ss.cfg.TLS.Opts()...)
+		cfg, err = tls.New(
+			tls.WithCert(ss.cfg.TLS.Cert),
+			tls.WithKey(ss.cfg.TLS.Key),
+			tls.WithCa(ss.cfg.TLS.CA),
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -104,16 +108,10 @@ func (s *srvs) setupAPIs(cfg *tls.Config) ([]servers.Option, error) {
 			}
 			opts = append(opts, servers.WithServer(srv))
 		case server.GRPC:
-			grpcOpts := append(
-				sc.Opts(),
-				server.WithTLSConfig(cfg),
-			)
-
-			if s.grpc != nil {
-				grpcOpts = append(grpcOpts, s.grpc(sc)...)
-			}
-
-			srv, err := server.New(grpcOpts...)
+			srv, err := server.New(
+				append(append(sc.Opts(), s.grpc(sc)...),
+					server.WithTLSConfig(cfg),
+				)...)
 			if err != nil {
 				return nil, err
 			}
