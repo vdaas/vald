@@ -68,7 +68,7 @@ target:
     idle_timeout: 1h
     initial_connection_window_size: 2097152
     initial_window_size: 1048576
-    insecure: true
+    insecure: false
     interceptors: []
     keepalive:
       permit_without_stream: false
