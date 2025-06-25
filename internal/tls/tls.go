@@ -129,6 +129,5 @@ func newCredential(opts ...Option) (c *credentials, err error) {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
-	c.cfg.InsecureSkipVerify = c.insecure
 	return c, nil
 }
