@@ -79,24 +79,11 @@ type PoolConfig struct {
 	TokenAwareHostPolicy     bool   `json:"token_aware_host_policy"     yaml:"token_aware_host_policy"`
 }
 
-// Bind binds the actual data from the PoolConfig receiver fields.
-func (pc *PoolConfig) Bind() *PoolConfig {
-	pc.DataCenter = GetActualValue(pc.DataCenter)
-	return pc
-}
-
 // RetryPolicy represents the configuration for the retry policy.
 type RetryPolicy struct {
 	NumRetries  int    `json:"num_retries"  yaml:"num_retries"`
 	MinDuration string `json:"min_duration" yaml:"min_duration"`
 	MaxDuration string `json:"max_duration" yaml:"max_duration"`
-}
-
-// Bind binds the actual data from the RetryPolicy receiver fields.
-func (rp *RetryPolicy) Bind() *RetryPolicy {
-	rp.MinDuration = GetActualValue(rp.MinDuration)
-	rp.MaxDuration = GetActualValue(rp.MaxDuration)
-	return rp
 }
 
 // ReconnectionPolicy represents the configuration for the reconnection policy.
@@ -105,24 +92,11 @@ type ReconnectionPolicy struct {
 	InitialInterval string `json:"initial_interval" yaml:"initial_interval"`
 }
 
-// Bind binds the actual data from the ReconnectionPolicy receiver fields.
-func (rp *ReconnectionPolicy) Bind() *ReconnectionPolicy {
-	rp.InitialInterval = GetActualValue(rp.InitialInterval)
-	return rp
-}
-
 // HostFilter represents the configuration for the host filter.
 type HostFilter struct {
 	Enabled    bool     `json:"enabled"`
 	DataCenter string   `json:"data_center" yaml:"data_center"`
 	WhiteList  []string `json:"white_list"  yaml:"white_list"`
-}
-
-// Bind binds the actual data from the HostFilter receiver fields.
-func (hf *HostFilter) Bind() *HostFilter {
-	hf.DataCenter = GetActualValue(hf.DataCenter)
-	hf.WhiteList = GetActualValues(hf.WhiteList)
-	return hf
 }
 
 // Bind binds the actual data from the Cassandra receiver fields.
@@ -137,38 +111,31 @@ func (c *Cassandra) Bind() *Cassandra {
 	c.Username = GetActualValue(c.Username)
 	c.Password = GetActualValue(c.Password)
 
-	if c.PoolConfig == nil {
-		c.PoolConfig = new(PoolConfig)
+	if c.RetryPolicy != nil {
+		c.RetryPolicy.MinDuration = GetActualValue(c.RetryPolicy.MinDuration)
+		c.RetryPolicy.MaxDuration = GetActualValue(c.RetryPolicy.MaxDuration)
 	}
-	c.PoolConfig.Bind()
-
-	if c.RetryPolicy == nil {
-		c.RetryPolicy = new(RetryPolicy)
+	if c.ReconnectionPolicy != nil {
+		c.ReconnectionPolicy.InitialInterval = GetActualValue(c.ReconnectionPolicy.InitialInterval)
 	}
-	c.RetryPolicy.Bind()
-
-	if c.ReconnectionPolicy == nil {
-		c.ReconnectionPolicy = new(ReconnectionPolicy)
+	if c.PoolConfig != nil {
+		c.PoolConfig.DataCenter = GetActualValue(c.PoolConfig.DataCenter)
 	}
-	c.ReconnectionPolicy.Bind()
-
-	if c.HostFilter == nil {
-		c.HostFilter = new(HostFilter)
+	if c.HostFilter != nil {
+		c.HostFilter.DataCenter = GetActualValue(c.HostFilter.DataCenter)
+		c.HostFilter.WhiteList = GetActualValues(c.HostFilter.WhiteList)
 	}
-	c.HostFilter.Bind()
-
 	c.SocketKeepalive = GetActualValue(c.SocketKeepalive)
-
-	if c.TLS == nil {
+	if c.TLS != nil {
+		c.TLS.Bind()
+	} else {
 		c.TLS = new(TLS)
 	}
-	c.TLS.Bind()
-
-	if c.Net == nil {
+	if c.Net != nil {
+		c.Net.Bind()
+	} else {
 		c.Net = new(Net)
 	}
-	c.Net.Bind()
-
 	c.ReconnectInterval = GetActualValue(c.ReconnectInterval)
 	c.MaxWaitSchemaAgreement = GetActualValue(c.MaxWaitSchemaAgreement)
 	c.WriteCoalesceWaitTime = GetActualValue(c.WriteCoalesceWaitTime)
@@ -264,7 +231,11 @@ func (cfg *Cassandra) Opts() (opts []cassandra.Option, err error) {
 	}
 
 	if cfg.TLS != nil && cfg.TLS.Enabled {
-		tcfg, err := tls.NewClientConfig(cfg.TLS.Opts()...)
+		tcfg, err := tls.New(
+			tls.WithCert(cfg.TLS.Cert),
+			tls.WithKey(cfg.TLS.Key),
+			tls.WithCa(cfg.TLS.CA),
+		)
 		if err != nil {
 			return nil, err
 		}

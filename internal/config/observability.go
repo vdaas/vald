@@ -24,32 +24,6 @@ type Observability struct {
 	Trace   *Trace   `json:"trace"   yaml:"trace"`
 }
 
-// Bind binds the actual data from the Observability receiver fields.
-func (o *Observability) Bind() *Observability {
-	if o.OTLP == nil {
-		o.OTLP = new(OTLP)
-	}
-	if o.OTLP != nil {
-		o.OTLP.Bind()
-	}
-
-	if o.Metrics == nil {
-		o.Metrics = new(Metrics)
-	}
-	if o.Metrics != nil {
-		o.Metrics.Bind()
-	}
-
-	if o.Trace == nil {
-		o.Trace = new(Trace)
-	}
-	if o.Trace != nil {
-		o.Trace.Bind()
-	}
-
-	return o
-}
-
 type OTLP struct {
 	CollectorEndpoint       string         `json:"collector_endpoint"          yaml:"collector_endpoint"`
 	Attribute               *OTLPAttribute `json:"attribute"                   yaml:"attribute"`
@@ -61,22 +35,6 @@ type OTLP struct {
 	MetricsExportTimeout    string         `json:"metrics_export_timeout"      yaml:"metrics_export_timeout"`
 }
 
-// Bind binds the actual data from the OTLP receiver fields.
-func (o *OTLP) Bind() *OTLP {
-	o.CollectorEndpoint = GetActualValue(o.CollectorEndpoint)
-	o.TraceBatchTimeout = GetActualValue(o.TraceBatchTimeout)
-	o.TraceExportTimeout = GetActualValue(o.TraceExportTimeout)
-	o.MetricsExportInterval = GetActualValue(o.MetricsExportInterval)
-	o.MetricsExportTimeout = GetActualValue(o.MetricsExportTimeout)
-	if o.Attribute == nil {
-		o.Attribute = new(OTLPAttribute)
-	}
-	if o.Attribute != nil {
-		o.Attribute.Bind()
-	}
-	return o
-}
-
 type OTLPAttribute struct {
 	Namespace   string `json:"namespace"    yaml:"namespace"`
 	PodName     string `json:"pod_name"     yaml:"pod_name"`
@@ -84,24 +42,9 @@ type OTLPAttribute struct {
 	ServiceName string `json:"service_name" yaml:"service_name"`
 }
 
-// Bind binds the actual data from the OTLPAttribute receiver fields.
-func (o *OTLPAttribute) Bind() *OTLPAttribute {
-	o.Namespace = GetActualValue(o.Namespace)
-	o.PodName = GetActualValue(o.PodName)
-	o.NodeName = GetActualValue(o.NodeName)
-	o.ServiceName = GetActualValue(o.ServiceName)
-	return o
-}
-
 // Trace represents the configuration for the trace.
 type Trace struct {
 	Enabled bool `json:"enabled" yaml:"enabled"`
-}
-
-// Bind binds the actual data from the Trace receiver fields.
-func (t *Trace) Bind() *Trace {
-	// No fields to bind as per rules
-	return t
 }
 
 // Metrics represents the configuration for the metrics.
@@ -113,8 +56,42 @@ type Metrics struct {
 	EnableCGO         bool     `json:"enable_cgo"          yaml:"enable_cgo"`
 }
 
-// Bind binds the actual data from the Metrics receiver fields.
-func (m *Metrics) Bind() *Metrics {
-	m.VersionInfoLabels = GetActualValues(m.VersionInfoLabels)
-	return m
+// Bind binds the actual data from the OTLPAttribute receiver fields.
+func (o *OTLPAttribute) Bind() *OTLPAttribute {
+	o.Namespace = GetActualValue(o.Namespace)
+	o.PodName = GetActualValue(o.PodName)
+	o.NodeName = GetActualValue(o.NodeName)
+	o.ServiceName = GetActualValue(o.ServiceName)
+	return o
+}
+
+// Bind binds the actual data from the Observability receiver fields.
+func (o *Observability) Bind() *Observability {
+	if o.OTLP != nil {
+		o.OTLP.CollectorEndpoint = GetActualValue(o.OTLP.CollectorEndpoint)
+		o.OTLP.TraceBatchTimeout = GetActualValue(o.OTLP.TraceBatchTimeout)
+		o.OTLP.TraceExportTimeout = GetActualValue(o.OTLP.TraceExportTimeout)
+		o.OTLP.MetricsExportInterval = GetActualValue(o.OTLP.MetricsExportInterval)
+		o.OTLP.MetricsExportTimeout = GetActualValue(o.OTLP.MetricsExportTimeout)
+	} else {
+		o.OTLP = new(OTLP)
+	}
+
+	if o.OTLP.Attribute != nil {
+		o.OTLP.Attribute.Bind()
+	} else {
+		o.OTLP.Attribute = new(OTLPAttribute)
+	}
+
+	if o.Metrics != nil {
+		o.Metrics.VersionInfoLabels = GetActualValues(o.Metrics.VersionInfoLabels)
+	} else {
+		o.Metrics = new(Metrics)
+	}
+
+	if o.Trace == nil {
+		o.Trace = new(Trace)
+	}
+
+	return o
 }
