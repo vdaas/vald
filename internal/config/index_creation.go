@@ -50,11 +50,8 @@ func (ic *IndexCreation) Bind() *IndexCreation {
 	ic.NodeName = GetActualValue(ic.NodeName)
 	ic.TargetAddrs = GetActualValues(ic.TargetAddrs)
 
-	if ic.Discoverer == nil {
-		ic.Discoverer = new(DiscovererClient)
+	if ic.Discoverer != nil {
+		ic.Discoverer.Bind()
 	}
-	// Assuming DiscovererClient.Bind() is compliant and ic.Discoverer is now non-nil
-	ic.Discoverer.Bind()
-
 	return ic
 }
