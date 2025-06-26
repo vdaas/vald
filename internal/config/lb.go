@@ -63,7 +63,7 @@ func (g *LB) Bind() *LB {
 		g.Discoverer = new(DiscovererClient)
 	}
 	// Assuming DiscovererClient.Bind() is compliant and g.Discoverer is now non-nil
-	g.Discoverer.Bind()
+	g.Discoverer = g.Discoverer.Bind()
 
 	return g
 }

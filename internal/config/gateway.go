@@ -59,7 +59,7 @@ func (g *Gateway) Bind() *Gateway {
 	g.NodeName = GetActualValue(g.NodeName)
 
 	if g.Discoverer != nil {
-		g.Discoverer.Bind()
+		g.Discoverer = g.Discoverer.Bind()
 	}
 
 	if g.Meta != nil {
