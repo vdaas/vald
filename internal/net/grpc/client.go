@@ -1153,35 +1153,52 @@ func (g *gRPCClient) Close(ctx context.Context) (err error) {
 	return err
 }
 
+func (g *gRPCClient) restart(ctx context.Context) error {
+	go g.Close(ctx)
+	_g := &gRPCClient{
+		name:  g.name,
+		addrs: make(map[string]struct{}),
+	}
+	_g.dopts = g.dopts
+	_, err := _g.StartConnectionMonitor(ctx)
+	if err != nil {
+		return err
+	}
+	g = _g
+	return nil
+}
+
 func (g *gRPCClient) rangeConns(
 	ctx context.Context, action string, fn func(ctx context.Context, addr string, p pool.Conn) bool,
 ) error {
 	if g == nil || g.conns.Len() == 0 {
-		if g != nil {
-			log.Warnf("%s rangeConns for %s returns Client Conn Not Found Error at beginning, len: %d,\tsize: %d,\taddrs: %v", g.name, action, g.conns.Len(), g.conns.Size(), g.addrs)
-		} else {
-			log.Warnf("rangeConns for %s returns Client Not Found Error at beginning", action)
+		if err := g.restart(ctx); err != nil {
+			return err
 		}
-		return errors.ErrGRPCClientConnNotFound("*")
 	}
-	var cnt int
-	g.conns.Range(func(addr string, p pool.Conn) bool {
-		select {
-		case <-ctx.Done():
-			log.Warnf("%s processing %s for addr %s canceled due to %v", g.name, action, addr, ctx.Err())
-			return false
-		default:
-			cnt++
-			return fn(ctx, addr, p)
-		}
-	})
-	if cnt == 0 {
-		if g != nil {
-			log.Warnf("%s rangeConns for %s returns Client Conn Not Found Error at ending, len: %d,\tsize: %d,\taddrs: %v", g.name, action, g.conns.Len(), g.conns.Size(), g.addrs)
-		} else {
-			log.Warnf("rangeConns for %s returns Client Not Found Error at ending", action)
-		}
-		return errors.ErrGRPCClientConnNotFound("*")
+	successCount := func(g *gRPCClient) int {
+		var cnt int
+		g.conns.Range(func(addr string, p pool.Conn) bool {
+			select {
+			case <-ctx.Done():
+				log.Warnf("%s processing %s for addr %s canceled due to %v", g.name, action, addr, ctx.Err())
+				return false
+			default:
+				cnt++
+				return fn(ctx, addr, p)
+			}
+		})
+		return cnt
 	}
-	return nil
+	if successCount(g) > 0 {
+		return nil
+	}
+	if err := g.restart(ctx); err != nil {
+		return err
+	}
+	if successCount(g) > 0 {
+		return nil
+	}
+	log.Warnf("%s rangeConns for %s returns Client Conn Not Found Error after restarting, len: %d,\tsize: %d,\taddrs: %v", g.name, action, g.conns.Len(), g.conns.Size(), g.addrs)
+	return errors.ErrGRPCClientConnNotFound("*")
 }
