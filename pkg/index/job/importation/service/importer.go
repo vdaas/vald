@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -33,11 +33,11 @@ import (
 )
 
 const (
-	apiName        = "vald/index/job/export"
-	grpcMethodName = "vald.v1.StreamListObject/" + vald.StreamListObjectRPCName
+	apiName        = "vald/index/job/import"
+	grpcMethodName = "vald.v1.StreamUpsert/" + vald.StreamUpsertRPCName
 )
 
-// Exporter represents an interface for exporting.
+// Importer represents an interface for importing.
 type Importer interface {
 	StartClient(ctx context.Context) (<-chan error, error)
 	Start(ctx context.Context) error
@@ -124,7 +124,7 @@ func (i *importer) doImportIndex(
 	ctx context.Context,
 ) (errs error) {
 	log.Info("starting doImportIndex")
-	ctx, span := trace.StartSpan(igrpc.WrapGRPCMethod(ctx, grpcMethodName), apiName+"/service/index.doExportIndex")
+	ctx, span := trace.StartSpan(igrpc.WrapGRPCMethod(ctx, grpcMethodName), apiName+"/service/index.doImportIndex")
 	defer func() {
 		if span != nil {
 			span.End()

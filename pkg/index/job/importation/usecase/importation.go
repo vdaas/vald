@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 	// skipcq: CRT-D0001
 	gOpts = append(gOpts, grpc.WithErrGroup(eg))
 
-	gateway, err := vald.New(vald.WithClient(grpc.New(gOpts...)))
+	gateway, err := vald.New(vald.WithClient(grpc.New("Index importer client", gOpts...)))
 	if err != nil {
 		return nil, err
 	}
@@ -74,22 +74,11 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 		}
 	}
 
-	// grpcServerOptions := []server.Option{
-	// 	server.WithGRPCOption(
-	// 		grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
-	// 		grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
-	// 	),
-	// }
-
 	// For health check and metrics
-	// srv, err := starter.New(starter.WithConfig(cfg.Server),
-	// 	starter.WithGRPC(func(_ *iconf.Server) []server.Option {
-	// 		return grpcServerOptions
-	// 	}),
-	// )
-	// if err != nil {
-	// 	return nil, err
-	// }
+	// srv, err := starter.New(starter.WithConfig(cfg.Server))
+	if err != nil {
+		return nil, err
+	}
 
 	return &run{
 		eg:            eg,
@@ -112,7 +101,7 @@ func (r *run) PreStart(ctx context.Context) error {
 // during the operation and an error representing any initialization errors.
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 3)
-	var sech, oech, cech <-chan error
+	var sech, oech <-chan error
 	if r.observability != nil {
 		oech = r.observability.Start(ctx)
 	}
@@ -174,6 +163,11 @@ func (r *run) Stop(ctx context.Context) (errs error) {
 			errs = errors.Join(errs, err)
 		}
 	}
+	// if r.server != nil {
+	// 	if err := r.server.Shutdown(ctx); err != nil {
+	// 		errs = errors.Join(errs, err)
+	// 	}
+	// }
 	return errs
 }
 

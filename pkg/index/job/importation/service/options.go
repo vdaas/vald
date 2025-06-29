@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -25,46 +25,55 @@ var defaultOpts = []Option{
 	WithStreamListConcurrency(200),
 	WithIndexPath("/var/export/index"),
 	WithErrGroup(errgroup.Get()),
+	WithForceUpdate(false),
 }
 
 // WithStreamListConcurrency returns Option that sets streamListConcurrency.
 func WithStreamListConcurrency(num int) Option {
-	return func(e *importer) error {
+	return func(i *importer) error {
 		if num <= 0 {
 			return errors.NewErrInvalidOption("streamListConcurrency", num)
 		}
-		e.streamListConcurrency = num
+		i.streamListConcurrency = num
 		return nil
 	}
 }
 
 // WithIndexPath returns Option that sets indexPath.
 func WithIndexPath(path string) Option {
-	return func(e *importer) error {
+	return func(i *importer) error {
 		if path == "" {
 			return errors.NewErrInvalidOption("indexPath", path)
 		}
-		e.indexPath = path
+		i.indexPath = path
 		return nil
 	}
 }
 
 // WithGateway returns Option that sets gateway client.
 func WithGateway(client vald.Client) Option {
-	return func(e *importer) error {
+	return func(i *importer) error {
 		if client == nil {
 			return errors.NewErrCriticalOption("gateway", client)
 		}
-		e.gateway = client
+		i.gateway = client
+		return nil
+	}
+}
+
+// WithForceUpdate returns Option that sets forceUpdate flag.
+func WithForceUpdate(force bool) Option {
+	return func(i *importer) error {
+		i.forceUpdate = force
 		return nil
 	}
 }
 
 // WithErrGroup returns Option that set errgroup.
 func WithErrGroup(eg errgroup.Group) Option {
-	return func(e *importer) error {
+	return func(i *importer) error {
 		if eg != nil {
-			e.eg = eg
+			i.eg = eg
 		}
 		return nil
 	}
