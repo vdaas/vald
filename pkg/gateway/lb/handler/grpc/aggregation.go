@@ -222,7 +222,6 @@ func (s *server) aggregationSearch(
 						sspan.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
 						sspan.SetStatus(trace.StatusError, err.Error())
 					}
-					log.Debug(err)
 					return nil
 				}
 			}

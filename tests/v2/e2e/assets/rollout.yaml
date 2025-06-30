@@ -133,7 +133,7 @@ strategies:
           - name: Flush
             mode: unary
             type: flush
-            wait: 2m
+            wait: 20s
           - mode: unary
             name: IndexInfo
             type: index_info
