@@ -228,7 +228,7 @@ func Parse(
 		ipAddr = ips[0]
 	}
 
-	// 4. Classify the IP address.
+	// 3. Classify the IP address.
 	// Normalize IPv4-mapped IPv6 addresses.
 	if ipAddr.Is4In6() {
 		ipAddr = ipAddr.Unmap()
