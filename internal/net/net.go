@@ -216,7 +216,7 @@ func Parse(
 	}
 
 	// 2. Resolve and analyze the host part.
-	// First, try to parse it as an IP address literal.
+	// Try to parse it as an IP address literal.
 	ipAddr, err := netip.ParseAddr(host)
 	if err != nil {
 		// DNS resolution.
