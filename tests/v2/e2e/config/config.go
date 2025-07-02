@@ -182,21 +182,26 @@ func (d *Data) Bind() (bound *Data, err error) {
 			var bs *Strategy
 			if bs, err = strategy.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind strategy: %s", strategy.Name)
+			} else if bs != nil {
+				d.Strategies[cnt] = bs
+				cnt++
 			}
-			d.Strategies[cnt] = bs
-			cnt++
 		}
 	}
 	// Bind Dataset.
 	if d.Dataset != nil {
-		if d.Dataset, err = d.Dataset.Bind(); err != nil {
+		if ds, err := d.Dataset.Bind(); err != nil {
 			return nil, errors.Wrapf(err, "failed to bind dataset configuration for %s", d.Dataset.Name)
+		} else if ds != nil {
+			d.Dataset = ds
 		}
 	}
 	// Bind Kubernetes.
 	if d.Kubernetes != nil {
-		if d.Kubernetes, err = d.Kubernetes.Bind(); err != nil {
+		if k, err := d.Kubernetes.Bind(); err != nil {
 			return nil, errors.Wrapf(err, "failed to bind Kubernetes configuration for %s", d.Kubernetes.KubeConfig)
+		} else if k != nil {
+			d.Kubernetes = k
 		}
 	}
 	// Process metadata.
@@ -225,9 +230,10 @@ func (s *Strategy) Bind() (bound *Strategy, err error) {
 			var bo *Operation
 			if bo, err = op.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind operation: %s", op.Name)
+			} else if bo != nil {
+				s.Operations[cnt] = bo
+				cnt++
 			}
-			s.Operations[cnt] = bo
-			cnt++
 		}
 	}
 	return s, nil
@@ -240,12 +246,15 @@ func (o *Operation) Bind() (bound *Operation, err error) {
 	}
 	o.Name = config.GetActualValue(o.Name)
 	o.TimeConfig.Bind()
-	for i, exec := range o.Executions {
+	var cnt int
+	for _, exec := range o.Executions {
 		var be *Execution
 		if be, err = exec.Bind(); err != nil {
 			return nil, errors.Wrapf(err, "failed to bind execution: %s", exec.Name)
+		} else if be != nil {
+			o.Executions[cnt] = be
+			cnt++
 		}
-		o.Executions[i] = be
 	}
 	return o, nil
 }
@@ -306,8 +315,10 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 			if e.Search == nil {
 				return nil, errors.Errorf("missing required fields on SearchQuery for Execution %s of type %s", e.Name, e.Type)
 			}
-			if e.Search, err = e.Search.Bind(); err != nil {
+			if sq, err := e.Search.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind SearchQuery for Execution %s of type %s", e.Name, e.Type)
+			} else if sq != nil {
+				e.Search = sq
 			}
 		case OpInsert,
 			OpUpdate,
@@ -315,8 +326,10 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 			OpRemove,
 			OpRemoveByTimestamp:
 			if e.Modification != nil {
-				if e.Modification, err = e.Modification.Bind(); err != nil {
+				if m, err := e.Modification.Bind(); err != nil {
 					return nil, errors.Wrapf(err, "failed to bind ModificationConfig for Execution %s of type %s", e.Name, e.Type)
+				} else if m != nil {
+					e.Modification = m
 				}
 			}
 		}
@@ -328,11 +341,11 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 		OpFlush:
 	case OpKubernetes:
 		if e.Kubernetes != nil {
-			ek, err := e.Kubernetes.Bind()
-			if err != nil {
+			if ek, err := e.Kubernetes.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind Kubernetes configuration for Execution: %s, detail %v", e.Name, e.Kubernetes)
+			} else if ek != nil {
+				e.Kubernetes = ek
 			}
-			e.Kubernetes = ek
 		}
 	case OpClient:
 		// do nothing
@@ -853,7 +866,7 @@ func Load(path string) (cfg *Data, err error) {
 		return nil, errors.Wrapf(err, "failed to bind configuration from %s", path)
 	}
 	log.Debug(config.ToRawYaml(cfg))
-	return
+	return cfg, nil
 }
 
 var reps = strings.NewReplacer(" ", "", "-", "", "_", "", ":", "", ";", "", ",", "", ".", "")

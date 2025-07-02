@@ -137,10 +137,10 @@ func (g *GRPCClient) Bind() *GRPCClient {
 	if g.TLS != nil && g.TLS.Enabled {
 		g.TLS.Bind()
 	} else {
-		g.TLS = &TLS{
+		g.TLS = (&TLS{
 			Enabled:            false,
 			InsecureSkipVerify: true,
-		}
+		}).Bind()
 		if g.DialOption != nil {
 			g.DialOption.Insecure = true
 		}
@@ -173,16 +173,10 @@ func (d *DialOption) Bind() *DialOption {
 	d.Timeout = GetActualValue(d.Timeout)
 	d.UserAgent = GetActualValue(d.UserAgent)
 
-	if d.Net == nil {
-		d.Net = new(Net)
-	}
 	if d.Net != nil {
 		d.Net.Bind()
 	}
 
-	if d.Keepalive == nil {
-		d.Keepalive = new(GRPCClientKeepalive)
-	}
 	if d.Keepalive != nil {
 		d.Keepalive.Bind()
 	}
@@ -277,7 +271,7 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 			grpc.WithWriteBufferSize(g.DialOption.WriteBufferSize),
 		)
 
-		if g.DialOption.Net != nil &&
+		if g.DialOption.Net != nil && g.DialOption.Net.Dialer != nil &&
 			len(g.DialOption.Net.Dialer.Timeout) != 0 {
 			if g.DialOption.Net.TLS != nil && g.DialOption.Net.TLS.Enabled {
 				opts = append(opts,
