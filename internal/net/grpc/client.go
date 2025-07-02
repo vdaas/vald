@@ -506,9 +506,6 @@ func (g *gRPCClient) RangeConcurrent(
 	}
 	eg, egctx := errgroup.New(sctx)
 	eg.SetLimit(concurrency)
-	if g.conns.Len() == 0 {
-		return errors.ErrGRPCClientConnNotFound("*")
-	}
 	err = g.rangeConns("RangeConcurrent", func(addr string, p pool.Conn) bool {
 		eg.Go(safety.RecoverFunc(func() (err error) {
 			ssctx, sspan := trace.StartSpan(egctx, apiName+"/Client.RangeConcurrent/"+addr)
@@ -579,31 +576,26 @@ func (g *gRPCClient) OrderedRange(
 	}
 	var cnt int
 	for _, addr := range orders {
-		select {
-		case <-sctx.Done():
-			return nil
-		default:
-			p, ok := g.conns.Load(addr)
-			if !ok || p == nil || !p.IsHealthy(sctx) {
-				g.crl.Store(addr, true)
-				log.Warnf("gRPCClient.OrderedRange operation failed, gRPC connection pool for %s is invalid,\terror: %v", addr, errors.ErrGRPCClientConnNotFound(addr))
-				continue
+		p, ok := g.conns.Load(addr)
+		if !ok || p == nil || !p.IsHealthy(sctx) {
+			g.crl.Store(addr, true)
+			log.Warnf("gRPCClient.OrderedRange operation failed, gRPC connection pool for %s is invalid,\terror: %v", addr, errors.ErrGRPCClientConnNotFound(addr))
+			continue
+		}
+		cnt++
+		ssctx, span := trace.StartSpan(sctx, apiName+"/Client.OrderedRange/"+addr)
+		defer func() {
+			if span != nil {
+				span.End()
 			}
-			cnt++
-			ssctx, span := trace.StartSpan(sctx, apiName+"/Client.OrderedRange/"+addr)
-			defer func() {
-				if span != nil {
-					span.End()
-				}
-			}()
-			_, ierr := g.connectWithBackoff(ssctx, p, addr, true, func(ictx context.Context,
-				conn *ClientConn, copts ...CallOption,
-			) (any, error) {
-				return nil, f(ictx, addr, conn, copts...)
-			})
-			if ierr != nil {
-				err = errors.Join(err, ierr)
-			}
+		}()
+		_, ierr := g.connectWithBackoff(ssctx, p, addr, true, func(ictx context.Context,
+			conn *ClientConn, copts ...CallOption,
+		) (any, error) {
+			return nil, f(ictx, addr, conn, copts...)
+		})
+		if ierr != nil {
+			err = errors.Join(err, ierr)
 		}
 	}
 	if cnt == 0 {
@@ -653,38 +645,33 @@ func (g *gRPCClient) OrderedRangeConcurrent(
 		addr := order
 		eg.Go(safety.RecoverFunc(func() (err error) {
 			p, ok := g.conns.Load(addr)
-			if !ok || p == nil || !p.IsHealthy(sctx) {
+			if !ok || p == nil || !p.IsHealthy(egctx) {
 				g.crl.Store(addr, true)
 				log.Warnf("gRPCClient.OrderedRangeConcurrent operation failed, gRPC connection pool for %s is invalid,\terror: %v", addr, errors.ErrGRPCClientConnNotFound(addr))
 				return nil
 			}
-			ssctx, sspan := trace.StartSpan(sctx, apiName+"/Client.OrderedRangeConcurrent/"+addr)
+			ssctx, sspan := trace.StartSpan(egctx, apiName+"/Client.OrderedRangeConcurrent/"+addr)
 			defer func() {
 				if sspan != nil {
 					sspan.End()
 				}
 			}()
-			select {
-			case <-egctx.Done():
-				return nil
-			default:
-				_, err = g.connectWithBackoff(ssctx, p, addr, true, func(ictx context.Context,
-					conn *ClientConn, copts ...CallOption,
-				) (any, error) {
-					return nil, f(ictx, addr, conn, copts...)
-				})
-				if err != nil {
-					if sspan != nil {
-						sspan.RecordError(err)
-						st, ok := status.FromError(err)
-						if ok && st != nil {
-							sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), err.Error())...)
-						}
-						sspan.SetStatus(trace.StatusError, err.Error())
+			_, err = g.connectWithBackoff(ssctx, p, addr, true, func(ictx context.Context,
+				conn *ClientConn, copts ...CallOption,
+			) (any, error) {
+				return nil, f(ictx, addr, conn, copts...)
+			})
+			if err != nil {
+				if sspan != nil {
+					sspan.RecordError(err)
+					st, ok := status.FromError(err)
+					if ok && st != nil {
+						sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), err.Error())...)
 					}
+					sspan.SetStatus(trace.StatusError, err.Error())
 				}
-				return nil
 			}
+			return nil
 		}))
 	}
 	err = eg.Wait()

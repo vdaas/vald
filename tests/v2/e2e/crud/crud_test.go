@@ -55,7 +55,8 @@ func TestMain(m *testing.M) {
 		os.Exit(0)
 	}
 
-	cfg, err = config.Load(p.ConfigFilePath())
+	fp := p.ConfigFilePath()
+	cfg, err = config.Load(fp)
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
@@ -64,5 +65,6 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("failed to load dataset: %v", err)
 	}
+	cfg.FilePath = fp
 	os.Exit(m.Run())
 }

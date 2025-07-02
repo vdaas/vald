@@ -17,7 +17,7 @@ replace (
 	google.golang.org/grpc => google.golang.org/grpc v1.73.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.36.6
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
-	sigs.k8s.io/yaml => sigs.k8s.io/yaml v1.4.0
+	sigs.k8s.io/yaml => sigs.k8s.io/yaml v1.5.0
 )
 
 require (
