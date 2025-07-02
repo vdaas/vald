@@ -21,6 +21,6 @@ assignees: ""
 - Rust Version: v1.87.0
 - Docker Version: v28.2.2
 - Kubernetes Version: v1.33.1
-- Helm Version: v3.18.2
+- Helm Version: v3.18.3
 - NGT Version: v2.4.2
 - Faiss Version: v1.11.0
