@@ -146,7 +146,8 @@ func (s *server) aggregationSearch(
 		if r == nil || len(r.GetResults()) == 0 {
 			select {
 			case <-sctx.Done():
-				err = status.WrapWithNotFound("failed to process search request", errors.ErrEmptySearchResult,
+				err = status.WrapWithNotFound(fmt.Sprintf("failed to process search request from %s", target),
+					errors.ErrEmptySearchResult,
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
@@ -210,7 +211,8 @@ func (s *server) aggregationSearch(
 					return nil
 				}
 				if r == nil || len(r.GetResults()) == 0 {
-					err = status.WrapWithNotFound("failed to process search request", errors.ErrEmptySearchResult,
+					err = status.WrapWithNotFound(fmt.Sprintf("failed to process search request from %s", target),
+						errors.ErrEmptySearchResult,
 						&errdetails.ResourceInfo{
 							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
 							ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
@@ -220,7 +222,6 @@ func (s *server) aggregationSearch(
 						sspan.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
 						sspan.SetStatus(trace.StatusError, err.Error())
 					}
-					log.Debug(err)
 					return nil
 				}
 			}
