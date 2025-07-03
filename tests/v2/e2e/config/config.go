@@ -43,12 +43,14 @@ import (
 // Data represents the complete configuration for the application.
 type Data struct {
 	config.GlobalConfig `json:",inline" yaml:",inline"`
+	TimeConfig          `json:",inline" yaml:",inline"`
 	Target              *config.GRPCClient `json:"target,omitempty"          yaml:"target,omitempty"`
 	Strategies          []*Strategy        `json:"strategies,omitempty"      yaml:"strategies,omitempty"`
 	Dataset             *Dataset           `json:"dataset,omitempty"         yaml:"dataset,omitempty"`
 	Kubernetes          *Kubernetes        `json:"kubernetes,omitempty"      yaml:"kubernetes,omitempty"`
 	Metadata            map[string]string  `json:"metadata,omitempty"        yaml:"metadata,omitempty"`
 	MetaString          string             `json:"metadata_string,omitempty" yaml:"metadata_string,omitempty"`
+	FilePath            string             `json:"-"                         yaml:"-"`
 }
 
 // Strategy represents a test strategy.
@@ -69,7 +71,7 @@ type Operation struct {
 // Execution represents the execution details for a given operation.
 type Execution struct {
 	*BaseConfig  `                    yaml:",inline,omitempty"      json:",inline,omitempty"`
-	TimeConfig   `                    yaml:",inline,omitempty"      json:",inline,omitempty"`
+	TimeConfig   `                    yaml:",inline"                json:",inline"`
 	Name         string              `yaml:"name"                   json:"name,omitempty"`
 	Type         OperationType       `yaml:"type"                   json:"type,omitempty"`
 	Mode         OperationMode       `yaml:"mode"                   json:"mode,omitempty"`
