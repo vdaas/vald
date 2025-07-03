@@ -76,7 +76,7 @@ func (l *Listener) Accept() (net.Conn, error) {
 		return nil, err
 	}
 	return &Conn{
-		Connection: sess,
-		Stream:     stream,
+		Conn:   sess,
+		Stream: stream,
 	}, nil
 }
