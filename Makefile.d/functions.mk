@@ -132,9 +132,11 @@ define telepresence
 endef
 
 define run-v2-e2e-crud-test
+	CC=$(CC) \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CGO_CFLAGS="$(CGO_CFLAGS)" \
 	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
 	E2E_ADDR="$(E2E_BIND_HOST):$(E2E_BIND_PORT)" \
 	E2E_BIND_HOST="$(E2E_BIND_HOST)" \

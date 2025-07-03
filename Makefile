@@ -182,6 +182,17 @@ CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?=
 endif
 
+ifeq ($(GOOS),darwin)
+ifeq ($(shell command -v brew 2>/dev/null),)
+$(error Homebrew is not installed. Please install Homebrew and run 'brew install hdf5 zlib')
+endif
+CC = gcc-15
+HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lz -ldl -lm
+CFLAGS = -I $(shell brew --prefix hdf5)/include
+CGO_CFLAGS ?= $(CFLAGS)
+CGO_LDFLAGS = -L $(shell brew --prefix hdf5)/lib -L $(shell brew --prefix zlib)/lib $(HDF5_LDFLAGS)
+endif
+
 BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
 BENCH_DATASETS = $(BENCH_DATASET_MD5S:$(BENCH_DATASET_MD5_DIR)/%.md5=$(BENCH_DATASET_HDF5_DIR)/%.hdf5)
 
