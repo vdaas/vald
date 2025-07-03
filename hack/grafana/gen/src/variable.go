@@ -54,15 +54,15 @@ func addOverviewVariables(builder *dashboard.DashboardBuilder) {
 			AllValue("vald-.*").
 			Multi(true),
 		).
-		WithVariable(dashboard.NewQueryVariableBuilder("ValdAgentPodName").
+		WithVariable(dashboard.NewQueryVariableBuilder("PodName").
 			Label("agent-pod").
 			Query(dashboard.StringOrMap{String: cog.ToPtr("label_values(agent_core_ngt_is_indexing{kubernetes_name =~\"vald-agent\"}, target_pod)")}).
 			IncludeAll(true).
 			Multi(true),
 		).
-		WithVariable(dashboard.NewQueryVariableBuilder("ValdAgentContainerName").
+		WithVariable(dashboard.NewQueryVariableBuilder("ContainerName").
 			Label("agent-container").
-			Query(dashboard.StringOrMap{String: cog.ToPtr("label_values(agent_core_ngt_is_indexing{kubernetes_name =~\"vald-agent\", target_pod=~\"$ValdAgentPodName\"}, container)")}).
+			Query(dashboard.StringOrMap{String: cog.ToPtr("label_values(agent_core_ngt_is_indexing{kubernetes_name =~\"vald-agent\", target_pod=~\"$PodName\"}, container)")}).
 			IncludeAll(true).
 			AllValue(".+").
 			Multi(true),
