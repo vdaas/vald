@@ -32,7 +32,7 @@ func addOverviewIndexPanel(builder *dashboard.DashboardBuilder) {
 				promql.Sum(promql.Vector(ngt.IndexCountMetricsName).
 					Label(namespaceKey, namespaceVariable).
 					LabelMatchRegexp(nameKey, nameVariable).
-					LabelMatchRegexp(podKey, "$ValdAgentPodName")).String(),
+					LabelMatchRegexp(podKey, "$PodName")).String(),
 			).Format("table")).
 			Thresholds(
 				dashboard.NewThresholdsConfigBuilder().
@@ -101,7 +101,7 @@ func addBackoffPerRPCPanel(builder *dashboard.DashboardBuilder) {
 				promql.Sum(promql.Irate(promql.Vector(serverCompletedRPCs).
 					Label(namespaceKey, namespaceVariable).
 					LabelMatchRegexp(nameKey, nameVariable).
-					LabelMatchRegexp(podKey, "$ValdAgentPodName").
+					LabelMatchRegexp(podKey, "$PodName").
 					Range(intervalVariable))).By([]string{"grpc_server_method"})).String(),
 		).Format("time_series").LegendFormat("{{grpc_server_method}} ({{grpc_server_status}})"),
 		).FillOpacity(opacity)
