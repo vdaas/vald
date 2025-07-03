@@ -175,12 +175,10 @@ EXTLDFLAGS ?= -m64
 else ifeq ($(GOARCH),arm64)
 CFLAGS ?=
 ifeq ($(GOOS),darwin)
-ifneq ($(shell command -v brew 2>/dev/null),)
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lz -ldl -lm
 CFLAGS = -I $(shell brew --prefix hdf5)/include
 CGO_CFLAGS ?= $(CFLAGS)
 CGO_LDFLAGS = -L $(shell brew --prefix hdf5)/lib -L $(shell brew --prefix zlib)/lib $(HDF5_LDFLAGS)
-endif
 endif
 CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?= -march=armv8-a
