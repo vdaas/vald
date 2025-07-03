@@ -176,7 +176,6 @@ else ifeq ($(GOARCH),arm64)
 CFLAGS ?=
 ifeq ($(GOOS),darwin)
 ifneq ($(shell command -v brew 2>/dev/null),)
-CC = gcc-15
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lz -ldl -lm
 CFLAGS = -I $(shell brew --prefix hdf5)/include
 CGO_CFLAGS ?= $(CFLAGS)

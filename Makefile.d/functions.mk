@@ -132,7 +132,6 @@ define telepresence
 endef
 
 define run-v2-e2e-crud-test
-	CC=$(CC) \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
