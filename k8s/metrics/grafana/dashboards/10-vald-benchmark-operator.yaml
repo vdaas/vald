@@ -855,7 +855,7 @@ data:
             "multi": true,
             "allowCustomValue": true,
             "includeAll": true,
-            "allValue": ".+",
+            "allValue": ".*",
             "auto": false,
             "auto_min": "10s",
             "auto_count": 30
