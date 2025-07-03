@@ -174,8 +174,6 @@ CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?= -m64
 else ifeq ($(GOARCH),arm64)
 CFLAGS ?=
-CXXFLAGS ?= $(CFLAGS)
-EXTLDFLAGS ?= -march=armv8-a
 ifeq ($(GOOS),darwin)
 ifneq ($(shell command -v brew 2>/dev/null),)
 CC = gcc-15
@@ -185,6 +183,8 @@ CGO_CFLAGS ?= $(CFLAGS)
 CGO_LDFLAGS = -L $(shell brew --prefix hdf5)/lib -L $(shell brew --prefix zlib)/lib $(HDF5_LDFLAGS)
 endif
 endif
+CXXFLAGS ?= $(CFLAGS)
+EXTLDFLAGS ?= -march=armv8-a
 else
 CFLAGS ?=
 CXXFLAGS ?= $(CFLAGS)
