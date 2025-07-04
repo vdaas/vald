@@ -1,5 +1,124 @@
 # CHANGELOG
 
+## v1.7.17
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.7.17</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.7.17</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.7.17</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.7.17</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.7.17</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.7.17</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.7.17</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.7.17</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.7.17</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.7.17</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.7.17</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.7.17</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.7.17</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.7.17</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.7.17)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.7.17/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.17/charts/vald-helm-operator/README.md)
+
+### Changes
+
+:sparkles: New feature
+[VALD-125] feat: Implement index exporter [#2746](https://github.com/vdaas/vald/pull/2746)
+
+[VALD-147] add server_config [#2958](https://github.com/vdaas/vald/pull/2958)
+
+[VALD-147] implement AccessLogMiddleware [#2991](https://github.com/vdaas/vald/pull/2991)
+
+[VALD-148] Generate grafana boards by grafana-foundation-sdk Go [#2937](https://github.com/vdaas/vald/pull/2937)
+
+[VALD-322] e2e/v2: Support selector for wait action [#2956](https://github.com/vdaas/vald/pull/2956)
+
+[VALD-325] E2E V2: Index Correction Job [#3000](https://github.com/vdaas/vald/pull/3000)
+
+[VALD-336] Implement expect in E2E v2 to assert API results [#2971](https://github.com/vdaas/vald/pull/2971)
+
+[VALD-351] Add Rust version VQueue prototype implementation [#2998](https://github.com/vdaas/vald/pull/2998)
+
+Add git-lfs to dev container image [#2978](https://github.com/vdaas/vald/pull/2978)
+
+Fix dashboard variables in overview board (#3030) (#3042)
+
+[VALD-359] Support Mac C flags (#3040) (#3044)
+
+Support prometheus without container label (#3043) (#3045)
+
+:zap: Improve performance
+
+improve rangeConns's performance for Release v1.7.17 (#3039) (#3041)
+
+:bug: Bugfix
+[BUGFIX] use client config for tls dialer [#2938](https://github.com/vdaas/vald/pull/2938)
+
+[Bugfix] prevent nil pointer panic for internal/config/grpc.go [#3017](https://github.com/vdaas/vald/pull/3017)
+
+[VALD-148] hotfix: Fix name & despcription of metrics [#2981](https://github.com/vdaas/vald/pull/2981)
+
+Avoid concurrent assignment of stream client in RoundRobin [#2954](https://github.com/vdaas/vald/pull/2954)
+
+fix: make format has conflicts in some targets [#2977](https://github.com/vdaas/vald/pull/2977)
+
+:pencil2: Document
+docs: Fix a typo in the value that specified the service name [#3005](https://github.com/vdaas/vald/pull/3005)
+
+docs: add Kynea0b as a contributor for doc [#3006](https://github.com/vdaas/vald/pull/3006)
+
+docs: add Matts966 as a contributor for code, infra, and 2 more [#3007](https://github.com/vdaas/vald/pull/3007)
+
+:white_check_mark: Testing
+E2E V2 CI [#2950](https://github.com/vdaas/vald/pull/2950)
+
+:green_heart: CI
+feat: automatically resolve go.mod & go.sum conflicts in backport workflow [#2980](https://github.com/vdaas/vald/pull/2980)
+
+:chart_with_upwards_trend: Metrics/Tracing
+[VALD-148] Generate grafana boards by grafana-foundation-sdk Go [#2937](https://github.com/vdaas/vald/pull/2937)
+
 ## v1.7.16
 
 ### Docker images
