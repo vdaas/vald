@@ -84,7 +84,16 @@ jobs:
               git checkout -b ${BACKPORT_BRANCH_NAME}
 
               # Force cherry-pick. Automatically resolve conflicts in go.mod and go.sum files.
-              git cherry-pick ${GITHUB_SHA} || (git checkout --theirs go.mod go.sum 2>/dev/null || true && git add -A && git cherry-pick --continue --no-edit || git commit --allow-empty --no-edit)
+
+              GITHUB_SHA=009fa85cbbfbe6a5d57a22e48c9579275ad86733
+              git cherry-pick ${GITHUB_SHA} || (
+                git checkout --theirs go.mod go.sum 2>/dev/null || true
+                git add -A
+                if ! git cherry-pick --continue --no-edit; then
+                  # No diff to commit → create an empty commit so the workflow can keep going
+                  git commit --allow-empty --no-edit
+                fi
+              )
               git push origin ${BACKPORT_BRANCH_NAME}
 
               gh pr create --base ${BRANCH_NAME} \
