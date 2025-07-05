@@ -15,7 +15,7 @@
 #
 apiVersion: v2
 name: vald-readreplica
-version: v1.7.16
+version: v1.7.17
 description: A helm chart for readreplica add-on
 type: application
 keywords:

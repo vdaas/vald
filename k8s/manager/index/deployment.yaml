@@ -20,10 +20,10 @@ metadata:
   labels:
     app: vald-manager-index
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.16
+    helm.sh/chart: vald-v1.7.17
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.16
+    app.kubernetes.io/version: v1.7.17
     app.kubernetes.io/component: manager-index
 spec:
   progressDeadlineSeconds: 600
@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: manager-index
       annotations:
-        checksum/configmap: 520448df94cfc56e4219825271d59b5563623a9c2bb54b13c287ea33cdf2e5e6
+        checksum/configmap: bf52ce3889c671186eb265aa70310c32b8e806d92c691bf3fef5659571fcef4e
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-index
