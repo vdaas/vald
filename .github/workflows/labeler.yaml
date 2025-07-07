@@ -42,7 +42,7 @@ jobs:
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
           branch_name=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.head.ref"`
-          type_labels=($(curl -s "https://api.github.com/repos/${REPOSITORY}/labels?per_page=5000" | jq -r ".[].name" | grep -e "^type/"))
+          type_labels=($(gh api "repos/${REPOSITORY}/labels?per_page=5000" | jq -r ".[].name" | grep -e "^type/"))
           send_labels=()
 
           git fetch origin main
@@ -121,7 +121,7 @@ jobs:
           )
 
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-          existing_labels=($(curl -s "https://api.github.com/repos/${REPOSITORY}/issues/${pr_num}/labels" | jq -r ".[].name"))
+          existing_labels=($(gh api "repos/${REPOSITORY}/issues/${pr_num}/labels" | jq -r ".[].name"))
           send_labels=()
           size_label="size/S"
           priority_label="priority/low"
