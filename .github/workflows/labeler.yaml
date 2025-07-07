@@ -83,7 +83,7 @@ jobs:
             data="{\"labels\": [$str]}"
             # If target branch is main, add "actions/backport/release/v1.7" label
             base_name=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.base.ref"`
-            if [[ "${base_name}" == "main" ]]; then
+            if [[ "${base_name}" == "main" && "${branch_name}" != backport/* ]]; then
               data="{\"labels\": [$str, \"actions/backport/release/v1.7\"]}"
             fi
             echo "send data: " $data
