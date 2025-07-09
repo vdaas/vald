@@ -45,13 +45,13 @@ jobs:
         id: check_permissions
         run: |
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_permissions.yaml
-          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          roles=`yq e ".users.${USERNAME}.role.[]" chatops_permissions.yaml`
           if [ "$roles" = "" ]; then
-            roles=`yq r chatops_permissions.yaml "default-roles.*"`
+            roles=`yq e ".default-roles[]" chatops_permissions.yaml`
           fi
           for role in `echo $roles`
           do
-              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+              if yq e ".roles.${role}.policies[]" chatops_permissions.yaml | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] label requested by ${USERNAME}"
                 echo "EXECUTABLE=true" >> $GITHUB_OUTPUT
                 break
@@ -98,13 +98,13 @@ jobs:
         id: check_permissions
         run: |
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_permissions.yaml
-          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          roles=`yq e ".users.${USERNAME}.role[]" chatops_permissions.yaml`
           if [ "$roles" = "" ]; then
-            roles=`yq r chatops_permissions.yaml "default-roles.*"`
+            roles=`yq e ".default-roles[]" chatops_permissions.yaml`
           fi
           for role in `echo $roles`
           do
-              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+              if yq e ".roles.${role}.policies[]" chatops_permissions.yaml | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] rebase requested by ${USERNAME}"
                 echo "EXECUTABLE=true" >> $GITHUB_OUTPUT
                 break
@@ -178,13 +178,13 @@ jobs:
         id: check_permissions
         run: |
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_permissions.yaml
-          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          roles=`yq e ".users.${USERNAME}.role[]" chatops_permissions.yaml`
           if [ "$roles" = "" ]; then
-            roles=`yq r chatops_permissions.yaml "default-roles.*"`
+            roles=`yq e ".default-roles[]" chatops_permissions.yaml`
           fi
           for role in `echo $roles`
           do
-              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+              if yq e ".roles.${role}.policies[]" chatops_permissions.yaml | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] add-contributor requested by ${USERNAME}"
                 echo "EXECUTABLE=true" >> $GITHUB_OUTPUT
                 break
@@ -294,13 +294,13 @@ jobs:
         id: check_permissions
         run: |
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_permissions.yaml
-          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          roles=`yq e ".users.${USERNAME}.role[]" chatops_permissions.yaml `
           if [ "$roles" = "" ]; then
-            roles=`yq r chatops_permissions.yaml "default-roles.*"`
+            roles=`yq e ".default-roles.[]" chatops_permissions.yaml`
           fi
           for role in `echo $roles`
           do
-              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+              if yq e ".roles.${role}.policies[]" chatops_permissions.yaml | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] format requested by ${USERNAME}"
                 echo "EXECUTABLE=true" >> $GITHUB_OUTPUT
                 break
@@ -429,13 +429,13 @@ jobs:
         id: check_permissions
         run: |
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_permissions.yaml
-          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          roles=`yq e ".users.${USERNAME}.role[]" chatops_permissions.yaml`
           if [ "$roles" = "" ]; then
-            roles=`yq r chatops_permissions.yaml "default-roles.*"`
+            roles=`yq e ".default-roles[]" chatops_permissions.yaml`
           fi
           for role in `echo $roles`
           do
-              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+              if yq e ".roles.${role}.policies[]" chatops_permissions.yaml | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] approved requested by ${USERNAME}"
                 echo "EXECUTABLE=true" >> $GITHUB_OUTPUT
                 break
