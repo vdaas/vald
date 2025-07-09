@@ -222,6 +222,7 @@ jobs:
           git_user_signingkey: true
           git_commit_gpgsign: true
       - name: Generate tests and push
+        shell: bash
         id: gen_test
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -338,6 +339,7 @@ jobs:
           git_user_signingkey: true
           git_commit_gpgsign: true
       - name: update and push
+        shell: bash
         id: format_push
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
