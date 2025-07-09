@@ -23,6 +23,9 @@ on:
         description: "Comment to trigger actions e.g. /label, /rebase, /gentest, /format, /approve"
         required: true
         type: string
+env:
+  COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.sender.user.login }}
+  USERNAME: ${{ github.event_name == 'issue_comment' && github.event.comment.user.login || github. }}
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
@@ -41,12 +44,9 @@ jobs:
     steps:
       - name: Check PR Comments
         id: check_comments_label
-        env:
-          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.inputs.comment }}
-          TRIGGER_PHRASE: "/label"
+        if: startsWith(env.COMMENT_BODY, '/label')
         run:
-          echo "BOOL_TRIGGERED=$([ "$COMMENT_BODY" = "$TRIGGER_PHRASE" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-          echo "COMMENTER_USERNAME=${{ github.event.comment.user.login }}" >> "$GITHUB_OUTPUT"
+          echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
           echo "TRAILING_LINE=$(echo "$COMMENT_BODY" | sed -e "s|$TRIGGER_PHRASE||" -e 's/^[[:space:]]*//')" >> "$GITHUB_OUTPUT"
       - name: Check permissions
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
@@ -66,7 +66,6 @@ jobs:
               fi
           done
         env:
-          USERNAME: ${{ steps.check_comments_label.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: label
       - name: Add label
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -82,7 +81,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           ISSUE_URL: ${{ github.event.issue.labels_url }}
-          USERNAME: ${{ steps.check_comments_label.outputs.COMMENTER_USERNAME }}
           TRAILING_LINE: ${{ steps.check_comments_label.outputs.TRAILING_LINE }}
   rebase:
     if: github.event.comment.user.login != 'vdaas-ci'
@@ -96,12 +94,9 @@ jobs:
     steps:
       - name: Check PR Comments
         id: check_comments_rebase
-        env:
-          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.inputs.comment }}
-          TRIGGER_PHRASE: "/rebase"
+        if: startsWith(env.COMMENT_BODY, '/rebase')
         run:
-          echo "BOOL_TRIGGERED=$([ "$COMMENT_BODY" = "$TRIGGER_PHRASE" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-          echo "COMMENTER_USERNAME=${{ github.event.comment.user.login }}" >> "$GITHUB_OUTPUT"
+          echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
       - name: Check permissions
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -120,7 +115,6 @@ jobs:
               fi
           done
         env:
-          USERNAME: ${{ steps.check_comments_rebase.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: rebase
       - name: Comment back to PR
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -136,7 +130,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
           BRANCH: ${{ steps.check_comments_rebase.outputs.BRANCH_NAME }}
-          USERNAME: ${{ steps.check_comments_rebase.outputs.COMMENTER_USERNAME }}
       - uses: actions/checkout@v4
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
@@ -177,12 +170,9 @@ jobs:
     steps:
       - name: check PR Comments
         id: check_comments_gen_test
-        env:
-          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.inputs.comment }}
-          TRIGGER_PHRASE: "/gen-test"
+        if: startsWith(env.COMMENT_BODY, '/gen-test')
         run:
-          echo "BOOL_TRIGGERED=$([ "$COMMENT_BODY" = "$TRIGGER_PHRASE" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-          echo "COMMENTER_USERNAME=${{ github.event.comment.user.login }}" >> "$GITHUB_OUTPUT"
+          echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
       - name: check permissions
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -201,7 +191,6 @@ jobs:
               fi
           done
         env:
-          USERNAME: ${{ steps.check_comments_gen_test.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: gen-test
       - name: check executable
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -215,7 +204,6 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          USERNAME: ${{ steps.check_comments_gen_test.outputs.COMMENTER_USERNAME }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
           API_URL: ${{ github.event.issue.comments_url }}
       - uses: actions/checkout@v4
@@ -295,12 +283,9 @@ jobs:
     steps:
       - name: check PR Comments
         id: check_comments_format
-        env:
-          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.inputs.comment }}
-          TRIGGER_PHRASE: "/format"
+        if: startsWith(env.COMMENT_BODY, '/format')
         run:
-          echo "BOOL_TRIGGERED=$([ "$COMMENT_BODY" = "$TRIGGER_PHRASE" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-          echo "COMMENTER_USERNAME=${{ github.event.comment.user.login }}" >> "$GITHUB_OUTPUT"
+          echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
       - name: check permissions
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -319,7 +304,6 @@ jobs:
               fi
           done
         env:
-          USERNAME: ${{ steps.check_comments_format.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: format
       - name: check executable
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -333,7 +317,6 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          USERNAME: ${{ steps.check_comments_format.outputs.COMMENTER_USERNAME }}
           API_URL: ${{ github.event.issue.comments_url }}
       - uses: actions/checkout@v4
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -432,12 +415,9 @@ jobs:
     steps:
       - name: check PR Comments
         id: check_comments_approve
-        env:
-          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.inputs.comment }}
-          TRIGGER_PHRASE: "/approve"
+        if: startsWith(env.COMMENT_BODY, '/approve')
         run:
-          echo "BOOL_TRIGGERED=$([ "$COMMENT_BODY" = "$TRIGGER_PHRASE" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-          echo "COMMENTER_USERNAME=${{ github.event.comment.user.login }}" >> "$GITHUB_OUTPUT"
+          echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
       - name: check permissions
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -456,7 +436,6 @@ jobs:
               fi
           done
         env:
-          USERNAME: ${{ steps.check_comments_approve.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: approve
       - name: approve
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -471,4 +450,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           PR_URL: ${{ github.event.issue.pull_request.url }}
-          USERNAME: ${{ steps.check_comments_approve.outputs.COMMENTER_USERNAME }}
