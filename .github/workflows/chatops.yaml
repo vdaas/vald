@@ -24,8 +24,8 @@ on:
         required: true
         type: string
 env:
-  COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.sender.user.login }}
-  USERNAME: ${{ github.event_name == 'issue_comment' && github.event.comment.user.login || github. }}
+  COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.inputs.comment }}
+  USERNAME: ${{ github.event_name == 'issue_comment' && github.event.comment.user.login || github.event.sender.login }}
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
