@@ -117,7 +117,7 @@ jobs:
         env:
           REQUIRED_POLICY: rebase
       - name: Comment back to PR
-        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        if: github.event_name == 'issue_comment' && steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
           curl --include --verbose --fail \
           -H "Accept: application/json" \
@@ -144,7 +144,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
       - name: Failure comment
-        if: failure()
+        if: github.event_name == 'issue_comment' && failure()
         run: |
           curl --include --verbose --fail \
           -H "Accept: application/json" \
@@ -193,7 +193,7 @@ jobs:
         env:
           REQUIRED_POLICY: gen-test
       - name: check executable
-        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        if: github.event_name == 'issue_comment' && steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
           curl --include --verbose --fail \
           -H "Accept: application/json" \
@@ -255,7 +255,7 @@ jobs:
           PR_AUTHOR: ${{ github.event.issue.user.login }}
           PR_NUM: ${{ github.event.issue.number }}
       - name: failure comment
-        if: failure()
+        if: github.event_name == 'issue_comment' && failure()
         run: |
           ERR_LOG=${{ steps.gen_test.outputs.ERR_LOG }}
           curl --include --verbose --fail \
@@ -306,7 +306,7 @@ jobs:
         env:
           REQUIRED_POLICY: format
       - name: check executable
-        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        if: github.event_name == 'issue_comment' && steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
           curl --include --verbose --fail \
           -H "Accept: application/json" \
@@ -375,7 +375,7 @@ jobs:
           PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
           PR_NUM: ${{ github.event.issue.number }}
       - name: no changes
-        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true' && steps.format_push.outputs.UPDATED == 'false'
+        if: github.event_name == 'issue_comment' && steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true' && steps.format_push.outputs.UPDATED == 'false'
         run: |
           curl --include --verbose --fail \
           -H "Accept: application/json" \
@@ -388,7 +388,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
       - name: failure comment
-        if: failure()
+        if: github.event_name == 'issue_comment' && failure()
         run: |
           curl --include --verbose --fail \
           -H "Accept: application/json" \
