@@ -42,7 +42,7 @@ jobs:
       - name: Check PR Comments
         id: check_comments_label
         env:
-          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.workflow_dispatch.inputs.comment }}
+          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.inputs.comment }}
           TRIGGER_PHRASE: "/label"
         run:
           echo "BOOL_TRIGGERED=$([ "$COMMENT_BODY" = "$TRIGGER_PHRASE" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
@@ -97,7 +97,7 @@ jobs:
       - name: Check PR Comments
         id: check_comments_rebase
         env:
-          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.workflow_dispatch.inputs.comment }}
+          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.inputs.comment }}
           TRIGGER_PHRASE: "/rebase"
         run:
           echo "BOOL_TRIGGERED=$([ "$COMMENT_BODY" = "$TRIGGER_PHRASE" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
@@ -178,7 +178,7 @@ jobs:
       - name: check PR Comments
         id: check_comments_gen_test
         env:
-          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.workflow_dispatch.inputs.comment }}
+          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.inputs.comment }}
           TRIGGER_PHRASE: "/gen-test"
         run:
           echo "BOOL_TRIGGERED=$([ "$COMMENT_BODY" = "$TRIGGER_PHRASE" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
@@ -296,7 +296,7 @@ jobs:
       - name: check PR Comments
         id: check_comments_format
         env:
-          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.workflow_dispatch.inputs.comment }}
+          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.inputs.comment }}
           TRIGGER_PHRASE: "/format"
         run:
           echo "BOOL_TRIGGERED=$([ "$COMMENT_BODY" = "$TRIGGER_PHRASE" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
@@ -433,7 +433,7 @@ jobs:
       - name: check PR Comments
         id: check_comments_approve
         env:
-          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.workflow_dispatch.inputs.comment }}
+          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.inputs.comment }}
           TRIGGER_PHRASE: "/approve"
         run:
           echo "BOOL_TRIGGERED=$([ "$COMMENT_BODY" = "$TRIGGER_PHRASE" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
