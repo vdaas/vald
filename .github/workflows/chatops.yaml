@@ -17,6 +17,12 @@ name: ChatOps
 on:
   issue_comment:
     types: [created]
+  workflow_dispatch: # For debugging
+    inputs:
+      comment:
+        description: "Comment to trigger actions e.g. /label, /rebase, /gentest, /format, /approve"
+        required: true
+        type: string
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
@@ -35,11 +41,13 @@ jobs:
     steps:
       - name: Check PR Comments
         id: check_comments_label
-        uses: machine-learning-apps/actions-chatops@master
-        with:
-          TRIGGER_PHRASE: "/label"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.workflow_dispatch.inputs.comment }}
+          TRIGGER_PHRASE: "/label"
+        run:
+          echo "BOOL_TRIGGERED=$([ "$COMMENT_BODY" = "$TRIGGER_PHRASE" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "COMMENTER_USERNAME=${{ github.event.comment.user.login }}" >> "$GITHUB_OUTPUT"
+          echo "TRAILING_LINE=$(echo "$COMMENT_BODY" | sed -e "s|$TRIGGER_PHRASE||" -e 's/^[[:space:]]*//')" >> "$GITHUB_OUTPUT"
       - name: Check permissions
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -88,11 +96,12 @@ jobs:
     steps:
       - name: Check PR Comments
         id: check_comments_rebase
-        uses: machine-learning-apps/actions-chatops@master
-        with:
-          TRIGGER_PHRASE: "/rebase"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.workflow_dispatch.inputs.comment }}
+          TRIGGER_PHRASE: "/rebase"
+        run:
+          echo "BOOL_TRIGGERED=$([ "$COMMENT_BODY" = "$TRIGGER_PHRASE" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "COMMENTER_USERNAME=${{ github.event.comment.user.login }}" >> "$GITHUB_OUTPUT"
       - name: Check permissions
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -168,11 +177,12 @@ jobs:
     steps:
       - name: check PR Comments
         id: check_comments_gen_test
-        uses: machine-learning-apps/actions-chatops@master
-        with:
-          TRIGGER_PHRASE: "/gen-test"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.workflow_dispatch.inputs.comment }}
+          TRIGGER_PHRASE: "/gen-test"
+        run:
+          echo "BOOL_TRIGGERED=$([ "$COMMENT_BODY" = "$TRIGGER_PHRASE" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "COMMENTER_USERNAME=${{ github.event.comment.user.login }}" >> "$GITHUB_OUTPUT"
       - name: check permissions
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -285,11 +295,12 @@ jobs:
     steps:
       - name: check PR Comments
         id: check_comments_format
-        uses: machine-learning-apps/actions-chatops@master
-        with:
-          TRIGGER_PHRASE: "/format"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.workflow_dispatch.inputs.comment }}
+          TRIGGER_PHRASE: "/format"
+        run:
+          echo "BOOL_TRIGGERED=$([ "$COMMENT_BODY" = "$TRIGGER_PHRASE" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "COMMENTER_USERNAME=${{ github.event.comment.user.login }}" >> "$GITHUB_OUTPUT"
       - name: check permissions
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -421,11 +432,12 @@ jobs:
     steps:
       - name: check PR Comments
         id: check_comments_approve
-        uses: machine-learning-apps/actions-chatops@master
-        with:
-          TRIGGER_PHRASE: "/approve"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.workflow_dispatch.inputs.comment }}
+          TRIGGER_PHRASE: "/approve"
+        run:
+          echo "BOOL_TRIGGERED=$([ "$COMMENT_BODY" = "$TRIGGER_PHRASE" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "COMMENTER_USERNAME=${{ github.event.comment.user.login }}" >> "$GITHUB_OUTPUT"
       - name: check permissions
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
