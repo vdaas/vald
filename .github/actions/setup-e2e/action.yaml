@@ -31,15 +31,11 @@ inputs:
   require_k3d:
     description: "If k3d is not required, set this to false"
     required: false
-    default: "false"
+    default: "true"
   require_minikube:
     description: "If minikube is not required, set this to true and set require_k3d to false"
     required: false
     default: "false"
-  require_kind:
-    description: "If kind is not required, set this to true and set require_kind to false"
-    required: false
-    default: "true"
   ingress_port:
     description: 'If it is not "0", ingress will be exposed to the specified port'
     required: false
@@ -95,12 +91,6 @@ runs:
       run: |
         make minikube/install
         make minikube/start
-    - name: Setup Kind environment
-      if: ${{ inputs.require_kind == 'true' }}
-      uses: helm/kind-action@a1b0e391336a6ee6713a0583f8c6240d70863de3 # 1.12.0
-      with:
-        node_image: kindest/node:v1.27.3
-        version: v0.29.0
     - name: Check Kubernetes cluster
       shell: bash
       run: |
