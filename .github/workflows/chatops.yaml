@@ -17,15 +17,24 @@ name: ChatOps
 on:
   issue_comment:
     types: [created]
-  workflow_dispatch: # For debugging
+  # issue_comment always uses main branch.
+  # For debugging other branch
+  workflow_dispatch:
     inputs:
       comment:
         description: "Comment to trigger actions e.g. /label, /rebase, /gentest, /format, /approve"
         required: true
         type: string
+      pr_number:
+        description: "PR number to trigger actions on"
+        required: true
+        type: number
 env:
   COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.inputs.comment }}
   USERNAME: ${{ github.event_name == 'issue_comment' && github.event.comment.user.login || github.event.sender.login }}
+  API_URL: ${{ github.event_name == 'issue_comment' && github.event.issue.comments_url || "https://api.github.com/repos/vdaas/vald/issues/${{ github.event.inputs.pr_number }}/comments" }}
+  PR_NUM: ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.inputs.pr_number }}
+  PR_INFO_URL: ${{ github.event_name == 'issue_comment' && github.event.issue.pull_request.url || "https://api.github.com/repos/vdaas/vald/pulls/${{ github.event.inputs.pr_number }}" }}
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
@@ -128,7 +137,6 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          API_URL: ${{ github.event.issue.comments_url }}
           BRANCH: ${{ steps.check_comments_rebase.outputs.BRANCH_NAME }}
       - uses: actions/checkout@v4
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -155,7 +163,6 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          API_URL: ${{ github.event.issue.comments_url }}
   gentest:
     if: github.event.comment.user.login != 'vdaas-ci'
     name: Add tests
@@ -205,7 +212,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
-          API_URL: ${{ github.event.issue.comments_url }}
       - uses: actions/checkout@v4
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
@@ -251,9 +257,7 @@ jobs:
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
-          PR_NUM: ${{ github.event.issue.number }}
       - name: failure comment
         if: failure()
         run: |
@@ -267,7 +271,6 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          API_URL: ${{ github.event.issue.comments_url }}
   format:
     if: github.event.comment.user.login != 'vdaas-ci'
     name: Add license and run golines + gofumpt + goimports
@@ -317,7 +320,6 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          API_URL: ${{ github.event.issue.comments_url }}
       - uses: actions/checkout@v4
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
@@ -372,8 +374,6 @@ jobs:
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
-          PR_NUM: ${{ github.event.issue.number }}
       - name: no changes
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true' && steps.format_push.outputs.UPDATED == 'false'
         run: |
@@ -386,7 +386,6 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          API_URL: ${{ github.event.issue.comments_url }}
       - name: failure comment
         if: failure()
         run: |
@@ -399,7 +398,6 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          API_URL: ${{ github.event.issue.comments_url }}
   approve:
     if: github.event.comment.user.login != 'vdaas-ci'
     name: Approve
@@ -446,7 +444,6 @@ jobs:
           -H "Authorization: token ${GITHUB_TOKEN}" \
           --request POST \
           --data "{\"body\": \"**[APPROVED]** This PR is approved by ${USERNAME}.\", \"event\": \"APPROVE\"}" \
-          "${PR_URL}/reviews"
+          "${PR_INFO_URL}/reviews"
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          PR_URL: ${{ github.event.issue.pull_request.url }}
