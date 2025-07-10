@@ -5,6 +5,7 @@
 ## Table of Contents
 
 - [v1/payload/payload.proto](#v1_payload_payload-proto)
+
   - [Control](#payload-v1-Control)
   - [Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest)
   - [Discoverer](#payload-v1-Discoverer)
