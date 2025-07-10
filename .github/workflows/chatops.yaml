@@ -115,8 +115,7 @@ jobs:
       - name: Check PR Comments
         id: check_comments_rebase
         if: startsWith(env.COMMENT_BODY, '/rebase')
-        run:
-          echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
+        run: echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
       - name: Check permissions
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -188,8 +187,7 @@ jobs:
       - name: check PR Comments
         id: check_comments_gen_test
         if: startsWith(env.COMMENT_BODY, '/gen-test')
-        run:
-          echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
+        run: echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
       - name: check permissions
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -295,8 +293,7 @@ jobs:
       - name: check PR Comments
         id: check_comments_format
         if: startsWith(env.COMMENT_BODY, '/format')
-        run:
-          echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
+        run: echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
       - name: check permissions
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -420,8 +417,7 @@ jobs:
       - name: check PR Comments
         id: check_comments_approve
         if: startsWith(env.COMMENT_BODY, '/approve')
-        run:
-          echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
+        run: echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
       - name: check permissions
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
