@@ -37,7 +37,7 @@ env:
   PR_INFO_URL: https://api.github.com/repos/vdaas/vald/pulls/${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.inputs.pr_number }}
 jobs:
   dump-contexts-to-log:
-    if: ${{ !contains(["cloudflare-workers-and-pages", "coderabbitai", "vdaas-ci"]), github.event.comment.user.login) }}
+    if: ${{ !contains(['cloudflare-workers-and-pages', 'coderabbitai', 'vdaas-ci']), github.event.comment.user.login) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
