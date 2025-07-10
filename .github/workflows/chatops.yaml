@@ -44,14 +44,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-  detect-ci-container:
-    uses: ./.github/workflows/_detect-ci-container.yaml
   label:
-    needs: [detect-ci-container]
+    needs:
+      - dump-contexts-to-log
     name: Add labels
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
