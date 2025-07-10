@@ -61,13 +61,6 @@ jobs:
         run: |
           echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
           echo "TRAILING_LINE=$(echo "$COMMENT_BODY" | sed -e "s|/label||" -e 's/^[[:space:]]*//')" >> "$GITHUB_OUTPUT"
-
-          cat "$GITHUB_OUTPUT"
-      - name: Debug Output
-        if: always()
-        run: |
-          echo "BOOL_TRIGGERED=${{ steps.check_comments_label.outputs.BOOL_TRIGGERED }}"
-
       - name: Check permissions
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
