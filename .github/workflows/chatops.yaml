@@ -32,9 +32,9 @@ on:
 env:
   COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.inputs.comment }}
   USERNAME: ${{ github.event_name == 'issue_comment' && github.event.comment.user.login || github.event.sender.login }}
-  API_URL: ${{ github.event_name == 'issue_comment' && github.event.issue.comments_url || 'https://api.github.com/repos/vdaas/vald/issues/${{ github.event.inputs.pr_number }}/comments' }}
+  API_URL: https://api.github.com/repos/vdaas/vald/issues/${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.inputs.pr_number }}/comments
   PR_NUM: ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.inputs.pr_number }}
-  PR_INFO_URL: ${{ github.event_name == 'issue_comment' && github.event.issue.pull_request.url || 'https://api.github.com/repos/vdaas/vald/pulls/${{ github.event.inputs.pr_number }}' }}
+  PR_INFO_URL: https://api.github.com/repos/vdaas/vald/pulls/${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.inputs.pr_number }}
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
