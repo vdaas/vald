@@ -37,12 +37,14 @@ env:
   PR_INFO_URL: https://api.github.com/repos/vdaas/vald/pulls/${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.inputs.pr_number }}
 jobs:
   dump-contexts-to-log:
+    if: !contains(fromJSON('["cloudflare-workers-and-pages", "coderabbitai", "vdaas-ci"]'), github.event.comment.user.login)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
   label:
-    if: github.event.comment.user.login != 'vdaas-ci'
+    needs:
+      - dump-contexts-to-log
     name: Add labels
     runs-on: ubuntu-latest
     container:
@@ -92,7 +94,8 @@ jobs:
           ISSUE_URL: ${{ github.event.issue.labels_url }}
           TRAILING_LINE: ${{ steps.check_comments_label.outputs.TRAILING_LINE }}
   rebase:
-    if: github.event.comment.user.login != 'vdaas-ci'
+    needs:
+      - dump-contexts-to-log
     name: Rebase
     runs-on: ubuntu-latest
     container:
@@ -164,7 +167,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
   gentest:
-    if: github.event.comment.user.login != 'vdaas-ci'
+    needs:
+      - dump-contexts-to-log
     name: Add tests
     runs-on: ubuntu-latest
     container:
@@ -270,7 +274,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
   format:
-    if: github.event.comment.user.login != 'vdaas-ci'
+    needs:
+      - dump-contexts-to-log
     name: Add license and run golines + gofumpt + goimports
     runs-on: ubuntu-latest
     container:
@@ -394,7 +399,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
   approve:
-    if: github.event.comment.user.login != 'vdaas-ci'
+    needs:
+      - dump-contexts-to-log
     name: Approve
     runs-on: ubuntu-latest
     container:
