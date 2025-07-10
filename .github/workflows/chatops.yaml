@@ -36,6 +36,7 @@ env:
   API_URL: https://api.github.com/repos/vdaas/vald/issues/${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.inputs.pr_number }}/comments
   PR_NUM: ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.inputs.pr_number }}
   PR_INFO_URL: https://api.github.com/repos/vdaas/vald/pulls/${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.inputs.pr_number }}
+  LABELS_URL: https://api.github.com/repos/vdaas/vald/issues/${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.inputs.pr_number }}/labels
 jobs:
   dump-contexts-to-log:
     if: ${{ !contains(fromJSON('["cloudflare-workers-and-pages", "coderabbitai", "vdaas-ci"]'), github.event.comment.user.login) }}
@@ -96,10 +97,9 @@ jobs:
           -H "Authorization: token ${GITHUB_TOKEN}" \
           --request POST \
           --data "{\"labels\": ${labels}}" \
-          `echo "${ISSUE_URL}" | sed -e 's/{\/name}//'`
+          "${LABELS_URL}"
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          ISSUE_URL: ${{ github.event.issue.labels_url }}
           TRAILING_LINE: ${{ steps.check_comments_label.outputs.TRAILING_LINE }}
   rebase:
     needs:
