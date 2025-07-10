@@ -96,11 +96,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           TRAILING_LINE: ${{ steps.check_comments_label.outputs.TRAILING_LINE }}
   rebase:
-    needs: [detect-ci-container]
+    needs:
+      - dump-contexts-to-log
     name: Rebase
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
@@ -167,11 +168,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
   gentest:
-    needs: [detect-ci-container]
+    needs:
+      - dump-contexts-to-log
     name: Add tests
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
@@ -272,11 +274,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
   format:
-    needs: [detect-ci-container]
+    needs:
+      - dump-contexts-to-log
     name: Add license and run golines + gofumpt + goimports
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
@@ -395,11 +398,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
   approve:
-    needs: [detect-ci-container]
+    needs:
+      - dump-contexts-to-log
     name: Approve
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
