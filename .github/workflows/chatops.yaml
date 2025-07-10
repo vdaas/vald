@@ -353,9 +353,9 @@ jobs:
 
           echo "Update license headers and format go codes/yaml"
 
+          make deps/install proto/replace
           make format
-
-          git checkout go.mod go.sum
+          git checkout go.mod go.sum ./example/client/go.mod ./example/client/go.sum ./rust/Cargo.lock ./rust/rust-toolchain.toml ./dockers
 
           if git diff --quiet --exit-code; then
             echo "UPDATED=false" >> $GITHUB_OUTPUT
