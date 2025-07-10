@@ -166,8 +166,6 @@ jobs:
   gentest:
     if: github.event.comment.user.login != 'vdaas-ci'
     name: Add tests
-    needs:
-      - rebase
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
@@ -274,9 +272,6 @@ jobs:
   format:
     if: github.event.comment.user.login != 'vdaas-ci'
     name: Add license and run golines + gofumpt + goimports
-    needs:
-      - rebase
-      - gentest
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
@@ -401,9 +396,6 @@ jobs:
   approve:
     if: github.event.comment.user.login != 'vdaas-ci'
     name: Approve
-    needs:
-      - rebase
-      - format
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
