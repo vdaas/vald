@@ -350,7 +350,7 @@ jobs:
 
           echo "Update license headers and format go codes/yaml"
 
-          sudo make format
+          make format
 
           git checkout go.mod go.sum
 
