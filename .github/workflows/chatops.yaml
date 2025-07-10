@@ -18,7 +18,8 @@ on:
   issue_comment:
     types: [created]
   # issue_comment always uses main branch.
-  # For debugging other branch
+  # For debugging other branch, run the command below:
+  # gh workflow run .github/workflows/chatops.yaml --ref <BRANCH> --field comment=<CHAT_COMMAND> --field pr_number=<PR_NUMBER>
   workflow_dispatch:
     inputs:
       comment:
@@ -59,6 +60,13 @@ jobs:
         run:
           echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
           echo "TRAILING_LINE=$(echo "$COMMENT_BODY" | sed -e "s|/label||" -e 's/^[[:space:]]*//')" >> "$GITHUB_OUTPUT"
+
+          cat "$GITHUB_OUTPUT"
+      - name: Debug Output
+        if: always()
+        run: |
+          echo "BOOL_TRIGGERED=${{ steps.check_comments_label.outputs.BOOL_TRIGGERED }}"
+
       - name: Check permissions
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
