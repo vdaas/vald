@@ -57,7 +57,7 @@ jobs:
       - name: Check PR Comments
         id: check_comments_label
         if: startsWith(env.COMMENT_BODY, '/label')
-        run:
+        run: |
           echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
           echo "TRAILING_LINE=$(echo "$COMMENT_BODY" | sed -e "s|/label||" -e 's/^[[:space:]]*//')" >> "$GITHUB_OUTPUT"
 
