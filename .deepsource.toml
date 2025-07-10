@@ -81,11 +81,3 @@ enabled = true
 [[analyzers]]
 name = "test-coverage"
 enabled = false
-
-[[transformers]]
-name = "gofumpt"
-enabled = true
-
-[[transformers]]
-name = "prettier"
-enabled = true
