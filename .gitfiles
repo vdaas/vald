@@ -50,6 +50,7 @@
 .github/conflint.yaml
 .github/e2e/index_correction.yaml
 .github/e2e/multi_crud.yaml
+.github/e2e/readreplica.yaml
 .github/e2e/stream_crud.yaml
 .github/e2e/unary_crud.yaml
 .github/helm/values/vald-mirror-target.yaml
