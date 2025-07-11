@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scenario: [stream_crud, unary_crud, multi_crud]
+        scenario: [stream_crud, unary_crud, multi_crud, readreplica]
         deployment: [helm-chart, helm-operator]
         environment: ["null"]
         include:
@@ -93,7 +93,7 @@ jobs:
         uses: ./.github/actions/e2e-deploy-vald
         with:
           helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}"
-          values: .github/helm/values/values-${{ contains('profile', matrix.environment) && matrix.environment || 'lb' }}.yaml
+          values: .github/helm/values/values-${{ 'profile' == matrix.environment && matrix.environment || 'readreplica' == matrix.scenario && 'readreplica' || 'lb' }}.yaml
           wait_for_selector: "app=vald-lb-gateway"
       - name: Deploy Vald-01
         if: ${{ matrix.environment == 'mirror' }}
