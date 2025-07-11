@@ -1645,6 +1645,7 @@ k8s/agent/priorityclass.yaml
 k8s/agent/statefulset.yaml
 k8s/agent/svc.yaml
 k8s/debug/kind/config.yaml
+k8s/debug/kind/e2e.yaml
 k8s/discoverer/clusterrole.yaml
 k8s/discoverer/clusterrolebinding.yaml
 k8s/discoverer/configmap.yaml
