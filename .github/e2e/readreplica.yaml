@@ -198,6 +198,7 @@ strategies:
             parallelism: 4
             num: 10000
             qps: 30
+            wait: 2m
           - name: Check rotate job
             type: kubernetes
             mode: other
