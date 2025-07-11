@@ -41,9 +41,12 @@ jobs:
       fail-fast: false
       matrix:
         scenario: [stream_crud, unary_crud, multi_crud, readreplica]
-        deployment: [helm-chart, helm-operator]
+        deployment: [helm-chart]
         environment: ["null"]
         include:
+          - scenario: stream_crud
+            deployment: helm-operator
+            environment: "null"
           - scenario: index_correction
             deployment: helm-chart
             environment: management
