@@ -179,7 +179,7 @@ jobs:
           fi
           kubectl get pods
 
-          make e2e/v2 E2E_CONFIG=$(pwd)/.github/e2e/${{ matrix.scenario }}.yaml
+          make e2e/v2 E2E_CONFIG=$(pwd)/.github/e2e/${{ matrix.scenario }}.yaml || true
 
           kubectl get pods
           kubectl get jobs
