@@ -92,12 +92,20 @@ jobs:
         run: |
           echo "HELM_EXTRA_OPTIONS=\"--values .github/helm/values/values-index-management-jobs.yaml\"" >> $GITHUB_ENV
       - name: Deploy Vald by Helm Chart
-        if: ${{ matrix.deployment == 'helm-chart' && matrix.environment != 'mirror' }}
+        if: ${{ matrix.deployment == 'helm-chart' && matrix.environment != 'mirror' && matrix.scenario != 'readreplica' }}
         uses: ./.github/actions/e2e-deploy-vald
         with:
           helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}"
-          values: .github/helm/values/values-${{ 'profile' == matrix.environment && matrix.environment || 'readreplica' == matrix.scenario && 'readreplica' || 'lb' }}.yaml
+          values: .github/helm/values/values-${{ 'profile' == matrix.environment && matrix.environment  || 'lb' }}.yaml
           wait_for_selector: "app=vald-lb-gateway"
+      - name: Deploy Vald Read Replica
+        if: 'readreplica' == matrix.scenario
+        id: deploy_vald_readreplica
+        uses: ./.github/actions/e2e-deploy-vald-readreplica
+        with:
+          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+          values: .github/helm/values/values-readreplica.yaml
+          wait_for_selector: app=vald-lb-gateway
       - name: Deploy Vald-01
         if: ${{ matrix.environment == 'mirror' }}
         uses: ./.github/actions/e2e-deploy-vald
