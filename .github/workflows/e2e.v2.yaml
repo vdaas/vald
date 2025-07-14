@@ -183,6 +183,7 @@ jobs:
 
           kubectl get pods
           kubectl get jobs
+          kubectl get jobs -o yaml | yq ".items[].metadata.labels.app"
 
       - uses: ./.github/actions/e2e-profile
         if: ${{ matrix.environment == 'profile' }}
