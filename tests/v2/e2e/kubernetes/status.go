@@ -119,11 +119,14 @@ func WaitForStatus[T Object, L ObjectList, C NamedObject, I ResourceInterface[T,
 	}
 
 	ticker := time.NewTicker(5 * time.Second)
+	timeout := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ctx.Done():
 			return false, ctx.Err()
+		case <- timeout.C:
+			return false, errors.New("timeout waiting for resource status")
 		case <-ticker.C:
 			opts := metav1.ListOptions{}
 			if name != "" {
@@ -148,7 +151,7 @@ func WaitForStatus[T Object, L ObjectList, C NamedObject, I ResourceInterface[T,
 			items, err := extractItems[T](l)
 			// if no resources found yet, keep polling
 			if len(items) == 0 {
-				return false, errors.New("No resource matched for labelSelector: " + labelSelector)
+				continue
 			}
 			if err != nil {
 				return false, errors.Wrap(err, "failed to extract items")
