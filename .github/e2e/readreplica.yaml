@@ -203,7 +203,7 @@ strategies:
             type: kubernetes
             mode: other
             kubernetes:
-              kind: pod
+              kind: job
               namespace: default
               label_selector: "app=vald-readreplica-rotate"
               status: completed

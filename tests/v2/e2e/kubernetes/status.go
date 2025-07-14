@@ -119,7 +119,7 @@ func WaitForStatus[T Object, L ObjectList, C NamedObject, I ResourceInterface[T,
 	}
 
 	ticker := time.NewTicker(5 * time.Second)
-	timeout := time.NewTicker(5 * time.Minute)
+	timeout := time.NewTimer(5 * time.Minute)
 	defer ticker.Stop()
 	for {
 		select {
