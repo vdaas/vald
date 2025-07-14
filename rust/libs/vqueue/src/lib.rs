@@ -14,136 +14,198 @@
 // limitations under the License.
 //
 
-use dashmap::DashMap;
-use std::cmp::Ordering;
-use std::sync::atomic::{AtomicU64, Ordering as AtomicOrdering};
+//! # Persistent Vector Queue
+//!
+//! A persistent, async-safe, and concurrent vector queue implementation.
+//! It is designed for high-concurrency environments, offloading blocking I/O operations
+//! to a dedicated thread pool managed by `tokio`.
+//!
+//! The implementation uses `sled` as its underlying persistent storage engine to leverage
+//! its robust transactional capabilities, ensuring data consistency.
+
+use async_trait::async_trait;
+use bincode::{Decode, Encode, config::standard as bincode_standard};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use sled::{
+    Tree,
+    transaction::{ConflictableTransactionError, TransactionError, Transactional},
+};
+use std::pin::Pin;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering as AtomicOrdering};
 use std::time::{SystemTime, UNIX_EPOCH};
+use thiserror::Error;
+use tokio::sync::mpsc;
+use tokio_stream::{Stream, wrappers::ReceiverStream};
 
 /// Error type representing possible failures for queue operations.
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum QueueError {
-    /// The provided UUID is invalid or empty.
+    #[error("The provided UUID is invalid or empty.")]
     InvalidUuid,
-    /// The provided timestamp is older than an existing entry and cannot replace it.
+    #[error("The provided timestamp is older than an existing entry and cannot replace it.")]
     TimestampTooOld,
-    /// Internal inconsistency error with a message.
-    InternalError(String),
+    #[error("Sled database error")]
+    Sled(#[from] sled::Error),
+    #[error("Sled transaction error")]
+    SledTransaction {
+        #[source]
+        source: Box<dyn std::error::Error + Send + Sync>,
+    },
+    #[error("Codec error")]
+    Codec {
+        #[source]
+        source: Box<dyn std::error::Error + Send + Sync>,
+    },
+    #[error("Internal Tokio task error")]
+    Internal(#[from] tokio::task::JoinError),
+    #[error("UTF-8 conversion error")]
+    Utf8(#[from] std::string::FromUtf8Error),
 }
 
-/// Trait definition for queue functionality. VQueue implements this interface.
+/// Trait definition for queue functionality.
+#[async_trait]
 pub trait Queue: Send + Sync {
-    /// Inserts the specified UUID and vector into the insert queue.
-    /// If timestamp is None, uses the current system time.
-    fn push_insert(
+    async fn push_insert(
         &self,
         uuid: String,
         vector: Arc<Vec<f32>>,
         timestamp: Option<i64>,
     ) -> Result<(), QueueError>;
-    /// Inserts a delete request for the specified UUID into the delete queue.
-    /// If timestamp is None, uses the current system time.
-    fn push_delete(&self, uuid: String, timestamp: Option<i64>) -> Result<(), QueueError>;
-    /// Pops and returns the vector and timestamp for the given UUID from the insert queue.
-    /// Returns None if no entry exists.
-    fn pop_insert(&self, uuid: &str) -> Result<Option<(Arc<Vec<f32>>, i64)>, QueueError>;
-    /// Pops and returns the timestamp for the given UUID from the delete queue.
-    /// Returns None if no entry exists.
-    fn pop_delete(&self, uuid: &str) -> Result<Option<i64>, QueueError>;
-    /// Retrieves the vector and timestamp for the given UUID without removing.
-    /// Returns None if no valid vector exists.
-    fn get_vector(&self, uuid: &str) -> Result<Option<(Arc<Vec<f32>>, i64)>, QueueError>;
-    /// Retrieves the vector, insert timestamp, and delete timestamp for the given UUID.
-    /// Returns None if no entry exists in either queue.
-    fn get_vector_with_timestamp(
+
+    async fn push_delete(&self, uuid: String, timestamp: Option<i64>) -> Result<(), QueueError>;
+
+    async fn pop_insert(&self, uuid: &str) -> Result<Option<(Arc<Vec<f32>>, i64)>, QueueError>;
+
+    async fn pop_delete(&self, uuid: &str) -> Result<Option<i64>, QueueError>;
+
+    async fn get_vector(&self, uuid: &str) -> Result<Option<(Arc<Vec<f32>>, i64)>, QueueError>;
+
+    async fn get_vector_with_timestamp(
         &self,
         uuid: &str,
     ) -> Result<Option<(Arc<Vec<f32>>, i64, i64)>, QueueError>;
-    /// Calls the provided closure for each insert entry in the queue.
-    /// If the closure returns false, iteration stops.
-    fn range<F>(&self, f: F) -> Result<(), QueueError>
-    where
-        F: FnMut(&str, &Arc<Vec<f32>>, i64) -> bool;
-    /// Returns the current size of the insert queue.
-    fn ivq_len(&self) -> usize;
-    /// Returns the current size of the delete queue.
-    fn dvq_len(&self) -> usize;
-    /// Retrieves and sorts insert entries with timestamps <= now, calling the closure for each.
-    fn range_pop_insert<F>(&self, now: i64, f: F) -> Result<(), QueueError>
-    where
-        F: FnMut(&str, &Arc<Vec<f32>>, i64) -> bool;
-    /// Retrieves and sorts delete entries with timestamps <= now, calling the closure for each.
-    fn range_pop_delete<F>(&self, now: i64, f: F) -> Result<(), QueueError>
-    where
-        F: FnMut(&str) -> bool;
-    /// Returns insert timestamp if exists and newer than delete timestamp.
-    fn iv_exists(&self, uuid: &str) -> Result<Option<i64>, QueueError>;
-    /// Returns delete timestamp if exists and newer than insert timestamp.
-    fn dv_exists(&self, uuid: &str) -> Result<Option<i64>, QueueError>;
+
+    fn range(
+        &self,
+    ) -> Pin<Box<dyn Stream<Item = Result<(String, Arc<Vec<f32>>, i64), QueueError>> + Send>>;
+
+    fn ivq_len(&self) -> u64;
+
+    fn dvq_len(&self) -> u64;
+
+    fn range_pop_insert(
+        &self,
+        now: i64,
+    ) -> Pin<Box<dyn Stream<Item = Result<(String, Arc<Vec<f32>>, i64), QueueError>> + Send>>;
+
+    fn range_pop_delete(
+        &self,
+        now: i64,
+    ) -> Pin<Box<dyn Stream<Item = Result<(String, i64), QueueError>> + Send>>;
+
+    async fn iv_exists(&self, uuid: &str) -> Result<Option<i64>, QueueError>;
+
+    async fn dv_exists(&self, uuid: &str) -> Result<Option<i64>, QueueError>;
 }
 
 /// Internal structure holding index information.
-#[derive(Clone)]
+#[derive(Serialize, Deserialize, Encode, Decode, Clone, Debug)]
 struct Index {
-    uuid: String,
+    #[serde(with = "arc_vec_serde")]
     vector: Option<Arc<Vec<f32>>>,
     timestamp: i64,
 }
 
-/// VQueue implementation using DashMap and AtomicU64 for concurrent access.
-pub struct VQueue {
-    il: Arc<DashMap<String, Index>>, // Insert queue
-    dl: Arc<DashMap<String, Index>>, // Delete queue
-    ic: AtomicU64,
-    dc: AtomicU64,
-    /// Cancel flag for early termination of iteration
-    cancel_flag: Arc<AtomicU64>,
+mod arc_vec_serde {
+    use super::*;
+    pub fn serialize<S>(vec: &Option<Arc<Vec<f32>>>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let vec_ref: Option<&Vec<f32>> = vec.as_ref().map(|arc| &**arc);
+        vec_ref.serialize(serializer)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Arc<Vec<f32>>>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let vec: Option<Vec<f32>> = Option::deserialize(deserializer)?;
+        Ok(vec.map(Arc::new))
+    }
 }
 
-impl VQueue {
-    /// Creates a new VQueue.
-    pub fn new() -> Self {
-        VQueue {
-            il: Arc::new(DashMap::new()),
-            dl: Arc::new(DashMap::new()),
-            ic: AtomicU64::new(0),
-            dc: AtomicU64::new(0),
-            cancel_flag: Arc::new(AtomicU64::new(0)),
+/// A persistent queue implementation using `sled`.
+#[derive(Clone)]
+pub struct PersistentQueue {
+    insert_queue: Tree,
+    delete_queue: Tree,
+    insert_count: Arc<AtomicU64>,
+    delete_count: Arc<AtomicU64>,
+}
+
+pub struct Builder {
+    path: String,
+}
+
+impl Builder {
+    pub fn new(path: impl AsRef<str>) -> Self {
+        Self {
+            path: path.as_ref().to_string(),
         }
     }
 
-    /// Returns the current time in nanoseconds.
-    fn now_ns() -> i64 {
-        SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_else(|_| std::time::Duration::from_secs(0))
-            .as_nanos() as i64
-    }
+    pub async fn build(self) -> Result<PersistentQueue, QueueError> {
+        let path = self.path;
+        let db = tokio::task::spawn_blocking(move || sled::open(path)).await??;
+        let insert_queue = db.open_tree("insert_queue")?;
+        let delete_queue = db.open_tree("delete_queue")?;
 
-    /// Loads the insert entry for the specified key.
-    fn load_ivq(&self, uuid: &str) -> Option<Index> {
-        self.il.get(uuid).map(|entry| entry.value().clone())
-    }
+        let insert_count = Arc::new(AtomicU64::new(insert_queue.len() as u64));
+        let delete_count = Arc::new(AtomicU64::new(delete_queue.len() as u64));
 
-    /// Loads the delete entry for the specified key.
-    fn load_dvq(&self, uuid: &str) -> Option<Index> {
-        self.dl.get(uuid).map(|entry| entry.value().clone())
-    }
-
-    /// Compares timestamps.
-    #[inline]
-    fn newer(ts1: i64, ts2: i64) -> bool {
-        ts1 > ts2
-    }
-
-    /// Sets the cancel flag (call to interrupt iteration).
-    pub fn cancel(&self) {
-        self.cancel_flag.fetch_add(1, AtomicOrdering::SeqCst);
+        Ok(PersistentQueue {
+            insert_queue,
+            delete_queue,
+            insert_count,
+            delete_count,
+        })
     }
 }
 
-impl Queue for VQueue {
-    fn push_insert(
+impl PersistentQueue {
+    fn now_ns() -> i64 {
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos() as i64
+    }
+
+    fn decode_index(bytes: &[u8]) -> Result<Index, QueueError> {
+        bincode::decode_from_slice(bytes, bincode_standard())
+            .map(|(i, _)| i)
+            .map_err(|e| QueueError::Codec {
+                source: Box::new(e),
+            })
+    }
+
+    fn decode_index_in_transaction(
+        bytes: &[u8],
+    ) -> Result<Index, ConflictableTransactionError<QueueError>> {
+        bincode::decode_from_slice(bytes, bincode_standard())
+            .map(|(i, _)| i)
+            .map_err(|e| {
+                ConflictableTransactionError::Abort(QueueError::Codec {
+                    source: Box::new(e),
+                })
+            })
+    }
+}
+
+#[async_trait]
+impl Queue for PersistentQueue {
+    async fn push_insert(
         &self,
         uuid: String,
         vector: Arc<Vec<f32>>,
@@ -152,368 +214,552 @@ impl Queue for VQueue {
         if uuid.trim().is_empty() {
             return Err(QueueError::InvalidUuid);
         }
-        let ts = timestamp.unwrap_or_else(|| VQueue::now_ns());
-        if let Some(didx) = self.load_dvq(&uuid) {
-            if VQueue::newer(didx.timestamp, ts) {
-                return Err(QueueError::TimestampTooOld);
-            }
-        }
-        let new_idx = Index {
-            uuid: uuid.clone(),
-            vector: Some(vector.clone()),
-            timestamp: ts,
-        };
-        match self.il.entry(uuid.clone()) {
-            dashmap::mapref::entry::Entry::Occupied(mut occ) => {
-                let existing = occ.get();
-                if VQueue::newer(ts, existing.timestamp) {
-                    occ.insert(new_idx);
-                } else {
-                    return Err(QueueError::TimestampTooOld);
-                }
-            }
-            dashmap::mapref::entry::Entry::Vacant(vac) => {
-                vac.insert(new_idx);
-                self.ic.fetch_add(1, AtomicOrdering::SeqCst);
-            }
-        }
-        Ok(())
+        let ts = timestamp.unwrap_or_else(Self::now_ns);
+
+        let iq = self.insert_queue.clone();
+        let dq = self.delete_queue.clone();
+        let ic = self.insert_count.clone();
+
+        tokio::task::spawn_blocking(move || {
+            let new_idx = Index {
+                vector: Some(vector),
+                timestamp: ts,
+            };
+
+            (&iq, &dq)
+                .transaction(move |(iq_tx, dq_tx)| {
+                    if let Some(d_bytes) = dq_tx.get(uuid.as_bytes())? {
+                        let d_idx = Self::decode_index_in_transaction(&d_bytes)?;
+                        if d_idx.timestamp > ts {
+                            return Err(ConflictableTransactionError::Abort(
+                                QueueError::TimestampTooOld,
+                            ));
+                        }
+                    }
+
+                    let is_new_entry;
+                    if let Some(i_bytes) = iq_tx.get(uuid.as_bytes())? {
+                        is_new_entry = false;
+                        let i_idx = Self::decode_index_in_transaction(&i_bytes)?;
+                        if i_idx.timestamp >= ts {
+                            return Err(ConflictableTransactionError::Abort(
+                                QueueError::TimestampTooOld,
+                            ));
+                        }
+                    } else {
+                        is_new_entry = true;
+                    }
+
+                    let new_idx_bytes = bincode::encode_to_vec(&new_idx, bincode_standard())
+                        .map_err(|e| {
+                            ConflictableTransactionError::Abort(QueueError::Codec {
+                                source: Box::new(e),
+                            })
+                        })?;
+                    iq_tx.insert(uuid.as_bytes(), new_idx_bytes)?;
+
+                    if is_new_entry {
+                        ic.fetch_add(1, AtomicOrdering::SeqCst);
+                    }
+                    Ok(())
+                })
+                .map_err(
+                    |e: TransactionError<QueueError>| QueueError::SledTransaction {
+                        source: Box::new(e),
+                    },
+                )
+        })
+        .await?
     }
 
-    fn push_delete(&self, uuid: String, timestamp: Option<i64>) -> Result<(), QueueError> {
+    async fn push_delete(&self, uuid: String, timestamp: Option<i64>) -> Result<(), QueueError> {
         if uuid.trim().is_empty() {
             return Err(QueueError::InvalidUuid);
         }
-        let ts = timestamp.unwrap_or_else(|| VQueue::now_ns());
-        let new_idx = Index {
-            uuid: uuid.clone(),
-            vector: None,
-            timestamp: ts,
-        };
-        match self.dl.entry(uuid.clone()) {
-            dashmap::mapref::entry::Entry::Occupied(mut occ) => {
-                let existing = occ.get();
-                if VQueue::newer(ts, existing.timestamp) {
-                    occ.insert(new_idx);
-                } else {
-                    return Err(QueueError::TimestampTooOld);
-                }
-            }
-            dashmap::mapref::entry::Entry::Vacant(vac) => {
-                vac.insert(new_idx);
-                self.dc.fetch_add(1, AtomicOrdering::SeqCst);
-            }
-        }
-        Ok(())
+        let ts = timestamp.unwrap_or_else(Self::now_ns);
+        let dq = self.delete_queue.clone();
+        let dc = self.delete_count.clone();
+
+        tokio::task::spawn_blocking(move || {
+            let new_idx = Index {
+                vector: None,
+                timestamp: ts,
+            };
+
+            (&dq)
+                .transaction(move |dq_tx| {
+                    let is_new_entry = dq_tx.get(uuid.as_bytes())?.is_none();
+                    let new_idx_bytes = bincode::encode_to_vec(&new_idx, bincode_standard())
+                        .map_err(|e| {
+                            ConflictableTransactionError::Abort(QueueError::Codec {
+                                source: Box::new(e),
+                            })
+                        })?;
+                    dq_tx.insert(uuid.as_bytes(), new_idx_bytes)?;
+
+                    if is_new_entry {
+                        dc.fetch_add(1, AtomicOrdering::SeqCst);
+                    }
+                    Ok(())
+                })
+                .map_err(
+                    |e: TransactionError<QueueError>| QueueError::SledTransaction {
+                        source: Box::new(e),
+                    },
+                )
+        })
+        .await?
     }
 
-    fn pop_insert(&self, uuid: &str) -> Result<Option<(Arc<Vec<f32>>, i64)>, QueueError> {
-        if uuid.trim().is_empty() {
-            return Err(QueueError::InvalidUuid);
-        }
-        if let Some((_, idx)) = self.il.remove(uuid) {
-            self.ic.fetch_sub(1, AtomicOrdering::SeqCst);
-            if idx.timestamp != 0 {
-                if let Some(vec_arc) = idx.vector {
-                    return Ok(Some((vec_arc, idx.timestamp)));
+    async fn pop_insert(&self, uuid: &str) -> Result<Option<(Arc<Vec<f32>>, i64)>, QueueError> {
+        let iq = self.insert_queue.clone();
+        let ic = self.insert_count.clone();
+        let uuid = uuid.to_string();
+
+        tokio::task::spawn_blocking(move || {
+            if let Some(bytes) = iq.remove(uuid.as_bytes())? {
+                ic.fetch_sub(1, AtomicOrdering::SeqCst);
+                let idx = Self::decode_index(&bytes)?;
+                if let Some(vector) = idx.vector {
+                    return Ok(Some((vector, idx.timestamp)));
                 }
             }
+            Ok(None)
+        })
+        .await?
+    }
+
+    async fn pop_delete(&self, uuid: &str) -> Result<Option<i64>, QueueError> {
+        let dq = self.delete_queue.clone();
+        let iq = self.insert_queue.clone();
+        let dc = self.delete_count.clone();
+        let ic = self.insert_count.clone();
+        let uuid = uuid.to_string();
+
+        tokio::task::spawn_blocking(move || {
+            let transaction_res = (&dq, &iq).transaction(|(dq_tx, iq_tx)| {
+                if let Some(d_bytes) = dq_tx.remove(uuid.as_bytes())? {
+                    dc.fetch_sub(1, AtomicOrdering::SeqCst);
+                    let d_idx = Self::decode_index_in_transaction(&d_bytes)?;
+                    if let Some(i_bytes) = iq_tx.get(uuid.as_bytes())? {
+                        let i_idx = Self::decode_index_in_transaction(&i_bytes)?;
+                        if d_idx.timestamp > i_idx.timestamp {
+                            if iq_tx.remove(uuid.as_bytes())?.is_some() {
+                                ic.fetch_sub(1, AtomicOrdering::SeqCst);
+                            }
+                        }
+                    }
+                    return Ok(Some(d_idx.timestamp));
+                }
+                Ok(None)
+            });
+            transaction_res.map_err(
+                |e: TransactionError<QueueError>| QueueError::SledTransaction {
+                    source: Box::new(e),
+                },
+            )
+        })
+        .await?
+    }
+
+    async fn get_vector(&self, uuid: &str) -> Result<Option<(Arc<Vec<f32>>, i64)>, QueueError> {
+        if let Some((vec, ts, _)) = self.get_vector_with_timestamp(uuid).await? {
+            return Ok(Some((vec, ts)));
         }
         Ok(None)
     }
 
-    fn pop_delete(&self, uuid: &str) -> Result<Option<i64>, QueueError> {
-        if uuid.trim().is_empty() {
-            return Err(QueueError::InvalidUuid);
-        }
-        if let Some((_, idx)) = self.dl.remove(uuid) {
-            if idx.timestamp != 0 {
-                self.dc.fetch_sub(1, AtomicOrdering::SeqCst);
-                return Ok(Some(idx.timestamp));
-            }
-        }
-        Ok(None)
-    }
-
-    fn get_vector(&self, uuid: &str) -> Result<Option<(Arc<Vec<f32>>, i64)>, QueueError> {
-        if uuid.trim().is_empty() {
-            return Err(QueueError::InvalidUuid);
-        }
-        if let Some(idx) = self.load_ivq(uuid) {
-            let its = idx.timestamp;
-            if let Some(didx) = self.load_dvq(uuid) {
-                if VQueue::newer(didx.timestamp, its) {
-                    return Ok(None);
-                }
-            }
-            if let Some(vec_arc) = idx.vector {
-                return Ok(Some((vec_arc.clone(), its)));
-            }
-        }
-        Ok(None)
-    }
-
-    fn get_vector_with_timestamp(
+    async fn get_vector_with_timestamp(
         &self,
         uuid: &str,
     ) -> Result<Option<(Arc<Vec<f32>>, i64, i64)>, QueueError> {
-        if uuid.trim().is_empty() {
-            return Err(QueueError::InvalidUuid);
-        }
-        let mut its = 0;
-        let mut dts = 0;
-        if let Some(idx) = self.load_ivq(uuid) {
-            its = idx.timestamp;
-        }
-        if let Some(didx) = self.load_dvq(uuid) {
-            dts = didx.timestamp;
-        }
-        if its == 0 && dts == 0 {
-            return Ok(None);
-        }
-        if its == 0 {
-            return Ok(None); // No insert vector available
-        }
-        if dts == 0 || VQueue::newer(its, dts) {
-            if let Some(idx) = self.load_ivq(uuid) {
-                if let Some(vec_arc) = idx.vector {
-                    return Ok(Some((vec_arc.clone(), its, dts)));
-                }
+        let iq = self.insert_queue.clone();
+        let (its_opt, dts_opt) = self.get_timestamps(uuid).await?;
+
+        if let Some(its) = its_opt {
+            if its > dts_opt.unwrap_or(0) {
+                let iq_clone = iq.clone();
+                let uuid = uuid.to_string();
+                return tokio::task::spawn_blocking(move || {
+                    if let Some(bytes) = iq_clone.get(uuid)? {
+                        let idx = Self::decode_index(&bytes)?;
+                        if let Some(vector) = idx.vector {
+                            return Ok(Some((vector, its, dts_opt.unwrap_or(0))));
+                        }
+                    }
+                    Ok(None)
+                })
+                .await?;
             }
-            return Ok(None);
         }
         Ok(None)
     }
 
-    fn range<F>(&self, mut f: F) -> Result<(), QueueError>
-    where
-        F: FnMut(&str, &Arc<Vec<f32>>, i64) -> bool,
-    {
-        for entry in self.il.iter() {
-            if self.cancel_flag.load(AtomicOrdering::SeqCst) != 0 {
-                break;
-            }
-            let idx = entry.value();
-            let uuid = &idx.uuid;
-            let its = idx.timestamp;
-            if let Some(didx) = self.load_dvq(uuid) {
-                if VQueue::newer(didx.timestamp, its) {
-                    continue;
+    fn range(
+        &self,
+    ) -> Pin<Box<dyn Stream<Item = Result<(String, Arc<Vec<f32>>, i64), QueueError>> + Send>> {
+        let (tx, rx) = mpsc::channel(128);
+        let q = self.clone();
+
+        tokio::spawn(async move {
+            let iter = q.insert_queue.iter();
+            for item in iter {
+                let res = (|| -> Result<Option<(String, Arc<Vec<f32>>, i64)>, QueueError> {
+                    let (uuid_bytes, i_bytes) = item?;
+                    let uuid = String::from_utf8(uuid_bytes.to_vec())?;
+                    let i_idx = Self::decode_index(&i_bytes)?;
+
+                    if let Some(d_bytes) = q.delete_queue.get(&uuid_bytes)? {
+                        let d_idx = Self::decode_index(&d_bytes)?;
+                        if d_idx.timestamp > i_idx.timestamp {
+                            return Ok(None);
+                        }
+                    }
+
+                    if let Some(vector) = i_idx.vector {
+                        Ok(Some((uuid, vector, i_idx.timestamp)))
+                    } else {
+                        Ok(None)
+                    }
+                })();
+
+                match res {
+                    Ok(Some(item)) => {
+                        if tx.send(Ok(item)).await.is_err() {
+                            break;
+                        }
+                    }
+                    Err(e) => {
+                        if tx.send(Err(e)).await.is_err() {
+                            break;
+                        }
+                    }
+                    Ok(None) => {}
                 }
             }
-            if let Some(ref vec_arc) = idx.vector {
-                if !f(uuid, vec_arc, its) {
-                    break;
+        });
+
+        Box::pin(ReceiverStream::new(rx))
+    }
+
+    fn ivq_len(&self) -> u64 {
+        self.insert_count.load(AtomicOrdering::Relaxed)
+    }
+    fn dvq_len(&self) -> u64 {
+        self.delete_count.load(AtomicOrdering::Relaxed)
+    }
+
+    fn range_pop_insert(
+        &self,
+        now: i64,
+    ) -> Pin<Box<dyn Stream<Item = Result<(String, Arc<Vec<f32>>, i64), QueueError>> + Send>> {
+        let q = self.clone();
+        let (tx, rx) = mpsc::channel(128);
+
+        tokio::spawn(async move {
+            let keys = match q.collect_insert_keys_to_pop(now).await {
+                Ok(keys) => keys,
+                Err(e) => {
+                    let _ = tx.send(Err(e)).await;
+                    return;
                 }
-            }
-        }
-        Ok(())
-    }
+            };
 
-    fn ivq_len(&self) -> usize {
-        self.ic.load(AtomicOrdering::SeqCst) as usize
-    }
-
-    fn dvq_len(&self) -> usize {
-        self.dc.load(AtomicOrdering::SeqCst) as usize
-    }
-
-    fn range_pop_insert<F>(&self, now: i64, mut f: F) -> Result<(), QueueError>
-    where
-        F: FnMut(&str, &Arc<Vec<f32>>, i64) -> bool,
-    {
-        let mut items: Vec<Index> = Vec::new();
-        for entry in self.il.iter() {
-            if self.cancel_flag.load(AtomicOrdering::SeqCst) != 0 {
-                break;
-            }
-            let idx = entry.value().clone();
-            if VQueue::newer(idx.timestamp, now) {
-                continue;
-            }
-            if let Some(didx) = self.load_dvq(&idx.uuid) {
-                if VQueue::newer(didx.timestamp, idx.timestamp) {
-                    let _ = self.il.remove(&idx.uuid);
-                    self.ic.fetch_sub(1, AtomicOrdering::SeqCst);
-                    continue;
-                }
-            }
-            items.push(idx);
-        }
-        items.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
-        for idx in items {
-            if self.cancel_flag.load(AtomicOrdering::SeqCst) != 0 {
-                break;
-            }
-            if let Some(ref vec_arc) = idx.vector {
-                if !f(&idx.uuid, vec_arc, idx.timestamp) {
-                    return Ok(());
-                }
-            }
-            if self.il.remove(&idx.uuid).is_some() {
-                self.ic.fetch_sub(1, AtomicOrdering::SeqCst);
-            }
-        }
-        Ok(())
-    }
-
-    fn range_pop_delete<F>(&self, now: i64, mut f: F) -> Result<(), QueueError>
-    where
-        F: FnMut(&str) -> bool,
-    {
-        let mut items: Vec<Index> = Vec::new();
-        for entry in self.dl.iter() {
-            if self.cancel_flag.load(AtomicOrdering::SeqCst) != 0 {
-                break;
-            }
-            let idx = entry.value().clone();
-            if VQueue::newer(idx.timestamp, now) {
-                continue;
-            }
-            items.push(idx);
-        }
-        items.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
-        for didx in items {
-            if self.cancel_flag.load(AtomicOrdering::SeqCst) != 0 {
-                break;
-            }
-            if !f(&didx.uuid) {
-                return Ok(());
-            }
-            if self.dl.remove(&didx.uuid).is_some() {
-                self.dc.fetch_sub(1, AtomicOrdering::SeqCst);
-            }
-            if let Some(iv) = self.load_ivq(&didx.uuid) {
-                if VQueue::newer(didx.timestamp, iv.timestamp) {
-                    if self.il.remove(&didx.uuid).is_some() {
-                        self.ic.fetch_sub(1, AtomicOrdering::SeqCst);
+            for uuid in keys {
+                match q.pop_insert(&uuid).await {
+                    Ok(Some(item)) => {
+                        if tx.send(Ok((uuid, item.0, item.1))).await.is_err() {
+                            break;
+                        }
+                    }
+                    Ok(None) => { /* Already popped */ }
+                    Err(e) => {
+                        if tx.send(Err(e)).await.is_err() {
+                            break;
+                        }
                     }
                 }
             }
-        }
-        Ok(())
+        });
+
+        Box::pin(ReceiverStream::new(rx))
     }
 
-    fn iv_exists(&self, uuid: &str) -> Result<Option<i64>, QueueError> {
-        if uuid.trim().is_empty() {
-            return Err(QueueError::InvalidUuid);
-        }
-        if let Some((_, ts)) = self.get_vector(uuid)? {
-            return Ok(Some(ts));
+    fn range_pop_delete(
+        &self,
+        now: i64,
+    ) -> Pin<Box<dyn Stream<Item = Result<(String, i64), QueueError>> + Send>> {
+        let q = self.clone();
+        let (tx, rx) = mpsc::channel(128);
+
+        tokio::spawn(async move {
+            let keys = match q.collect_delete_keys_to_pop(now).await {
+                Ok(keys) => keys,
+                Err(e) => {
+                    let _ = tx.send(Err(e)).await;
+                    return;
+                }
+            };
+
+            for uuid in keys {
+                match q.pop_delete(&uuid).await {
+                    Ok(Some(ts)) => {
+                        if tx.send(Ok((uuid, ts))).await.is_err() {
+                            break;
+                        }
+                    }
+                    Ok(None) => { /* Already popped */ }
+                    Err(e) => {
+                        if tx.send(Err(e)).await.is_err() {
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+
+        Box::pin(ReceiverStream::new(rx))
+    }
+
+    async fn iv_exists(&self, uuid: &str) -> Result<Option<i64>, QueueError> {
+        let (its_opt, dts_opt) = self.get_timestamps(uuid).await?;
+        if let Some(its) = its_opt {
+            if its > dts_opt.unwrap_or(0) {
+                return Ok(Some(its));
+            }
         }
         Ok(None)
     }
 
-    fn dv_exists(&self, uuid: &str) -> Result<Option<i64>, QueueError> {
-        if uuid.trim().is_empty() {
-            return Err(QueueError::InvalidUuid);
-        }
-        if let Some(didx) = self.load_dvq(uuid) {
-            let dts = didx.timestamp;
-            if let Some(idx) = self.load_ivq(uuid) {
-                if VQueue::newer(dts, idx.timestamp) {
-                    return Ok(Some(dts));
-                }
-                return Ok(None);
+    async fn dv_exists(&self, uuid: &str) -> Result<Option<i64>, QueueError> {
+        let (its_opt, dts_opt) = self.get_timestamps(uuid).await?;
+        if let Some(dts) = dts_opt {
+            if dts > its_opt.unwrap_or(0) {
+                return Ok(Some(dts));
             }
-            return Ok(Some(dts));
         }
-        return Ok(None);
+        Ok(None)
+    }
+}
+
+impl PersistentQueue {
+    /// Helper to get both insert and delete timestamps atomically.
+    async fn get_timestamps(&self, uuid: &str) -> Result<(Option<i64>, Option<i64>), QueueError> {
+        let iq = self.insert_queue.clone();
+        let dq = self.delete_queue.clone();
+        let uuid = uuid.to_string();
+
+        tokio::task::spawn_blocking(move || {
+            let (i_idx_opt, d_idx_opt): (Option<Index>, Option<Index>) = (&iq, &dq)
+                .transaction(|(iq_tx, dq_tx)| {
+                    let i_bytes = iq_tx.get(uuid.as_bytes())?;
+                    let d_bytes = dq_tx.get(uuid.as_bytes())?;
+                    let i_idx_opt = i_bytes
+                        .map(|b| Self::decode_index_in_transaction(&b))
+                        .transpose()?;
+                    let d_idx_opt = d_bytes
+                        .map(|b| Self::decode_index_in_transaction(&b))
+                        .transpose()?;
+                    Ok((i_idx_opt, d_idx_opt))
+                })
+                .map_err(
+                    |e: TransactionError<QueueError>| QueueError::SledTransaction {
+                        source: Box::new(e),
+                    },
+                )?;
+
+            Ok((
+                i_idx_opt.map(|i| i.timestamp),
+                d_idx_opt.map(|d| d.timestamp),
+            ))
+        })
+        .await?
+    }
+
+    async fn collect_insert_keys_to_pop(&self, now: i64) -> Result<Vec<String>, QueueError> {
+        let iq = self.insert_queue.clone();
+        let dq = self.delete_queue.clone();
+        let ic = self.insert_count.clone();
+
+        tokio::task::spawn_blocking(move || {
+            let mut keys = Vec::new();
+            for item in iq.iter() {
+                let (uuid_bytes, i_bytes) = item?;
+                let i_idx = Self::decode_index(&i_bytes)?;
+
+                if i_idx.timestamp > now {
+                    continue;
+                }
+
+                if let Some(d_bytes) = dq.get(&uuid_bytes)? {
+                    let d_idx = Self::decode_index(&d_bytes)?;
+                    if d_idx.timestamp > i_idx.timestamp {
+                        if iq.remove(&uuid_bytes)?.is_some() {
+                            ic.fetch_sub(1, AtomicOrdering::SeqCst);
+                        }
+                        continue;
+                    }
+                }
+                keys.push(String::from_utf8(uuid_bytes.to_vec())?);
+            }
+            Ok(keys)
+        })
+        .await?
+    }
+
+    async fn collect_delete_keys_to_pop(&self, now: i64) -> Result<Vec<String>, QueueError> {
+        let dq = self.delete_queue.clone();
+        tokio::task::spawn_blocking(move || {
+            let mut keys = Vec::new();
+            for item in dq.iter() {
+                let (uuid_bytes, d_bytes) = item?;
+                let d_idx = Self::decode_index(&d_bytes)?;
+                if d_idx.timestamp <= now {
+                    keys.push(String::from_utf8(uuid_bytes.to_vec())?);
+                }
+            }
+            Ok(keys)
+        })
+        .await?
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::Arc;
+    use std::fs;
+    use tokio::task::JoinSet;
+    use tokio_stream::StreamExt;
 
-    #[test]
-    fn test_push_pop() {
-        let q = VQueue::new();
+    struct TestGuard {
+        path: String,
+    }
+
+    impl Drop for TestGuard {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.path);
+        }
+    }
+
+    async fn setup(test_name: &str) -> (PersistentQueue, TestGuard) {
+        let path = format!("./test_db_queue_{}", test_name);
+        let _ = fs::remove_dir_all(&path);
+        let guard = TestGuard { path: path.clone() };
+        let queue = Builder::new(&path).build().await.unwrap();
+        (queue, guard)
+    }
+
+    #[tokio::test]
+    async fn test_push_and_pop_insert() {
+        let (q, _guard) = setup("push_pop_insert").await;
         let vec = Arc::new(vec![1.0, 2.0]);
-        assert!(q.push_insert("key1".into(), vec.clone(), None).is_ok());
+        q.push_insert("key1".into(), vec.clone(), None)
+            .await
+            .unwrap();
         assert_eq!(q.ivq_len(), 1);
-        if let Ok(Some((vec_out, ts))) = q.pop_insert("key1") {
-            assert_eq!(*vec_out, vec![1.0, 2.0]);
-            assert!(ts > 0);
-        } else {
-            panic!("PopInsert failed");
-        }
+        let (vec_out, _) = q.pop_insert("key1").await.unwrap().unwrap();
+        assert_eq!(*vec_out, vec![1.0, 2.0]);
         assert_eq!(q.ivq_len(), 0);
+        assert!(q.pop_insert("key1").await.unwrap().is_none());
     }
 
-    #[test]
-    fn test_delete() {
-        let q = VQueue::new();
-        assert!(q.push_delete("key1".into(), None).is_ok());
+    #[tokio::test]
+    async fn test_pop_delete_is_fully_atomic() {
+        let (q, _guard) = setup("pop_delete_atomic").await;
+        q.push_insert("key1".to_string(), Arc::new(vec![1.0]), Some(100))
+            .await
+            .unwrap();
+        q.push_delete("key1".to_string(), Some(200)).await.unwrap();
+
+        assert_eq!(q.ivq_len(), 1);
         assert_eq!(q.dvq_len(), 1);
-        if let Ok(Some(ts)) = q.pop_delete("key1") {
-            assert!(ts > 0);
-        } else {
-            panic!("PopDelete failed");
-        }
+
+        let ts = q.pop_delete("key1").await.unwrap().unwrap();
+        assert_eq!(ts, 200);
+
+        assert_eq!(q.ivq_len(), 0);
         assert_eq!(q.dvq_len(), 0);
+        assert!(q.get_vector("key1").await.unwrap().is_none());
     }
 
-    #[test]
-    fn test_get_vector() {
-        let q = VQueue::new();
-        let vec = Arc::new(vec![3.0]);
-        assert!(q.push_insert("key1".into(), vec.clone(), Some(100)).is_ok());
-        assert!(q.push_delete("key1".into(), Some(50)).is_ok());
-        if let Ok(Some((vec_out, ts))) = q.get_vector("key1") {
-            assert_eq!(*vec_out, vec![3.0]);
-            assert_eq!(ts, 100);
-        } else {
-            panic!("GetVector failed");
+    #[tokio::test]
+    async fn test_range_pop_insert_stream() {
+        let (q, _guard) = setup("range_pop_insert_stream").await;
+        q.push_insert("key1".to_string(), Arc::new(vec![1.0]), Some(100))
+            .await
+            .unwrap();
+        q.push_insert("key2".to_string(), Arc::new(vec![2.0]), Some(200))
+            .await
+            .unwrap();
+        q.push_insert("key3".to_string(), Arc::new(vec![3.0]), Some(300))
+            .await
+            .unwrap();
+        q.push_delete("key2".to_string(), Some(250)).await.unwrap();
+
+        let mut stream = q.range_pop_insert(280);
+        let mut results = Vec::new();
+        while let Some(item) = stream.next().await {
+            results.push(item.unwrap());
         }
-        assert!(q.push_delete("key1".into(), Some(150)).is_ok());
-        assert!(q.get_vector("key1").unwrap().is_none());
+
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].0, "key1");
+        assert_eq!(q.ivq_len(), 1);
+        assert!(q.get_vector("key3").await.unwrap().is_some());
+        assert!(q.get_vector("key1").await.unwrap().is_none());
     }
 
-    #[test]
-    fn test_range() {
-        let q = VQueue::new();
-        let vec1 = Arc::new(vec![3.0]);
-        let vec2 = Arc::new(vec![4.0]);
-        assert!(q.push_insert("a".into(), vec1.clone(), Some(100)).is_ok());
-        assert!(q.push_insert("b".into(), vec2.clone(), Some(200)).is_ok());
-        let mut seen = Vec::new();
-        q.range(|uuid, vec_arc, ts| {
-            seen.push((uuid.to_string(), vec_arc.clone().clone(), ts));
-            true
-        })
-        .unwrap();
-        assert_eq!(seen.len(), 2);
+    #[tokio::test]
+    async fn test_range_pop_delete_stream() {
+        let (q, _guard) = setup("range_pop_delete_stream").await;
+        q.push_insert("key1".to_string(), Arc::new(vec![1.0]), Some(100))
+            .await
+            .unwrap();
+        q.push_insert("key2".to_string(), Arc::new(vec![2.0]), Some(300))
+            .await
+            .unwrap();
+        q.push_delete("key1".to_string(), Some(200)).await.unwrap();
+        q.push_delete("key2".to_string(), Some(250)).await.unwrap();
+        q.push_delete("key3".to_string(), Some(400)).await.unwrap();
+
+        let stream = q.range_pop_delete(500);
+        let results: Vec<_> = stream.collect::<Vec<_>>().await;
+
+        assert_eq!(results.len(), 3);
+        assert_eq!(q.dvq_len(), 0);
+        assert_eq!(q.ivq_len(), 1);
+        assert!(q.get_vector("key1").await.unwrap().is_none());
+        assert!(q.get_vector("key2").await.unwrap().is_some());
     }
 
-    #[test]
-    fn test_concurrent_access() {
-        use std::thread;
-        let q = Arc::new(VQueue::new());
-        let handles: Vec<_> = (0..10)
-            .map(|i| {
-                let q_clone = q.clone();
-                thread::spawn(move || {
+    #[tokio::test]
+    async fn test_concurrent_pushes() {
+        let (q, _guard) = setup("concurrent_pushes").await;
+        let queue = Arc::new(q);
+        let mut tasks = JoinSet::new();
+        let num_tasks = 100;
+
+        for i in 0..num_tasks {
+            let q_clone = queue.clone();
+            tasks.spawn(async move {
+                if i % 2 == 0 {
                     let vec = Arc::new(vec![i as f32]);
-                    q_clone.push_insert(format!("key{}", i), vec, None)
-                })
-            })
-            .collect();
-
-        for handle in handles {
-            handle.join().unwrap().unwrap();
+                    q_clone
+                        .push_insert(format!("key{}", i), vec, Some(i as i64))
+                        .await
+                } else {
+                    q_clone
+                        .push_delete(format!("key{}", i), Some(i as i64))
+                        .await
+                }
+            });
         }
-        assert_eq!(q.ivq_len(), 10);
-    }
 
-    #[test]
-    fn test_timestamp_ordering() {
-        let q = VQueue::new();
-        let vec = Arc::new(vec![1.0]);
+        while let Some(res) = tasks.join_next().await {
+            res.unwrap().unwrap();
+        }
 
-        // Test that older timestamps are rejected
-        assert!(q.push_insert("key1".into(), vec.clone(), Some(100)).is_ok());
-        assert!(q.push_insert("key1".into(), vec.clone(), Some(50)).is_err());
+        assert_eq!(queue.ivq_len(), num_tasks / 2);
+        assert_eq!(queue.dvq_len(), num_tasks / 2);
     }
 }
