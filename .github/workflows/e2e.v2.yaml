@@ -177,7 +177,12 @@ jobs:
           if [[ "${{ matrix.environment }}" == "mirror" ]]; then
             export E2E_TARGET_NAMESPACE=vald-01
           fi
+          kubectl get pods
+
           make e2e/v2 E2E_CONFIG=$(pwd)/.github/e2e/${{ matrix.scenario }}.yaml
+
+          kubectl get pods
+          kubectl get jobs
 
       - uses: ./.github/actions/e2e-profile
         if: ${{ matrix.environment == 'profile' }}
