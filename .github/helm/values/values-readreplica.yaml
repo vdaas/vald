@@ -32,7 +32,7 @@ gateway:
       index_replica: 3
 agent:
   minReplicas: 3
-  maxReplicas: 10
+  maxReplicas: 3
   podManagementPolicy: Parallel
   hpa:
     enabled: false
@@ -54,10 +54,12 @@ agent:
     storageClass: csi-hostpath-sc
     size: 1Gi
   readreplica:
+    minReplicas: 1
+    maxReplicas: 1
     enabled: true
     snapshot_classname: "csi-hostpath-snapclass"
     hpa:
-      enabled: true
+      enabled: false
     name: vald-agent-readreplica
     volume_name: vald-agent-readreplica-pvc
 discoverer:
