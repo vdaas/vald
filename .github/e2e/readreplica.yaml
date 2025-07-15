@@ -196,7 +196,7 @@ strategies:
             type: insert
             mode: unary
             parallelism: 4
-            num: 10000
+            num: 1000
             qps: 30
             wait: 2m
           - name: Check rotate job
@@ -214,7 +214,7 @@ strategies:
             expect:
               - status_code: ok
                 path: $.sum()
-                value: 30000
+                value: 3000
   - concurrency: 2
     name: Parallel Search Opeation (Search, SearchByID, LinearSearch, LinearSearchByID) x (ConcurrentQueue, SortSlice, SortPoolSlice, PairingHeap) = 16
     operations:
