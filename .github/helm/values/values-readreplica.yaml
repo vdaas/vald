@@ -54,8 +54,8 @@ agent:
     storageClass: csi-hostpath-sc
     size: 1Gi
   readreplica:
-    minReplicas: 1
-    maxReplicas: 1
+    minReplicas: 3
+    maxReplicas: 5
     enabled: true
     snapshot_classname: "csi-hostpath-snapclass"
     hpa:

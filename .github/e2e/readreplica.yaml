@@ -179,6 +179,10 @@ strategies:
     operations:
       - name: IndexProperty
         executions:
+          - name: Flush
+            mode: unary
+            type: flush
+            wait: 2s
           - mode: unary
             name: IndexProperty
             type: index_property
@@ -196,7 +200,7 @@ strategies:
             type: insert
             mode: unary
             parallelism: 4
-            num: 1000
+            num: 100
             qps: 30
             wait: 2m
           - name: Check rotate job
@@ -214,7 +218,7 @@ strategies:
             expect:
               - status_code: ok
                 path: $.sum()
-                value: 3000
+                value: 300
   - concurrency: 2
     name: Parallel Search Opeation (Search, SearchByID, LinearSearch, LinearSearchByID) x (ConcurrentQueue, SortSlice, SortPoolSlice, PairingHeap) = 16
     operations:

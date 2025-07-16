@@ -75,8 +75,8 @@ kind/cluster/restart: \
 .PHONY: kind/vs/start
 ## start kind (kubernetes in docker) cluster with volume snapshot
 kind/vs/start:
-	sed -e 's/apiServerAddress: "127.0.0.1"/apiServerAddress: "$(shell grep host.docker.internal /etc/hosts | cut -f1)"/' $(ROOTDIR)/k8s/debug/kind/e2e.yaml | kind create cluster --name $(NAME)-vs --config - 
-	@make kind/vs/login
+# 	sed -e 's/apiServerAddress: "127.0.0.1"/apiServerAddress: "$(shell grep host.docker.internal /etc/hosts | cut -f1)"/' $(ROOTDIR)/k8s/debug/kind/e2e.yaml | kind create cluster --name $(NAME)-vs --config - 
+# 	@make kind/vs/login
 
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml

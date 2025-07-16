@@ -927,6 +927,7 @@ include Makefile.d/e2e.mk
 include Makefile.d/git.mk
 include Makefile.d/helm.mk
 include Makefile.d/k3d.mk
+include Makefile.d/k0s.mk
 include Makefile.d/k8s.mk
 include Makefile.d/kind.mk
 include Makefile.d/minikube.mk
