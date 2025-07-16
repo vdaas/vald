@@ -33,6 +33,7 @@ dependencies = [
  "http-body",
  "log",
  "opentelemetry",
+ "opentelemetry_sdk",
  "prost",
  "prost-types",
  "proto",
@@ -42,6 +43,8 @@ dependencies = [
  "tonic",
  "tonic-types",
  "tower 0.5.2",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

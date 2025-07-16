@@ -15,12 +15,14 @@
 //
 
 use log::{debug, warn};
+use opentelemetry::trace::{self, SpanContext};
 use std::{
     pin::Pin,
     task::{Context, Poll},
     time::{SystemTime, UNIX_EPOCH},
 };
 use tower::{Layer, Service};
+use tracing::{Instrument, Level, Span};
 
 const GRPC_KIND_UNARY: &str = "unary";
 const GRPC_KIND_STREAM: &str = "stream";
@@ -98,10 +100,25 @@ where
         self.inner.poll_ready(cx)
     }
 
+    //#[tracing::instrument]
     fn call(&mut self, req: http::Request<ReqBody>) -> Self::Future {
         // See: https://docs.rs/tower/latest/tower/trait.Service.html#be-careful-when-cloning-inner-services
         let clone = self.inner.clone();
         let mut inner = std::mem::replace(&mut self.inner, clone);
+
+        //let trace_id = opentelemetry::global::get_text_map_propagator(|_propagator| {
+        //    debug!("{:?}", Span::current());
+        //    let _span = tracing::info_span!("vdaas/vald").entered();
+        //    debug!("{:?}", Span::current());
+        //    Span::current().id().unwrap().into_u64()
+        //});
+        debug!("{:?} {:?}", Span::current(), Span::current().id());
+        tracing::debug!("{:?} {:?}", Span::current(), Span::current().id());
+        let _span = tracing::span!(Level::INFO, "middleware").entered();
+        debug!("{:?} {:?}", Span::current(), Span::current().id());
+        tracing::debug!("{:?} {:?}", Span::current(), Span::current().id());
+        let trace_id = Span::current().id().unwrap().into_u64();
+        println!("{:?}", trace_id);
 
         let path = req.uri().path().to_string().clone();
         Box::pin(async move {
@@ -141,13 +158,14 @@ where
                 start_time: start_nanos,
                 end_time: end_nanos,
                 latency: end_nanos - start_nanos,
-                trace_id: "".to_string(),
+                trace_id: trace_id.to_string(),
             };
             match result {
                 Ok(res) => {
                     let status = res.headers().get("grpc-status");
                     if status.is_none() {
                         debug!("{}, {:?}", RPC_COMPLETED_MESSAGE, entity);
+                        tracing::debug!("{}, {:?}", RPC_COMPLETED_MESSAGE, entity);
                     } else {
                         let message = res
                             .headers()

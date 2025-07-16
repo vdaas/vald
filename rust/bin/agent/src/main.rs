@@ -18,12 +18,17 @@ use algorithm::{Error, MultiError};
 use anyhow::Result;
 use chrono::{Local, Timelike};
 use config::Config;
+use opentelemetry::propagation::TextMapCompositePropagator;
+use opentelemetry_sdk::propagation::{BaggagePropagator, TraceContextPropagator};
 use proto::payload::v1::object::Distance;
 use proto::payload::v1::search;
 use qbg::index::Index;
 use qbg::property::Property;
 use std::collections::HashMap;
 use std::time::Duration;
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::EnvFilter;
 
 mod handler;
 mod middleware;
@@ -394,11 +399,37 @@ fn parse_duration_from_string(input: &str) -> Option<Duration> {
     }
 }
 
+#[must_use]
+pub struct OtelInitGuard();
+
+impl Drop for OtelInitGuard {
+    fn drop(&mut self) {
+        opentelemetry::global::shutdown_tracer_provider();
+    }
+}
+
+pub fn init_opentelemetry() -> OtelInitGuard {
+    opentelemetry::global::set_text_map_propagator(TextMapCompositePropagator::new(vec![
+        Box::new(TraceContextPropagator::new()),
+        Box::new(BaggagePropagator::new()),
+    ]));
+    OtelInitGuard()
+}
+
+fn init_subscriber() {
+    tracing_subscriber::registry()
+        .with(EnvFilter::from_default_env())
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+    //tracing_subscriber::registry::Registry::default().init();
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = "0.0.0.0:8081".parse()?;
     let settings = Config::builder()
         .add_source(config::File::with_name("/etc/server/config.yaml"))
+        .add_source(config::File::with_name("../cmd/agent/core/qbg/sample.yaml"))
         .build()
         .unwrap();
     let _logger =
@@ -412,6 +443,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "vald-agent",
         10,
     );
+
+    let _guard = init_opentelemetry();
+    init_subscriber();
+    let _span = tracing::info_span!("vdaas/vald").entered();
 
     let mut grpc_key = String::new();
     for i in 0..settings.get_array("server_config.servers")?.len() {

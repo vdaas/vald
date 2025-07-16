@@ -114,6 +114,7 @@ mod tests {
     use super::*;
 
     use bytes::{Buf, BufMut, Bytes, BytesMut};
+    use log::{debug, info, warn};
     use prost::Message;
     use proto::{
         payload::v1::object::{
@@ -134,6 +135,8 @@ mod tests {
         transport::{Channel, Server},
         Request, Response, Status,
     };
+    use tracing::{Level, Span};
+    use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
     // tonic-mock uses old version of http_body, so we need to implement below ourselves.
     #[derive(Clone)]
@@ -395,10 +398,34 @@ mod tests {
 
     #[tokio::test]
     async fn test_bidirectional_stream_over_network() {
-        let _logger = flexi_logger::Logger::try_with_str("debug")
-            .unwrap()
-            .start()
-            .unwrap();
+        //let _logger = flexi_logger::Logger::try_with_str("debug")
+        //    .unwrap()
+        //    .start()
+        //    .unwrap();
+
+        //let exporter = opentelemetry_stdout::SpanExporter::builder().build();
+        //let provider = opentelemetry_sdk::trace::TracerProvider::builder()
+        //    .with_simple_exporter(exporter)
+        //    .build();
+        //global::set_tracer_provider(provider);
+        //tracing_subscriber::registry()
+        //    .with(tracing_opentelemetry::layer().with_tracer(global::tracer("vdaas/vald")))
+        //    .with(fmt::layer())
+        //    .with(EnvFilter::from_default_env())
+        //    .init();
+        //tracing_subscriber::registry()
+        //    .with(EnvFilter::from_default_env())
+        //    .with(tracing_subscriber::fmt::layer())
+        //    .init();
+        //tracing_subscriber::fmt::init();
+        tracing_subscriber::fmt().with_max_level(Level::INFO).init();
+        let _span = tracing::span!(Level::INFO, "vdaas/vald").entered();
+        log::info!("log::info, trace id: {:?}", _span.id());
+        log::debug!("log::debug, trace id: {:?}", _span.id());
+        log::warn!("log::warn, trace id: {:?}", _span.id());
+        tracing::info!("tracing::info, trace id: {:?}", _span.id());
+        tracing::debug!("tracing::debug, trace id: {:?}", _span.id());
+        tracing::warn!("tracing::warn, trace id: {:?}", _span.id());
         bidirectional_stream_over_network(
             Duration::from_millis(1000),
             Duration::from_millis(0),
