@@ -14,24 +14,42 @@
 # limitations under the License.
 #
 
-K0S_COMMAND = k0s
 K0S_OPTIONS ?=
-
-.PHONY: k0s/install
-## install K0S
-k0s/install: $(BINDIR)/k0s
+KUBECONFIG = ~/.kube/config
 
 $(BINDIR)/k0s: update/k0s
 
 .PHONY: k0s/start
 ## start k0s cluster
 k0s/start:
-	sudo $(K0S_COMMAND) install controller
-	sudo k0s start \
-		$(K0S_OPTIONS)
-	sudo k0s kubectl get nodes
+	docker rm -f k0s-controller || true
+	docker run -d --name k0s-controller --hostname k0s-controller \
+		-v /var/lib/k0s -v /var/log/pods `# this is where k0s stores its data` \
+		--tmpfs /run `# this is where k0s stores runtime data` \
+		--privileged `# this is the easiest way to enable container-in-container workloads` \
+		-p 6443:6443 `# publish the Kubernetes API server port` \
+		docker.io/k0sproject/k0s:v1.33.2-k0s.0
+	sleep 10
+	docker exec k0s-controller k0s kubeconfig admin > $(KUBECONFIG)
 
+k0s/vs/start: k0s/start
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
 
+	mkdir -p $(TEMP_DIR)/csi-driver-hostpath \
+		&& curl -fsSL https://github.com/kubernetes-csi/csi-driver-host-path/archive/refs/tags/v1.15.0.tar.gz | tar zxf - -C $(TEMP_DIR)/csi-driver-hostpath --strip-components 1 \
+		&& cd $(TEMP_DIR)/csi-driver-hostpath \
+		&& deploy/kubernetes-latest/deploy.sh \
+		&& kubectl apply -f examples/csi-storageclass.yaml \
+		&& kubectl apply -f examples/csi-pvc.yaml \
+		&& rm -rf $(TEMP_DIR)/csi-driver-hostpath
+
+	@make k8s/metrics/metrics-server/deploy
+	helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server -n kube-system
+	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
 
 
 # .PHONY: k3d/storage
