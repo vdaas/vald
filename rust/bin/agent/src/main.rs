@@ -441,6 +441,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let mut accessloginterceptor: Option<()> = None;
+    let mut metricinterceptor: Option<()> = None;
     for i in 0..settings
         .get_array(format!("{grpc_key}.grpc.interceptors").as_str())?
         .len()
@@ -448,11 +449,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let name = settings.get::<String>(format!("{grpc_key}.grpc.interceptors[{i}]").as_str())?;
         match name.to_lowercase().as_str() {
             "accessloginterceptor" | "accesslog" => accessloginterceptor = Some(()),
+            "metricinterceptor" | "metric" => metricinterceptor = Some(()),
             _ => {}
         }
     }
     let layer = tower::ServiceBuilder::new()
         .option_layer(accessloginterceptor.map(|_| middleware::AccessLogMiddlewareLayer::default()))
+        .option_layer(metricinterceptor.map(|_| middleware::MetricMiddlewareLayer::default()))
         .into_inner();
 
     builder
