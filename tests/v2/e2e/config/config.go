@@ -669,6 +669,9 @@ func (pf *PortForward) Bind() (bound *PortForward, err error) {
 	if pf == nil {
 		return nil, errors.Wrap(errors.ErrInvalidConfig, "missing required fields on PortForward")
 	}
+	if !pf.Enabled {
+		return pf, nil
+	}
 	pf.ServiceName = config.GetActualValue(pf.ServiceName)
 	pf.Namespace = config.GetActualValue(pf.Namespace)
 	if pf.ServiceName == "" {
