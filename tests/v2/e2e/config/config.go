@@ -669,27 +669,28 @@ func (pf *PortForward) Bind() (bound *PortForward, err error) {
 	if pf == nil {
 		return nil, errors.Wrap(errors.ErrInvalidConfig, "missing required fields on PortForward")
 	}
-	if pf.Enabled {
-		pf.ServiceName = config.GetActualValue(pf.ServiceName)
-		pf.Namespace = config.GetActualValue(pf.Namespace)
-		if pf.ServiceName == "" {
-			return nil, errors.New("portforward: service name cannot be empty")
-		}
-		if pf.Namespace == "" {
-			return nil, errors.New("portforward: namespace cannot be empty")
-		}
-		if _, err = pf.TargetPort.Bind(); err != nil {
-			return nil, err
-		}
-		if _, err = pf.LocalPort.Bind(); err != nil {
-			return nil, err
-		}
-		if pf.TargetPort.Port() == 0 {
-			pf.TargetPort = localPort
-		}
-		if pf.LocalPort.Port() == 0 {
-			pf.LocalPort = localPort
-		}
+	if !pf.Enabled {
+		return pf, nil
+	}
+	pf.ServiceName = config.GetActualValue(pf.ServiceName)
+	pf.Namespace = config.GetActualValue(pf.Namespace)
+	if pf.ServiceName == "" {
+		return nil, errors.New("portforward: service name cannot be empty")
+	}
+	if pf.Namespace == "" {
+		return nil, errors.New("portforward: namespace cannot be empty")
+	}
+	if _, err = pf.TargetPort.Bind(); err != nil {
+		return nil, err
+	}
+	if _, err = pf.LocalPort.Bind(); err != nil {
+		return nil, err
+	}
+	if pf.TargetPort.Port() == 0 {
+		pf.TargetPort = localPort
+	}
+	if pf.LocalPort.Port() == 0 {
+		pf.LocalPort = localPort
 	}
 	return pf, nil
 }
