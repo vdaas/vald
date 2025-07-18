@@ -179,15 +179,19 @@ strategies:
   #             action: rollout
   - concurrency: 1
     name: check Index Property
+    repeats: 0
     operations:
       - name: IndexProperty
+        repeats: 0
         executions:
           - mode: unary
             name: IndexProperty
+            repeats: 0
             type: index_property
             wait: 3s
   - concurrency: 1
     name: Initial Insert and Wait
+    repeats: 0
     operations:
       - name: Insert -> IndexInfo
         executions:
