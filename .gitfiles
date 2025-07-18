@@ -1677,9 +1677,6 @@ k8s/index/job/creation/configmap.yaml
 k8s/index/job/creation/cronjob.yaml
 k8s/index/job/deletion/configmap.yaml
 k8s/index/job/deletion/cronjob.yaml
-k8s/index/job/exportation/configmap.yaml
-k8s/index/job/exportation/cronjob.yaml
-k8s/index/job/exportation/pvc.yaml
 k8s/index/job/save/configmap.yaml
 k8s/index/job/save/cronjob.yaml
 k8s/index/operator/configmap.yaml
