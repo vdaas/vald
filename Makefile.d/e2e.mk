@@ -150,18 +150,14 @@ e2e/actions/run/job: \
 ## run GitHub Actions E2E test (Stream CRUD with read replica )
 e2e/actions/run/readreplica: \
 	hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
-	minikube/restart
+	kind/vs/restart
 	kubectl wait -n kube-system --for=condition=Available deployment/metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	sleep 2
-	kubectl wait -n kube-system --for=condition=Ready pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl wait -n kube-system --for=condition=ContainersReady pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	sleep 3
-	$(MAKE) k8s/vald/deploy \
-		HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-readreplica.yaml
-	sleep 20
-	kubectl wait --for=condition=Ready pod -l "app=$(AGENT_NGT_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl wait --for=condition=ContainersReady pod -l "app=$(AGENT_NGT_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
+	kubectl wait -n kube-system --for=condition=Ready pod -l app.kubernetes.io/name=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
+	kubectl wait -n kube-system --for=condition=ContainersReady pod -l app.kubernetes.io/name=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
+
 	$(MAKE) k8s/vald-readreplica/deploy \
+		VERSION=$(VERSION) \
 		HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-readreplica.yaml
 	sleep 3
 	kubectl wait --for=condition=Ready pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
@@ -169,9 +165,10 @@ e2e/actions/run/readreplica: \
 	kubectl get pods
 	pod_name=$$(kubectl get pods --selector="app=$(LB_GATEWAY_IMAGE)" | tail -1 | awk '{print $$1}'); \
 	echo $$pod_name; \
-	$(MAKE) E2E_TARGET_POD_NAME=$$pod_name e2e/readreplica
-	$(MAKE) k8s/vald/delete
-	$(MAKE) minikube/delete
+	$(MAKE) E2E_TIMEOUT=30m E2E_CONFIG=$(ROOTDIR)/.github/e2e/readreplica.yaml e2e/v2
+	# $(MAKE) E2E_TARGET_POD_NAME=$$pod_name e2e/readreplica
+	# $(MAKE) k8s/vald/delete
+	# $(MAKE) kind/vs/stop
 
 .PHONY: e2e/actions/run/stream/crud/skip
 ## run GitHub Actions E2E test (Stream CRUD with SkipExistsCheck = true)

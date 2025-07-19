@@ -31,6 +31,7 @@ update/libs: \
 	update/jaeger-operator \
 	update/k3d \
 	update/k3s \
+	update/k0s \
 	update/kind \
 	update/kube-linter \
 	update/kubectl \
@@ -106,6 +107,11 @@ update/chaos-mesh:
 ## update k3d version
 update/k3d:
 	curl -fsSL https://api.github.com/repos/k3d-io/k3d/releases/latest | jq -r '.tag_name' | sed 's/v//g' > $(ROOTDIR)/versions/K3D_VERSION
+
+.PHONY: update/k0s
+## update k0s version
+update/k0s:
+	curl -sSf https://get.k0s.sh | sudo sh && k0s version > $(ROOTDIR)/versions/K0S_VERSION
 
 .PHONY: update/k3s
 ## update k3s version

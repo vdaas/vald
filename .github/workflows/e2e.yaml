@@ -336,14 +336,7 @@ jobs:
         uses: ./.github/actions/setup-e2e
         with:
           require_k3d: "false"
-          require_minikube: "true"
-      - name: Deploy Vald
-        id: deploy_vald
-        uses: ./.github/actions/e2e-deploy-vald
-        with:
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-readreplica.yaml
-          wait_for_selector: app=vald-agent
+          require_kind: "true"
       - name: Deploy Vald Read Replica
         id: deploy_vald_readreplica
         uses: ./.github/actions/e2e-deploy-vald-readreplica
@@ -363,7 +356,7 @@ jobs:
             E2E_UPDATE_COUNT=100 \
             E2E_UPSERT_COUNT=100 \
             E2E_REMOVE_COUNT=100 \
-            E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=10m \
             E2E_TARGET_POD_NAME=${POD_NAME} \
             E2E_TARGET_NAMESPACE=default \
             e2e/readreplica
