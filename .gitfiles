@@ -2274,7 +2274,6 @@ rust/libs/proto/src/sidecar.v1.tonic.rs
 rust/libs/proto/src/vald.v1.tonic.rs
 rust/libs/vqueue/Cargo.toml
 rust/libs/vqueue/src/lib.rs
-rust/rust-toolchain
 rust/rust-toolchain.toml
 tests/chaos/chart/.helmignore
 tests/chaos/chart/Chart.yaml
