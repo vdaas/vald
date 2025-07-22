@@ -280,13 +280,16 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 	})
 }
 
-func executeWithTimings[T config.Timing](
+func executeWithTimings[T interface {
+	config.Timing
+	config.Repeats
+}](
 	t *testing.T,
 	ctx context.Context,
 	cfg T,
 	name, prefix string,
 	fn func(*testing.T, context.Context) error,
-) error {
+) (err error) {
 	t.Helper()
 	if delay := cfg.GetDelay(); delay != "" {
 		dur, err := delay.Duration()
@@ -316,7 +319,21 @@ func executeWithTimings[T config.Timing](
 		}
 	}
 
-	err := fn(t, ctx)
+	if cfg.GetRepeats() > 1 {
+		for idx := range cfg.GetRepeats() {
+			task := fmt.Sprintf("Repeat %s for %s (%d/%d)", prefix, name, idx+1, cfg.GetRepeats())
+			log.Info(task)
+			t.Run(task, func(tt *testing.T) {
+				tt.Helper()
+				ierr := fn(tt, ctx)
+				if ierr != nil {
+					err = errors.Join(err, ierr)
+				}
+			})
+		}
+	} else {
+		err = fn(t, ctx)
+	}
 
 	if wait := cfg.GetWait(); wait != "" {
 		dur, werr := wait.Duration()
