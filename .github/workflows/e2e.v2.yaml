@@ -140,6 +140,7 @@ jobs:
           require_helm: false
           require_k3d: false
           require_kind: false
+          require_k0s: false
       - name: Merge Docker image tag
         if: ${{ matrix.deployment == 'helm-operator' }}
         shell: bash
