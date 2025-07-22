@@ -76,19 +76,9 @@ var defaultOptions = func() []Option {
 	}
 }
 
-var (
-	replacer      *strings.Replacer
-	clientAuthMap map[string]tls.ClientAuthType
-)
+var clientAuthMap map[string]tls.ClientAuthType
 
 func init() {
-	replacer = strings.NewReplacer(
-		" ", "",
-		"-", "",
-		"_", "",
-		"ｰ", "",
-		"ー", "",
-	)
 	clientAuthMap = map[string]tls.ClientAuthType{
 		"auto":                       tls.NoClientCert,
 		"noclientcert":               tls.NoClientCert,
@@ -105,7 +95,7 @@ func init() {
 }
 
 func parseClientAuthType(authType string) tls.ClientAuthType {
-	if t, ok := clientAuthMap[replacer.Replace(strings.ToLower(authType))]; ok {
+	if t, ok := clientAuthMap[strings.TrimForCompare(authType)]; ok {
 		return t
 	}
 	return tls.NoClientCert

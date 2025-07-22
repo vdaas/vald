@@ -86,8 +86,7 @@ func WithMetricType(metricType string) Option {
 			"tanimoto":   core.Tanimoto,
 			"sorensen":   core.Sorensen,
 		}
-		normalizedMetricType := strings.NewReplacer("-", "", "_", "", " ", "").Replace(strings.ToLower(metricType))
-		if metricType, ok := metricTypeMap[normalizedMetricType]; ok {
+		if metricType, ok := metricTypeMap[strings.TrimForCompare(metricType)]; ok {
 			u.metricType = metricType
 		} else {
 			err := errors.NewUsearchError("unsupported MetricType")
