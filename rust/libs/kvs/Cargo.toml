@@ -16,12 +16,15 @@
 [package]
 name = "kvs"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
-anyhow = "1.0.97"
-kv = { version = "0.24.0", features = ["bincode", "bincode-value"] }
-serde = { version = "1.0.219", features = ["derive"] }
-
-[dev-dependencies]
-tokio = { version = "1.44.1", features = ["macros", "rt-multi-thread", "sync"] }
+futures = "0.3"
+bincode = "2.0"
+sled = "0.34"
+parking_lot = "0.12"
+serde = { version = "1.0", features = ["derive"] }
+thiserror = "2.0"
+tokio = { version = "1.46", features = ["full"] }
+tokio-stream = "0.1"
+tracing = "0.1"

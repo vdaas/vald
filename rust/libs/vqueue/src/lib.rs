@@ -15,7 +15,6 @@
 //
 
 use dashmap::DashMap;
-use std::cmp::Ordering;
 use std::sync::atomic::{AtomicU64, Ordering as AtomicOrdering};
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
