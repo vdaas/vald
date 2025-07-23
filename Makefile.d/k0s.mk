@@ -23,7 +23,8 @@ $(BINDIR)/k0s: update/k0s
 ## start k0s cluster
 k0s/start:
 	docker rm -f k0s-controller || true
-	docker run -d --name k0s-controller --hostname k0s-controller \
+	docker rm -f k0s-worker || true
+	docker run -d --name k0s-controller --hostname k0s-controller --net=host \
 		-v /var/lib/k0s -v /var/log/pods `# this is where k0s stores its data` \
 		--tmpfs /run `# this is where k0s stores runtime data` \
 		--privileged `# this is the easiest way to enable container-in-container workloads` \
@@ -33,6 +34,17 @@ k0s/start:
 	mkdir -p ~/.kube
 	docker exec k0s-controller k0s kubeconfig admin > $(KUBECONFIG)
 	until docker exec k0s-controller k0s status | grep 'Kube-api probing successful: true'; do \
+		echo "Waiting for k0s to be ready..."; \
+		sleep 5; \
+	done
+	docker run -d --name k0s-worker --hostname k0s-worker --net=host \
+		-v /var/lib/k0s -v /var/log/pods `# this is where k0s stores its data` \
+		--tmpfs /run `# this is where k0s stores runtime data` \
+		--privileged `# this is the easiest way to enable container-in-container workloads` \
+		docker.io/k0sproject/k0s:v1.33.2-k0s.0 \
+		k0s worker $$(docker exec k0s-controller k0s token create --role=worker) \
+		--kubelet-root-dir=/var/lib/kubelet
+	until docker exec k0s-worker k0s status | grep 'Kube-api probing successful: true'; do \
 		echo "Waiting for k0s to be ready..."; \
 		sleep 5; \
 	done
@@ -52,9 +64,9 @@ k0s/vs/start: k0s/start
 		&& kubectl apply -f examples/csi-pvc.yaml \
 		&& rm -rf $(TEMP_DIR)/csi-driver-hostpath
 
-	@make k8s/metrics/metrics-server/deploy
-	helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server -n kube-system
-	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
+# 	@make k8s/metrics/metrics-server/deploy
+# 	helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server -n kube-system
+# 	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
 
 
 # .PHONY: k3d/storage
