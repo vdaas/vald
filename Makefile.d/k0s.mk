@@ -32,6 +32,10 @@ k0s/start:
 	sleep 10
 	mkdir -p ~/.kube
 	docker exec k0s-controller k0s kubeconfig admin > $(KUBECONFIG)
+	until docker exec k0s-controller k0s status | grep 'Kubernetes API' | grep 'running'; do \
+		echo "Waiting for k0s to be ready..." \
+		sleep 5 \
+	done
 
 k0s/vs/start: k0s/start
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
