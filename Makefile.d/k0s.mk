@@ -37,7 +37,7 @@ k0s/start:
 		echo "Waiting for k0s to be ready..."; \
 		sleep 5; \
 	done
-	docker run -d --name k0s-worker --hostname k0s-worker --net=host \
+	docker run -d --name k0s-worker --hostname k0s-worker \
 		-v /var/lib/k0s -v /var/log/pods `# this is where k0s stores its data` \
 		--tmpfs /run `# this is where k0s stores runtime data` \
 		--privileged `# this is the easiest way to enable container-in-container workloads` \
