@@ -201,6 +201,15 @@ jobs:
           dispatch_user: ${{ secrets.DISPATCH_USER }}
           dispatch_token: ${{ secrets.DISPATCH_TOKEN }}
 
+      - name: Debug
+        if: ${{ always() }}
+        run: |
+          kubectl get nodes
+          kubectl get pods
+          kubectl describe pods
+          kubectl describe pvc
+          kubectl describe volumesnapshot
+
   slack-notification:
     name: "Slack notification"
     if: startsWith( github.ref, 'refs/tags/')
