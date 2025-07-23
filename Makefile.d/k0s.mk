@@ -30,6 +30,7 @@ k0s/start:
 		-p 6443:6443 `# publish the Kubernetes API server port` \
 		docker.io/k0sproject/k0s:v1.33.2-k0s.0
 	sleep 10
+	mkdir -p ~/.kube
 	docker exec k0s-controller k0s kubeconfig admin > $(KUBECONFIG)
 
 k0s/vs/start: k0s/start
