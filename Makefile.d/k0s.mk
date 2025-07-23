@@ -32,7 +32,7 @@ k0s/start:
 	sleep 10
 	mkdir -p ~/.kube
 	docker exec k0s-controller k0s kubeconfig admin > $(KUBECONFIG)
-	until docker exec k0s-controller k0s status | grep 'Kube-api probing successful: true' | grep 'running'; do \
+	until docker exec k0s-controller k0s status | grep 'Kube-api probing successful: true'; do \
 		echo "Waiting for k0s to be ready..."; \
 		sleep 5; \
 	done
