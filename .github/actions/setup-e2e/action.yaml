@@ -39,11 +39,11 @@ inputs:
   require_kind:
     description: "If kind is not required, set this to true and set require_kind to false"
     required: false
-    default: "false"
+    default: "true"
   require_k0s:
     description: "If k0s is not required, set this to true and set require_k0s to false"
     required: false
-    default: "true"
+    default: "false"
   ingress_port:
     description: 'If it is not "0", ingress will be exposed to the specified port'
     required: false
