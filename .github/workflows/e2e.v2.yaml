@@ -208,7 +208,6 @@ jobs:
           kubectl get pods
           kubectl describe pods
           kubectl describe pvc
-          kubectl describe volumesnapshot
 
   slack-notification:
     name: "Slack notification"
