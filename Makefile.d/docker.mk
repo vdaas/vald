@@ -41,7 +41,8 @@ docker/build: \
 	docker/build/index-operator \
 	docker/build/index-save \
 	docker/build/manager-index \
-	docker/build/readreplica-rotate
+	docker/build/readreplica-rotate \
+	docker/build/e2e
 
 docker/xpanes/build:
 	@xpanes -s -c "make -f $(ROOTDIR)/Makefile {}" \
@@ -70,7 +71,8 @@ docker/xpanes/build:
 		docker/build/index-save \
 		docker/build/manager-index \
 		docker/build/operator/helm \
-		docker/build/readreplica-rotate
+		docker/build/readreplica-rotate \
+		docker/build/e2e
 
 .PHONY: docker/name/org
 docker/name/org:
@@ -408,4 +410,15 @@ docker/build/example-client:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/example/client/Dockerfile" \
 		IMAGE=$(EXAMPLE_CLIENT_IMAGE) \
 		DOCKER_OPTS="$${DOCKER_OPTS:+$${DOCKER_OPTS}} --build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
+		docker/build/image
+
+.PHONY: docker/name/e2e
+docker/name/e2e:
+	@echo "$(ORG)/$(E2E_IMAGE)"
+
+.PHONY: docker/build/e2e
+## build e2e docker image
+docker/build/e2e:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/tests/v2/e2e/Dockerfile" \
+		IMAGE=$(E2E_IMAGE) \
 		docker/build/image
