@@ -61,6 +61,17 @@ func passThrough[M proto.Message](t *testing.T, msg M) any {
 	return msg
 }
 
+func emptyCallback[M proto.Message](name string) callback[M] {
+	return func(t *testing.T, _ uint64, _ M, err error) bool {
+		t.Helper()
+		if err != nil {
+			log.Errorf("%s operation returned error: %v", name, err)
+			return false
+		}
+		return true
+	}
+}
+
 func printCallback[M proto.Message](unwrap func(t *testing.T, msg M) any) callback[M] {
 	return func(t *testing.T, idx uint64, msg M, err error) bool {
 		t.Helper()

@@ -1,6 +1,6 @@
 module github.com/vdaas/vald
 
-go 1.24.4
+go 1.24.5
 
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.121.3

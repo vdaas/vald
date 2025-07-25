@@ -46,6 +46,10 @@ const (
 	OpIndexProperty         OperationType = "index_property"
 	OpFlush                 OperationType = "flush"
 
+	OpCreateIndex        OperationType = "create_index"
+	OpSaveIndex          OperationType = "save_index"
+	OpCreateAndSaveIndex OperationType = "create_and_save_index"
+
 	OpKubernetes OperationType = "kubernetes"
 	OpClient     OperationType = "client"
 	OpWait       OperationType = "wait"

@@ -22,6 +22,7 @@
 package config
 
 import (
+	"runtime"
 	"strconv"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -79,6 +80,7 @@ type Execution struct {
 	Type         OperationType       `yaml:"type"                   json:"type,omitempty"`
 	Mode         OperationMode       `yaml:"mode"                   json:"mode,omitempty"`
 	Search       *SearchQuery        `yaml:"search,omitempty"       json:"search,omitempty"`
+	Agent        *AgentConfig        `yaml:"agent,omitempty"        json:"agent,omitempty"`
 	Kubernetes   *KubernetesConfig   `yaml:"kubernetes,omitempty"   json:"kubernetes,omitempty"`
 	Modification *ModificationConfig `yaml:"modification,omitempty" json:"modification,omitempty"`
 	Expect       []Expect            `yaml:"expect,omitempty"       json:"expect,omitempty"`
@@ -118,6 +120,11 @@ type SearchQuery struct {
 type ModificationConfig struct {
 	SkipStrictExistCheck bool  `yaml:"skip_strict_exist_check,omitempty" json:"skip_strict_exist_check,omitempty"`
 	Timestamp            int64 `yaml:"timestamp,omitempty"               json:"timestamp,omitempty"`
+}
+
+// AgentConfig represents settings for agent for createting index
+type AgentConfig struct {
+	PoolSize uint32 `yaml:"pool_size,omitempty" json:"pool_size,omitempty"`
 }
 
 // KubernetesConfig holds Kubernetes-specific settings.
@@ -344,6 +351,15 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 		OpIndexStatisticsDetail,
 		OpIndexProperty,
 		OpFlush:
+	case OpCreateIndex,
+		OpSaveIndex,
+		OpCreateAndSaveIndex:
+		if e.Agent == nil {
+			e.Agent = new(AgentConfig)
+		}
+		if e.Agent.PoolSize == 0 {
+			e.Agent.PoolSize = uint32(runtime.GOMAXPROCS(-1))
+		}
 	case OpKubernetes:
 		if e.Kubernetes != nil {
 			if ek, err := e.Kubernetes.Bind(); err != nil {
