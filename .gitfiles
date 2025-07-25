@@ -2300,6 +2300,7 @@ tests/e2e/performance/max_vector_dim_test.go
 tests/e2e/pkg/agent/core/ngt/service/ngt_e2s_test.go
 tests/e2e/sidecar/sidecar_test.go
 tests/performance/max_vector_dim_test.go
+tests/v2/e2e/assets/agent_crud.yaml
 tests/v2/e2e/assets/index_correction.yaml
 tests/v2/e2e/assets/multi_crud.yaml
 tests/v2/e2e/assets/rollout.yaml
@@ -2307,6 +2308,7 @@ tests/v2/e2e/assets/stream_crud.yaml
 tests/v2/e2e/assets/unary_crud.yaml
 tests/v2/e2e/config/config.go
 tests/v2/e2e/config/enums.go
+tests/v2/e2e/crud/agent_test.go
 tests/v2/e2e/crud/crud_test.go
 tests/v2/e2e/crud/dataset_test.go
 tests/v2/e2e/crud/grpc_test.go
