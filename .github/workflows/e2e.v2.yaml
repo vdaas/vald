@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scenario: [stream_crud, unary_crud, multi_crud, readreplica]
+        scenario: [stream_crud, unary_crud, multi_crud, readreplica, rollout]
         deployment: [helm-chart]
         environment: ["null"]
         include:
