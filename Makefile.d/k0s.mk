@@ -15,7 +15,6 @@
 #
 
 K0S_OPTIONS ?=
-KUBECONFIG = ~/.kube/config
 
 $(BINDIR)/k0s: update/k0s
 
@@ -32,7 +31,7 @@ k0s/start:
 		docker.io/k0sproject/k0s:v1.33.2-k0s.0
 	sleep 10
 	mkdir -p ~/.kube
-	docker exec k0s-controller k0s kubeconfig admin > $(KUBECONFIG)
+	docker exec k0s-controller k0s kubeconfig admin > ~/.kube/config
 	until docker exec k0s-controller k0s status | grep 'Kube-api probing successful: true'; do \
 		echo "Waiting for k0s to be ready..."; \
 		sleep 5; \
@@ -63,31 +62,3 @@ k0s/vs/start: k0s/start
 		&& kubectl apply -f examples/csi-storageclass.yaml \
 		&& kubectl apply -f examples/csi-pvc.yaml \
 		&& rm -rf $(TEMP_DIR)/csi-driver-hostpath
-
-# 	@make k8s/metrics/metrics-server/deploy
-# 	helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server -n kube-system
-# 	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
-
-
-# .PHONY: k3d/storage
-# ## storage k3d (kubernetes in docker) cluster
-# k3d/storage:
-# 	kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
-# 	kubectl get storageclass
-# 	kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
-
-# .PHONY: k3d/config
-# ## config k3d (kubernetes in docker) cluster
-# k3d/config:
-# 	export KUBECONFIG="$(shell $(K3D_COMMAND) kubeconfig merge -o $(TEMP_DIR)/k3d_$(K3D_CLUSTER_NAME)_kubeconfig.yaml $(K3D_CLUSTER_NAME) --kubeconfig-switch-context)"
-
-# .PHONY: k3d/restart
-# ## restart k3d (kubernetes in docker) cluster
-# k3d/restart: \
-# 	k3d/delete \
-# 	k3d/start
-
-# .PHONY: k3d/delete
-# ## stop k3d (kubernetes in docker) cluster
-# k3d/delete:
-# 	-$(K3D_COMMAND) cluster delete $(K3D_CLUSTER_NAME)
