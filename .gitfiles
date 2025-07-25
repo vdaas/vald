@@ -94,6 +94,7 @@
 .github/workflows/dockers-ci-container-image.yaml
 .github/workflows/dockers-dev-container-image.yaml
 .github/workflows/dockers-discoverer-k8s-image.yaml
+.github/workflows/dockers-e2e-image.yaml
 .github/workflows/dockers-example-client-image.yaml
 .github/workflows/dockers-gateway-filter-image.yaml
 .github/workflows/dockers-gateway-lb-image.yaml
@@ -603,6 +604,7 @@ dockers/manager/index/README.md
 dockers/operator/helm/Dockerfile
 dockers/operator/helm/README.md
 dockers/template.md
+dockers/tests/v2/e2e/Dockerfile
 dockers/tools/benchmark/job/Dockerfile
 dockers/tools/benchmark/operator/Dockerfile
 docs/api/README.md
