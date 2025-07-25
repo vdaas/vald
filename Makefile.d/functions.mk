@@ -120,6 +120,32 @@ define go-example-build
 		main.go
 endef
 
+define go-e2e-build
+	echo $(GO_SOURCES_INTERNAL)
+	echo $(PBGOS)
+	echo $(shell find $(ROOTDIR)/$1 -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	CFLAGS="$(CFLAGS)" \
+	CXXFLAGS="$(CXXFLAGS)" \
+	CGO_ENABLED=$(CGO_ENABLED) \
+	CGO_CXXFLAGS="$2" \
+	CGO_FFLAGS="$2" \
+	CGO_LDFLAGS="$2" \
+	GO111MODULE=on \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	GOPRIVATE=$(GOPRIVATE) \
+	GO_VERSION=$(GO_VERSION) \
+	go test \
+		-c \
+		-v \
+		-race \
+		-mod=readonly \
+		-tags "e2e" \
+		-ldflags '-extldflags "-static"' \
+		-o $(ROOTDIR)/$3 \
+		$(ROOTDIR)/$1
+endef
+
 define telepresence
 	[ -z $(SWAP_IMAGE) ] && IMAGE=$2 || IMAGE=$(SWAP_IMAGE) \
 	&& echo "telepresence replaces $(SWAP_DEPLOYMENT_TYPE)/$1 with $${IMAGE}:$(SWAP_TAG)" \
