@@ -47,6 +47,22 @@ k3d/start:
 	  $(K3D_OPTIONS)
 	@make k3d/config
 
+.PHONY: k3d/vs/start
+k3d/vs/start:
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
+
+	mkdir -p $(TEMP_DIR)/csi-driver-hostpath \
+		&& curl -fsSL https://github.com/kubernetes-csi/csi-driver-host-path/archive/refs/tags/v1.15.0.tar.gz | tar zxf - -C $(TEMP_DIR)/csi-driver-hostpath --strip-components 1 \
+		&& cd $(TEMP_DIR)/csi-driver-hostpath \
+		&& deploy/kubernetes-latest/deploy.sh \
+		&& kubectl apply -f examples/csi-storageclass.yaml \
+		&& kubectl apply -f examples/csi-pvc.yaml \
+		&& rm -rf $(TEMP_DIR)/csi-driver-hostpath
+
 .PHONY: k3d/storage
 ## storage k3d (kubernetes in docker) cluster
 k3d/storage:

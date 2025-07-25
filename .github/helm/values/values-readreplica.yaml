@@ -15,7 +15,7 @@
 #
 defaults:
   logging:
-    level: info
+    level: debug
   networkPolicy:
     enabled: true
 gateway:
@@ -32,7 +32,7 @@ gateway:
       index_replica: 3
 agent:
   minReplicas: 3
-  maxReplicas: 10
+  maxReplicas: 3
   podManagementPolicy: Parallel
   hpa:
     enabled: false
@@ -54,10 +54,14 @@ agent:
     storageClass: csi-hostpath-sc
     size: 1Gi
   readreplica:
+    minReplicas: 3
+    maxReplicas: 5
     enabled: true
     snapshot_classname: "csi-hostpath-snapclass"
     hpa:
-      enabled: true
+      enabled: false
+    name: vald-agent-readreplica
+    volume_name: vald-agent-readreplica-pvc
 discoverer:
   minReplicas: 1
   hpa:

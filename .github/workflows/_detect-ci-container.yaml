@@ -57,7 +57,7 @@ jobs:
       - name: Get Docker image tag from detection result
         id: get_tag_name
         run: |
-          TAG=$(echo "$TAGS" | awk '{print $1}' | awk -F '=' '{print $2}')
+          TAG=$(echo "$TAGS" | awk '{print $1}' | awk -F '=' '{print $2}' | sed -e 's/"//g')
           echo "TAG=${TAG}"
           echo "TAG=${TAG}" >> $GITHUB_OUTPUT
         env:
