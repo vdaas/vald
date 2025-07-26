@@ -99,6 +99,7 @@ rules:
       - replicasets
       - deployments
       - statefulsets
+      - daemonsets
     verbs:
       - create
       - delete
