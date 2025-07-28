@@ -36,12 +36,12 @@ binary/build: \
 	cmd/agent/core/ngt/ngt \
 	cmd/agent/core/faiss/faiss \
 	rust/target/debug/agent \
-	rust/target/release/agent \
+	rust/target/release/agent
 
 .PHONY: e2e/build
 ## build all e2e binaries
 e2e/build: \
-	tests/v2/e2e/e2e \
+	tests/v2/e2e/e2e
 
 cmd/agent/core/ngt/ngt: \
 	ngt/install

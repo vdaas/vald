@@ -141,7 +141,15 @@ define go-e2e-build
 		-race \
 		-mod=readonly \
 		-tags "e2e" \
-		-ldflags '-extldflags "-static"' \
+		-ldflags "-extldflags '-static' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(if $(filter 1,$(strip $(CGO_ENABLED))),true,false)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)'" \
 		-o $(ROOTDIR)/$3 \
 		$(ROOTDIR)/$1
 endef
