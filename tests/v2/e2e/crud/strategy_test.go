@@ -77,19 +77,18 @@ func TestE2EStrategy(t *testing.T) {
 				if pfd != nil {
 					pfd.Stop()
 				}
-				t.Fatalf("failed to portforward: %v", err)
+				t.Fatalf("failed to construct portforward client: %v", err)
 			}
-			defer pfd.Stop()
 			_, err = pfd.Start(ctx)
 			if err != nil {
 				if pfd != nil {
 					pfd.Stop()
 				}
-				t.Fatalf("failed to portforward: %v", err)
+				t.Fatalf("failed to start portforward: %v", err)
 			}
+			defer pfd.Stop()
 		}
 	}
-
 	r.client, ctx, err = newClient(t, ctx, cfg.Metadata)
 	if err != nil {
 		t.Fatalf("failed to create client: %v", err)
@@ -101,12 +100,10 @@ func TestE2EStrategy(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to start client: %v", err)
 	}
-
 	r.aclient, err = agent.New(agent.WithValdClient(r.client))
 	if err != nil {
 		t.Fatalf("failed to create agent client: %v", err)
 	}
-
 	go func() {
 		select {
 		case <-ctx.Done():
@@ -124,9 +121,9 @@ func TestE2EStrategy(t *testing.T) {
 		}
 	}()
 	t.Logf("connected addrs: %v", r.client.GRPCClient().ConnectedAddrs(ctx))
-
 	t.Run("Run E2E V2 Scenarios", func(tt *testing.T) {
 		if err := executeWithTimings(tt, ctx, cfg, cfg.FilePath, "e2e", func(ttt *testing.T, ctx context.Context) error {
+			ttt.Helper()
 			for i, st := range cfg.Strategies {
 				r.processStrategy(ttt, ctx, i, st)
 			}
@@ -142,9 +139,9 @@ func (r *runner) processStrategy(t *testing.T, ctx context.Context, idx int, st 
 	if r == nil || st == nil {
 		return
 	}
-
 	t.Run(fmt.Sprintf("#%d: strategy=%s", idx, st.Name), func(tt *testing.T) {
 		if err := executeWithTimings(tt, ctx, st, st.Name, "strategy", func(ttt *testing.T, ctx context.Context) error {
+			ttt.Helper()
 			eg, egctx := errgroup.New(ctx)
 			if st.Concurrency > 0 {
 				eg.SetLimit(int(st.Concurrency))
@@ -152,7 +149,6 @@ func (r *runner) processStrategy(t *testing.T, ctx context.Context, idx int, st 
 			} else {
 				ttt.Logf("concurrency is not set, the operations will execute concurrently with no limit (%d)", len(st.Operations))
 			}
-
 			for i, op := range st.Operations {
 				if op != nil {
 					i, op := i, op
@@ -162,7 +158,6 @@ func (r *runner) processStrategy(t *testing.T, ctx context.Context, idx int, st 
 					})
 				}
 			}
-
 			return eg.Wait()
 		}); err != nil {
 			tt.Errorf("failed to process operations: %v", err)
@@ -199,6 +194,7 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 
 	t.Run(fmt.Sprintf("#%d: execution=%s type=%s mode=%s", idx, e.Name, e.Type, e.Mode), func(tt *testing.T) {
 		if err := executeWithTimings(tt, ctx, e, e.Name, "execution", func(ttt *testing.T, ctx context.Context) error {
+			ttt.Helper()
 			switch e.Type {
 			case config.OpSearch,
 				config.OpSearchByID,
@@ -255,6 +251,17 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 						e.Name, time.Since(start).String(), e.Type, e.Mode, idx)
 				}()
 				r.processIndex(ttt, ctx, e)
+			case config.OpCreateIndex,
+				config.OpSaveIndex,
+				config.OpCreateAndSaveIndex:
+				start := time.Now()
+				log.Infof("started %s execution at %s, type: %s, mode: %s, execution: %d",
+					e.Name, start.Format("2006-01-02 15:04:05"), e.Type, e.Mode, idx)
+				defer func() {
+					log.Infof("finished %s execution in %s, type: %s, mode: %s, execution: %d",
+						e.Name, time.Since(start).String(), e.Type, e.Mode, idx)
+				}()
+				r.processAgent(t, ctx, e)
 			case config.OpKubernetes:
 				if e.Kubernetes != nil {
 					start := time.Now()
@@ -319,21 +326,7 @@ func executeWithTimings[T interface {
 		}
 	}
 
-	if cfg.GetRepeats() > 1 {
-		for idx := range cfg.GetRepeats() {
-			task := fmt.Sprintf("Repeat %s for %s (%d/%d)", prefix, name, idx+1, cfg.GetRepeats())
-			log.Info(task)
-			t.Run(task, func(tt *testing.T) {
-				tt.Helper()
-				ierr := fn(tt, ctx)
-				if ierr != nil {
-					err = errors.Join(err, ierr)
-				}
-			})
-		}
-	} else {
-		err = fn(t, ctx)
-	}
+	err = executeWithRepeats(t, ctx, name, prefix, cfg.GetRepeats(), fn)
 
 	if wait := cfg.GetWait(); wait != "" {
 		dur, werr := wait.Duration()
@@ -352,6 +345,41 @@ func executeWithTimings[T interface {
 	}
 
 	return err
+}
+
+func executeWithRepeats(
+	t *testing.T,
+	ctx context.Context,
+	name, prefix string,
+	repeats uint64,
+	fn func(*testing.T, context.Context) error,
+) (err error) {
+	t.Helper()
+	if repeats > 1 {
+		for idx := range repeats {
+			task := fmt.Sprintf("Repeat %s for %s (%d/%d)", prefix, name, idx+1, repeats)
+			select {
+			case <-ctx.Done():
+				err = ctx.Err()
+				log.Warnf("context canceled due to %s during %s", err.Error(), task)
+				if err != nil && errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
+					return err
+				}
+				return nil
+			default:
+			}
+			log.Info(task)
+			t.Run(task, func(tt *testing.T) {
+				tt.Helper()
+				ierr := fn(tt, ctx)
+				if ierr != nil && errors.IsNot(ierr, context.Canceled, context.DeadlineExceeded) {
+					err = errors.Join(err, ierr)
+				}
+			})
+		}
+		return err
+	}
+	return fn(t, ctx)
 }
 
 func newClient(
