@@ -407,7 +407,7 @@ func (sq *SearchQuery) Bind() (bound *SearchQuery, err error) {
 	if sq.Radius == 0 {
 		sq.Radius = -1
 	}
-	switch trimStringForCompare(sq.AlgorithmString) {
+	switch strings.TrimForCompare(sq.AlgorithmString) {
 	case "concurrentqueue", "queue", "cqueue", "cq":
 		sq.Algorithm = payload.Search_ConcurrentQueue
 	case "sortslice", "slice", "sslice", "ss":
@@ -435,7 +435,7 @@ func (ot OperationType) Bind() (bound OperationType, err error) {
 	if ot == "" {
 		return "", errors.Wrap(errors.ErrInvalidConfig, "missing required fields on OperationType")
 	}
-	switch trimStringForCompare(config.GetActualValue(ot)) {
+	switch strings.TrimForCompare(config.GetActualValue(ot)) {
 	case "search", "ser", "s":
 		return OpSearch, nil
 	case "searchbyid", "serid", "sid", "sbyid":
@@ -486,7 +486,7 @@ func (ot OperationType) Bind() (bound OperationType, err error) {
 
 // Bind expands environment variables for OperationMode.
 func (om OperationMode) Bind() (bound OperationMode, err error) {
-	switch trimStringForCompare(config.GetActualValue(om)) {
+	switch strings.TrimForCompare(config.GetActualValue(om)) {
 	case "unary", "un", "u":
 		return OperationUnary, nil
 	case "stream", "str", "s":
@@ -500,7 +500,7 @@ func (om OperationMode) Bind() (bound OperationMode, err error) {
 
 // Bind expands environment variables for StatusCode.
 func (op Operator) Bind() (bound Operator, err error) {
-	switch trimStringForCompare(config.GetActualValue(op)) {
+	switch strings.TrimForCompare(config.GetActualValue(op)) {
 	case Le, Lt, Ge, Gt, Eq, Ne:
 		return op, nil
 	case "":
@@ -511,7 +511,7 @@ func (op Operator) Bind() (bound Operator, err error) {
 
 // Bind expands environment variables for StatusCode.
 func (sc StatusCode) Bind() (bound StatusCode, err error) {
-	switch trimStringForCompare(config.GetActualValue(sc)) {
+	switch strings.TrimForCompare(config.GetActualValue(sc)) {
 	case StatusCodeOK:
 		return StatusCodeOK, nil
 	case StatusCodeCanceled:
@@ -552,7 +552,7 @@ func (sc StatusCode) Bind() (bound StatusCode, err error) {
 
 // Bind expands environment variables for KubernetesKind.
 func (kk KubernetesKind) Bind() (bound KubernetesKind, err error) {
-	switch trimStringForCompare(config.GetActualValue(kk)) {
+	switch strings.TrimForCompare(config.GetActualValue(kk)) {
 	case "configmap", "config", "cm":
 		return ConfigMap, nil
 	case "cronjob", "cron", "cj":
@@ -577,7 +577,7 @@ func (kk KubernetesKind) Bind() (bound KubernetesKind, err error) {
 
 // Bind expands environment variables for KubernetesAction.
 func (ka KubernetesAction) Bind() (bound KubernetesAction, err error) {
-	switch trimStringForCompare(config.GetActualValue(ka)) {
+	switch strings.TrimForCompare(config.GetActualValue(ka)) {
 	case "rollout", "roll", "ro":
 		return KubernetesActionRollout, nil
 	case "delete", "del", "d":
@@ -602,7 +602,7 @@ func (ka KubernetesAction) Bind() (bound KubernetesAction, err error) {
 
 // Bind expands environment variables for KubernetesAction.
 func (ks KubernetesStatus) Bind() (bound KubernetesStatus, err error) {
-	switch trimStringForCompare(config.GetActualValue(ks)) {
+	switch strings.TrimForCompare(config.GetActualValue(ks)) {
 	case "unknown", "u":
 		return KubernetesStatusUnknown, nil
 	case "pending", "pen", "p":
@@ -794,7 +794,7 @@ func (sc StatusCode) Equals(c string) bool {
 }
 
 func (sc StatusCode) Status() codes.Code {
-	switch trimStringForCompare(sc) {
+	switch strings.TrimForCompare(sc) {
 	case StatusCodeOK:
 		return codes.OK
 	case StatusCodeCanceled:
@@ -849,7 +849,7 @@ func (p Port) Port() uint16 {
 }
 
 func (ks KubernetesStatus) Status() kubernetes.ResourceStatus {
-	switch trimStringForCompare(ks) {
+	switch strings.TrimForCompare(ks) {
 	case KubernetesStatusUnknown:
 		return kubernetes.StatusUnknown
 	case KubernetesStatusPending:
@@ -911,10 +911,4 @@ func Load(path string) (cfg *Data, err error) {
 	}
 	log.Debug(config.ToRawYaml(cfg))
 	return cfg, nil
-}
-
-var reps = strings.NewReplacer(" ", "", "-", "", "_", "", ":", "", ";", "", ",", "", ".", "")
-
-func trimStringForCompare[S ~string](str S) S {
-	return S(reps.Replace(string(str)))
 }

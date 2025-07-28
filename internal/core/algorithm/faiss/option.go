@@ -96,7 +96,7 @@ func WithMethodType(methodType string) Option {
 			return errors.NewErrIgnoredOption("methodType")
 		}
 
-		switch strings.NewReplacer("-", "", "_", "", " ", "").Replace(strings.ToLower(methodType)) {
+		switch strings.TrimForCompare(methodType) {
 		case "ivfpq":
 			f.methodType = IVFPQ
 		case "binaryindex":
@@ -117,7 +117,7 @@ func WithMetricType(metricType string) Option {
 			return errors.NewErrIgnoredOption("metricType")
 		}
 
-		switch strings.NewReplacer("-", "", "_", "", " ", "").Replace(strings.ToLower(metricType)) {
+		switch strings.TrimForCompare(metricType) {
 		case "innerproduct":
 			f.metricType = InnerProduct
 		case "l2":
