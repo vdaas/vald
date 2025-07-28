@@ -42,6 +42,7 @@ HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 INDEX_CORRECTION_IMAGE          = $(NAME)-index-correction
 INDEX_CREATION_IMAGE            = $(NAME)-index-creation
 INDEX_DELETION_IMAGE            = $(NAME)-index-deletion
+INDEX_EXPORTATION_IMAGE         = $(NAME)-index-exportation
 INDEX_OPERATOR_IMAGE            = $(NAME)-index-operator
 INDEX_SAVE_IMAGE                = $(NAME)-index-save
 LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
@@ -161,8 +162,8 @@ PROTO_MIRROR_API_DOCS := $(PROTO_MIRROR_APIS:$(ROOTDIR)/apis/proto/v1/mirror/%.p
 
 LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
 
-NGT_LDFLAGS = -fopenmp -lopenblas -llapack
-FAISS_LDFLAGS = $(NGT_LDFLAGS) -lgfortran
+NGT_LDFLAGS = -fopenmp -lopenblas -llapack -lgfortran
+FAISS_LDFLAGS = $(NGT_LDFLAGS)
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl -lm
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 TEST_LDFLAGS = $(LDFLAGS) $(CGO_LDFLAGS)
@@ -173,6 +174,12 @@ CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?= -m64
 else ifeq ($(GOARCH),arm64)
 CFLAGS ?=
+ifeq ($(GOOS),darwin)
+HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lz -ldl -lm
+CFLAGS = -I $(shell brew --prefix hdf5)/include
+CGO_CFLAGS ?= $(CFLAGS)
+CGO_LDFLAGS = -L $(shell brew --prefix hdf5)/lib -L $(shell brew --prefix zlib)/lib $(HDF5_LDFLAGS)
+endif
 CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?= -march=armv8-a
 else
@@ -926,3 +933,4 @@ include Makefile.d/minikube.mk
 include Makefile.d/proto.mk
 include Makefile.d/test.mk
 include Makefile.d/tools.mk
+include Makefile.d/tls.mk

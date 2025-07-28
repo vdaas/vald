@@ -125,9 +125,16 @@ func TestE2EStrategy(t *testing.T) {
 	}()
 	t.Logf("connected addrs: %v", r.client.GRPCClient().ConnectedAddrs(ctx))
 
-	for i, st := range cfg.Strategies {
-		r.processStrategy(t, ctx, i, st)
-	}
+	t.Run("Run E2E V2 Scenarios", func(tt *testing.T) {
+		if err := executeWithTimings(tt, ctx, cfg, cfg.FilePath, "e2e", func(ttt *testing.T, ctx context.Context) error {
+			for i, st := range cfg.Strategies {
+				r.processStrategy(ttt, ctx, i, st)
+			}
+			return nil
+		}); err != nil {
+			tt.Errorf("failed to process operations: %v", err)
+		}
+	})
 }
 
 func (r *runner) processStrategy(t *testing.T, ctx context.Context, idx int, st *config.Strategy) {
@@ -273,13 +280,16 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 	})
 }
 
-func executeWithTimings[T config.Timing](
+func executeWithTimings[T interface {
+	config.Timing
+	config.Repeats
+}](
 	t *testing.T,
 	ctx context.Context,
 	cfg T,
 	name, prefix string,
 	fn func(*testing.T, context.Context) error,
-) error {
+) (err error) {
 	t.Helper()
 	if delay := cfg.GetDelay(); delay != "" {
 		dur, err := delay.Duration()
@@ -296,7 +306,6 @@ func executeWithTimings[T config.Timing](
 		}
 	}
 
-	var cancel context.CancelFunc = func() {}
 	if timeout := cfg.GetTimeout(); timeout != "" {
 		dur, err := timeout.Duration()
 		if err != nil {
@@ -304,12 +313,27 @@ func executeWithTimings[T config.Timing](
 		}
 		if dur > 0 {
 			t.Logf("timeout is set to %s, this %s/%s will stop after %s", timeout, prefix, name, dur.String())
+			var cancel context.CancelFunc
 			ctx, cancel = context.WithTimeout(ctx, dur)
+			defer cancel()
 		}
 	}
-	defer cancel()
 
-	err := fn(t, ctx)
+	if cfg.GetRepeats() > 1 {
+		for idx := range cfg.GetRepeats() {
+			task := fmt.Sprintf("Repeat %s for %s (%d/%d)", prefix, name, idx+1, cfg.GetRepeats())
+			log.Info(task)
+			t.Run(task, func(tt *testing.T) {
+				tt.Helper()
+				ierr := fn(tt, ctx)
+				if ierr != nil {
+					err = errors.Join(err, ierr)
+				}
+			})
+		}
+	} else {
+		err = fn(t, ctx)
+	}
 
 	if wait := cfg.GetWait(); wait != "" {
 		dur, werr := wait.Duration()

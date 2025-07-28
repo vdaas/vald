@@ -22,6 +22,7 @@
 .fossa.yml
 .gitattributes
 .gitfiles
+.gitguardian.yaml
 .github/ISSUE_TEMPLATE/bug_report.md
 .github/ISSUE_TEMPLATE/feature_request.md
 .github/ISSUE_TEMPLATE/security_issue_report.md
@@ -102,6 +103,7 @@
 .github/workflows/dockers-index-correction-image.yaml
 .github/workflows/dockers-index-creation-image.yaml
 .github/workflows/dockers-index-deletion-image.yaml
+.github/workflows/dockers-index-exportation-image.yaml
 .github/workflows/dockers-index-operator-image.yaml
 .github/workflows/dockers-index-save-image.yaml
 .github/workflows/dockers-manager-index-image.yaml
@@ -159,6 +161,7 @@ Makefile.d/kind.mk
 Makefile.d/minikube.mk
 Makefile.d/proto.mk
 Makefile.d/test.mk
+Makefile.d/tls.mk
 Makefile.d/tools.mk
 README.md
 SECURITY.md
@@ -528,6 +531,8 @@ cmd/index/job/deletion/doc.go
 cmd/index/job/deletion/main.go
 cmd/index/job/deletion/main_test.go
 cmd/index/job/deletion/sample.yaml
+cmd/index/job/exportation/main.go
+cmd/index/job/exportation/sample.yaml
 cmd/index/job/readreplica/rotate/doc.go
 cmd/index/job/readreplica/rotate/main.go
 cmd/index/job/readreplica/rotate/main_test.go
@@ -589,6 +594,7 @@ dockers/gateway/mirror/Dockerfile
 dockers/index/job/correction/Dockerfile
 dockers/index/job/creation/Dockerfile
 dockers/index/job/deletion/Dockerfile
+dockers/index/job/exportation/Dockerfile
 dockers/index/job/readreplica/rotate/Dockerfile
 dockers/index/job/save/Dockerfile
 dockers/index/operator/Dockerfile
@@ -918,6 +924,7 @@ internal/config/index_creation.go
 internal/config/index_creation_test.go
 internal/config/index_deleter.go
 internal/config/index_deleter_test.go
+internal/config/index_exporter.go
 internal/config/index_operator.go
 internal/config/index_operator_test.go
 internal/config/index_save.go
@@ -1482,7 +1489,6 @@ internal/observability/trace/doc.go
 internal/observability/trace/status.go
 internal/observability/trace/status_test.go
 internal/observability/trace/trace.go
-internal/observability/trace/trace_option.go
 internal/observability/trace/trace_test.go
 internal/os/doc.go
 internal/os/hostname.go
@@ -1523,9 +1529,6 @@ internal/servers/starter/option.go
 internal/servers/starter/option_test.go
 internal/servers/starter/starter.go
 internal/servers/starter/starter_test.go
-internal/servers/starter/testdata/dummyCa.pem
-internal/servers/starter/testdata/dummyServer.crt
-internal/servers/starter/testdata/dummyServer.key
 internal/strings/doc.go
 internal/strings/strings.go
 internal/strings/strings_benchmark_test.go
@@ -1572,11 +1575,6 @@ internal/test/data/strings/doc.go
 internal/test/data/strings/strings.go
 internal/test/data/strings/strings_benchmark_test.go
 internal/test/data/strings/strings_test.go
-internal/test/data/tls/dummyCa.pem
-internal/test/data/tls/dummyServer.crt
-internal/test/data/tls/dummyServer.key
-internal/test/data/tls/invalid.crt
-internal/test/data/tls/invalid.pem
 internal/test/data/vector/doc.go
 internal/test/data/vector/gen.go
 internal/test/data/vector/gen_test.go
@@ -1586,6 +1584,7 @@ internal/test/data/vector/noise/noise_test.go
 internal/test/data/vector/noise/option.go
 internal/test/data/vector/noise/option_test.go
 internal/test/doc.go
+internal/test/framework.go
 internal/test/goleak/doc.go
 internal/test/goleak/goleak.go
 internal/test/goleak/goleak_test.go
@@ -1660,7 +1659,6 @@ k8s/external/minio/svc.yaml
 k8s/gateway/gateway/ing.yaml
 k8s/gateway/gateway/lb/configmap.yaml
 k8s/gateway/gateway/lb/deployment.yaml
-k8s/gateway/gateway/lb/hpa.yaml
 k8s/gateway/gateway/lb/pdb.yaml
 k8s/gateway/gateway/lb/priorityclass.yaml
 k8s/gateway/gateway/lb/svc.yaml
@@ -2092,6 +2090,10 @@ pkg/index/job/deletion/service/options_test.go
 pkg/index/job/deletion/usecase/deletion.go
 pkg/index/job/deletion/usecase/deletion_test.go
 pkg/index/job/deletion/usecase/doc.go
+pkg/index/job/exportation/config/config.go
+pkg/index/job/exportation/service/exporter.go
+pkg/index/job/exportation/service/options.go
+pkg/index/job/exportation/usecase/exportation.go
 pkg/index/job/readreplica/rotate/config/config.go
 pkg/index/job/readreplica/rotate/config/config_test.go
 pkg/index/job/readreplica/rotate/config/doc.go
@@ -2272,7 +2274,6 @@ rust/libs/proto/src/sidecar.v1.tonic.rs
 rust/libs/proto/src/vald.v1.tonic.rs
 rust/libs/vqueue/Cargo.toml
 rust/libs/vqueue/src/lib.rs
-rust/rust-toolchain
 rust/rust-toolchain.toml
 tests/chaos/chart/.helmignore
 tests/chaos/chart/Chart.yaml

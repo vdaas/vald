@@ -17,14 +17,36 @@ name: ChatOps
 on:
   issue_comment:
     types: [created]
+  # issue_comment always uses main branch.
+  # For debugging other branch, run the command below:
+  # gh workflow run .github/workflows/chatops.yaml --ref <BRANCH> --field comment=<CHAT_COMMAND> --field pr_number=<PR_NUMBER>
+  workflow_dispatch:
+    inputs:
+      comment:
+        description: "Comment to trigger actions e.g. /label, /rebase, /gentest, /format, /approve"
+        required: true
+        type: string
+      pr_number:
+        description: "PR number to trigger actions on"
+        required: true
+        type: number
+env:
+  COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.inputs.comment }}
+  USERNAME: ${{ github.event_name == 'issue_comment' && github.event.comment.user.login || github.event.sender.login }}
+  API_URL: https://api.github.com/repos/vdaas/vald/issues/${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.inputs.pr_number }}/comments
+  PR_NUM: ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.inputs.pr_number }}
+  PR_INFO_URL: https://api.github.com/repos/vdaas/vald/pulls/${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.inputs.pr_number }}
+  LABELS_URL: https://api.github.com/repos/vdaas/vald/issues/${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.inputs.pr_number }}/labels
 jobs:
   dump-contexts-to-log:
+    if: ${{ !contains(fromJSON('["cloudflare-workers-and-pages", "coderabbitai", "vdaas-ci", "all-contributors"]'), github.event.comment.user.login) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
   label:
-    if: github.event.comment.user.login != 'vdaas-ci'
+    needs:
+      - dump-contexts-to-log
     name: Add labels
     runs-on: ubuntu-latest
     container:
@@ -35,30 +57,28 @@ jobs:
     steps:
       - name: Check PR Comments
         id: check_comments_label
-        uses: machine-learning-apps/actions-chatops@master
-        with:
-          TRIGGER_PHRASE: "/label"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: startsWith(env.COMMENT_BODY, '/label')
+        run: |
+          echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
+          echo "TRAILING_LINE=$(echo "$COMMENT_BODY" | sed -e "s|/label||" -e 's/^[[:space:]]*//')" >> "$GITHUB_OUTPUT"
       - name: Check permissions
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_permissions.yaml
-          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          roles=`yq e ".users.${USERNAME}.role.[]" chatops_permissions.yaml`
           if [ "$roles" = "" ]; then
-            roles=`yq r chatops_permissions.yaml "default-roles.*"`
+            roles=`yq e ".default-roles[]" chatops_permissions.yaml`
           fi
           for role in `echo $roles`
           do
-              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+              if yq e ".roles.${role}.policies[]" chatops_permissions.yaml | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] label requested by ${USERNAME}"
                 echo "EXECUTABLE=true" >> $GITHUB_OUTPUT
                 break
               fi
           done
         env:
-          USERNAME: ${{ steps.check_comments_label.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: label
       - name: Add label
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -70,14 +90,13 @@ jobs:
           -H "Authorization: token ${GITHUB_TOKEN}" \
           --request POST \
           --data "{\"labels\": ${labels}}" \
-          `echo "${ISSUE_URL}" | sed -e 's/{\/name}//'`
+          "${LABELS_URL}"
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          ISSUE_URL: ${{ github.event.issue.labels_url }}
-          USERNAME: ${{ steps.check_comments_label.outputs.COMMENTER_USERNAME }}
           TRAILING_LINE: ${{ steps.check_comments_label.outputs.TRAILING_LINE }}
   rebase:
-    if: github.event.comment.user.login != 'vdaas-ci'
+    needs:
+      - dump-contexts-to-log
     name: Rebase
     runs-on: ubuntu-latest
     container:
@@ -88,30 +107,26 @@ jobs:
     steps:
       - name: Check PR Comments
         id: check_comments_rebase
-        uses: machine-learning-apps/actions-chatops@master
-        with:
-          TRIGGER_PHRASE: "/rebase"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: startsWith(env.COMMENT_BODY, '/rebase')
+        run: echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
       - name: Check permissions
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_permissions.yaml
-          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          roles=`yq e ".users.${USERNAME}.role[]" chatops_permissions.yaml`
           if [ "$roles" = "" ]; then
-            roles=`yq r chatops_permissions.yaml "default-roles.*"`
+            roles=`yq e ".default-roles[]" chatops_permissions.yaml`
           fi
           for role in `echo $roles`
           do
-              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+              if yq e ".roles.${role}.policies[]" chatops_permissions.yaml | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] rebase requested by ${USERNAME}"
                 echo "EXECUTABLE=true" >> $GITHUB_OUTPUT
                 break
               fi
           done
         env:
-          USERNAME: ${{ steps.check_comments_rebase.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: rebase
       - name: Comment back to PR
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -125,9 +140,7 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          API_URL: ${{ github.event.issue.comments_url }}
           BRANCH: ${{ steps.check_comments_rebase.outputs.BRANCH_NAME }}
-          USERNAME: ${{ steps.check_comments_rebase.outputs.COMMENTER_USERNAME }}
       - uses: actions/checkout@v4
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
@@ -153,12 +166,10 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          API_URL: ${{ github.event.issue.comments_url }}
   gentest:
-    if: github.event.comment.user.login != 'vdaas-ci'
-    name: Add tests
     needs:
-      - rebase
+      - dump-contexts-to-log
+    name: Add tests
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
@@ -168,30 +179,26 @@ jobs:
     steps:
       - name: check PR Comments
         id: check_comments_gen_test
-        uses: machine-learning-apps/actions-chatops@master
-        with:
-          TRIGGER_PHRASE: "/gen-test"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: startsWith(env.COMMENT_BODY, '/gen-test')
+        run: echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
       - name: check permissions
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_permissions.yaml
-          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          roles=`yq e ".users.${USERNAME}.role[]" chatops_permissions.yaml`
           if [ "$roles" = "" ]; then
-            roles=`yq r chatops_permissions.yaml "default-roles.*"`
+            roles=`yq e ".default-roles[]" chatops_permissions.yaml`
           fi
           for role in `echo $roles`
           do
-              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+              if yq e ".roles.${role}.policies[]" chatops_permissions.yaml | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] add-contributor requested by ${USERNAME}"
                 echo "EXECUTABLE=true" >> $GITHUB_OUTPUT
                 break
               fi
           done
         env:
-          USERNAME: ${{ steps.check_comments_gen_test.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: gen-test
       - name: check executable
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -205,9 +212,7 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          USERNAME: ${{ steps.check_comments_gen_test.outputs.COMMENTER_USERNAME }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
-          API_URL: ${{ github.event.issue.comments_url }}
       - uses: actions/checkout@v4
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
@@ -222,6 +227,7 @@ jobs:
           git_user_signingkey: true
           git_commit_gpgsign: true
       - name: Generate tests and push
+        shell: bash
         id: gen_test
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -252,9 +258,7 @@ jobs:
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
-          PR_NUM: ${{ github.event.issue.number }}
       - name: failure comment
         if: failure()
         run: |
@@ -268,13 +272,10 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          API_URL: ${{ github.event.issue.comments_url }}
   format:
-    if: github.event.comment.user.login != 'vdaas-ci'
-    name: Add license and run golines + gofumpt + goimports
     needs:
-      - rebase
-      - gentest
+      - dump-contexts-to-log
+    name: Add license and run golines + gofumpt + goimports
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
@@ -284,30 +285,26 @@ jobs:
     steps:
       - name: check PR Comments
         id: check_comments_format
-        uses: machine-learning-apps/actions-chatops@master
-        with:
-          TRIGGER_PHRASE: "/format"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: startsWith(env.COMMENT_BODY, '/format')
+        run: echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
       - name: check permissions
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_permissions.yaml
-          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          roles=`yq e ".users.${USERNAME}.role[]" chatops_permissions.yaml `
           if [ "$roles" = "" ]; then
-            roles=`yq r chatops_permissions.yaml "default-roles.*"`
+            roles=`yq e ".default-roles.[]" chatops_permissions.yaml`
           fi
           for role in `echo $roles`
           do
-              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+              if yq e ".roles.${role}.policies[]" chatops_permissions.yaml | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] format requested by ${USERNAME}"
                 echo "EXECUTABLE=true" >> $GITHUB_OUTPUT
                 break
               fi
           done
         env:
-          USERNAME: ${{ steps.check_comments_format.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: format
       - name: check executable
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -321,8 +318,6 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          USERNAME: ${{ steps.check_comments_format.outputs.COMMENTER_USERNAME }}
-          API_URL: ${{ github.event.issue.comments_url }}
       - uses: actions/checkout@v4
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
@@ -338,6 +333,7 @@ jobs:
           git_user_signingkey: true
           git_commit_gpgsign: true
       - name: update and push
+        shell: bash
         id: format_push
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -357,9 +353,9 @@ jobs:
 
           echo "Update license headers and format go codes/yaml"
 
-          sudo make format
-
-          git checkout go.mod go.sum
+          make deps/install proto/replace
+          make format
+          git checkout go.mod go.sum ./example/client/go.mod ./example/client/go.sum ./rust/Cargo.lock ./rust/rust-toolchain.toml ./dockers
 
           if git diff --quiet --exit-code; then
             echo "UPDATED=false" >> $GITHUB_OUTPUT
@@ -376,8 +372,6 @@ jobs:
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
-          PR_NUM: ${{ github.event.issue.number }}
       - name: no changes
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true' && steps.format_push.outputs.UPDATED == 'false'
         run: |
@@ -390,7 +384,6 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          API_URL: ${{ github.event.issue.comments_url }}
       - name: failure comment
         if: failure()
         run: |
@@ -403,13 +396,10 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          API_URL: ${{ github.event.issue.comments_url }}
   approve:
-    if: github.event.comment.user.login != 'vdaas-ci'
-    name: Approve
     needs:
-      - rebase
-      - format
+      - dump-contexts-to-log
+    name: Approve
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
@@ -419,30 +409,26 @@ jobs:
     steps:
       - name: check PR Comments
         id: check_comments_approve
-        uses: machine-learning-apps/actions-chatops@master
-        with:
-          TRIGGER_PHRASE: "/approve"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: startsWith(env.COMMENT_BODY, '/approve')
+        run: echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
       - name: check permissions
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
           curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_permissions.yaml
-          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          roles=`yq e ".users.${USERNAME}.role[]" chatops_permissions.yaml`
           if [ "$roles" = "" ]; then
-            roles=`yq r chatops_permissions.yaml "default-roles.*"`
+            roles=`yq e ".default-roles[]" chatops_permissions.yaml`
           fi
           for role in `echo $roles`
           do
-              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+              if yq e ".roles.${role}.policies[]" chatops_permissions.yaml | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
                 echo "[OK] approved requested by ${USERNAME}"
                 echo "EXECUTABLE=true" >> $GITHUB_OUTPUT
                 break
               fi
           done
         env:
-          USERNAME: ${{ steps.check_comments_approve.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: approve
       - name: approve
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -453,8 +439,6 @@ jobs:
           -H "Authorization: token ${GITHUB_TOKEN}" \
           --request POST \
           --data "{\"body\": \"**[APPROVED]** This PR is approved by ${USERNAME}.\", \"event\": \"APPROVE\"}" \
-          "${PR_URL}/reviews"
+          "${PR_INFO_URL}/reviews"
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          PR_URL: ${{ github.event.issue.pull_request.url }}
-          USERNAME: ${{ steps.check_comments_approve.outputs.COMMENTER_USERNAME }}

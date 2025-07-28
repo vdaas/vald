@@ -22,6 +22,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/servers"
 	"github.com/vdaas/vald/internal/servers/server"
+	testdata "github.com/vdaas/vald/internal/test"
 	"github.com/vdaas/vald/internal/tls"
 )
 
@@ -39,9 +40,9 @@ func TestNew(t *testing.T) {
 				WithConfig(&config.Servers{
 					TLS: &config.TLS{
 						Enabled: true,
-						Cert:    "./testdata/dummyServer.crt",
-						CA:      "./testdata/dummyCa.pem",
-						Key:     "./testdata/dummyServer.key",
+						Cert:    testdata.GetTestdataPath("tls/server.crt"),
+						Key:     testdata.GetTestdataPath("tls/server.key"),
+						CA:      testdata.GetTestdataPath("tls/ca.pem"),
 					},
 				}),
 			},

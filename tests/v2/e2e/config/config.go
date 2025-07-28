@@ -42,35 +42,40 @@ import (
 
 // Data represents the complete configuration for the application.
 type Data struct {
-	config.GlobalConfig `json:",inline,omitempty" yaml:",inline,omitempty"`
+	config.GlobalConfig `json:",inline" yaml:",inline"`
+	TimeConfig          `json:",inline" yaml:",inline"`
 	Target              *config.GRPCClient `json:"target,omitempty"          yaml:"target,omitempty"`
 	Strategies          []*Strategy        `json:"strategies,omitempty"      yaml:"strategies,omitempty"`
 	Dataset             *Dataset           `json:"dataset,omitempty"         yaml:"dataset,omitempty"`
 	Kubernetes          *Kubernetes        `json:"kubernetes,omitempty"      yaml:"kubernetes,omitempty"`
 	Metadata            map[string]string  `json:"metadata,omitempty"        yaml:"metadata,omitempty"`
 	MetaString          string             `json:"metadata_string,omitempty" yaml:"metadata_string,omitempty"`
+	FilePath            string             `json:"-"                         yaml:"-"`
 }
 
 // Strategy represents a test strategy.
 type Strategy struct {
-	TimeConfig  `             yaml:",inline,omitempty"    json:",inline,omitempty"`
+	TimeConfig  `             yaml:",inline"              json:",inline"`
 	Name        string       `yaml:"name"                 json:"name,omitempty"`
+	Repeats     uint64       `yaml:"repeats"              json:"repeats,omitempty"`
 	Concurrency uint64       `yaml:"concurrency"          json:"concurrency,omitempty"`
 	Operations  []*Operation `yaml:"operations,omitempty" json:"operations,omitempty"`
 }
 
 // Operation represents an individual operation configuration.
 type Operation struct {
-	TimeConfig `             yaml:",inline,omitempty"    json:",inline,omitempty"`
+	TimeConfig `             yaml:",inline"              json:",inline"`
 	Name       string       `yaml:"name,omitempty"       json:"name,omitempty"`
+	Repeats    uint64       `yaml:"repeats"              json:"repeats,omitempty"`
 	Executions []*Execution `yaml:"executions,omitempty" json:"executions,omitempty"`
 }
 
 // Execution represents the execution details for a given operation.
 type Execution struct {
 	*BaseConfig  `                    yaml:",inline,omitempty"      json:",inline,omitempty"`
-	TimeConfig   `                    yaml:",inline,omitempty"      json:",inline,omitempty"`
+	TimeConfig   `                    yaml:",inline"                json:",inline"`
 	Name         string              `yaml:"name"                   json:"name,omitempty"`
+	Repeats      uint64              `yaml:"repeats"                json:"repeats,omitempty"`
 	Type         OperationType       `yaml:"type"                   json:"type,omitempty"`
 	Mode         OperationMode       `yaml:"mode"                   json:"mode,omitempty"`
 	Search       *SearchQuery        `yaml:"search,omitempty"       json:"search,omitempty"`
@@ -182,21 +187,26 @@ func (d *Data) Bind() (bound *Data, err error) {
 			var bs *Strategy
 			if bs, err = strategy.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind strategy: %s", strategy.Name)
+			} else if bs != nil {
+				d.Strategies[cnt] = bs
+				cnt++
 			}
-			d.Strategies[cnt] = bs
-			cnt++
 		}
 	}
 	// Bind Dataset.
 	if d.Dataset != nil {
-		if d.Dataset, err = d.Dataset.Bind(); err != nil {
+		if ds, err := d.Dataset.Bind(); err != nil {
 			return nil, errors.Wrapf(err, "failed to bind dataset configuration for %s", d.Dataset.Name)
+		} else if ds != nil {
+			d.Dataset = ds
 		}
 	}
 	// Bind Kubernetes.
 	if d.Kubernetes != nil {
-		if d.Kubernetes, err = d.Kubernetes.Bind(); err != nil {
+		if k, err := d.Kubernetes.Bind(); err != nil {
 			return nil, errors.Wrapf(err, "failed to bind Kubernetes configuration for %s", d.Kubernetes.KubeConfig)
+		} else if k != nil {
+			d.Kubernetes = k
 		}
 	}
 	// Process metadata.
@@ -225,9 +235,10 @@ func (s *Strategy) Bind() (bound *Strategy, err error) {
 			var bo *Operation
 			if bo, err = op.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind operation: %s", op.Name)
+			} else if bo != nil {
+				s.Operations[cnt] = bo
+				cnt++
 			}
-			s.Operations[cnt] = bo
-			cnt++
 		}
 	}
 	return s, nil
@@ -240,12 +251,15 @@ func (o *Operation) Bind() (bound *Operation, err error) {
 	}
 	o.Name = config.GetActualValue(o.Name)
 	o.TimeConfig.Bind()
-	for i, exec := range o.Executions {
+	var cnt int
+	for _, exec := range o.Executions {
 		var be *Execution
 		if be, err = exec.Bind(); err != nil {
 			return nil, errors.Wrapf(err, "failed to bind execution: %s", exec.Name)
+		} else if be != nil {
+			o.Executions[cnt] = be
+			cnt++
 		}
-		o.Executions[i] = be
 	}
 	return o, nil
 }
@@ -306,8 +320,10 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 			if e.Search == nil {
 				return nil, errors.Errorf("missing required fields on SearchQuery for Execution %s of type %s", e.Name, e.Type)
 			}
-			if e.Search, err = e.Search.Bind(); err != nil {
+			if sq, err := e.Search.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind SearchQuery for Execution %s of type %s", e.Name, e.Type)
+			} else if sq != nil {
+				e.Search = sq
 			}
 		case OpInsert,
 			OpUpdate,
@@ -315,8 +331,10 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 			OpRemove,
 			OpRemoveByTimestamp:
 			if e.Modification != nil {
-				if e.Modification, err = e.Modification.Bind(); err != nil {
+				if m, err := e.Modification.Bind(); err != nil {
 					return nil, errors.Wrapf(err, "failed to bind ModificationConfig for Execution %s of type %s", e.Name, e.Type)
+				} else if m != nil {
+					e.Modification = m
 				}
 			}
 		}
@@ -328,11 +346,11 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 		OpFlush:
 	case OpKubernetes:
 		if e.Kubernetes != nil {
-			ek, err := e.Kubernetes.Bind()
-			if err != nil {
+			if ek, err := e.Kubernetes.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind Kubernetes configuration for Execution: %s, detail %v", e.Name, e.Kubernetes)
+			} else if ek != nil {
+				e.Kubernetes = ek
 			}
-			e.Kubernetes = ek
 		}
 	case OpClient:
 		// do nothing
@@ -654,6 +672,9 @@ func (pf *PortForward) Bind() (bound *PortForward, err error) {
 	if pf == nil {
 		return nil, errors.Wrap(errors.ErrInvalidConfig, "missing required fields on PortForward")
 	}
+	if !pf.Enabled {
+		return pf, nil
+	}
 	pf.ServiceName = config.GetActualValue(pf.ServiceName)
 	pf.Namespace = config.GetActualValue(pf.Namespace)
 	if pf.ServiceName == "" {
@@ -728,6 +749,26 @@ func (t *TimeConfig) GetTimeout() timeutil.DurationString {
 		return ""
 	}
 	return t.Timeout
+}
+
+type Repeats interface {
+	GetRepeats() uint64
+}
+
+func (d Data) GetRepeats() uint64 {
+	return 0 // Data level repetition is not supported. Use Strategy, Operation, or Execution level repetition instead, as these levels are designed to handle repeated operations.
+}
+
+func (s Strategy) GetRepeats() uint64 {
+	return s.Repeats
+}
+
+func (o Operation) GetRepeats() uint64 {
+	return o.Repeats
+}
+
+func (e Execution) GetRepeats() uint64 {
+	return e.Repeats
 }
 
 // Equals compares StatusCode with a given string ignoring case.
@@ -853,7 +894,7 @@ func Load(path string) (cfg *Data, err error) {
 		return nil, errors.Wrapf(err, "failed to bind configuration from %s", path)
 	}
 	log.Debug(config.ToRawYaml(cfg))
-	return
+	return cfg, nil
 }
 
 var reps = strings.NewReplacer(" ", "", "-", "", "_", "", ":", "", ";", "", ",", "", ".", "")

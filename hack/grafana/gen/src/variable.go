@@ -54,17 +54,17 @@ func addOverviewVariables(builder *dashboard.DashboardBuilder) {
 			AllValue("vald-.*").
 			Multi(true),
 		).
-		WithVariable(dashboard.NewQueryVariableBuilder("ValdAgentPodName").
+		WithVariable(dashboard.NewQueryVariableBuilder("PodName").
 			Label("agent-pod").
 			Query(dashboard.StringOrMap{String: cog.ToPtr("label_values(agent_core_ngt_is_indexing{kubernetes_name =~\"vald-agent\"}, target_pod)")}).
 			IncludeAll(true).
 			Multi(true),
 		).
-		WithVariable(dashboard.NewQueryVariableBuilder("ValdAgentContainerName").
+		WithVariable(dashboard.NewQueryVariableBuilder("ContainerName").
 			Label("agent-container").
-			Query(dashboard.StringOrMap{String: cog.ToPtr("label_values(agent_core_ngt_is_indexing{kubernetes_name =~\"vald-agent\", target_pod=~\"$ValdAgentPodName\"}, container)")}).
+			Query(dashboard.StringOrMap{String: cog.ToPtr("label_values(agent_core_ngt_is_indexing{kubernetes_name =~\"vald-agent\", target_pod=~\"$PodName\"}, container)")}).
 			IncludeAll(true).
-			AllValue(".+").
+			AllValue(".*").
 			Multi(true),
 		).
 		WithVariable(dashboard.NewQueryVariableBuilder("ValdGatewayPodName").
@@ -77,7 +77,7 @@ func addOverviewVariables(builder *dashboard.DashboardBuilder) {
 			Label("gateway-container").
 			Query(dashboard.StringOrMap{String: cog.ToPtr("label_values(app_version_info{kubernetes_name =~\"vald-lb-gateway\", target_pod=~\"$ValdGatewayPodName\"}, container)")}).
 			IncludeAll(true).
-			AllValue(".+").
+			AllValue(".*").
 			Multi(true),
 		)
 	addIntervalVariable(builder, "30m")
@@ -105,7 +105,7 @@ func addBasicVariables(builder *dashboard.DashboardBuilder, serverName string) {
 			Label("container").
 			Query(dashboard.StringOrMap{String: cog.ToPtr(fmt.Sprintf("label_values(%s{server_name=~\"%s\", kubernetes_name=\"$ReplicaSet\", target_pod=~\"$PodName\"}, container)", appInfo, serverName))}).
 			IncludeAll(true).
-			AllValue(".+").
+			AllValue(".*").
 			Multi(true),
 		)
 }

@@ -47,8 +47,11 @@ func (is *IndexSave) Bind() *IndexSave {
 	is.NodeName = GetActualValue(is.NodeName)
 	is.TargetAddrs = GetActualValues(is.TargetAddrs)
 
-	if is.Discoverer != nil {
-		is.Discoverer.Bind()
+	if is.Discoverer == nil {
+		is.Discoverer = new(DiscovererClient)
 	}
+	// Assuming DiscovererClient.Bind() is compliant and is.Discoverer is now non-nil
+	is.Discoverer.Bind()
+
 	return is
 }
