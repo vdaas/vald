@@ -48,6 +48,7 @@ const (
 	VersionTLS13 = tls.VersionTLS13
 )
 
+// nolint: gochecknoglobals
 var (
 	Client         = tls.Client
 	Dial           = tls.Dial
@@ -119,7 +120,7 @@ func loadKeyPair(role, certPath, keyPath string) (tls.Certificate, error) {
 	return kp, nil
 }
 
-// NewServerConfig returns a *tls.Config for server, with optional mTLS and hot reload
+// NewServerConfig returns a *tls.Config for server, with optional mTLS and hot reload.
 func NewServerConfig(opts ...Option) (*Config, error) {
 	c, err := newCredential(opts...)
 	if err != nil {
@@ -136,6 +137,7 @@ func NewServerConfig(opts ...Option) (*Config, error) {
 	}
 	if c.sn == "" {
 		c.sn = "vald-server"
+		c.cfg.ServerName = c.sn
 	}
 	// load cert pair
 	kp, err := loadKeyPair(c.sn, c.cert, c.key)
@@ -155,7 +157,7 @@ func NewServerConfig(opts ...Option) (*Config, error) {
 	return c.cfg, nil
 }
 
-// NewClientConfig returns a *tls.Config for client, with optional mTLS and hot reload
+// NewClientConfig returns a *tls.Config for client, with optional mTLS and hot reload.
 func NewClientConfig(opts ...Option) (*Config, error) {
 	c, err := newCredential(opts...)
 	if err != nil {
@@ -188,6 +190,7 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 	if c.cert != "" && c.key != "" {
 		if c.sn == "" {
 			c.sn = "vald-client"
+			c.cfg.ServerName = c.sn
 		}
 		kp, err := loadKeyPair(c.sn, c.cert, c.key)
 		if err != nil {
@@ -199,7 +202,7 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 }
 
 // NewX509CertPool loads one or more PEM files into a CertPool
-// It deduplicates certificates, logs SANs, checks expiration and chain
+// It deduplicates certificates, logs SANs, checks expiration and chain.
 func NewX509CertPool(paths ...string) (*x509.CertPool, error) {
 	pool := systemOrNewPool()
 	seen := make(map[string]struct{}, len(paths))
@@ -297,7 +300,7 @@ func fingerprint(data []byte) string {
 }
 
 // parsePEMCertificates extracts x509.Certificates from PEM data,
-// skipping private keys and unknown blocks
+// skipping private keys and unknown blocks.
 func parsePEMCertificates(pemBytes []byte) ([]*x509.Certificate, error) {
 	var certs []*x509.Certificate
 	for len(pemBytes) > 0 {
