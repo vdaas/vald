@@ -337,6 +337,13 @@ jobs:
         with:
           require_k3d: "false"
           require_kind: "true"
+      - name: Deploy Vald
+        id: deploy_vald
+        uses: ./.github/actions/e2e-deploy-vald
+        with:
+          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+          values: .github/helm/values/values-readreplica.yaml
+          wait_for_selector: app=vald-agent
       - name: Deploy Vald Read Replica
         id: deploy_vald_readreplica
         uses: ./.github/actions/e2e-deploy-vald-readreplica
