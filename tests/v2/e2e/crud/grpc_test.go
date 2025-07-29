@@ -116,12 +116,15 @@ func handleGRPCWithStatusCode(
 	}
 	for _, expect := range plan.Expect {
 		if expect.StatusCode != "" && !expect.StatusCode.Equals(code.String()) {
-			errs = append(errs, fmt.Errorf("unexpected gRPC response received expected: %s, got: %s", expect.StatusCode, code))
+			err := fmt.Errorf("unexpected gRPC response received expected: %s, got: %s", expect.StatusCode, code)
+			fmt.Fprintf(os.Stderr, "❌ assert failed, err: %v\n", err)
+			errs = append(errs, err)
 			continue
 		}
 		if expect.Value != nil {
 			val, err := jsonpath.JSONPathEval(protoJSON, expect.Path)
 			if err != nil {
+				fmt.Fprintf(os.Stderr, "❌ assert failed, err: %v\n", err)
 				errs = append(errs, fmt.Errorf("failed to evaluate JSONPath: %s, JSON: %s, err: %s", expect.Path, protoJSON, err))
 				continue
 			}

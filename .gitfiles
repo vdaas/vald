@@ -51,6 +51,7 @@
 .github/e2e/index_correction.yaml
 .github/e2e/multi_crud.yaml
 .github/e2e/readreplica.yaml
+.github/e2e/rollout.yaml
 .github/e2e/stream_crud.yaml
 .github/e2e/unary_crud.yaml
 .github/helm/values/vald-mirror-target.yaml
@@ -156,6 +157,7 @@ Makefile.d/e2e.mk
 Makefile.d/functions.mk
 Makefile.d/git.mk
 Makefile.d/helm.mk
+Makefile.d/k0s.mk
 Makefile.d/k3d.mk
 Makefile.d/k8s.mk
 Makefile.d/kind.mk

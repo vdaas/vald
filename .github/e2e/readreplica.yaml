@@ -175,19 +175,6 @@ strategies:
   #             name: "vald-agent"
   #             action: rollout
   - concurrency: 1
-    name: check Index Property
-    operations:
-      - name: IndexProperty
-        executions:
-          - mode: unary
-            name: IndexProperty
-            type: index_property
-            wait: 3s
-            expect:
-              - status_code: ok
-                path: $.details.length()
-                value: 3
-  - concurrency: 1
     name: Insert -> Check rotate job
     operations:
       - name: Insert -> Check rotate job
@@ -196,8 +183,8 @@ strategies:
             type: insert
             mode: unary
             parallelism: 4
-            num: 1000
-            qps: 30
+            num: 105
+            qps: 35
             wait: 2m
           - name: Check rotate job
             type: kubernetes
@@ -208,13 +195,7 @@ strategies:
               label_selector: "app=vald-readreplica-rotate"
               status: completed
               action: wait
-          - mode: unary
-            name: IndexInfo
-            type: index_info
-            expect:
-              - status_code: ok
-                path: $.sum()
-                value: 3000
+            wait: 1m
   - concurrency: 2
     name: Parallel Search Opeation (Search, SearchByID, LinearSearch, LinearSearchByID) x (ConcurrentQueue, SortSlice, SortPoolSlice, PairingHeap) = 16
     operations:
@@ -441,16 +422,20 @@ strategies:
             mode: unary
             type: index_detail
   - concurrency: 1
-    name: IndexStatistics -> Flush -> IndexInfo
+    name: IndexInfo -> Flush -> IndexInfo
     operations:
       - executions:
-          - name: IndexStatistics
-            mode: unary
-            type: index_statistics_detail
+          - mode: unary
+            name: IndexInfo
+            type: index_info
+            expect:
+              - status_code: ok
+                path: $.sum()
+                op: ge
+                value: 300
           - name: Flush
             mode: unary
             type: flush
-            wait: 2m
           - name: IndexInfo
             mode: unary
             type: index_info

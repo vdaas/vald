@@ -125,7 +125,7 @@ func WaitForStatus[T Object, L ObjectList, C NamedObject, I ResourceInterface[T,
 		select {
 		case <-ctx.Done():
 			return false, ctx.Err()
-		case <- timeout.C:
+		case <-timeout.C:
 			return false, errors.New("timeout waiting for resource status")
 		case <-ticker.C:
 			opts := metav1.ListOptions{}
@@ -138,7 +138,10 @@ func WaitForStatus[T Object, L ObjectList, C NamedObject, I ResourceInterface[T,
 				if err != nil {
 					return false, errors.Wrap(err, info)
 				}
-				return slices.Contains(statuses, status), nil
+				if slices.Contains(statuses, status) {
+					return true, nil
+				}
+				continue
 			}
 			if labelSelector != "" {
 				opts.LabelSelector = labelSelector

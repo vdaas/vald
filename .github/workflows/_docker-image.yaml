@@ -56,14 +56,6 @@ jobs:
         (github.event_name == 'schedule')
       }}
     steps:
-      - name: Run sccache-cache only on non-release runs
-        if: !startsWith(github.ref, 'refs/heads/release/v')
-        uses: mozilla-actions/sccache-action@v0.0.9
-      - name: Set Rust caching env vars only on non-release runs
-        if: !startsWith(github.ref, 'refs/heads/release/v')
-        run: |
-          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
-          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Get ref
         id: ref
         run: |

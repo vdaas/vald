@@ -43,7 +43,9 @@ agent:
   ngt:
     auto_index_duration_limit: 2m
     auto_index_check_duration: 30s
-    auto_index_length: 1000
+    auto_index_length: 100
+    auto_create_index_pool_size: 100
+    default_pool_size: 100
     dimension: 784
     index_path: /var/ngt/index
     enable_in_memory_mode: false
