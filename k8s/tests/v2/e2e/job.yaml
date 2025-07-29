@@ -1,0 +1,81 @@
+#
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vald-e2e
+  namespace: default
+  labels:
+    app: vald-e2e
+    app.kubernetes.io/name: vald
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/component: e2e
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    metadata:
+      labels:
+        app: vald-e2e
+        app.kubernetes.io/name: vald
+        app.kubernetes.io/instance: release-name
+        app.kubernetes.io/component: e2e
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+        - name: download-dataset
+          image: busybox:stable
+          imagePullPolicy: Always
+          command:
+            - /bin/sh
+            - -e
+            - -c
+            - wget https://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5 -O /data/dataset.hdf5
+          volumeMounts:
+            - name: dataset-volume
+              mountPath: /data
+          resources:
+            limits:
+              cpu: 400m
+              memory: 400Mi
+            requests:
+              cpu: 100m
+              memory: 200Mi
+      containers:
+        - name: e2e
+          image: ghcr.io/vdaas/vald/vald-e2e:latest
+          args: ["-config", "/etc/e2e/unary_crud.yaml"]
+          imagePullPolicy: Always
+          env:
+            - name: E2E_DATASET_PATH
+              value: "/data/dataset.hdf5"
+          volumeMounts:
+            - name: e2e-config-volume
+              mountPath: /etc/e2e
+            - name: dataset-volume
+              mountPath: /data
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 1000Mi
+            requests:
+              cpu: 400m
+              memory: 400Mi
+      volumes:
+        - name: e2e-config-volume
+          configMap:
+            name: e2e-config
+        - name: dataset-volume
+          emptyDir: {}

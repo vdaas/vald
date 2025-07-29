@@ -544,6 +544,18 @@ k8s/monitoring/delete: \
 	k8s/metrics/jaeger/delete \
 	k8s/metrics/prometheus/operator/delete \
 
+.PHONY: k8s/e2e/deploy
+## deploy e2e job
+k8s/e2e/deploy:
+	kubectl create configmap e2e-config --from-file=./tests/v2/e2e/assets
+	kubectl apply -f k8s/tests/v2/e2e/job.yaml
+
+.PHONY: k8s/e2e/delete
+## delete e2e job
+k8s/e2e/delete:
+	kubectl delete -f k8s/tests/v2/e2e/job.yaml
+	kubectl delete configmap e2e-config
+
 .PHONY: telepresence/install
 ## install telepresence
 telepresence/install: $(BINDIR)/telepresence

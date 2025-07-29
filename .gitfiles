@@ -1745,6 +1745,7 @@ k8s/operator/helm/operator.yaml
 k8s/operator/helm/serviceaccount.yaml
 k8s/operator/helm/svc.yaml
 k8s/readreplica/configmap.yaml
+k8s/tests/v2/e2e/job.yaml
 k8s/tools/benchmark/job/clusterrole.yaml
 k8s/tools/benchmark/job/clusterrolebinding.yaml
 k8s/tools/benchmark/job/serviceaccount.yaml
