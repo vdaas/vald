@@ -52,7 +52,7 @@ k0s/vs/start: k0s/start
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
 
 	mkdir -p $(TEMP_DIR)/csi-driver-hostpath \
-		&& curl -fsSL https://github.com/kubernetes-csi/csi-driver-host-path/archive/refs/tags/v1.15.0.tar.gz | tar zxf - -C $(TEMP_DIR)/csi-driver-hostpath --strip-components 1 \
+		&& curl -fsSL https://github.com/kubernetes-csi/csi-driver-host-path/archive/refs/tags/$(CSI_DRIVER_HOST_PATH_VERSION).tar.gz | tar zxf - -C $(TEMP_DIR)/csi-driver-hostpath --strip-components 1 \
 		&& cd $(TEMP_DIR)/csi-driver-hostpath \
 		&& deploy/kubernetes-latest/deploy.sh \
 		&& kubectl apply -f examples/csi-storageclass.yaml \
