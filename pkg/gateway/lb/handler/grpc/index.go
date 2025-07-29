@@ -662,15 +662,10 @@ func (s *server) IndexProperty(
 		})
 		return nil
 	}))
-	for i := 0; i < s.gateway.GetAgentCount(ctx); i++ {
-		select {
-		case <-ctx.Done():
-			err = ctx.Err()
-			log.Errorf("!!! IndexProperty API canceled: %v", err)
-			break
-		case err = <-ech:
-			log.Errorf("!!! IndexProperty API error: %v", err)
-		}
+	select {
+	case <-ctx.Done():
+		err = ctx.Err()
+	case err = <-ech:
 	}
 	if err != nil {
 		resInfo := &errdetails.ResourceInfo{
