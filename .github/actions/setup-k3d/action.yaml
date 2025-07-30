@@ -111,10 +111,6 @@ runs:
       shell: bash
       run: |
         echo "KUBECONFIG=$(k3d kubeconfig write ${{ inputs.name }})" >> $GITHUB_ENV
-    - name: VolumeSnapshot
-      shell: bash
-      run: |
-        make k3d/vs/start
     - name: Check KUBECONFIG environment variable
       shell: bash
       run: |
