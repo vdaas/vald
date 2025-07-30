@@ -43,7 +43,9 @@ update/libs: \
 	update/usearch \
 	update/vald \
 	update/yq \
-	update/zlib
+	update/zlib \
+	update/snapshotter \
+	update/csi-driver-host-path
 
 .PHONY: go/download
 ## download Go package dependencies
