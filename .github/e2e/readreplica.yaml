@@ -421,6 +421,10 @@ strategies:
           - name: IndexDetail
             mode: unary
             type: index_detail
+            wait: 5m
+            expect:
+              - status_code: ok
+                value: {}
   - concurrency: 1
     name: IndexInfo -> Flush -> IndexInfo
     operations:
