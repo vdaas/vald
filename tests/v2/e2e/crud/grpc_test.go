@@ -22,7 +22,6 @@ package crud
 import (
 	"context"
 	"fmt"
-	"os"
 	"reflect"
 	"slices"
 	"strconv"
