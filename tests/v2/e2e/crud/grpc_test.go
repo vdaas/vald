@@ -167,7 +167,7 @@ func handleGRPCWithStatusCode(
 				errs = append(errs, fmt.Errorf("unsupported operator '%s' for JSONPath %s", expect.Op, expect.Path))
 				continue
 			}
-			log.Errorf("✅ assert_%v passed, expected: %v actual: %v\n", expect.Op, expect.Value, val)
+			log.Infof("✅ assert_%v passed, expected: %v actual: %v\n", expect.Op, expect.Value, val)
 		}
 		return nil
 	}
