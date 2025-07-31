@@ -84,12 +84,7 @@ runs:
       if: ${{ inputs.use_local_charts == 'true' }}
       run: |
         make k8s/vald-readreplica/deploy HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
-
-        stern vald-discoverer &
-        stern vald-lb-gateway &
-        stern vald-agent-readreplica &
         sleep 3
-
         kubectl get pods
 
         kubectl wait --for=condition=ready pod -l ${WAIT_FOR_SELECTOR} --timeout=600s
