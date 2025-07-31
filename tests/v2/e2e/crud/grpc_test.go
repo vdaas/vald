@@ -219,9 +219,9 @@ func single[Q, R proto.Message](
 			break
 		}
 		if time.Since(start) >= timeout {
-      t.Error(fmt.Errorf("timeout reached: %w", err.Error()))
-      return
-    }
+			t.Error(fmt.Errorf("timeout reached: %w", err.Error()))
+			return
+		}
 	}
 
 	for _, cb := range callback {
