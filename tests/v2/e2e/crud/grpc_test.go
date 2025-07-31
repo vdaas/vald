@@ -27,6 +27,7 @@ import (
 	"strconv"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/iter"
@@ -207,10 +208,20 @@ func single[Q, R proto.Message](
 		plan.BaseConfig.Limiter.Wait(ctx)
 	}
 	// Execute the modify gRPC call.
-	res, err := call(ctx, req)
-	if err = handleGRPCCall(t, err, res, plan); err != nil {
-		t.Error(err.Error())
-		return
+	timeout, _ := plan.RetryUntilSuccessTimeout.Duration()
+	start := time.Now()
+	var res R
+	var err error
+	for {
+		res, err = call(ctx, req)
+		err = handleGRPCCall(t, err, res, plan)
+		if err == nil {
+			break
+		}
+		if time.Since(start) >= timeout {
+      t.Error(fmt.Errorf("timeout reached: %w", err.Error()))
+      return
+    }
 	}
 
 	for _, cb := range callback {

@@ -425,11 +425,12 @@ strategies:
           - mode: unary
             name: IndexInfo
             type: index_info
+            retry_until_success_timeout: 30m
             expect:
               - status_code: ok
                 path: $.sum()
                 op: ge
-                value: 150
+                value: 300
           - name: Flush
             mode: unary
             type: flush
