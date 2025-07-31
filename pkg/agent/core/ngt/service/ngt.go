@@ -887,6 +887,9 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 	if n.dcd {
 		return nil
 	}
+	if n.isReadReplica {
+		return nil
+	}
 	n.removeInvalidIndex(ctx)
 	ech := make(chan error, 2)
 	n.eg.Go(safety.RecoverFunc(func() (err error) {

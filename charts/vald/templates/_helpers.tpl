@@ -714,6 +714,10 @@ initContainers
       {{- $agentReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.agent.server_config.healths.readiness.port }}
       {{- $agentReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
       until [ "$(wget --server-response --spider --quiet http://{{ $.Values.agent.name }}.{{ $.namespace }}.svc.cluster.local:{{ $agentReadinessPort }}{{ $agentReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+      {{- else if eq .target "agent-readreplica" }}
+      {{- $agentReadReplicaReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.agent.server_config.healths.readiness.port }}
+      {{- $agentReadReplicaReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}
+      until [ "$(wget --server-response --spider --quiet http://{{ $.Values.agent.readreplica.name }}-0.{{ $.namespace }}.svc.cluster.local:{{ $agentReadReplicaReadinessPort }}{{ $agentReadReplicaReadinessPath }} 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
       {{- else if eq .target "gateway-lb" }}
       {{- $lbGatewayReadinessPort := default $.Values.defaults.server_config.healths.readiness.port $.Values.gateway.lb.server_config.healths.readiness.port }}
       {{- $lbGatewayReadinessPath := default $.Values.defaults.server_config.healths.readiness.readinessProbe.httpGet.path .readinessPath }}

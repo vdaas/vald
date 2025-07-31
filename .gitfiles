@@ -50,6 +50,8 @@
 .github/conflint.yaml
 .github/e2e/index_correction.yaml
 .github/e2e/multi_crud.yaml
+.github/e2e/readreplica.yaml
+.github/e2e/rollout.yaml
 .github/e2e/stream_crud.yaml
 .github/e2e/unary_crud.yaml
 .github/helm/values/vald-mirror-target.yaml
@@ -155,6 +157,7 @@ Makefile.d/e2e.mk
 Makefile.d/functions.mk
 Makefile.d/git.mk
 Makefile.d/helm.mk
+Makefile.d/k0s.mk
 Makefile.d/k3d.mk
 Makefile.d/k8s.mk
 Makefile.d/kind.mk
@@ -1645,6 +1648,7 @@ k8s/agent/priorityclass.yaml
 k8s/agent/statefulset.yaml
 k8s/agent/svc.yaml
 k8s/debug/kind/config.yaml
+k8s/debug/kind/e2e.yaml
 k8s/discoverer/clusterrole.yaml
 k8s/discoverer/clusterrolebinding.yaml
 k8s/discoverer/configmap.yaml
@@ -2329,6 +2333,7 @@ tests/v2/e2e/kubernetes/status.go
 versions/BUF_VERSION
 versions/CHAOS_MESH_VERSION
 versions/CMAKE_VERSION
+versions/CSI_DRIVER_HOST_PATH_VERSION
 versions/DOCKER_VERSION
 versions/FAISS_VERSION
 versions/GOLANGCILINT_VERSION
@@ -2350,6 +2355,7 @@ versions/PROMETHEUS_STACK_VERSION
 versions/PROTOBUF_VERSION
 versions/REVIEWDOG_VERSION
 versions/RUST_VERSION
+versions/SNAPSHOTTER_VERSION
 versions/TELEPRESENCE_VERSION
 versions/USEARCH_VERSION
 versions/VALD_VERSION

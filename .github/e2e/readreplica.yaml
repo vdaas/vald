@@ -81,8 +81,8 @@ target:
     net:
       dialer:
         dual_stack_enabled: true
-        keepalive: ""
-        timeout: ""
+        keepalive: true
+        timeout: 30s
       dns:
         cache_enabled: false
       network: tcp
@@ -104,7 +104,7 @@ target:
         key: /path/to/key
     read_buffer_size: 0
     shared_write_buffer: false
-    timeout: ""
+    timeout: 30s
     user_agent: Vald-gRPC
     write_buffer_size: 0
   tls:
@@ -150,7 +150,7 @@ strategies:
   #               min_num: 2
   #               ration: 0
   #               nprobe: 0
-  #               timeout: 1000s
+  #               timeout: 30s
   #             - k: 20
   #               radius: -1
   #               epsilon: 0.05
@@ -175,38 +175,27 @@ strategies:
   #             name: "vald-agent"
   #             action: rollout
   - concurrency: 1
-    name: check Index Property
+    name: Insert -> Check rotate job
     operations:
-      - name: IndexProperty
-        executions:
-          - mode: unary
-            name: IndexProperty
-            type: index_property
-            wait: 3s
-            expect:
-              - status_code: ok
-                path: $.details.length()
-                value: 3
-  - concurrency: 1
-    name: Initial Insert and Wait
-    operations:
-      - name: Insert -> IndexInfo
+      - name: Insert -> Check rotate job
         executions:
           - name: Insert
             type: insert
-            mode: stream
+            mode: unary
             parallelism: 4
-            num: 10000
-            qps: 30
+            num: 105
+            qps: 35
             wait: 2m
-          - mode: unary
-            name: IndexInfo
-            type: index_info
-            expect:
-              - status_code: ok
-                path: $.stored
-                op: gt
-                value: 5000
+          - name: Check rotate job
+            type: kubernetes
+            mode: other
+            kubernetes:
+              kind: job
+              namespace: default
+              label_selector: "app=vald-readreplica-rotate"
+              status: completed
+              action: wait
+            wait: 1m
   - concurrency: 2
     name: Parallel Search Opeation (Search, SearchByID, LinearSearch, LinearSearchByID) x (ConcurrentQueue, SortSlice, SortPoolSlice, PairingHeap) = 16
     operations:
@@ -429,16 +418,18 @@ strategies:
             offset: 200
             type: upsert
             wait: 2m
-          - name: IndexDetail
-            mode: unary
-            type: index_detail
   - concurrency: 1
-    name: IndexStatistics -> Flush -> IndexInfo
+    name: IndexInfo -> Flush -> IndexInfo
     operations:
       - executions:
-          - name: IndexStatistics
-            mode: unary
-            type: index_statistics_detail
+          - mode: unary
+            name: IndexInfo
+            type: index_info
+            expect:
+              - status_code: ok
+                path: $.sum()
+                op: ge
+                value: 150
           - name: Flush
             mode: unary
             type: flush

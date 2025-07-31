@@ -14,41 +14,37 @@
 # limitations under the License.
 #
 
-K3D_CLUSTER_NAME  = "vald-cluster"
-K3D_COMMAND       = k3d
-K3D_NODES         = 5
-K3D_NETWORK       = bridge
-K3D_PORT          = 6550
-K3D_HOST          = localhost
-K3D_INGRESS_PORT  = 8081
-K3D_HOST_PID_MODE = true
-K3D_OPTIONS       = --port $(K3D_INGRESS_PORT):80@loadbalancer
+.PHONY: k0s/start
+## start k0s cluster
+k0s/start:
+	docker rm -f k0s-controller || true
+	docker rm -f k0s-worker || true
+	docker run -d --name k0s-controller --hostname k0s-controller --net=host \
+		-v /var/lib/k0s -v /var/log/pods `# this is where k0s stores its data` \
+		--tmpfs /run `# this is where k0s stores runtime data` \
+		--privileged `# this is the easiest way to enable container-in-container workloads` \
+		-p 6443:6443 `# publish the Kubernetes API server port` \
+		docker.io/k0sproject/k0s:v1.33.2-k0s.0
+	sleep 10
+	mkdir -p ~/.kube
+	docker exec k0s-controller k0s kubeconfig admin > ~/.kube/config
+	until docker exec k0s-controller k0s status | grep 'Kube-api probing successful: true'; do \
+		echo "Waiting for k0s to be ready..."; \
+		sleep 5; \
+	done
+	docker run -d --name k0s-worker --hostname k0s-worker \
+		-v /var/lib/k0s -v /var/log/pods `# this is where k0s stores its data` \
+		--tmpfs /run `# this is where k0s stores runtime data` \
+		--privileged `# this is the easiest way to enable container-in-container workloads` \
+		docker.io/k0sproject/k0s:v1.33.2-k0s.0 \
+		k0s worker $$(docker exec k0s-controller k0s token create --role=worker) \
+		--kubelet-root-dir=/var/lib/kubelet
+	until docker exec k0s-worker k0s status | grep 'Kube-api probing successful: true'; do \
+		echo "Waiting for k0s to be ready..."; \
+		sleep 5; \
+	done
 
-.PHONY: k3d/install
-## install K3D
-k3d/install: $(BINDIR)/k3d
-
-$(BINDIR)/k3d: update/k3d
-	mkdir -p $(BINDIR)
-	curl -fsSL https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=v$(K3D_VERSION) K3D_INSTALL_DIR=$(BINDIR) bash
-	chmod a+x $(BINDIR)/$(K3D_COMMAND)
-
-.PHONY: k3d/start
-## start k3d (kubernetes in docker) cluster
-k3d/start:
-	$(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) \
-	  --agents $(K3D_NODES) \
-	  --image docker.io/rancher/k3s:$(K3S_VERSION) \
-	  --host-pid-mode=$(K3D_HOST_PID_MODE) \
-	  --api-port $(K3D_HOST):$(K3D_PORT) \
-	  -v "/lib/modules:/lib/modules" \
-	  --k3s-arg '--kubelet-arg=eviction-hard=imagefs.available<1%,nodefs.available<1%@agent:*' \
-	  --k3s-arg '--kubelet-arg=eviction-minimum-reclaim=imagefs.available=1%,nodefs.available=1%@agent:*' \
-	  $(K3D_OPTIONS)
-	@make k3d/config
-
-.PHONY: k3d/vs/start
-k3d/vs/start:
+k0s/vs/start: k0s/start
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
@@ -62,26 +58,3 @@ k3d/vs/start:
 		&& kubectl apply -f examples/csi-storageclass.yaml \
 		&& kubectl apply -f examples/csi-pvc.yaml \
 		&& rm -rf $(TEMP_DIR)/csi-driver-hostpath
-
-.PHONY: k3d/storage
-## storage k3d (kubernetes in docker) cluster
-k3d/storage:
-	kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
-	kubectl get storageclass
-	kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
-
-.PHONY: k3d/config
-## config k3d (kubernetes in docker) cluster
-k3d/config:
-	export KUBECONFIG="$(shell $(K3D_COMMAND) kubeconfig merge -o $(TEMP_DIR)/k3d_$(K3D_CLUSTER_NAME)_kubeconfig.yaml $(K3D_CLUSTER_NAME) --kubeconfig-switch-context)"
-
-.PHONY: k3d/restart
-## restart k3d (kubernetes in docker) cluster
-k3d/restart: \
-	k3d/delete \
-	k3d/start
-
-.PHONY: k3d/delete
-## stop k3d (kubernetes in docker) cluster
-k3d/delete:
-	-$(K3D_COMMAND) cluster delete $(K3D_CLUSTER_NAME)
