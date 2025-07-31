@@ -73,17 +73,18 @@ type Operation struct {
 
 // Execution represents the execution details for a given operation.
 type Execution struct {
-	*BaseConfig  `                    yaml:",inline,omitempty"      json:",inline,omitempty"`
-	TimeConfig   `                    yaml:",inline"                json:",inline"`
-	Name         string              `yaml:"name"                   json:"name,omitempty"`
-	Repeats      uint64              `yaml:"repeats"                json:"repeats,omitempty"`
-	Type         OperationType       `yaml:"type"                   json:"type,omitempty"`
-	Mode         OperationMode       `yaml:"mode"                   json:"mode,omitempty"`
-	Search       *SearchQuery        `yaml:"search,omitempty"       json:"search,omitempty"`
-	Agent        *AgentConfig        `yaml:"agent,omitempty"        json:"agent,omitempty"`
-	Kubernetes   *KubernetesConfig   `yaml:"kubernetes,omitempty"   json:"kubernetes,omitempty"`
-	Modification *ModificationConfig `yaml:"modification,omitempty" json:"modification,omitempty"`
-	Expect       []Expect            `yaml:"expect,omitempty"       json:"expect,omitempty"`
+	*BaseConfig              `                    yaml:",inline,omitempty"      json:",inline,omitempty"`
+	TimeConfig               `                    yaml:",inline"                json:",inline"`
+	Name                     string                  `yaml:"name"                   json:"name,omitempty"`
+	Repeats                  uint64                  `yaml:"repeats"                json:"repeats,omitempty"`
+	Type                     OperationType           `yaml:"type"                   json:"type,omitempty"`
+	Mode                     OperationMode           `yaml:"mode"                   json:"mode,omitempty"`
+	Search                   *SearchQuery            `yaml:"search,omitempty"       json:"search,omitempty"`
+	Agent                    *AgentConfig            `yaml:"agent,omitempty"        json:"agent,omitempty"`
+	Kubernetes               *KubernetesConfig       `yaml:"kubernetes,omitempty"   json:"kubernetes,omitempty"`
+	Modification             *ModificationConfig     `yaml:"modification,omitempty" json:"modification,omitempty"`
+	Expect                   []Expect                `yaml:"expect,omitempty"       json:"expect,omitempty"`
+	RetryUntilSuccessTimeout timeutil.DurationString `yaml:"retry_until_success_timeout" json:"retry_until_success_timeout,omitempty"`
 }
 
 // TimeConfig holds time-related configuration values.
@@ -162,10 +163,10 @@ type Dataset struct {
 
 // Expect holds expected results for executions.
 type Expect struct {
-	StatusCode StatusCode `yaml:"status_code,omitempty" json:"status_code,omitempty"`
-	Path       string     `yaml:"path,omitempty"        json:"path,omitempty"`
-	Op         Operator   `yaml:"op,omitempty"          json:"op,omitempty"`
-	Value      any        `yaml:"value,omitempty"       json:"value,omitempty"`
+	StatusCode StatusCode `yaml:"status_code,omitempty"       json:"status_code,omitempty"`
+	Path       string     `yaml:"path,omitempty"              json:"path,omitempty"`
+	Op         Operator   `yaml:"op,omitempty"                json:"op,omitempty"`
+	Value      any        `yaml:"value,omitempty"             json:"value,omitempty"`
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -285,7 +286,14 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 	}
 	e.Name = config.GetActualValue(e.Name)
 	e.TimeConfig.Bind()
+	dur, err := e.RetryUntilSuccessTimeout.Duration()
+	if err != nil || dur < 0 {
+		e.RetryUntilSuccessTimeout = timeutil.DurationString("0s")
+	}
 	if e.Expect != nil {
+		if e.Mode != OperationUnary {
+			return nil, errors.Wrapf(errors.ErrInvalidConfig, "Expect is only supported for unary operations in Execution %s of type %s", e.Name, e.Type)
+		}
 		for i, ex := range e.Expect {
 			if ex.StatusCode, err = ex.StatusCode.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind StatusCodes for Execution %s of type %s", e.Name, e.Type)
