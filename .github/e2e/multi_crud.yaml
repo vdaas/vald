@@ -463,7 +463,6 @@ strategies:
           - name: Flush
             mode: unary
             type: flush
-            wait: 2m
           - name: IndexInfo
             mode: unary
             type: index_info

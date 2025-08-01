@@ -43,7 +43,9 @@ update/libs: \
 	update/usearch \
 	update/vald \
 	update/yq \
-	update/zlib
+	update/zlib \
+	update/snapshotter \
+	update/csi-driver-host-path
 
 .PHONY: go/download
 ## download Go package dependencies
@@ -244,6 +246,16 @@ update/hdf5:
 ## update vald it's self version
 update/vald:
 	curl -fsSL https://api.github.com/repos/$(REPO)/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/VALD_VERSION
+
+.PHONY: update/snapshotter
+## update snapshotter version
+update/snapshotter:
+	curl -fsSL https://api.github.com/repos/kubernetes-csi/external-snapshotter/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/SNAPSHOTTER_VERSION
+
+.PHONY: update/csi-driver-host-path
+## update csi-driver-host-path version
+update/csi-driver-host-path:
+	curl -fsSL https://api.github.com/repos/kubernetes-csi/csi-driver-host-path/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/CSI_DRIVER_HOST_PATH_VERSION
 
 .PHONY: update/template
 ## update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE
