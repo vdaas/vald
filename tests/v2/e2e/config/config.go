@@ -291,12 +291,12 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 		e.RetryUntilSuccessTimeout = timeutil.DurationString("0s")
 	}
 	if e.Expect != nil {
-		if e.Mode != OperationUnary {
-			return nil, errors.Wrapf(errors.ErrInvalidConfig, "Expect is only supported for unary operations in Execution %s of type %s", e.Name, e.Type)
-		}
 		for i, ex := range e.Expect {
 			if ex.StatusCode, err = ex.StatusCode.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind StatusCodes for Execution %s of type %s", e.Name, e.Type)
+			}
+			if e.Mode != OperationUnary && ex.Value != nil {
+				return nil, errors.Wrapf(errors.ErrInvalidConfig, "Expect.Value is only supported for unary operations in Execution %s of type %s", e.Name, e.Type)
 			}
 			if ex.Op, err = ex.Op.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind Expect.Op for Execution %s of type %s", e.Name, e.Type)
