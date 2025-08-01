@@ -36,8 +36,12 @@ binary/build: \
 	cmd/agent/core/ngt/ngt \
 	cmd/agent/core/faiss/faiss \
 	rust/target/debug/agent \
-	rust/target/release/agent \
+	rust/target/release/agent
 
+.PHONY: e2e/build
+## build all e2e binaries
+e2e/build: \
+	tests/v2/e2e/e2e
 
 cmd/agent/core/ngt/ngt: \
 	ngt/install
@@ -118,6 +122,10 @@ rust/target/release/agent:
 
 rust/target/debug/agent:
 	pushd rust && cargo build -p agent && popd
+
+tests/v2/e2e/e2e:
+	$(eval CGO_ENABLED = 1)
+	$(call go-e2e-build,tests/v2/e2e/crud,$(HDF5_LDFLAGS),$@)
 
 .PHONY: binary/build/zip
 ## build all binaries and zip them
