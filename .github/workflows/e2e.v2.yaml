@@ -83,7 +83,7 @@ jobs:
             environment: bandwidth
           - scenario: readreplica
             deployment: helm-chart
-            cluster: kind
+            cluster: k0s
             environment: "null"
     runs-on: ubuntu-latest
     timeout-minutes: 60
