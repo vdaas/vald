@@ -35,7 +35,7 @@ inputs:
   wait_for_timeout:
     description: "Timeout used for waiting for pods"
     required: false
-    default: "600s"
+    default: "3600s"
   use_local_charts:
     description: "If you want to use local charts, set this to true."
     required: false
@@ -87,7 +87,7 @@ runs:
         sleep 3
         kubectl get pods
 
-        kubectl wait --for=condition=ready pod -l ${WAIT_FOR_SELECTOR} --timeout=3600s
+        kubectl wait --for=condition=ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
 
         podname=`kubectl get pods --selector=${WAIT_FOR_SELECTOR} | tail -1 | awk '{print $1}'`
         echo "POD_NAME=${podname}" >> $GITHUB_OUTPUT
