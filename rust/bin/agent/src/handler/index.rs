@@ -24,13 +24,16 @@ use std::collections::HashMap;
 use tonic::{Code, Status};
 use tonic_types::{ErrorDetails, PreconditionViolation, StatusExt};
 
+use super::common::inject_trace_context;
+
 #[tonic::async_trait]
 impl agent_server::Agent for super::Agent {
     async fn create_index(
         &self,
-        request: tonic::Request<control::CreateIndexRequest>,
+        mut request: tonic::Request<control::CreateIndexRequest>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
         info!("Recieved a request from {:?}", request.remote_addr());
+        inject_trace_context(&mut request);
         let req = request.get_ref();
         let pool_size = req.pool_size;
         let hostname = cargo::util::hostname()?;
@@ -92,9 +95,10 @@ impl agent_server::Agent for super::Agent {
 
     async fn save_index(
         &self,
-        request: tonic::Request<Empty>,
+        mut request: tonic::Request<Empty>,
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
         info!("Recieved a request from {:?}", request.remote_addr());
+        inject_trace_context(&mut request);
         let hostname = cargo::util::hostname()?;
         let domain = hostname.to_str().unwrap();
         let res = Empty {};
@@ -137,9 +141,10 @@ impl index_server::Index for super::Agent {
     #[doc = " Represent the RPC to get the agent index information.\n"]
     async fn index_info(
         &self,
-        request: tonic::Request<Empty>,
+        mut request: tonic::Request<Empty>,
     ) -> std::result::Result<tonic::Response<info::index::Count>, tonic::Status> {
         info!("Recieved a request from {:?}", request.remote_addr());
+        inject_trace_context(&mut request);
         {
             let s = self.s.read().await;
             Ok(tonic::Response::new(info::index::Count {

@@ -15,6 +15,8 @@
 //
 
 use log::{debug, warn};
+use opentelemetry::trace::TraceContextExt;
+use opentelemetry_http::HeaderExtractor;
 use std::{
     pin::Pin,
     task::{Context, Poll},
@@ -104,6 +106,12 @@ where
         let mut inner = std::mem::replace(&mut self.inner, clone);
 
         let path = req.uri().path().to_string().clone();
+        let cx = opentelemetry::global::get_text_map_propagator(|prop| {
+            prop.extract(&HeaderExtractor(req.headers()))
+        });
+        let trace_id = cx.span().span_context().trace_id().to_string();
+        let _gurad = cx.attach();
+
         Box::pin(async move {
             // Do extra async work here...
             let (service, method) = if let Some(pos) = path.rfind('/') {
@@ -141,7 +149,7 @@ where
                 start_time: start_nanos,
                 end_time: end_nanos,
                 latency: end_nanos - start_nanos,
-                trace_id: "".to_string(),
+                trace_id: trace_id,
             };
             match result {
                 Ok(res) => {

@@ -17,12 +17,12 @@ use algorithm::Error;
 use log::{debug, error, info, warn};
 use prost::Message;
 use proto::{payload::v1::search, vald::v1::search_server};
-use tokio::sync::RwLock;
 use std::sync::Arc;
+use tokio::sync::RwLock;
 use tonic::{Code, Status};
 use tonic_types::StatusExt;
 
-use super::common::{bidirectional_stream, build_error_details};
+use super::common::{bidirectional_stream, build_error_details, inject_trace_context};
 
 async fn search(
     s: Arc<RwLock<dyn algorithm::ANN>>,
@@ -47,7 +47,15 @@ async fn search(
             };
             let resource_type = format!("{}/qbg.Search", resource_type);
             let resource_name = format!("{}: {}({})", api_name, name, ip);
-            let err_details = build_error_details(err, domain, &config.request_id, request.encode_to_vec(), &resource_type, &resource_name, Some("vector dimension size"));
+            let err_details = build_error_details(
+                err,
+                domain,
+                &config.request_id,
+                request.encode_to_vec(),
+                &resource_type,
+                &resource_name,
+                Some("vector dimension size"),
+            );
             let status = Status::with_error_details(
                 Code::InvalidArgument,
                 "Search API Incombatible Dimension Size detedted",
@@ -69,19 +77,43 @@ async fn search(
                 let request_bytes = request.encode_to_vec();
                 let status = match err {
                     Error::CreateIndexingIsInProgress {} => {
-                        let err_details = build_error_details(err, domain, &config.request_id, request_bytes, &resource_type, &resource_name, None);
+                        let err_details = build_error_details(
+                            err,
+                            domain,
+                            &config.request_id,
+                            request_bytes,
+                            &resource_type,
+                            &resource_name,
+                            None,
+                        );
                         let status = Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to creating indices is in progress", err_details);
                         debug!("{:?}", status);
                         status
                     }
                     Error::FlushingIsInProgress {} => {
-                        let err_details = build_error_details(err, domain, &config.request_id, request_bytes, &resource_type, &resource_name, None);
+                        let err_details = build_error_details(
+                            err,
+                            domain,
+                            &config.request_id,
+                            request_bytes,
+                            &resource_type,
+                            &resource_name,
+                            None,
+                        );
                         let status = Status::with_error_details(Code::Aborted, "Search API aborted to process search request due to flushing indices is in progress", err_details);
                         debug!("{:?}", status);
                         status
                     }
                     Error::EmptySearchResult {} => {
-                        let err_details = build_error_details(err, domain, &config.request_id, request_bytes, &resource_type, &resource_name, None);
+                        let err_details = build_error_details(
+                            err,
+                            domain,
+                            &config.request_id,
+                            request_bytes,
+                            &resource_type,
+                            &resource_name,
+                            None,
+                        );
                         let status = Status::with_error_details(
                             Code::NotFound,
                             format!(
@@ -94,7 +126,15 @@ async fn search(
                         status
                     }
                     Error::IncompatibleDimensionSize { got: _, want: _ } => {
-                        let err_details = build_error_details(err, domain, &config.request_id, request_bytes, &resource_type, &resource_name, Some("vector dimension size"));
+                        let err_details = build_error_details(
+                            err,
+                            domain,
+                            &config.request_id,
+                            request_bytes,
+                            &resource_type,
+                            &resource_name,
+                            Some("vector dimension size"),
+                        );
                         let status = Status::with_error_details(
                             Code::InvalidArgument,
                             "Search API Incompatible Dimension Size detected",
@@ -104,7 +144,15 @@ async fn search(
                         status
                     }
                     _ => {
-                        let err_details = build_error_details(err, domain, &config.request_id, request_bytes, &resource_type, &resource_name, None);
+                        let err_details = build_error_details(
+                            err,
+                            domain,
+                            &config.request_id,
+                            request_bytes,
+                            &resource_type,
+                            &resource_name,
+                            None,
+                        );
                         let status = Status::with_error_details(
                             Code::Internal,
                             "Search API failed to process search request",
@@ -128,9 +176,10 @@ async fn search(
 impl search_server::Search for super::Agent {
     async fn search(
         &self,
-        request: tonic::Request<search::Request>,
+        mut request: tonic::Request<search::Request>,
     ) -> Result<tonic::Response<search::Response>, Status> {
         info!("Recieved a request from {:?}", request.remote_addr());
+        inject_trace_context(&mut request);
         let request = request.get_ref();
         let s = self.s.clone();
         let resource_type = self.resource_type.clone();
@@ -157,10 +206,13 @@ impl search_server::Search for super::Agent {
     #[doc = " A method to search indexed vectors by multiple vectors.\n"]
     async fn stream_search(
         &self,
-        request: tonic::Request<tonic::Streaming<search::Request>>,
+        mut request: tonic::Request<tonic::Streaming<search::Request>>,
     ) -> std::result::Result<tonic::Response<Self::StreamSearchStream>, tonic::Status> {
-        info!("Received stream search request from {:?}", request.remote_addr());
-
+        info!(
+            "Received stream search request from {:?}",
+            request.remote_addr()
+        );
+        inject_trace_context(&mut request);
         let s = self.s.clone();
         let resource_type = self.resource_type.clone() + "/qbg.StreamSearch";
         let name = self.name.clone();
@@ -175,11 +227,9 @@ impl search_server::Search for super::Agent {
             let api_name = api_name.clone();
             async move {
                 match search(s, &resource_type, &api_name, &name, &ip, &req).await {
-                    Ok(response) => {
-                        Ok(search::StreamResponse {
-                            payload: Some(search::stream_response::Payload::Response(response)),
-                        })
-                    }
+                    Ok(response) => Ok(search::StreamResponse {
+                        payload: Some(search::stream_response::Payload::Response(response)),
+                    }),
                     Err(status) => Err(status),
                 }
             }
@@ -202,9 +252,10 @@ impl search_server::Search for super::Agent {
     #[doc = " A method to search indexed vectors by multiple vectors in a single request.\n"]
     async fn multi_search(
         &self,
-        request: tonic::Request<search::MultiRequest>,
+        mut request: tonic::Request<search::MultiRequest>,
     ) -> std::result::Result<tonic::Response<search::Responses>, tonic::Status> {
         info!("Recieved a request from {:?}", request.remote_addr());
+        inject_trace_context(&mut request);
         let mreq = request.get_ref();
         let hostname = cargo::util::hostname()?;
         let _domain = hostname.to_str().unwrap();

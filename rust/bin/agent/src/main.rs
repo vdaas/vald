@@ -18,12 +18,18 @@ use algorithm::{Error, MultiError};
 use anyhow::Result;
 use chrono::{Local, Timelike};
 use config::Config;
+use opentelemetry::propagation::TextMapCompositePropagator;
+use opentelemetry::trace::{TraceContextExt, Tracer};
+use opentelemetry_sdk::propagation::{BaggagePropagator, TraceContextPropagator};
 use proto::payload::v1::object::Distance;
 use proto::payload::v1::search;
 use qbg::index::Index;
 use qbg::property::Property;
 use std::collections::HashMap;
 use std::time::Duration;
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::EnvFilter;
 
 mod handler;
 mod middleware;
@@ -394,6 +400,34 @@ fn parse_duration_from_string(input: &str) -> Option<Duration> {
     }
 }
 
+#[must_use]
+pub struct OtelInitGuard();
+
+impl Drop for OtelInitGuard {
+    fn drop(&mut self) {
+        opentelemetry::global::shutdown_tracer_provider();
+    }
+}
+
+pub fn init_opentelemetry() -> OtelInitGuard {
+    opentelemetry::global::set_text_map_propagator(TextMapCompositePropagator::new(vec![
+        Box::new(TraceContextPropagator::new()),
+        Box::new(BaggagePropagator::new()),
+    ]));
+    // TODO: to otel collector
+    //let exporter = opentelemetry_otlp::SpanExporter::builder()
+    //    .with_tonic()
+    //    .with_protocol(Protocol::Grpc)
+    //    .build()
+    //    .unwrap();
+    let exporter = opentelemetry_stdout::SpanExporter::default();
+    let provider = opentelemetry_sdk::trace::TracerProvider::builder()
+        .with_simple_exporter(exporter)
+        .build();
+    opentelemetry::global::set_tracer_provider(provider);
+    OtelInitGuard()
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = "0.0.0.0:8081".parse()?;
@@ -403,6 +437,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .unwrap();
     let _logger =
         flexi_logger::Logger::try_with_str(settings.get::<String>("logging.level")?)?.start()?;
+    let _guard = init_opentelemetry();
+    let tracer = opentelemetry::global::tracer("vdaas/vald");
+    let span = tracer.start("main");
+    let _cx = opentelemetry::Context::current_with_span(span);
     let service = QBGService::new(settings.clone());
     let agent = handler::Agent::new(
         service,

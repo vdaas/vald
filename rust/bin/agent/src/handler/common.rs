@@ -15,6 +15,7 @@
 //
 
 use futures::StreamExt;
+use opentelemetry::propagation::Injector;
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::mpsc;
 use tokio::sync::Mutex;
@@ -27,6 +28,27 @@ macro_rules! stream_type {
     ($t:ty) => {
         tokio_stream::wrappers::ReceiverStream<Result<$t, tonic::Status>>
     };
+}
+
+struct MetadataInjector<'a>(&'a mut tonic::metadata::MetadataMap);
+
+impl<'a> Injector for MetadataInjector<'a> {
+    fn set(&mut self, key: &str, value: String) {
+        let key_owned = key.to_owned();
+        let parsed_key = key_owned
+            .parse::<tonic::metadata::MetadataKey<_>>()
+            .unwrap();
+        self.0.insert(parsed_key, value.parse().unwrap());
+    }
+}
+
+pub fn inject_trace_context<T>(request: &mut Request<T>) {
+    let metadata = request.metadata_mut();
+    let mut injector = MetadataInjector(metadata);
+    let cx = opentelemetry::Context::current();
+    opentelemetry::global::get_text_map_propagator(|prop| {
+        prop.inject_context(&cx, &mut injector);
+    });
 }
 
 pub fn build_error_details(
@@ -114,6 +136,11 @@ mod tests {
     use super::*;
 
     use bytes::{Buf, BufMut, Bytes, BytesMut};
+    use opentelemetry::{
+        propagation::TextMapCompositePropagator,
+        trace::{FutureExt, TraceContextExt, Tracer},
+    };
+    use opentelemetry_sdk::propagation::{BaggagePropagator, TraceContextPropagator};
     use prost::Message;
     use proto::{
         payload::v1::object::{
@@ -349,6 +376,8 @@ mod tests {
                 sleep(send_duration).await;
             }
         });
+        let mut request = Request::new(request_stream);
+        inject_trace_context(&mut request);
 
         let addr = "[::1]:50051".parse().unwrap();
         let echo_server = EchoServer::default();
@@ -374,10 +403,7 @@ mod tests {
             .await
             .unwrap();
         let mut client = object_client::ObjectClient::new(channel);
-        let response = client
-            .stream_get_object(Request::new(request_stream))
-            .await
-            .unwrap();
+        let response = client.stream_get_object(request).await.unwrap();
         let mut response_stream = response.into_inner();
         let mut received_vectors = Vec::new();
         while let Some(res) = response_stream.next().await {
@@ -399,13 +425,27 @@ mod tests {
             .unwrap()
             .start()
             .unwrap();
+        opentelemetry::global::set_text_map_propagator(TextMapCompositePropagator::new(vec![
+            Box::new(TraceContextPropagator::new()),
+            Box::new(BaggagePropagator::new()),
+        ]));
+        let exporter = opentelemetry_stdout::SpanExporter::default();
+        let provider = opentelemetry_sdk::trace::TracerProvider::builder()
+            .with_simple_exporter(exporter)
+            .build();
+        opentelemetry::global::set_tracer_provider(provider);
+        let tracer = opentelemetry::global::tracer("vdaas/vald");
+        let span = tracer.start("test");
+        let cx = opentelemetry::Context::current_with_span(span);
         bidirectional_stream_over_network(
             Duration::from_millis(1000),
             Duration::from_millis(0),
             Duration::from_millis(0),
             Duration::from_millis(1000),
         )
+        .with_context(cx)
         .await;
+        opentelemetry::global::shutdown_tracer_provider();
     }
 
     #[tokio::test]
