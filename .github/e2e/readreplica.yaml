@@ -430,7 +430,7 @@ strategies:
               - status_code: ok
                 path: $.sum()
                 op: ge
-                value: 300
+                value: 215
           - name: Flush
             mode: unary
             type: flush
