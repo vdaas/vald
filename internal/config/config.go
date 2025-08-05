@@ -62,6 +62,25 @@ func (c *GlobalConfig) Bind() *GlobalConfig {
 	return c
 }
 
+func replaceEnvInValues(v any) any {
+	switch val := v.(type) {
+	case string:
+		return GetActualValue(val)
+	case []any:
+		for i, e := range val {
+			val[i] = replaceEnvInValues(e)
+		}
+		return val
+	case map[string]any:
+		for k, e := range val {
+			val[k] = replaceEnvInValues(e)
+		}
+		return val
+	default:
+		return val
+	}
+}
+
 // Read returns config struct or error when decoding the configuration file to actually *Config struct.
 func Read[T any](path string, cfg T) (err error) {
 	f, err := file.Open(path, os.O_RDONLY, fs.ModePerm)
@@ -77,20 +96,29 @@ func Read[T any](path string, cfg T) (err error) {
 			err = f.Close()
 		}
 	}()
+	data, err := io.ReadAll(f)
+	if err != nil {
+		return err
+	}
+	var raw map[string]any
 	switch ext := filepath.Ext(path); ext {
 	case ".yaml", ".yml":
-		var data []byte
-		data, err = io.ReadAll(f)
-		if err != nil {
+		if err := yaml.Unmarshal(data, &raw); err != nil {
 			return err
 		}
-		err = yaml.Unmarshal(data, cfg)
 	case ".json":
-		err = json.Decode(f, cfg)
+		if err := json.Unmarshal(data, &raw); err != nil {
+			return err
+		}
 	default:
-		err = errors.ErrUnsupportedConfigFileType(ext)
+		return errors.ErrUnsupportedConfigFileType(ext)
 	}
-	return err
+	replaced := replaceEnvInValues(raw)
+	intermediate, err := json.Marshal(replaced)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(intermediate, &cfg)
 }
 
 // GetActualValue returns the environment variable value if the val has prefix and suffix "_",
