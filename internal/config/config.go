@@ -23,6 +23,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strconv"
 
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/encoding/json"
@@ -65,7 +66,12 @@ func (c *GlobalConfig) Bind() *GlobalConfig {
 func replaceEnvInValues(v any) any {
 	switch val := v.(type) {
 	case string:
-		return GetActualValue(val)
+		str := GetActualValue(val)
+		// Return number if the string is a valid number because string to number conversion is not supported in the yaml package.
+		if n, err := strconv.ParseUint(str, 10, 64); err == nil {
+			return n
+		}
+		return str
 	case []any:
 		for i, e := range val {
 			val[i] = replaceEnvInValues(e)
