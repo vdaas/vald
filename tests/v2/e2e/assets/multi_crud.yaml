@@ -407,7 +407,7 @@ strategies:
           - name: Update
             type: update
             mode: multiple
-            bulk_size: 10
+            bulk_size: _E2E_BULK_SIZE_
             parallelism: _E2E_PARALLELISM_
             num: _E2E_UPDATE_COUNT_
             offset: 0
@@ -434,7 +434,7 @@ strategies:
           - name: Upsert
             type: upsert
             mode: multiple
-            bulk_size: 10
+            bulk_size: _E2E_BULK_SIZE_
             parallelism: _E2E_PARALLELISM_
             num: _E2E_UPDATE_COUNT_
           - name: IndexDetail
@@ -457,7 +457,7 @@ strategies:
           - name: Upsert
             parallelism: _E2E_PARALLELISM_
             mode: multiple
-            bulk_size: 10
+            bulk_size: _E2E_BULK_SIZE_
             num: _E2E_UPDATE_COUNT_
             offset: 0
             type: upsert
