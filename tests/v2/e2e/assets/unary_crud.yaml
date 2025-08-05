@@ -213,7 +213,7 @@ strategies:
             type: insert
             mode: unary
             parallelism: _E2E_PARALLELISM_
-            num: _E2E_INSERT_NUM_
+            num: _E2E_INSERT_COUNT_
             qps: _E2E_QPS_
             wait: 2m
           - mode: unary
