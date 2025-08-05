@@ -158,7 +158,7 @@ strategies:
             expect:
               - status_code: ok
                 path: $.*
-                value: _E2E_INSERT_COUNT_
+                value: _E2E_EXPECTED_INDEX_
   - concurrency: 1
     name: Index Correction -> Check the number of Replica
     operations:
@@ -187,7 +187,7 @@ strategies:
             expect:
               - status_code: ok
                 path: $.*
-                value: _E2E_INSERT_COUNT_
+                value: _E2E_EXPECTED_INDEX_
   - concurrency: 1
     name: Kill an agent -> Index Correction -> Check the number of Replica
     operations:
@@ -208,7 +208,7 @@ strategies:
               - status_code: ok
                 path: $.*
                 op: lt
-                value: _E2E_INSERT_COUNT_
+                value: _E2E_EXPECTED_INDEX_
           - name: IndexCorrection
             type: kubernetes
             mode: other
@@ -232,4 +232,4 @@ strategies:
             expect:
               - status_code: ok
                 path: $.*
-                value: _E2E_INSERT_COUNT_
+                value: _E2E_EXPECTED_INDEX_

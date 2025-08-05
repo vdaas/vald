@@ -367,6 +367,7 @@ E2E_BIND_PORT                      ?= 8082
 E2E_DATASET_NAME                   ?= fashion-mnist-784-euclidean.hdf5
 E2E_GET_OBJECT_COUNT               ?= 10
 E2E_INSERT_COUNT                   ?= 60000
+E2E_EXPECTED_INDEX                 ?= 180000
 E2E_PARALLELISM                    ?= 10
 E2E_QPS                            ?= 3000
 E2E_SEARCH_COUNT                   ?= 1000

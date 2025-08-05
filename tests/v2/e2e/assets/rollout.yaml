@@ -158,7 +158,7 @@ strategies:
             expect:
               - status_code: ok
                 path: $.stored
-                value: _E2E_INSERT_COUNT_
+                value: _E2E_EXPECTED_INDEX_
   - name: Search_with_RolloutRestartAgent
     concurrency: 2
     operations:
