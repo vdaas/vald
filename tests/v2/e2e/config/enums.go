@@ -143,3 +143,11 @@ const (
 	Le Operator = "le"
 	Lt Operator = "lt"
 )
+
+type ExitCondition string
+
+const (
+	Count   ExitCondition = "count"
+	Timeout ExitCondition = "timeout"
+	Success ExitCondition = "success"
+)
