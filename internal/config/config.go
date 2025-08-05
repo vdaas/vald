@@ -114,11 +114,11 @@ func Read[T any](path string, cfg T) (err error) {
 		return errors.ErrUnsupportedConfigFileType(ext)
 	}
 	replaced := replaceEnvInValues(raw)
-	intermediate, err := json.Marshal(replaced)
+	intermediate, err := yaml.Marshal(replaced)
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(intermediate, &cfg)
+	return yaml.Unmarshal(intermediate, &cfg)
 }
 
 // GetActualValue returns the environment variable value if the val has prefix and suffix "_",
