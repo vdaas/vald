@@ -170,9 +170,11 @@ type Expect struct {
 
 // Repeats holds the repeat configuration for operations.
 type Repeats struct {
-	Count        uint64 `yaml:"count,omitempty"         json:"count,omitempty"`
-	UntilSuccess bool   `yaml:"until_success,omitempty" json:"until_success,omitempty"`
-	Timeout      timeutil.DurationString `yaml:"timeout,omitempty"       json:"timeout,omitempty"`
+	Enable        bool	 `yaml:"enable,omitempty"       json:"enable,omitempty"`
+	ExitCondition ExitCondition `yaml:"exit_condition,omitempty" json:"exit_condition,omitempty"`
+	Count         uint64 `yaml:"count,omitempty"         json:"count,omitempty"`
+	Interval      timeutil.DurationString `yaml:"interval,omitempty"       json:"interval,omitempty"`
+	Timeout       timeutil.DurationString `yaml:"timeout,omitempty"       json:"timeout,omitempty"`
 }
 
 ////////////////////////////////////////////////////////////////////////////////
