@@ -289,7 +289,7 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 
 func executeWithTimings[T interface {
 	config.Timing
-	config.Repeats
+	config.Repeater
 }](
 	t *testing.T,
 	ctx context.Context,
