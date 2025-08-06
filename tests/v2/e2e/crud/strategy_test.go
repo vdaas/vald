@@ -358,10 +358,15 @@ func executeWithRepeats(
 	if repeats.Enabled {
 		idx := uint64(0)
 		for {
-			if repeats.ExitCondition == config.Count && idx >= repeats.Count {
-				break
+			var task string
+			if repeats.ExitCondition == config.Count {
+				task = fmt.Sprintf("Repeat %s for %s (%d/%d)", prefix, name, idx+1, repeats.Count)
+				if idx >= repeats.Count {
+					break
+				}
+			} else {
+				task = fmt.Sprintf("Repeat %s for %s (%d), ExitCondition: %s", prefix, name, idx+1, repeats.ExitCondition)
 			}
-			task := fmt.Sprintf("Repeat %s for %s (%d/%d)", prefix, name, idx+1, repeats)
 			idx++
 			select {
 			case <-ctx.Done():
