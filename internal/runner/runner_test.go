@@ -44,13 +44,12 @@ func TestRun(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(args)
+		args       args
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -60,7 +59,7 @@ func TestRun(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "returns nil when internal functionally occurs no error",
 				args: args{
@@ -96,7 +95,7 @@ func TestRun(t *testing.T) {
 		}(),
 
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "returns error when run.PreStop and run.Stop and run.PostStop returns error",
 				args: args{
@@ -160,7 +159,7 @@ func TestRun(t *testing.T) {
 		}(),
 
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "returns error when channel of run.StartFunc contains error",
 				args: args{
@@ -226,7 +225,7 @@ func TestRun(t *testing.T) {
 		{
 			name: "returns error when run.PreStart returns error",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 				run: func() Runner {
 					return &runnerMock{
 						PreStartFunc: func(context.Context) error {
@@ -244,7 +243,7 @@ func TestRun(t *testing.T) {
 		{
 			name: "returns error when run.Start returns error",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 				run: func() Runner {
 					return &runnerMock{
 						PreStartFunc: func(context.Context) error {

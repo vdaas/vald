@@ -86,9 +86,9 @@ func ListenAndServe(b *testing.B, addr string) func() {
 	}
 }
 
-func do(b *testing.B, conn *ClientConn) {
+func do(ctx context.Context, b *testing.B, conn *ClientConn) {
 	b.Helper()
-	_, err := discoverer.NewDiscovererClient(conn).Nodes(context.Background(), new(payload.Discoverer_Request))
+	_, err := discoverer.NewDiscovererClient(conn).Nodes(ctx, new(payload.Discoverer_Request))
 	if err != nil {
 		b.Error(err)
 	}
@@ -97,7 +97,7 @@ func do(b *testing.B, conn *ClientConn) {
 func Benchmark_ConnPool(b *testing.B) {
 	defer ListenAndServe(b, DefaultServerAddr)()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(b.Context())
 	defer cancel()
 	pool, err := New(ctx,
 		WithAddr(DefaultServerAddr),
@@ -119,7 +119,7 @@ func Benchmark_ConnPool(b *testing.B) {
 	for b.Loop() {
 		conn, ok := pool.Get(ctx)
 		if ok {
-			do(b, conn)
+			do(ctx, b, conn)
 		}
 	}
 	b.StopTimer()
@@ -143,7 +143,7 @@ func Benchmark_StaticDial(b *testing.B) {
 	for b.Loop() {
 		val, ok := conns.Load(DefaultServerAddr)
 		if ok {
-			do(b, val)
+			do(b.Context(), b, val)
 		}
 	}
 	b.StopTimer()
@@ -152,7 +152,7 @@ func Benchmark_StaticDial(b *testing.B) {
 func BenchmarkParallel_ConnPool(b *testing.B) {
 	defer ListenAndServe(b, DefaultServerAddr)()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(b.Context())
 	defer cancel()
 	pool, err := New(ctx,
 		WithAddr(DefaultServerAddr),
@@ -175,7 +175,7 @@ func BenchmarkParallel_ConnPool(b *testing.B) {
 		for pb.Next() {
 			conn, ok := pool.Get(ctx)
 			if ok {
-				do(b, conn)
+				do(ctx, b, conn)
 			}
 		}
 	})
@@ -201,7 +201,7 @@ func BenchmarkParallel_StaticDial(b *testing.B) {
 		for pb.Next() {
 			val, ok := conns.Load(DefaultServerAddr)
 			if ok {
-				do(b, val)
+				do(b.Context(), b, val)
 			}
 		}
 	})

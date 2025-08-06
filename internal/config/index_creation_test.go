@@ -17,15 +17,15 @@ package config
 //
 // func TestIndexCreation_Bind(t *testing.T) {
 // 	type fields struct {
-// 		AgentPort        int
+// 		Discoverer       *DiscovererClient
 // 		AgentName        string
 // 		AgentNamespace   string
 // 		AgentDNS         string
 // 		NodeName         string
+// 		TargetAddrs      []string
+// 		AgentPort        int
 // 		Concurrency      int
 // 		CreationPoolSize uint32
-// 		TargetAddrs      []string
-// 		Discoverer       *DiscovererClient
 // 	}
 // 	type want struct {
 // 		want *IndexCreation
@@ -50,15 +50,15 @@ package config
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           AgentPort:0,
+// 		           Discoverer:DiscovererClient{},
 // 		           AgentName:"",
 // 		           AgentNamespace:"",
 // 		           AgentDNS:"",
 // 		           NodeName:"",
+// 		           TargetAddrs:nil,
+// 		           AgentPort:0,
 // 		           Concurrency:0,
 // 		           CreationPoolSize:0,
-// 		           TargetAddrs:nil,
-// 		           Discoverer:DiscovererClient{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -77,15 +77,15 @@ package config
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           AgentPort:0,
+// 		           Discoverer:DiscovererClient{},
 // 		           AgentName:"",
 // 		           AgentNamespace:"",
 // 		           AgentDNS:"",
 // 		           NodeName:"",
+// 		           TargetAddrs:nil,
+// 		           AgentPort:0,
 // 		           Concurrency:0,
 // 		           CreationPoolSize:0,
-// 		           TargetAddrs:nil,
-// 		           Discoverer:DiscovererClient{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -116,15 +116,15 @@ package config
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			ic := &IndexCreation{
-// 				AgentPort:        test.fields.AgentPort,
+// 				Discoverer:       test.fields.Discoverer,
 // 				AgentName:        test.fields.AgentName,
 // 				AgentNamespace:   test.fields.AgentNamespace,
 // 				AgentDNS:         test.fields.AgentDNS,
 // 				NodeName:         test.fields.NodeName,
+// 				TargetAddrs:      test.fields.TargetAddrs,
+// 				AgentPort:        test.fields.AgentPort,
 // 				Concurrency:      test.fields.Concurrency,
 // 				CreationPoolSize: test.fields.CreationPoolSize,
-// 				TargetAddrs:      test.fields.TargetAddrs,
-// 				Discoverer:       test.fields.Discoverer,
 // 			}
 //
 // 			got := ic.Bind()

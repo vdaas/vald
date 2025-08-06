@@ -40,11 +40,11 @@ func TestNew(t *testing.T) {
 		want Group[any]
 	}
 	type test struct {
-		name       string
 		want       want
 		checkFunc  func(want, Group[any]) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want, got Group[any]) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -89,22 +89,22 @@ func TestNew(t *testing.T) {
 func Test_group_Do(t *testing.T) {
 	type args[V any] struct {
 		ctx context.Context
-		key string
 		fn  func(context.Context) (V, error)
+		key string
 	}
 	type want[V any] struct {
 		wantV      V
-		wantShared bool
 		err        error
+		wantShared bool
 	}
 	type test[V any] struct {
-		name       string
 		args       args[V]
 		want       want[V]
 		beforeFunc func(args[V])
 		execFunc   func(*testing.T, args[V]) (V, bool, error)
 		checkFunc  func(want[V], V, bool, error) error
 		afterFunc  func(args[V])
+		name       string
 	}
 	tests := []test[string]{
 		func() test[string] {
@@ -136,7 +136,7 @@ func Test_group_Do(t *testing.T) {
 				name: "returns (v, false, nil) when Do is called with another key",
 				args: args[string]{
 					key: key1,
-					ctx: context.Background(),
+					ctx: t.Context(),
 					fn:  fn1,
 				},
 				want: want[string]{
@@ -237,7 +237,7 @@ func Test_group_Do(t *testing.T) {
 				name: "returns (v, true, nil) when Do is called with the same key",
 				args: args[string]{
 					key: "req_1",
-					ctx: context.Background(),
+					ctx: t.Context(),
 					fn:  fn1,
 				},
 				want: w,
@@ -299,7 +299,7 @@ func Test_group_Do(t *testing.T) {
 
 func TestDo(t *testing.T) {
 	g := New[string]()
-	v, _, err := g.Do(context.Background(), "key", func(context.Context) (string, error) {
+	v, _, err := g.Do(t.Context(), "key", func(context.Context) (string, error) {
 		return "bar", nil
 	})
 	if got, want := fmt.Sprintf("%v (%T)", v, v), "bar (string)"; got != want {
@@ -313,10 +313,10 @@ func TestDo(t *testing.T) {
 func TestDoErr(t *testing.T) {
 	g := New[any]()
 	someErr := errors.New("Some error")
-	v, _, err := g.Do(context.Background(), "key", func(context.Context) (any, error) {
+	v, _, err := g.Do(t.Context(), "key", func(context.Context) (any, error) {
 		return nil, someErr
 	})
-	if err != someErr {
+	if !errors.Is(err, someErr) {
 		t.Errorf("Do error = %v; want someErr %v", err, someErr)
 	}
 	if v != nil {
@@ -350,7 +350,7 @@ func TestDoDupSuppress(t *testing.T) {
 		go func() {
 			defer wg2.Done()
 			wg1.Done()
-			s, _, err := g.Do(context.Background(), "key", fn)
+			s, _, err := g.Do(t.Context(), "key", fn)
 			if err != nil {
 				t.Errorf("Do error: %v", err)
 				return
@@ -382,7 +382,7 @@ func TestForget(t *testing.T) {
 	)
 
 	go func() {
-		g.Do(context.Background(), "key", func(ctx context.Context) (i int, e error) {
+		g.Do(t.Context(), "key", func(ctx context.Context) (i int, e error) {
 			close(firstStarted)
 			<-unblockFirst
 			close(firstFinished)
@@ -393,7 +393,7 @@ func TestForget(t *testing.T) {
 	g.Forget("key")
 
 	unblockSecond := make(chan struct{})
-	secondResult := g.DoChan(context.Background(), "key", func(ctx context.Context) (i int, e error) {
+	secondResult := g.DoChan(t.Context(), "key", func(ctx context.Context) (i int, e error) {
 		t.Log(2, "key")
 		<-unblockSecond
 		return 2, nil
@@ -402,7 +402,7 @@ func TestForget(t *testing.T) {
 	close(unblockFirst)
 	<-firstFinished
 
-	thirdResult := g.DoChan(context.Background(), "key", func(ctx context.Context) (i int, e error) {
+	thirdResult := g.DoChan(t.Context(), "key", func(ctx context.Context) (i int, e error) {
 		t.Log(3, "key")
 		return 3, nil
 	})
@@ -417,7 +417,7 @@ func TestForget(t *testing.T) {
 
 func TestDoChan(t *testing.T) {
 	g := New[string]()
-	ch := g.DoChan(context.Background(), "key", func(ctx context.Context) (string, error) {
+	ch := g.DoChan(t.Context(), "key", func(ctx context.Context) (string, error) {
 		return "bar", nil
 	})
 
@@ -457,7 +457,7 @@ func TestPanicDo(t *testing.T) {
 				}
 			}()
 
-			g.Do(context.Background(), "key", fn)
+			g.Do(t.Context(), "key", fn)
 		}()
 	}
 
@@ -492,7 +492,7 @@ func TestGoexitDo(t *testing.T) {
 					close(done)
 				}
 			}()
-			_, _, err = g.Do(context.Background(), "key", fn)
+			_, _, err = g.Do(t.Context(), "key", fn)
 		}()
 	}
 
@@ -528,7 +528,7 @@ func TestPanicDoChan(t *testing.T) {
 		}()
 
 		g := New[any]()
-		ch := g.DoChan(context.Background(), "", func(context.Context) (any, error) {
+		ch := g.DoChan(t.Context(), "", func(context.Context) (any, error) {
 			panic("Panicking in DoChan")
 		})
 		<-ch
@@ -569,7 +569,7 @@ func TestPanicDoSharedByDoChan(t *testing.T) {
 			defer func() {
 				recover()
 			}()
-			g.Do(context.Background(), "", func(context.Context) (any, error) {
+			g.Do(t.Context(), "", func(context.Context) (any, error) {
 				close(blocked)
 				<-unblock
 				panic("Panicking in Do")
@@ -577,7 +577,7 @@ func TestPanicDoSharedByDoChan(t *testing.T) {
 		}()
 
 		<-blocked
-		ch := g.DoChan(context.Background(), "", func(context.Context) (any, error) {
+		ch := g.DoChan(t.Context(), "", func(context.Context) (any, error) {
 			panic("DoChan unexpectedly executed callback")
 		})
 		close(unblock)
@@ -609,15 +609,15 @@ func TestPanicDoSharedByDoChan(t *testing.T) {
 	}
 }
 
-func ExampleGroup() {
+func TestExampleGroup(t *testing.T) {
 	g := New[string]()
 
 	block := make(chan struct{})
-	res1c := g.DoChan(context.Background(), "key", func(context.Context) (string, error) {
+	res1c := g.DoChan(t.Context(), "key", func(context.Context) (string, error) {
 		<-block
 		return "func 1", nil
 	})
-	res2c := g.DoChan(context.Background(), "key", func(context.Context) (string, error) {
+	res2c := g.DoChan(t.Context(), "key", func(context.Context) (string, error) {
 		<-block
 		return "func 2", nil
 	})
@@ -627,11 +627,11 @@ func ExampleGroup() {
 	res2 := <-res2c
 
 	// Results are shared by functions executed with duplicate keys.
-	fmt.Println("Shared:", res2.Shared)
+	t.Log("Shared:", res2.Shared)
 	// Only the first function is executed: it is registered and started with "key",
 	// and doesn't complete before the second function is registered with a duplicate key.
-	fmt.Println("Equal results:", res1.Val == res2.Val)
-	fmt.Println("Result:", res1.Val)
+	t.Log("Equal results:", res1.Val == res2.Val)
+	t.Log("Result:", res1.Val)
 
 	// Output:
 	// Shared: true
@@ -642,7 +642,7 @@ func ExampleGroup() {
 func TestDoTimeout(t *testing.T) {
 	g := New[string]()
 	start := time.Now()
-	v, _, err := g.Do(context.Background(), "key", func(context.Context) (string, error) {
+	v, _, err := g.Do(t.Context(), "key", func(context.Context) (string, error) {
 		time.Sleep(100 * time.Millisecond)
 		return "bar", nil
 	})
@@ -668,12 +668,12 @@ func TestDoMultipleErrors(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			v, _, err := g.Do(context.Background(), "key", func(context.Context) (string, error) {
+			v, _, err := g.Do(t.Context(), "key", func(context.Context) (string, error) {
 				atomic.AddInt32(&calls, 1)
 				time.Sleep(10 * time.Millisecond)
 				return "", someErr
 			})
-			if err != someErr {
+			if !errors.Is(err, someErr) {
 				t.Errorf("Do error = %v; want %v", err, someErr)
 			}
 			if v != "" {

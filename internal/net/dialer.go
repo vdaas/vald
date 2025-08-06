@@ -45,35 +45,59 @@ type Dialer interface {
 }
 
 type dialer struct {
+	// dnsCache is a cacher.Cache.
 	dnsCache              cacher.Cache[*dialerCache]
-	enableDNSCache        bool
-	dnsCachedOnce         sync.Once
-	tlsConfig             *tls.Config
-	tmu                   sync.RWMutex // lock mutex for tls handshake update
-	dnsRefreshDurationStr string
-	dnsCacheExpirationStr string
-	dnsRefreshDuration    time.Duration
-	dnsCacheExpiration    time.Duration
-	dialerTimeout         time.Duration
-	dialerKeepalive       time.Duration
-	dialerFallbackDelay   time.Duration
+	// ctrl is a control.SocketController.
 	ctrl                  control.SocketController
-	sockFlg               control.SocketFlag
-	dialerDualStack       bool
-	addrs                 sync.Map[string, *addrInfo]
-	der                   *net.Dialer
+	// dialer is a function to dial.
 	dialer                func(ctx context.Context, network, addr string) (Conn, error)
+	// der is a net.Dialer.
+	der                   *net.Dialer
+	// tlsConfig is a tls.Config.
+	tlsConfig             *tls.Config
+	// addrs is a sync.Map.
+	addrs                 sync.Map[string, *addrInfo]
+	// dnsRefreshDurationStr is a DNS refresh duration string.
+	dnsRefreshDurationStr string
+	// dnsCacheExpirationStr is a DNS cache expiration string.
+	dnsCacheExpirationStr string
+	// dnsCacheExpiration is a DNS cache expiration.
+	dnsCacheExpiration    time.Duration
+	// dialerTimeout is a dialer timeout.
+	dialerTimeout         time.Duration
+	// dialerKeepalive is a dialer keepalive.
+	dialerKeepalive       time.Duration
+	// dialerFallbackDelay is a dialer fallback delay.
+	dialerFallbackDelay   time.Duration
+	// dnsRefreshDuration is a DNS refresh duration.
+	dnsRefreshDuration    time.Duration
+	// sockFlg is a control.SocketFlag.
+	sockFlg               control.SocketFlag
+	// tmu is a sync.RWMutex.
+	tmu                   sync.RWMutex
+	// dnsCachedOnce is a sync.Once.
+	dnsCachedOnce         sync.Once
+	// dialerDualStack is a flag to enable dual stack.
+	dialerDualStack       bool
+	// enableDNSCache is a flag to enable DNS cache.
+	enableDNSCache        bool
 }
 
 type addrInfo struct {
+	// addr is an address.
 	addr string
+	// host is a host.
 	host string
+	// port is a port.
 	port string
+	// isIP is a flag to check if the address is an IP address.
 	isIP bool
 }
 
 type dialerCache struct {
+	// ips is a list of IPs.
 	ips []string
+	// cnt is a counter.
 	cnt uint32
 }
 

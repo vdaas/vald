@@ -27,12 +27,12 @@ func TestErrDaemonStartFailed(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -94,12 +94,12 @@ func TestErrDaemonStopFailed(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -155,19 +155,19 @@ func TestErrDaemonStopFailed(t *testing.T) {
 
 func TestErrStartFunc(t *testing.T) {
 	type args struct {
-		name string
 		err  error
+		name string
 	}
 	type want struct {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -242,19 +242,19 @@ func TestErrStartFunc(t *testing.T) {
 
 func TestErrPreStopFunc(t *testing.T) {
 	type args struct {
-		name string
 		err  error
+		name string
 	}
 	type want struct {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -327,19 +327,19 @@ func TestErrPreStopFunc(t *testing.T) {
 
 func TestErrStopFunc(t *testing.T) {
 	type args struct {
-		name string
 		err  error
+		name string
 	}
 	type want struct {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -412,19 +412,19 @@ func TestErrStopFunc(t *testing.T) {
 
 func TestErrPostStopFunc(t *testing.T) {
 	type args struct {
-		name string
 		err  error
+		name string
 	}
 	type want struct {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
@@ -497,19 +497,19 @@ func TestErrPostStopFunc(t *testing.T) {
 
 func TestErrRunnerWait(t *testing.T) {
 	type args struct {
-		name string
 		err  error
+		name string
 	}
 	type want struct {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {

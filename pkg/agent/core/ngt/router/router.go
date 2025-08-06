@@ -26,8 +26,11 @@ import (
 )
 
 type router struct {
+	// REST handler object.
 	handler rest.Handler
-	eg      errgroup.Group
+	// errgroup for managing goroutines.
+	eg errgroup.Group
+	// timeout duration string.
 	timeout string
 }
 

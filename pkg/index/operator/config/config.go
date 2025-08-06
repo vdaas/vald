@@ -23,17 +23,10 @@ type GlobalConfig = config.GlobalConfig
 
 // Data represents the application configurations.
 type Data struct {
-	// GlobalConfig represents application base configurations.
+	Server              *config.Servers       `json:"server_config" yaml:"server_config"`
+	Observability       *config.Observability `json:"observability" yaml:"observability"`
+	Operator            *config.IndexOperator `json:"operator"      yaml:"operator"`
 	config.GlobalConfig `json:",inline" yaml:",inline"`
-
-	// Server represent all server configurations
-	Server *config.Servers `json:"server_config" yaml:"server_config"`
-
-	// Observability represents observability configurations.
-	Observability *config.Observability `json:"observability" yaml:"observability"`
-
-	// Operator represents auto indexing service configurations.
-	Operator *config.IndexOperator `json:"operator" yaml:"operator"`
 }
 
 // NewConfig load configurations from file path.
@@ -45,7 +38,7 @@ func NewConfig(path string) (cfg *Data, err error) {
 	}
 
 	if cfg != nil {
-		_ = cfg.GlobalConfig.Bind()
+		_ = cfg.Bind()
 	} else {
 		return nil, errors.ErrInvalidConfig
 	}

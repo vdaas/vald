@@ -38,10 +38,9 @@ const (
 
 type ValdBenchmarkScenario struct {
 	metav1.TypeMeta   `json:",inline"`
+	Status            ValdBenchmarkScenarioStatus `json:"status,omitempty"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   ValdBenchmarkScenarioSpec   `json:"spec,omitempty"`
-	Status ValdBenchmarkScenarioStatus `json:"status,omitempty"`
+	Spec              ValdBenchmarkScenarioSpec `json:"spec,omitempty"`
 }
 
 type ValdBenchmarkScenarioList struct {

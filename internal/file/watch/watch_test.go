@@ -58,12 +58,12 @@ func TestNew(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		beforeFunc func(args)
 		checkFunc  func(want, Watcher, error) error
 		afterFunc  func(*testing.T, args, Watcher)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got Watcher, err error) error {
 		if !errors.Is(err, w.err) {
@@ -77,7 +77,7 @@ func TestNew(t *testing.T) {
 	defaultAfterFunc := func(t *testing.T, args args, w Watcher) {
 		t.Helper()
 		if w != nil {
-			err := w.Stop(context.Background())
+			err := w.Stop(t.Context())
 			if err != nil {
 				t.Error(err)
 			}
@@ -147,12 +147,12 @@ func Test_watch_init(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
+		fields     fields
 		beforeFunc func(*testing.T, *fields)
 		checkFunc  func(want, *watch, error) error
 		afterFunc  func(*testing.T, Watcher)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
 		if !errors.Is(err, w.err) {
@@ -169,7 +169,7 @@ func Test_watch_init(t *testing.T) {
 			return
 		}
 
-		err := w.Stop(context.Background())
+		err := w.Stop(t.Context())
 		if err != nil {
 			t.Error(err)
 		}
@@ -315,13 +315,13 @@ func Test_watch_Start(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		want       want
+		args       args
 		checkFunc  func(want, <-chan error, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args, Watcher)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
@@ -336,7 +336,7 @@ func Test_watch_Start(t *testing.T) {
 	defaultAfterFunc := func(t *testing.T, args args, w Watcher) {
 		t.Helper()
 		if w != nil {
-			err := w.Stop(context.Background())
+			err := w.Stop(t.Context())
 			if err != nil {
 				t.Error(err)
 			}
@@ -357,7 +357,7 @@ func Test_watch_Start(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			w, tmpDir := defaultWatcher(t)
 			w.Add(tmpDir)
 
@@ -383,7 +383,7 @@ func Test_watch_Start(t *testing.T) {
 					},
 				},
 				checkFunc: func(w want, c <-chan error, e error) error {
-					_, err := file.OverWriteFile(context.Background(), tmpDir+"/watch.go", bytes.NewBuffer(nil), 0o777)
+					_, err := file.OverWriteFile(t.Context(), tmpDir+"/watch.go", bytes.NewBuffer(nil), 0o777)
 					if err != nil {
 						return err
 					}
@@ -408,7 +408,7 @@ func Test_watch_Start(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			w, tmpDir := defaultWatcher(t)
 			w.Add(tmpDir)
 
@@ -428,7 +428,7 @@ func Test_watch_Start(t *testing.T) {
 					},
 				},
 				checkFunc: func(w want, c <-chan error, e error) error {
-					_, err := file.OverWriteFile(context.Background(), tmpDir+"/watch.go", bytes.NewBuffer(nil), 0o777)
+					_, err := file.OverWriteFile(t.Context(), tmpDir+"/watch.go", bytes.NewBuffer(nil), 0o777)
 					if err != nil {
 						return err
 					}
@@ -452,7 +452,7 @@ func Test_watch_Start(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			w, tmpDir := defaultWatcher(t)
 			w.Add(tmpDir)
 
@@ -481,7 +481,7 @@ func Test_watch_Start(t *testing.T) {
 					err: nil,
 				},
 				checkFunc: func(w want, c <-chan error, e error) error {
-					_, err := file.OverWriteFile(context.Background(), tmpDir+"/watch.go", bytes.NewBuffer(nil), 0o777)
+					_, err := file.OverWriteFile(t.Context(), tmpDir+"/watch.go", bytes.NewBuffer(nil), 0o777)
 					if err != nil {
 						return err
 					}
@@ -496,7 +496,7 @@ func Test_watch_Start(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			w, tmpDir := defaultWatcher(t)
 			os.Create(tmpDir + "/watch.go")
 			w.Add(tmpDir)
@@ -541,7 +541,7 @@ func Test_watch_Start(t *testing.T) {
 		}(),
 
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			w, tmpDir := defaultWatcher(t)
 			os.Create(tmpDir + "/watch.go")
 			w.Add(tmpDir)
@@ -585,7 +585,7 @@ func Test_watch_Start(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			w, tmpDir := defaultWatcher(t)
 			os.Create(tmpDir + "/watch.go")
 			w.Add(tmpDir)
@@ -680,13 +680,13 @@ func Test_watch_Add(t *testing.T) {
 		want *watch
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want, *watch, error) error
 		beforeFunc func(*testing.T, *fields, args)
 		afterFunc  func(*testing.T, args, Watcher)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
 		if !errors.Is(err, w.err) {
@@ -716,7 +716,7 @@ func Test_watch_Add(t *testing.T) {
 		t.Helper()
 		t.Helper()
 		if w != nil {
-			err := w.Stop(context.Background())
+			err := w.Stop(t.Context())
 			if err != nil {
 				t.Error(err)
 			}
@@ -838,13 +838,13 @@ func Test_watch_Remove(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want, *watch, error) error
 		beforeFunc func(*testing.T, *fields, args)
 		afterFunc  func(*testing.T, args, Watcher)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
 		if w.err == nil {
@@ -891,7 +891,7 @@ func Test_watch_Remove(t *testing.T) {
 		t.Helper()
 		t.Helper()
 		if w != nil {
-			err := w.Stop(context.Background())
+			err := w.Stop(t.Context())
 			if err != nil {
 				t.Error(err)
 			}
@@ -1011,13 +1011,13 @@ func Test_watch_Stop(t *testing.T) {
 		want *watch
 	}
 	type test struct {
-		name       string
+		want       want
 		args       args
 		fields     fields
-		want       want
 		checkFunc  func(want, *watch, error) error
 		beforeFunc func(*testing.T, *fields, args)
 		afterFunc  func(*testing.T, args, Watcher)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
 		if w.err == nil {
@@ -1057,7 +1057,7 @@ func Test_watch_Stop(t *testing.T) {
 	defaultAfterFunc := func(t *testing.T, args args, w Watcher) {
 		t.Helper()
 		if w != nil {
-			err := w.Stop(context.Background())
+			err := w.Stop(t.Context())
 			if err != nil {
 				t.Error(err)
 			}
@@ -1067,7 +1067,7 @@ func Test_watch_Stop(t *testing.T) {
 		{
 			name: "returns nil when stop success",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 			},
 			fields: fields{
 				dirs: map[string]struct{}{
@@ -1098,7 +1098,7 @@ func Test_watch_Stop(t *testing.T) {
 		{
 			name: "returns non-exist error when the file not exists",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 			},
 			fields: fields{
 				dirs: map[string]struct{}{

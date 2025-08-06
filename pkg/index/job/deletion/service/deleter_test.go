@@ -195,8 +195,8 @@ package service
 // 	}
 // 	type fields struct {
 // 		client        discoverer.Client
-// 		targetAddrs   []string
 // 		targetIndexID string
+// 		targetAddrs   []string
 // 		concurrency   int
 // 	}
 // 	type want struct {
@@ -231,8 +231,8 @@ package service
 // 		       },
 // 		       fields: fields {
 // 		           client:nil,
-// 		           targetAddrs:nil,
 // 		           targetIndexID:"",
+// 		           targetAddrs:nil,
 // 		           concurrency:0,
 // 		       },
 // 		       want: want{},
@@ -256,8 +256,8 @@ package service
 // 		           },
 // 		           fields: fields {
 // 		           client:nil,
-// 		           targetAddrs:nil,
 // 		           targetIndexID:"",
+// 		           targetAddrs:nil,
 // 		           concurrency:0,
 // 		           },
 // 		           want: want{},
@@ -290,8 +290,8 @@ package service
 // 			}
 // 			idx := &index{
 // 				client:        test.fields.client,
-// 				targetAddrs:   test.fields.targetAddrs,
 // 				targetIndexID: test.fields.targetIndexID,
+// 				targetAddrs:   test.fields.targetAddrs,
 // 				concurrency:   test.fields.concurrency,
 // 			}
 //
@@ -309,8 +309,8 @@ package service
 // 	}
 // 	type fields struct {
 // 		client        discoverer.Client
-// 		targetAddrs   []string
 // 		targetIndexID string
+// 		targetAddrs   []string
 // 		concurrency   int
 // 	}
 // 	type want struct {
@@ -341,8 +341,8 @@ package service
 // 		       },
 // 		       fields: fields {
 // 		           client:nil,
-// 		           targetAddrs:nil,
 // 		           targetIndexID:"",
+// 		           targetAddrs:nil,
 // 		           concurrency:0,
 // 		       },
 // 		       want: want{},
@@ -366,8 +366,8 @@ package service
 // 		           },
 // 		           fields: fields {
 // 		           client:nil,
-// 		           targetAddrs:nil,
 // 		           targetIndexID:"",
+// 		           targetAddrs:nil,
 // 		           concurrency:0,
 // 		           },
 // 		           want: want{},
@@ -400,8 +400,8 @@ package service
 // 			}
 // 			idx := &index{
 // 				client:        test.fields.client,
-// 				targetAddrs:   test.fields.targetAddrs,
 // 				targetIndexID: test.fields.targetIndexID,
+// 				targetAddrs:   test.fields.targetAddrs,
 // 				concurrency:   test.fields.concurrency,
 // 			}
 //
@@ -420,8 +420,8 @@ package service
 // 	}
 // 	type fields struct {
 // 		client        discoverer.Client
-// 		targetAddrs   []string
 // 		targetIndexID string
+// 		targetAddrs   []string
 // 		concurrency   int
 // 	}
 // 	type want struct {
@@ -453,8 +453,8 @@ package service
 // 		       },
 // 		       fields: fields {
 // 		           client:nil,
-// 		           targetAddrs:nil,
 // 		           targetIndexID:"",
+// 		           targetAddrs:nil,
 // 		           concurrency:0,
 // 		       },
 // 		       want: want{},
@@ -479,8 +479,8 @@ package service
 // 		           },
 // 		           fields: fields {
 // 		           client:nil,
-// 		           targetAddrs:nil,
 // 		           targetIndexID:"",
+// 		           targetAddrs:nil,
 // 		           concurrency:0,
 // 		           },
 // 		           want: want{},
@@ -513,8 +513,8 @@ package service
 // 			}
 // 			idx := &index{
 // 				client:        test.fields.client,
-// 				targetAddrs:   test.fields.targetAddrs,
 // 				targetIndexID: test.fields.targetIndexID,
+// 				targetAddrs:   test.fields.targetAddrs,
 // 				concurrency:   test.fields.concurrency,
 // 			}
 //

@@ -29,22 +29,12 @@ type (
 // Config represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
+	Server              *config.Servers       `json:"server_config"  yaml:"server_config"`
+	Observability       *config.Observability `json:"observability"  yaml:"observability"`
+	Client              *config.GRPCClient    `json:"client"         yaml:"client"`
+	IngressFilters      *config.IngressFilter `json:"ingress_filter" yaml:"ingress_filter"`
+	EgressFilters       *config.EgressFilter  `json:"egress_filter"  yaml:"egress_filter"`
 	config.GlobalConfig `json:",inline" yaml:",inline"`
-
-	// Server represent all server configurations
-	Server *config.Servers `json:"server_config" yaml:"server_config"`
-
-	// Observability represent observability configurations
-	Observability *config.Observability `json:"observability" yaml:"observability"`
-
-	// Client represent gateway client configuration
-	Client *config.GRPCClient `json:"client" yaml:"client"`
-
-	// IngressFilters represent filter configuration for ingress payload
-	IngressFilters *config.IngressFilter `json:"ingress_filter" yaml:"ingress_filter"`
-
-	// EgressFilters represent filter configuration for egress payload
-	EgressFilters *config.EgressFilter `json:"egress_filter" yaml:"egress_filter"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {

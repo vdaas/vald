@@ -27,7 +27,10 @@ const (
 
 // SearchResult is struct for comfortable use in Go.
 type SearchResult struct {
-	ID       uint32
-	Distance float32
+	// Error.
 	Error    error
+	// ID.
+	ID       uint32
+	// Distance.
+	Distance float32
 }

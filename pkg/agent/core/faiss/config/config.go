@@ -27,16 +27,13 @@ type GlobalConfig = config.GlobalConfig
 // Data represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
-	GlobalConfig `json:",inline" yaml:",inline"`
-
 	// Server represent all server configurations
-	Server *config.Servers `json:"server_config" yaml:"server_config"`
-
+	Server        *config.Servers       `json:"server_config" yaml:"server_config"`
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
-
 	// Faiss represent faiss core configuration
-	Faiss *config.Faiss `json:"faiss" yaml:"faiss"`
+	Faiss         *config.Faiss         `json:"faiss"         yaml:"faiss"`
+	GlobalConfig  `json:",inline" yaml:",inline"`
 }
 
 // NewConfig returns the Data struct or error from the given file path.

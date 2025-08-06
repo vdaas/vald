@@ -18,21 +18,21 @@ package config
 
 // BenchmarkJob represents the configuration for the internal benchmark search job.
 type BenchmarkJob struct {
-	Target             *BenchmarkTarget    `json:"target,omitempty"               yaml:"target"`
+	RemoveConfig       *RemoveConfig       `json:"remove_config,omitempty"        yaml:"remove_config"`
 	Dataset            *BenchmarkDataset   `json:"dataset,omitempty"              yaml:"dataset"`
-	Replica            int                 `json:"replica,omitempty"              yaml:"replica"`
-	Repetition         int                 `json:"repetition,omitempty"           yaml:"repetition"`
-	JobType            string              `json:"job_type,omitempty"             yaml:"job_type"`
+	ClientConfig       *GRPCClient         `json:"client_config,omitempty"        yaml:"client_config"`
+	ObjectConfig       *ObjectConfig       `json:"object_config,omitempty"        yaml:"object_config"`
+	Target             *BenchmarkTarget    `json:"target,omitempty"               yaml:"target"`
 	InsertConfig       *InsertConfig       `json:"insert_config,omitempty"        yaml:"insert_config"`
 	UpdateConfig       *UpdateConfig       `json:"update_config,omitempty"        yaml:"update_config"`
 	UpsertConfig       *UpsertConfig       `json:"upsert_config,omitempty"        yaml:"upsert_config"`
 	SearchConfig       *SearchConfig       `json:"search_config,omitempty"        yaml:"search_config"`
-	RemoveConfig       *RemoveConfig       `json:"remove_config,omitempty"        yaml:"remove_config"`
-	ObjectConfig       *ObjectConfig       `json:"object_config,omitempty"        yaml:"object_config"`
-	ClientConfig       *GRPCClient         `json:"client_config,omitempty"        yaml:"client_config"`
-	Rules              []*BenchmarkJobRule `json:"rules,omitempty"                yaml:"rules"`
+	JobType            string              `json:"job_type,omitempty"             yaml:"job_type"`
 	BeforeJobName      string              `json:"before_job_name,omitempty"      yaml:"before_job_name"`
 	BeforeJobNamespace string              `json:"before_job_namespace,omitempty" yaml:"before_job_namespace"`
+	Rules              []*BenchmarkJobRule `json:"rules,omitempty"                yaml:"rules"`
+	Repetition         int                 `json:"repetition,omitempty"           yaml:"repetition"`
+	Replica            int                 `json:"replica,omitempty"              yaml:"replica"`
 	RPS                int                 `json:"rps,omitempty"                  yaml:"rps"`
 	ConcurrencyLimit   int                 `json:"concurrency_limit,omitempty"    yaml:"concurrency_limit"`
 }
@@ -46,9 +46,9 @@ type BenchmarkScenario struct {
 
 // BenchmarkTarget defines the desired state of BenchmarkTarget.
 type BenchmarkTarget struct {
+	Meta map[string]string `json:"meta,omitempty"`
 	Host string            `json:"host,omitempty"`
 	Port int               `json:"port,omitempty"`
-	Meta map[string]string `json:"meta,omitempty"`
 }
 
 func (t *BenchmarkTarget) Bind() *BenchmarkTarget {
@@ -58,11 +58,11 @@ func (t *BenchmarkTarget) Bind() *BenchmarkTarget {
 
 // BenchmarkDataset defines the desired state of BenchmarkDateset.
 type BenchmarkDataset struct {
+	Range   *BenchmarkDatasetRange `json:"range,omitempty"`
 	Name    string                 `json:"name,omitempty"`
 	Group   string                 `json:"group,omitempty"`
-	Indexes int                    `json:"indexes,omitempty"`
-	Range   *BenchmarkDatasetRange `json:"range,omitempty"`
 	URL     string                 `json:"url,omitempty"`
+	Indexes int                    `json:"indexes,omitempty"`
 }
 
 func (d *BenchmarkDataset) Bind() *BenchmarkDataset {
@@ -92,8 +92,8 @@ func (r *BenchmarkJobRule) Bind() *BenchmarkJobRule {
 
 // InsertConfig defines the desired state of insert config.
 type InsertConfig struct {
-	SkipStrictExistCheck bool   `json:"skip_strict_exist_check,omitempty"`
 	Timestamp            string `json:"timestamp,omitempty"`
+	SkipStrictExistCheck bool   `json:"skip_strict_exist_check,omitempty"`
 }
 
 func (cfg *InsertConfig) Bind() *InsertConfig {
@@ -103,8 +103,8 @@ func (cfg *InsertConfig) Bind() *InsertConfig {
 
 // UpdateConfig defines the desired state of update config.
 type UpdateConfig struct {
-	SkipStrictExistCheck  bool   `json:"skip_strict_exist_check,omitempty"`
 	Timestamp             string `json:"timestamp,omitempty"`
+	SkipStrictExistCheck  bool   `json:"skip_strict_exist_check,omitempty"`
 	DisableBalancedUpdate bool   `json:"disable_balanced_update,omitempty"`
 }
 
@@ -115,8 +115,8 @@ func (cfg *UpdateConfig) Bind() *UpdateConfig {
 
 // UpsertConfig defines the desired state of upsert config.
 type UpsertConfig struct {
-	SkipStrictExistCheck  bool   `json:"skip_strict_exist_check,omitempty"`
 	Timestamp             string `json:"timestamp,omitempty"`
+	SkipStrictExistCheck  bool   `json:"skip_strict_exist_check,omitempty"`
 	DisableBalancedUpdate bool   `json:"disable_balanced_update,omitempty"`
 }
 
@@ -127,13 +127,13 @@ func (cfg *UpsertConfig) Bind() *UpsertConfig {
 
 // SearchConfig defines the desired state of search config.
 type SearchConfig struct {
+	Timeout              string  `json:"timeout,omitempty"`
+	AggregationAlgorithm string  `json:"aggregation_algorithm,omitempty"`
 	Epsilon              float32 `json:"epsilon,omitempty"`
 	Radius               float32 `json:"radius,omitempty"`
 	Num                  int32   `json:"num,omitempty"`
 	MinNum               int32   `json:"min_num,omitempty"`
-	Timeout              string  `json:"timeout,omitempty"`
 	EnableLinearSearch   bool    `json:"enable_linear_search,omitempty"`
-	AggregationAlgorithm string  `json:"aggregation_algorithm,omitempty"`
 }
 
 func (cfg *SearchConfig) Bind() *SearchConfig {
@@ -144,8 +144,8 @@ func (cfg *SearchConfig) Bind() *SearchConfig {
 
 // RemoveConfig defines the desired state of remove config.
 type RemoveConfig struct {
-	SkipStrictExistCheck bool   `json:"skip_strict_exist_check,omitempty"`
 	Timestamp            string `json:"timestamp,omitempty"`
+	SkipStrictExistCheck bool   `json:"skip_strict_exist_check,omitempty"`
 }
 
 func (cfg *RemoveConfig) Bind() *RemoveConfig {

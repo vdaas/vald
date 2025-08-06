@@ -30,32 +30,33 @@ type Closer interface {
 	Close()
 }
 
-type Bit32 interface {
-	Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) (any, error)
-	Insert(vec []float32) (uint, error)
-	InsertCommit(vec []float32, poolSize uint32) (uint, error)
-	BulkInsert(vecs [][]float32) ([]uint, []error)
-	BulkInsertCommit(vecs [][]float32, poolSize uint32) ([]uint, []error)
+// Bit is the interface for bit operations.
+type Bit[T float32 | float64] interface {
+	// Search searches for a vector.
+	Search(ctx context.Context, vec []T, size int, epsilon, radius float32) (any, error)
+	// Insert inserts a vector.
+	Insert(vec []T) (uint, error)
+	// InsertCommit inserts a vector and commits.
+	InsertCommit(vec []T, poolSize uint32) (uint, error)
+	// BulkInsert inserts multiple vectors.
+	BulkInsert(vecs [][]T) ([]uint, []error)
+	// BulkInsertCommit inserts multiple vectors and commits.
+	BulkInsertCommit(vecs [][]T, poolSize uint32) ([]uint, []error)
+	// CreateAndSaveIndex creates and saves the index.
 	CreateAndSaveIndex(poolSize uint32) error
+	// CreateIndex creates the index.
 	CreateIndex(poolSize uint32) error
+	// SaveIndex saves the index.
 	SaveIndex() error
+	// Remove removes a vector.
 	Remove(id uint) error
+	// BulkRemove removes multiple vectors.
 	BulkRemove(ids ...uint) error
-	GetVector(id uint) ([]float32, error)
+	// GetVector gets a vector.
+	GetVector(id uint) ([]T, error)
 	Closer
 }
 
-type Bit64 interface {
-	Search(ctx context.Context, vec []float64, size int, epsilon, radius float32) (any, error)
-	Insert(vec []float64) (uint, error)
-	InsertCommit(vec []float64, poolSize uint32) (uint, error)
-	BulkInsert(vecs [][]float64) ([]uint, []error)
-	BulkInsertCommit(vecs [][]float64, poolSize uint32) ([]uint, []error)
-	CreateAndSaveIndex(poolSize uint32) error
-	CreateIndex(poolSize uint32) error
-	SaveIndex() error
-	Remove(id uint) error
-	BulkRemove(ids ...uint) error
-	GetVector(id uint) ([]float64, error)
-	Closer
-}
+type Bit32 Bit[float32]
+
+type Bit64 Bit[float64]

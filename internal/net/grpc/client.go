@@ -115,52 +115,52 @@ type Client interface {
 
 // gRPCClient is an implementation of the Client interface.
 type gRPCClient struct {
-	// name is the name of the gRPC client, used for logging.
-	name string
-	// addrs is a set of initial addresses to connect to.
-	addrs map[string]struct{}
-	// poolSize is the number of connections per address in the pool.
-	poolSize uint64
-	// clientCount is the total number of active client connections.
-	clientCount uint64
-	// conns stores the connection pools for each address.
-	conns sync.Map[string, pool.Conn]
-	// hcDur is the duration between health checks.
-	hcDur time.Duration
-	// prDur is the duration between pool rebalances.
-	prDur time.Duration
 	// dialer is the custom net.Dialer.
-	dialer net.Dialer
-	// enablePoolRebalance enables periodic rebalancing of connection pools.
-	enablePoolRebalance bool
+	dialer                 net.Dialer
+	// eg is the error group for managing background goroutines.
+	eg                     errgroup.Group
+	// cb is the circuit breaker.
+	cb                     circuitbreaker.CircuitBreaker
+	// bo is the backoff strategy for retries.
+	bo                     backoff.Backoff
+	// addrs is a set of initial addresses to connect to.
+	addrs                  map[string]struct{}
+	// stopMonitor is the function to stop the connection monitor.
+	stopMonitor            context.CancelFunc
+	// ech is the error channel for the connection monitor.
+	ech                    <-chan error
+	// crl is the connection request list for pending reconnections.
+	crl                    sync.Map[string, bool]
 	// disableResolveDNSAddrs stores addresses for which DNS resolution should be disabled.
 	disableResolveDNSAddrs sync.Map[string, bool]
-	// resolveDNS enables DNS resolution for addresses.
-	resolveDNS bool
-	// dopts are the default dial options.
-	dopts []DialOption
-	// copts are the default call options.
-	copts []CallOption
+	// conns stores the connection pools for each address.
+	conns                  sync.Map[string, pool.Conn]
+	// name is the name of the gRPC client, used for logging.
+	name                   string
 	// roccd is the reconnection old connection closing duration.
-	roccd string
-	// eg is the error group for managing background goroutines.
-	eg errgroup.Group
-	// bo is the backoff strategy for retries.
-	bo backoff.Backoff
-	// cb is the circuit breaker.
-	cb circuitbreaker.CircuitBreaker
+	roccd                  string
+	// dopts are the default dial options.
+	dopts                  []DialOption
+	// copts are the default call options.
+	copts                  []CallOption
 	// gbo is the gRPC backoff configuration.
-	gbo gbackoff.Config
+	gbo                    gbackoff.Config
+	// hcDur is the duration between health checks.
+	hcDur                  time.Duration
 	// mcd is the minimum connection timeout duration.
-	mcd time.Duration
-	// crl is the connection request list for pending reconnections.
-	crl sync.Map[string, bool]
-	// ech is the error channel for the connection monitor.
-	ech <-chan error
+	mcd                    time.Duration
+	// prDur is the duration between pool rebalances.
+	prDur                  time.Duration
+	// clientCount is the total number of active client connections.
+	clientCount            uint64
+	// poolSize is the number of connections per address in the pool.
+	poolSize               uint64
 	// monitorRunning indicates if the connection monitor is running.
-	monitorRunning atomic.Bool
-	// stopMonitor is the function to stop the connection monitor.
-	stopMonitor context.CancelFunc
+	monitorRunning         atomic.Bool
+	// resolveDNS enables DNS resolution for addresses.
+	resolveDNS             bool
+	// enablePoolRebalance enables periodic rebalancing of connection pools.
+	enablePoolRebalance    bool
 }
 
 const (
@@ -249,11 +249,11 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 	g.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer g.monitorRunning.Store(false)
 		defer close(ech)
-		defer func() {
-			if err := g.Close(context.Background()); err != nil {
+		defer func(ctx context.Context) {
+			if err := g.Close(ctx); err != nil {
 				log.Error(err)
 			}
-		}()
+		}(ctx)
 
 		var hcTick, prTick *time.Ticker
 

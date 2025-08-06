@@ -24,50 +24,43 @@ import (
 
 // Cassandra represents the configuration for the internal cassandra package.
 type Cassandra struct {
-	Hosts             []string `json:"hosts"              yaml:"hosts"`
-	CQLVersion        string   `json:"cql_version"        yaml:"cql_version"`
-	ProtoVersion      int      `json:"proto_version"      yaml:"proto_version"`
-	Timeout           string   `json:"timeout"            yaml:"timeout"`
-	ConnectTimeout    string   `json:"connect_timeout"    yaml:"connect_timeout"`
-	Port              int      `json:"port"               yaml:"port"`
-	Keyspace          string   `json:"keyspace"           yaml:"keyspace"`
-	NumConns          int      `json:"num_conns"          yaml:"num_conns"`
-	Consistency       string   `json:"consistency"        yaml:"consistency"`
-	SerialConsistency string   `json:"serial_consistency" yaml:"serial_consistency"`
-
-	Username string `json:"username" yaml:"username"`
-	Password string `json:"password" yaml:"password"`
-
-	PoolConfig         *PoolConfig         `json:"pool_config"         yaml:"pool_config"`
-	RetryPolicy        *RetryPolicy        `json:"retry_policy"        yaml:"retry_policy"`
-	ReconnectionPolicy *ReconnectionPolicy `json:"reconnection_policy" yaml:"reconnection_policy"`
-	HostFilter         *HostFilter         `json:"host_filter"         yaml:"host_filter"`
-
-	SocketKeepalive          string `json:"socket_keepalive"            yaml:"socket_keepalive"`
-	MaxPreparedStmts         int    `json:"max_prepared_stmts"          yaml:"max_prepared_stmts"`
-	MaxRoutingKeyInfo        int    `json:"max_routing_key_info"        yaml:"max_routing_key_info"`
-	PageSize                 int    `json:"page_size"                   yaml:"page_size"`
-	TLS                      *TLS   `json:"tls"                         yaml:"tls"`
-	Net                      *Net   `json:"net"                         yaml:"net"`
-	EnableHostVerification   bool   `json:"enable_host_verification"    yaml:"enable_host_verification"`
-	DefaultTimestamp         bool   `json:"default_timestamp"           yaml:"default_timestamp"`
-	ReconnectInterval        string `json:"reconnect_interval"          yaml:"reconnect_interval"`
-	MaxWaitSchemaAgreement   string `json:"max_wait_schema_agreement"   yaml:"max_wait_schema_agreement"`
-	IgnorePeerAddr           bool   `json:"ignore_peer_addr"            yaml:"ignore_peer_addr"`
-	DisableInitialHostLookup bool   `json:"disable_initial_host_lookup" yaml:"disable_initial_host_lookup"`
-	DisableNodeStatusEvents  bool   `json:"disable_node_status_events"  yaml:"disable_node_status_events"`
-	DisableTopologyEvents    bool   `json:"disable_topology_events"     yaml:"disable_topology_events"`
-	DisableSchemaEvents      bool   `json:"disable_schema_events"       yaml:"disable_schema_events"`
-	DisableSkipMetadata      bool   `json:"disable_skip_metadata"       yaml:"disable_skip_metadata"`
-	DefaultIdempotence       bool   `json:"default_idempotence"         yaml:"default_idempotence"`
-	WriteCoalesceWaitTime    string `json:"write_coalesce_wait_time"    yaml:"write_coalesce_wait_time"`
-
-	// meta
-	KVTable string `json:"kv_table" yaml:"kv_table"`
-	VKTable string `json:"vk_table" yaml:"vk_table"`
-
-	// backup manager
-	VectorBackupTable string `json:"vector_backup_table" yaml:"vector_backup_table"`
+	PoolConfig               *PoolConfig         `json:"pool_config"                 yaml:"pool_config"`
+	Net                      *Net                `json:"net"                         yaml:"net"`
+	TLS                      *TLS                `json:"tls"                         yaml:"tls"`
+	HostFilter               *HostFilter         `json:"host_filter"                 yaml:"host_filter"`
+	ReconnectionPolicy       *ReconnectionPolicy `json:"reconnection_policy"         yaml:"reconnection_policy"`
+	RetryPolicy              *RetryPolicy        `json:"retry_policy"                yaml:"retry_policy"`
+	VKTable                  string              `json:"vk_table"                    yaml:"vk_table"`
+	ReconnectInterval        string              `json:"reconnect_interval"          yaml:"reconnect_interval"`
+	Consistency              string              `json:"consistency"                 yaml:"consistency"`
+	SerialConsistency        string              `json:"serial_consistency"          yaml:"serial_consistency"`
+	Username                 string              `json:"username"                    yaml:"username"`
+	Password                 string              `json:"password"                    yaml:"password"`
+	Keyspace                 string              `json:"keyspace"                    yaml:"keyspace"`
+	KVTable                  string              `json:"kv_table"                    yaml:"kv_table"`
+	ConnectTimeout           string              `json:"connect_timeout"             yaml:"connect_timeout"`
+	Timeout                  string              `json:"timeout"                     yaml:"timeout"`
+	SocketKeepalive          string              `json:"socket_keepalive"            yaml:"socket_keepalive"`
+	WriteCoalesceWaitTime    string              `json:"write_coalesce_wait_time"    yaml:"write_coalesce_wait_time"`
+	CQLVersion               string              `json:"cql_version"                 yaml:"cql_version"`
+	MaxWaitSchemaAgreement   string              `json:"max_wait_schema_agreement"   yaml:"max_wait_schema_agreement"`
+	VectorBackupTable        string              `json:"vector_backup_table"         yaml:"vector_backup_table"`
+	Hosts                    []string            `json:"hosts"                       yaml:"hosts"`
+	MaxRoutingKeyInfo        int                 `json:"max_routing_key_info"        yaml:"max_routing_key_info"`
+	MaxPreparedStmts         int                 `json:"max_prepared_stmts"          yaml:"max_prepared_stmts"`
+	ProtoVersion             int                 `json:"proto_version"               yaml:"proto_version"`
+	PageSize                 int                 `json:"page_size"                   yaml:"page_size"`
+	Port                     int                 `json:"port"                        yaml:"port"`
+	NumConns                 int                 `json:"num_conns"                   yaml:"num_conns"`
+	DisableTopologyEvents    bool                `json:"disable_topology_events"     yaml:"disable_topology_events"`
+	DefaultTimestamp         bool                `json:"default_timestamp"           yaml:"default_timestamp"`
+	DisableSchemaEvents      bool                `json:"disable_schema_events"       yaml:"disable_schema_events"`
+	DisableSkipMetadata      bool                `json:"disable_skip_metadata"       yaml:"disable_skip_metadata"`
+	DefaultIdempotence       bool                `json:"default_idempotence"         yaml:"default_idempotence"`
+	DisableNodeStatusEvents  bool                `json:"disable_node_status_events"  yaml:"disable_node_status_events"`
+	DisableInitialHostLookup bool                `json:"disable_initial_host_lookup" yaml:"disable_initial_host_lookup"`
+	IgnorePeerAddr           bool                `json:"ignore_peer_addr"            yaml:"ignore_peer_addr"`
+	EnableHostVerification   bool                `json:"enable_host_verification"    yaml:"enable_host_verification"`
 }
 
 // PoolConfig represents the configuration for the pool config.
@@ -87,9 +80,9 @@ func (pc *PoolConfig) Bind() *PoolConfig {
 
 // RetryPolicy represents the configuration for the retry policy.
 type RetryPolicy struct {
-	NumRetries  int    `json:"num_retries"  yaml:"num_retries"`
 	MinDuration string `json:"min_duration" yaml:"min_duration"`
 	MaxDuration string `json:"max_duration" yaml:"max_duration"`
+	NumRetries  int    `json:"num_retries"  yaml:"num_retries"`
 }
 
 // Bind binds the actual data from the RetryPolicy receiver fields.
@@ -101,8 +94,8 @@ func (rp *RetryPolicy) Bind() *RetryPolicy {
 
 // ReconnectionPolicy represents the configuration for the reconnection policy.
 type ReconnectionPolicy struct {
-	MaxRetries      int    `json:"max_retries"      yaml:"max_retries"`
 	InitialInterval string `json:"initial_interval" yaml:"initial_interval"`
+	MaxRetries      int    `json:"max_retries"      yaml:"max_retries"`
 }
 
 // Bind binds the actual data from the ReconnectionPolicy receiver fields.
@@ -113,9 +106,9 @@ func (rp *ReconnectionPolicy) Bind() *ReconnectionPolicy {
 
 // HostFilter represents the configuration for the host filter.
 type HostFilter struct {
-	Enabled    bool     `json:"enabled"`
 	DataCenter string   `json:"data_center" yaml:"data_center"`
 	WhiteList  []string `json:"white_list"  yaml:"white_list"`
+	Enabled    bool     `json:"enabled"`
 }
 
 // Bind binds the actual data from the HostFilter receiver fields.

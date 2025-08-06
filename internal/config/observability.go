@@ -18,10 +18,10 @@ package config
 
 // Observability represents the configuration for the observability.
 type Observability struct {
-	Enabled bool     `json:"enabled" yaml:"enabled"`
 	OTLP    *OTLP    `json:"otlp"    yaml:"otlp"`
 	Metrics *Metrics `json:"metrics" yaml:"metrics"`
 	Trace   *Trace   `json:"trace"   yaml:"trace"`
+	Enabled bool     `json:"enabled" yaml:"enabled"`
 }
 
 // Bind binds the actual data from the Observability receiver fields.
@@ -51,14 +51,14 @@ func (o *Observability) Bind() *Observability {
 }
 
 type OTLP struct {
-	CollectorEndpoint       string         `json:"collector_endpoint"          yaml:"collector_endpoint"`
 	Attribute               *OTLPAttribute `json:"attribute"                   yaml:"attribute"`
+	CollectorEndpoint       string         `json:"collector_endpoint"          yaml:"collector_endpoint"`
 	TraceBatchTimeout       string         `json:"trace_batch_timeout"         yaml:"trace_batch_timeout"`
 	TraceExportTimeout      string         `json:"trace_export_timeout"        yaml:"trace_export_timeout"`
-	TraceMaxExportBatchSize int            `json:"trace_max_export_batch_size" yaml:"trace_max_export_batch_size"`
-	TraceMaxQueueSize       int            `json:"trace_max_queue_size"        yaml:"trace_max_queue_size"`
 	MetricsExportInterval   string         `json:"metrics_export_interval"     yaml:"metrics_export_interval"`
 	MetricsExportTimeout    string         `json:"metrics_export_timeout"      yaml:"metrics_export_timeout"`
+	TraceMaxExportBatchSize int            `json:"trace_max_export_batch_size" yaml:"trace_max_export_batch_size"`
+	TraceMaxQueueSize       int            `json:"trace_max_queue_size"        yaml:"trace_max_queue_size"`
 }
 
 // Bind binds the actual data from the OTLP receiver fields.
@@ -106,8 +106,8 @@ func (t *Trace) Bind() *Trace {
 
 // Metrics represents the configuration for the metrics.
 type Metrics struct {
-	EnableVersionInfo bool     `json:"enable_version_info" yaml:"enable_version_info"`
 	VersionInfoLabels []string `json:"version_info_labels" yaml:"version_info_labels"`
+	EnableVersionInfo bool     `json:"enable_version_info" yaml:"enable_version_info"`
 	EnableMemory      bool     `json:"enable_memory"       yaml:"enable_memory"`
 	EnableGoroutine   bool     `json:"enable_goroutine"    yaml:"enable_goroutine"`
 	EnableCGO         bool     `json:"enable_cgo"          yaml:"enable_cgo"`

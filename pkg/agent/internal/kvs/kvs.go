@@ -51,10 +51,14 @@ type ValueStructUo struct {
 }
 
 type bidi struct {
-	ou          [slen]*sync.Map[uint32, valueStructOu]
-	uo          [slen]*sync.Map[string, ValueStructUo]
+	// map for OID -> UUID.
+	ou [slen]*sync.Map[uint32, valueStructOu]
+	// map for UUID -> OID.
+	uo [slen]*sync.Map[string, ValueStructUo]
+	// concurrency for ranging.
 	concurrency int
-	l           uint64
+	// length of the bidi map.
+	l uint64
 }
 
 const (

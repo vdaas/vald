@@ -44,13 +44,12 @@ func TestNewQueue(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, Queue, error) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got Queue, err error) error {
 		if !errors.Is(err, w.err) {
@@ -158,27 +157,26 @@ func Test_queue_Start(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		buffer  int
 		eg      errgroup.Group
-		qcdur   time.Duration
-		inCh    chan JobFunc
-		outCh   chan JobFunc
 		qLen    atomic.Value
 		running atomic.Value
+		inCh    chan JobFunc
+		outCh   chan JobFunc
+		buffer  int
+		qcdur   time.Duration
 	}
 	type want struct {
 		want <-chan error
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		args       args
 		checkFunc  func(want, <-chan error, error) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(args)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
@@ -204,7 +202,7 @@ func Test_queue_Start(t *testing.T) {
 			return test{
 				name: "Start success.",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 				},
 				fields: fields{
 					buffer: 10,
@@ -238,7 +236,7 @@ func Test_queue_Start(t *testing.T) {
 			return test{
 				name: "Start failed when queue is already running.",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 				},
 				fields: fields{
 					buffer: 0,
@@ -262,7 +260,7 @@ func Test_queue_Start(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			wantC := make(chan error)
 			close(wantC)
 			return test{
@@ -298,7 +296,7 @@ func Test_queue_Start(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			inCh := make(chan JobFunc, 10)
 			wantC := make(chan error)
 			close(wantC)
@@ -381,12 +379,12 @@ func Test_queue_isRunning(t *testing.T) {
 		want bool
 	}
 	type test struct {
-		name       string
 		fields     fields
-		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -442,26 +440,25 @@ func Test_queue_Push(t *testing.T) {
 		job JobFunc
 	}
 	type fields struct {
-		buffer  int
 		eg      errgroup.Group
-		qcdur   time.Duration
-		inCh    chan JobFunc
-		outCh   chan JobFunc
 		qLen    atomic.Value
 		running atomic.Value
+		inCh    chan JobFunc
+		outCh   chan JobFunc
+		buffer  int
+		qcdur   time.Duration
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
 		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(args)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -474,7 +471,7 @@ func Test_queue_Push(t *testing.T) {
 			return test{
 				name: "return nil when push success.",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					job: func(context.Context) error {
 						return nil
 					},
@@ -503,7 +500,7 @@ func Test_queue_Push(t *testing.T) {
 			return test{
 				name: "return error when job is nil.",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					job: nil,
 				},
 				want: want{
@@ -515,7 +512,7 @@ func Test_queue_Push(t *testing.T) {
 			return test{
 				name: "return error when queue is not running.",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					job: func(context.Context) error {
 						return nil
 					},
@@ -532,7 +529,7 @@ func Test_queue_Push(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			inCh := make(chan JobFunc, 1)
 			return test{
 				name: "return error when ctx.Done.",
@@ -611,27 +608,26 @@ func Test_queue_Pop(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		buffer  int
 		eg      errgroup.Group
-		qcdur   time.Duration
-		inCh    chan JobFunc
-		outCh   chan JobFunc
 		qLen    atomic.Value
 		running atomic.Value
+		inCh    chan JobFunc
+		outCh   chan JobFunc
+		buffer  int
+		qcdur   time.Duration
 	}
 	type want struct {
 		want JobFunc
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		args       args
 		checkFunc  func(want, JobFunc, error) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(args)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got JobFunc, err error) error {
 		if !errors.Is(err, w.err) {
@@ -644,7 +640,7 @@ func Test_queue_Pop(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx := context.Background()
+			ctx := t.Context()
 			f := JobFunc(func(context.Context) error {
 				return nil
 			})
@@ -681,7 +677,7 @@ func Test_queue_Pop(t *testing.T) {
 		{
 			name: "return (nil, error) when queue is not running.",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 			},
 			fields: fields{
 				running: func() (v atomic.Value) {
@@ -699,7 +695,7 @@ func Test_queue_Pop(t *testing.T) {
 			},
 		},
 		func() test {
-			ctx := context.Background()
+			ctx := t.Context()
 			f := JobFunc(func(context.Context) error {
 				return nil
 			})
@@ -736,7 +732,7 @@ func Test_queue_Pop(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx := context.Background()
+			ctx := t.Context()
 			f := JobFunc(func(context.Context) error {
 				return nil
 			})
@@ -774,7 +770,7 @@ func Test_queue_Pop(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "return (JobFunc, error) when context canceled.",
 				args: args{
@@ -850,12 +846,12 @@ func Test_queue_Len(t *testing.T) {
 		want uint64
 	}
 	type test struct {
-		name       string
 		fields     fields
-		want       want
 		checkFunc  func(want, uint64) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got uint64) error {
 		if !reflect.DeepEqual(got, w.want) {

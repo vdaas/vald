@@ -27,24 +27,24 @@ import (
 
 func TestServers_Bind(t *testing.T) {
 	type fields struct {
+		TLS                  *TLS
+		FullShutdownDuration string
 		Servers              []*Server
 		HealthCheckServers   []*Server
 		MetricsServers       []*Server
 		StartUpStrategy      []string
 		ShutdownStrategy     []string
-		FullShutdownDuration string
-		TLS                  *TLS
 	}
 	type want struct {
 		want *Servers
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *Servers) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *Servers) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -301,24 +301,24 @@ func TestServers_Bind(t *testing.T) {
 
 func TestServers_GetGRPCStreamConcurrency(t *testing.T) {
 	type fields struct {
+		TLS                  *TLS
+		FullShutdownDuration string
 		Servers              []*Server
 		HealthCheckServers   []*Server
 		MetricsServers       []*Server
 		StartUpStrategy      []string
 		ShutdownStrategy     []string
-		FullShutdownDuration string
-		TLS                  *TLS
 	}
 	type want struct {
 		wantC int
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, int) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		fields     fields
+		want       want
 	}
 	defaultCheckFunc := func(w want, gotC int) error {
 		if !reflect.DeepEqual(gotC, w.wantC) {
@@ -505,12 +505,12 @@ func TestHTTP_Bind(t *testing.T) {
 		want *HTTP
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *HTTP) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		fields     fields
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *HTTP) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -630,30 +630,30 @@ func TestHTTP_Bind(t *testing.T) {
 
 func TestGRPC_Bind(t *testing.T) {
 	type fields struct {
-		BidirectionalStreamConcurrency int
-		MaxReceiveMessageSize          int
-		MaxSendMessageSize             int
-		InitialWindowSize              int
-		InitialConnWindowSize          int
 		Keepalive                      *GRPCKeepalive
-		WriteBufferSize                int
-		ReadBufferSize                 int
 		ConnectionTimeout              string
+		Interceptors                   []string
+		WriteBufferSize                int
+		InitialConnWindowSize          int
+		InitialWindowSize              int
+		BidirectionalStreamConcurrency int
+		ReadBufferSize                 int
+		MaxSendMessageSize             int
+		MaxReceiveMessageSize          int
 		MaxHeaderListSize              uint32
 		HeaderTableSize                uint32
-		Interceptors                   []string
 		EnableReflection               bool
 	}
 	type want struct {
 		want *GRPC
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *GRPC) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *GRPC) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -850,12 +850,12 @@ func TestGRPCKeepalive_Bind(t *testing.T) {
 		want *GRPCKeepalive
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *GRPCKeepalive) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		fields     fields
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *GRPCKeepalive) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -968,28 +968,28 @@ func TestGRPCKeepalive_Bind(t *testing.T) {
 
 func TestServer_Bind(t *testing.T) {
 	type fields struct {
-		Name          string
-		Network       string
-		Host          string
-		Port          uint16
-		SocketPath    string
-		Mode          string
-		ProbeWaitTime string
 		HTTP          *HTTP
 		GRPC          *GRPC
 		SocketOption  *SocketOption
+		Name          string
+		Network       string
+		Host          string
+		SocketPath    string
+		Mode          string
+		ProbeWaitTime string
+		Port          uint16
 		Restart       bool
 	}
 	type want struct {
 		want *Server
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *Server) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *Server) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1222,28 +1222,28 @@ func TestServer_Bind(t *testing.T) {
 
 func TestServer_Opts(t *testing.T) {
 	type fields struct {
-		Name          string
-		Network       string
-		Host          string
-		Port          uint16
-		SocketPath    string
-		Mode          string
-		ProbeWaitTime string
 		HTTP          *HTTP
 		GRPC          *GRPC
 		SocketOption  *SocketOption
+		Name          string
+		Network       string
+		Host          string
+		SocketPath    string
+		Mode          string
+		ProbeWaitTime string
+		Port          uint16
 		Restart       bool
 	}
 	type want struct {
 		want []server.Option
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, []server.Option) error
 		beforeFunc func()
 		afterFunc  func()
+		fields     fields
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got []server.Option) error {
 		if len(got) != len(w.want) {
@@ -1465,3 +1465,123 @@ func TestServer_Opts(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
+//
+// func TestHTTP2_Bind(t *testing.T) {
+// 	type fields struct {
+// 		HandlerLimit                 int
+// 		Enabled                      bool
+// 		PermitProhibitedCipherSuites bool
+// 		MaxUploadBufferPerConnection int32
+// 		MaxUploadBufferPerStream     int32
+// 		MaxConcurrentStreams         uint32
+// 		MaxDecoderHeaderTableSize    uint32
+// 		MaxEncoderHeaderTableSize    uint32
+// 		MaxReadFrameSize             uint32
+// 	}
+// 	type want struct {
+// 		want *HTTP2
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *HTTP2) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *HTTP2) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           HandlerLimit:0,
+// 		           Enabled:false,
+// 		           PermitProhibitedCipherSuites:false,
+// 		           MaxUploadBufferPerConnection:0,
+// 		           MaxUploadBufferPerStream:0,
+// 		           MaxConcurrentStreams:0,
+// 		           MaxDecoderHeaderTableSize:0,
+// 		           MaxEncoderHeaderTableSize:0,
+// 		           MaxReadFrameSize:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           HandlerLimit:0,
+// 		           Enabled:false,
+// 		           PermitProhibitedCipherSuites:false,
+// 		           MaxUploadBufferPerConnection:0,
+// 		           MaxUploadBufferPerStream:0,
+// 		           MaxConcurrentStreams:0,
+// 		           MaxDecoderHeaderTableSize:0,
+// 		           MaxEncoderHeaderTableSize:0,
+// 		           MaxReadFrameSize:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			h := &HTTP2{
+// 				HandlerLimit:                 test.fields.HandlerLimit,
+// 				Enabled:                      test.fields.Enabled,
+// 				PermitProhibitedCipherSuites: test.fields.PermitProhibitedCipherSuites,
+// 				MaxUploadBufferPerConnection: test.fields.MaxUploadBufferPerConnection,
+// 				MaxUploadBufferPerStream:     test.fields.MaxUploadBufferPerStream,
+// 				MaxConcurrentStreams:         test.fields.MaxConcurrentStreams,
+// 				MaxDecoderHeaderTableSize:    test.fields.MaxDecoderHeaderTableSize,
+// 				MaxEncoderHeaderTableSize:    test.fields.MaxEncoderHeaderTableSize,
+// 				MaxReadFrameSize:             test.fields.MaxReadFrameSize,
+// 			}
+//
+// 			got := h.Bind()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

@@ -29,17 +29,29 @@ import (
 )
 
 type strategy struct {
+	// 32-bit algorithm core.
 	core32    algorithm.Bit32
+	// 64-bit algorithm core.
 	core64    algorithm.Bit64
-	initBit32 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
-	initBit64 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
+	// Closer for the algorithm core.
 	closer    algorithm.Closer
-	propName  string
+	// Initialization function for the 32-bit algorithm core.
+	initBit32 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
+	// Initialization function for the 64-bit algorithm core.
+	initBit64 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
+	// Pre-property function for the 32-bit algorithm core.
 	preProp32 func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
+	// Pre-property function for the 64-bit algorithm core.
 	preProp64 func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
-	mode      algorithm.Mode
+	// Property function for the 32-bit algorithm core.
 	prop32    func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (any, error)
+	// Property function for the 64-bit algorithm core.
 	prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (any, error)
+	// Name of the property.
+	propName  string
+	// Algorithm mode.
+	mode      algorithm.Mode
+	// Whether to run in parallel.
 	parallel  bool
 }
 
@@ -122,9 +134,7 @@ func (s *strategy) Close() {
 	s.closer.Close()
 }
 
-func (s *strategy) float32(
-	ctx context.Context, b *testing.B, dataset assets.Dataset, ids []uint, cnt *uint64,
-) {
+func (s *strategy) run(b *testing.B, f func()) {
 	b.Helper()
 
 	b.StopTimer()
@@ -135,55 +145,38 @@ func (s *strategy) float32(
 	if s.parallel {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				_, err := s.prop32(ctx, b, s.core32, dataset, ids, cnt)
-				if err != nil {
-					b.Error(err)
-				}
-				atomic.AddUint64(cnt, 1)
+				f()
 			}
 		})
 	} else {
 		for i := 0; i < b.N; i++ {
-			_, err := s.prop32(ctx, b, s.core32, dataset, ids, cnt)
-			if err != nil {
-				b.Error(err)
-			}
-			atomic.AddUint64(cnt, 1)
+			f()
 		}
 	}
 
 	b.StopTimer()
 }
 
+func (s *strategy) float32(
+	ctx context.Context, b *testing.B, dataset assets.Dataset, ids []uint, cnt *uint64,
+) {
+	s.run(b, func() {
+		_, err := s.prop32(ctx, b, s.core32, dataset, ids, cnt)
+		if err != nil {
+			b.Error(err)
+		}
+		atomic.AddUint64(cnt, 1)
+	})
+}
+
 func (s *strategy) float64(
 	ctx context.Context, b *testing.B, dataset assets.Dataset, ids []uint, cnt *uint64,
 ) {
-	b.Helper()
-
-	b.StopTimer()
-	b.ReportAllocs()
-	b.ResetTimer()
-	b.StartTimer()
-
-	if s.parallel {
-		b.RunParallel(func(pb *testing.PB) {
-			for pb.Next() {
-				_, err := s.prop64(ctx, b, s.core64, dataset, ids, cnt)
-				if err != nil {
-					b.Error(err)
-				}
-				atomic.AddUint64(cnt, 1)
-			}
-		})
-	} else {
-		for i := 0; i < b.N; i++ {
-			_, err := s.prop64(ctx, b, s.core64, dataset, ids, cnt)
-			if err != nil {
-				b.Error(err)
-			}
-			atomic.AddUint64(cnt, 1)
+	s.run(b, func() {
+		_, err := s.prop64(ctx, b, s.core64, dataset, ids, cnt)
+		if err != nil {
+			b.Error(err)
 		}
-	}
-
-	b.StopTimer()
+		atomic.AddUint64(cnt, 1)
+	})
 }

@@ -33,12 +33,12 @@ func TestWithConfigFilePathKeys(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -58,6 +58,7 @@ func TestWithConfigFilePathKeys(t *testing.T) {
 			},
 			want: want{
 				obj: &T{
+					// FIX: field order corrected to match parser.filePath struct.
 					filePath: struct {
 						keys        []string
 						defaultPath string
@@ -106,12 +107,12 @@ func TestWithConfigFilePathDefault(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -129,6 +130,7 @@ func TestWithConfigFilePathDefault(t *testing.T) {
 			},
 			want: want{
 				obj: &T{
+					// FIX: field order corrected to match parser.filePath struct.
 					filePath: struct {
 						keys        []string
 						defaultPath string
@@ -175,12 +177,12 @@ func TestWithConfigFileDescription(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -198,6 +200,7 @@ func TestWithConfigFileDescription(t *testing.T) {
 			},
 			want: want{
 				obj: &T{
+					// FIX: field order corrected to match parser.filePath struct.
 					filePath: struct {
 						keys        []string
 						defaultPath string
@@ -244,12 +247,12 @@ func TestWithVersionKeys(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -269,6 +272,7 @@ func TestWithVersionKeys(t *testing.T) {
 			},
 			want: want{
 				obj: &T{
+					// FIX: field order corrected to match parser.version struct.
 					version: struct {
 						keys        []string
 						defaultFlag bool
@@ -317,12 +321,12 @@ func TestWithVersionFlagDefault(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -340,6 +344,7 @@ func TestWithVersionFlagDefault(t *testing.T) {
 			},
 			want: want{
 				obj: &T{
+					// FIX: field order corrected to match parser.version struct.
 					version: struct {
 						keys        []string
 						defaultFlag bool
@@ -386,12 +391,12 @@ func TestWithVersionDescription(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -409,6 +414,7 @@ func TestWithVersionDescription(t *testing.T) {
 			},
 			want: want{
 				obj: &T{
+					// FIX: field order corrected to match parser.version struct.
 					version: struct {
 						keys        []string
 						defaultFlag bool

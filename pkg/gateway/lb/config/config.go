@@ -29,16 +29,10 @@ type (
 // Config represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
+	Server              *config.Servers       `json:"server_config" yaml:"server_config"`
+	Observability       *config.Observability `json:"observability" yaml:"observability"`
+	Gateway             *config.LB            `json:"gateway"       yaml:"gateway"`
 	config.GlobalConfig `json:",inline" yaml:",inline"`
-
-	// Server represent all server configurations
-	Server *config.Servers `json:"server_config" yaml:"server_config"`
-
-	// Observability represent observability configurations
-	Observability *config.Observability `json:"observability" yaml:"observability"`
-
-	// Gateway represent agent gateway service configuration
-	Gateway *config.LB `json:"gateway" yaml:"gateway"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {

@@ -32,12 +32,12 @@ func Test_vector_GetUUID(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -104,12 +104,12 @@ func Test_vector_GetVector(t *testing.T) {
 		want []byte
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, []byte) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got []byte) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -176,12 +176,12 @@ func Test_vector_GetIPs(t *testing.T) {
 		want []string
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, []string) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		fields     fields
+		want       want
 	}
 	defaultCheckFunc := func(w want, got []string) error {
 		if !reflect.DeepEqual(got, w.want) {

@@ -89,9 +89,9 @@ func Test_location(t *testing.T) {
 	}
 
 	type test struct {
+		checkFunc func(got *time.Location) error
 		name      string
 		args      args
-		checkFunc func(got *time.Location) error
 	}
 
 	tests := []test{

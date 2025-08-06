@@ -38,12 +38,12 @@ func TestNew(t *testing.T) {
 		opts []Option
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, BidiMap) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got BidiMap) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -117,19 +117,19 @@ func Test_bidi_Get(t *testing.T) {
 		l  uint64
 	}
 	type want struct {
-		want    uint32
 		want1   int64
-		want2   bool
 		wantLen uint64
+		want    uint32
+		want2   bool
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
 		checkFunc  func(want, uint32, int64, bool, *bidi) error
 		beforeFunc func(*testing.T, args, BidiMap)
 		afterFunc  func(args, BidiMap)
+		fields     fields
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got uint32, got1 int64, got2 bool, bm *bidi) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -390,13 +390,13 @@ func Test_bidi_GetInverse(t *testing.T) {
 		wantLen uint64
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
 		checkFunc  func(want, string, int64, bool, *bidi) error
 		beforeFunc func(*testing.T, args, BidiMap)
 		afterFunc  func(args, BidiMap)
+		fields     fields
+		name       string
+		want       want
+		args       args
 	}
 	defaultCheckFunc := func(w want, got string, got1 int64, got2 bool, bm *bidi) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -660,13 +660,13 @@ func Test_bidi_Set(t *testing.T) {
 		l   uint64
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
 		checkFunc  func(w want, args args, b *bidi) error
 		beforeFunc func(*testing.T, args, *bidi)
 		afterFunc  func(args)
+		fields     fields
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, args args, b *bidi) error {
 		val, ts, ok := b.Get(args.key)
@@ -943,13 +943,13 @@ func Test_bidi_Delete(t *testing.T) {
 		wantLen uint64
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
 		checkFunc  func(want, args, *bidi, uint32, bool) error
 		beforeFunc func(*testing.T, args, BidiMap)
 		afterFunc  func(args)
+		fields     fields
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, _ args, _ *bidi, gotVal uint32, gotOk bool) error {
 		if !reflect.DeepEqual(gotVal, w.wantVal) {
@@ -1225,13 +1225,13 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 		wantLen uint64
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
 		checkFunc  func(want, args, *bidi, string, bool) error
 		beforeFunc func(*testing.T, args, BidiMap)
 		afterFunc  func(args)
+		fields     fields
+		name       string
+		want       want
+		args       args
 	}
 	defaultCheckFunc := func(w want, _ args, _ *bidi, gotKey string, gotOk bool) error {
 		if !reflect.DeepEqual(gotKey, w.wantKey) {
@@ -1507,13 +1507,13 @@ func Test_bidi_Range(t *testing.T) {
 		wantLen uint64
 	}
 	type test struct {
-		name       string
 		args       args
-		fields     fields
-		want       want
 		checkFunc  func(want, *bidi) error
 		beforeFunc func(*testing.T, args, BidiMap)
 		afterFunc  func(args)
+		fields     fields
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, bm *bidi) error {
 		return nil
@@ -1682,7 +1682,7 @@ func Test_bidi_Range(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			defer cancel()
 			b := &bidi{
 				ou: test.fields.ou,
@@ -1719,12 +1719,12 @@ func Test_bidi_Len(t *testing.T) {
 		want uint64
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, uint64) error
 		beforeFunc func()
 		afterFunc  func()
+		fields     fields
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got uint64) error {
 		if !reflect.DeepEqual(got, w.want) {

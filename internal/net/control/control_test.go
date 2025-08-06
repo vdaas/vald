@@ -41,12 +41,12 @@ func TestNew(t *testing.T) {
 		want SocketController
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, SocketController) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got SocketController) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -114,12 +114,12 @@ func Test_boolint(t *testing.T) {
 		want int
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, int) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		want       want
+		args       args
 	}
 	defaultCheckFunc := func(w want, got int) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -180,12 +180,12 @@ func Test_isTCP(t *testing.T) {
 		want bool
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -273,12 +273,12 @@ func Test_control_GetControl(t *testing.T) {
 		want func(network, addr string, c syscall.RawConn) (err error)
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, func(network, addr string, c syscall.RawConn) (err error)) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got func(network, addr string, c syscall.RawConn) (err error)) error {
 		if reflect.ValueOf(w.want).Pointer() != reflect.ValueOf(got).Pointer() {
@@ -334,9 +334,9 @@ func Test_control_GetControl(t *testing.T) {
 func Test_control_controlFunc(t *testing.T) {
 	t.Parallel()
 	type args struct {
+		c       syscall.RawConn
 		network string
 		address string
-		c       syscall.RawConn
 	}
 	type fields struct {
 		reusePort                bool
@@ -354,13 +354,13 @@ func Test_control_controlFunc(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {

@@ -32,12 +32,12 @@ func TestDatasetName_String(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		d          DatasetName
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		want       want
+		d          DatasetName
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -90,12 +90,12 @@ func TestDatasetUrl_String(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		d          DatasetUrl
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		want       want
+		d          DatasetUrl
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -166,12 +166,12 @@ func Test_Hdf5Key_String(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		h          Hdf5Key
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		want       want
+		h          Hdf5Key
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -246,12 +246,12 @@ func TestNew(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, Data, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got Data, err error) error {
 		if !errors.Is(err, w.err) {
@@ -328,11 +328,11 @@ func TestNew(t *testing.T) {
 
 func Test_data_Download(t *testing.T) {
 	type fields struct {
-		name      DatasetName
 		path      string
 		train     [][]float32
 		test      [][]float32
 		neighbors [][]int
+		name      DatasetName
 	}
 	type args struct {
 		url string
@@ -341,13 +341,13 @@ func Test_data_Download(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		fields     fields
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -435,11 +435,11 @@ func Test_data_Download(t *testing.T) {
 
 func Test_data_Read(t *testing.T) {
 	type fields struct {
-		name      DatasetName
 		path      string
 		train     [][]float32
 		test      [][]float32
 		neighbors [][]int
+		name      DatasetName
 	}
 	type args struct {
 		key Hdf5Key
@@ -448,13 +448,13 @@ func Test_data_Read(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
-		args       args
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
+		args       args
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -543,22 +543,22 @@ func Test_data_Read(t *testing.T) {
 
 func Test_data_GetName(t *testing.T) {
 	type fields struct {
-		name      DatasetName
 		path      string
 		train     [][]float32
 		test      [][]float32
 		neighbors [][]int
+		name      DatasetName
 	}
 	type want struct {
 		want DatasetName
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, DatasetName) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
+		want       want
 	}
 	defaultCheckFunc := func(w want, got DatasetName) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -647,22 +647,22 @@ func Test_data_GetName(t *testing.T) {
 
 func Test_data_GetPath(t *testing.T) {
 	type fields struct {
-		name      DatasetName
 		path      string
 		train     [][]float32
 		test      [][]float32
 		neighbors [][]int
+		name      DatasetName
 	}
 	type want struct {
 		want string
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		want       want
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -754,23 +754,23 @@ func Test_data_GetByGroupName(t *testing.T) {
 		name string
 	}
 	type fields struct {
-		name      DatasetName
 		path      string
 		train     [][]float32
 		test      [][]float32
 		neighbors [][]int
+		name      DatasetName
 	}
 	type want struct {
 		want [][]float32
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
 		checkFunc  func(want, [][]float32) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got [][]float32) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -865,22 +865,22 @@ func Test_data_GetByGroupName(t *testing.T) {
 
 func Test_data_GetTrain(t *testing.T) {
 	type fields struct {
-		name      DatasetName
 		path      string
 		train     [][]float32
 		test      [][]float32
 		neighbors [][]int
+		name      DatasetName
 	}
 	type want struct {
 		want [][]float32
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, [][]float32) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		want       want
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got [][]float32) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -969,22 +969,22 @@ func Test_data_GetTrain(t *testing.T) {
 
 func Test_data_GetTest(t *testing.T) {
 	type fields struct {
-		name      DatasetName
 		path      string
 		train     [][]float32
 		test      [][]float32
 		neighbors [][]int
+		name      DatasetName
 	}
 	type want struct {
 		want [][]float32
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, [][]float32) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		want       want
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got [][]float32) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1073,22 +1073,22 @@ func Test_data_GetTest(t *testing.T) {
 
 func Test_data_GetNeighbors(t *testing.T) {
 	type fields struct {
-		name      DatasetName
 		path      string
 		train     [][]float32
 		test      [][]float32
 		neighbors [][]int
+		name      DatasetName
 	}
 	type want struct {
 		want [][]int
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, [][]int) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		want       want
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got [][]int) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1184,12 +1184,12 @@ func Test_downloadFile(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		args       args
+		name       string
 	}
 	defaultBeforeFunc := func(t *testing.T, _ args) {}
 	defaultAfterFunc := func(t *testing.T, _ args) {}
@@ -1249,16 +1249,16 @@ func TestReadDatasetF32(t *testing.T) {
 		key  Hdf5Key
 	}
 	type want struct {
-		want [][]float32
 		err  error
+		want [][]float32
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, [][]float32, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got [][]float32, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1341,16 +1341,16 @@ func TestReadDatasetI32(t *testing.T) {
 		key  Hdf5Key
 	}
 	type want struct {
-		want [][]int32
 		err  error
+		want [][]int32
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, [][]int32, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got [][]int32, err error) error {
 		if !errors.Is(err, w.err) {

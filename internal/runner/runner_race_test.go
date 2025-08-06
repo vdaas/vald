@@ -36,13 +36,12 @@ func TestDo_for_race(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, args)
-
-		afterFunc func(args)
+		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -59,7 +58,7 @@ func TestDo_for_race(t *testing.T) {
 		{
 			name: "returns nil when option is nil and version option is set",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 			},
 			beforeFunc: func(t *testing.T, _ args) {
 				t.Helper()
@@ -75,7 +74,7 @@ func TestDo_for_race(t *testing.T) {
 		{
 			name: "returns error when option is nil and params.Parse returns error",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 			},
 			beforeFunc: func(t *testing.T, _ args) {
 				t.Helper()
@@ -91,7 +90,7 @@ func TestDo_for_race(t *testing.T) {
 		{
 			name: "returns error when option is not nil and r.loadConfig returns error",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 				opts: []Option{
 					WithConfigLoader(func(string) (any, *config.GlobalConfig, error) {
 						return nil, nil, errors.New("err")
@@ -112,7 +111,7 @@ func TestDo_for_race(t *testing.T) {
 		{
 			name: "returns error when option is not nil and ver.Check returns error",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 				opts: []Option{
 					WithVersion("v1.1.7", "v1.1.5", "v1.1.0"),
 					WithConfigLoader(func(string) (any, *config.GlobalConfig, error) {
@@ -141,7 +140,7 @@ func TestDo_for_race(t *testing.T) {
 		{
 			name: "returns error when option is not nil and r.initializeDaemon returns error",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 				opts: []Option{
 					WithVersion("v1.1.2", "v1.1.5", "v1.1.0"),
 					WithConfigLoader(func(string) (any, *config.GlobalConfig, error) {
@@ -173,7 +172,7 @@ func TestDo_for_race(t *testing.T) {
 		{
 			name: "returns nil when option is not nil and Run returns nil",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 				opts: []Option{
 					WithVersion("v1.1.2", "v1.1.5", "v1.1.0"),
 					WithConfigLoader(func(string) (any, *config.GlobalConfig, error) {

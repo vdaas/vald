@@ -42,20 +42,24 @@ type Group interface {
 
 // group is the concrete implementation of Group.
 type group struct {
-	egctx  context.Context
-	cancel context.CancelCauseFunc
-
-	wg sync.WaitGroup
-
-	// limit controls how many tasks can run concurrently.
-	limit atomic.Int64
-	// sem is used to limit concurrent goroutines when limit > 1.
-	sem *semaphore.Weighted
-
-	cancelOnce sync.Once
-	mu         sync.RWMutex
+	// egctx is a context.Context.
+	egctx      context.Context
+	// cancel is a context.CancelCauseFunc.
+	cancel     context.CancelCauseFunc
+	// sem is a semaphore.Weighted.
+	sem        *semaphore.Weighted
+	// emap is a map of error messages.
 	emap       map[string]struct{}
+	// errs is a list of errors.
 	errs       []error
+	// wg is a sync.WaitGroup.
+	wg         sync.WaitGroup
+	// limit is a limit.
+	limit      atomic.Int64
+	// mu is a sync.RWMutex.
+	mu         sync.RWMutex
+	// cancelOnce is a sync.Once.
+	cancelOnce sync.Once
 }
 
 var (

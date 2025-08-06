@@ -110,18 +110,18 @@ package storage
 // func Test_bs_initCompressor(t *testing.T) {
 // 	type fields struct {
 // 		eg                        errgroup.Group
-// 		storageType               string
-// 		bucketName                string
-// 		filename                  string
+// 		compressor                compress.Compressor
+// 		bucket                    blob.Bucket
+// 		compressAlgorithm         string
 // 		suffix                    string
+// 		filename                  string
+// 		bucketName                string
+// 		storageType               string
 // 		s3Opts                    []s3.Option
 // 		s3SessionOpts             []session.Option
 // 		cloudStorageOpts          []cloudstorage.Option
 // 		cloudStorageURLOpenerOpts []urlopener.Option
-// 		compressAlgorithm         string
 // 		compressionLevel          int
-// 		bucket                    blob.Bucket
-// 		compressor                compress.Compressor
 // 	}
 // 	type want struct {
 // 		err error
@@ -147,18 +147,18 @@ package storage
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           eg:nil,
-// 		           storageType:"",
-// 		           bucketName:"",
-// 		           filename:"",
+// 		           compressor:nil,
+// 		           bucket:nil,
+// 		           compressAlgorithm:"",
 // 		           suffix:"",
+// 		           filename:"",
+// 		           bucketName:"",
+// 		           storageType:"",
 // 		           s3Opts:nil,
 // 		           s3SessionOpts:nil,
 // 		           cloudStorageOpts:nil,
 // 		           cloudStorageURLOpenerOpts:nil,
-// 		           compressAlgorithm:"",
 // 		           compressionLevel:0,
-// 		           bucket:nil,
-// 		           compressor:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -178,18 +178,18 @@ package storage
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           eg:nil,
-// 		           storageType:"",
-// 		           bucketName:"",
-// 		           filename:"",
+// 		           compressor:nil,
+// 		           bucket:nil,
+// 		           compressAlgorithm:"",
 // 		           suffix:"",
+// 		           filename:"",
+// 		           bucketName:"",
+// 		           storageType:"",
 // 		           s3Opts:nil,
 // 		           s3SessionOpts:nil,
 // 		           cloudStorageOpts:nil,
 // 		           cloudStorageURLOpenerOpts:nil,
-// 		           compressAlgorithm:"",
 // 		           compressionLevel:0,
-// 		           bucket:nil,
-// 		           compressor:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -221,18 +221,18 @@ package storage
 // 			}
 // 			b := &bs{
 // 				eg:                        test.fields.eg,
-// 				storageType:               test.fields.storageType,
-// 				bucketName:                test.fields.bucketName,
-// 				filename:                  test.fields.filename,
+// 				compressor:                test.fields.compressor,
+// 				bucket:                    test.fields.bucket,
+// 				compressAlgorithm:         test.fields.compressAlgorithm,
 // 				suffix:                    test.fields.suffix,
+// 				filename:                  test.fields.filename,
+// 				bucketName:                test.fields.bucketName,
+// 				storageType:               test.fields.storageType,
 // 				s3Opts:                    test.fields.s3Opts,
 // 				s3SessionOpts:             test.fields.s3SessionOpts,
 // 				cloudStorageOpts:          test.fields.cloudStorageOpts,
 // 				cloudStorageURLOpenerOpts: test.fields.cloudStorageURLOpenerOpts,
-// 				compressAlgorithm:         test.fields.compressAlgorithm,
 // 				compressionLevel:          test.fields.compressionLevel,
-// 				bucket:                    test.fields.bucket,
-// 				compressor:                test.fields.compressor,
 // 			}
 //
 // 			err := b.initCompressor()
@@ -249,18 +249,18 @@ package storage
 // 	}
 // 	type fields struct {
 // 		eg                        errgroup.Group
-// 		storageType               string
-// 		bucketName                string
-// 		filename                  string
+// 		compressor                compress.Compressor
+// 		bucket                    blob.Bucket
+// 		compressAlgorithm         string
 // 		suffix                    string
+// 		filename                  string
+// 		bucketName                string
+// 		storageType               string
 // 		s3Opts                    []s3.Option
 // 		s3SessionOpts             []session.Option
 // 		cloudStorageOpts          []cloudstorage.Option
 // 		cloudStorageURLOpenerOpts []urlopener.Option
-// 		compressAlgorithm         string
 // 		compressionLevel          int
-// 		bucket                    blob.Bucket
-// 		compressor                compress.Compressor
 // 	}
 // 	type want struct {
 // 		err error
@@ -290,18 +290,18 @@ package storage
 // 		       },
 // 		       fields: fields {
 // 		           eg:nil,
-// 		           storageType:"",
-// 		           bucketName:"",
-// 		           filename:"",
+// 		           compressor:nil,
+// 		           bucket:nil,
+// 		           compressAlgorithm:"",
 // 		           suffix:"",
+// 		           filename:"",
+// 		           bucketName:"",
+// 		           storageType:"",
 // 		           s3Opts:nil,
 // 		           s3SessionOpts:nil,
 // 		           cloudStorageOpts:nil,
 // 		           cloudStorageURLOpenerOpts:nil,
-// 		           compressAlgorithm:"",
 // 		           compressionLevel:0,
-// 		           bucket:nil,
-// 		           compressor:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -324,18 +324,18 @@ package storage
 // 		           },
 // 		           fields: fields {
 // 		           eg:nil,
-// 		           storageType:"",
-// 		           bucketName:"",
-// 		           filename:"",
+// 		           compressor:nil,
+// 		           bucket:nil,
+// 		           compressAlgorithm:"",
 // 		           suffix:"",
+// 		           filename:"",
+// 		           bucketName:"",
+// 		           storageType:"",
 // 		           s3Opts:nil,
 // 		           s3SessionOpts:nil,
 // 		           cloudStorageOpts:nil,
 // 		           cloudStorageURLOpenerOpts:nil,
-// 		           compressAlgorithm:"",
 // 		           compressionLevel:0,
-// 		           bucket:nil,
-// 		           compressor:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -367,18 +367,18 @@ package storage
 // 			}
 // 			b := &bs{
 // 				eg:                        test.fields.eg,
-// 				storageType:               test.fields.storageType,
-// 				bucketName:                test.fields.bucketName,
-// 				filename:                  test.fields.filename,
+// 				compressor:                test.fields.compressor,
+// 				bucket:                    test.fields.bucket,
+// 				compressAlgorithm:         test.fields.compressAlgorithm,
 // 				suffix:                    test.fields.suffix,
+// 				filename:                  test.fields.filename,
+// 				bucketName:                test.fields.bucketName,
+// 				storageType:               test.fields.storageType,
 // 				s3Opts:                    test.fields.s3Opts,
 // 				s3SessionOpts:             test.fields.s3SessionOpts,
 // 				cloudStorageOpts:          test.fields.cloudStorageOpts,
 // 				cloudStorageURLOpenerOpts: test.fields.cloudStorageURLOpenerOpts,
-// 				compressAlgorithm:         test.fields.compressAlgorithm,
 // 				compressionLevel:          test.fields.compressionLevel,
-// 				bucket:                    test.fields.bucket,
-// 				compressor:                test.fields.compressor,
 // 			}
 //
 // 			err := b.initBucket(test.args.ctx)
@@ -395,18 +395,18 @@ package storage
 // 	}
 // 	type fields struct {
 // 		eg                        errgroup.Group
-// 		storageType               string
-// 		bucketName                string
-// 		filename                  string
+// 		compressor                compress.Compressor
+// 		bucket                    blob.Bucket
+// 		compressAlgorithm         string
 // 		suffix                    string
+// 		filename                  string
+// 		bucketName                string
+// 		storageType               string
 // 		s3Opts                    []s3.Option
 // 		s3SessionOpts             []session.Option
 // 		cloudStorageOpts          []cloudstorage.Option
 // 		cloudStorageURLOpenerOpts []urlopener.Option
-// 		compressAlgorithm         string
 // 		compressionLevel          int
-// 		bucket                    blob.Bucket
-// 		compressor                compress.Compressor
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -440,18 +440,18 @@ package storage
 // 		       },
 // 		       fields: fields {
 // 		           eg:nil,
-// 		           storageType:"",
-// 		           bucketName:"",
-// 		           filename:"",
+// 		           compressor:nil,
+// 		           bucket:nil,
+// 		           compressAlgorithm:"",
 // 		           suffix:"",
+// 		           filename:"",
+// 		           bucketName:"",
+// 		           storageType:"",
 // 		           s3Opts:nil,
 // 		           s3SessionOpts:nil,
 // 		           cloudStorageOpts:nil,
 // 		           cloudStorageURLOpenerOpts:nil,
-// 		           compressAlgorithm:"",
 // 		           compressionLevel:0,
-// 		           bucket:nil,
-// 		           compressor:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -474,18 +474,18 @@ package storage
 // 		           },
 // 		           fields: fields {
 // 		           eg:nil,
-// 		           storageType:"",
-// 		           bucketName:"",
-// 		           filename:"",
+// 		           compressor:nil,
+// 		           bucket:nil,
+// 		           compressAlgorithm:"",
 // 		           suffix:"",
+// 		           filename:"",
+// 		           bucketName:"",
+// 		           storageType:"",
 // 		           s3Opts:nil,
 // 		           s3SessionOpts:nil,
 // 		           cloudStorageOpts:nil,
 // 		           cloudStorageURLOpenerOpts:nil,
-// 		           compressAlgorithm:"",
 // 		           compressionLevel:0,
-// 		           bucket:nil,
-// 		           compressor:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -517,18 +517,18 @@ package storage
 // 			}
 // 			b := &bs{
 // 				eg:                        test.fields.eg,
-// 				storageType:               test.fields.storageType,
-// 				bucketName:                test.fields.bucketName,
-// 				filename:                  test.fields.filename,
+// 				compressor:                test.fields.compressor,
+// 				bucket:                    test.fields.bucket,
+// 				compressAlgorithm:         test.fields.compressAlgorithm,
 // 				suffix:                    test.fields.suffix,
+// 				filename:                  test.fields.filename,
+// 				bucketName:                test.fields.bucketName,
+// 				storageType:               test.fields.storageType,
 // 				s3Opts:                    test.fields.s3Opts,
 // 				s3SessionOpts:             test.fields.s3SessionOpts,
 // 				cloudStorageOpts:          test.fields.cloudStorageOpts,
 // 				cloudStorageURLOpenerOpts: test.fields.cloudStorageURLOpenerOpts,
-// 				compressAlgorithm:         test.fields.compressAlgorithm,
 // 				compressionLevel:          test.fields.compressionLevel,
-// 				bucket:                    test.fields.bucket,
-// 				compressor:                test.fields.compressor,
 // 			}
 //
 // 			got, err := b.Start(test.args.ctx)
@@ -545,18 +545,18 @@ package storage
 // 	}
 // 	type fields struct {
 // 		eg                        errgroup.Group
-// 		storageType               string
-// 		bucketName                string
-// 		filename                  string
+// 		compressor                compress.Compressor
+// 		bucket                    blob.Bucket
+// 		compressAlgorithm         string
 // 		suffix                    string
+// 		filename                  string
+// 		bucketName                string
+// 		storageType               string
 // 		s3Opts                    []s3.Option
 // 		s3SessionOpts             []session.Option
 // 		cloudStorageOpts          []cloudstorage.Option
 // 		cloudStorageURLOpenerOpts []urlopener.Option
-// 		compressAlgorithm         string
 // 		compressionLevel          int
-// 		bucket                    blob.Bucket
-// 		compressor                compress.Compressor
 // 	}
 // 	type want struct {
 // 		err error
@@ -586,18 +586,18 @@ package storage
 // 		       },
 // 		       fields: fields {
 // 		           eg:nil,
-// 		           storageType:"",
-// 		           bucketName:"",
-// 		           filename:"",
+// 		           compressor:nil,
+// 		           bucket:nil,
+// 		           compressAlgorithm:"",
 // 		           suffix:"",
+// 		           filename:"",
+// 		           bucketName:"",
+// 		           storageType:"",
 // 		           s3Opts:nil,
 // 		           s3SessionOpts:nil,
 // 		           cloudStorageOpts:nil,
 // 		           cloudStorageURLOpenerOpts:nil,
-// 		           compressAlgorithm:"",
 // 		           compressionLevel:0,
-// 		           bucket:nil,
-// 		           compressor:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -620,18 +620,18 @@ package storage
 // 		           },
 // 		           fields: fields {
 // 		           eg:nil,
-// 		           storageType:"",
-// 		           bucketName:"",
-// 		           filename:"",
+// 		           compressor:nil,
+// 		           bucket:nil,
+// 		           compressAlgorithm:"",
 // 		           suffix:"",
+// 		           filename:"",
+// 		           bucketName:"",
+// 		           storageType:"",
 // 		           s3Opts:nil,
 // 		           s3SessionOpts:nil,
 // 		           cloudStorageOpts:nil,
 // 		           cloudStorageURLOpenerOpts:nil,
-// 		           compressAlgorithm:"",
 // 		           compressionLevel:0,
-// 		           bucket:nil,
-// 		           compressor:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -663,18 +663,18 @@ package storage
 // 			}
 // 			b := &bs{
 // 				eg:                        test.fields.eg,
-// 				storageType:               test.fields.storageType,
-// 				bucketName:                test.fields.bucketName,
-// 				filename:                  test.fields.filename,
+// 				compressor:                test.fields.compressor,
+// 				bucket:                    test.fields.bucket,
+// 				compressAlgorithm:         test.fields.compressAlgorithm,
 // 				suffix:                    test.fields.suffix,
+// 				filename:                  test.fields.filename,
+// 				bucketName:                test.fields.bucketName,
+// 				storageType:               test.fields.storageType,
 // 				s3Opts:                    test.fields.s3Opts,
 // 				s3SessionOpts:             test.fields.s3SessionOpts,
 // 				cloudStorageOpts:          test.fields.cloudStorageOpts,
 // 				cloudStorageURLOpenerOpts: test.fields.cloudStorageURLOpenerOpts,
-// 				compressAlgorithm:         test.fields.compressAlgorithm,
 // 				compressionLevel:          test.fields.compressionLevel,
-// 				bucket:                    test.fields.bucket,
-// 				compressor:                test.fields.compressor,
 // 			}
 //
 // 			err := b.Stop(test.args.in0)
@@ -691,18 +691,18 @@ package storage
 // 	}
 // 	type fields struct {
 // 		eg                        errgroup.Group
-// 		storageType               string
-// 		bucketName                string
-// 		filename                  string
+// 		compressor                compress.Compressor
+// 		bucket                    blob.Bucket
+// 		compressAlgorithm         string
 // 		suffix                    string
+// 		filename                  string
+// 		bucketName                string
+// 		storageType               string
 // 		s3Opts                    []s3.Option
 // 		s3SessionOpts             []session.Option
 // 		cloudStorageOpts          []cloudstorage.Option
 // 		cloudStorageURLOpenerOpts []urlopener.Option
-// 		compressAlgorithm         string
 // 		compressionLevel          int
-// 		bucket                    blob.Bucket
-// 		compressor                compress.Compressor
 // 	}
 // 	type want struct {
 // 		wantR io.ReadCloser
@@ -736,18 +736,18 @@ package storage
 // 		       },
 // 		       fields: fields {
 // 		           eg:nil,
-// 		           storageType:"",
-// 		           bucketName:"",
-// 		           filename:"",
+// 		           compressor:nil,
+// 		           bucket:nil,
+// 		           compressAlgorithm:"",
 // 		           suffix:"",
+// 		           filename:"",
+// 		           bucketName:"",
+// 		           storageType:"",
 // 		           s3Opts:nil,
 // 		           s3SessionOpts:nil,
 // 		           cloudStorageOpts:nil,
 // 		           cloudStorageURLOpenerOpts:nil,
-// 		           compressAlgorithm:"",
 // 		           compressionLevel:0,
-// 		           bucket:nil,
-// 		           compressor:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -770,18 +770,18 @@ package storage
 // 		           },
 // 		           fields: fields {
 // 		           eg:nil,
-// 		           storageType:"",
-// 		           bucketName:"",
-// 		           filename:"",
+// 		           compressor:nil,
+// 		           bucket:nil,
+// 		           compressAlgorithm:"",
 // 		           suffix:"",
+// 		           filename:"",
+// 		           bucketName:"",
+// 		           storageType:"",
 // 		           s3Opts:nil,
 // 		           s3SessionOpts:nil,
 // 		           cloudStorageOpts:nil,
 // 		           cloudStorageURLOpenerOpts:nil,
-// 		           compressAlgorithm:"",
 // 		           compressionLevel:0,
-// 		           bucket:nil,
-// 		           compressor:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -813,18 +813,18 @@ package storage
 // 			}
 // 			b := &bs{
 // 				eg:                        test.fields.eg,
-// 				storageType:               test.fields.storageType,
-// 				bucketName:                test.fields.bucketName,
-// 				filename:                  test.fields.filename,
+// 				compressor:                test.fields.compressor,
+// 				bucket:                    test.fields.bucket,
+// 				compressAlgorithm:         test.fields.compressAlgorithm,
 // 				suffix:                    test.fields.suffix,
+// 				filename:                  test.fields.filename,
+// 				bucketName:                test.fields.bucketName,
+// 				storageType:               test.fields.storageType,
 // 				s3Opts:                    test.fields.s3Opts,
 // 				s3SessionOpts:             test.fields.s3SessionOpts,
 // 				cloudStorageOpts:          test.fields.cloudStorageOpts,
 // 				cloudStorageURLOpenerOpts: test.fields.cloudStorageURLOpenerOpts,
-// 				compressAlgorithm:         test.fields.compressAlgorithm,
 // 				compressionLevel:          test.fields.compressionLevel,
-// 				bucket:                    test.fields.bucket,
-// 				compressor:                test.fields.compressor,
 // 			}
 //
 // 			gotR, err := b.Reader(test.args.ctx)
@@ -841,18 +841,18 @@ package storage
 // 	}
 // 	type fields struct {
 // 		eg                        errgroup.Group
-// 		storageType               string
-// 		bucketName                string
-// 		filename                  string
+// 		compressor                compress.Compressor
+// 		bucket                    blob.Bucket
+// 		compressAlgorithm         string
 // 		suffix                    string
+// 		filename                  string
+// 		bucketName                string
+// 		storageType               string
 // 		s3Opts                    []s3.Option
 // 		s3SessionOpts             []session.Option
 // 		cloudStorageOpts          []cloudstorage.Option
 // 		cloudStorageURLOpenerOpts []urlopener.Option
-// 		compressAlgorithm         string
 // 		compressionLevel          int
-// 		bucket                    blob.Bucket
-// 		compressor                compress.Compressor
 // 	}
 // 	type want struct {
 // 		wantW io.WriteCloser
@@ -886,18 +886,18 @@ package storage
 // 		       },
 // 		       fields: fields {
 // 		           eg:nil,
-// 		           storageType:"",
-// 		           bucketName:"",
-// 		           filename:"",
+// 		           compressor:nil,
+// 		           bucket:nil,
+// 		           compressAlgorithm:"",
 // 		           suffix:"",
+// 		           filename:"",
+// 		           bucketName:"",
+// 		           storageType:"",
 // 		           s3Opts:nil,
 // 		           s3SessionOpts:nil,
 // 		           cloudStorageOpts:nil,
 // 		           cloudStorageURLOpenerOpts:nil,
-// 		           compressAlgorithm:"",
 // 		           compressionLevel:0,
-// 		           bucket:nil,
-// 		           compressor:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -920,18 +920,18 @@ package storage
 // 		           },
 // 		           fields: fields {
 // 		           eg:nil,
-// 		           storageType:"",
-// 		           bucketName:"",
-// 		           filename:"",
+// 		           compressor:nil,
+// 		           bucket:nil,
+// 		           compressAlgorithm:"",
 // 		           suffix:"",
+// 		           filename:"",
+// 		           bucketName:"",
+// 		           storageType:"",
 // 		           s3Opts:nil,
 // 		           s3SessionOpts:nil,
 // 		           cloudStorageOpts:nil,
 // 		           cloudStorageURLOpenerOpts:nil,
-// 		           compressAlgorithm:"",
 // 		           compressionLevel:0,
-// 		           bucket:nil,
-// 		           compressor:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -963,18 +963,18 @@ package storage
 // 			}
 // 			b := &bs{
 // 				eg:                        test.fields.eg,
-// 				storageType:               test.fields.storageType,
-// 				bucketName:                test.fields.bucketName,
-// 				filename:                  test.fields.filename,
+// 				compressor:                test.fields.compressor,
+// 				bucket:                    test.fields.bucket,
+// 				compressAlgorithm:         test.fields.compressAlgorithm,
 // 				suffix:                    test.fields.suffix,
+// 				filename:                  test.fields.filename,
+// 				bucketName:                test.fields.bucketName,
+// 				storageType:               test.fields.storageType,
 // 				s3Opts:                    test.fields.s3Opts,
 // 				s3SessionOpts:             test.fields.s3SessionOpts,
 // 				cloudStorageOpts:          test.fields.cloudStorageOpts,
 // 				cloudStorageURLOpenerOpts: test.fields.cloudStorageURLOpenerOpts,
-// 				compressAlgorithm:         test.fields.compressAlgorithm,
 // 				compressionLevel:          test.fields.compressionLevel,
-// 				bucket:                    test.fields.bucket,
-// 				compressor:                test.fields.compressor,
 // 			}
 //
 // 			gotW, err := b.Writer(test.args.ctx)
@@ -988,18 +988,18 @@ package storage
 // func Test_bs_StorageInfo(t *testing.T) {
 // 	type fields struct {
 // 		eg                        errgroup.Group
-// 		storageType               string
-// 		bucketName                string
-// 		filename                  string
+// 		compressor                compress.Compressor
+// 		bucket                    blob.Bucket
+// 		compressAlgorithm         string
 // 		suffix                    string
+// 		filename                  string
+// 		bucketName                string
+// 		storageType               string
 // 		s3Opts                    []s3.Option
 // 		s3SessionOpts             []session.Option
 // 		cloudStorageOpts          []cloudstorage.Option
 // 		cloudStorageURLOpenerOpts []urlopener.Option
-// 		compressAlgorithm         string
 // 		compressionLevel          int
-// 		bucket                    blob.Bucket
-// 		compressor                compress.Compressor
 // 	}
 // 	type want struct {
 // 		want *StorageInfo
@@ -1025,18 +1025,18 @@ package storage
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           eg:nil,
-// 		           storageType:"",
-// 		           bucketName:"",
-// 		           filename:"",
+// 		           compressor:nil,
+// 		           bucket:nil,
+// 		           compressAlgorithm:"",
 // 		           suffix:"",
+// 		           filename:"",
+// 		           bucketName:"",
+// 		           storageType:"",
 // 		           s3Opts:nil,
 // 		           s3SessionOpts:nil,
 // 		           cloudStorageOpts:nil,
 // 		           cloudStorageURLOpenerOpts:nil,
-// 		           compressAlgorithm:"",
 // 		           compressionLevel:0,
-// 		           bucket:nil,
-// 		           compressor:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1056,18 +1056,18 @@ package storage
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           eg:nil,
-// 		           storageType:"",
-// 		           bucketName:"",
-// 		           filename:"",
+// 		           compressor:nil,
+// 		           bucket:nil,
+// 		           compressAlgorithm:"",
 // 		           suffix:"",
+// 		           filename:"",
+// 		           bucketName:"",
+// 		           storageType:"",
 // 		           s3Opts:nil,
 // 		           s3SessionOpts:nil,
 // 		           cloudStorageOpts:nil,
 // 		           cloudStorageURLOpenerOpts:nil,
-// 		           compressAlgorithm:"",
 // 		           compressionLevel:0,
-// 		           bucket:nil,
-// 		           compressor:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1099,18 +1099,18 @@ package storage
 // 			}
 // 			b := &bs{
 // 				eg:                        test.fields.eg,
-// 				storageType:               test.fields.storageType,
-// 				bucketName:                test.fields.bucketName,
-// 				filename:                  test.fields.filename,
+// 				compressor:                test.fields.compressor,
+// 				bucket:                    test.fields.bucket,
+// 				compressAlgorithm:         test.fields.compressAlgorithm,
 // 				suffix:                    test.fields.suffix,
+// 				filename:                  test.fields.filename,
+// 				bucketName:                test.fields.bucketName,
+// 				storageType:               test.fields.storageType,
 // 				s3Opts:                    test.fields.s3Opts,
 // 				s3SessionOpts:             test.fields.s3SessionOpts,
 // 				cloudStorageOpts:          test.fields.cloudStorageOpts,
 // 				cloudStorageURLOpenerOpts: test.fields.cloudStorageURLOpenerOpts,
-// 				compressAlgorithm:         test.fields.compressAlgorithm,
 // 				compressionLevel:          test.fields.compressionLevel,
-// 				bucket:                    test.fields.bucket,
-// 				compressor:                test.fields.compressor,
 // 			}
 //
 // 			got := b.StorageInfo()

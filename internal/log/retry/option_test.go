@@ -30,12 +30,12 @@ func TestWithError(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -104,12 +104,12 @@ func TestWithWarn(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {

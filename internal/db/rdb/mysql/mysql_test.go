@@ -48,12 +48,12 @@ func TestNew(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, MySQL, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got MySQL, err error) error {
 		if !errors.Is(err, w.err) {
@@ -142,39 +142,39 @@ func Test_mySQLClient_Open(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		db                   string
-		host                 string
-		port                 uint16
-		network              string
-		socketPath           string
+		dialer               net.Dialer
+		dbr                  dbr.DBR
+		connected            atomic.Value
+		session              dbr.Session
+		tlsConfig            *tls.Config
+		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
 		user                 string
-		pass                 string
-		name                 string
+		socketPath           string
 		charset              string
 		timezone             string
+		name                 string
+		host                 string
+		network              string
+		pass                 string
+		db                   string
 		initialPingTimeLimit time.Duration
-		initialPingDuration  time.Duration
-		connMaxLifeTime      time.Duration
-		dialer               net.Dialer
-		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-		tlsConfig            *tls.Config
 		maxOpenConns         int
 		maxIdleConns         int
-		session              dbr.Session
-		connected            atomic.Value
-		dbr                  dbr.DBR
+		connMaxLifeTime      time.Duration
+		initialPingDuration  time.Duration
+		port                 uint16
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
 		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -184,7 +184,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "Open success with tls config when no error occurs",
 				args: args{
@@ -244,7 +244,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 		func() test {
 			dialer, _ := net.NewDialer()
 			dialerFunc := dialer.GetDialer()
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "Open success with dialer when no error occurs",
 				args: args{
@@ -303,7 +303,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "returns error when dbr.Open returns error",
 				args: args{
@@ -346,7 +346,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 		}(),
 		func() test {
 			err := errors.New("PingContextFunc is failed")
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "returns error when Ping fails",
 				args: args{
@@ -457,21 +457,21 @@ func Test_mySQLClient_Ping(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
+		session              dbr.Session
 		initialPingTimeLimit time.Duration
 		initialPingDuration  time.Duration
-		session              dbr.Session
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
 		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -481,7 +481,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "returns nil when no error occurs",
 				args: args{
@@ -513,7 +513,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "returns error when session is nil",
 				args: args{
@@ -533,7 +533,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			err := errors.New("error")
 			return test{
 				name: "returns error when session.PingContext returns error",
@@ -559,7 +559,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "returns error when ping failed due to initialPingTimeLimit",
 				args: args{
@@ -625,13 +625,13 @@ func Test_mySQLClient_Close(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
+		args       args
 		want       want
 		checkFunc  func(want, error, *mySQLClient) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error, m *mySQLClient) error {
 		if !errors.Is(err, w.err) {
@@ -646,7 +646,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 		{
 			name: "Close success when connection is already closed",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 			},
 			fields: fields{
 				session: &dbr.MockSession{},
@@ -660,7 +660,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 		{
 			name: "Close success when connection is not closed",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 			},
 			fields: fields{
 				session: &dbr.MockSession{
@@ -678,7 +678,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 		{
 			name: "return an error when session is nil",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 			},
 			fields: fields{
 				connected: func() (v atomic.Value) {
@@ -734,13 +734,13 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, Vector, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		args       args
+		name       string
 	}
 	defaultCheckFunc := func(w want, got Vector, err error) error {
 		if !errors.Is(err, w.err) {
@@ -756,7 +756,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 			return test{
 				name: "return (nil, error) when MySQL connection is closed",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "",
 				},
 				fields: fields{
@@ -774,7 +774,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 			return test{
 				name: "return (nil, error) when MySQL session is nil",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "",
 				},
 				fields: fields{
@@ -793,7 +793,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 			return test{
 				name: "return (nil, error) when LoadContext returns error",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 				},
 				fields: fields{
 					session: &dbr.MockSession{
@@ -834,7 +834,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 			return test{
 				name: "return (nil, error) when vector is not found",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "vdaas-01",
 				},
 				fields: fields{
@@ -885,7 +885,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 			return test{
 				name: "return (nil, error) when podIPs are not found",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: uuid,
 				},
 				fields: fields{
@@ -947,7 +947,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 			return test{
 				name: "return (vector, nil) when select success",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: uuid,
 				},
 				fields: fields{
@@ -1039,17 +1039,17 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 		dbr       dbr.DBR
 	}
 	type want struct {
-		want []string
 		err  error
+		want []string
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
-		want       want
 		checkFunc  func(want, []string, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		args       args
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got []string, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1066,7 +1066,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 			return test{
 				name: "return (nil, error) when connection closed",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: uuid,
 				},
 				fields: fields{
@@ -1085,7 +1085,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 			return test{
 				name: "return (nil, error) when MySQL session is nil",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: uuid,
 				},
 				fields: fields{
@@ -1105,7 +1105,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 			return test{
 				name: "return (nil, error) when LoadContext for id returns error",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: uuid,
 				},
 				fields: fields{
@@ -1151,7 +1151,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 			return test{
 				name: "return (nil, error) when data is not found",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: uuid,
 				},
 				fields: fields{
@@ -1208,7 +1208,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 			return test{
 				name: "return (nil, error) when LoadContext for ips fails",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: uuid,
 				},
 				fields: fields{
@@ -1273,7 +1273,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 			return test{
 				name: "return (ips, nil) when select success",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: uuid,
 				},
 				fields: fields{
@@ -1359,12 +1359,12 @@ func Test_validateVector(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1435,13 +1435,13 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
+		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1455,7 +1455,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 			return test{
 				name: "return error when mysql connection is closed",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1474,7 +1474,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 			return test{
 				name: "return error when mysql session is nil",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1494,7 +1494,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 			return test{
 				name: "return error when session.Begin fails",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1518,7 +1518,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 			return test{
 				name: "return error when data vector is invalid",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1549,7 +1549,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 			return test{
 				name: "return error when insertbysql ExecContext returns error",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1587,7 +1587,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 			return test{
 				name: "return error when select loadcontext returns error",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1645,7 +1645,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 			return test{
 				name: "return error when elem not found by uuid",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1716,7 +1716,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 			return test{
 				name: "return error when delete ExecContext returns error",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1798,7 +1798,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 			return test{
 				name: "return error when insert ExecContext returns error",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1893,7 +1893,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 			return test{
 				name: "return error when tx.Commit returns error",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					mv:  m,
 				},
 				fields: fields{
@@ -1990,7 +1990,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 			return test{
 				name: "return nil when setVector ends with success",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					mv:  m,
 				},
 				fields: fields{
@@ -2117,13 +2117,13 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -2137,7 +2137,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when mysql connection is closed",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					data: m,
 				},
 				fields: fields{
@@ -2156,7 +2156,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when mysql session is nil",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					data: m,
 				},
 				fields: fields{
@@ -2176,7 +2176,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when session.Begin fails",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					data: m,
 				},
 				fields: fields{
@@ -2201,7 +2201,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when data vector is invalid",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					data: m,
 				},
 				fields: fields{
@@ -2234,7 +2234,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when insertbysql ExecContext returns error",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					data: m,
 				},
 				fields: fields{
@@ -2274,7 +2274,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when select loadcontext returns error",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					data: m,
 				},
 				fields: fields{
@@ -2334,7 +2334,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when elem not found by uuid",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					data: m,
 				},
 				fields: fields{
@@ -2408,7 +2408,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when delete ExecContext returns error",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					data: m,
 				},
 				fields: fields{
@@ -2492,7 +2492,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when insert ExecContext returns error",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					data: m,
 				},
 				fields: fields{
@@ -2589,7 +2589,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return error when tx.Commit returns error",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					data: m,
 				},
 				fields: fields{
@@ -2688,7 +2688,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 			return test{
 				name: "return nil when setVector ends with success",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					data: m,
 				},
 				fields: fields{
@@ -2815,13 +2815,13 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		args       args
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -2834,7 +2834,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 			return test{
 				name: "return nil when deleteVector success with empty-uuid",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "",
 				},
 				fields: fields{
@@ -2898,7 +2898,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 			return test{
 				name: "return nil when deleteVector success with uuid",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "vald-01",
 				},
 				fields: fields{
@@ -2963,7 +2963,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 			return test{
 				name: "return error when MySQL connection is closed",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "vald-01",
 				},
 				fields: fields{
@@ -2981,7 +2981,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 			return test{
 				name: "return error when MySQL session is nil",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "vald-01",
 				},
 				fields: fields{
@@ -3000,7 +3000,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 			return test{
 				name: "return error when session.Begin returns error",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "vald-01",
 				},
 				fields: fields{
@@ -3024,7 +3024,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 			return test{
 				name: "return error when transaction is nil",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "vald-01",
 				},
 				fields: fields{
@@ -3048,7 +3048,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 			return test{
 				name: "return error when Select(idColumnName) returns error",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "vald-01",
 				},
 				fields: fields{
@@ -3100,7 +3100,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 			return test{
 				name: "return error when returned id = 0 from Select statement",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: uuid,
 				},
 				fields: fields{
@@ -3151,7 +3151,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 			return test{
 				name: "return error when DeleteFromFunc(vectorTableName) returns error",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "vald-01",
 				},
 				fields: fields{
@@ -3221,7 +3221,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 			return test{
 				name: "return error when DeleteFromFunc(podIPTableName) returns error",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "vald-01",
 				},
 				fields: fields{
@@ -3290,7 +3290,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 			return test{
 				name: "return nil when no error occurs",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "vald-01",
 				},
 				fields: fields{
@@ -3394,13 +3394,13 @@ func Test_mySQLClient_DeleteVectors(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -3413,7 +3413,7 @@ func Test_mySQLClient_DeleteVectors(t *testing.T) {
 			return test{
 				name: "return nil when deleteVectors success with empty uuids",
 				args: args{
-					ctx:   context.Background(),
+					ctx:   t.Context(),
 					uuids: []string{},
 				},
 				fields: fields{
@@ -3477,7 +3477,7 @@ func Test_mySQLClient_DeleteVectors(t *testing.T) {
 			return test{
 				name: "return nil when deleteVectors success with uuids",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					uuids: []string{
 						"vald-01",
 						"vald-02",
@@ -3585,13 +3585,13 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -3605,7 +3605,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 			return test{
 				name: "return error when MySQL connection is closed",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "vald-01",
 					ips: []string{
 						"192.168.1.1",
@@ -3627,7 +3627,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 			return test{
 				name: "return error when MySQL session is nil",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "vald-01",
 					ips: []string{
 						"192.168.1.1",
@@ -3650,7 +3650,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 			return test{
 				name: "return error when session.Begin returns error",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "vald-01",
 					ips: []string{
 						"192.168.1.1",
@@ -3678,7 +3678,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 			return test{
 				name: "return error when select LoadContext returns error",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "vald-01",
 					ips: []string{
 						"192.168.1.1",
@@ -3737,7 +3737,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 			return test{
 				name: "return error when element not found by uuid",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "vald-01",
 					ips: []string{
 						"192.168.1.1",
@@ -3796,7 +3796,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 			return test{
 				name: "return error when InsertInto.ExecContext returns error",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "vald-01",
 					ips: []string{
 						"192.168.1.1",
@@ -3868,7 +3868,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 			return test{
 				name: "return nil when setIPs success",
 				args: args{
-					ctx:  context.Background(),
+					ctx:  t.Context(),
 					uuid: "vald-01",
 					ips: []string{
 						"192.168.1.1",
@@ -3978,13 +3978,13 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -3998,7 +3998,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 			return test{
 				name: "return error when MySQL connection is closed",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					ips: []string{
 						"192.168.1.1",
 						"192.168.1.2",
@@ -4019,7 +4019,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 			return test{
 				name: "return error when MySQL session is nil",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					ips: []string{
 						"192.168.1.1",
 						"192.168.1.2",
@@ -4041,7 +4041,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 			return test{
 				name: "return error when session.Begin returns error",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					ips: []string{
 						"192.168.1.1",
 						"192.168.1.2",
@@ -4068,7 +4068,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 			return test{
 				name: "return error when delete.ExecContext returns error",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					ips: []string{
 						"192.168.1.1",
 						"192.168.1.2",
@@ -4114,7 +4114,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 			return test{
 				name: "return nil when removeIPs success",
 				args: args{
-					ctx: context.Background(),
+					ctx: t.Context(),
 					ips: []string{
 						"192.168.1.1",
 						"192.168.1.2",
@@ -4191,28 +4191,28 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 // 		err error
 // 	}
 // 	type fields struct {
-// 		db                   string
-// 		network              string
-// 		socketPath           string
-// 		host                 string
-// 		port                 uint16
-// 		user                 string
-// 		pass                 string
-// 		name                 string
-// 		charset              string
-// 		timezone             string
-// 		initialPingTimeLimit time.Duration
-// 		initialPingDuration  time.Duration
-// 		connMaxLifeTime      time.Duration
 // 		dialer               net.Dialer
-// 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-// 		tlsConfig            *tls.Config
-// 		maxOpenConns         int
-// 		maxIdleConns         int
-// 		session              dbr.Session
-// 		connected            atomic.Value
-// 		eventReceiver        EventReceiver
 // 		dbr                  dbr.DBR
+// 		eventReceiver        EventReceiver
+// 		connected            atomic.Value
+// 		session              dbr.Session
+// 		tlsConfig            *tls.Config
+// 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
+// 		user                 string
+// 		host                 string
+// 		timezone             string
+// 		network              string
+// 		charset              string
+// 		socketPath           string
+// 		name                 string
+// 		pass                 string
+// 		db                   string
+// 		initialPingDuration  time.Duration
+// 		maxIdleConns         int
+// 		maxOpenConns         int
+// 		connMaxLifeTime      time.Duration
+// 		initialPingTimeLimit time.Duration
+// 		port                 uint16
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -4236,28 +4236,28 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 // 		           err:nil,
 // 		       },
 // 		       fields: fields {
-// 		           db:"",
-// 		           network:"",
-// 		           socketPath:"",
-// 		           host:"",
-// 		           port:0,
-// 		           user:"",
-// 		           pass:"",
-// 		           name:"",
-// 		           charset:"",
-// 		           timezone:"",
-// 		           initialPingTimeLimit:nil,
-// 		           initialPingDuration:nil,
-// 		           connMaxLifeTime:nil,
 // 		           dialer:nil,
-// 		           dialerFunc:nil,
-// 		           tlsConfig:nil,
-// 		           maxOpenConns:0,
-// 		           maxIdleConns:0,
-// 		           session:nil,
-// 		           connected:nil,
-// 		           eventReceiver:nil,
 // 		           dbr:nil,
+// 		           eventReceiver:nil,
+// 		           connected:nil,
+// 		           session:nil,
+// 		           tlsConfig:nil,
+// 		           dialerFunc:nil,
+// 		           user:"",
+// 		           host:"",
+// 		           timezone:"",
+// 		           network:"",
+// 		           charset:"",
+// 		           socketPath:"",
+// 		           name:"",
+// 		           pass:"",
+// 		           db:"",
+// 		           initialPingDuration:nil,
+// 		           maxIdleConns:0,
+// 		           maxOpenConns:0,
+// 		           connMaxLifeTime:nil,
+// 		           initialPingTimeLimit:nil,
+// 		           port:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4279,28 +4279,28 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 // 		           err:nil,
 // 		           },
 // 		           fields: fields {
-// 		           db:"",
-// 		           network:"",
-// 		           socketPath:"",
-// 		           host:"",
-// 		           port:0,
-// 		           user:"",
-// 		           pass:"",
-// 		           name:"",
-// 		           charset:"",
-// 		           timezone:"",
-// 		           initialPingTimeLimit:nil,
-// 		           initialPingDuration:nil,
-// 		           connMaxLifeTime:nil,
 // 		           dialer:nil,
-// 		           dialerFunc:nil,
-// 		           tlsConfig:nil,
-// 		           maxOpenConns:0,
-// 		           maxIdleConns:0,
-// 		           session:nil,
-// 		           connected:nil,
-// 		           eventReceiver:nil,
 // 		           dbr:nil,
+// 		           eventReceiver:nil,
+// 		           connected:nil,
+// 		           session:nil,
+// 		           tlsConfig:nil,
+// 		           dialerFunc:nil,
+// 		           user:"",
+// 		           host:"",
+// 		           timezone:"",
+// 		           network:"",
+// 		           charset:"",
+// 		           socketPath:"",
+// 		           name:"",
+// 		           pass:"",
+// 		           db:"",
+// 		           initialPingDuration:nil,
+// 		           maxIdleConns:0,
+// 		           maxOpenConns:0,
+// 		           connMaxLifeTime:nil,
+// 		           initialPingTimeLimit:nil,
+// 		           port:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4331,28 +4331,28 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			m := &mySQLClient{
-// 				db:                   test.fields.db,
-// 				network:              test.fields.network,
-// 				socketPath:           test.fields.socketPath,
-// 				host:                 test.fields.host,
-// 				port:                 test.fields.port,
-// 				user:                 test.fields.user,
-// 				pass:                 test.fields.pass,
-// 				name:                 test.fields.name,
-// 				charset:              test.fields.charset,
-// 				timezone:             test.fields.timezone,
-// 				initialPingTimeLimit: test.fields.initialPingTimeLimit,
-// 				initialPingDuration:  test.fields.initialPingDuration,
-// 				connMaxLifeTime:      test.fields.connMaxLifeTime,
 // 				dialer:               test.fields.dialer,
-// 				dialerFunc:           test.fields.dialerFunc,
-// 				tlsConfig:            test.fields.tlsConfig,
-// 				maxOpenConns:         test.fields.maxOpenConns,
-// 				maxIdleConns:         test.fields.maxIdleConns,
-// 				session:              test.fields.session,
-// 				connected:            test.fields.connected,
-// 				eventReceiver:        test.fields.eventReceiver,
 // 				dbr:                  test.fields.dbr,
+// 				eventReceiver:        test.fields.eventReceiver,
+// 				connected:            test.fields.connected,
+// 				session:              test.fields.session,
+// 				tlsConfig:            test.fields.tlsConfig,
+// 				dialerFunc:           test.fields.dialerFunc,
+// 				user:                 test.fields.user,
+// 				host:                 test.fields.host,
+// 				timezone:             test.fields.timezone,
+// 				network:              test.fields.network,
+// 				charset:              test.fields.charset,
+// 				socketPath:           test.fields.socketPath,
+// 				name:                 test.fields.name,
+// 				pass:                 test.fields.pass,
+// 				db:                   test.fields.db,
+// 				initialPingDuration:  test.fields.initialPingDuration,
+// 				maxIdleConns:         test.fields.maxIdleConns,
+// 				maxOpenConns:         test.fields.maxOpenConns,
+// 				connMaxLifeTime:      test.fields.connMaxLifeTime,
+// 				initialPingTimeLimit: test.fields.initialPingTimeLimit,
+// 				port:                 test.fields.port,
 // 			}
 //
 // 			m.errorLog(test.args.err)

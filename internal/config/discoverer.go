@@ -18,11 +18,11 @@ package config
 
 // Discoverer represents the Discoverer configurations.
 type Discoverer struct {
+	Net               *Net       `json:"net,omitempty"                yaml:"net"`
+	Selectors         *Selectors `json:"selectors,omitempty"          yaml:"selectors"`
 	Name              string     `json:"name,omitempty"               yaml:"name"`
 	Namespace         string     `json:"namespace,omitempty"          yaml:"namespace"`
 	DiscoveryDuration string     `json:"discovery_duration,omitempty" yaml:"discovery_duration"`
-	Net               *Net       `json:"net,omitempty"                yaml:"net"`
-	Selectors         *Selectors `json:"selectors,omitempty"          yaml:"selectors"`
 }
 
 type Selectors struct {
@@ -123,8 +123,8 @@ func (s *Selector) GetFields() map[string]string {
 }
 
 type ReadReplica struct {
-	Enabled bool   `json:"enabled,omitempty" yaml:"enabled"`
 	IDKey   string `json:"id_key,omitempty"  yaml:"id_key"`
+	Enabled bool   `json:"enabled,omitempty" yaml:"enabled"`
 }
 
 func (r *ReadReplica) GetEnabled() bool {
@@ -207,9 +207,9 @@ func (r *ReadReplica) Bind() *ReadReplica {
 
 // DiscovererClient represents the DiscovererClient configurations.
 type DiscovererClient struct {
-	Duration           string      `json:"duration"             yaml:"duration"`
 	Client             *GRPCClient `json:"client"               yaml:"client"`
 	AgentClientOptions *GRPCClient `json:"agent_client_options" yaml:"agent_client_options"`
+	Duration           string      `json:"duration"             yaml:"duration"`
 }
 
 // Bind binds the actual data from the DiscovererClient receiver field.

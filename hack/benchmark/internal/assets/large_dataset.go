@@ -24,11 +24,15 @@ const (
 )
 
 type largeDataset struct {
+	// Training dataset.
+	train     x1b.BillionScaleVectors
+	// Query dataset.
+	query     x1b.BillionScaleVectors
+	// Distances for the ground truth.
+	distances x1b.FloatVectors
 	*dataset
-	train       x1b.BillionScaleVectors
-	query       x1b.BillionScaleVectors
+	// Ground truth for the dataset.
 	groundTruth [][]int
-	distances   x1b.FloatVectors
 }
 
 func loadLargeData(
@@ -59,7 +63,7 @@ func loadLargeData(
 		groundTruth := make([][]int, 0, iv.Size())
 		for i := 0; ; i++ {
 			gt32, err := iv.LoadInt32(i)
-			if err == ErrOutOfBounds {
+			if errors.Is(err, ErrOutOfBounds) {
 				break
 			}
 			gt := make([]int, 0, len(gt32))

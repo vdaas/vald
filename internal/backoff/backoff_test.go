@@ -40,10 +40,10 @@ func TestMain(m *testing.M) {
 
 func TestNew(t *testing.T) {
 	type test struct {
-		name      string
-		opts      []Option
 		want      *backoff
 		checkFunc func(got, want *backoff) error
+		name      string
+		opts      []Option
 	}
 
 	tests := []test{
@@ -102,13 +102,13 @@ func Test_backoff_addJitter(t *testing.T) {
 		want float64
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
 		checkFunc  func(want, float64) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		fields     fields
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got float64) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -171,12 +171,12 @@ func Test_backoff_Close(t *testing.T) {
 	type fields struct{}
 	type want struct{}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -217,8 +217,7 @@ func Test_backoff_Close(t *testing.T) {
 func Test_backoff_Do(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ctx context.Context
-		f   func(ctx context.Context) (val any, retryable bool, err error)
+		f func(ctx context.Context) (val any, retryable bool, err error)
 	}
 	type fields struct {
 		backoffFactor         float64
@@ -236,13 +235,13 @@ func Test_backoff_Do(t *testing.T) {
 		err     error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		args       args
 		checkFunc  func(want, any, error) error
-		beforeFunc func(args)
+		beforeFunc func(*testing.T, args) context.Context
 		afterFunc  func(args)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, gotRes any, err error) error {
 		if !errors.Is(err, w.err) {
@@ -255,7 +254,6 @@ func Test_backoff_Do(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx := context.Background()
 			err := errors.New("error is occurred")
 			f := func(context.Context) (any, bool, error) {
 				return nil, false, err
@@ -263,8 +261,11 @@ func Test_backoff_Do(t *testing.T) {
 			return test{
 				name: "return nil response and error when function returns (nil, false, error) and not retryable",
 				args: args{
-					ctx: ctx,
-					f:   f,
+					f: f,
+				},
+				beforeFunc: func(t *testing.T, _ args) context.Context {
+					t.Helper()
+					return t.Context()
 				},
 				want: want{
 					err: err,
@@ -272,21 +273,22 @@ func Test_backoff_Do(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx := context.Background()
 			f := func(context.Context) (any, bool, error) {
 				return nil, true, nil
 			}
 			return test{
 				name: "return nil response and nil error when function returns (nil, true, nil) and not retryable",
 				args: args{
-					ctx: ctx,
-					f:   f,
+					f: f,
+				},
+				beforeFunc: func(t *testing.T, _ args) context.Context {
+					t.Helper()
+					return t.Context()
 				},
 				want: want{},
 			}
 		}(),
 		func() test {
-			ctx := context.Background()
 			err := errors.New("errors is occurred")
 			f := func(context.Context) (any, bool, error) {
 				return nil, false, err
@@ -294,8 +296,11 @@ func Test_backoff_Do(t *testing.T) {
 			return test{
 				name: "return nil response and error when function return (nil, false, error) and maxRetryCount = 0",
 				args: args{
-					ctx: ctx,
-					f:   f,
+					f: f,
+				},
+				beforeFunc: func(t *testing.T, _ args) context.Context {
+					t.Helper()
+					return t.Context()
 				},
 				fields: fields{
 					backoffFactor:         0,
@@ -315,7 +320,6 @@ func Test_backoff_Do(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx := context.Background()
 			err := errors.New("errors is occurred")
 			f := func(context.Context) (any, bool, error) {
 				return str, true, err
@@ -323,8 +327,11 @@ func Test_backoff_Do(t *testing.T) {
 			return test{
 				name: "return response and nil error when function return (string, true, error) and maxRetryCount = 1",
 				args: args{
-					ctx: ctx,
-					f:   f,
+					f: f,
+				},
+				beforeFunc: func(t *testing.T, _ args) context.Context {
+					t.Helper()
+					return t.Context()
 				},
 				fields: fields{
 					backoffFactor:         0,
@@ -344,7 +351,6 @@ func Test_backoff_Do(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx := context.Background()
 			err := errors.New("errors is occurred")
 			cnt := 0
 			f := func(context.Context) (any, bool, error) {
@@ -357,8 +363,11 @@ func Test_backoff_Do(t *testing.T) {
 			return test{
 				name: "return response and error when function return (string, false, error) at 2nd times and maxRetryCount = 1",
 				args: args{
-					ctx: ctx,
-					f:   f,
+					f: f,
+				},
+				beforeFunc: func(t *testing.T, _ args) context.Context {
+					t.Helper()
+					return t.Context()
 				},
 				fields: fields{
 					backoffFactor:         0,
@@ -378,7 +387,6 @@ func Test_backoff_Do(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx := context.Background()
 			err := errors.New("errors is occurred")
 			cnt := 0
 			f := func(context.Context) (any, bool, error) {
@@ -391,8 +399,11 @@ func Test_backoff_Do(t *testing.T) {
 			return test{
 				name: "return response and nil error when function return (string, true, nil) at 2nd times and maxRetryCount = 1",
 				args: args{
-					ctx: ctx,
-					f:   f,
+					f: f,
+				},
+				beforeFunc: func(t *testing.T, _ args) context.Context {
+					t.Helper()
+					return t.Context()
 				},
 				fields: fields{
 					backoffFactor:         0,
@@ -411,7 +422,6 @@ func Test_backoff_Do(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx := context.Background()
 			err := errors.New("errors is occurred")
 			f := func(context.Context) (any, bool, error) {
 				return str, true, err
@@ -419,8 +429,11 @@ func Test_backoff_Do(t *testing.T) {
 			return test{
 				name: "return response and error when function return (string, true, error) and maxRetryCount = 1, errLog is true",
 				args: args{
-					ctx: ctx,
-					f:   f,
+					f: f,
+				},
+				beforeFunc: func(t *testing.T, _ args) context.Context {
+					t.Helper()
+					return t.Context()
 				},
 				fields: fields{
 					backoffFactor:         0,
@@ -440,7 +453,6 @@ func Test_backoff_Do(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx := context.Background()
 			err := errors.New("errors is occurred")
 			f := func(context.Context) (any, bool, error) {
 				return str, true, err
@@ -448,8 +460,11 @@ func Test_backoff_Do(t *testing.T) {
 			return test{
 				name: "return nil response and error when function returns (string, true, error) and context will be closed due to timelimit",
 				args: args{
-					ctx: ctx,
-					f:   f,
+					f: f,
+				},
+				beforeFunc: func(t *testing.T, _ args) context.Context {
+					t.Helper()
+					return t.Context()
 				},
 				fields: fields{
 					backoffFactor:         0,
@@ -468,17 +483,21 @@ func Test_backoff_Do(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("errors is occurred")
-			f := func(context.Context) (any, bool, error) {
-				cancel()
+			f := func(ctx context.Context) (any, bool, error) {
+				ctx.Done()
 				return str, true, err
 			}
 			return test{
 				name: "return nil response and error when function returns (string, true, error) and calls cancel()",
 				args: args{
-					ctx: ctx,
-					f:   f,
+					f: f,
+				},
+				beforeFunc: func(t *testing.T, _ args) context.Context {
+					t.Helper()
+					ctx, cancel := context.WithCancel(t.Context())
+					defer cancel()
+					return ctx
 				},
 				fields: fields{
 					backoffFactor:         0,
@@ -497,21 +516,25 @@ func Test_backoff_Do(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("errors is occurred")
 			cnt := 0
-			f := func(context.Context) (any, bool, error) {
+			f := func(ctx context.Context) (any, bool, error) {
 				cnt++
 				if cnt > 1 {
-					cancel()
+					ctx.Done()
 				}
 				return str, true, err
 			}
 			return test{
 				name: "return nil response and error when function returns (string, true, error) and calls cancel() in 2nd times",
 				args: args{
-					ctx: ctx,
-					f:   f,
+					f: f,
+				},
+				beforeFunc: func(t *testing.T, _ args) context.Context {
+					t.Helper()
+					ctx, cancel := context.WithCancel(t.Context())
+					defer cancel()
+					return ctx
 				},
 				fields: fields{
 					backoffFactor:         0,
@@ -530,7 +553,6 @@ func Test_backoff_Do(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx := context.Background()
 			err := errors.New("errors is occurred")
 			cnt := 0
 			f := func(context.Context) (any, bool, error) {
@@ -543,8 +565,11 @@ func Test_backoff_Do(t *testing.T) {
 			return test{
 				name: "return nil response and error when function returns ends due to backoffTimeLimit",
 				args: args{
-					ctx: ctx,
-					f:   f,
+					f: f,
+				},
+				beforeFunc: func(t *testing.T, _ args) context.Context {
+					t.Helper()
+					return t.Context()
 				},
 				fields: fields{
 					backoffFactor:         1.1,
@@ -569,8 +594,9 @@ func Test_backoff_Do(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			var ctx context.Context
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				ctx = test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -591,7 +617,7 @@ func Test_backoff_Do(t *testing.T) {
 				errLog:                test.fields.errLog,
 			}
 
-			gotRes, err := b.Do(test.args.ctx, test.args.f)
+			gotRes, err := b.Do(ctx, test.args.f)
 			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

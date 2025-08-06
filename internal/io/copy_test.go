@@ -35,26 +35,26 @@ const (
 func TestCopy(t *testing.T) {
 	// A version of bytes.buffer without ReadFrom and WriteTo
 	type buffer struct {
+		io.ReaderFrom
+		io.WriterTo
 		bytes.Buffer
-		io.ReaderFrom // conflicts with and hides bytes.Buffer's ReaderFrom.
-		io.WriterTo   // conflicts with and hides bytes.Buffer's WriterTo.
 	}
 	type args struct {
 		dst io.Writer
 		src io.Reader
 	}
 	type want struct {
-		wantWritten int64
-		wantDst     string
 		err         error
+		wantDst     string
+		wantWritten int64
 	}
 	type test struct {
-		name       string
 		args       args
-		want       want
 		checkFunc  func(want, int64, io.Writer, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
 	}
 	checkFunc := func(w want, gotWritten int64, got string, err error) error {
 		if !errors.Is(err, w.err) {
@@ -209,12 +209,12 @@ func TestNewCopier(t *testing.T) {
 		want Copier
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, Copier) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got Copier) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -281,18 +281,18 @@ func Test_copier_Copy(t *testing.T) {
 		bufSize int64
 	}
 	type want struct {
-		wantWritten int64
-		wantDst     string
 		err         error
+		wantDst     string
+		wantWritten int64
 	}
 	type test struct {
-		name       string
 		args       args
-		fields     fields
-		want       want
 		checkFunc  func(want, int64, string, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, gotWritten int64, gotDst string, err error) error {
 		if !errors.Is(err, w.err) {

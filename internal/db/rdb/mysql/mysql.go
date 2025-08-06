@@ -50,28 +50,50 @@ type MySQL interface {
 }
 
 type mySQLClient struct {
-	db                   string
-	network              string
-	socketPath           string
-	host                 string
-	port                 uint16
-	user                 string
-	pass                 string
-	name                 string
-	charset              string
-	timezone             string
-	initialPingTimeLimit time.Duration
-	initialPingDuration  time.Duration
-	connMaxLifeTime      time.Duration
+	// dialer is a net.Dialer.
 	dialer               net.Dialer
-	dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-	tlsConfig            *tls.Config
-	maxOpenConns         int
-	maxIdleConns         int
-	session              dbr.Session
-	connected            atomic.Value
-	eventReceiver        EventReceiver
+	// dbr is a dbr.DBR.
 	dbr                  dbr.DBR
+	// eventReceiver is an EventReceiver.
+	eventReceiver        EventReceiver
+	// connected is an atomic.Value.
+	connected            atomic.Value
+	// session is a dbr.Session.
+	session              dbr.Session
+	// tlsConfig is a tls.Config.
+	tlsConfig            *tls.Config
+	// dialerFunc is a function to dial.
+	dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
+	// user is a user.
+	user                 string
+	// host is a host.
+	host                 string
+	// timezone is a timezone.
+	timezone             string
+	// network is a network.
+	network              string
+	// charset is a charset.
+	charset              string
+	// socketPath is a socket path.
+	socketPath           string
+	// name is a name.
+	name                 string
+	// pass is a password.
+	pass                 string
+	// db is a database.
+	db                   string
+	// initialPingDuration is an initial ping duration.
+	initialPingDuration  time.Duration
+	// maxIdleConns is a max idle conns.
+	maxIdleConns         int
+	// maxOpenConns is a max open conns.
+	maxOpenConns         int
+	// connMaxLifeTime is a conn max life time.
+	connMaxLifeTime      time.Duration
+	// initialPingTimeLimit is an initial ping time limit.
+	initialPingTimeLimit time.Duration
+	// port is a port.
+	port                 uint16
 }
 
 // New creates the new mySQLClient with option.

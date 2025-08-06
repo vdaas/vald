@@ -36,13 +36,20 @@ import (
 type JobWatcher k8s.ResourceController
 
 type reconciler struct {
+	// jobsByAppNamePool is a sync.Pool for map[string][]k8s.Job.
+	jobsByAppNamePool sync.Pool
+	// mgr is a manager.Manager.
 	mgr               manager.Manager
-	name              string
-	namespaces        []string
+	// onError is a function to call on error.
 	onError           func(err error)
+	// onReconcile is a function to call on reconcile.
 	onReconcile       func(ctx context.Context, jobList map[string][]k8s.Job)
+	// name is a name.
+	name              string
+	// namespaces is a list of namespaces.
+	namespaces        []string
+	// listOpts is a list of client.ListOption.
 	listOpts          []client.ListOption
-	jobsByAppNamePool sync.Pool // map[app][]Job
 }
 
 // New returns the JobWatcher that implements reconciliation loop, or any errors occurred.
@@ -93,7 +100,7 @@ func (r *reconciler) Reconcile(
 				RequeueAfter: time.Second,
 			}, nil
 		}
-		return
+		return res, err
 	}
 
 	jobs := r.jobsByAppNamePool.Get().(map[string][]k8s.Job)
@@ -121,7 +128,7 @@ func (r *reconciler) Reconcile(
 
 	r.jobsByAppNamePool.Put(jobs)
 
-	return
+	return res, err
 }
 
 // GetName returns the name of resource controller.

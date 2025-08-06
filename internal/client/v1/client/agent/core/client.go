@@ -37,12 +37,15 @@ type Client interface {
 
 type agentClient struct {
 	vald.Client
-	addrs []string
+	// gRPC client.
 	c     grpc.Client
+	// List of addresses.
+	addrs []string
 }
 
 type singleAgentClient struct {
 	vald.Client
+	// Agent client.
 	ac agent.AgentClient
 }
 
@@ -61,7 +64,7 @@ func New(opts ...Option) (Client, error) {
 	}
 	if c.c == nil {
 		if c.Client != nil {
-			c.c = c.Client.GRPCClient()
+			c.c = c.GRPCClient()
 		} else {
 			if c.addrs == nil {
 				return nil, errors.ErrGRPCTargetAddrNotFound

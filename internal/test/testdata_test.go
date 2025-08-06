@@ -30,12 +30,12 @@ func TestGetTestdataPath(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -85,11 +85,11 @@ func Test_baseDir(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {

@@ -34,19 +34,11 @@ type GlobalConfig = config.GlobalConfig
 // Config represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Config struct {
+	K8sClient           client.Client         `json:"k8s_client"    yaml:"k8s_client"`
+	Server              *config.Servers       `json:"server_config" yaml:"server_config"`
+	Observability       *config.Observability `json:"observability" yaml:"observability"`
+	Job                 *config.BenchmarkJob  `json:"job"           yaml:"job"`
 	config.GlobalConfig `json:",inline" yaml:",inline"`
-
-	// Server represent all server configuration
-	Server *config.Servers `json:"server_config" yaml:"server_config"`
-
-	// Observability represent observability configurations
-	Observability *config.Observability `json:"observability" yaml:"observability"`
-
-	// Job represents benchmark job configurations
-	Job *config.BenchmarkJob `json:"job" yaml:"job"`
-
-	// K8sClient represents kubernetes clients
-	K8sClient client.Client `json:"k8s_client" yaml:"k8s_client"`
 }
 
 var (

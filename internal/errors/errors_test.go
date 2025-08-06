@@ -30,16 +30,16 @@ func TestErrTimeoutParseFailed(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
-			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return fmt.Errorf("got: \"%wv\",\n\t\t\t\twawt: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -100,16 +100,16 @@ func TestErrServerNotFound(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
-			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return fmt.Errorf("got: \"%wv\",\n\t\t\t\twawt: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -171,16 +171,16 @@ func TestErrOptionFailed(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		args       args
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
-			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return fmt.Errorf("got: \"%wv\",\n\t\t\t\twawt: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -272,16 +272,16 @@ func TestErrArgumentPraseFailed(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
-			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return fmt.Errorf("got: \"%wv\",\n\t\t\t\twawt: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -340,16 +340,16 @@ func TestErrBackoffTimeout(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
-			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return fmt.Errorf("got: \"%wv\",\n\t\t\t\twawt: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -409,16 +409,16 @@ func TestErrInvalidTypeConversion(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
-			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return fmt.Errorf("got: \"%wv\",\n\t\t\t\twawt: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -511,16 +511,16 @@ func TestErrLoggingRetry(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		args       args
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
-			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return fmt.Errorf("got: \"%wv\",\n\t\t\t\twawt: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -613,16 +613,16 @@ func TestErrLoggingFailed(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		args       args
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
-			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return fmt.Errorf("got: \"%wv\",\n\t\t\t\twawt: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -714,16 +714,16 @@ func TestNew(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
-			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return fmt.Errorf("got: \"%wv\",\n\t\t\t\twawt: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -780,16 +780,16 @@ func TestWrap(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		args       args
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
-			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return fmt.Errorf("got: \"%wv\",\n\t\t\t\twawt: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -872,16 +872,16 @@ func TestWrapf(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
-			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return fmt.Errorf("got: \"%wv\",\n\t\t\t\twawt: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1072,16 +1072,16 @@ func TestCause(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
-			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return fmt.Errorf("got: \"%wv\",\n\t\t\t\twawt: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1137,16 +1137,16 @@ func TestUnwarp(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
-			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return fmt.Errorf("got: \"%wv\",\n\t\t\t\twawt: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1204,16 +1204,16 @@ func TestErrorf(t *testing.T) {
 		want error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got error) error {
 		if !Is(got, w.want) {
-			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return fmt.Errorf("got: \"%wv\",\n\t\t\t\twawt: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -1364,12 +1364,12 @@ func TestIs(t *testing.T) {
 		want bool
 	}
 	type test struct {
-		name       string
 		args       args
-		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if got != w.want {
@@ -1535,12 +1535,12 @@ func TestAs(t *testing.T) {
 		want bool
 	}
 	type test struct {
-		name       string
 		args       args
-		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if got != w.want {
@@ -1659,12 +1659,12 @@ func TestJoin(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !Is(err, w.err) {
@@ -1912,9 +1912,8 @@ func TestJoin(t *testing.T) {
 //
 // func Test_is(t *testing.T) {
 // 	type args struct {
-// 		err              error
-// 		target           error
-// 		targetComparable bool
+// 		err    error
+// 		target error
 // 	}
 // 	type want struct {
 // 		wantSame bool
@@ -1941,7 +1940,6 @@ func TestJoin(t *testing.T) {
 // 		       args: args {
 // 		           err:nil,
 // 		           target:nil,
-// 		           targetComparable:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1962,7 +1960,6 @@ func TestJoin(t *testing.T) {
 // 		           args: args {
 // 		           err:nil,
 // 		           target:nil,
-// 		           targetComparable:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1993,7 +1990,7 @@ func TestJoin(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			gotSame := is(test.args.err, test.args.target, test.args.targetComparable)
+// 			gotSame := is(test.args.err, test.args.target)
 // 			if err := checkFunc(test.want, gotSame); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -2167,6 +2164,94 @@ func TestJoin(t *testing.T) {
 // 			}
 //
 // 			gotStr := e.Error()
+// 			if err := checkFunc(test.want, gotStr); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_joinError_String(t *testing.T) {
+// 	type fields struct {
+// 		errs []error
+// 	}
+// 	type want struct {
+// 		wantStr string
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, string) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, gotStr string) error {
+// 		if !reflect.DeepEqual(gotStr, w.wantStr) {
+// 			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotStr, w.wantStr)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           errs:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           errs:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			e := &joinError{
+// 				errs: test.fields.errs,
+// 			}
+//
+// 			gotStr := e.String()
 // 			if err := checkFunc(test.want, gotStr); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

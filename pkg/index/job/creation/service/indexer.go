@@ -42,11 +42,15 @@ type Indexer interface {
 }
 
 type index struct {
-	client      discoverer.Client
+	// discoverer client.
+	client discoverer.Client
+	// target agent addresses.
 	targetAddrs []string
 
+	// creation pool size.
 	creationPoolSize uint32
-	concurrency      int
+	// concurrency for create index.
+	concurrency int
 }
 
 // New returns Indexer object if no error occurs.

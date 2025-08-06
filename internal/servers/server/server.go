@@ -363,13 +363,13 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 				switch s.mode {
 				case REST, GQL:
 					err = s.http.starter(l)
-					if err != nil && err != http.ErrServerClosed {
+					if err != nil && !errors.Is(err, http.ErrServerClosed) {
 						ech <- err
 					}
 				case GRPC:
 					glog.Init()
 					err = s.grpc.srv.Serve(l)
-					if err != nil && err != grpc.ErrServerStopped {
+					if err != nil && !errors.Is(err, grpc.ErrServerStopped) {
 						ech <- err
 					}
 				}
@@ -381,7 +381,7 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 				s.mu.RLock()
 				if !s.enableRestart || s.shuttingDown {
 					s.mu.RUnlock()
-					return
+					return err
 				}
 				s.mu.RUnlock()
 				log.Infof("%s server %s stopped", s.mode.String(), s.name)

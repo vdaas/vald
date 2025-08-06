@@ -28,19 +28,19 @@ import (
 func Test_attributesFromError(t *testing.T) {
 	type T = []attribute.KeyValue
 	type args struct {
-		method string
 		err    error
+		method string
 	}
 	type want struct {
 		obj T
 	}
 	type test struct {
-		name       string
 		args       args
-		want       want
 		checkFunc  func(w want, obj T) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		want       want
 	}
 
 	defaultCheckFunc := func(w want, obj T) error {

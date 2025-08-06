@@ -15,20 +15,16 @@ package config
 
 // IndexExporter represents the configurations for index exportation.
 type IndexExporter struct {
-	// Concurrency represents indexing concurrency.
-	Concurrency int `json:"concurrency" yaml:"concurrency"`
-
-	// KVSBackgroundSyncInterval represents interval for checked id list kvs sync duration
-	KVSBackgroundSyncInterval string `json:"kvs_background_sync_interval" yaml:"kvs_background_sync_interval"`
-
-	// KVSBackgroundCompactionInterval represents interval for checked id list kvs compaction duration
-	KVSBackgroundCompactionInterval string `json:"kvs_background_compaction_interval" yaml:"kvs_background_compaction_interval"`
-
-	// IndexPath represents the export index file path
-	IndexPath string `json:"index_path,omitempty" yaml:"index_path"`
-
 	// Gateway represent gateway service configuration
-	Gateway *GRPCClient `json:"gateway" yaml:"gateway"`
+	Gateway                         *GRPCClient `json:"gateway"                            yaml:"gateway"`
+	// KVSBackgroundSyncInterval represents interval for checked id list kvs sync duration
+	KVSBackgroundSyncInterval       string      `json:"kvs_background_sync_interval"       yaml:"kvs_background_sync_interval"`
+	// KVSBackgroundCompactionInterval represents interval for checked id list kvs compaction duration
+	KVSBackgroundCompactionInterval string      `json:"kvs_background_compaction_interval" yaml:"kvs_background_compaction_interval"`
+	// IndexPath represents the export index file path
+	IndexPath                       string      `json:"index_path,omitempty"               yaml:"index_path"`
+	// Concurrency represents indexing concurrency.
+	Concurrency                     int         `json:"concurrency"                        yaml:"concurrency"`
 }
 
 func (e *IndexExporter) Bind() *IndexExporter {

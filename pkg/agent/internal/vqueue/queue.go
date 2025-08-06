@@ -47,7 +47,9 @@ type Queue interface {
 }
 
 type vqueue struct {
+	// insert list.
 	il, dl sync.Map[string, *index]
+	// insert and delete counter.
 	ic, dc uint64
 }
 

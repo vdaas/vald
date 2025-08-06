@@ -58,19 +58,25 @@ type (
 
 	usearch struct {
 		// index struct
-		index *core.Index
-
-		// config
-		quantizationType core.Quantization
-		metricType       core.Metric
+		index            *core.Index
+		// mutex
+		mu               *sync.RWMutex
+		// index path
+		idxPath          string
+		// dimension
 		dimension        uint
+		// connectivity
 		connectivity     uint
+		// expansion add
 		expansionAdd     uint
+		// expansion search
 		expansionSearch  uint
+		// quantization type
+		quantizationType core.Quantization
+		// metric type
+		metricType       core.Metric
+		// multi
 		multi            bool
-
-		idxPath string
-		mu      *sync.RWMutex
 	}
 )
 
@@ -161,7 +167,7 @@ func (u *usearch) GetIndicesSize() (indicesSize int, err error) {
 	return int(size), err
 }
 
-// Add adds vectors to the index
+// Add adds vectors to the index.
 func (u *usearch) Add(key core.Key, vec []float32) error {
 	if len(vec) != int(u.dimension) {
 		return errors.New("inconsistent dimensions")

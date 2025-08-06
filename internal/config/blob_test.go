@@ -29,12 +29,12 @@ func TestBlobStorageType_String(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		bst        BlobStorageType
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
+		bst        BlobStorageType
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -103,12 +103,12 @@ func TestAtoBST(t *testing.T) {
 		want BlobStorageType
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, BlobStorageType) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got BlobStorageType) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -195,21 +195,21 @@ func TestAtoBST(t *testing.T) {
 
 func TestBlob_Bind(t *testing.T) {
 	type fields struct {
-		StorageType  string
-		Bucket       string
 		S3           *S3Config
 		CloudStorage *CloudStorageConfig
+		StorageType  string
+		Bucket       string
 	}
 	type want struct {
 		want *Blob
 	}
 	type test struct {
-		name       string
 		fields     fields
 		want       want
 		checkFunc  func(want, *Blob) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *Blob) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -329,9 +329,9 @@ func TestS3Config_Bind(t *testing.T) {
 		AccessKey                  string
 		SecretAccessKey            string
 		Token                      string
+		MaxChunkSize               string
+		MaxPartSize                string
 		MaxRetries                 int
-		ForcePathStyle             bool
-		UseAccelerate              bool
 		UseARNRegion               bool
 		UseDualStack               bool
 		EnableSSL                  bool
@@ -340,19 +340,19 @@ func TestS3Config_Bind(t *testing.T) {
 		EnableContentMD5Validation bool
 		EnableEndpointDiscovery    bool
 		EnableEndpointHostPrefix   bool
-		MaxPartSize                string
-		MaxChunkSize               string
+		UseAccelerate              bool
+		ForcePathStyle             bool
 	}
 	type want struct {
 		want *S3Config
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *S3Config) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *S3Config) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -497,25 +497,25 @@ func TestS3Config_Bind(t *testing.T) {
 
 func TestCloudStorageConfig_Bind(t *testing.T) {
 	type fields struct {
-		URL                     string
 		Client                  *CloudStorageClient
-		WriteBufferSize         int
+		URL                     string
 		WriteCacheControl       string
 		WriteContentDisposition string
 		WriteContentEncoding    string
 		WriteContentLanguage    string
 		WriteContentType        string
+		WriteBufferSize         int
 	}
 	type want struct {
 		want *CloudStorageConfig
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *CloudStorageConfig) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *CloudStorageConfig) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -668,3 +668,95 @@ func TestCloudStorageConfig_Bind(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
+//
+// func TestCloudStorageClient_Bind(t *testing.T) {
+// 	type fields struct {
+// 		CredentialsFilePath string
+// 		CredentialsJSON     string
+// 	}
+// 	type want struct {
+// 		want *CloudStorageClient
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *CloudStorageClient) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *CloudStorageClient) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           CredentialsFilePath:"",
+// 		           CredentialsJSON:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           CredentialsFilePath:"",
+// 		           CredentialsJSON:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			csc := &CloudStorageClient{
+// 				CredentialsFilePath: test.fields.CredentialsFilePath,
+// 				CredentialsJSON:     test.fields.CredentialsJSON,
+// 			}
+//
+// 			got := csc.Bind()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

@@ -14,7 +14,6 @@
 package ngt
 
 import (
-	"context"
 	"flag"
 	"testing"
 
@@ -49,7 +48,7 @@ func init() {
 func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 	for _, dname := range datasets {
 		b.Run(dname, func(b *testing.B) {
-			ctx := context.Background()
+			ctx := b.Context()
 
 			dataset := assets.LoadData(dname)(b)
 
@@ -91,7 +90,7 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 	for _, dname := range datasets {
 		b.Run(dname, func(b *testing.B) {
-			ctx := context.Background()
+			ctx := b.Context()
 
 			dataset := assets.LoadData(dname)(b)
 

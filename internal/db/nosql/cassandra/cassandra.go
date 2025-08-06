@@ -106,64 +106,115 @@ type (
 		enableTokenAwareHostPolicy     bool
 	}
 	hostFilter struct {
-		enable    bool
+		// dcHost is a data center host.
 		dcHost    string
+		// whiteList is a list of white list.
 		whiteList []string
+		// enable is a flag to enable host filter.
+		enable    bool
 	}
 	// skipcq: SCC-U1000
 	events struct {
+		// DisableNodeStatusEvents is a flag to disable node status events.
 		DisableNodeStatusEvents bool
+		// DisableTopologyEvents is a flag to disable topology events.
 		DisableTopologyEvents   bool
+		// DisableSchemaEvents is a flag to disable schema events.
 		DisableSchemaEvents     bool
 	}
 	client struct {
-		hosts                    []string
-		cqlVersion               string
-		protoVersion             int
-		timeout                  time.Duration
-		connectTimeout           time.Duration
-		port                     int
-		keyspace                 string
-		numConns                 int
-		consistency              gocql.Consistency
-		compressor               gocql.Compressor
-		username                 string
-		password                 string
-		authProvider             func(h *gocql.HostInfo) (gocql.Authenticator, error)
-		retryPolicy              retryPolicy
-		reconnectionPolicy       reconnectionPolicy
-		poolConfig               poolConfig
-		hostFilter               hostFilter
-		socketKeepalive          time.Duration
-		maxPreparedStmts         int
-		maxRoutingKeyInfo        int
-		pageSize                 int
-		serialConsistency        gocql.SerialConsistency
-		tls                      *tls.Config
-		tlsCertPath              string
-		tlsKeyPath               string
-		tlsCAPath                string
-		enableHostVerification   bool
-		defaultTimestamp         bool
-		reconnectInterval        time.Duration
-		maxWaitSchemaAgreement   time.Duration
-		ignorePeerAddr           bool
-		disableInitialHostLookup bool
-		disableNodeStatusEvents  bool
-		disableTopologyEvents    bool
-		disableSchemaEvents      bool
-		disableSkipMetadata      bool
-		queryObserver            QueryObserver
-		batchObserver            BatchObserver
-		connectObserver          ConnectObserver
-		frameHeaderObserver      FrameHeaderObserver
-		defaultIdempotence       bool
-		rawDialer                net.Dialer
+		// cluster is a cluster config.
+		cluster                  ClusterConfig
+		// dialer is a gocql dialer.
 		dialer                   gocql.Dialer
+		// rawDialer is a net dialer.
+		rawDialer                net.Dialer
+		// frameHeaderObserver is a frame header observer.
+		frameHeaderObserver      FrameHeaderObserver
+		// connectObserver is a connect observer.
+		connectObserver          ConnectObserver
+		// batchObserver is a batch observer.
+		batchObserver            BatchObserver
+		// queryObserver is a query observer.
+		queryObserver            QueryObserver
+		// compressor is a gocql compressor.
+		compressor               gocql.Compressor
+		// tls is a tls config.
+		tls                      *tls.Config
+		// session is a gocql session.
+		session                  *gocql.Session
+		// authProvider is a function to get auth provider.
+		authProvider             func(h *gocql.HostInfo) (gocql.Authenticator, error)
+		// tlsCAPath is a path to tls ca.
+		tlsCAPath                string
+		// tlsCertPath is a path to tls cert.
+		tlsCertPath              string
+		// cqlVersion is a cql version.
+		cqlVersion               string
+		// keyspace is a keyspace.
+		keyspace                 string
+		// password is a password.
+		password                 string
+		// tlsKeyPath is a path to tls key.
+		tlsKeyPath               string
+		// username is a username.
+		username                 string
+		// poolConfig is a pool config.
+		poolConfig               poolConfig
+		// hosts is a list of hosts.
+		hosts                    []string
+		// hostFilter is a host filter.
+		hostFilter               hostFilter
+		// retryPolicy is a retry policy.
+		retryPolicy              retryPolicy
+		// reconnectionPolicy is a reconnection policy.
+		reconnectionPolicy       reconnectionPolicy
+		// reconnectInterval is a reconnect interval.
+		reconnectInterval        time.Duration
+		// port is a port.
+		port                     int
+		// pageSize is a page size.
+		pageSize                 int
+		// socketKeepalive is a socket keepalive.
+		socketKeepalive          time.Duration
+		// protoVersion is a proto version.
+		protoVersion             int
+		// maxRoutingKeyInfo is a max routing key info.
+		maxRoutingKeyInfo        int
+		// maxWaitSchemaAgreement is a max wait schema agreement.
+		maxWaitSchemaAgreement   time.Duration
+		// writeCoalesceWaitTime is a write coalesce wait time.
 		writeCoalesceWaitTime    time.Duration
-
-		cluster ClusterConfig
-		session *gocql.Session
+		// timeout is a timeout.
+		timeout                  time.Duration
+		// connectTimeout is a connect timeout.
+		connectTimeout           time.Duration
+		// maxPreparedStmts is a max prepared stmts.
+		maxPreparedStmts         int
+		// numConns is a number of conns.
+		numConns                 int
+		// consistency is a gocql consistency.
+		consistency              gocql.Consistency
+		// serialConsistency is a gocql serial consistency.
+		serialConsistency        gocql.SerialConsistency
+		// disableSkipMetadata is a flag to disable skip metadata.
+		disableSkipMetadata      bool
+		// disableSchemaEvents is a flag to disable schema events.
+		disableSchemaEvents      bool
+		// disableTopologyEvents is a flag to disable topology events.
+		disableTopologyEvents    bool
+		// defaultIdempotence is a flag to default idempotence.
+		defaultIdempotence       bool
+		// disableNodeStatusEvents is a flag to disable node status events.
+		disableNodeStatusEvents  bool
+		// disableInitialHostLookup is a flag to disable initial host lookup.
+		disableInitialHostLookup bool
+		// ignorePeerAddr is a flag to ignore peer addr.
+		ignorePeerAddr           bool
+		// defaultTimestamp is a flag to default timestamp.
+		defaultTimestamp         bool
+		// enableHostVerification is a flag to enable host verification.
+		enableHostVerification   bool
 	}
 )
 
@@ -375,32 +426,32 @@ func Contains(column string) Cmp {
 
 // WrapErrorWithKeys wraps the cassandra error to Vald internal error.
 func WrapErrorWithKeys(err error, keys ...string) error {
-	switch err {
-	case ErrNotFound:
+	switch {
+	case errors.Is(err, ErrNotFound):
 		return errors.ErrCassandraNotFound(keys...)
-	case ErrUnavailable:
+	case errors.Is(err, ErrUnavailable):
 		return errors.ErrCassandraUnavailable
-	case ErrUnsupported:
+	case errors.Is(err, ErrUnsupported):
 		return err
-	case ErrTooManyStmts:
+	case errors.Is(err, ErrTooManyStmts):
 		return err
-	case ErrUseStmt:
+	case errors.Is(err, ErrUseStmt):
 		return err
-	case ErrSessionClosed:
+	case errors.Is(err, ErrSessionClosed):
 		return err
-	case ErrNoConnections:
+	case errors.Is(err, ErrNoConnections):
 		return err
-	case ErrNoKeyspace:
+	case errors.Is(err, ErrNoKeyspace):
 		return err
-	case ErrKeyspaceDoesNotExist:
+	case errors.Is(err, ErrKeyspaceDoesNotExist):
 		return err
-	case ErrNoMetadata:
+	case errors.Is(err, ErrNoMetadata):
 		return err
-	case ErrNoHosts:
+	case errors.Is(err, ErrNoHosts):
 		return err
-	case ErrNoConnectionsStarted:
+	case errors.Is(err, ErrNoConnectionsStarted):
 		return err
-	case ErrHostQueryFailed:
+	case errors.Is(err, ErrHostQueryFailed):
 		return err
 	default:
 		return err

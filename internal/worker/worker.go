@@ -45,13 +45,21 @@ type Worker interface {
 }
 
 type worker struct {
-	name           string
-	limitation     int
+	// running is a flag to check if the worker is running.
 	running        atomic.Value
+	// eg is an error group.
 	eg             errgroup.Group
+	// queue is a queue.
 	queue          Queue
+	// name is a name.
+	name           string
+	// qopts is a list of queue options.
 	qopts          []QueueOption
+	// limitation is a limitation.
+	limitation     int
+	// requestedCount is a requested count.
 	requestedCount uint64
+	// completedCount is a completed count.
 	completedCount uint64
 }
 

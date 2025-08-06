@@ -152,10 +152,14 @@ const (
 )
 
 type metricsInfo struct {
-	Name  string
-	Desc  string
-	Unit  string
+	// Value is a function to get the value.
 	Value func() int64
+	// Name is a name.
+	Name  string
+	// Desc is a description.
+	Desc  string
+	// Unit is a unit.
+	Unit  string
 }
 
 func getMemstatsMetrics() []*metricsInfo {

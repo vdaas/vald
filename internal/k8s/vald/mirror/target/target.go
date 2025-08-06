@@ -50,18 +50,27 @@ const (
 )
 
 type reconciler struct {
+	// mgr is a manager.Manager.
 	mgr         manager.Manager
+	// name is a name.
 	name        string
+	// onError is a function to call on error.
 	onError     func(err error)
+	// onReconcile is a function to call on reconcile.
 	onReconcile func(ctx context.Context, mm map[string]Target)
+	// lopts is a list of client.ListOption.
 	lopts       []client.ListOption
 }
 
 type Target struct {
+	// Colocation is a colocation.
 	Colocation string
+	// Host is a host.
 	Host       string
-	Port       int
+	// Phase is a phase.
 	Phase      MirrorTargetPhase
+	// Port is a port.
+	Port       int
 }
 
 func New(opts ...Option) (MirrorTargetWatcher, error) {

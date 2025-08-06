@@ -15,6 +15,7 @@ package operation
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"testing"
 
@@ -72,7 +73,7 @@ func (o *operation) StreamRemove(ctx context.Context, b *testing.B, maxIdNum int
 
 			for {
 				res, err := sc.Recv()
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					return
 				}
 

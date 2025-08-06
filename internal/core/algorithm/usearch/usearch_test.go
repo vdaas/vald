@@ -86,18 +86,18 @@ func Test_usearch_Search(t *testing.T) {
 		multi            bool
 	}
 	type want struct {
-		want []algorithm.SearchResult
 		err  error
+		want []algorithm.SearchResult
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		createFunc func(t *testing.T, fields fields) (Usearch, error)
 		want       want
+		createFunc func(t *testing.T, fields fields) (Usearch, error)
 		checkFunc  func(want, []algorithm.SearchResult, Usearch, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, Usearch) error
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCreateFunc := func(t *testing.T, fields fields) (Usearch, error) {
 		t.Helper()
@@ -624,15 +624,15 @@ func Test_usearch_Search(t *testing.T) {
 // func Test_usearch_SaveIndex(t *testing.T) {
 // 	type fields struct {
 // 		index            *core.Index
-// 		quantizationType core.Quantization
-// 		metricType       core.Metric
+// 		mu               *sync.RWMutex
+// 		idxPath          string
 // 		dimension        uint
 // 		connectivity     uint
 // 		expansionAdd     uint
 // 		expansionSearch  uint
+// 		quantizationType core.Quantization
+// 		metricType       core.Metric
 // 		multi            bool
-// 		idxPath          string
-// 		mu               *sync.RWMutex
 // 	}
 // 	type want struct {
 // 		err error
@@ -658,15 +658,15 @@ func Test_usearch_Search(t *testing.T) {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           index:nil,
-// 		           quantizationType:nil,
-// 		           metricType:nil,
+// 		           mu:nil,
+// 		           idxPath:"",
 // 		           dimension:0,
 // 		           connectivity:0,
 // 		           expansionAdd:0,
 // 		           expansionSearch:0,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
 // 		           multi:false,
-// 		           idxPath:"",
-// 		           mu:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -686,15 +686,15 @@ func Test_usearch_Search(t *testing.T) {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           index:nil,
-// 		           quantizationType:nil,
-// 		           metricType:nil,
+// 		           mu:nil,
+// 		           idxPath:"",
 // 		           dimension:0,
 // 		           connectivity:0,
 // 		           expansionAdd:0,
 // 		           expansionSearch:0,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
 // 		           multi:false,
-// 		           idxPath:"",
-// 		           mu:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -726,15 +726,15 @@ func Test_usearch_Search(t *testing.T) {
 // 			}
 // 			u := &usearch{
 // 				index:            test.fields.index,
-// 				quantizationType: test.fields.quantizationType,
-// 				metricType:       test.fields.metricType,
+// 				mu:               test.fields.mu,
+// 				idxPath:          test.fields.idxPath,
 // 				dimension:        test.fields.dimension,
 // 				connectivity:     test.fields.connectivity,
 // 				expansionAdd:     test.fields.expansionAdd,
 // 				expansionSearch:  test.fields.expansionSearch,
+// 				quantizationType: test.fields.quantizationType,
+// 				metricType:       test.fields.metricType,
 // 				multi:            test.fields.multi,
-// 				idxPath:          test.fields.idxPath,
-// 				mu:               test.fields.mu,
 // 			}
 //
 // 			err := u.SaveIndex()
@@ -751,15 +751,15 @@ func Test_usearch_Search(t *testing.T) {
 // 	}
 // 	type fields struct {
 // 		index            *core.Index
-// 		quantizationType core.Quantization
-// 		metricType       core.Metric
+// 		mu               *sync.RWMutex
+// 		idxPath          string
 // 		dimension        uint
 // 		connectivity     uint
 // 		expansionAdd     uint
 // 		expansionSearch  uint
+// 		quantizationType core.Quantization
+// 		metricType       core.Metric
 // 		multi            bool
-// 		idxPath          string
-// 		mu               *sync.RWMutex
 // 	}
 // 	type want struct {
 // 		err error
@@ -789,15 +789,15 @@ func Test_usearch_Search(t *testing.T) {
 // 		       },
 // 		       fields: fields {
 // 		           index:nil,
-// 		           quantizationType:nil,
-// 		           metricType:nil,
+// 		           mu:nil,
+// 		           idxPath:"",
 // 		           dimension:0,
 // 		           connectivity:0,
 // 		           expansionAdd:0,
 // 		           expansionSearch:0,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
 // 		           multi:false,
-// 		           idxPath:"",
-// 		           mu:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -820,15 +820,15 @@ func Test_usearch_Search(t *testing.T) {
 // 		           },
 // 		           fields: fields {
 // 		           index:nil,
-// 		           quantizationType:nil,
-// 		           metricType:nil,
+// 		           mu:nil,
+// 		           idxPath:"",
 // 		           dimension:0,
 // 		           connectivity:0,
 // 		           expansionAdd:0,
 // 		           expansionSearch:0,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
 // 		           multi:false,
-// 		           idxPath:"",
-// 		           mu:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -860,15 +860,15 @@ func Test_usearch_Search(t *testing.T) {
 // 			}
 // 			u := &usearch{
 // 				index:            test.fields.index,
-// 				quantizationType: test.fields.quantizationType,
-// 				metricType:       test.fields.metricType,
+// 				mu:               test.fields.mu,
+// 				idxPath:          test.fields.idxPath,
 // 				dimension:        test.fields.dimension,
 // 				connectivity:     test.fields.connectivity,
 // 				expansionAdd:     test.fields.expansionAdd,
 // 				expansionSearch:  test.fields.expansionSearch,
+// 				quantizationType: test.fields.quantizationType,
+// 				metricType:       test.fields.metricType,
 // 				multi:            test.fields.multi,
-// 				idxPath:          test.fields.idxPath,
-// 				mu:               test.fields.mu,
 // 			}
 //
 // 			err := u.SaveIndexWithPath(test.args.idxPath)
@@ -882,15 +882,15 @@ func Test_usearch_Search(t *testing.T) {
 // func Test_usearch_GetIndicesSize(t *testing.T) {
 // 	type fields struct {
 // 		index            *core.Index
-// 		quantizationType core.Quantization
-// 		metricType       core.Metric
+// 		mu               *sync.RWMutex
+// 		idxPath          string
 // 		dimension        uint
 // 		connectivity     uint
 // 		expansionAdd     uint
 // 		expansionSearch  uint
+// 		quantizationType core.Quantization
+// 		metricType       core.Metric
 // 		multi            bool
-// 		idxPath          string
-// 		mu               *sync.RWMutex
 // 	}
 // 	type want struct {
 // 		wantIndicesSize int
@@ -920,15 +920,15 @@ func Test_usearch_Search(t *testing.T) {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           index:nil,
-// 		           quantizationType:nil,
-// 		           metricType:nil,
+// 		           mu:nil,
+// 		           idxPath:"",
 // 		           dimension:0,
 // 		           connectivity:0,
 // 		           expansionAdd:0,
 // 		           expansionSearch:0,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
 // 		           multi:false,
-// 		           idxPath:"",
-// 		           mu:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -948,15 +948,15 @@ func Test_usearch_Search(t *testing.T) {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           index:nil,
-// 		           quantizationType:nil,
-// 		           metricType:nil,
+// 		           mu:nil,
+// 		           idxPath:"",
 // 		           dimension:0,
 // 		           connectivity:0,
 // 		           expansionAdd:0,
 // 		           expansionSearch:0,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
 // 		           multi:false,
-// 		           idxPath:"",
-// 		           mu:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -988,15 +988,15 @@ func Test_usearch_Search(t *testing.T) {
 // 			}
 // 			u := &usearch{
 // 				index:            test.fields.index,
-// 				quantizationType: test.fields.quantizationType,
-// 				metricType:       test.fields.metricType,
+// 				mu:               test.fields.mu,
+// 				idxPath:          test.fields.idxPath,
 // 				dimension:        test.fields.dimension,
 // 				connectivity:     test.fields.connectivity,
 // 				expansionAdd:     test.fields.expansionAdd,
 // 				expansionSearch:  test.fields.expansionSearch,
+// 				quantizationType: test.fields.quantizationType,
+// 				metricType:       test.fields.metricType,
 // 				multi:            test.fields.multi,
-// 				idxPath:          test.fields.idxPath,
-// 				mu:               test.fields.mu,
 // 			}
 //
 // 			gotIndicesSize, err := u.GetIndicesSize()
@@ -1014,15 +1014,15 @@ func Test_usearch_Search(t *testing.T) {
 // 	}
 // 	type fields struct {
 // 		index            *core.Index
-// 		quantizationType core.Quantization
-// 		metricType       core.Metric
+// 		mu               *sync.RWMutex
+// 		idxPath          string
 // 		dimension        uint
 // 		connectivity     uint
 // 		expansionAdd     uint
 // 		expansionSearch  uint
+// 		quantizationType core.Quantization
+// 		metricType       core.Metric
 // 		multi            bool
-// 		idxPath          string
-// 		mu               *sync.RWMutex
 // 	}
 // 	type want struct {
 // 		err error
@@ -1053,15 +1053,15 @@ func Test_usearch_Search(t *testing.T) {
 // 		       },
 // 		       fields: fields {
 // 		           index:nil,
-// 		           quantizationType:nil,
-// 		           metricType:nil,
+// 		           mu:nil,
+// 		           idxPath:"",
 // 		           dimension:0,
 // 		           connectivity:0,
 // 		           expansionAdd:0,
 // 		           expansionSearch:0,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
 // 		           multi:false,
-// 		           idxPath:"",
-// 		           mu:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1085,15 +1085,15 @@ func Test_usearch_Search(t *testing.T) {
 // 		           },
 // 		           fields: fields {
 // 		           index:nil,
-// 		           quantizationType:nil,
-// 		           metricType:nil,
+// 		           mu:nil,
+// 		           idxPath:"",
 // 		           dimension:0,
 // 		           connectivity:0,
 // 		           expansionAdd:0,
 // 		           expansionSearch:0,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
 // 		           multi:false,
-// 		           idxPath:"",
-// 		           mu:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1125,15 +1125,15 @@ func Test_usearch_Search(t *testing.T) {
 // 			}
 // 			u := &usearch{
 // 				index:            test.fields.index,
-// 				quantizationType: test.fields.quantizationType,
-// 				metricType:       test.fields.metricType,
+// 				mu:               test.fields.mu,
+// 				idxPath:          test.fields.idxPath,
 // 				dimension:        test.fields.dimension,
 // 				connectivity:     test.fields.connectivity,
 // 				expansionAdd:     test.fields.expansionAdd,
 // 				expansionSearch:  test.fields.expansionSearch,
+// 				quantizationType: test.fields.quantizationType,
+// 				metricType:       test.fields.metricType,
 // 				multi:            test.fields.multi,
-// 				idxPath:          test.fields.idxPath,
-// 				mu:               test.fields.mu,
 // 			}
 //
 // 			err := u.Add(test.args.key, test.args.vec)
@@ -1150,15 +1150,15 @@ func Test_usearch_Search(t *testing.T) {
 // 	}
 // 	type fields struct {
 // 		index            *core.Index
-// 		quantizationType core.Quantization
-// 		metricType       core.Metric
+// 		mu               *sync.RWMutex
+// 		idxPath          string
 // 		dimension        uint
 // 		connectivity     uint
 // 		expansionAdd     uint
 // 		expansionSearch  uint
+// 		quantizationType core.Quantization
+// 		metricType       core.Metric
 // 		multi            bool
-// 		idxPath          string
-// 		mu               *sync.RWMutex
 // 	}
 // 	type want struct {
 // 		err error
@@ -1188,15 +1188,15 @@ func Test_usearch_Search(t *testing.T) {
 // 		       },
 // 		       fields: fields {
 // 		           index:nil,
-// 		           quantizationType:nil,
-// 		           metricType:nil,
+// 		           mu:nil,
+// 		           idxPath:"",
 // 		           dimension:0,
 // 		           connectivity:0,
 // 		           expansionAdd:0,
 // 		           expansionSearch:0,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
 // 		           multi:false,
-// 		           idxPath:"",
-// 		           mu:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1219,15 +1219,15 @@ func Test_usearch_Search(t *testing.T) {
 // 		           },
 // 		           fields: fields {
 // 		           index:nil,
-// 		           quantizationType:nil,
-// 		           metricType:nil,
+// 		           mu:nil,
+// 		           idxPath:"",
 // 		           dimension:0,
 // 		           connectivity:0,
 // 		           expansionAdd:0,
 // 		           expansionSearch:0,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
 // 		           multi:false,
-// 		           idxPath:"",
-// 		           mu:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1259,15 +1259,15 @@ func Test_usearch_Search(t *testing.T) {
 // 			}
 // 			u := &usearch{
 // 				index:            test.fields.index,
-// 				quantizationType: test.fields.quantizationType,
-// 				metricType:       test.fields.metricType,
+// 				mu:               test.fields.mu,
+// 				idxPath:          test.fields.idxPath,
 // 				dimension:        test.fields.dimension,
 // 				connectivity:     test.fields.connectivity,
 // 				expansionAdd:     test.fields.expansionAdd,
 // 				expansionSearch:  test.fields.expansionSearch,
+// 				quantizationType: test.fields.quantizationType,
+// 				metricType:       test.fields.metricType,
 // 				multi:            test.fields.multi,
-// 				idxPath:          test.fields.idxPath,
-// 				mu:               test.fields.mu,
 // 			}
 //
 // 			err := u.Reserve(test.args.vectorCount)
@@ -1285,15 +1285,15 @@ func Test_usearch_Search(t *testing.T) {
 // 	}
 // 	type fields struct {
 // 		index            *core.Index
-// 		quantizationType core.Quantization
-// 		metricType       core.Metric
+// 		mu               *sync.RWMutex
+// 		idxPath          string
 // 		dimension        uint
 // 		connectivity     uint
 // 		expansionAdd     uint
 // 		expansionSearch  uint
+// 		quantizationType core.Quantization
+// 		metricType       core.Metric
 // 		multi            bool
-// 		idxPath          string
-// 		mu               *sync.RWMutex
 // 	}
 // 	type want struct {
 // 		want []float32
@@ -1328,15 +1328,15 @@ func Test_usearch_Search(t *testing.T) {
 // 		       },
 // 		       fields: fields {
 // 		           index:nil,
-// 		           quantizationType:nil,
-// 		           metricType:nil,
+// 		           mu:nil,
+// 		           idxPath:"",
 // 		           dimension:0,
 // 		           connectivity:0,
 // 		           expansionAdd:0,
 // 		           expansionSearch:0,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
 // 		           multi:false,
-// 		           idxPath:"",
-// 		           mu:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1360,15 +1360,15 @@ func Test_usearch_Search(t *testing.T) {
 // 		           },
 // 		           fields: fields {
 // 		           index:nil,
-// 		           quantizationType:nil,
-// 		           metricType:nil,
+// 		           mu:nil,
+// 		           idxPath:"",
 // 		           dimension:0,
 // 		           connectivity:0,
 // 		           expansionAdd:0,
 // 		           expansionSearch:0,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
 // 		           multi:false,
-// 		           idxPath:"",
-// 		           mu:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1400,15 +1400,15 @@ func Test_usearch_Search(t *testing.T) {
 // 			}
 // 			u := &usearch{
 // 				index:            test.fields.index,
-// 				quantizationType: test.fields.quantizationType,
-// 				metricType:       test.fields.metricType,
+// 				mu:               test.fields.mu,
+// 				idxPath:          test.fields.idxPath,
 // 				dimension:        test.fields.dimension,
 // 				connectivity:     test.fields.connectivity,
 // 				expansionAdd:     test.fields.expansionAdd,
 // 				expansionSearch:  test.fields.expansionSearch,
+// 				quantizationType: test.fields.quantizationType,
+// 				metricType:       test.fields.metricType,
 // 				multi:            test.fields.multi,
-// 				idxPath:          test.fields.idxPath,
-// 				mu:               test.fields.mu,
 // 			}
 //
 // 			got, err := u.GetObject(test.args.key, test.args.count)
@@ -1425,15 +1425,15 @@ func Test_usearch_Search(t *testing.T) {
 // 	}
 // 	type fields struct {
 // 		index            *core.Index
-// 		quantizationType core.Quantization
-// 		metricType       core.Metric
+// 		mu               *sync.RWMutex
+// 		idxPath          string
 // 		dimension        uint
 // 		connectivity     uint
 // 		expansionAdd     uint
 // 		expansionSearch  uint
+// 		quantizationType core.Quantization
+// 		metricType       core.Metric
 // 		multi            bool
-// 		idxPath          string
-// 		mu               *sync.RWMutex
 // 	}
 // 	type want struct {
 // 		err error
@@ -1463,15 +1463,15 @@ func Test_usearch_Search(t *testing.T) {
 // 		       },
 // 		       fields: fields {
 // 		           index:nil,
-// 		           quantizationType:nil,
-// 		           metricType:nil,
+// 		           mu:nil,
+// 		           idxPath:"",
 // 		           dimension:0,
 // 		           connectivity:0,
 // 		           expansionAdd:0,
 // 		           expansionSearch:0,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
 // 		           multi:false,
-// 		           idxPath:"",
-// 		           mu:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1494,15 +1494,15 @@ func Test_usearch_Search(t *testing.T) {
 // 		           },
 // 		           fields: fields {
 // 		           index:nil,
-// 		           quantizationType:nil,
-// 		           metricType:nil,
+// 		           mu:nil,
+// 		           idxPath:"",
 // 		           dimension:0,
 // 		           connectivity:0,
 // 		           expansionAdd:0,
 // 		           expansionSearch:0,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
 // 		           multi:false,
-// 		           idxPath:"",
-// 		           mu:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1534,15 +1534,15 @@ func Test_usearch_Search(t *testing.T) {
 // 			}
 // 			u := &usearch{
 // 				index:            test.fields.index,
-// 				quantizationType: test.fields.quantizationType,
-// 				metricType:       test.fields.metricType,
+// 				mu:               test.fields.mu,
+// 				idxPath:          test.fields.idxPath,
 // 				dimension:        test.fields.dimension,
 // 				connectivity:     test.fields.connectivity,
 // 				expansionAdd:     test.fields.expansionAdd,
 // 				expansionSearch:  test.fields.expansionSearch,
+// 				quantizationType: test.fields.quantizationType,
+// 				metricType:       test.fields.metricType,
 // 				multi:            test.fields.multi,
-// 				idxPath:          test.fields.idxPath,
-// 				mu:               test.fields.mu,
 // 			}
 //
 // 			err := u.Remove(test.args.key)
@@ -1556,15 +1556,15 @@ func Test_usearch_Search(t *testing.T) {
 // func Test_usearch_Close(t *testing.T) {
 // 	type fields struct {
 // 		index            *core.Index
-// 		quantizationType core.Quantization
-// 		metricType       core.Metric
+// 		mu               *sync.RWMutex
+// 		idxPath          string
 // 		dimension        uint
 // 		connectivity     uint
 // 		expansionAdd     uint
 // 		expansionSearch  uint
+// 		quantizationType core.Quantization
+// 		metricType       core.Metric
 // 		multi            bool
-// 		idxPath          string
-// 		mu               *sync.RWMutex
 // 	}
 // 	type want struct {
 // 		err error
@@ -1590,15 +1590,15 @@ func Test_usearch_Search(t *testing.T) {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           index:nil,
-// 		           quantizationType:nil,
-// 		           metricType:nil,
+// 		           mu:nil,
+// 		           idxPath:"",
 // 		           dimension:0,
 // 		           connectivity:0,
 // 		           expansionAdd:0,
 // 		           expansionSearch:0,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
 // 		           multi:false,
-// 		           idxPath:"",
-// 		           mu:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1618,15 +1618,15 @@ func Test_usearch_Search(t *testing.T) {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           index:nil,
-// 		           quantizationType:nil,
-// 		           metricType:nil,
+// 		           mu:nil,
+// 		           idxPath:"",
 // 		           dimension:0,
 // 		           connectivity:0,
 // 		           expansionAdd:0,
 // 		           expansionSearch:0,
+// 		           quantizationType:nil,
+// 		           metricType:nil,
 // 		           multi:false,
-// 		           idxPath:"",
-// 		           mu:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1658,15 +1658,15 @@ func Test_usearch_Search(t *testing.T) {
 // 			}
 // 			u := &usearch{
 // 				index:            test.fields.index,
-// 				quantizationType: test.fields.quantizationType,
-// 				metricType:       test.fields.metricType,
+// 				mu:               test.fields.mu,
+// 				idxPath:          test.fields.idxPath,
 // 				dimension:        test.fields.dimension,
 // 				connectivity:     test.fields.connectivity,
 // 				expansionAdd:     test.fields.expansionAdd,
 // 				expansionSearch:  test.fields.expansionSearch,
+// 				quantizationType: test.fields.quantizationType,
+// 				metricType:       test.fields.metricType,
 // 				multi:            test.fields.multi,
-// 				idxPath:          test.fields.idxPath,
-// 				mu:               test.fields.mu,
 // 			}
 //
 // 			err := u.Close()

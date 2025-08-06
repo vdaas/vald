@@ -59,7 +59,7 @@ func New() LZ4 {
 // NewWriterLevel returns Writer implementation.
 func (*compress) NewWriterLevel(w io.Writer, level int) Writer {
 	lw := lz4.NewWriter(w)
-	lw.Header.CompressionLevel = level
+	lw.CompressionLevel = level
 	return &writer{
 		Writer: lw,
 	}

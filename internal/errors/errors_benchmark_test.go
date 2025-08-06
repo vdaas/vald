@@ -14,7 +14,6 @@
 package errors
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"testing"
@@ -98,10 +97,10 @@ func BenchmarkStdWrapShortData(b *testing.B) {
 
 func BenchmarkStdJoinLongData(b *testing.B) {
 	benchmark(b, bigData,
-		func(err1, err2 error) error { return errors.Join(err1, err2) })
+		func(err1, err2 error) error { return Join(err1, err2) })
 }
 
 func BenchmarkStdJoinShortData(b *testing.B) {
 	benchmark(b, smallData,
-		func(err1, err2 error) error { return errors.Join(err1, err2) })
+		func(err1, err2 error) error { return Join(err1, err2) })
 }

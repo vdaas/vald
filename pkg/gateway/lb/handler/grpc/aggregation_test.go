@@ -23,15 +23,15 @@ package grpc
 // 		f    func(ctx context.Context, fcfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error)
 // 	}
 // 	type fields struct {
+// 		UnimplementedValdServer vald.UnimplementedValdServer
 // 		eg                      errgroup.Group
 // 		gateway                 service.Gateway
+// 		name                    string
+// 		ip                      string
 // 		timeout                 time.Duration
 // 		replica                 int
 // 		streamConcurrency       int
 // 		multiConcurrency        int
-// 		name                    string
-// 		ip                      string
-// 		UnimplementedValdServer vald.UnimplementedValdServer
 // 	}
 // 	type want struct {
 // 		wantRes   *payload.Search_Response
@@ -71,15 +71,15 @@ package grpc
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
+// 		           UnimplementedValdServer:nil,
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           name:"",
+// 		           ip:"",
 // 		           timeout:nil,
 // 		           replica:0,
 // 		           streamConcurrency:0,
 // 		           multiConcurrency:0,
-// 		           name:"",
-// 		           ip:"",
-// 		           UnimplementedValdServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -104,15 +104,15 @@ package grpc
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
+// 		           UnimplementedValdServer:nil,
 // 		           eg:nil,
 // 		           gateway:nil,
+// 		           name:"",
+// 		           ip:"",
 // 		           timeout:nil,
 // 		           replica:0,
 // 		           streamConcurrency:0,
 // 		           multiConcurrency:0,
-// 		           name:"",
-// 		           ip:"",
-// 		           UnimplementedValdServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -143,15 +143,15 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
+// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
 // 				eg:                      test.fields.eg,
 // 				gateway:                 test.fields.gateway,
+// 				name:                    test.fields.name,
+// 				ip:                      test.fields.ip,
 // 				timeout:                 test.fields.timeout,
 // 				replica:                 test.fields.replica,
 // 				streamConcurrency:       test.fields.streamConcurrency,
 // 				multiConcurrency:        test.fields.multiConcurrency,
-// 				name:                    test.fields.name,
-// 				ip:                      test.fields.ip,
-// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
 // 			}
 //
 // 			gotRes, gotAttrs, err := s.aggregationSearch(test.args.ctx, test.args.aggr, test.args.bcfg, test.args.f)
@@ -258,14 +258,14 @@ package grpc
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		num     int
-// 		fnum    int
-// 		dch     chan DistPayload
-// 		closed  atomic.Bool
 // 		maxDist atomic.Value
+// 		dch     chan DistPayload
+// 		cancel  context.CancelFunc
 // 		visited sync.Map[string, any]
 // 		result  []*payload.Object_Distance
-// 		cancel  context.CancelFunc
+// 		num     int
+// 		fnum    int
+// 		closed  atomic.Bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -289,14 +289,14 @@ package grpc
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           num:0,
-// 		           fnum:0,
-// 		           dch:nil,
-// 		           closed:nil,
 // 		           maxDist:nil,
+// 		           dch:nil,
+// 		           cancel:nil,
 // 		           visited:nil,
 // 		           result:nil,
-// 		           cancel:nil,
+// 		           num:0,
+// 		           fnum:0,
+// 		           closed:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -318,14 +318,14 @@ package grpc
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           num:0,
-// 		           fnum:0,
-// 		           dch:nil,
-// 		           closed:nil,
 // 		           maxDist:nil,
+// 		           dch:nil,
+// 		           cancel:nil,
 // 		           visited:nil,
 // 		           result:nil,
-// 		           cancel:nil,
+// 		           num:0,
+// 		           fnum:0,
+// 		           closed:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -356,14 +356,14 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdStdAggr{
-// 				num:     test.fields.num,
-// 				fnum:    test.fields.fnum,
-// 				dch:     test.fields.dch,
-// 				closed:  test.fields.closed,
 // 				maxDist: test.fields.maxDist,
+// 				dch:     test.fields.dch,
+// 				cancel:  test.fields.cancel,
 // 				visited: test.fields.visited,
 // 				result:  test.fields.result,
-// 				cancel:  test.fields.cancel,
+// 				num:     test.fields.num,
+// 				fnum:    test.fields.fnum,
+// 				closed:  test.fields.closed,
 // 			}
 //
 // 			v.Start(test.args.ctx)
@@ -380,14 +380,14 @@ package grpc
 // 		data *payload.Search_Response
 // 	}
 // 	type fields struct {
-// 		num     int
-// 		fnum    int
-// 		dch     chan DistPayload
-// 		closed  atomic.Bool
 // 		maxDist atomic.Value
+// 		dch     chan DistPayload
+// 		cancel  context.CancelFunc
 // 		visited sync.Map[string, any]
 // 		result  []*payload.Object_Distance
-// 		cancel  context.CancelFunc
+// 		num     int
+// 		fnum    int
+// 		closed  atomic.Bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -412,14 +412,14 @@ package grpc
 // 		           data:nil,
 // 		       },
 // 		       fields: fields {
-// 		           num:0,
-// 		           fnum:0,
-// 		           dch:nil,
-// 		           closed:nil,
 // 		           maxDist:nil,
+// 		           dch:nil,
+// 		           cancel:nil,
 // 		           visited:nil,
 // 		           result:nil,
-// 		           cancel:nil,
+// 		           num:0,
+// 		           fnum:0,
+// 		           closed:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -442,14 +442,14 @@ package grpc
 // 		           data:nil,
 // 		           },
 // 		           fields: fields {
-// 		           num:0,
-// 		           fnum:0,
-// 		           dch:nil,
-// 		           closed:nil,
 // 		           maxDist:nil,
+// 		           dch:nil,
+// 		           cancel:nil,
 // 		           visited:nil,
 // 		           result:nil,
-// 		           cancel:nil,
+// 		           num:0,
+// 		           fnum:0,
+// 		           closed:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -480,14 +480,14 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdStdAggr{
-// 				num:     test.fields.num,
-// 				fnum:    test.fields.fnum,
-// 				dch:     test.fields.dch,
-// 				closed:  test.fields.closed,
 // 				maxDist: test.fields.maxDist,
+// 				dch:     test.fields.dch,
+// 				cancel:  test.fields.cancel,
 // 				visited: test.fields.visited,
 // 				result:  test.fields.result,
-// 				cancel:  test.fields.cancel,
+// 				num:     test.fields.num,
+// 				fnum:    test.fields.fnum,
+// 				closed:  test.fields.closed,
 // 			}
 //
 // 			v.Send(test.args.ctx, test.args.data)
@@ -500,14 +500,14 @@ package grpc
 //
 // func Test_valdStdAggr_Result(t *testing.T) {
 // 	type fields struct {
-// 		num     int
-// 		fnum    int
-// 		dch     chan DistPayload
-// 		closed  atomic.Bool
 // 		maxDist atomic.Value
+// 		dch     chan DistPayload
+// 		cancel  context.CancelFunc
 // 		visited sync.Map[string, any]
 // 		result  []*payload.Object_Distance
-// 		cancel  context.CancelFunc
+// 		num     int
+// 		fnum    int
+// 		closed  atomic.Bool
 // 	}
 // 	type want struct {
 // 		want *payload.Search_Response
@@ -532,14 +532,14 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           num:0,
-// 		           fnum:0,
-// 		           dch:nil,
-// 		           closed:nil,
 // 		           maxDist:nil,
+// 		           dch:nil,
+// 		           cancel:nil,
 // 		           visited:nil,
 // 		           result:nil,
-// 		           cancel:nil,
+// 		           num:0,
+// 		           fnum:0,
+// 		           closed:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -558,14 +558,14 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           num:0,
-// 		           fnum:0,
-// 		           dch:nil,
-// 		           closed:nil,
 // 		           maxDist:nil,
+// 		           dch:nil,
+// 		           cancel:nil,
 // 		           visited:nil,
 // 		           result:nil,
-// 		           cancel:nil,
+// 		           num:0,
+// 		           fnum:0,
+// 		           closed:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -596,14 +596,14 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdStdAggr{
-// 				num:     test.fields.num,
-// 				fnum:    test.fields.fnum,
-// 				dch:     test.fields.dch,
-// 				closed:  test.fields.closed,
 // 				maxDist: test.fields.maxDist,
+// 				dch:     test.fields.dch,
+// 				cancel:  test.fields.cancel,
 // 				visited: test.fields.visited,
 // 				result:  test.fields.result,
-// 				cancel:  test.fields.cancel,
+// 				num:     test.fields.num,
+// 				fnum:    test.fields.fnum,
+// 				closed:  test.fields.closed,
 // 			}
 //
 // 			got := v.Result()
@@ -616,14 +616,14 @@ package grpc
 //
 // func Test_valdStdAggr_GetNum(t *testing.T) {
 // 	type fields struct {
-// 		num     int
-// 		fnum    int
-// 		dch     chan DistPayload
-// 		closed  atomic.Bool
 // 		maxDist atomic.Value
+// 		dch     chan DistPayload
+// 		cancel  context.CancelFunc
 // 		visited sync.Map[string, any]
 // 		result  []*payload.Object_Distance
-// 		cancel  context.CancelFunc
+// 		num     int
+// 		fnum    int
+// 		closed  atomic.Bool
 // 	}
 // 	type want struct {
 // 		want int
@@ -648,14 +648,14 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           num:0,
-// 		           fnum:0,
-// 		           dch:nil,
-// 		           closed:nil,
 // 		           maxDist:nil,
+// 		           dch:nil,
+// 		           cancel:nil,
 // 		           visited:nil,
 // 		           result:nil,
-// 		           cancel:nil,
+// 		           num:0,
+// 		           fnum:0,
+// 		           closed:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -674,14 +674,14 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           num:0,
-// 		           fnum:0,
-// 		           dch:nil,
-// 		           closed:nil,
 // 		           maxDist:nil,
+// 		           dch:nil,
+// 		           cancel:nil,
 // 		           visited:nil,
 // 		           result:nil,
-// 		           cancel:nil,
+// 		           num:0,
+// 		           fnum:0,
+// 		           closed:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -712,14 +712,14 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdStdAggr{
-// 				num:     test.fields.num,
-// 				fnum:    test.fields.fnum,
-// 				dch:     test.fields.dch,
-// 				closed:  test.fields.closed,
 // 				maxDist: test.fields.maxDist,
+// 				dch:     test.fields.dch,
+// 				cancel:  test.fields.cancel,
 // 				visited: test.fields.visited,
 // 				result:  test.fields.result,
-// 				cancel:  test.fields.cancel,
+// 				num:     test.fields.num,
+// 				fnum:    test.fields.fnum,
+// 				closed:  test.fields.closed,
 // 			}
 //
 // 			got := v.GetNum()
@@ -732,14 +732,14 @@ package grpc
 //
 // func Test_valdStdAggr_GetFnum(t *testing.T) {
 // 	type fields struct {
-// 		num     int
-// 		fnum    int
-// 		dch     chan DistPayload
-// 		closed  atomic.Bool
 // 		maxDist atomic.Value
+// 		dch     chan DistPayload
+// 		cancel  context.CancelFunc
 // 		visited sync.Map[string, any]
 // 		result  []*payload.Object_Distance
-// 		cancel  context.CancelFunc
+// 		num     int
+// 		fnum    int
+// 		closed  atomic.Bool
 // 	}
 // 	type want struct {
 // 		want int
@@ -764,14 +764,14 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           num:0,
-// 		           fnum:0,
-// 		           dch:nil,
-// 		           closed:nil,
 // 		           maxDist:nil,
+// 		           dch:nil,
+// 		           cancel:nil,
 // 		           visited:nil,
 // 		           result:nil,
-// 		           cancel:nil,
+// 		           num:0,
+// 		           fnum:0,
+// 		           closed:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -790,14 +790,14 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           num:0,
-// 		           fnum:0,
-// 		           dch:nil,
-// 		           closed:nil,
 // 		           maxDist:nil,
+// 		           dch:nil,
+// 		           cancel:nil,
 // 		           visited:nil,
 // 		           result:nil,
-// 		           cancel:nil,
+// 		           num:0,
+// 		           fnum:0,
+// 		           closed:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -828,14 +828,14 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdStdAggr{
-// 				num:     test.fields.num,
-// 				fnum:    test.fields.fnum,
-// 				dch:     test.fields.dch,
-// 				closed:  test.fields.closed,
 // 				maxDist: test.fields.maxDist,
+// 				dch:     test.fields.dch,
+// 				cancel:  test.fields.cancel,
 // 				visited: test.fields.visited,
 // 				result:  test.fields.result,
-// 				cancel:  test.fields.cancel,
+// 				num:     test.fields.num,
+// 				fnum:    test.fields.fnum,
+// 				closed:  test.fields.closed,
 // 			}
 //
 // 			got := v.GetFnum()
@@ -942,11 +942,11 @@ package grpc
 // 		in0 context.Context
 // 	}
 // 	type fields struct {
-// 		num     int
-// 		fnum    int
 // 		ph      *PairingHeap
 // 		visited sync.Map[string, any]
 // 		result  []*payload.Object_Distance
+// 		num     int
+// 		fnum    int
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -970,11 +970,11 @@ package grpc
 // 		           in0:nil,
 // 		       },
 // 		       fields: fields {
-// 		           num:0,
-// 		           fnum:0,
 // 		           ph:PairingHeap{},
 // 		           visited:nil,
 // 		           result:nil,
+// 		           num:0,
+// 		           fnum:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -996,11 +996,11 @@ package grpc
 // 		           in0:nil,
 // 		           },
 // 		           fields: fields {
-// 		           num:0,
-// 		           fnum:0,
 // 		           ph:PairingHeap{},
 // 		           visited:nil,
 // 		           result:nil,
+// 		           num:0,
+// 		           fnum:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1031,11 +1031,11 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdPairingHeapAggr{
-// 				num:     test.fields.num,
-// 				fnum:    test.fields.fnum,
 // 				ph:      test.fields.ph,
 // 				visited: test.fields.visited,
 // 				result:  test.fields.result,
+// 				num:     test.fields.num,
+// 				fnum:    test.fields.fnum,
 // 			}
 //
 // 			v.Start(test.args.in0)
@@ -1052,11 +1052,11 @@ package grpc
 // 		data *payload.Search_Response
 // 	}
 // 	type fields struct {
-// 		num     int
-// 		fnum    int
 // 		ph      *PairingHeap
 // 		visited sync.Map[string, any]
 // 		result  []*payload.Object_Distance
+// 		num     int
+// 		fnum    int
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -1081,11 +1081,11 @@ package grpc
 // 		           data:nil,
 // 		       },
 // 		       fields: fields {
-// 		           num:0,
-// 		           fnum:0,
 // 		           ph:PairingHeap{},
 // 		           visited:nil,
 // 		           result:nil,
+// 		           num:0,
+// 		           fnum:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1108,11 +1108,11 @@ package grpc
 // 		           data:nil,
 // 		           },
 // 		           fields: fields {
-// 		           num:0,
-// 		           fnum:0,
 // 		           ph:PairingHeap{},
 // 		           visited:nil,
 // 		           result:nil,
+// 		           num:0,
+// 		           fnum:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1143,11 +1143,11 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdPairingHeapAggr{
-// 				num:     test.fields.num,
-// 				fnum:    test.fields.fnum,
 // 				ph:      test.fields.ph,
 // 				visited: test.fields.visited,
 // 				result:  test.fields.result,
+// 				num:     test.fields.num,
+// 				fnum:    test.fields.fnum,
 // 			}
 //
 // 			v.Send(test.args.ctx, test.args.data)
@@ -1160,11 +1160,11 @@ package grpc
 //
 // func Test_valdPairingHeapAggr_Result(t *testing.T) {
 // 	type fields struct {
-// 		num     int
-// 		fnum    int
 // 		ph      *PairingHeap
 // 		visited sync.Map[string, any]
 // 		result  []*payload.Object_Distance
+// 		num     int
+// 		fnum    int
 // 	}
 // 	type want struct {
 // 		want *payload.Search_Response
@@ -1189,11 +1189,11 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           num:0,
-// 		           fnum:0,
 // 		           ph:PairingHeap{},
 // 		           visited:nil,
 // 		           result:nil,
+// 		           num:0,
+// 		           fnum:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1212,11 +1212,11 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           num:0,
-// 		           fnum:0,
 // 		           ph:PairingHeap{},
 // 		           visited:nil,
 // 		           result:nil,
+// 		           num:0,
+// 		           fnum:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1247,11 +1247,11 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdPairingHeapAggr{
-// 				num:     test.fields.num,
-// 				fnum:    test.fields.fnum,
 // 				ph:      test.fields.ph,
 // 				visited: test.fields.visited,
 // 				result:  test.fields.result,
+// 				num:     test.fields.num,
+// 				fnum:    test.fields.fnum,
 // 			}
 //
 // 			got := v.Result()
@@ -1264,11 +1264,11 @@ package grpc
 //
 // func Test_valdPairingHeapAggr_GetNum(t *testing.T) {
 // 	type fields struct {
-// 		num     int
-// 		fnum    int
 // 		ph      *PairingHeap
 // 		visited sync.Map[string, any]
 // 		result  []*payload.Object_Distance
+// 		num     int
+// 		fnum    int
 // 	}
 // 	type want struct {
 // 		want int
@@ -1293,11 +1293,11 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           num:0,
-// 		           fnum:0,
 // 		           ph:PairingHeap{},
 // 		           visited:nil,
 // 		           result:nil,
+// 		           num:0,
+// 		           fnum:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1316,11 +1316,11 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           num:0,
-// 		           fnum:0,
 // 		           ph:PairingHeap{},
 // 		           visited:nil,
 // 		           result:nil,
+// 		           num:0,
+// 		           fnum:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1351,11 +1351,11 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdPairingHeapAggr{
-// 				num:     test.fields.num,
-// 				fnum:    test.fields.fnum,
 // 				ph:      test.fields.ph,
 // 				visited: test.fields.visited,
 // 				result:  test.fields.result,
+// 				num:     test.fields.num,
+// 				fnum:    test.fields.fnum,
 // 			}
 //
 // 			got := v.GetNum()
@@ -1368,11 +1368,11 @@ package grpc
 //
 // func Test_valdPairingHeapAggr_GetFnum(t *testing.T) {
 // 	type fields struct {
-// 		num     int
-// 		fnum    int
 // 		ph      *PairingHeap
 // 		visited sync.Map[string, any]
 // 		result  []*payload.Object_Distance
+// 		num     int
+// 		fnum    int
 // 	}
 // 	type want struct {
 // 		want int
@@ -1397,11 +1397,11 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           num:0,
-// 		           fnum:0,
 // 		           ph:PairingHeap{},
 // 		           visited:nil,
 // 		           result:nil,
+// 		           num:0,
+// 		           fnum:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1420,11 +1420,11 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           num:0,
-// 		           fnum:0,
 // 		           ph:PairingHeap{},
 // 		           visited:nil,
 // 		           result:nil,
+// 		           num:0,
+// 		           fnum:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1455,11 +1455,11 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdPairingHeapAggr{
-// 				num:     test.fields.num,
-// 				fnum:    test.fields.fnum,
 // 				ph:      test.fields.ph,
 // 				visited: test.fields.visited,
 // 				result:  test.fields.result,
+// 				num:     test.fields.num,
+// 				fnum:    test.fields.fnum,
 // 			}
 //
 // 			got := v.GetFnum()
@@ -1566,9 +1566,9 @@ package grpc
 // 		in0 context.Context
 // 	}
 // 	type fields struct {
+// 		result []*DistPayload
 // 		num    int
 // 		fnum   int
-// 		result []*DistPayload
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -1592,9 +1592,9 @@ package grpc
 // 		           in0:nil,
 // 		       },
 // 		       fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1616,9 +1616,9 @@ package grpc
 // 		           in0:nil,
 // 		           },
 // 		           fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1649,9 +1649,9 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdSliceAggr{
+// 				result: test.fields.result,
 // 				num:    test.fields.num,
 // 				fnum:   test.fields.fnum,
-// 				result: test.fields.result,
 // 			}
 //
 // 			v.Start(test.args.in0)
@@ -1668,9 +1668,9 @@ package grpc
 // 		data *payload.Search_Response
 // 	}
 // 	type fields struct {
+// 		result []*DistPayload
 // 		num    int
 // 		fnum   int
-// 		result []*DistPayload
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -1695,9 +1695,9 @@ package grpc
 // 		           data:nil,
 // 		       },
 // 		       fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1720,9 +1720,9 @@ package grpc
 // 		           data:nil,
 // 		           },
 // 		           fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1753,9 +1753,9 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdSliceAggr{
+// 				result: test.fields.result,
 // 				num:    test.fields.num,
 // 				fnum:   test.fields.fnum,
-// 				result: test.fields.result,
 // 			}
 //
 // 			v.Send(test.args.ctx, test.args.data)
@@ -1768,9 +1768,9 @@ package grpc
 //
 // func Test_valdSliceAggr_Result(t *testing.T) {
 // 	type fields struct {
+// 		result []*DistPayload
 // 		num    int
 // 		fnum   int
-// 		result []*DistPayload
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -1795,9 +1795,9 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1816,9 +1816,9 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1849,9 +1849,9 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdSliceAggr{
+// 				result: test.fields.result,
 // 				num:    test.fields.num,
 // 				fnum:   test.fields.fnum,
-// 				result: test.fields.result,
 // 			}
 //
 // 			gotRes := v.Result()
@@ -1864,9 +1864,9 @@ package grpc
 //
 // func Test_valdSliceAggr_GetNum(t *testing.T) {
 // 	type fields struct {
+// 		result []*DistPayload
 // 		num    int
 // 		fnum   int
-// 		result []*DistPayload
 // 	}
 // 	type want struct {
 // 		want int
@@ -1891,9 +1891,9 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1912,9 +1912,9 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1945,9 +1945,9 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdSliceAggr{
+// 				result: test.fields.result,
 // 				num:    test.fields.num,
 // 				fnum:   test.fields.fnum,
-// 				result: test.fields.result,
 // 			}
 //
 // 			got := v.GetNum()
@@ -1960,9 +1960,9 @@ package grpc
 //
 // func Test_valdSliceAggr_GetFnum(t *testing.T) {
 // 	type fields struct {
+// 		result []*DistPayload
 // 		num    int
 // 		fnum   int
-// 		result []*DistPayload
 // 	}
 // 	type want struct {
 // 		want int
@@ -1987,9 +1987,9 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2008,9 +2008,9 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2041,9 +2041,9 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdSliceAggr{
+// 				result: test.fields.result,
 // 				num:    test.fields.num,
 // 				fnum:   test.fields.fnum,
-// 				result: test.fields.result,
 // 			}
 //
 // 			got := v.GetFnum()
@@ -2150,9 +2150,9 @@ package grpc
 // 		in0 context.Context
 // 	}
 // 	type fields struct {
+// 		result []*DistPayload
 // 		num    int
 // 		fnum   int
-// 		result []*DistPayload
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -2176,9 +2176,9 @@ package grpc
 // 		           in0:nil,
 // 		       },
 // 		       fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2200,9 +2200,9 @@ package grpc
 // 		           in0:nil,
 // 		           },
 // 		           fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2233,9 +2233,9 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdPoolSliceAggr{
+// 				result: test.fields.result,
 // 				num:    test.fields.num,
 // 				fnum:   test.fields.fnum,
-// 				result: test.fields.result,
 // 			}
 //
 // 			v.Start(test.args.in0)
@@ -2252,9 +2252,9 @@ package grpc
 // 		data *payload.Search_Response
 // 	}
 // 	type fields struct {
+// 		result []*DistPayload
 // 		num    int
 // 		fnum   int
-// 		result []*DistPayload
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -2279,9 +2279,9 @@ package grpc
 // 		           data:nil,
 // 		       },
 // 		       fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2304,9 +2304,9 @@ package grpc
 // 		           data:nil,
 // 		           },
 // 		           fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2337,9 +2337,9 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdPoolSliceAggr{
+// 				result: test.fields.result,
 // 				num:    test.fields.num,
 // 				fnum:   test.fields.fnum,
-// 				result: test.fields.result,
 // 			}
 //
 // 			v.Send(test.args.ctx, test.args.data)
@@ -2352,9 +2352,9 @@ package grpc
 //
 // func Test_valdPoolSliceAggr_Result(t *testing.T) {
 // 	type fields struct {
+// 		result []*DistPayload
 // 		num    int
 // 		fnum   int
-// 		result []*DistPayload
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -2379,9 +2379,9 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2400,9 +2400,9 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2433,9 +2433,9 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdPoolSliceAggr{
+// 				result: test.fields.result,
 // 				num:    test.fields.num,
 // 				fnum:   test.fields.fnum,
-// 				result: test.fields.result,
 // 			}
 //
 // 			gotRes := v.Result()
@@ -2448,9 +2448,9 @@ package grpc
 //
 // func Test_valdPoolSliceAggr_GetNum(t *testing.T) {
 // 	type fields struct {
+// 		result []*DistPayload
 // 		num    int
 // 		fnum   int
-// 		result []*DistPayload
 // 	}
 // 	type want struct {
 // 		want int
@@ -2475,9 +2475,9 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2496,9 +2496,9 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2529,9 +2529,9 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdPoolSliceAggr{
+// 				result: test.fields.result,
 // 				num:    test.fields.num,
 // 				fnum:   test.fields.fnum,
-// 				result: test.fields.result,
 // 			}
 //
 // 			got := v.GetNum()
@@ -2544,9 +2544,9 @@ package grpc
 //
 // func Test_valdPoolSliceAggr_GetFnum(t *testing.T) {
 // 	type fields struct {
+// 		result []*DistPayload
 // 		num    int
 // 		fnum   int
-// 		result []*DistPayload
 // 	}
 // 	type want struct {
 // 		want int
@@ -2571,9 +2571,9 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2592,9 +2592,9 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           result:nil,
 // 		           num:0,
 // 		           fnum:0,
-// 		           result:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2625,9 +2625,9 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdPoolSliceAggr{
+// 				result: test.fields.result,
 // 				num:    test.fields.num,
 // 				fnum:   test.fields.fnum,
-// 				result: test.fields.result,
 // 			}
 //
 // 			got := v.GetFnum()

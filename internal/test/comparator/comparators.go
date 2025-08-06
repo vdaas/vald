@@ -15,10 +15,10 @@ package comparator
 
 import (
 	"reflect"
-	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
 var (

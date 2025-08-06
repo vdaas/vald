@@ -35,8 +35,10 @@ type Client interface {
 }
 
 type client struct {
-	addrs []string
+	// gRPC client.
 	c     grpc.Client
+	// List of addresses.
+	addrs []string
 }
 
 func New(opts ...Option) (Client, error) {

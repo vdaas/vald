@@ -23,7 +23,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
@@ -31,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/net/http/client"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -182,11 +182,16 @@ func main() {
 	mu := sync.Mutex{}
 
 	type result struct {
-		url      string
-		count    int
-		success  int
-		fail     int
+		// Map of error links.
 		errLinks map[string]int
+		// URL.
+		url      string
+		// Count.
+		count    int
+		// Success count.
+		success  int
+		// Fail count.
+		fail     int
 	}
 	// result for each file path
 	res := map[string]result{}

@@ -98,7 +98,7 @@ func (r *reconciler) Reconcile(
 				RequeueAfter: time.Second,
 			}, nil
 		}
-		return
+		return res, err
 	}
 
 	nodes := make([]Node, 0, len(ns.Items))
@@ -144,7 +144,7 @@ func (r *reconciler) Reconcile(
 		r.onReconcile(nodes)
 	}
 
-	return
+	return res, err
 }
 
 func (r *reconciler) GetName() string {

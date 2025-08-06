@@ -30,17 +30,17 @@ func TestCodec_Marshal(t *testing.T) {
 		v any
 	}
 	type want struct {
-		want []byte
 		err  error
+		want []byte
 	}
 	type test struct {
-		name       string
-		args       args
 		c          Codec
-		want       want
+		args       args
 		checkFunc  func(want, []byte, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got []byte, err error) error {
 		if !errors.Is(err, w.err) {
@@ -119,20 +119,20 @@ func TestCodec_Marshal(t *testing.T) {
 func TestCodec_Unmarshal(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		data []byte
 		v    any
+		data []byte
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		c          Codec
 		want       want
 		checkFunc  func(test, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(t test, err error) error {
 		if !errors.Is(err, t.want.err) {
@@ -215,12 +215,12 @@ func TestCodec_Name(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
 		c          Codec
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {

@@ -46,12 +46,12 @@ func Test_server_Exists(t *testing.T) {
 		code codes.Code
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, *payload.Object_ID, error) error
 		beforeFunc func(*testing.T, context.Context, args) (Server, error)
 		afterFunc  func(args)
+		args       args
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_ID, err error) error {
 		if err != nil {
@@ -314,7 +314,7 @@ func Test_server_Exists(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			defer cancel()
 
 			if test.beforeFunc == nil {
@@ -358,13 +358,13 @@ func Test_server_GetObject(t *testing.T) {
 		errCode codes.Code
 	}
 	type test struct {
-		name       string
 		args       args
-		fields     fields
-		want       want
 		checkFunc  func(want, *payload.Object_Vector, error) error
 		beforeFunc func(*testing.T, context.Context, args, Server)
 		afterFunc  func(args)
+		name       string
+		want       want
+		fields     fields
 	}
 
 	// common variables for test
@@ -1154,7 +1154,7 @@ func Test_server_GetObject(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			defer cancel()
 
 			if test.afterFunc != nil {
@@ -1211,7 +1211,7 @@ func Test_server_StreamListObject(t *testing.T) {
 		ngt, err := service.New(&defaultConfig)
 		require.NoError(t, err)
 
-		ctx := context.Background()
+		ctx := t.Context()
 		eg, ectx := errgroup.New(ctx)
 		opts := []Option{
 			WithIP(net.LoadLocalIP()),
@@ -1225,8 +1225,8 @@ func Test_server_StreamListObject(t *testing.T) {
 	}
 
 	type test struct {
-		name     string
 		testfunc func(t *testing.T)
+		name     string
 	}
 
 	tests := []test{
@@ -1360,7 +1360,7 @@ func Test_server_GetTimestamp(t *testing.T) {
 		ngt, err := service.New(&defaultConfig)
 		require.NoError(t, err)
 
-		ctx := context.Background()
+		ctx := t.Context()
 		eg, ectx := errgroup.New(ctx)
 		opts := []Option{
 			WithIP(net.LoadLocalIP()),
@@ -1374,8 +1374,8 @@ func Test_server_GetTimestamp(t *testing.T) {
 	}
 
 	type test struct {
-		name     string
 		testfunc func(t *testing.T)
+		name     string
 	}
 
 	tests := []test{
@@ -1460,13 +1460,13 @@ func Test_server_GetTimestamp(t *testing.T) {
 // 		stream vald.Object_StreamGetObjectServer
 // 	}
 // 	type fields struct {
-// 		name                     string
-// 		ip                       string
-// 		ngt                      service.NGT
-// 		eg                       errgroup.Group
-// 		streamConcurrency        int
 // 		UnimplementedAgentServer agent.UnimplementedAgentServer
 // 		UnimplementedValdServer  vald.UnimplementedValdServer
+// 		ngt                      service.NGT
+// 		eg                       errgroup.Group
+// 		name                     string
+// 		ip                       string
+// 		streamConcurrency        int
 // 	}
 // 	type want struct {
 // 		err error
@@ -1495,13 +1495,13 @@ func Test_server_GetTimestamp(t *testing.T) {
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1523,13 +1523,13 @@ func Test_server_GetTimestamp(t *testing.T) {
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
-// 		           name:"",
-// 		           ip:"",
-// 		           ngt:nil,
-// 		           eg:nil,
-// 		           streamConcurrency:0,
 // 		           UnimplementedAgentServer:nil,
 // 		           UnimplementedValdServer:nil,
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           name:"",
+// 		           ip:"",
+// 		           streamConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1560,13 +1560,13 @@ func Test_server_GetTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				name:                     test.fields.name,
-// 				ip:                       test.fields.ip,
-// 				ngt:                      test.fields.ngt,
-// 				eg:                       test.fields.eg,
-// 				streamConcurrency:        test.fields.streamConcurrency,
 // 				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
 // 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+// 				ngt:                      test.fields.ngt,
+// 				eg:                       test.fields.eg,
+// 				name:                     test.fields.name,
+// 				ip:                       test.fields.ip,
+// 				streamConcurrency:        test.fields.streamConcurrency,
 // 			}
 //
 // 			err := s.StreamGetObject(test.args.stream)

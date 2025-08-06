@@ -43,12 +43,12 @@ func TestWithErrGroup(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -111,12 +111,12 @@ func TestWithService(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -180,12 +180,12 @@ func TestWithBucket(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 
 	defaultCheckFunc := func(w want, obj *T) error {
@@ -248,12 +248,12 @@ func TestWithMaxChunkSize(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got *T) error {
 		if !reflect.DeepEqual(got, w.obj) {
@@ -326,12 +326,12 @@ func TestWithBackoff(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got *T) error {
 		if !reflect.DeepEqual(got, w.obj) {
@@ -394,12 +394,12 @@ func TestWithBackoffOpts(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(*testing.T, args, *T)
 		afterFunc  func(args, *T)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got *T) error {
 		opts := []comparator.Option{

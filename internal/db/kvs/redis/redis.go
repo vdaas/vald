@@ -60,40 +60,74 @@ type (
 )
 
 type redisClient struct {
-	addrs                []string
-	clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
-	db                   int
-	dialTimeout          time.Duration
-	network              string
+	// Dialer is a net.Dialer.
 	dialer               net.Dialer
-	dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-	idleCheckFrequency   time.Duration
-	idleTimeout          time.Duration
-	initialPingDuration  time.Duration
-	initialPingTimeLimit time.Duration
-	keyPref              string
-	maxConnAge           time.Duration
-	maxRedirects         int
-	maxRetries           int
-	maxRetryBackoff      time.Duration
-	minIdleConns         int
-	minRetryBackoff      time.Duration
-	onConnect            func(context.Context, *redis.Conn) error
-	password             string
-	poolSize             int
-	poolTimeout          time.Duration
-	readOnly             bool
-	readTimeout          time.Duration
-	routeByLatency       bool
-	routeRandomly        bool
-	sentinelMasterName   string
-	sentinelPassword     string
-	tlsConfig            *tls.Config
-	username             string
-	writeTimeout         time.Duration
+	// client is a Redis client.
 	client               Redis
-	hooks                []Hook
+	// limiter is a Limiter.
 	limiter              Limiter
+	// tlsConfig is a tls.Config.
+	tlsConfig            *tls.Config
+	// dialerFunc is a function to dial.
+	dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
+	// clusterSlots is a function to get cluster slots.
+	clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
+	// onConnect is a function to call on connect.
+	onConnect            func(context.Context, *redis.Conn) error
+	// network is a network.
+	network              string
+	// username is a username.
+	username             string
+	// sentinelPassword is a sentinel password.
+	sentinelPassword     string
+	// keyPref is a key prefix.
+	keyPref              string
+	// sentinelMasterName is a sentinel master name.
+	sentinelMasterName   string
+	// password is a password.
+	password             string
+	// hooks is a list of hooks.
+	hooks                []Hook
+	// addrs is a list of addresses.
+	addrs                []string
+	// minIdleConns is a minimum number of idle connections.
+	minIdleConns         int
+	// initialPingDuration is an initial ping duration.
+	initialPingDuration  time.Duration
+	// minRetryBackoff is a minimum retry backoff.
+	minRetryBackoff      time.Duration
+	// maxRetries is a max number of retries.
+	maxRetries           int
+	// maxRedirects is a max number of redirects.
+	maxRedirects         int
+	// poolSize is a pool size.
+	poolSize             int
+	// poolTimeout is a pool timeout.
+	poolTimeout          time.Duration
+	// db is a database.
+	db                   int
+	// readTimeout is a read timeout.
+	readTimeout          time.Duration
+	// dialTimeout is a dial timeout.
+	dialTimeout          time.Duration
+	// idleCheckFrequency is an idle check frequency.
+	idleCheckFrequency   time.Duration
+	// maxConnAge is a max connection age.
+	maxConnAge           time.Duration
+	// initialPingTimeLimit is an initial ping time limit.
+	initialPingTimeLimit time.Duration
+	// maxRetryBackoff is a max retry backoff.
+	maxRetryBackoff      time.Duration
+	// idleTimeout is an idle timeout.
+	idleTimeout          time.Duration
+	// writeTimeout is a write timeout.
+	writeTimeout         time.Duration
+	// routeRandomly is a flag to route randomly.
+	routeRandomly        bool
+	// routeByLatency is a flag to route by latency.
+	routeByLatency       bool
+	// readOnly is a flag to read only.
+	readOnly             bool
 }
 
 // New returns Connector if no error occurs.

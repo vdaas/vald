@@ -64,8 +64,8 @@ func fakeSearch(kind string) Search {
 // JustErrors illustrates the use of a Group in place of a sync.WaitGroup to
 // simplify goroutine counting and error handling. This example is derived from
 // the sync.WaitGroup example at https://golang.org/pkg/sync/#example_WaitGroup.
-func ExampleGroup_justErrors() {
-	g, _ := errgroup.New(context.Background())
+func TestExampleGroup_justErrors(t *testing.T) {
+	g, _ := errgroup.New(t.Context())
 	urls := []string{
 		"http://www.golang.org/",
 		"http://www.google.com/",
@@ -85,7 +85,9 @@ func ExampleGroup_justErrors() {
 	}
 	// Wait for all HTTP fetches to complete.
 	if err := g.Wait(); err == nil {
-		fmt.Println("Successfully fetched all URLs.")
+		t.Log("Successfully fetched all URLs.")
+	} else {
+		t.Error(err)
 	}
 }
 
@@ -93,7 +95,7 @@ func ExampleGroup_justErrors() {
 // task: the "Google Search 2.0" function from
 // https://talks.golang.org/2012/concurrency.slide#46, augmented with a Context
 // and error-handling.
-func ExampleGroup_parallel() {
+func TestExampleGroup_parallel(t *testing.T) {
 	Google := func(ctx context.Context, query string) ([]Result, error) {
 		g, ctx := errgroup.WithContext(ctx)
 
@@ -115,7 +117,7 @@ func ExampleGroup_parallel() {
 		return results, nil
 	}
 
-	results, err := Google(context.Background(), "golang")
+	results, err := Google(t.Context(), "golang")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return
@@ -145,7 +147,7 @@ func TestZeroGroup(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		g, _ := errgroup.New(context.Background())
+		g, _ := errgroup.New(t.Context())
 
 		var firstErr error
 		for i, err := range tc.errs {
@@ -169,8 +171,8 @@ func TestWithContext(t *testing.T) {
 	errDoom := errors.New("group_test: doomed")
 
 	cases := []struct {
-		errs []error
 		want error
+		errs []error
 	}{
 		{want: nil},
 		{errs: []error{nil}, want: nil},
@@ -179,14 +181,14 @@ func TestWithContext(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		g, ctx := errgroup.WithContext(context.Background())
+		g, ctx := errgroup.WithContext(t.Context())
 
 		for _, err := range tc.errs {
 			err := err
 			g.Go(func() error { return err })
 		}
 
-		if err := g.Wait(); err != tc.want {
+		if err := g.Wait(); !errors.Is(err, tc.want) {
 			t.Errorf("after %T.Go(func() error { return err }) for err in %v\n"+
 				"g.Wait() = %v; want %v",
 				g, tc.errs, err, tc.want)
@@ -207,7 +209,7 @@ func TestWithContext(t *testing.T) {
 }
 
 func TestTryGo(t *testing.T) {
-	g, _ := errgroup.New(context.Background())
+	g, _ := errgroup.New(t.Context())
 	n := 42
 	g.SetLimit(42)
 	ch := make(chan struct{})
@@ -260,7 +262,7 @@ func TestTryGo(t *testing.T) {
 func TestGoLimit(t *testing.T) {
 	const limit = 10
 
-	g, _ := errgroup.New(context.Background())
+	g, _ := errgroup.New(t.Context())
 	g.SetLimit(limit)
 	var active int32
 	for i := 0; i <= 1<<10; i++ {
@@ -281,7 +283,7 @@ func TestGoLimit(t *testing.T) {
 
 func BenchmarkGo(b *testing.B) {
 	fn := func() {}
-	g, _ := errgroup.New(context.Background())
+	g, _ := errgroup.New(b.Context())
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {

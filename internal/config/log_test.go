@@ -33,12 +33,12 @@ func TestLogging_Bind(t *testing.T) {
 		want *Logging
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *Logging) error
 		beforeFunc func(*testing.T)
 		afterFunc  func()
+		fields     fields
+		name       string
 	}
 	defaultCheckFunc := func(w want, got *Logging) error {
 		if !reflect.DeepEqual(got, w.want) {

@@ -116,38 +116,23 @@ func (pc *poolConn) Close(ctx context.Context, delay time.Duration) error {
 // pool implements the Conn interface.
 // It stores connection slots in a lock-free manner using an atomic.Value.
 type pool struct {
-	// connSlots holds a slice of atomic pointers to poolConn.
-	connSlots atomic.Pointer[[]atomic.Pointer[poolConn]] // holds []atomic.Pointer[poolConn]
-
-	// Configuration parameters.
-	startPort       uint16 // Starting port for scanning if needed.
-	endPort         uint16 // Ending port for scanning if needed.
-	host            string // Target host.
-	port            uint16 // Target port.
-	addr            string // Complete address (host:port).
-	isIPAddr        bool   // True if the target is an IP address.
-	enableDNSLookup bool   // Whether to perform DNS resolution.
-
-	// Pool management fields.
-	poolSize     atomic.Uint64 // Configured pool size.
-	currentIndex atomic.Uint64 // Atomic counter for round-robin indexing.
-
-	// gRPC dial options and timeouts.
+	errGroup          errgroup.Group
+	bo                backoff.Backoff
+	dnsHash           atomic.Pointer[string]
+	connSlots         atomic.Pointer[[]atomic.Pointer[poolConn]]
+	host              string
+	addr              string
 	dialOpts          []DialOption
-	dialTimeout       time.Duration // Timeout for dialing a connection.
-	oldConnCloseDelay time.Duration // Delay before closing old connections.
-
-	// Retry/backoff strategy.
-	bo backoff.Backoff
-
-	// Goroutine management.
-	errGroup errgroup.Group
-
-	// Used for DNS change detection during reconnection.
-	dnsHash atomic.Pointer[string]
-
-	// Flag indicating whether the pool is closing.
-	closing atomic.Bool
+	oldConnCloseDelay time.Duration
+	poolSize          atomic.Uint64
+	currentIndex      atomic.Uint64
+	dialTimeout       time.Duration
+	closing           atomic.Bool
+	port              uint16
+	endPort           uint16
+	startPort         uint16
+	enableDNSLookup   bool
+	isIPAddr          bool
 }
 
 // Default pool size.
@@ -290,8 +275,8 @@ func (p *pool) load(idx uint64) (ridx uint64, pc *poolConn) {
 	slots := p.getSlots()
 	sz := uint64(len(slots))
 	if slots != nil && sz != 0 {
-		if sz < idx {
-			return sz, slots[sz].Load()
+		if idx >= sz {
+			return sz - 1, slots[sz-1].Load()
 		}
 		return idx, slots[idx].Load()
 	}

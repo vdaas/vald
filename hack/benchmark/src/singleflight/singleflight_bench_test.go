@@ -17,7 +17,6 @@ import (
 	"context"
 	"fmt"
 	"io/fs"
-	"math"
 	"os"
 	"sync/atomic"
 	"testing"
@@ -79,7 +78,7 @@ func (h *helper) Do(parallel int, b *testing.B) {
 	go func() {
 		ch <- struct{}{}
 		atomic.AddInt64(&h.calledCnt, -1)
-		doFn(context.Background(), "key", fn)
+		doFn(b.Context(), "key", fn)
 	}()
 	<-ch
 	close(ch)
@@ -97,7 +96,7 @@ func (h *helper) Do(parallel int, b *testing.B) {
 			atomic.AddInt64(&h.totalCnt, 1)
 			go func() {
 				defer wg.Done()
-				doFn(context.Background(), "key", fn)
+				doFn(b.Context(), "key", fn)
 			}()
 		}
 		wg.Wait()
@@ -118,7 +117,7 @@ func Benchmark_group_Do_with_sync_singleflight(b *testing.B) {
 					initDoFn: func() func(ctx context.Context, key string, fn func(context.Context) (string, error)) {
 						g := new(stdsingleflight.Group)
 						return func(ctx context.Context, key string, fn func(context.Context) (string, error)) {
-							g.Do(key, func() (any, error) { return fn(context.Background()) })
+							g.Do(key, func() (any, error) { return fn(b.Context()) })
 						}
 					},
 					sleepDur: dur,
@@ -192,7 +191,7 @@ func calcVariance(in []Result) (out Result) {
 			out.Goroutine = r.Goroutine
 			out.Duration = r.Duration
 		}
-		sum += math.Pow(r.HitRate-aveResult.HitRate, 2)
+		sum += (r.HitRate - aveResult.HitRate) * (r.HitRate - aveResult.HitRate)
 	}
 	out.HitRate = sum / float64(len(in))
 

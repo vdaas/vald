@@ -42,13 +42,13 @@ func TestEncodeResponse(t *testing.T) {
 	type args struct {
 		w            http.ResponseWriter
 		data         any
-		status       int
 		contentTypes []string
+		status       int
 	}
 	type test struct {
+		checkFunc func(err error) error
 		name      string
 		args      args
-		checkFunc func(err error) error
 	}
 	tests := []test{
 		func() test {
@@ -115,9 +115,9 @@ func TestDecodeRequest(t *testing.T) {
 		data map[string]string
 	}
 	type test struct {
-		name      string
 		args      args
 		checkFunc func(err error, data map[string]string) error
+		name      string
 	}
 	tests := []test{
 		func() test {
@@ -187,9 +187,9 @@ func TestHandler(t *testing.T) {
 		logic func() (any, error)
 	}
 	type test struct {
-		name      string
 		args      args
 		checkFunc func(code int, err error, data map[string]string) error
+		name      string
 	}
 	tests := []test{
 		func() test {
@@ -336,15 +336,15 @@ func TestErrorHandler(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		w    http.ResponseWriter
+		err  error
 		r    *http.Request
 		msg  string
 		code int
-		err  error
 	}
 	type test struct {
+		checkFunc func(err error) error
 		name      string
 		args      args
-		checkFunc func(err error) error
 	}
 	tests := []test{
 		func() test {
@@ -407,12 +407,12 @@ func TestDecodeResponse(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -558,12 +558,12 @@ func TestEncodeRequest(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if w.err != nil && err != nil && !strings.HasPrefix(err.Error(), w.err.Error()) {
@@ -664,21 +664,21 @@ func TestRequest(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx     context.Context
-		method  string
-		url     string
 		payload any
 		data    any
+		method  string
+		url     string
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -691,7 +691,7 @@ func TestRequest(t *testing.T) {
 			return test{
 				name: "returns generation of request error when method is invalid",
 				args: args{
-					ctx:     context.Background(),
+					ctx:     t.Context(),
 					method:  "@",
 					url:     "/",
 					payload: nil,
@@ -706,7 +706,7 @@ func TestRequest(t *testing.T) {
 			return test{
 				name: "returns json encode error when the request json encoding fails",
 				args: args{
-					ctx:     context.Background(),
+					ctx:     t.Context(),
 					method:  "POST",
 					url:     "/",
 					payload: 1 + 3i,
@@ -727,7 +727,7 @@ func TestRequest(t *testing.T) {
 			return test{
 				name: "returns http request error when sending http request fails",
 				args: args{
-					ctx:     context.Background(),
+					ctx:     t.Context(),
 					method:  "POST",
 					url:     "/",
 					payload: "1",
@@ -750,7 +750,7 @@ func TestRequest(t *testing.T) {
 			return test{
 				name: "returns nil when no error occurs internally",
 				args: args{
-					ctx:     context.Background(),
+					ctx:     t.Context(),
 					method:  "POST",
 					url:     srv.URL,
 					payload: "1",

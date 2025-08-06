@@ -77,12 +77,15 @@ var (
 )
 
 type Details struct {
+	// Details is a list of details.
 	Details []Detail `json:"details,omitempty" yaml:"details"`
 }
 
 type Detail struct {
-	TypeURL string        `json:"type_url,omitempty" yaml:"type_url"`
+	// Message is a proto.Message.
 	Message proto.Message `json:"message,omitempty"  yaml:"message"`
+	// TypeURL is a type URL.
+	TypeURL string        `json:"type_url,omitempty" yaml:"type_url"`
 }
 
 func (d *Detail) MarshalJSON() (body []byte, err error) {

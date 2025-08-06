@@ -295,44 +295,62 @@ ENTRYPOINT ["{{.BinDir}}/{{.AppName}}"]
 
 type (
 	Workflow struct {
-		Name string `yaml:"name"`
-		On   On     `yaml:"on"`
+		// Jobs to run.
 		Jobs Jobs   `yaml:"jobs"`
+		// Name of the workflow.
+		Name string `yaml:"name"`
+		// Events that trigger the workflow.
+		On   On     `yaml:"on"`
 	}
 
 	On struct {
+		// Schedule to run the workflow.
 		Schedule          Schedule    `yaml:"schedule,omitempty"`
+		// Push event.
 		Push              Push        `yaml:"push"`
+		// Pull request event.
 		PullRequest       PullRequest `yaml:"pull_request"`
+		// Pull request target event.
 		PullRequestTarget PullRequest `yaml:"pull_request_target"`
 	}
 
 	Schedule []struct {
+		// Cron expression.
 		Cron string `yaml:"cron,omitempty"`
 	}
 
 	Push struct {
+		// Branches to trigger the workflow.
 		Branches []string `yaml:"branches"`
+		// Tags to trigger the workflow.
 		Tags     []string `yaml:"tags"`
 	}
 
 	PullRequest struct {
+		// Types of pull request events.
 		Types Types `yaml:"types,omitempty"`
+		// Paths to trigger the workflow.
 		Paths Paths `yaml:"paths"`
 	}
 
 	Jobs struct {
+		// Build job.
 		Build Build `yaml:"build"`
 	}
 
 	Build struct {
+		// Action to use.
 		Uses    string `yaml:"uses"`
+		// Parameters for the action.
 		With    With   `yaml:"with"`
+		// Secrets to use.
 		Secrets string `yaml:"secrets"`
 	}
 
 	With struct {
+		// Target to build.
 		Target    string `yaml:"target"`
+		// Platforms to build for.
 		Platforms string `yaml:"platforms,omitempty"`
 	}
 
@@ -340,36 +358,66 @@ type (
 	Paths []string
 
 	Data struct {
-		AliasImage        bool
-		ConfigExists      bool
-		Year              int
-		ContainerType     ContainerType
-		AppName           string
-		BinDir            string
-		BuildPlatforms    string
-		BuildStageName    string
-		BuildUser         string
-		BuilderImage      string
-		BuilderTag        string
-		Maintainer        string
-		Name              string
-		PackageDir        string
-		RootDir           string
-		RuntimeImage      string
-		RuntimeTag        string
-		RuntimeUser       string
+		// Build arguments.
 		Arguments         map[string]string
+		// Environment variables.
 		Environments      map[string]string
-		Entrypoints       []string
-		EnvironmentsSlice []string
-		ExtraCopies       []string
-		ExtraImages       []string
-		ExtraPackages     []string
+		// Root directory.
+		RootDir           string
+		// Build platforms.
+		BuildPlatforms    string
+		// Application name.
+		AppName           string
+		// Binary directory.
+		BinDir            string
+		// Runtime tag.
+		RuntimeTag        string
+		// Build stage name.
+		BuildStageName    string
+		// Build user.
+		BuildUser         string
+		// Builder image.
+		BuilderImage      string
+		// Builder tag.
+		BuilderTag        string
+		// Maintainer.
+		Maintainer        string
+		// Name.
+		Name              string
+		// Package directory.
+		PackageDir        string
+		// Runtime image.
+		RuntimeImage      string
+		// Runtime user.
+		RuntimeUser       string
+		// Preprocess commands.
 		Preprocess        []string
-		PullRequestPaths  []string
-		RunCommands       []string
-		RunMounts         []string
+		// Extra images.
+		ExtraImages       []string
+		// Stage files.
 		StageFiles        []string
+		// Run mounts.
+		RunMounts         []string
+		// Entrypoints.
+		Entrypoints       []string
+		// Slice of environment variables.
+		EnvironmentsSlice []string
+		// Extra copies.
+		ExtraCopies       []string
+		// Run commands.
+		RunCommands       []string
+		// Extra packages.
+		ExtraPackages     []string
+		// Pull request paths.
+		PullRequestPaths  []string
+		// Container type.
+		ContainerType     ContainerType
+		// Year.
+		Year              int
+		// Whether to alias the image.
+		AliasImage        bool
+		// Whether the config exists.
+		ConfigExists      bool
 	}
 	ContainerType int
 )
@@ -559,7 +607,7 @@ func appendM[K comparable](maps ...map[K]string) map[K]string {
 	return result
 }
 
-// extractVariables efficiently extracts variables from strings
+// extractVariables efficiently extracts variables from strings.
 func extractVariables(value string) []string {
 	var vars []string
 	start := -1
@@ -582,7 +630,7 @@ func extractVariables(value string) []string {
 	return vars
 }
 
-// topologicalSort sorts the elements topologically and ensures that equal-level nodes are sorted by name
+// topologicalSort sorts the elements topologically and ensures that equal-level nodes are sorted by name.
 func topologicalSort(envMap map[string]string) []string {
 	inDegree := make(map[string]int)         // Tracks the in-degree of each node
 	graph := make(map[string][]string)       // Tracks the edges between nodes
@@ -998,7 +1046,7 @@ jobs:
     secrets: "inherit"
 `), &workflow)
 			if err != nil {
-				return fmt.Errorf("Error decoding YAML: %v", err)
+				return fmt.Errorf("Error decoding YAML: %w", err)
 			}
 
 			if !data.AliasImage {

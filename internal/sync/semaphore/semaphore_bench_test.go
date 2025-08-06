@@ -85,7 +85,7 @@ func acquireN(b *testing.B, sem weighted, size int64, N int) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < N; j++ {
-			sem.Acquire(context.Background(), size)
+			sem.Acquire(b.Context(), size)
 		}
 		for j := 0; j < N; j++ {
 			sem.Release(size)
@@ -141,11 +141,11 @@ func BenchmarkAcquireSeq(b *testing.B) {
 		{128, 64, 2},
 	} {
 		for _, w := range []struct {
-			name string
 			w    weighted
+			name string
 		}{
-			{"Weighted", semaphore.NewWeighted(c.cap)},
-			{"semChan", newSemChan(c.cap)},
+			{name: "Weighted", w: semaphore.NewWeighted(c.cap)},
+			{name: "semChan", w: newSemChan(c.cap)},
 		} {
 			b.Run(fmt.Sprintf("%s-acquire-%d-%d-%d", w.name, c.cap, c.size, c.N), func(b *testing.B) {
 				acquireN(b, w.w, c.size, c.N)

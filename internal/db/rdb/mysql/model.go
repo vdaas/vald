@@ -24,19 +24,26 @@ type Vector interface {
 }
 
 type vector struct {
-	data   data
+	// podIPs is a list of pod IPs.
 	podIPs []podIP
+	// data is a data.
+	data   data
 }
 
 type data struct {
-	ID     int64  `db:"id"`
+	// UUID is a UUID.
 	UUID   string `db:"uuid"`
+	// Vector is a vector.
 	Vector []byte `db:"vector"`
+	// ID is an ID.
+	ID     int64  `db:"id"`
 }
 
 type podIP struct {
-	ID int64  `db:"id"`
+	// IP is an IP address.
 	IP string `db:"ip"`
+	// ID is an ID.
+	ID int64  `db:"id"`
 }
 
 // GetUUID returns UUID of Vector.

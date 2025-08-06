@@ -43,10 +43,14 @@ type Dataset interface {
 }
 
 type dataset struct {
+	// Name of the dataset.
 	name         string
-	dimension    int
+	// Distance type of the dataset.
 	distanceType string
+	// Object type of the dataset.
 	objectType   string
+	// Dimension of the dataset.
+	dimension    int
 }
 
 // Name returns dataset name.

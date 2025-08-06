@@ -24,19 +24,30 @@ import (
 )
 
 type breaker struct {
-	key     string // breaker key for logging
-	count   *count // type: *count
-	tripped int32  // tripped flag. when flag value is 1, breaker state is "Open" or "HalfOpen".
-
-	closedErrRate         float32
+	// Tripper for closed state.
 	closedErrShouldTrip   Tripper
-	halfOpenErrRate       float32
+	// Tripper for half-open state.
 	halfOpenErrShouldTrip Tripper
+	// Count of successes and failures.
+	count                 *count
+	// Breaker key for logging.
+	key                   string
+	// Minimum samples.
 	minSamples            int64
+	// Open timeout.
 	openTimeout           time.Duration
-	openExp               int64 // unix time
+	// Open expiration.
+	openExp               int64
+	// Closed refresh timeout.
 	closedRefreshTimeout  time.Duration
-	closedRefreshExp      int64 // unix time
+	// Closed refresh expiration.
+	closedRefreshExp      int64
+	// Tripped flag.
+	tripped               int32
+	// Closed error rate.
+	closedErrRate         float32
+	// Half-open error rate.
+	halfOpenErrRate       float32
 }
 
 var (
@@ -83,11 +94,19 @@ func (b *breaker) do(
 	if err != nil {
 		if errors.As(err, &serr) {
 			b.success()
-			return nil, b.currentState(), err.(*errors.ErrCircuitBreakerMarkWithSuccess).Unwrap()
+			return nil, b.currentState(), func() *errors.ErrCircuitBreakerMarkWithSuccess {
+				target := &errors.ErrCircuitBreakerMarkWithSuccess{}
+				_ = errors.As(err, &target)
+				return target
+			}().Unwrap()
 		}
 
 		if errors.As(err, &igerr) {
-			return nil, b.currentState(), err.(*errors.ErrCircuitBreakerIgnorable).Unwrap()
+			return nil, b.currentState(), func() *errors.ErrCircuitBreakerIgnorable {
+				target := &errors.ErrCircuitBreakerIgnorable{}
+				_ = errors.As(err, &target)
+				return target
+			}().Unwrap()
 		}
 
 		if errors.Is(err, context.Canceled) ||

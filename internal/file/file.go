@@ -219,9 +219,6 @@ func CopyFileWithPerm(ctx context.Context, src, dst string, perm fs.FileMode) (n
 	if len(src) == 0 || len(dst) == 0 || src == dst {
 		return 0, nil
 	}
-	if ctx == nil {
-		ctx = context.Background()
-	}
 	defer func() {
 		if err != nil {
 			log.Warn(err)

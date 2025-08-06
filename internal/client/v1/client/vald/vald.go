@@ -35,11 +35,14 @@ type Client interface {
 }
 
 type client struct {
-	addrs []string
+	// gRPC client.
 	c     grpc.Client
+	// List of addresses.
+	addrs []string
 }
 
 type singleClient struct {
+	// Vald client.
 	vc vald.Client
 }
 

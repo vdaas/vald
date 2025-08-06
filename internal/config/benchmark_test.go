@@ -17,9 +17,9 @@ package config
 //
 // func TestBenchmarkTarget_Bind(t *testing.T) {
 // 	type fields struct {
+// 		Meta map[string]string
 // 		Host string
 // 		Port int
-// 		Meta map[string]string
 // 	}
 // 	type want struct {
 // 		want *BenchmarkTarget
@@ -44,9 +44,9 @@ package config
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           Meta:nil,
 // 		           Host:"",
 // 		           Port:0,
-// 		           Meta:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -65,9 +65,9 @@ package config
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           Meta:nil,
 // 		           Host:"",
 // 		           Port:0,
-// 		           Meta:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -98,9 +98,9 @@ package config
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			tr := &BenchmarkTarget{
+// 				Meta: test.fields.Meta,
 // 				Host: test.fields.Host,
 // 				Port: test.fields.Port,
-// 				Meta: test.fields.Meta,
 // 			}
 //
 // 			got := tr.Bind()
@@ -113,11 +113,11 @@ package config
 //
 // func TestBenchmarkDataset_Bind(t *testing.T) {
 // 	type fields struct {
+// 		Range   *BenchmarkDatasetRange
 // 		Name    string
 // 		Group   string
-// 		Indexes int
-// 		Range   *BenchmarkDatasetRange
 // 		URL     string
+// 		Indexes int
 // 	}
 // 	type want struct {
 // 		want *BenchmarkDataset
@@ -142,11 +142,11 @@ package config
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           Range:BenchmarkDatasetRange{},
 // 		           Name:"",
 // 		           Group:"",
-// 		           Indexes:0,
-// 		           Range:BenchmarkDatasetRange{},
 // 		           URL:"",
+// 		           Indexes:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -165,11 +165,11 @@ package config
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           Range:BenchmarkDatasetRange{},
 // 		           Name:"",
 // 		           Group:"",
-// 		           Indexes:0,
-// 		           Range:BenchmarkDatasetRange{},
 // 		           URL:"",
+// 		           Indexes:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -200,11 +200,11 @@ package config
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &BenchmarkDataset{
+// 				Range:   test.fields.Range,
 // 				Name:    test.fields.Name,
 // 				Group:   test.fields.Group,
-// 				Indexes: test.fields.Indexes,
-// 				Range:   test.fields.Range,
 // 				URL:     test.fields.URL,
+// 				Indexes: test.fields.Indexes,
 // 			}
 //
 // 			got := d.Bind()
@@ -309,8 +309,8 @@ package config
 //
 // func TestInsertConfig_Bind(t *testing.T) {
 // 	type fields struct {
-// 		SkipStrictExistCheck bool
 // 		Timestamp            string
+// 		SkipStrictExistCheck bool
 // 	}
 // 	type want struct {
 // 		want *InsertConfig
@@ -335,8 +335,8 @@ package config
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           SkipStrictExistCheck:false,
 // 		           Timestamp:"",
+// 		           SkipStrictExistCheck:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -355,8 +355,8 @@ package config
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           SkipStrictExistCheck:false,
 // 		           Timestamp:"",
+// 		           SkipStrictExistCheck:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -387,8 +387,8 @@ package config
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			cfg := &InsertConfig{
-// 				SkipStrictExistCheck: test.fields.SkipStrictExistCheck,
 // 				Timestamp:            test.fields.Timestamp,
+// 				SkipStrictExistCheck: test.fields.SkipStrictExistCheck,
 // 			}
 //
 // 			got := cfg.Bind()
@@ -401,8 +401,8 @@ package config
 //
 // func TestUpdateConfig_Bind(t *testing.T) {
 // 	type fields struct {
-// 		SkipStrictExistCheck  bool
 // 		Timestamp             string
+// 		SkipStrictExistCheck  bool
 // 		DisableBalancedUpdate bool
 // 	}
 // 	type want struct {
@@ -428,8 +428,8 @@ package config
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           SkipStrictExistCheck:false,
 // 		           Timestamp:"",
+// 		           SkipStrictExistCheck:false,
 // 		           DisableBalancedUpdate:false,
 // 		       },
 // 		       want: want{},
@@ -449,8 +449,8 @@ package config
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           SkipStrictExistCheck:false,
 // 		           Timestamp:"",
+// 		           SkipStrictExistCheck:false,
 // 		           DisableBalancedUpdate:false,
 // 		           },
 // 		           want: want{},
@@ -482,8 +482,8 @@ package config
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			cfg := &UpdateConfig{
-// 				SkipStrictExistCheck:  test.fields.SkipStrictExistCheck,
 // 				Timestamp:             test.fields.Timestamp,
+// 				SkipStrictExistCheck:  test.fields.SkipStrictExistCheck,
 // 				DisableBalancedUpdate: test.fields.DisableBalancedUpdate,
 // 			}
 //
@@ -497,8 +497,8 @@ package config
 //
 // func TestUpsertConfig_Bind(t *testing.T) {
 // 	type fields struct {
-// 		SkipStrictExistCheck  bool
 // 		Timestamp             string
+// 		SkipStrictExistCheck  bool
 // 		DisableBalancedUpdate bool
 // 	}
 // 	type want struct {
@@ -524,8 +524,8 @@ package config
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           SkipStrictExistCheck:false,
 // 		           Timestamp:"",
+// 		           SkipStrictExistCheck:false,
 // 		           DisableBalancedUpdate:false,
 // 		       },
 // 		       want: want{},
@@ -545,8 +545,8 @@ package config
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           SkipStrictExistCheck:false,
 // 		           Timestamp:"",
+// 		           SkipStrictExistCheck:false,
 // 		           DisableBalancedUpdate:false,
 // 		           },
 // 		           want: want{},
@@ -578,8 +578,8 @@ package config
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			cfg := &UpsertConfig{
-// 				SkipStrictExistCheck:  test.fields.SkipStrictExistCheck,
 // 				Timestamp:             test.fields.Timestamp,
+// 				SkipStrictExistCheck:  test.fields.SkipStrictExistCheck,
 // 				DisableBalancedUpdate: test.fields.DisableBalancedUpdate,
 // 			}
 //
@@ -593,13 +593,13 @@ package config
 //
 // func TestSearchConfig_Bind(t *testing.T) {
 // 	type fields struct {
+// 		Timeout              string
+// 		AggregationAlgorithm string
 // 		Epsilon              float32
 // 		Radius               float32
 // 		Num                  int32
 // 		MinNum               int32
-// 		Timeout              string
 // 		EnableLinearSearch   bool
-// 		AggregationAlgorithm string
 // 	}
 // 	type want struct {
 // 		want *SearchConfig
@@ -624,13 +624,13 @@ package config
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           Timeout:"",
+// 		           AggregationAlgorithm:"",
 // 		           Epsilon:0,
 // 		           Radius:0,
 // 		           Num:0,
 // 		           MinNum:0,
-// 		           Timeout:"",
 // 		           EnableLinearSearch:false,
-// 		           AggregationAlgorithm:"",
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -649,13 +649,13 @@ package config
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           Timeout:"",
+// 		           AggregationAlgorithm:"",
 // 		           Epsilon:0,
 // 		           Radius:0,
 // 		           Num:0,
 // 		           MinNum:0,
-// 		           Timeout:"",
 // 		           EnableLinearSearch:false,
-// 		           AggregationAlgorithm:"",
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -686,13 +686,13 @@ package config
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			cfg := &SearchConfig{
+// 				Timeout:              test.fields.Timeout,
+// 				AggregationAlgorithm: test.fields.AggregationAlgorithm,
 // 				Epsilon:              test.fields.Epsilon,
 // 				Radius:               test.fields.Radius,
 // 				Num:                  test.fields.Num,
 // 				MinNum:               test.fields.MinNum,
-// 				Timeout:              test.fields.Timeout,
 // 				EnableLinearSearch:   test.fields.EnableLinearSearch,
-// 				AggregationAlgorithm: test.fields.AggregationAlgorithm,
 // 			}
 //
 // 			got := cfg.Bind()
@@ -705,8 +705,8 @@ package config
 //
 // func TestRemoveConfig_Bind(t *testing.T) {
 // 	type fields struct {
-// 		SkipStrictExistCheck bool
 // 		Timestamp            string
+// 		SkipStrictExistCheck bool
 // 	}
 // 	type want struct {
 // 		want *RemoveConfig
@@ -731,8 +731,8 @@ package config
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           SkipStrictExistCheck:false,
 // 		           Timestamp:"",
+// 		           SkipStrictExistCheck:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -751,8 +751,8 @@ package config
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           SkipStrictExistCheck:false,
 // 		           Timestamp:"",
+// 		           SkipStrictExistCheck:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -783,8 +783,8 @@ package config
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			cfg := &RemoveConfig{
-// 				SkipStrictExistCheck: test.fields.SkipStrictExistCheck,
 // 				Timestamp:            test.fields.Timestamp,
+// 				SkipStrictExistCheck: test.fields.SkipStrictExistCheck,
 // 			}
 //
 // 			got := cfg.Bind()
@@ -1065,21 +1065,21 @@ package config
 //
 // func TestBenchmarkJob_Bind(t *testing.T) {
 // 	type fields struct {
-// 		Target             *BenchmarkTarget
+// 		RemoveConfig       *RemoveConfig
 // 		Dataset            *BenchmarkDataset
-// 		Replica            int
-// 		Repetition         int
-// 		JobType            string
+// 		ClientConfig       *GRPCClient
+// 		ObjectConfig       *ObjectConfig
+// 		Target             *BenchmarkTarget
 // 		InsertConfig       *InsertConfig
 // 		UpdateConfig       *UpdateConfig
 // 		UpsertConfig       *UpsertConfig
 // 		SearchConfig       *SearchConfig
-// 		RemoveConfig       *RemoveConfig
-// 		ObjectConfig       *ObjectConfig
-// 		ClientConfig       *GRPCClient
-// 		Rules              []*BenchmarkJobRule
+// 		JobType            string
 // 		BeforeJobName      string
 // 		BeforeJobNamespace string
+// 		Rules              []*BenchmarkJobRule
+// 		Repetition         int
+// 		Replica            int
 // 		RPS                int
 // 		ConcurrencyLimit   int
 // 	}
@@ -1106,21 +1106,21 @@ package config
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           Target:BenchmarkTarget{},
+// 		           RemoveConfig:RemoveConfig{},
 // 		           Dataset:BenchmarkDataset{},
-// 		           Replica:0,
-// 		           Repetition:0,
-// 		           JobType:"",
+// 		           ClientConfig:GRPCClient{},
+// 		           ObjectConfig:ObjectConfig{},
+// 		           Target:BenchmarkTarget{},
 // 		           InsertConfig:InsertConfig{},
 // 		           UpdateConfig:UpdateConfig{},
 // 		           UpsertConfig:UpsertConfig{},
 // 		           SearchConfig:SearchConfig{},
-// 		           RemoveConfig:RemoveConfig{},
-// 		           ObjectConfig:ObjectConfig{},
-// 		           ClientConfig:GRPCClient{},
-// 		           Rules:nil,
+// 		           JobType:"",
 // 		           BeforeJobName:"",
 // 		           BeforeJobNamespace:"",
+// 		           Rules:nil,
+// 		           Repetition:0,
+// 		           Replica:0,
 // 		           RPS:0,
 // 		           ConcurrencyLimit:0,
 // 		       },
@@ -1141,21 +1141,21 @@ package config
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           Target:BenchmarkTarget{},
+// 		           RemoveConfig:RemoveConfig{},
 // 		           Dataset:BenchmarkDataset{},
-// 		           Replica:0,
-// 		           Repetition:0,
-// 		           JobType:"",
+// 		           ClientConfig:GRPCClient{},
+// 		           ObjectConfig:ObjectConfig{},
+// 		           Target:BenchmarkTarget{},
 // 		           InsertConfig:InsertConfig{},
 // 		           UpdateConfig:UpdateConfig{},
 // 		           UpsertConfig:UpsertConfig{},
 // 		           SearchConfig:SearchConfig{},
-// 		           RemoveConfig:RemoveConfig{},
-// 		           ObjectConfig:ObjectConfig{},
-// 		           ClientConfig:GRPCClient{},
-// 		           Rules:nil,
+// 		           JobType:"",
 // 		           BeforeJobName:"",
 // 		           BeforeJobNamespace:"",
+// 		           Rules:nil,
+// 		           Repetition:0,
+// 		           Replica:0,
 // 		           RPS:0,
 // 		           ConcurrencyLimit:0,
 // 		           },
@@ -1188,21 +1188,21 @@ package config
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			b := &BenchmarkJob{
-// 				Target:             test.fields.Target,
+// 				RemoveConfig:       test.fields.RemoveConfig,
 // 				Dataset:            test.fields.Dataset,
-// 				Replica:            test.fields.Replica,
-// 				Repetition:         test.fields.Repetition,
-// 				JobType:            test.fields.JobType,
+// 				ClientConfig:       test.fields.ClientConfig,
+// 				ObjectConfig:       test.fields.ObjectConfig,
+// 				Target:             test.fields.Target,
 // 				InsertConfig:       test.fields.InsertConfig,
 // 				UpdateConfig:       test.fields.UpdateConfig,
 // 				UpsertConfig:       test.fields.UpsertConfig,
 // 				SearchConfig:       test.fields.SearchConfig,
-// 				RemoveConfig:       test.fields.RemoveConfig,
-// 				ObjectConfig:       test.fields.ObjectConfig,
-// 				ClientConfig:       test.fields.ClientConfig,
-// 				Rules:              test.fields.Rules,
+// 				JobType:            test.fields.JobType,
 // 				BeforeJobName:      test.fields.BeforeJobName,
 // 				BeforeJobNamespace: test.fields.BeforeJobNamespace,
+// 				Rules:              test.fields.Rules,
+// 				Repetition:         test.fields.Repetition,
+// 				Replica:            test.fields.Replica,
 // 				RPS:                test.fields.RPS,
 // 				ConcurrencyLimit:   test.fields.ConcurrencyLimit,
 // 			}

@@ -300,11 +300,11 @@ func (s *subProcess) getDeployment(ctx context.Context) (*k8s.Deployment, error)
 func (s *subProcess) updateDeployment(
 	ctx context.Context, newPVC string, deployment *k8s.Deployment, snapshotTime time.Time,
 ) error {
-	if deployment.Spec.Template.ObjectMeta.Annotations == nil {
-		deployment.Spec.Template.ObjectMeta.Annotations = map[string]string{}
+	if deployment.Spec.Template.Annotations == nil {
+		deployment.Spec.Template.Annotations = map[string]string{}
 	}
 	now := time.Now().UTC().Format(time.RFC3339)
-	deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"] = now
+	deployment.Spec.Template.Annotations["kubectl.kubernetes.io/restartedAt"] = now
 
 	if deployment.Annotations == nil {
 		deployment.Annotations = map[string]string{}

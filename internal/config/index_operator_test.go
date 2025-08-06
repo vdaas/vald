@@ -15,17 +15,117 @@ package config
 
 // NOT IMPLEMENTED BELOW
 //
+// func TestIndexJobTemplates_Bind(t *testing.T) {
+// 	type fields struct {
+// 		Rotate     *k8s.Job
+// 		Creation   *k8s.Job
+// 		Save       *k8s.Job
+// 		Correction *k8s.Job
+// 	}
+// 	type want struct {
+// 		want *IndexJobTemplates
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *IndexJobTemplates) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *IndexJobTemplates) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           Rotate:nil,
+// 		           Creation:nil,
+// 		           Save:nil,
+// 		           Correction:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           Rotate:nil,
+// 		           Creation:nil,
+// 		           Save:nil,
+// 		           Correction:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			ijt := &IndexJobTemplates{
+// 				Rotate:     test.fields.Rotate,
+// 				Creation:   test.fields.Creation,
+// 				Save:       test.fields.Save,
+// 				Correction: test.fields.Correction,
+// 			}
+//
+// 			got := ijt.Bind()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
 // func TestIndexOperator_Bind(t *testing.T) {
 // 	type fields struct {
+// 		JobTemplates                      IndexJobTemplates
 // 		Namespace                         string
 // 		AgentName                         string
 // 		AgentNamespace                    string
 // 		RotatorName                       string
 // 		TargetReadReplicaIDAnnotationsKey string
+// 		ReadReplicaLabelKey               string
 // 		RotationJobConcurrency            uint
 // 		ReadReplicaEnabled                bool
-// 		ReadReplicaLabelKey               string
-// 		JobTemplates                      IndexJobTemplates
 // 	}
 // 	type want struct {
 // 		want *IndexOperator
@@ -50,15 +150,15 @@ package config
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           JobTemplates:IndexJobTemplates{},
 // 		           Namespace:"",
 // 		           AgentName:"",
 // 		           AgentNamespace:"",
 // 		           RotatorName:"",
 // 		           TargetReadReplicaIDAnnotationsKey:"",
+// 		           ReadReplicaLabelKey:"",
 // 		           RotationJobConcurrency:0,
 // 		           ReadReplicaEnabled:false,
-// 		           ReadReplicaLabelKey:"",
-// 		           JobTemplates:IndexJobTemplates{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -77,15 +177,15 @@ package config
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           JobTemplates:IndexJobTemplates{},
 // 		           Namespace:"",
 // 		           AgentName:"",
 // 		           AgentNamespace:"",
 // 		           RotatorName:"",
 // 		           TargetReadReplicaIDAnnotationsKey:"",
+// 		           ReadReplicaLabelKey:"",
 // 		           RotationJobConcurrency:0,
 // 		           ReadReplicaEnabled:false,
-// 		           ReadReplicaLabelKey:"",
-// 		           JobTemplates:IndexJobTemplates{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -116,15 +216,15 @@ package config
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			ic := &IndexOperator{
+// 				JobTemplates:                      test.fields.JobTemplates,
 // 				Namespace:                         test.fields.Namespace,
 // 				AgentName:                         test.fields.AgentName,
 // 				AgentNamespace:                    test.fields.AgentNamespace,
 // 				RotatorName:                       test.fields.RotatorName,
 // 				TargetReadReplicaIDAnnotationsKey: test.fields.TargetReadReplicaIDAnnotationsKey,
+// 				ReadReplicaLabelKey:               test.fields.ReadReplicaLabelKey,
 // 				RotationJobConcurrency:            test.fields.RotationJobConcurrency,
 // 				ReadReplicaEnabled:                test.fields.ReadReplicaEnabled,
-// 				ReadReplicaLabelKey:               test.fields.ReadReplicaLabelKey,
-// 				JobTemplates:                      test.fields.JobTemplates,
 // 			}
 //
 // 			got := ic.Bind()

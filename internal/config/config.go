@@ -36,14 +36,12 @@ import (
 
 // GlobalConfig represent a application setting data content (config.yaml).
 type GlobalConfig struct {
-	// Version represent configuration file version.
-	Version string `json:"version" yaml:"version"`
-
-	// TZ represent system time location .
-	TZ string `json:"time_zone" yaml:"time_zone"`
-
 	// Log represent log configuration.
 	Logging *Logging `json:"logging,omitempty" yaml:"logging,omitempty"`
+	// Version represent configuration file version.
+	Version string   `json:"version"           yaml:"version"`
+	// TZ represent system time location .
+	TZ      string   `json:"time_zone"         yaml:"time_zone"`
 }
 
 const (

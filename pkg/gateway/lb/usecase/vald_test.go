@@ -31,11 +31,11 @@ func Test_discovererClient(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name   string
 		cfg    *config.Data
+		assert func(*testing.T, discoverer.Client, error)
+		name   string
 		dopts  []grpc.Option
 		aopts  []grpc.Option
-		assert func(*testing.T, discoverer.Client, error)
 	}{
 		{
 			name: "Not create read replica client when read replica client option is not set",

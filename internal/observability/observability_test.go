@@ -203,7 +203,6 @@ package observability
 // 	type fields struct {
 // 		eg        errgroup.Group
 // 		exporters []exporter.Exporter
-// 		tracer    trace.Tracer
 // 		metrics   []metrics.Metric
 // 	}
 // 	type want struct {
@@ -235,7 +234,6 @@ package observability
 // 		       fields: fields {
 // 		           eg:nil,
 // 		           exporters:nil,
-// 		           tracer:nil,
 // 		           metrics:nil,
 // 		       },
 // 		       want: want{},
@@ -260,7 +258,6 @@ package observability
 // 		           fields: fields {
 // 		           eg:nil,
 // 		           exporters:nil,
-// 		           tracer:nil,
 // 		           metrics:nil,
 // 		           },
 // 		           want: want{},
@@ -294,7 +291,6 @@ package observability
 // 			o := &observability{
 // 				eg:        test.fields.eg,
 // 				exporters: test.fields.exporters,
-// 				tracer:    test.fields.tracer,
 // 				metrics:   test.fields.metrics,
 // 			}
 //
@@ -313,7 +309,6 @@ package observability
 // 	type fields struct {
 // 		eg        errgroup.Group
 // 		exporters []exporter.Exporter
-// 		tracer    trace.Tracer
 // 		metrics   []metrics.Metric
 // 	}
 // 	type want struct {
@@ -345,7 +340,6 @@ package observability
 // 		       fields: fields {
 // 		           eg:nil,
 // 		           exporters:nil,
-// 		           tracer:nil,
 // 		           metrics:nil,
 // 		       },
 // 		       want: want{},
@@ -370,7 +364,6 @@ package observability
 // 		           fields: fields {
 // 		           eg:nil,
 // 		           exporters:nil,
-// 		           tracer:nil,
 // 		           metrics:nil,
 // 		           },
 // 		           want: want{},
@@ -404,7 +397,6 @@ package observability
 // 			o := &observability{
 // 				eg:        test.fields.eg,
 // 				exporters: test.fields.exporters,
-// 				tracer:    test.fields.tracer,
 // 				metrics:   test.fields.metrics,
 // 			}
 //
@@ -423,7 +415,6 @@ package observability
 // 	type fields struct {
 // 		eg        errgroup.Group
 // 		exporters []exporter.Exporter
-// 		tracer    trace.Tracer
 // 		metrics   []metrics.Metric
 // 	}
 // 	type want struct {
@@ -455,7 +446,6 @@ package observability
 // 		       fields: fields {
 // 		           eg:nil,
 // 		           exporters:nil,
-// 		           tracer:nil,
 // 		           metrics:nil,
 // 		       },
 // 		       want: want{},
@@ -480,7 +470,6 @@ package observability
 // 		           fields: fields {
 // 		           eg:nil,
 // 		           exporters:nil,
-// 		           tracer:nil,
 // 		           metrics:nil,
 // 		           },
 // 		           want: want{},
@@ -514,7 +503,6 @@ package observability
 // 			o := &observability{
 // 				eg:        test.fields.eg,
 // 				exporters: test.fields.exporters,
-// 				tracer:    test.fields.tracer,
 // 				metrics:   test.fields.metrics,
 // 			}
 //

@@ -695,10 +695,20 @@ func (n *ngt) Search(
 		}
 		d := C.ngt_get_result(results, C.uint32_t(i), ne.err)
 		if d.id == 0 && d.distance == 0 {
-			result[i] = algorithm.SearchResult{0, 0, n.newGoError(ne)}
+			// FIX: Use named fields to avoid positional argument confusion.
+			result[i] = algorithm.SearchResult{
+				Error:    n.newGoError(ne),
+				ID:       0,
+				Distance: 0,
+			}
 			ne = n.GetErrorBuffer()
 		} else {
-			result[i] = algorithm.SearchResult{uint32(d.id), float32(d.distance), nil}
+			// FIX: Use named fields to avoid positional argument confusion.
+			result[i] = algorithm.SearchResult{
+				Error:    nil,
+				ID:       uint32(d.id),
+				Distance: float32(d.distance),
+			}
 		}
 	}
 	n.PutErrorBuffer(ne)

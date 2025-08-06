@@ -36,19 +36,26 @@ import (
 )
 
 type reader struct {
-	eg      errgroup.Group
-	service s3iface.S3API
-	bucket  string
-
-	pr io.ReadCloser
-	wg *sync.WaitGroup
-
-	ctxio ctxio.IO
-
-	backoffEnabled bool
-	backoffOpts    []backoff.Option
+	// eg is an error group.
+	eg             errgroup.Group
+	// service is a s3iface.S3API.
+	service        s3iface.S3API
+	// pr is an io.ReadCloser.
+	pr             io.ReadCloser
+	// ctxio is a ctxio.IO.
+	ctxio          ctxio.IO
+	// bo is a backoff.Backoff.
 	bo             backoff.Backoff
+	// wg is a sync.WaitGroup.
+	wg             *sync.WaitGroup
+	// bucket is a bucket name.
+	bucket         string
+	// backoffOpts is a list of backoff options.
+	backoffOpts    []backoff.Option
+	// maxChunkSize is a max chunk size.
 	maxChunkSize   int64
+	// backoffEnabled is a flag to enable backoff.
+	backoffEnabled bool
 }
 
 var (
@@ -178,7 +185,8 @@ func (r *reader) getObject(
 		},
 	)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
+		var aerr awserr.Error
+		if errors.As(err, &aerr) {
 			switch aerr.Code() {
 			case s3.ErrCodeNoSuchBucket:
 				return nil, errors.NewErrBlobNoSuchBucket(err, r.bucket)

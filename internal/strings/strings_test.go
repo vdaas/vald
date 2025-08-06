@@ -23,19 +23,19 @@ import (
 
 func TestJoin(t *testing.T) {
 	type args struct {
-		elems []string
 		sep   string
+		elems []string
 	}
 	type want struct {
 		wantStr string
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
+		args       args
 	}
 	defaultCheckFunc := func(w want, gotStr string) error {
 		if !reflect.DeepEqual(gotStr, w.wantStr) {
@@ -113,12 +113,12 @@ func TestTrimForCompare(t *testing.T) {
 		wantStr string
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, gotStr string) error {
 		if !reflect.DeepEqual(gotStr, w.wantStr) {

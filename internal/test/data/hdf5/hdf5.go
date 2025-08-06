@@ -18,6 +18,7 @@
 package hdf5
 
 import (
+	"net/http"
 	"os"
 	"reflect"
 
@@ -93,11 +94,16 @@ func (key Hdf5Key) String() string {
 }
 
 type data struct {
-	name      DatasetName
+	// path is a path.
 	path      string
+	// train is a training data.
 	train     [][]float32
+	// test is a test data.
 	test      [][]float32
+	// neighbors is a list of neighbors.
 	neighbors [][]int
+	// name is a dataset name.
+	name      DatasetName
 }
 
 func New(opts ...Option) (Data, error) {
@@ -223,7 +229,7 @@ func downloadFile(url, path string) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return errors.ErrInvalidStatusCode(resp.StatusCode)
 	}
 

@@ -92,10 +92,10 @@ package sidecar
 //
 // func Test_sidecarMetrics_View(t *testing.T) {
 // 	type fields struct {
+// 		info           *observer.BackupInfo
 // 		storageTypeKey string
 // 		bucketNameKey  string
 // 		filenameKey    string
-// 		info           *observer.BackupInfo
 // 	}
 // 	type want struct {
 // 		want []metrics.View
@@ -124,10 +124,10 @@ package sidecar
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           info:nil,
 // 		           storageTypeKey:"",
 // 		           bucketNameKey:"",
 // 		           filenameKey:"",
-// 		           info:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -146,10 +146,10 @@ package sidecar
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           info:nil,
 // 		           storageTypeKey:"",
 // 		           bucketNameKey:"",
 // 		           filenameKey:"",
-// 		           info:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -180,10 +180,10 @@ package sidecar
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &sidecarMetrics{
+// 				info:           test.fields.info,
 // 				storageTypeKey: test.fields.storageTypeKey,
 // 				bucketNameKey:  test.fields.bucketNameKey,
 // 				filenameKey:    test.fields.filenameKey,
-// 				info:           test.fields.info,
 // 			}
 //
 // 			got, err := s.View()
@@ -199,10 +199,10 @@ package sidecar
 // 		m metrics.Meter
 // 	}
 // 	type fields struct {
+// 		info           *observer.BackupInfo
 // 		storageTypeKey string
 // 		bucketNameKey  string
 // 		filenameKey    string
-// 		info           *observer.BackupInfo
 // 	}
 // 	type want struct {
 // 		err error
@@ -231,10 +231,10 @@ package sidecar
 // 		           m:nil,
 // 		       },
 // 		       fields: fields {
+// 		           info:nil,
 // 		           storageTypeKey:"",
 // 		           bucketNameKey:"",
 // 		           filenameKey:"",
-// 		           info:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -256,10 +256,10 @@ package sidecar
 // 		           m:nil,
 // 		           },
 // 		           fields: fields {
+// 		           info:nil,
 // 		           storageTypeKey:"",
 // 		           bucketNameKey:"",
 // 		           filenameKey:"",
-// 		           info:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -290,10 +290,10 @@ package sidecar
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			sm := &sidecarMetrics{
+// 				info:           test.fields.info,
 // 				storageTypeKey: test.fields.storageTypeKey,
 // 				bucketNameKey:  test.fields.bucketNameKey,
 // 				filenameKey:    test.fields.filenameKey,
-// 				info:           test.fields.info,
 // 			}
 //
 // 			err := sm.Register(test.args.m)
@@ -310,10 +310,10 @@ package sidecar
 // 		in1 *observer.BackupInfo
 // 	}
 // 	type fields struct {
+// 		info           *observer.BackupInfo
 // 		storageTypeKey string
 // 		bucketNameKey  string
 // 		filenameKey    string
-// 		info           *observer.BackupInfo
 // 	}
 // 	type want struct {
 // 		want context.Context
@@ -347,10 +347,10 @@ package sidecar
 // 		           in1:nil,
 // 		       },
 // 		       fields: fields {
+// 		           info:nil,
 // 		           storageTypeKey:"",
 // 		           bucketNameKey:"",
 // 		           filenameKey:"",
-// 		           info:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -373,10 +373,10 @@ package sidecar
 // 		           in1:nil,
 // 		           },
 // 		           fields: fields {
+// 		           info:nil,
 // 		           storageTypeKey:"",
 // 		           bucketNameKey:"",
 // 		           filenameKey:"",
-// 		           info:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -407,10 +407,10 @@ package sidecar
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &sidecarMetrics{
+// 				info:           test.fields.info,
 // 				storageTypeKey: test.fields.storageTypeKey,
 // 				bucketNameKey:  test.fields.bucketNameKey,
 // 				filenameKey:    test.fields.filenameKey,
-// 				info:           test.fields.info,
 // 			}
 //
 // 			got, err := s.BeforeProcess(test.args.ctx, test.args.in1)
@@ -427,10 +427,10 @@ package sidecar
 // 		info *observer.BackupInfo
 // 	}
 // 	type fields struct {
+// 		info           *observer.BackupInfo
 // 		storageTypeKey string
 // 		bucketNameKey  string
 // 		filenameKey    string
-// 		info           *observer.BackupInfo
 // 	}
 // 	type want struct {
 // 		err error
@@ -460,10 +460,10 @@ package sidecar
 // 		           info:nil,
 // 		       },
 // 		       fields: fields {
+// 		           info:nil,
 // 		           storageTypeKey:"",
 // 		           bucketNameKey:"",
 // 		           filenameKey:"",
-// 		           info:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -486,10 +486,10 @@ package sidecar
 // 		           info:nil,
 // 		           },
 // 		           fields: fields {
+// 		           info:nil,
 // 		           storageTypeKey:"",
 // 		           bucketNameKey:"",
 // 		           filenameKey:"",
-// 		           info:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -520,10 +520,10 @@ package sidecar
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			sm := &sidecarMetrics{
+// 				info:           test.fields.info,
 // 				storageTypeKey: test.fields.storageTypeKey,
 // 				bucketNameKey:  test.fields.bucketNameKey,
 // 				filenameKey:    test.fields.filenameKey,
-// 				info:           test.fields.info,
 // 			}
 //
 // 			err := sm.AfterProcess(test.args.in0, test.args.info)

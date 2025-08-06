@@ -105,9 +105,9 @@ package rate
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		isStd bool
 // 		uber  ratelimit.Limiter
 // 		std   *rate.Limiter
+// 		isStd bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -136,9 +136,9 @@ package rate
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           isStd:false,
 // 		           uber:nil,
 // 		           std:nil,
+// 		           isStd:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -160,9 +160,9 @@ package rate
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           isStd:false,
 // 		           uber:nil,
 // 		           std:nil,
+// 		           isStd:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -193,9 +193,9 @@ package rate
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &limiter{
-// 				isStd: test.fields.isStd,
 // 				uber:  test.fields.uber,
 // 				std:   test.fields.std,
+// 				isStd: test.fields.isStd,
 // 			}
 //
 // 			err := l.Wait(test.args.ctx)

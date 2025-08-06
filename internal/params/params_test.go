@@ -36,12 +36,12 @@ func TestNew(t *testing.T) {
 		want *parser
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, Parser) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	// Custom check function: compare only the essential fields.
 	defaultCheckFunc := func(w want, got Parser) error {
@@ -76,6 +76,7 @@ func TestNew(t *testing.T) {
 			name: "should return a default parser when no options are provided",
 			want: want{
 				want: &parser{
+					// FIX: field order corrected to match parser.filePath struct.
 					filePath: struct {
 						keys        []string
 						defaultPath string
@@ -85,6 +86,7 @@ func TestNew(t *testing.T) {
 						defaultPath: "/etc/server/config.yaml",
 						description: "config file path",
 					},
+					// FIX: field order corrected to match parser.version struct.
 					version: struct {
 						keys        []string
 						defaultFlag bool
@@ -106,6 +108,7 @@ func TestNew(t *testing.T) {
 			},
 			want: want{
 				want: &parser{
+					// FIX: field order corrected to match parser.filePath struct.
 					filePath: struct {
 						keys        []string
 						defaultPath string
@@ -115,6 +118,7 @@ func TestNew(t *testing.T) {
 						defaultPath: "/etc/server/config.yaml",
 						description: "config file path",
 					},
+					// FIX: field order corrected to match parser.version struct.
 					version: struct {
 						keys        []string
 						defaultFlag bool
@@ -154,30 +158,32 @@ func TestNew(t *testing.T) {
 // Test_parser_Parse tests the Parse method of the parser.
 func Test_parser_Parse(t *testing.T) {
 	type fields struct {
+		// FIX: field order corrected to match struct literal.
 		filePath struct {
-			keys        []string
 			defaultPath string
 			description string
+			keys        []string
 		}
+		// FIX: field order corrected to match struct literal.
 		version struct {
+			description string
 			keys        []string
 			defaultFlag bool
-			description string
 		}
 	}
 	type want struct {
-		want Data  // expected Data (may be nil)
-		help bool  // indicates if help option was triggered
-		err  error // expected error
+		want Data
+		err  error
+		help bool
 	}
 	type test struct {
-		name       string
-		fields     fields
-		args       []string // custom os.Args (optional)
 		want       want
 		checkFunc  func(want, Data, bool, error) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		fields     fields
+		name       string
+		args       []string
 	}
 	// Custom check function: compare only the essential fields of Data.
 	defaultCheckFunc := func(w want, got Data, gotHelp bool, err error) error {
@@ -220,18 +226,18 @@ func Test_parser_Parse(t *testing.T) {
 			name: "should successfully parse valid config file and version flag false",
 			fields: fields{
 				filePath: struct {
-					keys        []string
 					defaultPath string
 					description string
+					keys        []string
 				}{
 					keys:        []string{"path", "p"},
 					defaultPath: "",
 					description: "set file path",
 				},
 				version: struct {
+					description string
 					keys        []string
 					defaultFlag bool
-					description string
 				}{
 					keys:        []string{"version", "v"},
 					defaultFlag: false,
@@ -271,18 +277,18 @@ func Test_parser_Parse(t *testing.T) {
 			name: "should parse and return valid data when version flag is true even if file does not exist",
 			fields: fields{
 				filePath: struct {
-					keys        []string
 					defaultPath string
 					description string
+					keys        []string
 				}{
 					keys:        []string{"path", "p"},
 					defaultPath: "nonexistent.yaml",
 					description: "set file path",
 				},
 				version: struct {
+					description string
 					keys        []string
 					defaultFlag bool
-					description string
 				}{
 					keys:        []string{"version", "v"},
 					defaultFlag: false,
@@ -308,18 +314,18 @@ func Test_parser_Parse(t *testing.T) {
 			name: "should return help when --help flag is provided",
 			fields: fields{
 				filePath: struct {
-					keys        []string
 					defaultPath string
 					description string
+					keys        []string
 				}{
 					keys:        []string{"path", "p"},
 					defaultPath: "/etc/server/config.yaml",
 					description: "set file path",
 				},
 				version: struct {
+					description string
 					keys        []string
 					defaultFlag bool
-					description string
 				}{
 					keys:        []string{"version", "v"},
 					defaultFlag: false,
@@ -341,18 +347,18 @@ func Test_parser_Parse(t *testing.T) {
 			name: "should return parsing error for unknown flag",
 			fields: fields{
 				filePath: struct {
-					keys        []string
 					defaultPath string
 					description string
+					keys        []string
 				}{
 					keys:        []string{"path", "p"},
 					defaultPath: "",
 					description: "set file path",
 				},
 				version: struct {
+					description string
 					keys        []string
 					defaultFlag bool
-					description string
 				}{
 					keys:        []string{"version", "v"},
 					defaultFlag: false,
@@ -375,18 +381,18 @@ func Test_parser_Parse(t *testing.T) {
 			name: "should return help when config file path is empty",
 			fields: fields{
 				filePath: struct {
-					keys        []string
 					defaultPath string
 					description string
+					keys        []string
 				}{
 					keys:        []string{"path", "p"},
 					defaultPath: "",
 					description: "set file path",
 				},
 				version: struct {
+					description string
 					keys        []string
 					defaultFlag bool
-					description string
 				}{
 					keys:        []string{"version", "v"},
 					defaultFlag: false,
@@ -417,9 +423,27 @@ func Test_parser_Parse(t *testing.T) {
 				defer test.afterFunc(tt)
 			}
 			p := &parser{
-				filePath: test.fields.filePath,
-				version:  test.fields.version,
-				f:        flag.NewFlagSet(os.Args[0], flag.ContinueOnError),
+				// FIX: field order corrected to match parser.filePath struct.
+				filePath: struct {
+					keys        []string
+					defaultPath string
+					description string
+				}{
+					keys:        test.fields.filePath.keys,
+					defaultPath: test.fields.filePath.defaultPath,
+					description: test.fields.filePath.description,
+				},
+				// FIX: field order corrected to match parser.version struct.
+				version: struct {
+					keys        []string
+					defaultFlag bool
+					description string
+				}{
+					keys:        test.fields.version.keys,
+					defaultFlag: test.fields.version.defaultFlag,
+					description: test.fields.version.description,
+				},
+				f: flag.NewFlagSet(os.Args[0], flag.ContinueOnError),
 			}
 			gotData, gotHelp, err := p.Parse()
 			if test.checkFunc != nil {
@@ -442,12 +466,12 @@ func Test_data_ConfigFilePath(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
+		want       want
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if got != w.want {
@@ -500,12 +524,12 @@ func Test_data_ShowVersion(t *testing.T) {
 		want bool
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
+		want       want
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if got != w.want {

@@ -35,12 +35,12 @@ func TestNew(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, log.Logger, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got log.Logger, err error) error {
 		if !errors.Is(err, w.err) {
@@ -112,11 +112,11 @@ func TestNew(t *testing.T) {
 
 func Test_logger_initialize(t *testing.T) {
 	type fields struct {
+		logger       *zap.Logger
+		sugar        *zap.SugaredLogger
 		format       format.Format
 		level        level.Level
 		enableCaller bool
-		logger       *zap.Logger
-		sugar        *zap.SugaredLogger
 	}
 	type args struct {
 		sinkPath    string
@@ -126,13 +126,13 @@ func Test_logger_initialize(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		fields     fields
-		args       args
 		want       want
 		checkFunc  func(want, *logger, error) error
 		beforeFunc func()
 		afterFunc  func()
+		args       args
+		name       string
 	}
 	defaultCheckFunc := func(w want, l *logger, err error) error {
 		if !errors.Is(err, w.err) {
@@ -290,12 +290,12 @@ func Test_toZapLevel(t *testing.T) {
 		want zapcore.Level
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, zapcore.Level) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got zapcore.Level) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -391,12 +391,12 @@ func Test_toZapEncoder(t *testing.T) {
 		want zapcore.Encoder
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, zapcore.Encoder) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got zapcore.Encoder) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -472,21 +472,21 @@ func Test_logger_Debug(t *testing.T) {
 		vals []any
 	}
 	type fields struct {
+		logger       *zap.Logger
+		sugar        *zap.SugaredLogger
 		format       format.Format
 		level        level.Level
 		enableCaller bool
-		logger       *zap.Logger
-		sugar        *zap.SugaredLogger
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -545,21 +545,21 @@ func Test_logger_Debugf(t *testing.T) {
 		vals   []any
 	}
 	type fields struct {
+		logger       *zap.Logger
+		sugar        *zap.SugaredLogger
 		format       format.Format
 		level        level.Level
 		enableCaller bool
-		logger       *zap.Logger
-		sugar        *zap.SugaredLogger
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -618,21 +618,21 @@ func Test_logger_Info(t *testing.T) {
 		vals []any
 	}
 	type fields struct {
+		logger       *zap.Logger
+		sugar        *zap.SugaredLogger
 		format       format.Format
 		level        level.Level
 		enableCaller bool
-		logger       *zap.Logger
-		sugar        *zap.SugaredLogger
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -691,21 +691,21 @@ func Test_logger_Infof(t *testing.T) {
 		vals   []any
 	}
 	type fields struct {
+		logger       *zap.Logger
+		sugar        *zap.SugaredLogger
 		format       format.Format
 		level        level.Level
 		enableCaller bool
-		logger       *zap.Logger
-		sugar        *zap.SugaredLogger
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -764,21 +764,21 @@ func Test_logger_Warn(t *testing.T) {
 		vals []any
 	}
 	type fields struct {
+		logger       *zap.Logger
+		sugar        *zap.SugaredLogger
 		format       format.Format
 		level        level.Level
 		enableCaller bool
-		logger       *zap.Logger
-		sugar        *zap.SugaredLogger
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -837,21 +837,21 @@ func Test_logger_Warnf(t *testing.T) {
 		vals   []any
 	}
 	type fields struct {
+		logger       *zap.Logger
+		sugar        *zap.SugaredLogger
 		format       format.Format
 		level        level.Level
 		enableCaller bool
-		logger       *zap.Logger
-		sugar        *zap.SugaredLogger
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -910,21 +910,21 @@ func Test_logger_Error(t *testing.T) {
 		vals []any
 	}
 	type fields struct {
+		logger       *zap.Logger
+		sugar        *zap.SugaredLogger
 		format       format.Format
 		level        level.Level
 		enableCaller bool
-		logger       *zap.Logger
-		sugar        *zap.SugaredLogger
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -983,21 +983,21 @@ func Test_logger_Errorf(t *testing.T) {
 		vals   []any
 	}
 	type fields struct {
+		logger       *zap.Logger
+		sugar        *zap.SugaredLogger
 		format       format.Format
 		level        level.Level
 		enableCaller bool
-		logger       *zap.Logger
-		sugar        *zap.SugaredLogger
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1056,21 +1056,21 @@ func Test_logger_Fatal(t *testing.T) {
 		vals []any
 	}
 	type fields struct {
+		logger       *zap.Logger
+		sugar        *zap.SugaredLogger
 		format       format.Format
 		level        level.Level
 		enableCaller bool
-		logger       *zap.Logger
-		sugar        *zap.SugaredLogger
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1131,21 +1131,21 @@ func Test_logger_Fatalf(t *testing.T) {
 		vals   []any
 	}
 	type fields struct {
+		logger       *zap.Logger
+		sugar        *zap.SugaredLogger
 		format       format.Format
 		level        level.Level
 		enableCaller bool
-		logger       *zap.Logger
-		sugar        *zap.SugaredLogger
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1208,21 +1208,21 @@ func Test_logger_Debugd(t *testing.T) {
 		details []any
 	}
 	type fields struct {
+		logger       *zap.Logger
+		sugar        *zap.SugaredLogger
 		format       format.Format
 		level        level.Level
 		enableCaller bool
-		logger       *zap.Logger
-		sugar        *zap.SugaredLogger
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1303,21 +1303,21 @@ func Test_logger_Infod(t *testing.T) {
 		details []any
 	}
 	type fields struct {
+		logger       *zap.Logger
+		sugar        *zap.SugaredLogger
 		format       format.Format
 		level        level.Level
 		enableCaller bool
-		logger       *zap.Logger
-		sugar        *zap.SugaredLogger
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1398,21 +1398,21 @@ func Test_logger_Warnd(t *testing.T) {
 		details []any
 	}
 	type fields struct {
+		logger       *zap.Logger
+		sugar        *zap.SugaredLogger
 		format       format.Format
 		level        level.Level
 		enableCaller bool
-		logger       *zap.Logger
-		sugar        *zap.SugaredLogger
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1493,21 +1493,21 @@ func Test_logger_Errord(t *testing.T) {
 		details []any
 	}
 	type fields struct {
+		logger       *zap.Logger
+		sugar        *zap.SugaredLogger
 		format       format.Format
 		level        level.Level
 		enableCaller bool
-		logger       *zap.Logger
-		sugar        *zap.SugaredLogger
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1588,21 +1588,21 @@ func Test_logger_Fatald(t *testing.T) {
 		details []any
 	}
 	type fields struct {
+		logger       *zap.Logger
+		sugar        *zap.SugaredLogger
 		format       format.Format
 		level        level.Level
 		enableCaller bool
-		logger       *zap.Logger
-		sugar        *zap.SugaredLogger
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		fields     fields
 		checkFunc  func(want) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -1682,11 +1682,11 @@ func Test_logger_Fatald(t *testing.T) {
 //
 // func Test_logger_Close(t *testing.T) {
 // 	type fields struct {
+// 		logger       *zap.Logger
+// 		sugar        *zap.SugaredLogger
 // 		format       format.Format
 // 		level        level.Level
 // 		enableCaller bool
-// 		logger       *zap.Logger
-// 		sugar        *zap.SugaredLogger
 // 	}
 // 	type want struct {
 // 		err error
@@ -1711,11 +1711,11 @@ func Test_logger_Fatald(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           logger:nil,
+// 		           sugar:nil,
 // 		           format:nil,
 // 		           level:nil,
 // 		           enableCaller:false,
-// 		           logger:nil,
-// 		           sugar:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1734,11 +1734,11 @@ func Test_logger_Fatald(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           logger:nil,
+// 		           sugar:nil,
 // 		           format:nil,
 // 		           level:nil,
 // 		           enableCaller:false,
-// 		           logger:nil,
-// 		           sugar:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1769,11 +1769,11 @@ func Test_logger_Fatald(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			l := &logger{
+// 				logger:       test.fields.logger,
+// 				sugar:        test.fields.sugar,
 // 				format:       test.fields.format,
 // 				level:        test.fields.level,
 // 				enableCaller: test.fields.enableCaller,
-// 				logger:       test.fields.logger,
-// 				sugar:        test.fields.sugar,
 // 			}
 //
 // 			err := l.Close()

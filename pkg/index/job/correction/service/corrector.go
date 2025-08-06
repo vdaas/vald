@@ -20,7 +20,6 @@ import (
 	"os"
 	"reflect"
 	"slices"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -37,6 +36,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -203,6 +203,7 @@ func (c *correct) Start(ctx context.Context) (err error) {
 		eg, egctx := errgroup.WithContext(ctx)
 		eg.SetLimit(c.streamListConcurrency)
 		ctx, cancel := context.WithCancelCause(egctx)
+		defer cancel(nil)
 		stream, err := vc.NewValdClient(conn).StreamListObject(ctx, emptyReq, copts...)
 		if err != nil || stream == nil {
 			return err
@@ -400,7 +401,11 @@ func (c *correct) loadReplicaInfo(
 			return nil
 		},
 	)
-	return
+	return found,
+		skipped,
+		latest,
+		latestAgent,
+		err
 }
 
 func (c *correct) getLatestObject(

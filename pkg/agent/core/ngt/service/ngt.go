@@ -98,75 +98,108 @@ type (
 	}
 
 	ngt struct {
-		// instances
+		// NGT core service
 		core core.NGT
-		eg   errgroup.Group
-		kvs  kvs.BidiMap
-		fmu  sync.Mutex
-		fmap map[string]int64 // failure map for index
-		vq   vqueue.Queue
-
-		// statuses
-		indexing  atomic.Value
-		flushing  atomic.Bool
-		saving    atomic.Value
-		cimu      sync.Mutex // create index mutex
-		lastNocie uint64     // last number of create index execution this value prevent unnecessary saveindex.
-
-		// counters
-		nocie uint64        // number of create index execution
-		nogce uint64        // number of proactive GC execution
-		wfci  uint64        // wait for create indexing
-		nobic uint64        // number of broken index count
-		nopvq atomic.Uint64 // number of processed vq number
-
-		// parameters
-		cfg  *config.NGT
-		opts []Option
-
-		// configurations
-		inMem bool // in-memory mode
-		dim   int  // dimension size
-		alen  int  // auto indexing length
-
-		lim  time.Duration // auto indexing time limit
-		dur  time.Duration // auto indexing check duration
-		sdur time.Duration // auto save index check duration
-
-		minLit    time.Duration // minimum load index timeout
-		maxLit    time.Duration // maximum load index timeout
-		litFactor time.Duration // load index timeout factor
-
-		enableProactiveGC bool // if this value is true, agent component will purge GC memory more proactive
-		enableCopyOnWrite bool // if this value is true, agent component will write backup file using Copy on Write and saves old files to the old directory
-
-		podName      string
+		// temporary path for copy-on-write
+		tmpPath atomic.Value
+		// KVS for UUID and OID mapping
+		kvs kvs.BidiMap
+		// saving status flag
+		saving atomic.Value
+		// error group for goroutine management
+		eg errgroup.Group
+		// vector queue for insert and delete
+		vq vqueue.Queue
+		// indexing status flag
+		indexing atomic.Value
+		// kubernetes patcher
+		patcher client.Patcher
+		// file map for failed to remove OID from NGT
+		fmap map[string]int64
+		// index statistics cache
+		statisticsCache atomic.Pointer[payload.Info_Index_Statistics]
+		// NGT configuration
+		cfg *config.NGT
+		// base path for index
+		basePath string
+		// broken index path
+		brokenPath string
+		// old index path for backup
+		oldPath string
+		// pod name
+		podName string
+		// index path
+		path string
+		// pod namespace
 		podNamespace string
-		path         string       // index path
-		smu          sync.Mutex   // save index lock
-		tmpPath      atomic.Value // temporary index path for Copy on Write
-		oldPath      string       // old volume path
-		basePath     string       // index base directory for CoW
-		brokenPath   string       // backup broken index path
-		cowmu        sync.Mutex   // copy on write move lock
-
-		poolSize uint32  // default pool size
-		radius   float32 // default radius
-		epsilon  float32 // default epsilon
-
-		idelay time.Duration // initial delay duration
-		dcd    bool          // disable commit daemon
-
-		kvsdbConcurrency int // kvsdb concurrency
-		historyLimit     int // the maximum generation number of broken index backup
-
-		isReadReplica           bool
-		enableExportIndexInfo   bool
+		// options for NGT
+		opts []Option
+		// number of proactive GC execution
+		nogce uint64
+		// KVS DB concurrency
+		kvsdbConcurrency int
+		// auto index length limit
+		alen int
+		// auto index time limit
+		lim time.Duration
+		// auto index check duration
+		dur time.Duration
+		// auto save index duration
+		sdur time.Duration
+		// minimum load index timeout
+		minLit time.Duration
+		// maximum load index timeout
+		maxLit time.Duration
+		// load index timeout factor
+		litFactor time.Duration
+		// auto export index info duration
 		exportIndexInfoDuration time.Duration
-		patcher                 client.Patcher
-
+		// broken index history limit
+		historyLimit int
+		// vector dimension
+		dim int
+		// number of processed vqueue
+		nopvq atomic.Uint64
+		// number of broken index count
+		nobic uint64
+		// initial delay for auto indexing
+		idelay time.Duration
+		// waiting for create index count
+		wfci uint64
+		// number of create index execution
+		nocie uint64
+		// last number of create index execution
+		lastNocie uint64
+		// copy-on-write mutex
+		cowmu sync.Mutex
+		// save mutex
+		smu sync.Mutex
+		// create index mutex
+		cimu sync.Mutex
+		// file map mutex
+		fmu sync.Mutex
+		// flushing status flag
+		flushing atomic.Bool
+		// default pool size
+		poolSize uint32
+		// default radius
+		radius float32
+		// default epsilon
+		epsilon float32
+		// disable create index daemon
+		dcd bool
+		// is read replica
+		isReadReplica bool
+		// enable export index info
+		enableExportIndexInfo bool
+		// enable proactive GC
+		enableProactiveGC bool
+		// enable copy-on-write
+		enableCopyOnWrite bool
+		// enable statistics
 		enableStatistics bool
-		statisticsCache  atomic.Pointer[payload.Info_Index_Statistics]
+		// in-memory mode
+		inMem bool
 	}
 
 	contextSaveIndexTimeKey string
@@ -947,7 +980,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 					err = n.exportMetricsOnTick(ctx)
 				}
 			}
-			if err != nil && err != errors.ErrUncommittedIndexNotFound {
+			if err != nil && !errors.Is(err, errors.ErrUncommittedIndexNotFound) {
 				ech <- err
 				runtime.Gosched()
 				err = nil
@@ -1579,7 +1612,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 
 	nocie := atomic.LoadUint64(&n.nocie)
 	if atomic.LoadUint64(&n.lastNocie) == nocie {
-		return
+		return err
 	}
 	atomic.SwapUint64(&n.lastNocie, nocie)
 	err = func() error {
@@ -1835,7 +1868,7 @@ func (n *ngt) moveAndSwitchSavedData(ctx context.Context) (err error) {
 	log.Debug("start move and switch saved data operation for copy on write")
 	err = file.MoveDir(ctx, n.path, n.oldPath)
 	if err != nil {
-		log.Warnf("failed to backup backup data from %s to %s error: %v", n.path, n.oldPath, err)
+		log.Warnf("failed to backup data from %s to %s error: %v", n.path, n.oldPath, err)
 	}
 	path := n.tmpPath.Load().(string)
 	err = file.MoveDir(ctx, path, n.path)

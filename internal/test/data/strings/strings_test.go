@@ -28,12 +28,12 @@ func TestRandom(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, string) bool
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		want       want
+		args       args
 	}
 	defaultCheckFunc := func(w want, got string) bool {
 		return w.want == got

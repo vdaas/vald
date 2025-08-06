@@ -56,12 +56,12 @@ func TestNew(t *testing.T) {
 		err    error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, Connector, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, gotRc Connector, err error) error {
 		if !errors.Is(err, w.err) {
@@ -137,26 +137,25 @@ func TestNew(t *testing.T) {
 }
 
 func Test_redisClient_ping(t *testing.T) {
-	type args struct {
-		ctx context.Context
-	}
+	type args struct{}
 	type fields struct {
+		client               Redis
 		initialPingDuration  time.Duration
 		initialPingTimeLimit time.Duration
-		client               Redis
 	}
 	type want struct {
 		wantR Redis
 		err   error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		args       args
 		checkFunc  func(want, Redis, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(context.Context)
+		afterFunc  func(context.Context)
+		name       string
+		fields     fields
+		ctx        context.Context
 	}
 	defaultCheckFunc := func(w want, gotR Redis, err error) error {
 		if !errors.Is(err, w.err) {
@@ -177,9 +176,8 @@ func Test_redisClient_ping(t *testing.T) {
 
 			return test{
 				name: "returns nil when the ping success",
-				args: args{
-					ctx: context.Background(),
-				},
+				args: args{},
+				ctx:  t.Context(),
 				fields: fields{
 					initialPingDuration:  time.Millisecond,
 					initialPingTimeLimit: time.Second,
@@ -197,9 +195,8 @@ func Test_redisClient_ping(t *testing.T) {
 
 			return test{
 				name: "returns ping failed error when the ping fails and reached the ping time limit",
-				args: args{
-					ctx: context.Background(),
-				},
+				args: args{},
+				ctx:  t.Context(),
 				fields: fields{
 					initialPingDuration:  time.Millisecond,
 					initialPingTimeLimit: 3 * time.Millisecond,
@@ -226,10 +223,10 @@ func Test_redisClient_ping(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(test.ctx)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(test.ctx)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -241,7 +238,7 @@ func Test_redisClient_ping(t *testing.T) {
 				client:               test.fields.client,
 			}
 
-			gotR, err := rc.ping(test.args.ctx)
+			gotR, err := rc.ping(test.ctx)
 			if err := checkFunc(test.want, gotR, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -250,51 +247,50 @@ func Test_redisClient_ping(t *testing.T) {
 }
 
 func Test_redisClient_setClient(t *testing.T) {
-	type args struct {
-		ctx context.Context
-	}
+	type args struct{}
 	type fields struct {
-		addrs                []string
-		clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
-		db                   int
-		dialTimeout          time.Duration
+		client               Redis
 		dialer               net.Dialer
+		clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-		idleCheckFrequency   time.Duration
-		idleTimeout          time.Duration
-		initialPingDuration  time.Duration
-		initialPingTimeLimit time.Duration
+		tlsConfig            *tls.Config
+		onConnect            func(ctx context.Context, conn *redis.Conn) error
 		keyPref              string
-		maxConnAge           time.Duration
+		password             string
+		hooks                []Hook
+		addrs                []string
+		maxRetryBackoff      time.Duration
+		poolSize             int
 		maxRedirects         int
 		maxRetries           int
-		maxRetryBackoff      time.Duration
+		initialPingTimeLimit time.Duration
 		minIdleConns         int
 		minRetryBackoff      time.Duration
-		onConnect            func(ctx context.Context, conn *redis.Conn) error
-		password             string
-		poolSize             int
+		initialPingDuration  time.Duration
+		idleTimeout          time.Duration
+		maxConnAge           time.Duration
 		poolTimeout          time.Duration
-		readOnly             bool
+		db                   int
 		readTimeout          time.Duration
-		routeByLatency       bool
-		routeRandomly        bool
-		tlsConfig            *tls.Config
+		dialTimeout          time.Duration
 		writeTimeout         time.Duration
-		client               Redis
-		hooks                []Hook
+		idleCheckFrequency   time.Duration
+		routeRandomly        bool
+		routeByLatency       bool
+		readOnly             bool
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
 		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(context.Context)
+		afterFunc  func(context.Context)
+		name       string
+		fields     fields
+		ctx        context.Context
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -305,7 +301,8 @@ func Test_redisClient_setClient(t *testing.T) {
 	tests := []test{
 		{
 			name: "returns error when addrs not specified",
-			args: args{context.Background()},
+			args: args{},
+			ctx:  t.Context(),
 			want: want{
 				err: errors.ErrRedisAddrsNotFound,
 			},
@@ -313,7 +310,8 @@ func Test_redisClient_setClient(t *testing.T) {
 		},
 		{
 			name: "returns error when addrs is empty",
-			args: args{context.Background()},
+			args: args{},
+			ctx:  t.Context(),
 			fields: fields{
 				addrs: []string{},
 			},
@@ -324,7 +322,8 @@ func Test_redisClient_setClient(t *testing.T) {
 		},
 		{
 			name: "returns nil when addrs is single addr",
-			args: args{context.Background()},
+			args: args{},
+			ctx:  t.Context(),
 			fields: fields{
 				addrs: []string{"127.0.0.1:6379"},
 			},
@@ -333,7 +332,8 @@ func Test_redisClient_setClient(t *testing.T) {
 		},
 		{
 			name: "returns nil when addrs is single addr and it is empty string",
-			args: args{context.Background()},
+			args: args{},
+			ctx:  t.Context(),
 			fields: fields{
 				addrs: []string{""},
 			},
@@ -344,9 +344,8 @@ func Test_redisClient_setClient(t *testing.T) {
 		},
 		{
 			name: "returns nil when addrs is multiple addrs",
-			args: args{
-				ctx: context.Background(),
-			},
+			args: args{},
+			ctx:  t.Context(),
 			fields: fields{
 				addrs: []string{
 					"127.0.0.1:6379",
@@ -376,10 +375,10 @@ func Test_redisClient_setClient(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(test.ctx)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(test.ctx)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -417,7 +416,7 @@ func Test_redisClient_setClient(t *testing.T) {
 				hooks:                test.fields.hooks,
 			}
 
-			err := rc.setClient(test.args.ctx)
+			err := rc.setClient(test.ctx)
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -427,48 +426,48 @@ func Test_redisClient_setClient(t *testing.T) {
 
 func Test_redisClient_newClient(t *testing.T) {
 	type fields struct {
-		addrs                []string
-		clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
-		network              string
-		db                   int
-		dialTimeout          time.Duration
+		client               Redis
 		dialer               net.Dialer
+		clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-		idleCheckFrequency   time.Duration
-		idleTimeout          time.Duration
-		initialPingDuration  time.Duration
-		initialPingTimeLimit time.Duration
+		tlsConfig            *tls.Config
+		onConnect            func(ctx context.Context, conn *redis.Conn) error
 		keyPref              string
-		maxConnAge           time.Duration
-		maxRedirects         int
+		network              string
+		password             string
+		hooks                []Hook
+		addrs                []string
 		maxRetries           int
+		poolSize             int
+		maxRedirects         int
+		initialPingTimeLimit time.Duration
 		maxRetryBackoff      time.Duration
 		minIdleConns         int
 		minRetryBackoff      time.Duration
-		onConnect            func(ctx context.Context, conn *redis.Conn) error
-		password             string
-		poolSize             int
+		initialPingDuration  time.Duration
+		idleTimeout          time.Duration
+		maxConnAge           time.Duration
 		poolTimeout          time.Duration
-		readOnly             bool
+		db                   int
 		readTimeout          time.Duration
-		routeByLatency       bool
-		routeRandomly        bool
-		tlsConfig            *tls.Config
+		dialTimeout          time.Duration
 		writeTimeout         time.Duration
-		client               Redis
-		hooks                []Hook
+		idleCheckFrequency   time.Duration
+		routeRandomly        bool
+		routeByLatency       bool
+		readOnly             bool
 	}
 	type want struct {
 		want *redis.Client
 		err  error
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *redis.Client, error) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *redis.Client, err error) error {
 		if !errors.Is(err, w.err) {
@@ -637,7 +636,7 @@ func Test_redisClient_newClient(t *testing.T) {
 				hooks:                test.fields.hooks,
 			}
 
-			got, err := rc.newClient(context.Background())
+			got, err := rc.newClient(t.Context())
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -646,52 +645,51 @@ func Test_redisClient_newClient(t *testing.T) {
 }
 
 func Test_redisClient_newClusterClient(t *testing.T) {
-	type args struct {
-		ctx context.Context
-	}
+	type args struct{}
 	type fields struct {
-		addrs                []string
-		clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
-		db                   int
-		dialTimeout          time.Duration
+		client               Redis
 		dialer               net.Dialer
+		clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-		idleCheckFrequency   time.Duration
-		idleTimeout          time.Duration
-		initialPingDuration  time.Duration
-		initialPingTimeLimit time.Duration
+		tlsConfig            *tls.Config
+		onConnect            func(ctx context.Context, conn *redis.Conn) error
 		keyPref              string
-		maxConnAge           time.Duration
+		password             string
+		hooks                []Hook
+		addrs                []string
+		maxRetryBackoff      time.Duration
+		poolSize             int
 		maxRedirects         int
 		maxRetries           int
-		maxRetryBackoff      time.Duration
+		initialPingTimeLimit time.Duration
 		minIdleConns         int
 		minRetryBackoff      time.Duration
-		onConnect            func(ctx context.Context, conn *redis.Conn) error
-		password             string
-		poolSize             int
+		initialPingDuration  time.Duration
+		idleTimeout          time.Duration
+		maxConnAge           time.Duration
 		poolTimeout          time.Duration
-		readOnly             bool
+		db                   int
 		readTimeout          time.Duration
-		routeByLatency       bool
-		routeRandomly        bool
-		tlsConfig            *tls.Config
+		dialTimeout          time.Duration
 		writeTimeout         time.Duration
-		client               Redis
-		hooks                []Hook
+		idleCheckFrequency   time.Duration
+		routeRandomly        bool
+		routeByLatency       bool
+		readOnly             bool
 	}
 	type want struct {
 		want *redis.ClusterClient
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		args       args
 		checkFunc  func(want, *redis.ClusterClient, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(context.Context)
+		afterFunc  func(context.Context)
+		name       string
+		fields     fields
+		ctx        context.Context
 	}
 	defaultCheckFunc := func(w want, got *redis.ClusterClient, err error) error {
 		if !errors.Is(err, w.err) {
@@ -705,9 +703,8 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 	tests := []test{
 		{
 			name: "returns error when first element of addrs is empty string",
-			args: args{
-				ctx: context.Background(),
-			},
+			args: args{},
+			ctx:  t.Context(),
 			fields: fields{
 				addrs: []string{""},
 			},
@@ -756,9 +753,8 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 
 			return test{
 				name: "returns redis.Client successfully",
-				args: args{
-					ctx: context.Background(),
-				},
+				args: args{},
+				ctx:  t.Context(),
 				fields: fields{
 					addrs:              []string{"127.0.0.1:6379"},
 					dialerFunc:         dialer,
@@ -887,7 +883,7 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 				hooks:                test.fields.hooks,
 			}
 
-			got, err := rc.newClusterClient(test.args.ctx)
+			got, err := rc.newClusterClient(test.ctx)
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -896,52 +892,51 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 }
 
 func Test_redisClient_Connect(t *testing.T) {
-	type args struct {
-		ctx context.Context
-	}
+	type args struct{}
 	type fields struct {
-		addrs                []string
-		clusterSlots         func(ctx context.Context) ([]redis.ClusterSlot, error)
-		db                   int
-		dialTimeout          time.Duration
+		client               Redis
 		dialer               net.Dialer
+		clusterSlots         func(ctx context.Context) ([]redis.ClusterSlot, error)
 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-		idleCheckFrequency   time.Duration
-		idleTimeout          time.Duration
-		initialPingDuration  time.Duration
-		initialPingTimeLimit time.Duration
+		tlsConfig            *tls.Config
+		onConnect            func(ctx context.Context, conn *redis.Conn) error
 		keyPref              string
-		maxConnAge           time.Duration
+		password             string
+		hooks                []Hook
+		addrs                []string
+		maxRetryBackoff      time.Duration
+		poolSize             int
 		maxRedirects         int
 		maxRetries           int
-		maxRetryBackoff      time.Duration
+		initialPingTimeLimit time.Duration
 		minIdleConns         int
 		minRetryBackoff      time.Duration
-		onConnect            func(ctx context.Context, conn *redis.Conn) error
-		password             string
-		poolSize             int
+		initialPingDuration  time.Duration
+		idleTimeout          time.Duration
+		maxConnAge           time.Duration
 		poolTimeout          time.Duration
-		readOnly             bool
+		db                   int
 		readTimeout          time.Duration
-		routeByLatency       bool
-		routeRandomly        bool
-		tlsConfig            *tls.Config
+		dialTimeout          time.Duration
 		writeTimeout         time.Duration
-		client               Redis
-		hooks                []Hook
+		idleCheckFrequency   time.Duration
+		routeRandomly        bool
+		routeByLatency       bool
+		readOnly             bool
 	}
 	type want struct {
 		want Redis
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		args       args
 		checkFunc  func(want, Redis, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(context.Context)
+		afterFunc  func(context.Context)
+		name       string
+		fields     fields
+		ctx        context.Context
 	}
 	defaultCheckFunc := func(w want, got Redis, err error) error {
 		if !errors.Is(err, w.err) {
@@ -961,9 +956,8 @@ func Test_redisClient_Connect(t *testing.T) {
 
 			return test{
 				name: "returns error when addrs not specified",
-				args: args{
-					ctx: context.Background(),
-				},
+				args: args{},
+				ctx:  t.Context(),
 				fields: fields{
 					addrs:  []string{""},
 					dialer: dialer,
@@ -982,9 +976,8 @@ func Test_redisClient_Connect(t *testing.T) {
 
 			return test{
 				name: "returns error when an invalid addrs specified",
-				args: args{
-					ctx: context.Background(),
-				},
+				args: args{},
+				ctx:  t.Context(),
 				fields: fields{
 					addrs:                []string{"127.0.0.1:6379"},
 					initialPingTimeLimit: time.Microsecond,
@@ -1004,10 +997,10 @@ func Test_redisClient_Connect(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(test.ctx)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(test.ctx)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1045,7 +1038,7 @@ func Test_redisClient_Connect(t *testing.T) {
 				hooks:                test.fields.hooks,
 			}
 
-			got, err := rc.Connect(test.args.ctx)
+			got, err := rc.Connect(test.ctx)
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

@@ -38,12 +38,12 @@ func TestNewConfig(t *testing.T) {
 		err     error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, *Config, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, gotCfg *Config, err error) error {
 		if !errors.Is(err, w.err) {

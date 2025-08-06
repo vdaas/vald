@@ -35,9 +35,9 @@ func (*writer) Write(p []byte) (n int, err error) {
 }
 
 type reader struct {
+	io.Reader
 	pos int
 	len int
-	io.Reader
 }
 
 func (r *reader) Read(p []byte) (n int, err error) {

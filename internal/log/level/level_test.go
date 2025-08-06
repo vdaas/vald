@@ -26,11 +26,11 @@ func TestAtol(t *testing.T) {
 		want Level
 	}
 	type test struct {
-		name       string
-		str        string
 		checkFunc  func(want, Level) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		str        string
 		want       want
 	}
 
@@ -205,12 +205,12 @@ func TestLevel_String(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		l          Level
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
+		l          Level
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {

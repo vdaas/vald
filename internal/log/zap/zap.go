@@ -34,13 +34,16 @@ var (
 )
 
 type logger struct {
-	format format.Format
-	level  level.Level
-
+	// logger is a zap.Logger.
+	logger       *zap.Logger
+	// sugar is a zap.SugaredLogger.
+	sugar        *zap.SugaredLogger
+	// format is a format.Format.
+	format       format.Format
+	// level is a level.Level.
+	level        level.Level
+	// enableCaller is a flag to enable caller.
 	enableCaller bool
-
-	logger *zap.Logger
-	sugar  *zap.SugaredLogger
 }
 
 // New returns a new logger instance.

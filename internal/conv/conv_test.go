@@ -36,12 +36,12 @@ func TestBtoa(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		want       want
+		args       args
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -111,12 +111,12 @@ func TestAtob(t *testing.T) {
 		want []byte
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, []byte) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, got []byte) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -172,16 +172,16 @@ func TestUtf8ToSjis(t *testing.T) {
 		s string
 	}
 	type want struct {
-		want string
 		err  error
+		want string
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, string, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got string, err error) error {
 		if !errors.Is(err, w.err) {
@@ -242,16 +242,16 @@ func TestUtf8ToEucjp(t *testing.T) {
 		s string
 	}
 	type want struct {
-		want string
 		err  error
+		want string
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, string, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got string, err error) error {
 		if !errors.Is(err, w.err) {
@@ -313,16 +313,16 @@ func Test_encode(t *testing.T) {
 		t transform.Transformer
 	}
 	type want struct {
-		want string
 		err  error
+		want string
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, string, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 	defaultCheckFunc := func(w want, got string, err error) error {
 		if !errors.Is(err, w.err) {

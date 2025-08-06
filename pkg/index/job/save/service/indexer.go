@@ -42,9 +42,12 @@ type Indexer interface {
 }
 
 type index struct {
-	client      discoverer.Client
+	// discoverer client.
+	client discoverer.Client
+	// target agent addresses.
 	targetAddrs []string
 
+	// concurrency for save index.
 	concurrency int
 }
 

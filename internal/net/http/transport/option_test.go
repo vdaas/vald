@@ -35,12 +35,12 @@ func TestWithRoundTripper(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, got *T) error {
@@ -102,12 +102,12 @@ func TestWithBackoff(t *testing.T) {
 		obj *T
 	}
 	type test struct {
-		name       string
 		args       args
 		want       want
 		checkFunc  func(want, *T) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
 	}
 
 	defaultCheckFunc := func(w want, got *T) error {

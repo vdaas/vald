@@ -28,59 +28,59 @@ import (
 
 // GRPCClient represents the configurations for gRPC client.
 type GRPCClient struct {
-	Addrs               []string        `json:"addrs"                 yaml:"addrs"`
-	HealthCheckDuration string          `json:"health_check_duration" yaml:"health_check_duration"`
 	ConnectionPool      *ConnectionPool `json:"connection_pool"       yaml:"connection_pool"`
 	Backoff             *Backoff        `json:"backoff"               yaml:"backoff"`
 	CircuitBreaker      *CircuitBreaker `json:"circuit_breaker"       yaml:"circuit_breaker"`
 	CallOption          *CallOption     `json:"call_option"           yaml:"call_option"`
 	DialOption          *DialOption     `json:"dial_option"           yaml:"dial_option"`
 	TLS                 *TLS            `json:"tls"                   yaml:"tls"`
+	HealthCheckDuration string          `json:"health_check_duration" yaml:"health_check_duration"`
+	Addrs               []string        `json:"addrs"                 yaml:"addrs"`
 }
 
 // CallOption represents the configurations for call option.
 type CallOption struct {
-	WaitForReady          bool   `json:"wait_for_ready"            yaml:"wait_for_ready"`
+	ContentSubtype        string `json:"content_subtype"           yaml:"content_subtype"`
 	MaxRetryRPCBufferSize int    `json:"max_retry_rpc_buffer_size" yaml:"max_retry_rpc_buffer_size"`
 	MaxRecvMsgSize        int    `json:"max_recv_msg_size"         yaml:"max_recv_msg_size"`
 	MaxSendMsgSize        int    `json:"max_send_msg_size"         yaml:"max_send_msg_size"`
-	ContentSubtype        string `json:"content_subtype"           yaml:"content_subtype"`
+	WaitForReady          bool   `json:"wait_for_ready"            yaml:"wait_for_ready"`
 }
 
 // DialOption represents the configurations for dial option.
 type DialOption struct {
-	DisableRetry                bool                 `json:"disable_retry,omitempty"                  yaml:"disable_retry"`
-	EnableBackoff               bool                 `json:"enable_backoff,omitempty"                 yaml:"enable_backoff"`
-	Insecure                    bool                 `json:"insecure,omitempty"                       yaml:"insecure"`
-	SharedWriteBuffer           bool                 `json:"shared_write_buffer,omitempty"            yaml:"shared_write_buffer"`
-	InitialConnectionWindowSize int32                `json:"initial_connection_window_size,omitempty" yaml:"initial_connection_window_size"`
-	InitialWindowSize           int32                `json:"initial_window_size,omitempty"            yaml:"initial_window_size"`
-	MaxHeaderListSize           uint32               `json:"max_header_list_size,omitempty"           yaml:"max_header_list_size"`
-	MaxCallAttempts             int                  `json:"max_call_attempts,omitempty"              yaml:"max_call_attempts"`
-	MaxMsgSize                  int                  `json:"max_msg_size,omitempty"                   yaml:"max_msg_size"`
-	ReadBufferSize              int                  `json:"read_buffer_size,omitempty"               yaml:"read_buffer_size"`
+	Keepalive                   *GRPCClientKeepalive `json:"keepalive,omitempty"                      yaml:"keepalive"`
+	Net                         *Net                 `json:"net,omitempty"                            yaml:"net"`
+	Authority                   string               `json:"authority,omitempty"                      yaml:"authority"`
+	UserAgent                   string               `json:"user_agent,omitempty"                     yaml:"user_agent"`
+	Timeout                     string               `json:"timeout,omitempty"                        yaml:"timeout"`
+	MinimumConnectionTimeout    string               `json:"min_connection_timeout,omitempty"         yaml:"min_connection_timeout"`
+	IdleTimeout                 string               `json:"idle_timeout,omitempty"                   yaml:"idle_timeout"`
+	BackoffMaxDelay             string               `json:"backoff_max_delay,omitempty"              yaml:"backoff_max_delay"`
+	BackoffBaseDelay            string               `json:"backoff_base_delay,omitempty"             yaml:"backoff_base_delay"`
+	Interceptors                []string             `json:"interceptors,omitempty"                   yaml:"interceptors"`
 	WriteBufferSize             int                  `json:"write_buffer_size,omitempty"              yaml:"write_buffer_size"`
 	BackoffJitter               float64              `json:"backoff_jitter,omitempty"                 yaml:"backoff_jitter"`
 	BackoffMultiplier           float64              `json:"backoff_multiplier,omitempty"             yaml:"backoff_multiplier"`
-	Authority                   string               `json:"authority,omitempty"                      yaml:"authority"`
-	BackoffBaseDelay            string               `json:"backoff_base_delay,omitempty"             yaml:"backoff_base_delay"`
-	BackoffMaxDelay             string               `json:"backoff_max_delay,omitempty"              yaml:"backoff_max_delay"`
-	IdleTimeout                 string               `json:"idle_timeout,omitempty"                   yaml:"idle_timeout"`
-	MinimumConnectionTimeout    string               `json:"min_connection_timeout,omitempty"         yaml:"min_connection_timeout"`
-	Timeout                     string               `json:"timeout,omitempty"                        yaml:"timeout"`
-	UserAgent                   string               `json:"user_agent,omitempty"                     yaml:"user_agent"`
-	Interceptors                []string             `json:"interceptors,omitempty"                   yaml:"interceptors"`
-	Net                         *Net                 `json:"net,omitempty"                            yaml:"net"`
-	Keepalive                   *GRPCClientKeepalive `json:"keepalive,omitempty"                      yaml:"keepalive"`
+	ReadBufferSize              int                  `json:"read_buffer_size,omitempty"               yaml:"read_buffer_size"`
+	MaxMsgSize                  int                  `json:"max_msg_size,omitempty"                   yaml:"max_msg_size"`
+	MaxCallAttempts             int                  `json:"max_call_attempts,omitempty"              yaml:"max_call_attempts"`
+	MaxHeaderListSize           uint32               `json:"max_header_list_size,omitempty"           yaml:"max_header_list_size"`
+	InitialWindowSize           int32                `json:"initial_window_size,omitempty"            yaml:"initial_window_size"`
+	InitialConnectionWindowSize int32                `json:"initial_connection_window_size,omitempty" yaml:"initial_connection_window_size"`
+	DisableRetry                bool                 `json:"disable_retry,omitempty"                  yaml:"disable_retry"`
+	SharedWriteBuffer           bool                 `json:"shared_write_buffer,omitempty"            yaml:"shared_write_buffer"`
+	Insecure                    bool                 `json:"insecure,omitempty"                       yaml:"insecure"`
+	EnableBackoff               bool                 `json:"enable_backoff,omitempty"                 yaml:"enable_backoff"`
 }
 
 // ConnectionPool represents the configurations for connection pool.
 type ConnectionPool struct {
-	ResolveDNS           bool   `json:"enable_dns_resolver"     yaml:"enable_dns_resolver"`
-	EnableRebalance      bool   `json:"enable_rebalance"        yaml:"enable_rebalance"`
-	Size                 int    `json:"size"                    yaml:"size"`
 	RebalanceDuration    string `json:"rebalance_duration"      yaml:"rebalance_duration"`
 	OldConnCloseDuration string `json:"old_conn_close_duration" yaml:"old_conn_close_duration"`
+	Size                 int    `json:"size"                    yaml:"size"`
+	ResolveDNS           bool   `json:"enable_dns_resolver"     yaml:"enable_dns_resolver"`
+	EnableRebalance      bool   `json:"enable_rebalance"        yaml:"enable_rebalance"`
 }
 
 // Bind binds the actual data from the ConnectionPool receiver fields.

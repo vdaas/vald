@@ -14,16 +14,25 @@
 package metrics
 
 type SearchMetrics struct {
+	// Recall of the search.
 	Recall  float64
+	// Queries per second.
 	Qps     float64
+	// Epsilon value for the search.
 	Epsilon float32
 }
 
 type Metrics struct {
-	BuildTime        int64
+	// Name of the dataset.
 	DatasetName      string
-	SearchEdgeSize   int
-	CreationEdgeSize int
-	K                int
+	// Search metrics.
 	Search           []*SearchMetrics
+	// Build time of the index.
+	BuildTime        int64
+	// Search edge size.
+	SearchEdgeSize   int
+	// Creation edge size.
+	CreationEdgeSize int
+	// Number of nearest neighbors.
+	K                int
 }

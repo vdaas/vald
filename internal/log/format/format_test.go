@@ -26,12 +26,12 @@ func TestFormat_String(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		f          Format
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
+		f          Format
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -101,12 +101,12 @@ func TestAtof(t *testing.T) {
 		want Format
 	}
 	type test struct {
-		name       string
-		str        string
-		want       want
 		checkFunc  func(want, Format) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		str        string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got Format) error {
 		if !reflect.DeepEqual(got, w.want) {

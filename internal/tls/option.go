@@ -145,7 +145,7 @@ func WithInsecureSkipVerify(insecure bool) Option {
 	}
 }
 
-// WithClientAuth sets server-side client auth policy
+// WithClientAuth sets server-side client auth policy.
 func WithClientAuth(auth string) Option {
 	at := parseClientAuthType(auth)
 	return func(c *credentials) error {

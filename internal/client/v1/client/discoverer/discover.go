@@ -51,25 +51,42 @@ type Client interface {
 }
 
 type client struct {
-	autoconn     bool
-	onDiscover   func(ctx context.Context, c Client, addrs []string) error
-	onConnect    func(ctx context.Context, c Client, addr string) error
-	onDisconnect func(ctx context.Context, c Client, addr string) error
-	client       grpc.Client
-	dns          string
-	opts         []grpc.Option
-	port         int
-	addrs        atomic.Pointer[[]string]
-	dscClient    grpc.Client
-	dscDur       time.Duration
-	eg           errgroup.Group
-	name         string
-	namespace    string
-	nodeName     string
-	// read replica related members below
+	// gRPC client.
+	client              grpc.Client
+	// gRPC client for read replica.
 	readClient          grpc.Client
+	// Error group.
+	eg                  errgroup.Group
+	// Discoverer client.
+	dscClient           grpc.Client
+	// List of addresses.
+	addrs               atomic.Pointer[[]string]
+	// onDisconnect hook.
+	onDisconnect        func(ctx context.Context, c Client, addr string) error
+	// onDiscover hook.
+	onDiscover          func(ctx context.Context, c Client, addrs []string) error
+	// onConnect hook.
+	onConnect           func(ctx context.Context, c Client, addr string) error
+	// Node name.
+	nodeName            string
+	// Name.
+	name                string
+	// Namespace.
+	namespace           string
+	// DNS.
+	dns                 string
+	// gRPC options.
+	opts                []grpc.Option
+	// Discoverer duration.
+	dscDur              time.Duration
+	// Port.
+	port                int
+	// Number of read replicas.
 	readReplicaReplicas uint64
+	// Round robin counter.
 	roundRobin          atomic.Uint64
+	// Auto connect flag.
+	autoconn            bool
 }
 
 func New(opts ...Option) (d Client, err error) {
@@ -163,7 +180,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 				}
 			}
 			err = ctx.Err()
-			if err != nil && err != context.Canceled {
+			if err != nil && !errors.Is(err, context.Canceled) {
 				errs = errors.Join(errs, err)
 			}
 			return errs

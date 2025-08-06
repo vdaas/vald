@@ -35,11 +35,15 @@ const (
 )
 
 type core struct {
-	idxPath    string
-	tmpdir     string
-	objectType ObjectType
-	dimension  int
 	ngt.NGT
+	// Index path.
+	idxPath    string
+	// Temporary directory.
+	tmpdir     string
+	// Object type.
+	objectType ObjectType
+	// Dimension.
+	dimension  int
 }
 
 func New(opts ...Option) (c.Bit32, error) {

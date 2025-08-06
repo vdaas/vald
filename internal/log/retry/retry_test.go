@@ -29,12 +29,12 @@ func TestNew(t *testing.T) {
 		want Retry
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, Retry) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got Retry) error {
 		wantr, gotr := w.want.(*retry), got.(*retry)
@@ -112,12 +112,12 @@ func Test_retry_Out(t *testing.T) {
 		errorFn func(vals ...any)
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -239,12 +239,12 @@ func Test_retry_Outf(t *testing.T) {
 		errorFn func(vals ...any)
 	}
 	type test struct {
-		name       string
-		args       args
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func() error {
 		return nil

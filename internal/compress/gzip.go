@@ -26,9 +26,12 @@ import (
 )
 
 type gzipCompressor struct {
+	// Gob compressor.
 	gobc             Compressor
-	compressionLevel int
+	// Gzip implementation.
 	gzip             gzip.Gzip
+	// Compression level.
+	compressionLevel int
 }
 
 // NewGzip returns Compressor implementation.

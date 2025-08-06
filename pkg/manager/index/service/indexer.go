@@ -49,22 +49,38 @@ type Indexer interface {
 }
 
 type index struct {
-	client                 discoverer.Client
-	eg                     errgroup.Group
-	creationPoolSize       uint32
-	indexDuration          time.Duration
-	indexDurationLimit     time.Duration
-	saveIndexDuration      time.Duration
-	saveIndexDurationLimit time.Duration
-	shouldSaveList         sync.Map[string, bool]
+	// error group for managing goroutines.
+	eg errgroup.Group
+	// discoverer client.
+	client discoverer.Client
+	// map for agent that should save index.
+	shouldSaveList sync.Map[string, bool]
+	// map for index info.
+	indexInfos sync.Map[string, *payload.Info_Index_Count]
+	// create index concurrency.
 	createIndexConcurrency int
-	saveIndexConcurrency   int
-	indexInfos             sync.Map[string, *payload.Info_Index_Count]
-	indexing               atomic.Bool
-	saving                 atomic.Bool
-	minUncommitted         uint32
-	uuidsCount             uint32
-	uncommittedUUIDsCount  uint32
+	// save index duration.
+	saveIndexDuration time.Duration
+	// save index duration limit.
+	saveIndexDurationLimit time.Duration
+	// index duration limit.
+	indexDurationLimit time.Duration
+	// index duration.
+	indexDuration time.Duration
+	// save index concurrency.
+	saveIndexConcurrency int
+	// creation pool size.
+	creationPoolSize uint32
+	// indexing status.
+	indexing atomic.Bool
+	// saving status.
+	saving atomic.Bool
+	// minimum uncommitted count.
+	minUncommitted uint32
+	// number of uuids.
+	uuidsCount uint32
+	// number of uncommitted uuids.
+	uncommittedUUIDsCount uint32
 }
 
 func New(opts ...Option) (idx Indexer, err error) {

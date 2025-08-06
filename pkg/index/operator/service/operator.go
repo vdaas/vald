@@ -49,16 +49,26 @@ type Operator interface {
 }
 
 type operator struct {
-	ctrl                              k8s.Controller
-	eg                                errgroup.Group
-	namespace                         string
-	client                            client.Client
-	rotatorName                       string
+	// kubernetes controller.
+	ctrl k8s.Controller
+	// error group for managing goroutines.
+	eg errgroup.Group
+	// kubernetes client.
+	client client.Client
+	// rotator job template.
+	rotatorJob *k8s.Job
+	// namespace to watch.
+	namespace string
+	// rotator job name.
+	rotatorName string
+	// target read replica ID annotations key.
 	targetReadReplicaIDAnnotationsKey string
-	readReplicaEnabled                bool
-	readReplicaLabelKey               string
-	rotationJobConcurrency            uint
-	rotatorJob                        *k8s.Job
+	// read replica label key.
+	readReplelaLabelKey string
+	// rotation job concurrency.
+	rotationJobConcurrency uint
+	// read replica enabled flag.
+	readReplicaEnabled bool
 }
 
 // New returns Indexer object if no error occurs.

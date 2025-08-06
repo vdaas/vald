@@ -28,23 +28,35 @@ import (
 )
 
 type CSpellConfig struct {
-	Version          string              `json:"version"`
-	Language         string              `json:"language"`
-	Import           []string            `json:"import"`
-	IgnorePaths      []string            `json:"ignorePaths"`
-	Patterns         []PatternEntry      `json:"patterns,omitempty"`
-	IgnoreRegExpList []string            `json:"ignoreRegExpList,omitempty"`
-	IgnoreWords      []string            `json:"ignoreWords,omitempty"`
+	// Map of ignored words by file.
 	IgnoreWordsMap   map[string][]string `json:"ignoreWordsMap,omitempty"`
+	// Version of the configuration.
+	Version          string              `json:"version"`
+	// Language of the configuration.
+	Language         string              `json:"language"`
+	// List of imported configurations.
+	Import           []string            `json:"import"`
+	// List of ignored paths.
+	IgnorePaths      []string            `json:"ignorePaths"`
+	// List of patterns.
+	Patterns         []PatternEntry      `json:"patterns,omitempty"`
+	// List of ignored regular expressions.
+	IgnoreRegExpList []string            `json:"ignoreRegExpList,omitempty"`
+	// List of ignored words.
+	IgnoreWords      []string            `json:"ignoreWords,omitempty"`
 }
 
 type PatternEntry struct {
+	// Name of the pattern.
 	Name    string `json:"name"`
+	// Pattern.
 	Pattern string `json:"pattern"`
 }
 
 type Override struct {
+	// List of files.
 	Files []string `json:"files"`
+	// List of words.
 	Words []string `json:"words"`
 }
 

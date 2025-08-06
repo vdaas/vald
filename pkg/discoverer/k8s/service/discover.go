@@ -49,23 +49,40 @@ type Discoverer interface {
 }
 
 type discoverer struct {
-	maxPods         int
-	nodes           sync.Map[string, *node.Node]
-	nodeMetrics     sync.Map[string, mnode.Node]
-	pods            sync.Map[string, *[]pod.Pod]
-	podMetrics      sync.Map[string, mpod.Pod]
-	services        sync.Map[string, *service.Service]
-	podsByNode      atomic.Pointer[map[string]map[string]map[string][]*payload.Info_Pod]
+	// error group for managing goroutines.
+	eg errgroup.Group
+	// dialer for network connection.
+	der net.Dialer
+	// kubernetes controller.
+	ctrl k8s.Controller
+	// pods grouped by name.
+	podsByName atomic.Pointer[map[string][]*payload.Info_Pod]
+	// services grouped by name.
+	svcsByName atomic.Pointer[map[string]*payload.Info_Service]
+	// nodes grouped by name.
+	nodeByName atomic.Pointer[map[string]*payload.Info_Node]
+	// pods grouped by node, namespace, and name.
+	podsByNode atomic.Pointer[map[string]map[string]map[string][]*payload.Info_Pod]
+	// pods grouped by namespace and name.
 	podsByNamespace atomic.Pointer[map[string]map[string][]*payload.Info_Pod]
-	podsByName      atomic.Pointer[map[string][]*payload.Info_Pod]
-	nodeByName      atomic.Pointer[map[string]*payload.Info_Node]
-	svcsByName      atomic.Pointer[map[string]*payload.Info_Service]
-	ctrl            k8s.Controller
-	namespace       string
-	name            string
-	csd             time.Duration
-	der             net.Dialer
-	eg              errgroup.Group
+	// pod metrics.
+	podMetrics sync.Map[string, mpod.Pod]
+	// kubernetes services.
+	services sync.Map[string, *service.Service]
+	// kubernetes pods.
+	pods sync.Map[string, *[]pod.Pod]
+	// node metrics.
+	nodeMetrics sync.Map[string, mnode.Node]
+	// kubernetes nodes.
+	nodes sync.Map[string, *node.Node]
+	// namespace to discover.
+	namespace string
+	// discoverer name.
+	name string
+	// maximum number of pods.
+	maxPods int
+	// cache sync duration.
+	csd time.Duration
 }
 
 // New returns Discoverer implementation.

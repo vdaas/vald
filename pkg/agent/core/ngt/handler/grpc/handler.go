@@ -34,13 +34,18 @@ type Server interface {
 }
 
 type server struct {
-	name              string
-	ip                string
-	ngt               service.NGT
-	eg                errgroup.Group
-	streamConcurrency int
 	agent.UnimplementedAgentServer
 	vald.UnimplementedValdServer
+	// NGT service object.
+	ngt service.NGT
+	// errgroup for managing goroutines.
+	eg errgroup.Group
+	// agent name.
+	name string
+	// agent IP address.
+	ip string
+	// stream concurrency.
+	streamConcurrency int
 }
 
 const (

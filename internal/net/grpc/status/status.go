@@ -201,21 +201,25 @@ func FromError(err error) (st *Status, ok bool) {
 	for {
 		if st, ok = status.FromError(err); ok && st != nil {
 			if st.Code() == codes.Unknown {
-				switch x := err.(type) {
-				case interface{ Unwrap() error }:
-					err = x.Unwrap()
-					if err == nil {
-						return st, true
-					}
-					sst, ok := FromError(err)
-					if ok && sst != nil {
-						return sst, true
-					}
-				case interface{ Unwrap() []error }:
-					for _, err = range x.Unwrap() {
-						if sst, ok := FromError(err); ok && sst != nil {
-							if sst.Code() != codes.Unknown {
-								return sst, true
+				{
+					var x interface{ Unwrap() error }
+					var x1 interface{ Unwrap() []error }
+					switch {
+					case errors.As(err, &x):
+						err = x.Unwrap()
+						if err == nil {
+							return st, true
+						}
+						sst, ok := FromError(err)
+						if ok && sst != nil {
+							return sst, true
+						}
+					case errors.As(err, &x1):
+						for _, err = range x1.Unwrap() {
+							if sst, ok := FromError(err); ok && sst != nil {
+								if sst.Code() != codes.Unknown {
+									return sst, true
+								}
 							}
 						}
 					}
@@ -224,33 +228,36 @@ func FromError(err error) (st *Status, ok bool) {
 			return st, true
 		}
 
-		switch x := err.(type) {
-		case interface{ Unwrap() error }:
-			err = x.Unwrap()
-			if err == nil {
-				return possibleStatus()
-			}
-		case interface{ Unwrap() []error }:
-			errs := x.Unwrap()
-			if errs == nil {
-				return possibleStatus()
-			}
-			var prev *Status
-			for _, err = range errs {
-				if st, ok = FromError(err); ok && st != nil {
-					if st.Code() != codes.Unknown {
-						return st, true
-					}
-					prev = st
+		{
+			var x interface{ Unwrap() error }
+			var x1 interface{ Unwrap() []error }
+			switch {
+			case errors.As(err, &x):
+				err = x.Unwrap()
+				if err == nil {
+					return possibleStatus()
 				}
+			case errors.As(err, &x1):
+				errs := x1.Unwrap()
+				if errs == nil {
+					return possibleStatus()
+				}
+				var prev *Status
+				for _, err = range errs {
+					if st, ok = FromError(err); ok && st != nil {
+						if st.Code() != codes.Unknown {
+							return st, true
+						}
+						prev = st
+					}
+				}
+				if prev != nil {
+					return prev, true
+				}
+				return possibleStatus()
+			default:
+				return possibleStatus()
 			}
-			if prev != nil {
-				return prev, true
-			}
-			return possibleStatus()
-		default:
-			return possibleStatus()
-
 		}
 	}
 }
@@ -521,25 +528,7 @@ func withDetails(st *Status, err error, details ...any) *Status {
 			m.Domain = removeDuplicatesFromTSVLine(m.GetDomain())
 			msgs = append(msgs, m)
 		case errdetails.BadRequestMessageName:
-			m := new(errdetails.BadRequest)
-			for _, msg := range ds {
-				b, ok := msg.(*errdetails.BadRequest)
-				if ok && b != nil && b.GetFieldViolations() != nil && !visited[b.String()] {
-					visited[b.String()] = true
-					if m.GetFieldViolations() == nil {
-						m = b
-					} else {
-						m.FieldViolations = append(m.GetFieldViolations(), b.GetFieldViolations()...)
-					}
-				}
-			}
-			slices.SortFunc(m.FieldViolations, func(left, right *errdetails.BadRequestFieldViolation) int {
-				return cmp.Compare(left.GetField(), right.GetField())
-			})
-			m.FieldViolations = slices.CompactFunc(m.GetFieldViolations(), func(left, right *errdetails.BadRequestFieldViolation) bool {
-				return left.GetField() == right.GetField()
-			})
-			msgs = append(msgs, m)
+			msgs = append(msgs, mergeBadRequest(ds, visited))
 		case errdetails.BadRequestFieldViolationMessageName:
 			m := new(errdetails.BadRequestFieldViolation)
 			for _, msg := range ds {
@@ -585,25 +574,7 @@ func withDetails(st *Status, err error, details ...any) *Status {
 			}
 			msgs = append(msgs, m)
 		case errdetails.PreconditionFailureMessageName:
-			m := new(errdetails.PreconditionFailure)
-			for _, msg := range ds {
-				p, ok := msg.(*errdetails.PreconditionFailure)
-				if ok && p != nil && p.GetViolations() != nil && !visited[p.String()] {
-					visited[p.String()] = true
-					if m.GetViolations() == nil {
-						m = p
-					} else {
-						m.Violations = append(m.GetViolations(), p.GetViolations()...)
-					}
-				}
-			}
-			slices.SortFunc(m.Violations, func(left, right *errdetails.PreconditionFailureViolation) int {
-				return cmp.Compare(left.GetType(), right.GetType())
-			})
-			m.Violations = slices.CompactFunc(m.GetViolations(), func(left, right *errdetails.PreconditionFailureViolation) bool {
-				return left.GetType() == right.GetType()
-			})
-			msgs = append(msgs, m)
+			msgs = append(msgs, mergePreconditionFailure(ds, visited))
 		case errdetails.PreconditionFailureViolationMessageName:
 			m := new(errdetails.PreconditionFailureViolation)
 			for _, msg := range ds {
@@ -796,6 +767,52 @@ func withDetails(st *Status, err error, details ...any) *Status {
 	}
 	Log(st.Code(), st.Err())
 	return st
+}
+
+func mergeBadRequest(ds []proto.Message, visited map[string]bool) *errdetails.BadRequest {
+	m := new(errdetails.BadRequest)
+	for _, msg := range ds {
+		b, ok := msg.(*errdetails.BadRequest)
+		if ok && b != nil && b.GetFieldViolations() != nil && !visited[b.String()] {
+			visited[b.String()] = true
+			if m.GetFieldViolations() == nil {
+				m = b
+			} else {
+				m.FieldViolations = append(m.GetFieldViolations(), b.GetFieldViolations()...)
+			}
+		}
+	}
+	slices.SortFunc(m.FieldViolations, func(left, right *errdetails.BadRequestFieldViolation) int {
+		return cmp.Compare(left.GetField(), right.GetField())
+	})
+	m.FieldViolations = slices.CompactFunc(m.GetFieldViolations(), func(left, right *errdetails.BadRequestFieldViolation) bool {
+		return left.GetField() == right.GetField()
+	})
+	return m
+}
+
+func mergePreconditionFailure(
+	ds []proto.Message, visited map[string]bool,
+) *errdetails.PreconditionFailure {
+	m := new(errdetails.PreconditionFailure)
+	for _, msg := range ds {
+		p, ok := msg.(*errdetails.PreconditionFailure)
+		if ok && p != nil && p.GetViolations() != nil && !visited[p.String()] {
+			visited[p.String()] = true
+			if m.GetViolations() == nil {
+				m = p
+			} else {
+				m.Violations = append(m.GetViolations(), p.GetViolations()...)
+			}
+		}
+	}
+	slices.SortFunc(m.Violations, func(left, right *errdetails.PreconditionFailureViolation) int {
+		return cmp.Compare(left.GetType(), right.GetType())
+	})
+	m.Violations = slices.CompactFunc(m.GetViolations(), func(left, right *errdetails.PreconditionFailureViolation) bool {
+		return left.GetType() == right.GetType()
+	})
+	return m
 }
 
 func typeURL(msg proto.Message) string {

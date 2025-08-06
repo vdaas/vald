@@ -112,9 +112,9 @@ package ingress
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		addrs []string
-// 		cl    sync.Map[string, any]
 // 		c     grpc.Client
+// 		cl    sync.Map[string, any]
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -147,9 +147,9 @@ package ingress
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -171,9 +171,9 @@ package ingress
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -204,9 +204,9 @@ package ingress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
-// 				cl:    test.fields.cl,
 // 				c:     test.fields.c,
+// 				cl:    test.fields.cl,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			got, err := c.Start(test.args.ctx)
@@ -222,9 +222,9 @@ package ingress
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		addrs []string
-// 		cl    sync.Map[string, any]
 // 		c     grpc.Client
+// 		cl    sync.Map[string, any]
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		err error
@@ -253,9 +253,9 @@ package ingress
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -277,9 +277,9 @@ package ingress
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -310,9 +310,9 @@ package ingress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
-// 				cl:    test.fields.cl,
 // 				c:     test.fields.c,
+// 				cl:    test.fields.cl,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			err := c.Stop(test.args.ctx)
@@ -325,9 +325,9 @@ package ingress
 //
 // func Test_client_GRPCClient(t *testing.T) {
 // 	type fields struct {
-// 		addrs []string
-// 		cl    sync.Map[string, any]
 // 		c     grpc.Client
+// 		cl    sync.Map[string, any]
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		want grpc.Client
@@ -352,9 +352,9 @@ package ingress
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -373,9 +373,9 @@ package ingress
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -406,9 +406,9 @@ package ingress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
-// 				cl:    test.fields.cl,
 // 				c:     test.fields.c,
+// 				cl:    test.fields.cl,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			got := c.GRPCClient()
@@ -425,9 +425,9 @@ package ingress
 // 		targets []string
 // 	}
 // 	type fields struct {
-// 		addrs []string
-// 		cl    sync.Map[string, any]
 // 		c     grpc.Client
+// 		cl    sync.Map[string, any]
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		want ingress.FilterClient
@@ -461,9 +461,9 @@ package ingress
 // 		           targets:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -486,9 +486,9 @@ package ingress
 // 		           targets:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -519,9 +519,9 @@ package ingress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
-// 				cl:    test.fields.cl,
 // 				c:     test.fields.c,
+// 				cl:    test.fields.cl,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			got, err := c.Target(test.args.ctx, test.args.targets...)
@@ -539,9 +539,9 @@ package ingress
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
-// 		cl    sync.Map[string, any]
 // 		c     grpc.Client
+// 		cl    sync.Map[string, any]
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Vector
@@ -576,9 +576,9 @@ package ingress
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -602,9 +602,9 @@ package ingress
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -635,9 +635,9 @@ package ingress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
-// 				cl:    test.fields.cl,
 // 				c:     test.fields.c,
+// 				cl:    test.fields.cl,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.GenVector(test.args.ctx, test.args.in, test.args.opts...)
@@ -655,9 +655,9 @@ package ingress
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
-// 		cl    sync.Map[string, any]
 // 		c     grpc.Client
+// 		cl    sync.Map[string, any]
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Vector
@@ -692,9 +692,9 @@ package ingress
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -718,9 +718,9 @@ package ingress
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
-// 		           cl:nil,
 // 		           c:nil,
+// 		           cl:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -751,9 +751,9 @@ package ingress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &client{
-// 				addrs: test.fields.addrs,
-// 				cl:    test.fields.cl,
 // 				c:     test.fields.c,
+// 				cl:    test.fields.cl,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := c.FilterVector(test.args.ctx, test.args.in, test.args.opts...)
@@ -771,8 +771,8 @@ package ingress
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addr string
 // 		c    grpc.Client
+// 		addr string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Vector
@@ -807,8 +807,8 @@ package ingress
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addr:"",
 // 		           c:nil,
+// 		           addr:"",
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -832,8 +832,8 @@ package ingress
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addr:"",
 // 		           c:nil,
+// 		           addr:"",
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -864,8 +864,8 @@ package ingress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &specificAddrClient{
-// 				addr: test.fields.addr,
 // 				c:    test.fields.c,
+// 				addr: test.fields.addr,
 // 			}
 //
 // 			gotRes, err := s.GenVector(test.args.ctx, test.args.in, test.args.opts...)
@@ -883,8 +883,8 @@ package ingress
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addr string
 // 		c    grpc.Client
+// 		addr string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Vector
@@ -919,8 +919,8 @@ package ingress
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addr:"",
 // 		           c:nil,
+// 		           addr:"",
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -944,8 +944,8 @@ package ingress
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addr:"",
 // 		           c:nil,
+// 		           addr:"",
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -976,8 +976,8 @@ package ingress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &specificAddrClient{
-// 				addr: test.fields.addr,
 // 				c:    test.fields.c,
+// 				addr: test.fields.addr,
 // 			}
 //
 // 			gotRes, err := s.FilterVector(test.args.ctx, test.args.in, test.args.opts...)
@@ -995,8 +995,8 @@ package ingress
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Vector
@@ -1031,8 +1031,8 @@ package ingress
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1056,8 +1056,8 @@ package ingress
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1088,8 +1088,8 @@ package ingress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			m := &multipleAddrsClient{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := m.GenVector(test.args.ctx, test.args.in, test.args.opts...)
@@ -1107,8 +1107,8 @@ package ingress
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {
-// 		addrs []string
 // 		c     grpc.Client
+// 		addrs []string
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Vector
@@ -1143,8 +1143,8 @@ package ingress
 // 		           opts:nil,
 // 		       },
 // 		       fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1168,8 +1168,8 @@ package ingress
 // 		           opts:nil,
 // 		           },
 // 		           fields: fields {
-// 		           addrs:nil,
 // 		           c:nil,
+// 		           addrs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1200,8 +1200,8 @@ package ingress
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			m := &multipleAddrsClient{
-// 				addrs: test.fields.addrs,
 // 				c:     test.fields.c,
+// 				addrs: test.fields.addrs,
 // 			}
 //
 // 			gotRes, err := m.FilterVector(test.args.ctx, test.args.in, test.args.opts...)

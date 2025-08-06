@@ -28,25 +28,40 @@ import (
 )
 
 type sess struct {
-	endpoint        string
-	region          string
-	accessKey       string
-	secretAccessKey string
-	token           string
-
+	// client is a http.Client.
+	client                     *http.Client
+	// endpoint is a s3 endpoint.
+	endpoint                   string
+	// region is a s3 region.
+	region                     string
+	// accessKey is a s3 access key.
+	accessKey                  string
+	// secretAccessKey is a s3 secret access key.
+	secretAccessKey            string
+	// token is a s3 token.
+	token                      string
+	// maxRetries is a max retries.
 	maxRetries                 int
-	forcePathStyle             bool
-	useAccelerate              bool
+	// useARNRegion is a flag to use ARN region.
 	useARNRegion               bool
+	// useAccelerate is a flag to use accelerate.
+	useAccelerate              bool
+	// useDualStack is a flag to use dual stack.
 	useDualStack               bool
+	// enableSSL is a flag to enable SSL.
 	enableSSL                  bool
+	// enableParamValidation is a flag to enable param validation.
 	enableParamValidation      bool
+	// enable100Continue is a flag to enable 100 continue.
 	enable100Continue          bool
+	// enableContentMD5Validation is a flag to enable content MD5 validation.
 	enableContentMD5Validation bool
+	// enableEndpointDiscovery is a flag to enable endpoint discovery.
 	enableEndpointDiscovery    bool
+	// enableEndpointHostPrefix is a flag to enable endpoint host prefix.
 	enableEndpointHostPrefix   bool
-
-	client *http.Client
+	// forcePathStyle is a flag to force path style.
+	forcePathStyle             bool
 }
 
 // Session represents the interface to get AWS S3 session.

@@ -25,30 +25,30 @@ import (
 
 func Test_breaker_isReady(t *testing.T) {
 	type fields struct {
-		key                   string
-		count                 *count
-		tripped               int32
-		closedErrRate         float32
 		closedErrShouldTrip   Tripper
-		halfOpenErrRate       float32
 		halfOpenErrShouldTrip Tripper
+		count                 *count
+		key                   string
 		minSamples            int64
 		openTimeout           time.Duration
 		openExp               int64
 		closedRefreshTimeout  time.Duration
 		closedRefreshExp      int64
+		tripped               int32
+		closedErrRate         float32
+		halfOpenErrRate       float32
 	}
 	type want struct {
-		wantSt State
 		err    error
+		wantSt State
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, State, error) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, gotSt State, err error) error {
 		if !errors.Is(err, w.err) {
@@ -176,27 +176,27 @@ func Test_breaker_isReady(t *testing.T) {
 
 func Test_breaker_success(t *testing.T) {
 	type fields struct {
-		key                   string
-		count                 *count
-		tripped               int32
-		closedErrRate         float32
 		closedErrShouldTrip   Tripper
-		halfOpenErrRate       float32
 		halfOpenErrShouldTrip Tripper
+		count                 *count
+		key                   string
 		minSamples            int64
 		openTimeout           time.Duration
 		openExp               int64
 		closedRefreshTimeout  time.Duration
 		closedRefreshExp      int64
+		tripped               int32
+		closedErrRate         float32
+		halfOpenErrRate       float32
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T, *breaker)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -298,27 +298,27 @@ func Test_breaker_success(t *testing.T) {
 
 func Test_breaker_fail(t *testing.T) {
 	type fields struct {
-		key                   string
-		count                 *count
-		tripped               int32
-		closedErrRate         float32
 		closedErrShouldTrip   Tripper
-		halfOpenErrRate       float32
 		halfOpenErrShouldTrip Tripper
+		count                 *count
+		key                   string
 		minSamples            int64
 		openTimeout           time.Duration
 		openExp               int64
 		closedRefreshTimeout  time.Duration
 		closedRefreshExp      int64
+		tripped               int32
+		closedErrRate         float32
+		halfOpenErrRate       float32
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T, *breaker)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -554,18 +554,18 @@ func Test_breaker_fail(t *testing.T) {
 // 		fn  func(ctx context.Context) (val any, err error)
 // 	}
 // 	type fields struct {
-// 		key                   string
-// 		count                 *count
-// 		tripped               int32
-// 		closedErrRate         float32
 // 		closedErrShouldTrip   Tripper
-// 		halfOpenErrRate       float32
 // 		halfOpenErrShouldTrip Tripper
+// 		count                 *count
+// 		key                   string
 // 		minSamples            int64
 // 		openTimeout           time.Duration
 // 		openExp               int64
 // 		closedRefreshTimeout  time.Duration
 // 		closedRefreshExp      int64
+// 		tripped               int32
+// 		closedErrRate         float32
+// 		halfOpenErrRate       float32
 // 	}
 // 	type want struct {
 // 		wantVal any
@@ -603,18 +603,18 @@ func Test_breaker_fail(t *testing.T) {
 // 		           fn:nil,
 // 		       },
 // 		       fields: fields {
-// 		           key:"",
-// 		           count:count{},
-// 		           tripped:0,
-// 		           closedErrRate:0,
 // 		           closedErrShouldTrip:nil,
-// 		           halfOpenErrRate:0,
 // 		           halfOpenErrShouldTrip:nil,
+// 		           count:count{},
+// 		           key:"",
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
 // 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
+// 		           tripped:0,
+// 		           closedErrRate:0,
+// 		           halfOpenErrRate:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -637,18 +637,18 @@ func Test_breaker_fail(t *testing.T) {
 // 		           fn:nil,
 // 		           },
 // 		           fields: fields {
-// 		           key:"",
-// 		           count:count{},
-// 		           tripped:0,
-// 		           closedErrRate:0,
 // 		           closedErrShouldTrip:nil,
-// 		           halfOpenErrRate:0,
 // 		           halfOpenErrShouldTrip:nil,
+// 		           count:count{},
+// 		           key:"",
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
 // 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
+// 		           tripped:0,
+// 		           closedErrRate:0,
+// 		           halfOpenErrRate:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -679,18 +679,18 @@ func Test_breaker_fail(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			b := &breaker{
-// 				key:                   test.fields.key,
-// 				count:                 test.fields.count,
-// 				tripped:               test.fields.tripped,
-// 				closedErrRate:         test.fields.closedErrRate,
 // 				closedErrShouldTrip:   test.fields.closedErrShouldTrip,
-// 				halfOpenErrRate:       test.fields.halfOpenErrRate,
 // 				halfOpenErrShouldTrip: test.fields.halfOpenErrShouldTrip,
+// 				count:                 test.fields.count,
+// 				key:                   test.fields.key,
 // 				minSamples:            test.fields.minSamples,
 // 				openTimeout:           test.fields.openTimeout,
 // 				openExp:               test.fields.openExp,
 // 				closedRefreshTimeout:  test.fields.closedRefreshTimeout,
 // 				closedRefreshExp:      test.fields.closedRefreshExp,
+// 				tripped:               test.fields.tripped,
+// 				closedErrRate:         test.fields.closedErrRate,
+// 				halfOpenErrRate:       test.fields.halfOpenErrRate,
 // 			}
 //
 // 			gotVal, gotSt, err := b.do(test.args.ctx, test.args.fn)
@@ -703,18 +703,18 @@ func Test_breaker_fail(t *testing.T) {
 //
 // func Test_breaker_currentState(t *testing.T) {
 // 	type fields struct {
-// 		key                   string
-// 		count                 *count
-// 		tripped               int32
-// 		closedErrRate         float32
 // 		closedErrShouldTrip   Tripper
-// 		halfOpenErrRate       float32
 // 		halfOpenErrShouldTrip Tripper
+// 		count                 *count
+// 		key                   string
 // 		minSamples            int64
 // 		openTimeout           time.Duration
 // 		openExp               int64
 // 		closedRefreshTimeout  time.Duration
 // 		closedRefreshExp      int64
+// 		tripped               int32
+// 		closedErrRate         float32
+// 		halfOpenErrRate       float32
 // 	}
 // 	type want struct {
 // 		want State
@@ -739,18 +739,18 @@ func Test_breaker_fail(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           key:"",
-// 		           count:count{},
-// 		           tripped:0,
-// 		           closedErrRate:0,
 // 		           closedErrShouldTrip:nil,
-// 		           halfOpenErrRate:0,
 // 		           halfOpenErrShouldTrip:nil,
+// 		           count:count{},
+// 		           key:"",
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
 // 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
+// 		           tripped:0,
+// 		           closedErrRate:0,
+// 		           halfOpenErrRate:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -769,18 +769,18 @@ func Test_breaker_fail(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           key:"",
-// 		           count:count{},
-// 		           tripped:0,
-// 		           closedErrRate:0,
 // 		           closedErrShouldTrip:nil,
-// 		           halfOpenErrRate:0,
 // 		           halfOpenErrShouldTrip:nil,
+// 		           count:count{},
+// 		           key:"",
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
 // 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
+// 		           tripped:0,
+// 		           closedErrRate:0,
+// 		           halfOpenErrRate:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -811,18 +811,18 @@ func Test_breaker_fail(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			b := &breaker{
-// 				key:                   test.fields.key,
-// 				count:                 test.fields.count,
-// 				tripped:               test.fields.tripped,
-// 				closedErrRate:         test.fields.closedErrRate,
 // 				closedErrShouldTrip:   test.fields.closedErrShouldTrip,
-// 				halfOpenErrRate:       test.fields.halfOpenErrRate,
 // 				halfOpenErrShouldTrip: test.fields.halfOpenErrShouldTrip,
+// 				count:                 test.fields.count,
+// 				key:                   test.fields.key,
 // 				minSamples:            test.fields.minSamples,
 // 				openTimeout:           test.fields.openTimeout,
 // 				openExp:               test.fields.openExp,
 // 				closedRefreshTimeout:  test.fields.closedRefreshTimeout,
 // 				closedRefreshExp:      test.fields.closedRefreshExp,
+// 				tripped:               test.fields.tripped,
+// 				closedErrRate:         test.fields.closedErrRate,
+// 				halfOpenErrRate:       test.fields.halfOpenErrRate,
 // 			}
 //
 // 			got := b.currentState()
@@ -835,18 +835,18 @@ func Test_breaker_fail(t *testing.T) {
 //
 // func Test_breaker_reset(t *testing.T) {
 // 	type fields struct {
-// 		key                   string
-// 		count                 *count
-// 		tripped               int32
-// 		closedErrRate         float32
 // 		closedErrShouldTrip   Tripper
-// 		halfOpenErrRate       float32
 // 		halfOpenErrShouldTrip Tripper
+// 		count                 *count
+// 		key                   string
 // 		minSamples            int64
 // 		openTimeout           time.Duration
 // 		openExp               int64
 // 		closedRefreshTimeout  time.Duration
 // 		closedRefreshExp      int64
+// 		tripped               int32
+// 		closedErrRate         float32
+// 		halfOpenErrRate       float32
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -866,18 +866,18 @@ func Test_breaker_fail(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           key:"",
-// 		           count:count{},
-// 		           tripped:0,
-// 		           closedErrRate:0,
 // 		           closedErrShouldTrip:nil,
-// 		           halfOpenErrRate:0,
 // 		           halfOpenErrShouldTrip:nil,
+// 		           count:count{},
+// 		           key:"",
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
 // 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
+// 		           tripped:0,
+// 		           closedErrRate:0,
+// 		           halfOpenErrRate:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -896,18 +896,18 @@ func Test_breaker_fail(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           key:"",
-// 		           count:count{},
-// 		           tripped:0,
-// 		           closedErrRate:0,
 // 		           closedErrShouldTrip:nil,
-// 		           halfOpenErrRate:0,
 // 		           halfOpenErrShouldTrip:nil,
+// 		           count:count{},
+// 		           key:"",
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
 // 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
+// 		           tripped:0,
+// 		           closedErrRate:0,
+// 		           halfOpenErrRate:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -938,18 +938,18 @@ func Test_breaker_fail(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			b := &breaker{
-// 				key:                   test.fields.key,
-// 				count:                 test.fields.count,
-// 				tripped:               test.fields.tripped,
-// 				closedErrRate:         test.fields.closedErrRate,
 // 				closedErrShouldTrip:   test.fields.closedErrShouldTrip,
-// 				halfOpenErrRate:       test.fields.halfOpenErrRate,
 // 				halfOpenErrShouldTrip: test.fields.halfOpenErrShouldTrip,
+// 				count:                 test.fields.count,
+// 				key:                   test.fields.key,
 // 				minSamples:            test.fields.minSamples,
 // 				openTimeout:           test.fields.openTimeout,
 // 				openExp:               test.fields.openExp,
 // 				closedRefreshTimeout:  test.fields.closedRefreshTimeout,
 // 				closedRefreshExp:      test.fields.closedRefreshExp,
+// 				tripped:               test.fields.tripped,
+// 				closedErrRate:         test.fields.closedErrRate,
+// 				halfOpenErrRate:       test.fields.halfOpenErrRate,
 // 			}
 //
 // 			b.reset()
@@ -962,18 +962,18 @@ func Test_breaker_fail(t *testing.T) {
 //
 // func Test_breaker_trip(t *testing.T) {
 // 	type fields struct {
-// 		key                   string
-// 		count                 *count
-// 		tripped               int32
-// 		closedErrRate         float32
 // 		closedErrShouldTrip   Tripper
-// 		halfOpenErrRate       float32
 // 		halfOpenErrShouldTrip Tripper
+// 		count                 *count
+// 		key                   string
 // 		minSamples            int64
 // 		openTimeout           time.Duration
 // 		openExp               int64
 // 		closedRefreshTimeout  time.Duration
 // 		closedRefreshExp      int64
+// 		tripped               int32
+// 		closedErrRate         float32
+// 		halfOpenErrRate       float32
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -993,18 +993,18 @@ func Test_breaker_fail(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           key:"",
-// 		           count:count{},
-// 		           tripped:0,
-// 		           closedErrRate:0,
 // 		           closedErrShouldTrip:nil,
-// 		           halfOpenErrRate:0,
 // 		           halfOpenErrShouldTrip:nil,
+// 		           count:count{},
+// 		           key:"",
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
 // 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
+// 		           tripped:0,
+// 		           closedErrRate:0,
+// 		           halfOpenErrRate:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1023,18 +1023,18 @@ func Test_breaker_fail(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           key:"",
-// 		           count:count{},
-// 		           tripped:0,
-// 		           closedErrRate:0,
 // 		           closedErrShouldTrip:nil,
-// 		           halfOpenErrRate:0,
 // 		           halfOpenErrShouldTrip:nil,
+// 		           count:count{},
+// 		           key:"",
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
 // 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
+// 		           tripped:0,
+// 		           closedErrRate:0,
+// 		           halfOpenErrRate:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1065,18 +1065,18 @@ func Test_breaker_fail(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			b := &breaker{
-// 				key:                   test.fields.key,
-// 				count:                 test.fields.count,
-// 				tripped:               test.fields.tripped,
-// 				closedErrRate:         test.fields.closedErrRate,
 // 				closedErrShouldTrip:   test.fields.closedErrShouldTrip,
-// 				halfOpenErrRate:       test.fields.halfOpenErrRate,
 // 				halfOpenErrShouldTrip: test.fields.halfOpenErrShouldTrip,
+// 				count:                 test.fields.count,
+// 				key:                   test.fields.key,
 // 				minSamples:            test.fields.minSamples,
 // 				openTimeout:           test.fields.openTimeout,
 // 				openExp:               test.fields.openExp,
 // 				closedRefreshTimeout:  test.fields.closedRefreshTimeout,
 // 				closedRefreshExp:      test.fields.closedRefreshExp,
+// 				tripped:               test.fields.tripped,
+// 				closedErrRate:         test.fields.closedErrRate,
+// 				halfOpenErrRate:       test.fields.halfOpenErrRate,
 // 			}
 //
 // 			b.trip()
@@ -1089,18 +1089,18 @@ func Test_breaker_fail(t *testing.T) {
 //
 // func Test_breaker_isTripped(t *testing.T) {
 // 	type fields struct {
-// 		key                   string
-// 		count                 *count
-// 		tripped               int32
-// 		closedErrRate         float32
 // 		closedErrShouldTrip   Tripper
-// 		halfOpenErrRate       float32
 // 		halfOpenErrShouldTrip Tripper
+// 		count                 *count
+// 		key                   string
 // 		minSamples            int64
 // 		openTimeout           time.Duration
 // 		openExp               int64
 // 		closedRefreshTimeout  time.Duration
 // 		closedRefreshExp      int64
+// 		tripped               int32
+// 		closedErrRate         float32
+// 		halfOpenErrRate       float32
 // 	}
 // 	type want struct {
 // 		wantOk bool
@@ -1125,18 +1125,18 @@ func Test_breaker_fail(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           key:"",
-// 		           count:count{},
-// 		           tripped:0,
-// 		           closedErrRate:0,
 // 		           closedErrShouldTrip:nil,
-// 		           halfOpenErrRate:0,
 // 		           halfOpenErrShouldTrip:nil,
+// 		           count:count{},
+// 		           key:"",
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
 // 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
+// 		           tripped:0,
+// 		           closedErrRate:0,
+// 		           halfOpenErrRate:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1155,18 +1155,18 @@ func Test_breaker_fail(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           key:"",
-// 		           count:count{},
-// 		           tripped:0,
-// 		           closedErrRate:0,
 // 		           closedErrShouldTrip:nil,
-// 		           halfOpenErrRate:0,
 // 		           halfOpenErrShouldTrip:nil,
+// 		           count:count{},
+// 		           key:"",
 // 		           minSamples:0,
 // 		           openTimeout:nil,
 // 		           openExp:0,
 // 		           closedRefreshTimeout:nil,
 // 		           closedRefreshExp:0,
+// 		           tripped:0,
+// 		           closedErrRate:0,
+// 		           halfOpenErrRate:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1197,18 +1197,18 @@ func Test_breaker_fail(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			b := &breaker{
-// 				key:                   test.fields.key,
-// 				count:                 test.fields.count,
-// 				tripped:               test.fields.tripped,
-// 				closedErrRate:         test.fields.closedErrRate,
 // 				closedErrShouldTrip:   test.fields.closedErrShouldTrip,
-// 				halfOpenErrRate:       test.fields.halfOpenErrRate,
 // 				halfOpenErrShouldTrip: test.fields.halfOpenErrShouldTrip,
+// 				count:                 test.fields.count,
+// 				key:                   test.fields.key,
 // 				minSamples:            test.fields.minSamples,
 // 				openTimeout:           test.fields.openTimeout,
 // 				openExp:               test.fields.openExp,
 // 				closedRefreshTimeout:  test.fields.closedRefreshTimeout,
 // 				closedRefreshExp:      test.fields.closedRefreshExp,
+// 				tripped:               test.fields.tripped,
+// 				closedErrRate:         test.fields.closedErrRate,
+// 				halfOpenErrRate:       test.fields.halfOpenErrRate,
 // 			}
 //
 // 			gotOk := b.isTripped()

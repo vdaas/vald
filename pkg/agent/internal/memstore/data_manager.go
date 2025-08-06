@@ -133,7 +133,7 @@ func UUIDs(ctx context.Context, kv kvs.BidiMap, vq vqueue.Queue) (uuids []string
 	return uuids
 }
 
-// UpdateTimestamp updates memstore(kvs, vqueue) data's timestamp
+// UpdateTimestamp updates memstore(kvs, vqueue) data's timestamp.
 func UpdateTimestamp(
 	kv kvs.BidiMap,
 	vq vqueue.Queue,
@@ -169,7 +169,7 @@ func UpdateTimestamp(
 			// if time difference detected the data might be changed by another thread so we need to rollback
 			return vq.PushDelete(uuid, pdts)
 		}
-		return nil // succesfully update the vqueue
+		return nil // successfully update the vqueue
 	case vqok && kvok && dts < ts && (force || (kts < ts && its < ts)):
 		// if vqueue data exists and new timestamp never delete and force-update or timestamp is newer than insert queue timestamp
 		// update insert-vqueue first
@@ -182,7 +182,7 @@ func UpdateTimestamp(
 		if dts == 0 { // if kvs data exists but not found delete-vqueue data it would be better to add delete vqueue for update
 			return vq.PushDelete(uuid, ts-1)
 		}
-		return nil // succesfully update the vqueue and kvs
+		return nil // successfully update the vqueue and kvs
 	case !vqok && its == 0 && kvok && (force || kts < ts):
 		// if insert-vqueue not found and kvs data found just update kvs data
 		kv.Set(uuid, oid, ts)
@@ -191,11 +191,11 @@ func UpdateTimestamp(
 			pdts, ok := vq.PopDelete(uuid)
 			if ok && pdts != dts {
 				// if time difference detected the data might be changed by another thread so we need to rollback
-				return vq.PushDelete(uuid, pdts) // succesfully update the kvs but failed to dequeue delete-vqueue and rollbacked them
+				return vq.PushDelete(uuid, pdts) // successfully update the kvs but failed to dequeue delete-vqueue and rollbacked them
 			}
-			return nil // succesfully update the kvs and delete-vqueue
+			return nil // successfully update the kvs and delete-vqueue
 		}
-		return nil // succesfully update the kvs
+		return nil // successfully update the kvs
 	case !vqok && its != 0 && kvok && (force || kts < ts):
 		// if insert-vqueue found there are 2 case of vqok=false are vec==nil or dts > its so check kvok and update it and remove insert-vqueue
 		kv.Set(uuid, oid, ts)
@@ -210,7 +210,7 @@ func UpdateTimestamp(
 			// if time difference detected the data might be changed by another thread so we need to rollback
 			return vq.PushInsert(uuid, pvec, pits)
 		}
-		return nil // succesfully update the kvs
+		return nil // successfully update the kvs
 	}
 	return errors.ErrNothingToBeDoneForUpdate(uuid)
 }

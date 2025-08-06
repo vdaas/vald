@@ -26,24 +26,24 @@ import (
 
 func TestLB_Bind(t *testing.T) {
 	type fields struct {
-		AgentPort      int
+		Discoverer     *DiscovererClient
 		AgentName      string
 		AgentNamespace string
 		AgentDNS       string
 		NodeName       string
+		AgentPort      int
 		IndexReplica   int
-		Discoverer     *DiscovererClient
 	}
 	type want struct {
 		want *LB
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *LB) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *LB) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -202,9 +202,9 @@ func TestLB_Bind(t *testing.T) {
 //
 // func TestReadReplicaClient_Bind(t *testing.T) {
 // 	type fields struct {
-// 		Duration           string
 // 		Client             *GRPCClient
 // 		AgentClientOptions *GRPCClient
+// 		Duration           string
 // 	}
 // 	type want struct {
 // 		want *ReadReplicaClient
@@ -229,9 +229,9 @@ func TestLB_Bind(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           Duration:"",
 // 		           Client:GRPCClient{},
 // 		           AgentClientOptions:GRPCClient{},
+// 		           Duration:"",
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -250,9 +250,9 @@ func TestLB_Bind(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           Duration:"",
 // 		           Client:GRPCClient{},
 // 		           AgentClientOptions:GRPCClient{},
+// 		           Duration:"",
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -283,9 +283,9 @@ func TestLB_Bind(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			d := &ReadReplicaClient{
-// 				Duration:           test.fields.Duration,
 // 				Client:             test.fields.Client,
 // 				AgentClientOptions: test.fields.AgentClientOptions,
+// 				Duration:           test.fields.Duration,
 // 			}
 //
 // 			got := d.Bind()

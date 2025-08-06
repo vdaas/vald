@@ -29,54 +29,54 @@ import (
 
 func TestCassandra_Bind(t *testing.T) {
 	type fields struct {
-		Hosts                    []string
-		CQLVersion               string
-		ProtoVersion             int
-		Timeout                  string
-		ConnectTimeout           string
-		Port                     int
-		Keyspace                 string
-		NumConns                 int
+		PoolConfig               *PoolConfig
+		Net                      *Net
+		TLS                      *TLS
+		HostFilter               *HostFilter
+		ReconnectionPolicy       *ReconnectionPolicy
+		RetryPolicy              *RetryPolicy
+		VKTable                  string
+		ReconnectInterval        string
 		Consistency              string
 		SerialConsistency        string
 		Username                 string
 		Password                 string
-		PoolConfig               *PoolConfig
-		RetryPolicy              *RetryPolicy
-		ReconnectionPolicy       *ReconnectionPolicy
-		HostFilter               *HostFilter
+		Keyspace                 string
+		KVTable                  string
+		ConnectTimeout           string
+		Timeout                  string
 		SocketKeepalive          string
-		MaxPreparedStmts         int
-		MaxRoutingKeyInfo        int
-		PageSize                 int
-		TLS                      *TLS
-		Net                      *Net
-		EnableHostVerification   bool
-		DefaultTimestamp         bool
-		ReconnectInterval        string
+		WriteCoalesceWaitTime    string
+		CQLVersion               string
 		MaxWaitSchemaAgreement   string
-		IgnorePeerAddr           bool
-		DisableInitialHostLookup bool
-		DisableNodeStatusEvents  bool
+		VectorBackupTable        string
+		Hosts                    []string
+		MaxRoutingKeyInfo        int
+		MaxPreparedStmts         int
+		ProtoVersion             int
+		PageSize                 int
+		Port                     int
+		NumConns                 int
 		DisableTopologyEvents    bool
+		DefaultTimestamp         bool
 		DisableSchemaEvents      bool
 		DisableSkipMetadata      bool
 		DefaultIdempotence       bool
-		WriteCoalesceWaitTime    string
-		KVTable                  string
-		VKTable                  string
-		VectorBackupTable        string
+		DisableNodeStatusEvents  bool
+		DisableInitialHostLookup bool
+		IgnorePeerAddr           bool
+		EnableHostVerification   bool
 	}
 	type want struct {
 		want *Cassandra
 	}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *Cassandra) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *Cassandra) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -377,55 +377,55 @@ func TestCassandra_Bind(t *testing.T) {
 
 func TestCassandra_Opts(t *testing.T) {
 	type fields struct {
-		Hosts                    []string
-		CQLVersion               string
-		ProtoVersion             int
-		Timeout                  string
-		ConnectTimeout           string
-		Port                     int
-		Keyspace                 string
-		NumConns                 int
+		PoolConfig               *PoolConfig
+		Net                      *Net
+		TLS                      *TLS
+		HostFilter               *HostFilter
+		ReconnectionPolicy       *ReconnectionPolicy
+		RetryPolicy              *RetryPolicy
+		VKTable                  string
+		ReconnectInterval        string
 		Consistency              string
 		SerialConsistency        string
 		Username                 string
 		Password                 string
-		PoolConfig               *PoolConfig
-		RetryPolicy              *RetryPolicy
-		ReconnectionPolicy       *ReconnectionPolicy
-		HostFilter               *HostFilter
+		Keyspace                 string
+		KVTable                  string
+		ConnectTimeout           string
+		Timeout                  string
 		SocketKeepalive          string
-		MaxPreparedStmts         int
-		MaxRoutingKeyInfo        int
-		PageSize                 int
-		TLS                      *TLS
-		Net                      *Net
-		EnableHostVerification   bool
-		DefaultTimestamp         bool
-		ReconnectInterval        string
+		WriteCoalesceWaitTime    string
+		CQLVersion               string
 		MaxWaitSchemaAgreement   string
-		IgnorePeerAddr           bool
-		DisableInitialHostLookup bool
-		DisableNodeStatusEvents  bool
+		VectorBackupTable        string
+		Hosts                    []string
+		MaxRoutingKeyInfo        int
+		MaxPreparedStmts         int
+		ProtoVersion             int
+		PageSize                 int
+		Port                     int
+		NumConns                 int
 		DisableTopologyEvents    bool
+		DefaultTimestamp         bool
 		DisableSchemaEvents      bool
 		DisableSkipMetadata      bool
 		DefaultIdempotence       bool
-		WriteCoalesceWaitTime    string
-		KVTable                  string
-		VKTable                  string
-		VectorBackupTable        string
+		DisableNodeStatusEvents  bool
+		DisableInitialHostLookup bool
+		IgnorePeerAddr           bool
+		EnableHostVerification   bool
 	}
 	type want struct {
-		wantOpts []cassandra.Option
 		err      error
+		wantOpts []cassandra.Option
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, []cassandra.Option, error) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		want       want
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, gotOpts []cassandra.Option, err error) error {
 		if !errors.Is(err, w.err) {
@@ -907,3 +907,391 @@ func TestCassandra_Opts(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
+//
+// func TestPoolConfig_Bind(t *testing.T) {
+// 	type fields struct {
+// 		DataCenter               string
+// 		DCAwareRouting           bool
+// 		NonLocalReplicasFallback bool
+// 		ShuffleReplicas          bool
+// 		TokenAwareHostPolicy     bool
+// 	}
+// 	type want struct {
+// 		want *PoolConfig
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *PoolConfig) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *PoolConfig) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           DataCenter:"",
+// 		           DCAwareRouting:false,
+// 		           NonLocalReplicasFallback:false,
+// 		           ShuffleReplicas:false,
+// 		           TokenAwareHostPolicy:false,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           DataCenter:"",
+// 		           DCAwareRouting:false,
+// 		           NonLocalReplicasFallback:false,
+// 		           ShuffleReplicas:false,
+// 		           TokenAwareHostPolicy:false,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			pc := &PoolConfig{
+// 				DataCenter:               test.fields.DataCenter,
+// 				DCAwareRouting:           test.fields.DCAwareRouting,
+// 				NonLocalReplicasFallback: test.fields.NonLocalReplicasFallback,
+// 				ShuffleReplicas:          test.fields.ShuffleReplicas,
+// 				TokenAwareHostPolicy:     test.fields.TokenAwareHostPolicy,
+// 			}
+//
+// 			got := pc.Bind()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestRetryPolicy_Bind(t *testing.T) {
+// 	type fields struct {
+// 		MinDuration string
+// 		MaxDuration string
+// 		NumRetries  int
+// 	}
+// 	type want struct {
+// 		want *RetryPolicy
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *RetryPolicy) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *RetryPolicy) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           MinDuration:"",
+// 		           MaxDuration:"",
+// 		           NumRetries:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           MinDuration:"",
+// 		           MaxDuration:"",
+// 		           NumRetries:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			rp := &RetryPolicy{
+// 				MinDuration: test.fields.MinDuration,
+// 				MaxDuration: test.fields.MaxDuration,
+// 				NumRetries:  test.fields.NumRetries,
+// 			}
+//
+// 			got := rp.Bind()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestReconnectionPolicy_Bind(t *testing.T) {
+// 	type fields struct {
+// 		InitialInterval string
+// 		MaxRetries      int
+// 	}
+// 	type want struct {
+// 		want *ReconnectionPolicy
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *ReconnectionPolicy) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *ReconnectionPolicy) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           InitialInterval:"",
+// 		           MaxRetries:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           InitialInterval:"",
+// 		           MaxRetries:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			rp := &ReconnectionPolicy{
+// 				InitialInterval: test.fields.InitialInterval,
+// 				MaxRetries:      test.fields.MaxRetries,
+// 			}
+//
+// 			got := rp.Bind()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestHostFilter_Bind(t *testing.T) {
+// 	type fields struct {
+// 		DataCenter string
+// 		WhiteList  []string
+// 		Enabled    bool
+// 	}
+// 	type want struct {
+// 		want *HostFilter
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *HostFilter) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *HostFilter) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           DataCenter:"",
+// 		           WhiteList:nil,
+// 		           Enabled:false,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           DataCenter:"",
+// 		           WhiteList:nil,
+// 		           Enabled:false,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			hf := &HostFilter{
+// 				DataCenter: test.fields.DataCenter,
+// 				WhiteList:  test.fields.WhiteList,
+// 				Enabled:    test.fields.Enabled,
+// 			}
+//
+// 			got := hf.Bind()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

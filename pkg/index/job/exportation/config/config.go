@@ -23,17 +23,10 @@ type GlobalConfig = config.GlobalConfig
 
 // Data represents the application configurations.
 type Data struct {
-	// GlobalConfig represents application base configurations.
+	Server              *config.Servers       `json:"server_config" yaml:"server_config"`
+	Observability       *config.Observability `json:"observability" yaml:"observability"`
+	Exporter            *config.IndexExporter `json:"exporter"      yaml:"exporter"`
 	config.GlobalConfig `json:",inline" yaml:",inline"`
-
-	// Server represent all server configurations
-	Server *config.Servers `json:"server_config" yaml:"server_config"`
-
-	// Observability represents observability configurations.
-	Observability *config.Observability `json:"observability" yaml:"observability"`
-
-	// Exporter represents auto indexing service configurations.
-	Exporter *config.IndexExporter `json:"exporter" yaml:"exporter"`
 }
 
 // NewConfig load configurations from file path.

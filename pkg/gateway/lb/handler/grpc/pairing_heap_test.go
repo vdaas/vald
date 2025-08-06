@@ -27,9 +27,9 @@ import (
 
 func TestPairingHeap(t *testing.T) {
 	type test struct {
+		checkFunc func([]*DistPayload) error
 		name      string
 		args      []*DistPayload
-		checkFunc func([]*DistPayload) error
 	}
 	defaultCheckFunc := func(got []*DistPayload) error {
 		last := got[0].distance

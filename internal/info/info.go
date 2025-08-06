@@ -36,14 +36,18 @@ type Info interface {
 }
 
 type info struct {
-	baseURL      string // e.g https://github.com/vdaas/vald/tree/main
-	detail       Detail
-	prepOnce     sync.Once
+	// valdReplacer is a strings.Replacer.
 	valdReplacer *strings.Replacer
-
-	// runtime functions
-	rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
-	rtFuncForPC func(pc uintptr) *runtime.Func
+	// rtCaller is a function to get runtime caller.
+	rtCaller     func(skip int) (pc uintptr, file string, line int, ok bool)
+	// rtFuncForPC is a function to get runtime function for PC.
+	rtFuncForPC  func(pc uintptr) *runtime.Func
+	// baseURL is a base URL.
+	baseURL      string
+	// detail is a Detail.
+	detail       Detail
+	// prepOnce is a sync.Once.
+	prepOnce     sync.Once
 }
 
 // Detail represents environment information of system and stacktrace information.
@@ -346,7 +350,7 @@ func (i info) getDetail() Detail {
 			}
 		case func() bool {
 			idx = strings.Index(file, goSrc)
-			return idx >= 0 && strings.Index(file, valdRepo) >= 0
+			return idx >= 0 && strings.Contains(file, valdRepo)
 		}():
 			url = i.valdReplacer.Replace(file[idx+goSrcLen:])
 		case strings.HasPrefix(file, valdRepo):

@@ -25,10 +25,14 @@ import (
 )
 
 type cache[V any] struct {
+	// Gache instance.
 	gache          gache.Gache[V]
-	expireDur      time.Duration
-	expireCheckDur time.Duration
+	// Hook for expired cache.
 	expiredHook    func(context.Context, string, V)
+	// Expiration duration.
+	expireDur      time.Duration
+	// Expiration check duration.
+	expireCheckDur time.Duration
 }
 
 // New loads a cache model and returns a new cache struct.

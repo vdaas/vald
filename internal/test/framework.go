@@ -98,7 +98,7 @@ func Run[T, A any](ctx context.Context, t *testing.T, do Do[T, A], tests ...Case
 					}
 					checkFunc := test.CheckFunc
 					if checkFunc == nil {
-						checkFunc = DefaultCheck
+						checkFunc = DefaultCheck[T]
 					}
 					got, err := do(tt, args)
 					if err = checkFunc(tt, test.Want, Result[T]{

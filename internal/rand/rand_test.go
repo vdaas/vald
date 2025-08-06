@@ -33,8 +33,8 @@ func clearPool() {
 
 func TestUint32(t *testing.T) {
 	type test struct {
-		name       string
 		beforeFunc func(*testing.T)
+		name       string
 	}
 
 	tests := []test{
@@ -64,8 +64,8 @@ func TestUint32(t *testing.T) {
 
 func TestLimitedUint32(t *testing.T) {
 	type test struct {
-		name       string
 		beforeFunc func(*testing.T)
+		name       string
 		max        uint64
 	}
 
@@ -97,8 +97,8 @@ func TestLimitedUint32(t *testing.T) {
 
 func Test_rand_Uint32(t *testing.T) {
 	type test struct {
-		name string
 		x    *uint32
+		name string
 	}
 
 	tests := []test{
@@ -132,8 +132,8 @@ func Test_rand_Uint32(t *testing.T) {
 
 func Test_rand_init(t *testing.T) {
 	type test struct {
-		name      string
 		checkFunc func(*rand) error
+		name      string
 	}
 
 	tests := []test{
@@ -168,11 +168,11 @@ func TestFloat32(t *testing.T) {
 		max float32
 	}
 	type test struct {
-		name       string
-		want       want
 		checkFunc  func(want, float32) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
+		name       string
+		want       want
 	}
 	defaultCheckFunc := func(w want, got float32) error {
 		if w.min > got || w.max < got {

@@ -40,12 +40,12 @@ func TestNew(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, Worker, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got Worker, err error) error {
 		if !errors.Is(err, w.err) {
@@ -175,12 +175,12 @@ func Test_worker_Start(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		name           string
-		limitation     int
 		running        atomic.Value
 		eg             errgroup.Group
 		queue          Queue
+		name           string
 		qopts          []QueueOption
+		limitation     int
 		requestedCount uint64
 		completedCount uint64
 	}
@@ -189,13 +189,13 @@ func Test_worker_Start(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		args       args
 		checkFunc  func(want, <-chan error, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
 		if !errors.Is(err, w.err) {
@@ -219,7 +219,7 @@ func Test_worker_Start(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "Start without error",
 				args: args{
@@ -265,7 +265,7 @@ func Test_worker_Start(t *testing.T) {
 		{
 			name: "return queue start error",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 			},
 			fields: fields{
 				name:       "worker",
@@ -325,12 +325,12 @@ func Test_worker_startJobLoop(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		name           string
-		limitation     int
 		running        atomic.Value
 		eg             errgroup.Group
 		queue          Queue
+		name           string
 		qopts          []QueueOption
+		limitation     int
 		requestedCount uint64
 		completedCount uint64
 	}
@@ -338,13 +338,13 @@ func Test_worker_startJobLoop(t *testing.T) {
 		want <-chan error
 	}
 	type test struct {
-		name       string
 		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, <-chan error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got <-chan error) error {
 		if w.want == nil && got == nil {
@@ -363,7 +363,7 @@ func Test_worker_startJobLoop(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "start job loop with empty job list",
 				args: args{
@@ -395,7 +395,7 @@ func Test_worker_startJobLoop(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			err := errors.New("error")
 			return test{
 				name: "start job loop with queue pop error",
@@ -425,7 +425,7 @@ func Test_worker_startJobLoop(t *testing.T) {
 						return errors.New("got chan len 0")
 					}
 					for e := range got {
-						if e != err {
+						if !errors.Is(e, err) {
 							return errors.New("invalid error")
 						}
 					}
@@ -434,7 +434,7 @@ func Test_worker_startJobLoop(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "start job loop with a job",
 				args: args{
@@ -470,7 +470,7 @@ func Test_worker_startJobLoop(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			err := errors.New("error")
 			return test{
 				name: "start job loop with a job which return error",
@@ -503,7 +503,7 @@ func Test_worker_startJobLoop(t *testing.T) {
 						return errors.New("got chan len 0")
 					}
 					for e := range got {
-						if e != err {
+						if !errors.Is(e, err) {
 							return errors.New("invalid error")
 						}
 					}
@@ -512,7 +512,7 @@ func Test_worker_startJobLoop(t *testing.T) {
 			}
 		}(),
 		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			return test{
 				name: "start job loop with queue pop a nil job without error",
 				args: args{
@@ -582,23 +582,23 @@ func Test_worker_startJobLoop(t *testing.T) {
 
 func Test_worker_Pause(t *testing.T) {
 	type fields struct {
-		name           string
-		limitation     int
 		running        atomic.Value
 		eg             errgroup.Group
 		queue          Queue
+		name           string
 		qopts          []QueueOption
+		limitation     int
 		requestedCount uint64
 		completedCount uint64
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *worker) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, worker *worker) error {
 		return nil
@@ -656,23 +656,23 @@ func Test_worker_Pause(t *testing.T) {
 
 func Test_worker_Resume(t *testing.T) {
 	type fields struct {
-		name           string
-		limitation     int
 		running        atomic.Value
 		eg             errgroup.Group
 		queue          Queue
+		name           string
 		qopts          []QueueOption
+		limitation     int
 		requestedCount uint64
 		completedCount uint64
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		fields     fields
 		want       want
 		checkFunc  func(want, *worker) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, worker *worker) error {
 		return nil
@@ -730,12 +730,12 @@ func Test_worker_Resume(t *testing.T) {
 
 func Test_worker_IsRunning(t *testing.T) {
 	type fields struct {
-		name           string
-		limitation     int
 		running        atomic.Value
 		eg             errgroup.Group
 		queue          Queue
+		name           string
 		qopts          []QueueOption
+		limitation     int
 		requestedCount uint64
 		completedCount uint64
 	}
@@ -743,12 +743,12 @@ func Test_worker_IsRunning(t *testing.T) {
 		want bool
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		fields     fields
+		want       want
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -818,12 +818,12 @@ func Test_worker_IsRunning(t *testing.T) {
 
 func Test_worker_Name(t *testing.T) {
 	type fields struct {
-		name           string
-		limitation     int
 		running        atomic.Value
 		eg             errgroup.Group
 		queue          Queue
+		name           string
 		qopts          []QueueOption
+		limitation     int
 		requestedCount uint64
 		completedCount uint64
 	}
@@ -831,12 +831,12 @@ func Test_worker_Name(t *testing.T) {
 		want string
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		want       want
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -891,12 +891,12 @@ func Test_worker_Name(t *testing.T) {
 
 func Test_worker_Len(t *testing.T) {
 	type fields struct {
-		name           string
-		limitation     int
 		running        atomic.Value
 		eg             errgroup.Group
 		queue          Queue
+		name           string
 		qopts          []QueueOption
+		limitation     int
 		requestedCount uint64
 		completedCount uint64
 	}
@@ -904,12 +904,12 @@ func Test_worker_Len(t *testing.T) {
 		want uint64
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, uint64) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		fields     fields
+		want       want
 	}
 	defaultCheckFunc := func(w want, got uint64) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -968,12 +968,12 @@ func Test_worker_Len(t *testing.T) {
 
 func Test_worker_TotalRequested(t *testing.T) {
 	type fields struct {
-		name           string
-		limitation     int
 		running        atomic.Value
 		eg             errgroup.Group
 		queue          Queue
+		name           string
 		qopts          []QueueOption
+		limitation     int
 		requestedCount uint64
 		completedCount uint64
 	}
@@ -981,12 +981,12 @@ func Test_worker_TotalRequested(t *testing.T) {
 		want uint64
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, uint64) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		fields     fields
+		want       want
 	}
 	defaultCheckFunc := func(w want, got uint64) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1041,12 +1041,12 @@ func Test_worker_TotalRequested(t *testing.T) {
 
 func Test_worker_TotalCompleted(t *testing.T) {
 	type fields struct {
-		name           string
-		limitation     int
 		running        atomic.Value
 		eg             errgroup.Group
 		queue          Queue
+		name           string
 		qopts          []QueueOption
+		limitation     int
 		requestedCount uint64
 		completedCount uint64
 	}
@@ -1054,12 +1054,12 @@ func Test_worker_TotalCompleted(t *testing.T) {
 		want uint64
 	}
 	type test struct {
-		name       string
-		fields     fields
-		want       want
 		checkFunc  func(want, uint64) error
 		beforeFunc func()
 		afterFunc  func()
+		name       string
+		fields     fields
+		want       want
 	}
 	defaultCheckFunc := func(w want, got uint64) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1118,12 +1118,12 @@ func Test_worker_Dispatch(t *testing.T) {
 		f   JobFunc
 	}
 	type fields struct {
-		name           string
-		limitation     int
 		running        atomic.Value
 		eg             errgroup.Group
 		queue          Queue
+		name           string
 		qopts          []QueueOption
+		limitation     int
 		requestedCount uint64
 		completedCount uint64
 	}
@@ -1131,13 +1131,13 @@ func Test_worker_Dispatch(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
 		args       args
-		fields     fields
 		want       want
 		checkFunc  func(*worker, want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(worker *worker, w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1149,7 +1149,7 @@ func Test_worker_Dispatch(t *testing.T) {
 		{
 			name: "return error if the worker is not started yet",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 			},
 			fields: fields{
 				name: "test",
@@ -1165,7 +1165,7 @@ func Test_worker_Dispatch(t *testing.T) {
 		{
 			name: "return error if the job is failed to push to worker queue",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 				f: JobFunc(func(context.Context) error {
 					return nil
 				}),
@@ -1189,7 +1189,7 @@ func Test_worker_Dispatch(t *testing.T) {
 		{
 			name: "return nil if the job is nil",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 				f:   nil,
 			},
 			fields: fields{
@@ -1205,7 +1205,7 @@ func Test_worker_Dispatch(t *testing.T) {
 		{
 			name: "request count is incremented if the job is pushed",
 			args: args{
-				ctx: context.Background(),
+				ctx: t.Context(),
 				f: JobFunc(func(context.Context) error {
 					return nil
 				}),

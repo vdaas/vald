@@ -24,9 +24,9 @@ import (
 
 func TestWithConfig(t *testing.T) {
 	type test struct {
-		name      string
 		cfg       *config.Servers
 		checkFunc func(Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -62,9 +62,9 @@ func TestWithConfig(t *testing.T) {
 
 func TestWithGRPC(t *testing.T) {
 	type test struct {
-		name      string
 		opts      func(cfg *config.Server) []server.Option
 		checkFunc func(Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -102,9 +102,9 @@ func TestWithGRPC(t *testing.T) {
 
 func TestWithREST(t *testing.T) {
 	type test struct {
-		name      string
 		opts      func(cfg *config.Server) []server.Option
 		checkFunc func(Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -142,9 +142,9 @@ func TestWithREST(t *testing.T) {
 
 func TestWithGQL(t *testing.T) {
 	type test struct {
-		name      string
 		opts      func(cfg *config.Server) []server.Option
 		checkFunc func(Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -182,14 +182,14 @@ func TestWithGQL(t *testing.T) {
 
 func TestWithPreStartFunc(t *testing.T) {
 	type args struct {
-		name string
 		fn   func() error
+		name string
 	}
 
 	type test struct {
-		name      string
 		args      args
 		checkFunc func(Option) error
+		name      string
 	}
 
 	tests := []test{
@@ -234,14 +234,14 @@ func TestWithPreStartFunc(t *testing.T) {
 
 func TestWithPreStopFunc(t *testing.T) {
 	type args struct {
-		name string
 		fn   func() error
+		name string
 	}
 
 	type test struct {
-		name      string
 		args      args
 		checkFunc func(Option) error
+		name      string
 	}
 
 	tests := []test{

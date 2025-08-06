@@ -36,6 +36,7 @@ import (
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/k8s/vald"
 	kvald "github.com/vdaas/vald/internal/k8s/vald"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -83,12 +84,12 @@ func TestNew(t *testing.T) {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -632,12 +633,12 @@ func Test_needsBackup(t *testing.T) {
 		need bool
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
+		name       string
+		args       args
+		want       want
 	}
 	defaultCheckFunc := func(w want, need bool) error {
 		if need != w.need {
@@ -823,9 +824,10 @@ func Test_needsBackup(t *testing.T) {
 func TestNGT_GetObject(t *testing.T) {
 	t.Parallel()
 
+	// FIX: field order corrected to match struct literal.
 	type test struct {
-		name     string
 		testfunc func(t *testing.T)
+		name     string
 	}
 
 	tests := []test{
@@ -933,9 +935,9 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		opts []Option
 	}
 	type test struct {
+		want error
 		name string
 		args args
-		want error
 	}
 
 	setup := func(t *testing.T) string {
@@ -1001,9 +1003,9 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		opts []Option
 	}
 	type test struct {
+		want error
 		name string
 		args args
-		want error
 	}
 
 	setup := func(t *testing.T) string {
@@ -1069,9 +1071,9 @@ func Test_ngt_Close(t *testing.T) {
 		opts []Option
 	}
 	type test struct {
+		want error
 		name string
 		args args
-		want error
 	}
 
 	setup := func(t *testing.T) string {
@@ -1122,9 +1124,10 @@ func TestExportIndexInfo(t *testing.T) {
 	config.EnableExportIndexInfoToK8s = true
 	config.PodName = "test-pod"
 
+	// FIX: field order corrected to match struct literal.
 	type test struct {
-		name     string
 		testfunc func(t *testing.T)
+		name     string
 	}
 
 	tests := []test{
@@ -1361,57 +1364,56 @@ func Test_ngt_InsertUpsert(t *testing.T) {
 		bulkSize int
 	}
 	type fields struct {
-		svcCfg  *config.NGT
-		svcOpts []Option
-
+		tmpPath           atomic.Value
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmu               sync.Mutex
-		fmap              map[string]uint32
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
-		cimu              sync.Mutex
-		lastNocie         uint64
+		fmap              map[string]uint32
+		svcCfg            *config.NGT
+		basePath          string
+		oldPath           string
+		path              string
+		svcOpts           []Option
+		sdur              time.Duration
 		nocie             uint64
-		nogce             uint64
-		inMem             bool
 		dim               int
 		alen              int
 		lim               time.Duration
+		nogce             uint64
 		dur               time.Duration
-		sdur              time.Duration
 		minLit            time.Duration
 		maxLit            time.Duration
 		litFactor         time.Duration
-		enableProactiveGC bool
-		enableCopyOnWrite bool
-		path              string
-		smu               sync.Mutex
-		tmpPath           atomic.Value
-		oldPath           string
-		basePath          string
-		cowmu             sync.Mutex
+		kvsdbConcurrency  int
+		idelay            time.Duration
+		lastNocie         uint64
 		backupGen         uint64
+		smu               sync.Mutex
+		cimu              sync.Mutex
+		fmu               sync.Mutex
+		cowmu             sync.Mutex
 		poolSize          uint32
 		radius            float32
 		epsilon           float32
-		idelay            time.Duration
+		inMem             bool
+		enableCopyOnWrite bool
 		dcd               bool
-		kvsdbConcurrency  int
+		enableProactiveGC bool
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1540,20 +1542,19 @@ func Test_ngt_E2E(t *testing.T) {
 		return
 	}
 	type args struct {
+		client   grpc.Client
+		addr     string
 		requests []*payload.Upsert_MultiRequest
-
-		addr   string
-		client grpc.Client
 	}
 	type want struct {
 		err error
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	multiUpsertRequestGenFunc := func(indices []index, chunk int) (res []*payload.Upsert_MultiRequest) {
 		reqs := make([]*payload.Upsert_Request, 0, chunk)
@@ -1776,23 +1777,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -1800,28 +1803,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -1846,23 +1847,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -1870,28 +1873,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1914,23 +1915,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -1938,28 +1941,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1991,23 +1992,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -2015,28 +2018,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			n.copyNGT(test.args.src)
@@ -2141,23 +2142,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -2165,28 +2168,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -2216,23 +2217,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -2240,28 +2243,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2284,23 +2285,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -2308,28 +2311,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2361,23 +2362,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -2385,28 +2388,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.prepareFolders(test.args.ctx)
@@ -2425,23 +2426,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -2449,28 +2452,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -2502,23 +2503,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -2526,28 +2529,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2572,23 +2573,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -2596,28 +2599,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2649,23 +2650,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -2673,28 +2676,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.load(test.args.ctx, test.args.path, test.args.opts...)
@@ -2711,23 +2712,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -2735,28 +2738,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -2786,23 +2787,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -2810,28 +2813,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2854,23 +2855,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -2878,28 +2881,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2931,23 +2932,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -2955,28 +2958,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.backupBroken(test.args.ctx)
@@ -2995,23 +2996,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -3019,28 +3022,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -3072,23 +3073,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -3096,28 +3099,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3142,23 +3143,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -3166,28 +3169,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3219,23 +3220,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -3243,28 +3246,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.rebuild(test.args.ctx, test.args.path, test.args.opts...)
@@ -3281,23 +3282,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -3305,28 +3308,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -3356,23 +3357,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -3380,28 +3383,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3424,23 +3425,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -3448,28 +3451,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3501,23 +3502,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -3525,28 +3528,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.initNGT(test.args.opts...)
@@ -3565,23 +3566,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -3589,28 +3592,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -3642,23 +3643,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -3666,28 +3669,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3712,23 +3713,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -3736,28 +3739,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3789,23 +3790,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -3813,28 +3816,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.loadKVS(test.args.ctx, test.args.path, test.args.timeout)
@@ -3851,23 +3852,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -3875,28 +3878,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -3926,23 +3927,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -3950,28 +3953,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3994,23 +3995,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -4018,28 +4021,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4071,23 +4072,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -4095,28 +4098,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			got := n.Start(test.args.ctx)
@@ -4137,23 +4138,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -4161,28 +4164,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -4220,23 +4221,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -4244,28 +4247,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4292,23 +4293,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -4316,28 +4319,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4369,23 +4370,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -4393,28 +4396,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			gotRes, err := n.Search(test.args.ctx, test.args.vec, test.args.size, test.args.epsilon, test.args.radius)
@@ -4435,23 +4436,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -4459,28 +4462,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		wantVec []float32
@@ -4522,23 +4523,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -4546,28 +4549,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4594,23 +4595,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -4618,28 +4621,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4671,23 +4672,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -4695,28 +4698,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			gotVec, gotDst, err := n.SearchByID(test.args.ctx, test.args.uuid, test.args.size, test.args.epsilon, test.args.radius)
@@ -4735,23 +4736,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -4759,28 +4762,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -4816,23 +4817,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -4840,28 +4843,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4886,23 +4887,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -4910,28 +4913,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4963,23 +4964,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -4987,28 +4990,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			gotRes, err := n.LinearSearch(test.args.ctx, test.args.vec, test.args.size)
@@ -5027,23 +5028,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -5051,28 +5054,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		wantVec []float32
@@ -5112,23 +5113,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -5136,28 +5139,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -5182,23 +5183,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -5206,28 +5209,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -5259,23 +5260,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -5283,28 +5286,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			gotVec, gotDst, err := n.LinearSearchByID(test.args.ctx, test.args.uuid, test.args.size)
@@ -5322,23 +5323,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -5346,28 +5349,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -5398,23 +5399,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -5422,28 +5425,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -5467,23 +5468,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -5491,28 +5494,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -5544,23 +5545,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -5568,28 +5571,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.Insert(test.args.uuid, test.args.vec)
@@ -5608,23 +5609,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -5632,28 +5635,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -5685,23 +5686,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -5709,28 +5712,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -5755,23 +5756,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -5779,28 +5782,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -5832,23 +5833,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -5856,28 +5859,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.InsertWithTime(test.args.uuid, test.args.vec, test.args.t)
@@ -5897,23 +5898,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -5921,28 +5924,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -5975,23 +5976,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -5999,28 +6002,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -6046,23 +6047,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -6070,28 +6073,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -6123,23 +6124,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -6147,28 +6150,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.insert(test.args.uuid, test.args.vec, test.args.t, test.args.validation)
@@ -6185,23 +6186,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -6209,28 +6212,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -6260,23 +6261,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -6284,28 +6287,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -6328,23 +6329,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -6352,28 +6355,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -6405,23 +6406,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -6429,28 +6432,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.InsertMultiple(test.args.vecs)
@@ -6468,23 +6469,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -6492,28 +6495,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -6544,23 +6545,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -6568,28 +6571,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -6613,23 +6614,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -6637,28 +6640,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -6690,23 +6691,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -6714,28 +6717,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.InsertMultipleWithTime(test.args.vecs, test.args.t)
@@ -6754,23 +6755,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -6778,28 +6781,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -6831,23 +6832,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -6855,28 +6858,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -6901,23 +6902,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -6925,28 +6928,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -6978,23 +6979,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -7002,28 +7005,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.insertMultiple(test.args.vecs, test.args.now, test.args.validation)
@@ -7041,23 +7042,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -7065,28 +7068,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -7117,23 +7118,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -7141,28 +7144,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -7186,23 +7187,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -7210,28 +7213,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -7263,23 +7264,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -7287,28 +7290,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.Update(test.args.uuid, test.args.vec)
@@ -7327,23 +7328,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -7351,28 +7354,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -7404,23 +7405,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -7428,28 +7431,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -7474,23 +7475,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -7498,28 +7501,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -7551,23 +7552,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -7575,28 +7578,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.UpdateWithTime(test.args.uuid, test.args.vec, test.args.t)
@@ -7615,23 +7616,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -7639,28 +7642,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -7692,23 +7693,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -7716,28 +7719,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -7762,23 +7763,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -7786,28 +7789,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -7839,23 +7840,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -7863,28 +7866,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.update(test.args.uuid, test.args.vec, test.args.t)
@@ -7901,23 +7902,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -7925,28 +7928,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -7976,23 +7977,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -8000,28 +8003,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -8044,23 +8045,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -8068,28 +8071,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -8121,23 +8122,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -8145,28 +8148,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.UpdateMultiple(test.args.vecs)
@@ -8184,23 +8185,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -8208,28 +8211,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -8260,23 +8261,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -8284,28 +8287,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -8329,23 +8330,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -8353,28 +8356,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -8406,23 +8407,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -8430,28 +8433,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.UpdateMultipleWithTime(test.args.vecs, test.args.t)
@@ -8469,23 +8470,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -8493,28 +8496,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -8545,23 +8546,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -8569,28 +8572,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -8614,23 +8615,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -8638,28 +8641,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -8691,23 +8692,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -8715,28 +8718,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.updateMultiple(test.args.vecs, test.args.t)
@@ -8755,23 +8756,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -8779,28 +8782,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -8832,23 +8833,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -8856,28 +8859,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -8902,23 +8903,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -8926,28 +8929,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -8979,23 +8980,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -9003,28 +9006,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.UpdateTimestamp(test.args.uuid, test.args.ts, test.args.force)
@@ -9041,23 +9042,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -9065,28 +9068,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -9116,23 +9117,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -9140,28 +9143,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -9184,23 +9185,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -9208,28 +9211,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -9261,23 +9262,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -9285,28 +9288,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.Delete(test.args.uuid)
@@ -9324,23 +9325,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -9348,28 +9351,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -9400,23 +9401,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -9424,28 +9427,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -9469,23 +9470,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -9493,28 +9496,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -9546,23 +9547,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -9570,28 +9573,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.DeleteWithTime(test.args.uuid, test.args.t)
@@ -9610,23 +9611,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -9634,28 +9637,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -9687,23 +9688,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -9711,28 +9714,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -9757,23 +9758,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -9781,28 +9784,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -9834,23 +9835,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -9858,28 +9861,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.delete(test.args.uuid, test.args.t, test.args.validation)
@@ -9896,23 +9897,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -9920,28 +9923,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -9971,23 +9972,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -9995,28 +9998,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -10039,23 +10040,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -10063,28 +10066,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -10116,23 +10117,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -10140,28 +10143,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.DeleteMultiple(test.args.uuids...)
@@ -10179,23 +10180,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -10203,28 +10206,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -10255,23 +10256,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -10279,28 +10282,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -10324,23 +10325,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -10348,28 +10351,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -10401,23 +10402,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -10425,28 +10428,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.DeleteMultipleWithTime(test.args.uuids, test.args.t)
@@ -10465,23 +10466,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -10489,28 +10492,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -10542,23 +10543,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -10566,28 +10569,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -10612,23 +10613,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -10636,28 +10639,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -10689,23 +10690,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -10713,28 +10716,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.deleteMultiple(test.args.uuids, test.args.now, test.args.validation)
@@ -10751,23 +10752,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -10775,28 +10778,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -10826,23 +10827,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -10850,28 +10853,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -10894,23 +10895,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -10918,28 +10921,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -10971,23 +10972,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -10995,28 +10998,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.RegenerateIndexes(test.args.ctx)
@@ -11033,23 +11034,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -11057,28 +11060,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -11108,23 +11109,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -11132,28 +11135,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -11176,23 +11177,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -11200,28 +11203,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -11253,23 +11254,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -11277,28 +11280,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.loadStatistics(test.args.ctx)
@@ -11315,23 +11316,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -11339,28 +11342,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -11385,23 +11386,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -11409,28 +11412,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -11453,23 +11454,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -11477,28 +11480,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -11530,23 +11531,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -11554,28 +11557,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			n.removeInvalidIndex(test.args.ctx)
@@ -11592,23 +11593,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -11616,28 +11619,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -11667,23 +11668,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -11691,28 +11694,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -11735,23 +11736,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -11759,28 +11762,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -11812,23 +11813,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -11836,28 +11839,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.saveIndex(test.args.ctx)
@@ -11875,23 +11876,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -11899,28 +11902,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -11951,23 +11952,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -11975,28 +11978,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -12020,23 +12021,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -12044,28 +12047,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -12097,23 +12098,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -12121,28 +12124,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.CreateAndSaveIndex(test.args.ctx, test.args.poolSize)
@@ -12159,23 +12160,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -12183,28 +12186,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -12234,23 +12235,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -12258,28 +12261,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -12302,23 +12303,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -12326,28 +12329,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -12379,23 +12380,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -12403,28 +12406,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.moveAndSwitchSavedData(test.args.ctx)
@@ -12438,23 +12439,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_mktmp(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -12462,28 +12465,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -12509,23 +12510,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -12533,28 +12536,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -12574,23 +12575,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -12598,28 +12601,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -12651,23 +12652,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -12675,28 +12678,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.mktmp()
@@ -12713,23 +12714,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -12737,28 +12740,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		wantOid uint32
@@ -12792,23 +12793,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -12816,28 +12819,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -12860,23 +12861,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -12884,28 +12887,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -12937,23 +12938,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -12961,28 +12964,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			gotOid, gotOk := n.Exists(test.args.uuid)
@@ -12999,23 +13000,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -13023,28 +13026,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		wantVec       []float32
@@ -13082,23 +13083,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -13106,28 +13109,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -13150,23 +13151,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -13174,28 +13177,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -13227,23 +13228,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -13251,28 +13254,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			gotVec, gotTimestamp, err := n.GetObject(test.args.uuid)
@@ -13291,23 +13292,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -13315,28 +13318,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -13368,23 +13369,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -13392,28 +13395,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -13438,23 +13439,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -13462,28 +13465,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -13515,23 +13516,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -13539,28 +13542,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.readyForUpdate(test.args.uuid, test.args.vec, test.args.ts)
@@ -13574,23 +13575,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_IsSaving(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -13598,28 +13601,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		want bool
@@ -13645,23 +13646,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -13669,28 +13672,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -13710,23 +13711,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -13734,28 +13737,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -13787,23 +13788,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -13811,28 +13814,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			got := n.IsSaving()
@@ -13846,23 +13847,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_IsIndexing(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -13870,28 +13873,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		want bool
@@ -13917,23 +13918,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -13941,28 +13944,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -13982,23 +13983,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -14006,28 +14009,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -14059,23 +14060,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -14083,28 +14086,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			got := n.IsIndexing()
@@ -14118,23 +14119,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_IsFlushing(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -14142,28 +14145,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		want bool
@@ -14189,23 +14190,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -14213,28 +14216,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -14254,23 +14255,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -14278,28 +14281,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -14331,23 +14332,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -14355,28 +14358,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			got := n.IsFlushing()
@@ -14393,23 +14394,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -14417,28 +14420,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		wantUuids []string
@@ -14468,23 +14469,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -14492,28 +14495,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -14536,23 +14537,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -14560,28 +14563,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -14613,23 +14614,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -14637,28 +14640,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			gotUuids := n.UUIDs(test.args.ctx)
@@ -14672,23 +14673,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -14696,28 +14699,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -14743,23 +14744,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -14767,28 +14770,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -14808,23 +14809,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -14832,28 +14835,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -14885,23 +14886,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -14909,28 +14912,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			got := n.NumberOfCreateIndexExecution()
@@ -14944,23 +14945,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -14968,28 +14971,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -15015,23 +15016,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -15039,28 +15042,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -15080,23 +15081,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -15104,28 +15107,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -15157,23 +15158,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -15181,28 +15184,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			got := n.NumberOfProactiveGCExecution()
@@ -15216,23 +15217,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_lastNumberOfCreateIndexExecution(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -15240,28 +15243,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -15287,23 +15288,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -15311,28 +15314,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -15352,23 +15353,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -15376,28 +15379,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -15429,23 +15430,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -15453,28 +15456,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			got := n.lastNumberOfCreateIndexExecution()
@@ -15488,23 +15489,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_gc(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -15512,28 +15515,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -15554,23 +15555,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -15578,28 +15581,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -15619,23 +15620,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -15643,28 +15646,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -15696,23 +15697,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -15720,28 +15723,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			n.gc()
@@ -15755,23 +15756,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_Len(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -15779,28 +15782,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -15826,23 +15827,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -15850,28 +15853,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -15891,23 +15892,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -15915,28 +15918,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -15968,23 +15969,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -15992,28 +15995,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			got := n.Len()
@@ -16027,23 +16028,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -16051,28 +16054,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -16098,23 +16099,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -16122,28 +16125,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -16163,23 +16164,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -16187,28 +16190,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -16240,23 +16241,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -16264,28 +16267,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			got := n.InsertVQueueBufferLen()
@@ -16299,23 +16300,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -16323,28 +16326,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -16370,23 +16371,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -16394,28 +16397,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -16435,23 +16436,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -16459,28 +16462,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -16512,23 +16513,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -16536,28 +16539,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			got := n.DeleteVQueueBufferLen()
@@ -16571,23 +16572,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_GetDimensionSize(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -16595,28 +16598,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		want int
@@ -16642,23 +16643,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -16666,28 +16669,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -16707,23 +16708,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -16731,28 +16734,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -16784,23 +16785,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -16808,28 +16811,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			got := n.GetDimensionSize()
@@ -16843,23 +16844,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_BrokenIndexCount(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -16867,28 +16870,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		want uint64
@@ -16914,23 +16915,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -16938,28 +16941,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -16979,23 +16980,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -17003,28 +17006,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -17056,23 +17057,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -17080,28 +17083,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			got := n.BrokenIndexCount()
@@ -17119,23 +17120,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -17143,28 +17146,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -17190,23 +17191,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -17214,28 +17217,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -17259,23 +17260,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -17283,28 +17286,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -17336,23 +17337,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -17360,28 +17363,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			n.ListObjectFunc(test.args.ctx, test.args.f)
@@ -17395,23 +17396,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_IndexStatistics(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -17419,28 +17422,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		wantStats *payload.Info_Index_Statistics
@@ -17470,23 +17471,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -17494,28 +17497,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -17535,23 +17536,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -17559,28 +17562,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -17612,23 +17613,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -17636,28 +17639,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			gotStats, err := n.IndexStatistics()
@@ -17671,23 +17672,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_IsStatisticsEnabled(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -17695,28 +17698,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		want bool
@@ -17742,23 +17743,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -17766,28 +17769,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -17807,23 +17808,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -17831,28 +17834,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -17884,23 +17885,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -17908,28 +17911,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			got := n.IsStatisticsEnabled()
@@ -17943,23 +17944,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_IndexProperty(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -17967,28 +17970,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		want *payload.Info_Index_Property
@@ -18018,23 +18019,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -18042,28 +18045,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -18083,23 +18084,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -18107,28 +18110,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -18160,23 +18161,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -18184,28 +18187,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			got, err := n.IndexProperty()
@@ -18222,23 +18223,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -18246,28 +18249,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -18301,23 +18302,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -18325,28 +18328,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -18369,23 +18370,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -18393,28 +18396,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -18446,23 +18447,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -18470,28 +18473,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			gotRes, err := n.toSearchResponse(test.args.sr)
@@ -18505,23 +18506,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_uncommittedEntry(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -18529,28 +18532,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		wantK string
@@ -18580,23 +18581,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -18604,28 +18607,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -18645,23 +18646,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -18669,28 +18672,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -18722,23 +18723,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -18746,28 +18749,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			gotK, gotV := n.uncommittedEntry()
@@ -18781,23 +18782,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_processedVqEntries(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -18805,28 +18808,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		wantK string
@@ -18856,23 +18857,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -18880,28 +18883,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -18921,23 +18922,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -18945,28 +18948,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -18998,23 +18999,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -19022,28 +19025,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			gotK, gotV := n.processedVqEntries()
@@ -19057,23 +19058,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_unsavedNumberOfCreateIndexExecutionEntry(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -19081,28 +19084,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		wantK string
@@ -19132,23 +19133,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -19156,28 +19159,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -19197,23 +19198,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -19221,28 +19224,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -19274,23 +19275,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -19298,28 +19301,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			gotK, gotV := n.unsavedNumberOfCreateIndexExecutionEntry()
@@ -19336,23 +19337,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -19360,28 +19363,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		wantK string
@@ -19415,23 +19416,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -19439,28 +19442,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -19483,23 +19484,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -19507,28 +19510,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -19560,23 +19561,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -19584,28 +19587,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			gotK, gotV := n.lastTimeSaveIndexTimestampEntry(test.args.timestamp)
@@ -19619,23 +19620,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // func Test_ngt_indexCountEntry(t *testing.T) {
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -19643,28 +19646,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		wantK string
@@ -19694,23 +19695,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -19718,28 +19721,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -19759,23 +19760,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -19783,28 +19786,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -19836,23 +19837,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -19860,28 +19863,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			gotK, gotV := n.indexCountEntry()
@@ -19898,23 +19899,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -19922,28 +19925,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -19973,23 +19974,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -19997,28 +20000,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -20041,23 +20042,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -20065,28 +20068,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -20118,23 +20119,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -20142,28 +20145,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.exportMetricsOnTick(test.args.ctx)
@@ -20180,23 +20181,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -20204,28 +20207,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -20255,23 +20256,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -20279,28 +20282,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -20323,23 +20324,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -20347,28 +20350,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -20400,23 +20401,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -20424,28 +20427,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.exportMetricsOnCreateIndex(test.args.ctx)
@@ -20462,23 +20463,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type fields struct {
 // 		core                    core.NGT
-// 		eg                      errgroup.Group
+// 		tmpPath                 atomic.Value
 // 		kvs                     kvs.BidiMap
-// 		fmap                    map[string]int64
+// 		saving                  atomic.Value
+// 		eg                      errgroup.Group
 // 		vq                      vqueue.Queue
 // 		indexing                atomic.Value
-// 		flushing                atomic.Bool
-// 		saving                  atomic.Value
-// 		lastNocie               uint64
-// 		nocie                   uint64
-// 		nogce                   uint64
-// 		wfci                    uint64
-// 		nobic                   uint64
-// 		nopvq                   atomic.Uint64
+// 		patcher                 client.Patcher
+// 		fmap                    map[string]int64
+// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 		cfg                     *config.NGT
+// 		basePath                string
+// 		brokenPath              string
+// 		oldPath                 string
+// 		podName                 string
+// 		path                    string
+// 		podNamespace            string
 // 		opts                    []Option
-// 		inMem                   bool
-// 		dim                     int
+// 		nogce                   uint64
+// 		kvsdbConcurrency        int
 // 		alen                    int
 // 		lim                     time.Duration
 // 		dur                     time.Duration
@@ -20486,28 +20489,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		minLit                  time.Duration
 // 		maxLit                  time.Duration
 // 		litFactor               time.Duration
-// 		enableProactiveGC       bool
-// 		enableCopyOnWrite       bool
-// 		podName                 string
-// 		podNamespace            string
-// 		path                    string
-// 		tmpPath                 atomic.Value
-// 		oldPath                 string
-// 		basePath                string
-// 		brokenPath              string
+// 		exportIndexInfoDuration time.Duration
+// 		historyLimit            int
+// 		dim                     int
+// 		nopvq                   atomic.Uint64
+// 		nobic                   uint64
+// 		idelay                  time.Duration
+// 		wfci                    uint64
+// 		nocie                   uint64
+// 		lastNocie               uint64
+// 		flushing                atomic.Bool
 // 		poolSize                uint32
 // 		radius                  float32
 // 		epsilon                 float32
-// 		idelay                  time.Duration
 // 		dcd                     bool
-// 		kvsdbConcurrency        int
-// 		historyLimit            int
 // 		isReadReplica           bool
 // 		enableExportIndexInfo   bool
-// 		exportIndexInfoDuration time.Duration
-// 		patcher                 client.Patcher
+// 		enableProactiveGC       bool
+// 		enableCopyOnWrite       bool
 // 		enableStatistics        bool
-// 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+// 		inMem                   bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -20537,23 +20538,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       },
 // 		       fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -20561,28 +20564,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -20605,23 +20606,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           },
 // 		           fields: fields {
 // 		           core:nil,
-// 		           eg:nil,
+// 		           tmpPath:nil,
 // 		           kvs:nil,
-// 		           fmap:nil,
+// 		           saving:nil,
+// 		           eg:nil,
 // 		           vq:nil,
 // 		           indexing:nil,
-// 		           flushing:nil,
-// 		           saving:nil,
-// 		           lastNocie:0,
-// 		           nocie:0,
-// 		           nogce:0,
-// 		           wfci:0,
-// 		           nobic:0,
-// 		           nopvq:nil,
+// 		           patcher:nil,
+// 		           fmap:nil,
+// 		           statisticsCache:nil,
 // 		           cfg:nil,
+// 		           basePath:"",
+// 		           brokenPath:"",
+// 		           oldPath:"",
+// 		           podName:"",
+// 		           path:"",
+// 		           podNamespace:"",
 // 		           opts:nil,
-// 		           inMem:false,
-// 		           dim:0,
+// 		           nogce:0,
+// 		           kvsdbConcurrency:0,
 // 		           alen:0,
 // 		           lim:nil,
 // 		           dur:nil,
@@ -20629,28 +20632,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		           minLit:nil,
 // 		           maxLit:nil,
 // 		           litFactor:nil,
-// 		           enableProactiveGC:false,
-// 		           enableCopyOnWrite:false,
-// 		           podName:"",
-// 		           podNamespace:"",
-// 		           path:"",
-// 		           tmpPath:nil,
-// 		           oldPath:"",
-// 		           basePath:"",
-// 		           brokenPath:"",
+// 		           exportIndexInfoDuration:nil,
+// 		           historyLimit:0,
+// 		           dim:0,
+// 		           nopvq:nil,
+// 		           nobic:0,
+// 		           idelay:nil,
+// 		           wfci:0,
+// 		           nocie:0,
+// 		           lastNocie:0,
+// 		           flushing:nil,
 // 		           poolSize:0,
 // 		           radius:0,
 // 		           epsilon:0,
-// 		           idelay:nil,
 // 		           dcd:false,
-// 		           kvsdbConcurrency:0,
-// 		           historyLimit:0,
 // 		           isReadReplica:false,
 // 		           enableExportIndexInfo:false,
-// 		           exportIndexInfoDuration:nil,
-// 		           patcher:nil,
+// 		           enableProactiveGC:false,
+// 		           enableCopyOnWrite:false,
 // 		           enableStatistics:false,
-// 		           statisticsCache:nil,
+// 		           inMem:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -20682,23 +20683,25 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 			}
 // 			n := &ngt{
 // 				core:                    test.fields.core,
-// 				eg:                      test.fields.eg,
+// 				tmpPath:                 test.fields.tmpPath,
 // 				kvs:                     test.fields.kvs,
-// 				fmap:                    test.fields.fmap,
+// 				saving:                  test.fields.saving,
+// 				eg:                      test.fields.eg,
 // 				vq:                      test.fields.vq,
 // 				indexing:                test.fields.indexing,
-// 				flushing:                test.fields.flushing,
-// 				saving:                  test.fields.saving,
-// 				lastNocie:               test.fields.lastNocie,
-// 				nocie:                   test.fields.nocie,
-// 				nogce:                   test.fields.nogce,
-// 				wfci:                    test.fields.wfci,
-// 				nobic:                   test.fields.nobic,
-// 				nopvq:                   test.fields.nopvq,
+// 				patcher:                 test.fields.patcher,
+// 				fmap:                    test.fields.fmap,
+// 				statisticsCache:         test.fields.statisticsCache,
 // 				cfg:                     test.fields.cfg,
+// 				basePath:                test.fields.basePath,
+// 				brokenPath:              test.fields.brokenPath,
+// 				oldPath:                 test.fields.oldPath,
+// 				podName:                 test.fields.podName,
+// 				path:                    test.fields.path,
+// 				podNamespace:            test.fields.podNamespace,
 // 				opts:                    test.fields.opts,
-// 				inMem:                   test.fields.inMem,
-// 				dim:                     test.fields.dim,
+// 				nogce:                   test.fields.nogce,
+// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
 // 				alen:                    test.fields.alen,
 // 				lim:                     test.fields.lim,
 // 				dur:                     test.fields.dur,
@@ -20706,28 +20709,26 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				minLit:                  test.fields.minLit,
 // 				maxLit:                  test.fields.maxLit,
 // 				litFactor:               test.fields.litFactor,
-// 				enableProactiveGC:       test.fields.enableProactiveGC,
-// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
-// 				podName:                 test.fields.podName,
-// 				podNamespace:            test.fields.podNamespace,
-// 				path:                    test.fields.path,
-// 				tmpPath:                 test.fields.tmpPath,
-// 				oldPath:                 test.fields.oldPath,
-// 				basePath:                test.fields.basePath,
-// 				brokenPath:              test.fields.brokenPath,
+// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
+// 				historyLimit:            test.fields.historyLimit,
+// 				dim:                     test.fields.dim,
+// 				nopvq:                   test.fields.nopvq,
+// 				nobic:                   test.fields.nobic,
+// 				idelay:                  test.fields.idelay,
+// 				wfci:                    test.fields.wfci,
+// 				nocie:                   test.fields.nocie,
+// 				lastNocie:               test.fields.lastNocie,
+// 				flushing:                test.fields.flushing,
 // 				poolSize:                test.fields.poolSize,
 // 				radius:                  test.fields.radius,
 // 				epsilon:                 test.fields.epsilon,
-// 				idelay:                  test.fields.idelay,
 // 				dcd:                     test.fields.dcd,
-// 				kvsdbConcurrency:        test.fields.kvsdbConcurrency,
-// 				historyLimit:            test.fields.historyLimit,
 // 				isReadReplica:           test.fields.isReadReplica,
 // 				enableExportIndexInfo:   test.fields.enableExportIndexInfo,
-// 				exportIndexInfoDuration: test.fields.exportIndexInfoDuration,
-// 				patcher:                 test.fields.patcher,
+// 				enableProactiveGC:       test.fields.enableProactiveGC,
+// 				enableCopyOnWrite:       test.fields.enableCopyOnWrite,
 // 				enableStatistics:        test.fields.enableStatistics,
-// 				statisticsCache:         test.fields.statisticsCache,
+// 				inMem:                   test.fields.inMem,
 // 			}
 //
 // 			err := n.exportMetricsOnSaveIndex(test.args.ctx)

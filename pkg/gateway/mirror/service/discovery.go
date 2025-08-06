@@ -44,19 +44,17 @@ type Discovery interface {
 }
 
 type discovery struct {
-	namespace  string
-	labels     map[string]string
-	colocation string
-	der        net.Dialer
-
-	targetsByName   atomic.Pointer[map[string]target.Target] // latest reconciliation results.
+	der             net.Dialer
 	ctrl            k8s.Controller
-	dur             time.Duration
-	selfMirrAddrs   []string
+	mirr            Mirror
+	eg              errgroup.Group
+	labels          map[string]string
+	targetsByName   atomic.Pointer[map[string]target.Target]
+	namespace       string
+	colocation      string
 	selfMirrAddrStr string
-
-	mirr Mirror
-	eg   errgroup.Group
+	selfMirrAddrs   []string
+	dur             time.Duration
 }
 
 // NewDiscovery creates the Discovery object with optional configuration options.

@@ -44,24 +44,24 @@ func Test_server_Insert(t *testing.T) {
 		req *payload.Insert_Request
 	}
 	type fields struct {
+		svcCfg            *config.NGT
 		name              string
 		ip                string
-		streamConcurrency int
-		svcCfg            *config.NGT
 		svcOpts           []service.Option
+		streamConcurrency int
 	}
 	type want struct {
 		wantRes *payload.Object_Location
 		err     error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		args       args
 		checkFunc  func(want, *payload.Object_Location, error) error
 		beforeFunc func(*testing.T, *server)
 		afterFunc  func(args)
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1346,8 +1346,7 @@ func Test_server_Insert(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := t.Context()
 
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -1393,17 +1392,17 @@ func Test_server_StreamInsert(t *testing.T) {
 		ngtOpts []service.Option
 	}
 	type want struct {
-		errCode codes.Code
 		rpcResp []*payload.Object_StreamLocation
+		errCode codes.Code
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
 		checkFunc  func(want, []*payload.Object_StreamLocation, error) error
 		beforeFunc func(*testing.T, context.Context, args, Server)
 		afterFunc  func(args)
+		name       string
+		fields     fields
+		args       args
+		want       want
 	}
 
 	const (
@@ -2635,8 +2634,7 @@ func Test_server_StreamInsert(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := t.Context()
 
 			eg, _ := errgroup.New(ctx)
 			ngt, err := service.New(test.fields.ngtCfg,
@@ -2706,24 +2704,24 @@ func Test_server_MultiInsert(t *testing.T) {
 		reqs *payload.Insert_MultiRequest
 	}
 	type fields struct {
+		svcCfg            *config.NGT
 		name              string
 		ip                string
-		streamConcurrency int
-		svcCfg            *config.NGT
 		svcOpts           []service.Option
+		streamConcurrency int
 	}
 	type want struct {
 		wantRes *payload.Object_Locations
 		err     error
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
+		args       args
 		checkFunc  func(want, *payload.Object_Locations, error) error
 		beforeFunc func(*testing.T, context.Context, *server)
 		afterFunc  func(args)
+		name       string
+		fields     fields
 	}
 
 	// common variables for test
@@ -5538,8 +5536,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := t.Context()
 
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)

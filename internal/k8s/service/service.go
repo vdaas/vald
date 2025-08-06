@@ -37,25 +37,39 @@ type SvcWatcher k8s.ResourceController
 
 // Service represents a kubernetes service information.
 type Service struct {
-	Name        string
-	ClusterIP   string
-	ClusterIPs  []string
-	Ports       []servicePort
+	// Labels is a map of labels.
 	Labels      map[string]string
+	// Annotations is a map of annotations.
 	Annotations map[string]string
+	// Name is a name.
+	Name        string
+	// ClusterIP is a cluster IP.
+	ClusterIP   string
+	// ClusterIPs is a list of cluster IPs.
+	ClusterIPs  []string
+	// Ports is a list of service ports.
+	Ports       []servicePort
 }
 
 type servicePort struct {
+	// Name is a name.
 	Name string
+	// Port is a port.
 	Port int32
 }
 
 type reconciler struct {
+	// mgr is a manager.Manager.
 	mgr         manager.Manager
+	// name is a name.
 	name        string
+	// namespace is a namespace.
 	namespace   string
+	// onError is a function to call on error.
 	onError     func(err error)
+	// onReconcile is a function to call on reconcile.
 	onReconcile func(svcs []Service)
+	// lopts is a list of client.ListOption.
 	lopts       []client.ListOption
 }
 

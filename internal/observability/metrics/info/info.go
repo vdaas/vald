@@ -26,9 +26,12 @@ import (
 )
 
 type info struct {
-	name        string
-	description string
+	// kvs is a map of key-value pairs.
 	kvs         map[string]string
+	// name is a name.
+	name        string
+	// description is a description.
+	description string
 }
 
 // New creates new general info metric according to the provided struct.

@@ -17,11 +17,11 @@ package config
 //
 // func TestCircuitBreaker_Bind(t *testing.T) {
 // 	type fields struct {
-// 		ClosedErrorRate      float32
-// 		HalfOpenErrorRate    float32
-// 		MinSamples           int64
 // 		OpenTimeout          string
 // 		ClosedRefreshTimeout string
+// 		MinSamples           int64
+// 		ClosedErrorRate      float32
+// 		HalfOpenErrorRate    float32
 // 	}
 // 	type want struct {
 // 		want *CircuitBreaker
@@ -46,11 +46,11 @@ package config
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           ClosedErrorRate:0,
-// 		           HalfOpenErrorRate:0,
-// 		           MinSamples:0,
 // 		           OpenTimeout:"",
 // 		           ClosedRefreshTimeout:"",
+// 		           MinSamples:0,
+// 		           ClosedErrorRate:0,
+// 		           HalfOpenErrorRate:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -69,11 +69,11 @@ package config
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           ClosedErrorRate:0,
-// 		           HalfOpenErrorRate:0,
-// 		           MinSamples:0,
 // 		           OpenTimeout:"",
 // 		           ClosedRefreshTimeout:"",
+// 		           MinSamples:0,
+// 		           ClosedErrorRate:0,
+// 		           HalfOpenErrorRate:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -104,11 +104,11 @@ package config
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			cb := &CircuitBreaker{
-// 				ClosedErrorRate:      test.fields.ClosedErrorRate,
-// 				HalfOpenErrorRate:    test.fields.HalfOpenErrorRate,
-// 				MinSamples:           test.fields.MinSamples,
 // 				OpenTimeout:          test.fields.OpenTimeout,
 // 				ClosedRefreshTimeout: test.fields.ClosedRefreshTimeout,
+// 				MinSamples:           test.fields.MinSamples,
+// 				ClosedErrorRate:      test.fields.ClosedErrorRate,
+// 				HalfOpenErrorRate:    test.fields.HalfOpenErrorRate,
 // 			}
 //
 // 			got := cb.Bind()

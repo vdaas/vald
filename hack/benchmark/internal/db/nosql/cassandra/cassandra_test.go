@@ -60,10 +60,10 @@ type ReadMetaVector struct {
 }
 
 type MetaVector struct {
-	UUID   string   `json:"uuid"   db:"uuid"`
-	Vector []byte   `json:"vector" db:"vector"`
-	Meta   string   `json:"meta"   db:"meta"`
-	IPs    []string `json:"ips"    db:"ips"`
+	UUID   string   `db:"uuid"   json:"uuid"`
+	Vector []byte   `db:"vector" json:"vector"`
+	Meta   string   `db:"meta"   json:"meta"`
+	IPs    []string `db:"ips"    json:"ips"`
 }
 
 func init() {

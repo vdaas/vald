@@ -15,6 +15,7 @@ package operation
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"sync/atomic"
 	"testing"
@@ -75,7 +76,7 @@ func (o *operation) StreamSearch(ctx context.Context, b *testing.B, ds assets.Da
 
 			for {
 				res, err := sc.Recv()
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					return
 				}
 				if err != nil {
@@ -161,7 +162,7 @@ func (o *operation) StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum
 
 			for sc != nil {
 				res, err := sc.Recv()
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					finished.Store(true)
 					return
 				}

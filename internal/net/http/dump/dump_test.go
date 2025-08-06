@@ -37,9 +37,9 @@ func TestRequest(t *testing.T) {
 	}
 
 	type test struct {
-		name      string
 		args      args
 		checkFunc func(res any, err error) error
+		name      string
 	}
 
 	tests := []test{

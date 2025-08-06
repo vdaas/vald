@@ -32,12 +32,18 @@ import (
 
 // RFC7807Error represents RFC 7807 error.
 type RFC7807Error struct {
-	Type     string `json:"type"`
-	Title    string `json:"title"`
+	// Detail is a detail.
 	Detail   any    `json:"detail"`
+	// Type is a type.
+	Type     string `json:"type"`
+	// Title is a title.
+	Title    string `json:"title"`
+	// Instance is an instance.
 	Instance string `json:"instance"`
-	Status   int    `json:"status"`
+	// Error is an error.
 	Error    string `json:"error"`
+	// Status is a status.
+	Status   int    `json:"status"`
 }
 
 // EncodeResponse encodes http response body.

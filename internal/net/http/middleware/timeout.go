@@ -30,8 +30,10 @@ import (
 )
 
 type timeout struct {
-	dur time.Duration
+	// eg is an error group.
 	eg  errgroup.Group
+	// dur is a duration.
+	dur time.Duration
 }
 
 func NewTimeout(opts ...TimeoutOption) Wrapper {

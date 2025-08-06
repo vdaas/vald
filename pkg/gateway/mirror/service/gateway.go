@@ -45,8 +45,10 @@ type Gateway interface {
 
 type gateway struct {
 	// client is the Mirror gateway client for other clusters and the Vald gateway (e.g. LB gateway) client for the own cluster.
-	client  mirror.Client
-	eg      errgroup.Group
+	client mirror.Client
+	// errgroup for managing goroutines.
+	eg errgroup.Group
+	// pod name.
 	podName string
 }
 

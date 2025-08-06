@@ -15,6 +15,7 @@ package operation
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"sync/atomic"
 	"testing"
@@ -88,7 +89,7 @@ func (o *operation) StreamInsert(ctx context.Context, b *testing.B, ds assets.Da
 
 			for {
 				res, err := sc.Recv()
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					return
 				}
 

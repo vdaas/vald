@@ -29,9 +29,12 @@ type Limiter interface {
 }
 
 type limiter struct {
-	isStd bool
+	// uber is a ratelimit.Limiter.
 	uber  ratelimit.Limiter
+	// std is a rate.Limiter.
 	std   *rate.Limiter
+	// isStd is a flag to use std limiter.
+	isStd bool
 }
 
 func NewLimiter(cnt int) Limiter {

@@ -41,12 +41,12 @@ func TestNew(t *testing.T) {
 		wantC cacher.Cache[any]
 	}
 	type test struct {
-		name       string
-		args       args
 		want       want
 		checkFunc  func(want, cacher.Cache[any]) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		name       string
+		args       args
 	}
 	defaultCheckFunc := func(w want, got cacher.Cache[any]) error {
 		wc := reflect.ValueOf(w.wantC.(*cache[any]))
@@ -121,24 +121,20 @@ func TestNew(t *testing.T) {
 }
 
 func Test_cache_Start(t *testing.T) {
-	type args struct {
-		ctx context.Context
-	}
 	type fields struct {
 		gache          gache.Gache[any]
+		expiredHook    func(context.Context, string, any)
 		expireDur      time.Duration
 		expireCheckDur time.Duration
-		expiredHook    func(context.Context, string, any)
 	}
 	type want struct{}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
 		want       want
 		checkFunc  func(want) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func() context.Context
+		afterFunc  func()
+		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want) error {
 		return nil
@@ -146,12 +142,10 @@ func Test_cache_Start(t *testing.T) {
 	tests := []test{
 		{
 			name: "Call Start",
-			args: args{
-				ctx: func() context.Context {
-					ctx, cancel := context.WithCancel(context.Background())
-					defer cancel()
-					return ctx
-				}(),
+			beforeFunc: func() context.Context {
+				ctx, cancel := context.WithCancel(t.Context())
+				defer cancel()
+				return ctx
 			},
 			fields: fields{
 				gache:          gache.New[any](),
@@ -166,11 +160,12 @@ func Test_cache_Start(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			var ctx context.Context
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				ctx = test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc()
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -182,7 +177,7 @@ func Test_cache_Start(t *testing.T) {
 				expireCheckDur: test.fields.expireCheckDur,
 				expiredHook:    test.fields.expiredHook,
 			}
-			c.Start(test.args.ctx)
+			c.Start(ctx)
 			if err := checkFunc(test.want); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -196,22 +191,22 @@ func Test_cache_Get(t *testing.T) {
 	}
 	type fields struct {
 		gache          gache.Gache[any]
+		expiredHook    func(context.Context, string, any)
 		expireDur      time.Duration
 		expireCheckDur time.Duration
-		expiredHook    func(context.Context, string, any)
 	}
 	type want struct {
 		want  any
 		want1 bool
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
 		checkFunc  func(want, any, bool) error
 		beforeFunc func(*testing.T, args, *cache[any])
 		afterFunc  func(args)
+		want       want
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got any, got1 bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -291,28 +286,28 @@ func Test_cache_Get(t *testing.T) {
 
 func Test_cache_Set(t *testing.T) {
 	type args struct {
-		key string
 		val any
+		key string
 	}
 	type fields struct {
 		gache          gache.Gache[any]
+		expiredHook    func(context.Context, string, any)
 		expireDur      time.Duration
 		expireCheckDur time.Duration
-		expiredHook    func(context.Context, string, any)
 	}
 	type want struct {
-		key   string
 		want  any
+		key   string
 		want1 bool
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
 		checkFunc  func(want, *cache[any]) error
 		beforeFunc func(args)
 		afterFunc  func(args)
+		args       args
+		name       string
+		fields     fields
+		want       want
 	}
 	defaultCheckFunc := func(w want, c *cache[any]) error {
 		got, got1 := c.Get(w.key)
@@ -380,23 +375,23 @@ func Test_cache_Delete(t *testing.T) {
 	}
 	type fields struct {
 		gache          gache.Gache[any]
+		expiredHook    func(context.Context, string, any)
 		expireDur      time.Duration
 		expireCheckDur time.Duration
-		expiredHook    func(context.Context, string, any)
 	}
 	type want struct {
-		key   string
 		want  any
+		key   string
 		want1 bool
 	}
 	type test struct {
+		checkFunc  func(want, *cache[any]) error
+		beforeFunc func(*testing.T, args, *cache[any])
+		afterFunc  func(args)
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *cache[any]) error
-		beforeFunc func(*testing.T, args, *cache[any])
-		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, c *cache[any]) error {
 		got, got1 := c.Get(w.key)
@@ -484,22 +479,22 @@ func Test_cache_GetAndDelete(t *testing.T) {
 	}
 	type fields struct {
 		gache          gache.Gache[any]
+		expiredHook    func(context.Context, string, any)
 		expireDur      time.Duration
 		expireCheckDur time.Duration
-		expiredHook    func(context.Context, string, any)
 	}
 	type want struct {
 		want  any
 		want1 bool
 	}
 	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
 		checkFunc  func(want, any, bool) error
 		beforeFunc func(*testing.T, args, *cache[any])
 		afterFunc  func(args)
+		want       want
+		name       string
+		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got any, got1 bool) error {
 		if !reflect.DeepEqual(got, w.want) {
