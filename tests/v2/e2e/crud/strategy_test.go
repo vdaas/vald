@@ -355,7 +355,7 @@ func executeWithRepeats(
 	fn func(*testing.T, context.Context) error,
 ) (err error) {
 	t.Helper()
-	if repeats.Enabled {
+	if repeats != nil && repeats.Enabled {
 		idx := uint64(0)
 		for {
 			var task string
