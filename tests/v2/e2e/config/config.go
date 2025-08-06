@@ -58,7 +58,7 @@ type Data struct {
 type Strategy struct {
 	TimeConfig  `             yaml:",inline"              json:",inline"`
 	Name        string       `yaml:"name"                 json:"name,omitempty"`
-	Repeats     *Repeats       `yaml:"repeats"              json:"repeats,omitempty"`
+	Repeats     *Repeats     `yaml:"repeats"              json:"repeats,omitempty"`
 	Concurrency uint64       `yaml:"concurrency"          json:"concurrency,omitempty"`
 	Operations  []*Operation `yaml:"operations,omitempty" json:"operations,omitempty"`
 }
@@ -67,23 +67,23 @@ type Strategy struct {
 type Operation struct {
 	TimeConfig `             yaml:",inline"              json:",inline"`
 	Name       string       `yaml:"name,omitempty"       json:"name,omitempty"`
-	Repeats    *Repeats       `yaml:"repeats"              json:"repeats,omitempty"`
+	Repeats    *Repeats     `yaml:"repeats"              json:"repeats,omitempty"`
 	Executions []*Execution `yaml:"executions,omitempty" json:"executions,omitempty"`
 }
 
 // Execution represents the execution details for a given operation.
 type Execution struct {
-	*BaseConfig              `yaml:",inline,omitempty" json:",inline,omitempty"`
-	TimeConfig               `yaml:",inline" json:",inline"`
-	Name                     string                  `yaml:"name"                        json:"name,omitempty"`
-	Repeats                  *Repeats                  `yaml:"repeats"                     json:"repeats,omitempty"`
-	Type                     OperationType           `yaml:"type"                        json:"type,omitempty"`
-	Mode                     OperationMode           `yaml:"mode"                        json:"mode,omitempty"`
-	Search                   *SearchQuery            `yaml:"search,omitempty"            json:"search,omitempty"`
-	Agent                    *AgentConfig            `yaml:"agent,omitempty"             json:"agent,omitempty"`
-	Kubernetes               *KubernetesConfig       `yaml:"kubernetes,omitempty"        json:"kubernetes,omitempty"`
-	Modification             *ModificationConfig     `yaml:"modification,omitempty"      json:"modification,omitempty"`
-	Expect                   []Expect                `yaml:"expect,omitempty"            json:"expect,omitempty"`
+	*BaseConfig  `                    yaml:",inline,omitempty"      json:",inline,omitempty"`
+	TimeConfig   `                    yaml:",inline"                json:",inline"`
+	Name         string              `yaml:"name"                   json:"name,omitempty"`
+	Repeats      *Repeats            `yaml:"repeats"                json:"repeats,omitempty"`
+	Type         OperationType       `yaml:"type"                   json:"type,omitempty"`
+	Mode         OperationMode       `yaml:"mode"                   json:"mode,omitempty"`
+	Search       *SearchQuery        `yaml:"search,omitempty"       json:"search,omitempty"`
+	Agent        *AgentConfig        `yaml:"agent,omitempty"        json:"agent,omitempty"`
+	Kubernetes   *KubernetesConfig   `yaml:"kubernetes,omitempty"   json:"kubernetes,omitempty"`
+	Modification *ModificationConfig `yaml:"modification,omitempty" json:"modification,omitempty"`
+	Expect       []Expect            `yaml:"expect,omitempty"       json:"expect,omitempty"`
 }
 
 // TimeConfig holds time-related configuration values.
@@ -170,9 +170,9 @@ type Expect struct {
 
 // Repeats holds the repeat configuration for operations.
 type Repeats struct {
-	Enabled        bool	 `yaml:"enabled,omitempty"       json:"enabled,omitempty"`
-	ExitCondition ExitCondition `yaml:"exit_condition,omitempty" json:"exit_condition,omitempty"`
-	Count         uint64 `yaml:"count,omitempty"         json:"count,omitempty"`
+	Enabled       bool                    `yaml:"enabled,omitempty"        json:"enabled,omitempty"`
+	ExitCondition ExitCondition           `yaml:"exit_condition,omitempty" json:"exit_condition,omitempty"`
+	Count         uint64                  `yaml:"count,omitempty"          json:"count,omitempty"`
 	Interval      timeutil.DurationString `yaml:"interval,omitempty"       json:"interval,omitempty"`
 }
 
