@@ -37,9 +37,9 @@ package grpc
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, *payload.Search_Response, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -174,9 +174,9 @@ package grpc
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, *payload.Search_Response, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -311,9 +311,9 @@ package grpc
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, uint32) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -449,9 +449,9 @@ package grpc
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, *payload.Search_Response, []attribute.KeyValue, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -581,8 +581,8 @@ package grpc
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, Aggregator) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -683,9 +683,9 @@ package grpc
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -813,9 +813,9 @@ package grpc
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -945,9 +945,9 @@ package grpc
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, *payload.Search_Responses, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -1082,9 +1082,9 @@ package grpc
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, *payload.Search_Responses, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)

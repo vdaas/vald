@@ -13,16 +13,8 @@
 // limitations under the License.
 package config
 
-import (
-	"reflect"
-	"testing"
-
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/test/goleak"
-)
-
 // NOT IMPLEMENTED BELOW
-// 
+//
 // func TestNewConfig(t *testing.T) {
 // 	type args struct {
 // 		path string
@@ -33,8 +25,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, *Data, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -66,7 +58,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -87,7 +79,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -103,12 +95,12 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			gotCfg, err := NewConfig(test.args.path)
 // 			if err := checkFunc(test.want, gotCfg, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }

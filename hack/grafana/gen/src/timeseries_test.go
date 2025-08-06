@@ -11,17 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package src
-
-import (
-	"testing"
-
-	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
-	"github.com/vdaas/vald/internal/test/goleak"
-)
+package main
 
 // NOT IMPLEMENTED BELOW
-// 
+//
 // func Test_addCPUPanel(t *testing.T) {
 // 	type args struct {
 // 		dashboard *dashboard.DashboardBuilder
@@ -30,8 +23,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -57,7 +50,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -78,7 +71,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -94,7 +87,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			addCPUPanel(test.args.dashboard)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
@@ -102,7 +95,7 @@ import (
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_addMemoryPanel(t *testing.T) {
 // 	type args struct {
 // 		builder *dashboard.DashboardBuilder
@@ -111,8 +104,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -138,7 +131,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -159,7 +152,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -175,7 +168,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			addMemoryPanel(test.args.builder)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
@@ -183,7 +176,7 @@ import (
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_addJobCPUPanel(t *testing.T) {
 // 	type args struct {
 // 		dashboard *dashboard.DashboardBuilder
@@ -192,8 +185,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -219,7 +212,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -240,7 +233,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -256,7 +249,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			addJobCPUPanel(test.args.dashboard)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
@@ -264,7 +257,7 @@ import (
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_addJobMemoryPanel(t *testing.T) {
 // 	type args struct {
 // 		builder *dashboard.DashboardBuilder
@@ -273,8 +266,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -300,7 +293,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -321,7 +314,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -337,7 +330,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			addJobMemoryPanel(test.args.builder)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
@@ -345,7 +338,7 @@ import (
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_addLatencyPanel(t *testing.T) {
 // 	type args struct {
 // 		builder        *dashboard.DashboardBuilder
@@ -360,8 +353,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -393,7 +386,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -420,7 +413,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -436,7 +429,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			addLatencyPanel(test.args.builder, test.args.subTitle, test.args.kubernetesName, test.args.targetPod, test.args.container, test.args.method, test.args.match)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
@@ -444,7 +437,7 @@ import (
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_addCompletedRPCPanel(t *testing.T) {
 // 	type args struct {
 // 		dashboard      *dashboard.DashboardBuilder
@@ -456,8 +449,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -486,7 +479,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -510,7 +503,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -526,7 +519,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			addCompletedRPCPanel(test.args.dashboard, test.args.subTitle, test.args.kubernetesName, test.args.targetPod)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
@@ -534,7 +527,7 @@ import (
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_addGoroutinePanel(t *testing.T) {
 // 	type args struct {
 // 		dashboard      *dashboard.DashboardBuilder
@@ -545,8 +538,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -574,7 +567,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -597,7 +590,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -613,7 +606,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			addGoroutinePanel(test.args.dashboard, test.args.kubernetesName, test.args.targetPod)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
@@ -621,7 +614,7 @@ import (
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_addGCPanel(t *testing.T) {
 // 	type args struct {
 // 		dashboard      *dashboard.DashboardBuilder
@@ -631,8 +624,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -659,7 +652,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -681,7 +674,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -697,7 +690,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			addGCPanel(test.args.dashboard, test.args.kubernetesName)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
@@ -705,7 +698,7 @@ import (
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_addIndexPanel(t *testing.T) {
 // 	type args struct {
 // 		dashboard *dashboard.DashboardBuilder
@@ -714,8 +707,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -741,7 +734,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -762,7 +755,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -778,7 +771,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			addIndexPanel(test.args.dashboard)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
@@ -786,7 +779,7 @@ import (
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_addUncommitedIndexPanel(t *testing.T) {
 // 	type args struct {
 // 		dashboard *dashboard.DashboardBuilder
@@ -795,8 +788,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -822,7 +815,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -843,7 +836,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -859,7 +852,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			addUncommitedIndexPanel(test.args.dashboard)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
@@ -867,7 +860,7 @@ import (
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_addIndexLatencyPanel(t *testing.T) {
 // 	type args struct {
 // 		dashboard *dashboard.DashboardBuilder
@@ -876,8 +869,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -903,7 +896,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -924,7 +917,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -940,7 +933,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			addIndexLatencyPanel(test.args.dashboard)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
@@ -948,7 +941,7 @@ import (
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_addIndexPerPodPanel(t *testing.T) {
 // 	type args struct {
 // 		dashboard *dashboard.DashboardBuilder
@@ -957,8 +950,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -984,7 +977,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -1005,7 +998,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -1021,7 +1014,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			addIndexPerPodPanel(test.args.dashboard)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
@@ -1029,7 +1022,7 @@ import (
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_addMemstatsPanels(t *testing.T) {
 // 	type args struct {
 // 		dashboard *dashboard.DashboardBuilder
@@ -1038,8 +1031,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -1065,7 +1058,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -1086,7 +1079,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -1102,7 +1095,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			addMemstatsPanels(test.args.dashboard)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
@@ -1110,7 +1103,7 @@ import (
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_addProcStatusPanels(t *testing.T) {
 // 	type args struct {
 // 		dashboard *dashboard.DashboardBuilder
@@ -1119,8 +1112,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -1146,7 +1139,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -1167,7 +1160,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -1183,7 +1176,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			addProcStatusPanels(test.args.dashboard)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
@@ -1191,7 +1184,7 @@ import (
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_addMetricPanel(t *testing.T) {
 // 	type args struct {
 // 		dashboard *dashboard.DashboardBuilder
@@ -1203,8 +1196,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -1233,7 +1226,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -1257,7 +1250,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -1273,7 +1266,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			addMetricPanel(test.args.dashboard, test.args.title, test.args.metric, test.args.unit)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)

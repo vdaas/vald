@@ -36,40 +36,40 @@ type PodWatcher k8s.ResourceController
 
 type reconciler struct {
 	// mgr is a manager.Manager.
-	mgr         manager.Manager
+	mgr manager.Manager
 	// name is a name.
-	name        string
+	name string
 	// namespace is a namespace.
-	namespace   string
+	namespace string
 	// onError is a function to call on error.
-	onError     func(err error)
+	onError func(err error)
 	// onReconcile is a function to call on reconcile.
 	onReconcile func(ctx context.Context, podList map[string][]Pod)
 	// lopts is a list of client.ListOption.
-	lopts       []client.ListOption
+	lopts []client.ListOption
 }
 
 type Pod struct {
 	// Labels is a map of labels.
-	Labels      map[string]string
+	Labels map[string]string
 	// Annotations is a map of annotations.
 	Annotations map[string]string
 	// Name is a name.
-	Name        string
+	Name string
 	// NodeName is a node name.
-	NodeName    string
+	NodeName string
 	// Namespace is a namespace.
-	Namespace   string
+	Namespace string
 	// IP is an IP address.
-	IP          string
+	IP string
 	// CPULimit is a CPU limit.
-	CPULimit    float64
+	CPULimit float64
 	// CPURequest is a CPU request.
-	CPURequest  float64
+	CPURequest float64
 	// MemLimit is a memory limit.
-	MemLimit    float64
+	MemLimit float64
 	// MemRequest is a memory request.
-	MemRequest  float64
+	MemRequest float64
 }
 
 func New(opts ...Option) PodWatcher {

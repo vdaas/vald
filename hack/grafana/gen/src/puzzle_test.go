@@ -11,26 +11,17 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package src
-
-import (
-	"reflect"
-	"testing"
-
-	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
-	"github.com/pkg/errors"
-	"github.com/vdaas/vald/internal/test/goleak"
-)
+package main
 
 // NOT IMPLEMENTED BELOW
-// 
+//
 // func TestNewGridMap(t *testing.T) {
 // 	type want struct {
 // 		want *GridMap
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, *GridMap) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -56,7 +47,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -74,7 +65,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -90,16 +81,16 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			got := NewGridMap()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func TestGridMap_IsFree(t *testing.T) {
 // 	type args struct {
 // 		x uint32
@@ -116,9 +107,9 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, bool) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -154,7 +145,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -182,7 +173,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -202,16 +193,16 @@ import (
 // 				data:      test.fields.data,
 // 				minHeight: test.fields.minHeight,
 // 			}
-// 
+//
 // 			got := g.IsFree(test.args.x, test.args.y, test.args.w, test.args.h)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func TestGridMap_Reserve(t *testing.T) {
 // 	type args struct {
 // 		x uint32
@@ -227,9 +218,9 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -262,7 +253,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -290,7 +281,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -310,7 +301,7 @@ import (
 // 				data:      test.fields.data,
 // 				minHeight: test.fields.minHeight,
 // 			}
-// 
+//
 // 			g.Reserve(test.args.x, test.args.y, test.args.w, test.args.h)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
@@ -318,7 +309,7 @@ import (
 // 		})
 // 	}
 // }
-// 
+//
 // func TestGridMap_FindNextAvailablePosition(t *testing.T) {
 // 	type args struct {
 // 		w uint32
@@ -334,9 +325,9 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, uint32, uint32) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -373,7 +364,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -399,7 +390,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -419,16 +410,16 @@ import (
 // 				data:      test.fields.data,
 // 				minHeight: test.fields.minHeight,
 // 			}
-// 
+//
 // 			got, got1 := g.FindNextAvailablePosition(test.args.w, test.args.h)
 // 			if err := checkFunc(test.want, got, got1); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func TestArrangePanels(t *testing.T) {
 // 	type args struct {
 // 		builder *dashboard.Dashboard
@@ -437,8 +428,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -464,7 +455,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -485,7 +476,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -501,7 +492,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			ArrangePanels(test.args.builder)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)

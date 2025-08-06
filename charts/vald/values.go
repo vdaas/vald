@@ -25,29 +25,29 @@ type Affinity struct {
 // Agent.
 type Agent struct {
 	PersistentVolume *PersistentVolume `json:"persistentVolume,omitempty"`
-	ServerConfig *ServerConfig `json:"server_config,omitempty"`
-	Sidecar *Sidecar `json:"sidecar,omitempty"`
-	Service *Service `json:"service,omitempty"`
-	Affinity *Affinity `json:"affinity,omitempty"`
-	Hpa *Hpa `json:"hpa,omitempty"`
-	Image *Image `json:"image,omitempty"`
+	ServerConfig     *ServerConfig     `json:"server_config,omitempty"`
+	Sidecar          *Sidecar          `json:"sidecar,omitempty"`
+	Service          *Service          `json:"service,omitempty"`
+	Affinity         *Affinity         `json:"affinity,omitempty"`
+	Hpa              *Hpa              `json:"hpa,omitempty"`
+	Image            *Image            `json:"image,omitempty"`
 	// security context for container
 	SecurityContext *SecurityContext `json:"securityContext,omitempty"`
-	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
-	Logging *Logging `json:"logging,omitempty"`
+	RollingUpdate   *RollingUpdate   `json:"rollingUpdate,omitempty"`
+	Logging         *Logging         `json:"logging,omitempty"`
 	// compute resources
 	Resources *Resources `json:"resources,omitempty"`
 	// security context for pod
 	PodSecurityContext *PodSecurityContext `json:"podSecurityContext,omitempty"`
-	PodPriority *PodPriority `json:"podPriority,omitempty"`
+	PodPriority        *PodPriority        `json:"podPriority,omitempty"`
 	// node selector
 	NodeSelector *NodeSelector `json:"nodeSelector,omitempty"`
-	Ngt *config.NGT `json:"ngt,omitempty"`
+	Ngt          *config.NGT   `json:"ngt,omitempty"`
 	// deployment annotations
 	Annotations *Annotations `json:"annotations,omitempty"`
 	// pod annotations
 	PodAnnotations *PodAnnotations `json:"podAnnotations,omitempty"`
-	Observability *Observability `json:"observability,omitempty"`
+	Observability  *Observability  `json:"observability,omitempty"`
 	// external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
 	ExternalTrafficPolicy string `json:"externalTrafficPolicy,omitempty"`
 	// node name
@@ -98,9 +98,9 @@ type Annotations map[string]string
 // BlobStorage.
 type BlobStorage struct {
 	// bucket name
-	Bucket string `json:"bucket,omitempty"`
+	Bucket       string        `json:"bucket,omitempty"`
 	CloudStorage *CloudStorage `json:"cloud_storage,omitempty"`
-	S3 *S3 `json:"s3,omitempty"`
+	S3           *S3           `json:"s3,omitempty"`
 	// storage type
 	StorageType string `json:"storage_type,omitempty"`
 }
@@ -157,10 +157,10 @@ type Compress struct {
 
 // Config.
 type Config struct {
-	BlobStorage *BlobStorage `json:"blob_storage,omitempty"`
-	Client *config.GRPCClient `json:"client,omitempty"`
-	Compress *Compress `json:"compress,omitempty"`
-	RestoreBackoff *config.Backoff `json:"restore_backoff,omitempty"`
+	BlobStorage    *BlobStorage       `json:"blob_storage,omitempty"`
+	Client         *config.GRPCClient `json:"client,omitempty"`
+	Compress       *Compress          `json:"compress,omitempty"`
+	RestoreBackoff *config.Backoff    `json:"restore_backoff,omitempty"`
 	// auto backup duration
 	AutoBackupDuration string `json:"auto_backup_duration,omitempty"`
 	// backup filename
@@ -179,12 +179,12 @@ type Config struct {
 
 // Defaults.
 type Defaults struct {
-	Grpc *Grpc `json:"grpc,omitempty"`
-	Image *Image `json:"image,omitempty"`
-	Ingress *Ingress `json:"ingress,omitempty"`
-	Logging *Logging `json:"logging,omitempty"`
+	Grpc          *Grpc          `json:"grpc,omitempty"`
+	Image         *Image         `json:"image,omitempty"`
+	Ingress       *Ingress       `json:"ingress,omitempty"`
+	Logging       *Logging       `json:"logging,omitempty"`
 	Observability *Observability `json:"observability,omitempty"`
-	ServerConfig *ServerConfig `json:"server_config,omitempty"`
+	ServerConfig  *ServerConfig  `json:"server_config,omitempty"`
 	// Time zone
 	TimeZone string `json:"time_zone,omitempty"`
 }
@@ -202,7 +202,7 @@ type Dialer struct {
 // Discoverer.
 type Discoverer struct {
 	AgentClientOptions *config.GRPCClient `json:"agent_client_options,omitempty"`
-	Client *config.GRPCClient `json:"client,omitempty"`
+	Client             *config.GRPCClient `json:"client,omitempty"`
 	// refresh duration to discover
 	Duration string `json:"duration,omitempty"`
 }
@@ -234,23 +234,23 @@ type Fields struct{}
 
 // Filter.
 type Filter struct {
-	ServerConfig *ServerConfig `json:"server_config,omitempty"`
-	Service *Service `json:"service,omitempty"`
+	ServerConfig  *ServerConfig  `json:"server_config,omitempty"`
+	Service       *Service       `json:"service,omitempty"`
 	Observability *Observability `json:"observability,omitempty"`
-	Affinity *Affinity `json:"affinity,omitempty"`
+	Affinity      *Affinity      `json:"affinity,omitempty"`
 	// security context for container
 	SecurityContext *SecurityContext `json:"securityContext,omitempty"`
-	PodPriority *PodPriority `json:"podPriority,omitempty"`
-	Hpa *Hpa `json:"hpa,omitempty"`
-	Image *Image `json:"image,omitempty"`
-	Ingress *Ingress `json:"ingress,omitempty"`
-	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
+	PodPriority     *PodPriority     `json:"podPriority,omitempty"`
+	Hpa             *Hpa             `json:"hpa,omitempty"`
+	Image           *Image           `json:"image,omitempty"`
+	Ingress         *Ingress         `json:"ingress,omitempty"`
+	RollingUpdate   *RollingUpdate   `json:"rollingUpdate,omitempty"`
 	// compute resources
 	Resources *Resources `json:"resources,omitempty"`
-	Logging *Logging `json:"logging,omitempty"`
+	Logging   *Logging   `json:"logging,omitempty"`
 	// security context for pod
 	PodSecurityContext *PodSecurityContext `json:"podSecurityContext,omitempty"`
-	GatewayConfig *GatewayConfig `json:"gateway_config,omitempty"`
+	GatewayConfig      *GatewayConfig      `json:"gateway_config,omitempty"`
 	// pod annotations
 	PodAnnotations *PodAnnotations `json:"podAnnotations,omitempty"`
 	// deployment annotations
@@ -302,13 +302,13 @@ type Filter struct {
 // Gateway.
 type Gateway struct {
 	Filter *Filter `json:"filter,omitempty"`
-	Lb *Lb `json:"lb,omitempty"`
+	Lb     *Lb     `json:"lb,omitempty"`
 }
 
 // GatewayConfig.
 type GatewayConfig struct {
 	// gRPC client config for egress filter
-	EgressFilter *EgressFilter `json:"egress_filter,omitempty"`
+	EgressFilter  *EgressFilter      `json:"egress_filter,omitempty"`
 	GatewayClient *config.GRPCClient `json:"gateway_client,omitempty"`
 	// gRPC client config for ingress filter
 	IngressFilter *IngressFilter `json:"ingress_filter,omitempty"`
@@ -329,9 +329,9 @@ type Grpc struct {
 
 // Healths.
 type Healths struct {
-	Liveness *Liveness `json:"liveness,omitempty"`
+	Liveness  *Liveness  `json:"liveness,omitempty"`
 	Readiness *Readiness `json:"readiness,omitempty"`
-	Startup *Startup `json:"startup,omitempty"`
+	Startup   *Startup   `json:"startup,omitempty"`
 }
 
 // Hpa.
@@ -383,23 +383,23 @@ type Index struct {
 	ServerConfig *ServerConfig `json:"server_config,omitempty"`
 	// security context for pod
 	PodSecurityContext *PodSecurityContext `json:"podSecurityContext,omitempty"`
-	Service *Service `json:"service,omitempty"`
-	Affinity *Affinity `json:"affinity,omitempty"`
+	Service            *Service            `json:"service,omitempty"`
+	Affinity           *Affinity           `json:"affinity,omitempty"`
 	// security context for container
 	SecurityContext *SecurityContext `json:"securityContext,omitempty"`
-	Image *Image `json:"image,omitempty"`
-	Indexer *Indexer `json:"indexer,omitempty"`
-	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
+	Image           *Image           `json:"image,omitempty"`
+	Indexer         *Indexer         `json:"indexer,omitempty"`
+	RollingUpdate   *RollingUpdate   `json:"rollingUpdate,omitempty"`
 	// compute resources
-	Resources *Resources `json:"resources,omitempty"`
-	Logging *Logging `json:"logging,omitempty"`
+	Resources   *Resources   `json:"resources,omitempty"`
+	Logging     *Logging     `json:"logging,omitempty"`
 	PodPriority *PodPriority `json:"podPriority,omitempty"`
 	// deployment annotations
 	Annotations *Annotations `json:"annotations,omitempty"`
 	// pod annotations
 	PodAnnotations *PodAnnotations `json:"podAnnotations,omitempty"`
 	// node selector
-	NodeSelector *NodeSelector `json:"nodeSelector,omitempty"`
+	NodeSelector  *NodeSelector  `json:"nodeSelector,omitempty"`
 	Observability *Observability `json:"observability,omitempty"`
 	// service type: ClusterIP, LoadBalancer or NodePort
 	ServiceType string `json:"serviceType,omitempty"`
@@ -495,10 +495,10 @@ type IngressFilter struct {
 
 // InitContainersItems.
 type InitContainersItems struct {
-	Type string
-	Name string
-	Target string
-	Image string
+	Type          string
+	Name          string
+	Target        string
+	Image         string
 	SleepDuration int
 }
 
@@ -554,23 +554,23 @@ type Labels map[string]string
 
 // Lb.
 type Lb struct {
-	ServerConfig *ServerConfig `json:"server_config,omitempty"`
-	Service *Service `json:"service,omitempty"`
+	ServerConfig  *ServerConfig  `json:"server_config,omitempty"`
+	Service       *Service       `json:"service,omitempty"`
 	Observability *Observability `json:"observability,omitempty"`
-	Affinity *Affinity `json:"affinity,omitempty"`
+	Affinity      *Affinity      `json:"affinity,omitempty"`
 	// security context for container
 	SecurityContext *SecurityContext `json:"securityContext,omitempty"`
-	PodPriority *PodPriority `json:"podPriority,omitempty"`
-	Hpa *Hpa `json:"hpa,omitempty"`
-	Image *Image `json:"image,omitempty"`
-	Ingress *Ingress `json:"ingress,omitempty"`
-	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
+	PodPriority     *PodPriority     `json:"podPriority,omitempty"`
+	Hpa             *Hpa             `json:"hpa,omitempty"`
+	Image           *Image           `json:"image,omitempty"`
+	Ingress         *Ingress         `json:"ingress,omitempty"`
+	RollingUpdate   *RollingUpdate   `json:"rollingUpdate,omitempty"`
 	// compute resources
 	Resources *Resources `json:"resources,omitempty"`
-	Logging *Logging `json:"logging,omitempty"`
+	Logging   *Logging   `json:"logging,omitempty"`
 	// security context for pod
 	PodSecurityContext *PodSecurityContext `json:"podSecurityContext,omitempty"`
-	GatewayConfig *GatewayConfig `json:"gateway_config,omitempty"`
+	GatewayConfig      *GatewayConfig      `json:"gateway_config,omitempty"`
 	// pod annotations
 	PodAnnotations *PodAnnotations `json:"podAnnotations,omitempty"`
 	// deployment annotations
@@ -625,7 +625,7 @@ type Limits struct{}
 // Liveness.
 type Liveness struct {
 	LivenessProbe *LivenessProbe `json:"livenessProbe,omitempty"`
-	Server *Server `json:"server,omitempty"`
+	Server        *Server        `json:"server,omitempty"`
 	// liveness server host
 	Host string `json:"host,omitempty"`
 	// liveness server port
@@ -711,10 +711,10 @@ type NodeSelectorTermsItems struct{}
 
 // Observability.
 type Observability struct {
-	Metrics *Metrics `json:"metrics,omitempty"`
-	Jaeger *Jaeger `json:"jaeger,omitempty"`
+	Metrics    *Metrics    `json:"metrics,omitempty"`
+	Jaeger     *Jaeger     `json:"jaeger,omitempty"`
 	Prometheus *Prometheus `json:"prometheus,omitempty"`
-	Trace *Trace `json:"trace,omitempty"`
+	Trace      *Trace      `json:"trace,omitempty"`
 	// observability features enabled
 	Enabled bool `json:"enabled,omitempty"`
 }
@@ -812,7 +812,7 @@ type Prometheus struct {
 // Readiness.
 type Readiness struct {
 	ReadinessProbe *ReadinessProbe `json:"readinessProbe,omitempty"`
-	Server *Server `json:"server,omitempty"`
+	Server         *Server         `json:"server,omitempty"`
 	// readiness server host
 	Host string `json:"host,omitempty"`
 	// readiness server port
@@ -852,7 +852,7 @@ type RequiredDuringSchedulingIgnoredDuringExecutionItems struct{}
 
 // Resources compute resources.
 type Resources struct {
-	Limits *Limits `json:"limits,omitempty"`
+	Limits   *Limits   `json:"limits,omitempty"`
 	Requests *Requests `json:"requests,omitempty"`
 }
 
@@ -940,8 +940,8 @@ type Server struct {
 	// mysql network
 	Network string `json:"network,omitempty"`
 	// REST server probe wait time
-	ProbeWaitTime string `json:"probe_wait_time,omitempty"`
-	SocketOption *config.SocketOption `json:"socket_option,omitempty"`
+	ProbeWaitTime string               `json:"probe_wait_time,omitempty"`
+	SocketOption  *config.SocketOption `json:"socket_option,omitempty"`
 	// mysql socket_path
 	SocketPath string `json:"socket_path,omitempty"`
 }
@@ -951,7 +951,7 @@ type ServerConfig struct {
 	Healths *Healths `json:"healths,omitempty"`
 	Metrics *Metrics `json:"metrics,omitempty"`
 	Servers *Servers `json:"servers,omitempty"`
-	Tls *Tls `json:"tls,omitempty"`
+	Tls     *Tls     `json:"tls,omitempty"`
 	// server full shutdown duration
 	FullShutdownDuration string `json:"full_shutdown_duration,omitempty"`
 }
@@ -980,14 +980,14 @@ type ServiceAccount struct {
 
 // Sidecar.
 type Sidecar struct {
-	ServerConfig *ServerConfig `json:"server_config,omitempty"`
-	Image *Image `json:"image,omitempty"`
-	Logging *Logging `json:"logging,omitempty"`
+	ServerConfig  *ServerConfig  `json:"server_config,omitempty"`
+	Image         *Image         `json:"image,omitempty"`
+	Logging       *Logging       `json:"logging,omitempty"`
 	Observability *Observability `json:"observability,omitempty"`
 	// compute resources
 	Resources *Resources `json:"resources,omitempty"`
-	Config *Config `json:"config,omitempty"`
-	Service *Service `json:"service,omitempty"`
+	Config    *Config    `json:"config,omitempty"`
+	Service   *Service   `json:"service,omitempty"`
 	// name of agent sidecar
 	Name string `json:"name,omitempty"`
 	// Time zone
@@ -1054,12 +1054,12 @@ type Trace struct {
 
 // Values.
 type Values struct {
-	Agent *Agent `json:"agent,omitempty"`
-	Defaults *Defaults `json:"defaults,omitempty"`
-	Discoverer *Discoverer `json:"discoverer,omitempty"`
-	Gateway *Gateway `json:"gateway,omitempty"`
+	Agent       *Agent       `json:"agent,omitempty"`
+	Defaults    *Defaults    `json:"defaults,omitempty"`
+	Discoverer  *Discoverer  `json:"discoverer,omitempty"`
+	Gateway     *Gateway     `json:"gateway,omitempty"`
 	Initializer *Initializer `json:"initializer,omitempty"`
-	Manager *Manager `json:"manager,omitempty"`
+	Manager     *Manager     `json:"manager,omitempty"`
 }
 
 // VolumeMountsItems.

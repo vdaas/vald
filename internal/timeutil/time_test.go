@@ -190,7 +190,7 @@ func TestParseWithDefault(t *testing.T) {
 // 	type test struct {
 // 		name       string
 // 		d          DurationString
-// 		want       want
+// 		want
 // 		checkFunc  func(want, time.Duration, error) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -271,9 +271,9 @@ func TestParseWithDefault(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
+// 		args
 // 		d          DurationString
-// 		want       want
+// 		want
 // 		checkFunc  func(want, time.Duration) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)

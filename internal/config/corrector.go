@@ -19,28 +19,28 @@ package config
 // Corrector represents the index correction configurations.
 type Corrector struct {
 	// Discoverer represent agent discoverer service configuration
-	Discoverer                      *DiscovererClient `json:"discoverer"                         yaml:"discoverer"`
+	Discoverer *DiscovererClient `json:"discoverer"                         yaml:"discoverer"`
 	// Gateway represent gateway service configuration
-	Gateway                         *GRPCClient       `json:"gateway"                            yaml:"gateway"`
+	Gateway *GRPCClient `json:"gateway"                            yaml:"gateway"`
 	// AgentName represent agents meta_name for service discovery
-	AgentName                       string            `json:"agent_name"                         yaml:"agent_name"`
+	AgentName string `json:"agent_name"                         yaml:"agent_name"`
 	// AgentNamespace represent agent namespace location
-	AgentNamespace                  string            `json:"agent_namespace"                    yaml:"agent_namespace"`
+	AgentNamespace string `json:"agent_namespace"                    yaml:"agent_namespace"`
 	// AgentDNS represent agents dns A record for service discovery
-	AgentDNS                        string            `json:"agent_dns"                          yaml:"agent_dns"`
+	AgentDNS string `json:"agent_dns"                          yaml:"agent_dns"`
 	// NodeName represents node name
-	NodeName                        string            `json:"node_name"                          yaml:"node_name"`
+	NodeName string `json:"node_name"                          yaml:"node_name"`
 	// KVSBackgroundSyncInterval represents interval for checked id list kvs sync duration
-	KVSBackgroundSyncInterval       string            `json:"kvs_background_sync_interval"       yaml:"kvs_background_sync_interval"`
+	KVSBackgroundSyncInterval string `json:"kvs_background_sync_interval"       yaml:"kvs_background_sync_interval"`
 	// KVSBackgroundCompactionInterval represents interval for checked id list kvs compaction duration
-	KVSBackgroundCompactionInterval string            `json:"kvs_background_compaction_interval" yaml:"kvs_background_compaction_interval"`
+	KVSBackgroundCompactionInterval string `json:"kvs_background_compaction_interval" yaml:"kvs_background_compaction_interval"`
 	// AgentPort represent agent port number
-	AgentPort                       int               `json:"agent_port"                         yaml:"agent_port"`
+	AgentPort int `json:"agent_port"                         yaml:"agent_port"`
 	// StreamListConcurrency represent stream concurrency for StreamListObject rpc client
 	// this directly affects the memory usage of this job
-	StreamListConcurrency           int               `json:"stream_list_concurrency"            yaml:"stream_list_concurrency"`
+	StreamListConcurrency int `json:"stream_list_concurrency"            yaml:"stream_list_concurrency"`
 	// IndexReplica represent index replica count. This should be equal to the lb setting
-	IndexReplica                    int               `json:"index_replica"                      yaml:"index_replica"`
+	IndexReplica int `json:"index_replica"                      yaml:"index_replica"`
 }
 
 // Bind binds the actual data from the Indexer receiver field.

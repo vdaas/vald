@@ -47,7 +47,7 @@ func TestNewPProfHandler(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, []routing.Route) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

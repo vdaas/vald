@@ -44,7 +44,7 @@ type Copier interface {
 
 type copier struct {
 	// pool is a pool of buffers.
-	pool    sync.Pool
+	pool sync.Pool
 	// bufSize is a buffer size.
 	bufSize int64
 }

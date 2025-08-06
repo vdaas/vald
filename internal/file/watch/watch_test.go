@@ -295,9 +295,6 @@ func Test_watch_init(t *testing.T) {
 }
 
 func Test_watch_Start(t *testing.T) {
-	type args struct {
-		ctx context.Context
-	}
 	type fields struct {
 		w        *fsnotify.Watcher
 		dirs     map[string]struct{}
@@ -317,10 +314,10 @@ func Test_watch_Start(t *testing.T) {
 	type test struct {
 		fields     fields
 		want       want
-		args       args
+		ctx        context.Context
 		checkFunc  func(want, <-chan error, error) error
-		beforeFunc func(args)
-		afterFunc  func(*testing.T, args, Watcher)
+		beforeFunc func(context.Context)
+		afterFunc  func(*testing.T, context.Context, Watcher)
 		name       string
 	}
 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
@@ -333,10 +330,10 @@ func Test_watch_Start(t *testing.T) {
 
 		return nil
 	}
-	defaultAfterFunc := func(t *testing.T, args args, w Watcher) {
+	defaultAfterFunc := func(t *testing.T, ctx context.Context, w Watcher) {
 		t.Helper()
 		if w != nil {
-			err := w.Stop(t.Context())
+			err := w.Stop(ctx)
 			if err != nil {
 				t.Error(err)
 			}
@@ -363,21 +360,19 @@ func Test_watch_Start(t *testing.T) {
 
 			return test{
 				name: "return channel with error when the write event occurs and onChange and onWrite hook returns error",
-				args: args{
-					ctx: ctx,
-				},
+				ctx:  ctx,
 				fields: fields{
 					w:  w,
 					eg: errgroup.Get(),
 					onChange: func(ctx context.Context, name string) error {
 						if got, want := name, tmpDir+"/watch.go"; got != want {
-							t.Errorf("onChange name got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, want)
+							t.Errorf("onChange name got: \"%#v\",\n\t\t\t\t\twant: \"%#v\"", got, want)
 						}
 						return errors.New("err1")
 					},
 					onWrite: func(ctx context.Context, name string) error {
 						if got, want := name, tmpDir+"/watch.go"; got != want {
-							t.Errorf("onWrite name got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, want)
+							t.Errorf("onWrite name got: \"%#v\",\n\t\t\t\t\twant: \"%#v\"", got, want)
 						}
 						return errors.New("err2")
 					},
@@ -399,9 +394,9 @@ func Test_watch_Start(t *testing.T) {
 					}(),
 					err: nil,
 				},
-				afterFunc: func(t *testing.T, args args, w Watcher) {
+				afterFunc: func(t *testing.T, ctx context.Context, w Watcher) {
 					t.Helper()
-					defaultAfterFunc(t, args, w)
+					defaultAfterFunc(t, ctx, w)
 					cancel()
 					os.RemoveAll(tmpDir)
 				},
@@ -414,9 +409,7 @@ func Test_watch_Start(t *testing.T) {
 
 			return test{
 				name: "return channel with error when onWrite hook return error and send to returned channel",
-				args: args{
-					ctx: ctx,
-				},
+				ctx:  ctx,
 				fields: fields{
 					w:  w,
 					eg: errgroup.Get(),
@@ -443,9 +436,9 @@ func Test_watch_Start(t *testing.T) {
 					}(),
 					err: nil,
 				},
-				afterFunc: func(t *testing.T, args args, w Watcher) {
+				afterFunc: func(t *testing.T, ctx context.Context, w Watcher) {
 					t.Helper()
-					defaultAfterFunc(t, args, w)
+					defaultAfterFunc(t, ctx, w)
 					cancel()
 					os.RemoveAll(tmpDir)
 				},
@@ -458,9 +451,7 @@ func Test_watch_Start(t *testing.T) {
 
 			return test{
 				name: "return channel with error when onCreate hook return error and send to returned channel",
-				args: args{
-					ctx: ctx,
-				},
+				ctx:  ctx,
 				fields: fields{
 					w:  w,
 					eg: errgroup.Get(),
@@ -487,9 +478,9 @@ func Test_watch_Start(t *testing.T) {
 					}
 					return defaultCheckFunc(w, c, e)
 				},
-				afterFunc: func(t *testing.T, args args, w Watcher) {
+				afterFunc: func(t *testing.T, ctx context.Context, w Watcher) {
 					t.Helper()
-					defaultAfterFunc(t, args, w)
+					defaultAfterFunc(t, ctx, w)
 					cancel()
 					os.RemoveAll(tmpDir)
 				},
@@ -503,9 +494,7 @@ func Test_watch_Start(t *testing.T) {
 
 			return test{
 				name: "return channel with error when onDelete hook return error and send to returned channel",
-				args: args{
-					ctx: ctx,
-				},
+				ctx:  ctx,
 				fields: fields{
 					w:  w,
 					eg: errgroup.Get(),
@@ -531,9 +520,9 @@ func Test_watch_Start(t *testing.T) {
 					}
 					return defaultCheckFunc(w, c, e)
 				},
-				afterFunc: func(t *testing.T, args args, w Watcher) {
+				afterFunc: func(t *testing.T, ctx context.Context, w Watcher) {
 					t.Helper()
-					defaultAfterFunc(t, args, w)
+					defaultAfterFunc(t, ctx, w)
 					cancel()
 					os.RemoveAll(tmpDir)
 				},
@@ -548,9 +537,7 @@ func Test_watch_Start(t *testing.T) {
 
 			return test{
 				name: "return channel with error when onChmod hook return error and send to returned channel",
-				args: args{
-					ctx: ctx,
-				},
+				ctx:  ctx,
 				fields: fields{
 					w:  w,
 					eg: errgroup.Get(),
@@ -576,9 +563,9 @@ func Test_watch_Start(t *testing.T) {
 					}
 					return defaultCheckFunc(w, c, e)
 				},
-				afterFunc: func(t *testing.T, args args, w Watcher) {
+				afterFunc: func(t *testing.T, ctx context.Context, w Watcher) {
 					t.Helper()
-					defaultAfterFunc(t, args, w)
+					defaultAfterFunc(t, ctx, w)
 					cancel()
 					os.RemoveAll(tmpDir)
 				},
@@ -592,9 +579,7 @@ func Test_watch_Start(t *testing.T) {
 
 			return test{
 				name: "return channel with error when onRename hook return error and send to returned channel",
-				args: args{
-					ctx: ctx,
-				},
+				ctx:  ctx,
 				fields: fields{
 					w:  w,
 					eg: errgroup.Get(),
@@ -620,9 +605,9 @@ func Test_watch_Start(t *testing.T) {
 					}
 					return defaultCheckFunc(w, c, e)
 				},
-				afterFunc: func(t *testing.T, args args, w Watcher) {
+				afterFunc: func(t *testing.T, ctx context.Context, w Watcher) {
 					t.Helper()
-					defaultAfterFunc(t, args, w)
+					defaultAfterFunc(t, ctx, w)
 					cancel()
 					os.RemoveAll(tmpDir)
 				},
@@ -635,7 +620,7 @@ func Test_watch_Start(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(test.ctx)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -657,9 +642,9 @@ func Test_watch_Start(t *testing.T) {
 				onChmod:  test.fields.onChmod,
 				onError:  test.fields.onError,
 			}
-			defer test.afterFunc(tt, test.args, w)
+			defer test.afterFunc(tt, test.ctx, w)
 
-			got, err := w.Start(test.args.ctx)
+			got, err := w.Start(test.ctx)
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -999,9 +984,6 @@ func Test_watch_Remove(t *testing.T) {
 }
 
 func Test_watch_Stop(t *testing.T) {
-	type args struct {
-		ctx context.Context
-	}
 	type fields struct {
 		w    *fsnotify.Watcher
 		dirs map[string]struct{}
@@ -1012,11 +994,11 @@ func Test_watch_Stop(t *testing.T) {
 	}
 	type test struct {
 		want       want
-		args       args
+		ctx        context.Context
 		fields     fields
 		checkFunc  func(want, *watch, error) error
-		beforeFunc func(*testing.T, *fields, args)
-		afterFunc  func(*testing.T, args, Watcher)
+		beforeFunc func(*testing.T, *fields, context.Context)
+		afterFunc  func(*testing.T, context.Context, Watcher)
 		name       string
 	}
 	defaultCheckFunc := func(w want, got *watch, err error) error {
@@ -1045,7 +1027,7 @@ func Test_watch_Stop(t *testing.T) {
 		}
 		return nil
 	}
-	defaultBeforeFunc := func(t *testing.T, fields *fields, args args) {
+	defaultBeforeFunc := func(t *testing.T, fields *fields, ctx context.Context) {
 		t.Helper()
 
 		var err error
@@ -1054,10 +1036,10 @@ func Test_watch_Stop(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	defaultAfterFunc := func(t *testing.T, args args, w Watcher) {
+	defaultAfterFunc := func(t *testing.T, ctx context.Context, w Watcher) {
 		t.Helper()
 		if w != nil {
-			err := w.Stop(t.Context())
+			err := w.Stop(ctx)
 			if err != nil {
 				t.Error(err)
 			}
@@ -1066,9 +1048,7 @@ func Test_watch_Stop(t *testing.T) {
 	tests := []test{
 		{
 			name: "returns nil when stop success",
-			args: args{
-				ctx: t.Context(),
-			},
+			ctx:  t.Context(),
 			fields: fields{
 				dirs: map[string]struct{}{
 					"../watch":      {},
@@ -1076,9 +1056,9 @@ func Test_watch_Stop(t *testing.T) {
 					"watch_test.go": {},
 				},
 			},
-			beforeFunc: func(t *testing.T, fields *fields, args args) {
+			beforeFunc: func(t *testing.T, fields *fields, ctx context.Context) {
 				t.Helper()
-				defaultBeforeFunc(t, fields, args)
+				defaultBeforeFunc(t, fields, ctx)
 
 				for name := range fields.dirs {
 					err := fields.w.Add(name)
@@ -1097,9 +1077,7 @@ func Test_watch_Stop(t *testing.T) {
 
 		{
 			name: "returns non-exist error when the file not exists",
-			args: args{
-				ctx: t.Context(),
-			},
+			ctx:  t.Context(),
 			fields: fields{
 				dirs: map[string]struct{}{
 					"watch.go": {},
@@ -1129,15 +1107,15 @@ func Test_watch_Stop(t *testing.T) {
 				test.afterFunc = defaultAfterFunc
 			}
 
-			test.beforeFunc(tt, &test.fields, test.args)
+			test.beforeFunc(tt, &test.fields, test.ctx)
 
 			w := &watch{
 				w:    test.fields.w,
 				dirs: test.fields.dirs,
 			}
-			defer test.afterFunc(tt, test.args, w)
+			defer test.afterFunc(tt, test.ctx, w)
 
-			err := w.Stop(test.args.ctx)
+			err := w.Stop(test.ctx)
 			if err := checkFunc(test.want, w, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

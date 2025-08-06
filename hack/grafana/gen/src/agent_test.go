@@ -11,20 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package src
-
-import (
-	"reflect"
-	"testing"
-
-	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
-	"github.com/grafana/grafana-foundation-sdk/go/stat"
-	"github.com/pkg/errors"
-	"github.com/vdaas/vald/internal/test/goleak"
-)
+package main
 
 // NOT IMPLEMENTED BELOW
-// 
+//
 // func Test_addAgentPanels(t *testing.T) {
 // 	type args struct {
 // 		builder *dashboard.DashboardBuilder
@@ -33,8 +23,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -60,7 +50,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -81,7 +71,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -97,7 +87,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			addAgentPanels(test.args.builder)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
@@ -105,7 +95,7 @@ import (
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_agentStatPanel(t *testing.T) {
 // 	type args struct {
 // 		title string
@@ -116,8 +106,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, *stat.PanelBuilder) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -147,7 +137,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -169,7 +159,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -185,12 +175,12 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			got := agentStatPanel(test.args.title, test.args.field)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }

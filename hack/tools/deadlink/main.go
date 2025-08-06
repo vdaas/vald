@@ -185,13 +185,13 @@ func main() {
 		// Map of error links.
 		errLinks map[string]int
 		// URL.
-		url      string
+		url string
 		// Count.
-		count    int
+		count int
 		// Success count.
-		success  int
+		success int
 		// Fail count.
-		fail     int
+		fail int
 	}
 	// result for each file path
 	res := map[string]result{}

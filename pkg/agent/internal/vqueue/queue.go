@@ -47,9 +47,7 @@ type Queue interface {
 }
 
 type vqueue struct {
-	// insert list.
 	il, dl sync.Map[string, *index]
-	// insert and delete counter.
 	ic, dc uint64
 }
 
@@ -65,7 +63,7 @@ func New(opts ...Option) (Queue, error) {
 		if err := opt(vq); err != nil {
 			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 
-			e := new(errors.ErrCriticalOption)
+			e := new(errors.CriticalOptionError)
 			if errors.As(err, &e) {
 				log.Error(werr)
 				return nil, werr
@@ -98,7 +96,7 @@ func (v *vqueue) PushInsert(uuid string, vector []float32, timestamp int64) erro
 			v.il.Store(uuid, &idx)
 		}
 	} else {
-		_ = atomic.AddUint64(&v.ic, 1)
+		atomic.AddUint64(&v.ic, 1)
 	}
 	return nil
 }
@@ -120,7 +118,7 @@ func (v *vqueue) PushDelete(uuid string, timestamp int64) error {
 			v.dl.Store(uuid, &idx)
 		}
 	} else {
-		_ = atomic.AddUint64(&v.dc, 1)
+		atomic.AddUint64(&v.dc, 1)
 	}
 	return nil
 }
@@ -131,7 +129,7 @@ func (v *vqueue) PopInsert(uuid string) (vector []float32, timestamp int64, ok b
 	if !ok || idx == nil || idx.timestamp == 0 {
 		return nil, 0, false
 	}
-	_ = atomic.AddUint64(&v.ic, ^uint64(0))
+	atomic.AddUint64(&v.ic, ^uint64(0))
 	return idx.vector, idx.timestamp, ok
 }
 
@@ -141,7 +139,7 @@ func (v *vqueue) PopDelete(uuid string) (timestamp int64, ok bool) {
 	if !ok || idx == nil || idx.timestamp == 0 {
 		return 0, false
 	}
-	_ = atomic.AddUint64(&v.dc, ^uint64(0))
+	atomic.AddUint64(&v.dc, ^uint64(0))
 	return idx.timestamp, ok
 }
 

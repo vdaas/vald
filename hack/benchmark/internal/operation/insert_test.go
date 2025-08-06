@@ -30,9 +30,9 @@ package operation
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, int) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -138,9 +138,9 @@ package operation
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, int) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)

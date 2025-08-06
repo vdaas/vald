@@ -76,7 +76,7 @@ func (c *flushClient) Flush(
 
 // FlushServer is the server API for Flush service.
 // All implementations must embed UnimplementedFlushServer
-// for forward compatibility
+// for forward compatibility.
 type FlushServer interface {
 	// Overview
 	// Flush RPC is the method to remove all vectors.
@@ -135,7 +135,7 @@ func _Flush_Flush_Handler(
 
 // Flush_ServiceDesc is the grpc.ServiceDesc for Flush service.
 // It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
+// and not to be introspected or modified (even as a copy).
 var Flush_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "vald.v1.Flush",
 	HandlerType: (*FlushServer)(nil),

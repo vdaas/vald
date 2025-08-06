@@ -188,12 +188,12 @@ type objectStreamGetObjectClient struct {
 }
 
 func (x *objectStreamGetObjectClient) Send(m *payload.Object_VectorRequest) error {
-	return x.ClientStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *objectStreamGetObjectClient) Recv() (*payload.Object_StreamVector, error) {
 	m := new(payload.Object_StreamVector)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -207,10 +207,10 @@ func (c *objectClient) StreamListObject(
 		return nil, err
 	}
 	x := &objectStreamListObjectClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
+	if err := x.SendMsg(in); err != nil {
 		return nil, err
 	}
-	if err := x.ClientStream.CloseSend(); err != nil {
+	if err := x.CloseSend(); err != nil {
 		return nil, err
 	}
 	return x, nil
@@ -227,7 +227,7 @@ type objectStreamListObjectClient struct {
 
 func (x *objectStreamListObjectClient) Recv() (*payload.Object_List_Response, error) {
 	m := new(payload.Object_List_Response)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -246,7 +246,7 @@ func (c *objectClient) GetTimestamp(
 
 // ObjectServer is the server API for Object service.
 // All implementations must embed UnimplementedObjectServer
-// for forward compatibility
+// for forward compatibility.
 type ObjectServer interface {
 	// Overview
 	// Exists RPC is the method to check that a vector exists in the `vald-agent`.
@@ -441,12 +441,12 @@ type objectStreamGetObjectServer struct {
 }
 
 func (x *objectStreamGetObjectServer) Send(m *payload.Object_StreamVector) error {
-	return x.ServerStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *objectStreamGetObjectServer) Recv() (*payload.Object_VectorRequest, error) {
 	m := new(payload.Object_VectorRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -470,7 +470,7 @@ type objectStreamListObjectServer struct {
 }
 
 func (x *objectStreamListObjectServer) Send(m *payload.Object_List_Response) error {
-	return x.ServerStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func _Object_GetTimestamp_Handler(
@@ -495,7 +495,7 @@ func _Object_GetTimestamp_Handler(
 
 // Object_ServiceDesc is the grpc.ServiceDesc for Object service.
 // It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
+// and not to be introspected or modified (even as a copy).
 var Object_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "vald.v1.Object",
 	HandlerType: (*ObjectServer)(nil),

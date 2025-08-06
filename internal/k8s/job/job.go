@@ -39,17 +39,17 @@ type reconciler struct {
 	// jobsByAppNamePool is a sync.Pool for map[string][]k8s.Job.
 	jobsByAppNamePool sync.Pool
 	// mgr is a manager.Manager.
-	mgr               manager.Manager
+	mgr manager.Manager
 	// onError is a function to call on error.
-	onError           func(err error)
+	onError func(err error)
 	// onReconcile is a function to call on reconcile.
-	onReconcile       func(ctx context.Context, jobList map[string][]k8s.Job)
+	onReconcile func(ctx context.Context, jobList map[string][]k8s.Job)
 	// name is a name.
-	name              string
+	name string
 	// namespaces is a list of namespaces.
-	namespaces        []string
+	namespaces []string
 	// listOpts is a list of client.ListOption.
-	listOpts          []client.ListOption
+	listOpts []client.ListOption
 }
 
 // New returns the JobWatcher that implements reconciliation loop, or any errors occurred.

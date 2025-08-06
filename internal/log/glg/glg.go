@@ -34,13 +34,13 @@ const (
 
 type logger struct {
 	// retry is a retry.Retry.
-	retry  retry.Retry
+	retry retry.Retry
 	// glg is a glg.Glg.
-	glg    *glg.Glg
+	glg *glg.Glg
 	// format is a format.Format.
 	format format.Format
 	// level is a level.Level.
-	level  level.Level
+	level level.Level
 }
 
 // New returns a new logger instance.

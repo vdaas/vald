@@ -17,12 +17,12 @@
 package errors
 
 var (
-	// NewErrContextNotProvided represents a function to generate an error that the context is not provided.
-	NewErrContextNotProvided = New("context not provided")
+	// ErrContextNotProvided represents a function to generate an error that the context is not provided.
+	ErrContextNotProvided = New("context not provided")
 
-	// NewErrReaderNotProvided represents a function to generate an error that the io.Reader is not provided.
-	NewErrReaderNotProvided = New("io.Reader not provided")
+	// ErrReaderNotProvided represents a function to generate an error that the io.Reader is not provided.
+	ErrReaderNotProvided = New("io.Reader not provided")
 
-	// NewErrWriterNotProvided represents an error that the io.Writer is not provided.
-	NewErrWriterNotProvided = New("io.Writer not provided")
+	// ErrWriterNotProvided represents an error that the io.Writer is not provided.
+	ErrWriterNotProvided = New("io.Writer not provided")
 )

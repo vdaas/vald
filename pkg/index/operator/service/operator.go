@@ -49,26 +49,16 @@ type Operator interface {
 }
 
 type operator struct {
-	// kubernetes controller.
-	ctrl k8s.Controller
-	// error group for managing goroutines.
-	eg errgroup.Group
-	// kubernetes client.
-	client client.Client
-	// rotator job template.
-	rotatorJob *k8s.Job
-	// namespace to watch.
-	namespace string
-	// rotator job name.
-	rotatorName string
-	// target read replica ID annotations key.
+	ctrl                              k8s.Controller
+	eg                                errgroup.Group
+	client                            client.Client
+	rotatorJob                        *k8s.Job
+	namespace                         string
+	rotatorName                       string
 	targetReadReplicaIDAnnotationsKey string
-	// read replica label key.
-	readReplelaLabelKey string
-	// rotation job concurrency.
-	rotationJobConcurrency uint
-	// read replica enabled flag.
-	readReplicaEnabled bool
+	readReplicaLabelKey               string
+	rotationJobConcurrency            uint
+	readReplicaEnabled                bool
 }
 
 // New returns Indexer object if no error occurs.
@@ -85,8 +75,8 @@ func New(
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(operator); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := &errors.ErrCriticalOption{}
-			if errors.As(oerr, &e) {
+			var cerr *errors.CriticalOptionError
+			if errors.As(oerr, &cerr) {
 				log.Error(err)
 				return nil, oerr
 			}

@@ -127,7 +127,7 @@ func Test_attributesFromError(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, grpc.UnaryServerInterceptor, grpc.StreamServerInterceptor, error) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

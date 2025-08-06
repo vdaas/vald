@@ -29,8 +29,8 @@ import (
 	"github.com/vdaas/vald/internal/tls"
 )
 
-// Nil is a type alias of redis.Nil.
-var Nil = redis.Nil
+// ErrNil is a type alias of redis.Nil.
+var ErrNil = redis.Nil
 
 // Connector is an interface to connect to Redis servers.
 type Connector interface {
@@ -61,73 +61,73 @@ type (
 
 type redisClient struct {
 	// Dialer is a net.Dialer.
-	dialer               net.Dialer
+	dialer net.Dialer
 	// client is a Redis client.
-	client               Redis
+	client Redis
 	// limiter is a Limiter.
-	limiter              Limiter
+	limiter Limiter
 	// tlsConfig is a tls.Config.
-	tlsConfig            *tls.Config
+	tlsConfig *tls.Config
 	// dialerFunc is a function to dial.
-	dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
+	dialerFunc func(ctx context.Context, network, addr string) (net.Conn, error)
 	// clusterSlots is a function to get cluster slots.
-	clusterSlots         func(context.Context) ([]redis.ClusterSlot, error)
+	clusterSlots func(context.Context) ([]redis.ClusterSlot, error)
 	// onConnect is a function to call on connect.
-	onConnect            func(context.Context, *redis.Conn) error
+	onConnect func(context.Context, *redis.Conn) error
 	// network is a network.
-	network              string
+	network string
 	// username is a username.
-	username             string
+	username string
 	// sentinelPassword is a sentinel password.
-	sentinelPassword     string
+	sentinelPassword string
 	// keyPref is a key prefix.
-	keyPref              string
+	keyPref string
 	// sentinelMasterName is a sentinel master name.
-	sentinelMasterName   string
+	sentinelMasterName string
 	// password is a password.
-	password             string
+	password string
 	// hooks is a list of hooks.
-	hooks                []Hook
+	hooks []Hook
 	// addrs is a list of addresses.
-	addrs                []string
+	addrs []string
 	// minIdleConns is a minimum number of idle connections.
-	minIdleConns         int
+	minIdleConns int
 	// initialPingDuration is an initial ping duration.
-	initialPingDuration  time.Duration
+	initialPingDuration time.Duration
 	// minRetryBackoff is a minimum retry backoff.
-	minRetryBackoff      time.Duration
+	minRetryBackoff time.Duration
 	// maxRetries is a max number of retries.
-	maxRetries           int
+	maxRetries int
 	// maxRedirects is a max number of redirects.
-	maxRedirects         int
+	maxRedirects int
 	// poolSize is a pool size.
-	poolSize             int
+	poolSize int
 	// poolTimeout is a pool timeout.
-	poolTimeout          time.Duration
+	poolTimeout time.Duration
 	// db is a database.
-	db                   int
+	db int
 	// readTimeout is a read timeout.
-	readTimeout          time.Duration
+	readTimeout time.Duration
 	// dialTimeout is a dial timeout.
-	dialTimeout          time.Duration
+	dialTimeout time.Duration
 	// idleCheckFrequency is an idle check frequency.
-	idleCheckFrequency   time.Duration
+	idleCheckFrequency time.Duration
 	// maxConnAge is a max connection age.
-	maxConnAge           time.Duration
+	maxConnAge time.Duration
 	// initialPingTimeLimit is an initial ping time limit.
 	initialPingTimeLimit time.Duration
 	// maxRetryBackoff is a max retry backoff.
-	maxRetryBackoff      time.Duration
+	maxRetryBackoff time.Duration
 	// idleTimeout is an idle timeout.
-	idleTimeout          time.Duration
+	idleTimeout time.Duration
 	// writeTimeout is a write timeout.
-	writeTimeout         time.Duration
+	writeTimeout time.Duration
 	// routeRandomly is a flag to route randomly.
-	routeRandomly        bool
+	routeRandomly bool
 	// routeByLatency is a flag to route by latency.
-	routeByLatency       bool
+	routeByLatency bool
 	// readOnly is a flag to read only.
-	readOnly             bool
+	readOnly bool
 }
 
 // New returns Connector if no error occurs.

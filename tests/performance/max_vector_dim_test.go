@@ -42,7 +42,7 @@ const (
 	freeMemLimit = 500 // Limit of free memory remaining(MB)
 )
 
-func init_ngt_service(dim int) (service.NGT, error) {
+func init_ngt_service(ctx context.Context, dim int) (service.NGT, error) {
 	cfg := &config.NGT{
 		Dimension:              dim,
 		DistanceType:           ngt.L2.String(),
@@ -60,7 +60,7 @@ func init_ngt_service(dim int) (service.NGT, error) {
 			DeleteBufferPoolSize: 100,
 		},
 	}
-	ngt, err := service.New(cfg.Bind())
+	ngt, err := service.New(ctx, cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +145,7 @@ func TestMaxDimInsert(t *testing.T) {
 					t.Fatal(errors.ErrInvalidDimensionSize(dim, algorithm.MaximumVectorDimensionSize))
 				}
 				t.Logf("Start test: dimension = %d (bit = %d)", dim, bit)
-				ngt, err := init_ngt_service(dim)
+				ngt, err := init_ngt_service(ctx, dim)
 				time.Sleep(100 * time.Millisecond)
 				if err != nil {
 					t.Errorf("[Fail] Create NGT service: %#v", err)
@@ -248,7 +248,7 @@ func TestMaxDimInsertGRPC(t *testing.T) {
 					t.Fatal(errors.ErrInvalidDimensionSize(dim, algorithm.MaximumVectorDimensionSize))
 				}
 				t.Logf("Start test: dimension = %d (bit = %d)", dim, bit)
-				ngt, err := init_ngt_service(dim)
+				ngt, err := init_ngt_service(ctx, dim)
 				time.Sleep(100 * time.Millisecond)
 				if err != nil {
 					t.Errorf("[Fail] Create NGT service: %#v", err)

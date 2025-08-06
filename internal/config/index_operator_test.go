@@ -27,8 +27,8 @@ package config
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *IndexJobTemplates) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -132,8 +132,8 @@ package config
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *IndexOperator) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

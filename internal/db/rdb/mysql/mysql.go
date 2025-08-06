@@ -51,49 +51,49 @@ type MySQL interface {
 
 type mySQLClient struct {
 	// dialer is a net.Dialer.
-	dialer               net.Dialer
+	dialer net.Dialer
 	// dbr is a dbr.DBR.
-	dbr                  dbr.DBR
+	dbr dbr.DBR
 	// eventReceiver is an EventReceiver.
-	eventReceiver        EventReceiver
+	eventReceiver EventReceiver
 	// connected is an atomic.Value.
-	connected            atomic.Value
+	connected atomic.Value
 	// session is a dbr.Session.
-	session              dbr.Session
+	session dbr.Session
 	// tlsConfig is a tls.Config.
-	tlsConfig            *tls.Config
+	tlsConfig *tls.Config
 	// dialerFunc is a function to dial.
-	dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
+	dialerFunc func(ctx context.Context, network, addr string) (net.Conn, error)
 	// user is a user.
-	user                 string
+	user string
 	// host is a host.
-	host                 string
+	host string
 	// timezone is a timezone.
-	timezone             string
+	timezone string
 	// network is a network.
-	network              string
+	network string
 	// charset is a charset.
-	charset              string
+	charset string
 	// socketPath is a socket path.
-	socketPath           string
+	socketPath string
 	// name is a name.
-	name                 string
+	name string
 	// pass is a password.
-	pass                 string
+	pass string
 	// db is a database.
-	db                   string
+	db string
 	// initialPingDuration is an initial ping duration.
-	initialPingDuration  time.Duration
+	initialPingDuration time.Duration
 	// maxIdleConns is a max idle conns.
-	maxIdleConns         int
+	maxIdleConns int
 	// maxOpenConns is a max open conns.
-	maxOpenConns         int
+	maxOpenConns int
 	// connMaxLifeTime is a conn max life time.
-	connMaxLifeTime      time.Duration
+	connMaxLifeTime time.Duration
 	// initialPingTimeLimit is an initial ping time limit.
 	initialPingTimeLimit time.Duration
 	// port is a port.
-	port                 uint16
+	port uint16
 }
 
 // New creates the new mySQLClient with option.

@@ -36,11 +36,11 @@ import (
 	"context"
 	"fmt"
 	"runtime"
-	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
 // errGoexit indicates the runtime.Goexit was called in

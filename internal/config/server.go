@@ -99,61 +99,61 @@ func (h *HTTP2) Bind() *HTTP2 {
 // GRPC represents the configuration for gPRC.
 type GRPC struct {
 	// Keepalive represents the configuration for gRPC keep-alive.
-	Keepalive                      *GRPCKeepalive `json:"keepalive,omitempty"                        yaml:"keepalive"`
+	Keepalive *GRPCKeepalive `json:"keepalive,omitempty"                        yaml:"keepalive"`
 	// ConnectionTimeout represents the connection timeout.
-	ConnectionTimeout              string         `json:"connection_timeout,omitempty"               yaml:"connection_timeout"`
+	ConnectionTimeout string `json:"connection_timeout,omitempty"               yaml:"connection_timeout"`
 	// Interceptors represents the list of interceptors.
-	Interceptors                   []string       `json:"interceptors,omitempty"                     yaml:"interceptors"`
+	Interceptors []string `json:"interceptors,omitempty"                     yaml:"interceptors"`
 	// InitialConnWindowSize represents the initial connection window size.
-	InitialConnWindowSize          int            `json:"initial_conn_window_size,omitempty"         yaml:"initial_conn_window_size"`
+	InitialConnWindowSize int `json:"initial_conn_window_size,omitempty"         yaml:"initial_conn_window_size"`
 	// WriteBufferSize represents the write buffer size.
-	WriteBufferSize                int            `json:"write_buffer_size,omitempty"                yaml:"write_buffer_size"`
+	WriteBufferSize int `json:"write_buffer_size,omitempty"                yaml:"write_buffer_size"`
 	// ReadBufferSize represents the read buffer size.
-	ReadBufferSize                 int            `json:"read_buffer_size,omitempty"                 yaml:"read_buffer_size"`
+	ReadBufferSize int `json:"read_buffer_size,omitempty"                 yaml:"read_buffer_size"`
 	// MaxSendMessageSize represents the max send message size.
-	MaxSendMessageSize             int            `json:"max_send_message_size,omitempty"            yaml:"max_send_message_size"`
+	MaxSendMessageSize int `json:"max_send_message_size,omitempty"            yaml:"max_send_message_size"`
 	// MaxReceiveMessageSize represents the max receive message size.
-	MaxReceiveMessageSize          int            `json:"max_receive_message_size,omitempty"         yaml:"max_receive_message_size"`
+	MaxReceiveMessageSize int `json:"max_receive_message_size,omitempty"         yaml:"max_receive_message_size"`
 	// InitialWindowSize represents the initial window size.
-	InitialWindowSize              int            `json:"initial_window_size,omitempty"              yaml:"initial_window_size"`
+	InitialWindowSize int `json:"initial_window_size,omitempty"              yaml:"initial_window_size"`
 	// BidirectionalStreamConcurrency represents the bidirectional stream concurrency.
-	BidirectionalStreamConcurrency int            `json:"bidirectional_stream_concurrency,omitempty" yaml:"bidirectional_stream_concurrency"`
+	BidirectionalStreamConcurrency int `json:"bidirectional_stream_concurrency,omitempty" yaml:"bidirectional_stream_concurrency"`
 	// NumStreamWorkers represents the number of stream workers.
-	NumStreamWorkers               uint32         `json:"num_stream_workers,omitempty"               yaml:"num_stream_workers"`
+	NumStreamWorkers uint32 `json:"num_stream_workers,omitempty"               yaml:"num_stream_workers"`
 	// MaxHeaderListSize represents the max header list size.
-	MaxHeaderListSize              uint32         `json:"max_header_list_size,omitempty"             yaml:"max_header_list_size"`
+	MaxHeaderListSize uint32 `json:"max_header_list_size,omitempty"             yaml:"max_header_list_size"`
 	// MaxConcurrentStreams represents the max concurrent streams.
-	MaxConcurrentStreams           uint32         `json:"max_concurrent_streams,omitempty"           yaml:"max_concurrent_streams"`
+	MaxConcurrentStreams uint32 `json:"max_concurrent_streams,omitempty"           yaml:"max_concurrent_streams"`
 	// HeaderTableSize represents the header table size.
-	HeaderTableSize                uint32         `json:"header_table_size,omitempty"                yaml:"header_table_size"`
+	HeaderTableSize uint32 `json:"header_table_size,omitempty"                yaml:"header_table_size"`
 	// EnableAdmin represents whether to enable admin.
-	EnableAdmin                    bool           `json:"enable_admin,omitempty"                     yaml:"enable_admin"`
+	EnableAdmin bool `json:"enable_admin,omitempty"                     yaml:"enable_admin"`
 	// WaitForHandlers represents whether to wait for handlers.
-	WaitForHandlers                bool           `json:"wait_for_handlers,omitempty"                yaml:"wait_for_handlers"`
+	WaitForHandlers bool `json:"wait_for_handlers,omitempty"                yaml:"wait_for_handlers"`
 	// SharedWriteBuffer represents whether to use shared write buffer.
-	SharedWriteBuffer              bool           `json:"shared_write_buffer,omitempty"              yaml:"shared_write_buffer"`
+	SharedWriteBuffer bool `json:"shared_write_buffer,omitempty"              yaml:"shared_write_buffer"`
 	// EnableReflection represents whether to enable reflection.
-	EnableReflection               bool           `json:"enable_reflection,omitempty"                yaml:"enable_reflection"`
+	EnableReflection bool `json:"enable_reflection,omitempty"                yaml:"enable_reflection"`
 	// EnableChannelz represents whether to enable channelz.
-	EnableChannelz                 bool           `json:"enable_channelz,omitempty"                  yaml:"enable_channelz"`
+	EnableChannelz bool `json:"enable_channelz,omitempty"                  yaml:"enable_channelz"`
 }
 
 // GRPCKeepalive represents the configuration for gRPC keep-alive.
 type GRPCKeepalive struct {
 	// MaxConnIdle represents the max connection idle.
-	MaxConnIdle         string `json:"max_conn_idle"         yaml:"max_conn_idle"`
+	MaxConnIdle string `json:"max_conn_idle"         yaml:"max_conn_idle"`
 	// MaxConnAge represents the max connection age.
-	MaxConnAge          string `json:"max_conn_age"          yaml:"max_conn_age"`
+	MaxConnAge string `json:"max_conn_age"          yaml:"max_conn_age"`
 	// MaxConnAgeGrace represents the max connection age grace.
-	MaxConnAgeGrace     string `json:"max_conn_age_grace"    yaml:"max_conn_age_grace"`
+	MaxConnAgeGrace string `json:"max_conn_age_grace"    yaml:"max_conn_age_grace"`
 	// Time represents the time.
-	Time                string `json:"time"                  yaml:"time"`
+	Time string `json:"time"                  yaml:"time"`
 	// Timeout represents the timeout.
-	Timeout             string `json:"timeout"               yaml:"timeout"`
+	Timeout string `json:"timeout"               yaml:"timeout"`
 	// MinTime represents the min time.
-	MinTime             string `json:"min_time"              yaml:"min_time"`
+	MinTime string `json:"min_time"              yaml:"min_time"`
 	// PermitWithoutStream represents whether to permit without stream.
-	PermitWithoutStream bool   `json:"permit_without_stream" yaml:"permit_without_stream"`
+	PermitWithoutStream bool `json:"permit_without_stream" yaml:"permit_without_stream"`
 }
 
 // Bind binds the actual value from the Servers struct field.

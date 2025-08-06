@@ -629,9 +629,6 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 		},
 	}
 
-	ctx, cancel := context.WithCancel(t.Context())
-	t.Cleanup(func() { cancel() })
-
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
@@ -1010,9 +1007,9 @@ func Test_timestampOpFunc(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -1134,9 +1131,9 @@ func Test_timestampOpFunc(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, *payload.Object_Locations, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)

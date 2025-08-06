@@ -44,62 +44,62 @@ var aliases map[string]Schema
 
 type Schema struct {
 	// Minimum length.
-	MinLength                       *uint64            `json:"minLength,omitempty"                            yaml:"minLength,omitempty"`
+	MinLength *uint64 `json:"minLength,omitempty"                            yaml:"minLength,omitempty"`
 	// Minimum contains.
-	MinContains                     *uint64            `json:"minContains,omitempty"                          yaml:"minContains,omitempty"`
+	MinContains *uint64 `json:"minContains,omitempty"                          yaml:"minContains,omitempty"`
 	// Properties.
-	Properties                      map[string]*Schema `json:"properties,omitempty"                           yaml:"properties,omitempty"`
+	Properties map[string]*Schema `json:"properties,omitempty"                           yaml:"properties,omitempty"`
 	// Minimum.
-	Minimum                         *int64             `json:"minimum,omitempty"                              yaml:"minimum,omitempty"`
+	Minimum *int64 `json:"minimum,omitempty"                              yaml:"minimum,omitempty"`
 	// Maximum properties.
-	MaxProperties                   *uint64            `json:"maxProperties,omitempty"                        yaml:"maxProperties,omitempty"`
+	MaxProperties *uint64 `json:"maxProperties,omitempty"                        yaml:"maxProperties,omitempty"`
 	// Minimum properties.
-	MinProperties                   *uint64            `json:"minProperties,omitempty"                        yaml:"minProperties,omitempty"`
+	MinProperties *uint64 `json:"minProperties,omitempty"                        yaml:"minProperties,omitempty"`
 	// Dependent required.
-	DependentRequired               map[string]string  `json:"dependentRequired,omitempty"                    yaml:"dependentRequired,omitempty"`
+	DependentRequired map[string]string `json:"dependentRequired,omitempty"                    yaml:"dependentRequired,omitempty"`
 	// Maximum items.
-	MaxItems                        *uint64            `json:"maxItems,omitempty"                             yaml:"maxItems,omitempty"`
+	MaxItems *uint64 `json:"maxItems,omitempty"                             yaml:"maxItems,omitempty"`
 	// Items.
-	Items                           *Schema            `json:"items,omitempty"                                yaml:"items,omitempty"`
+	Items *Schema `json:"items,omitempty"                                yaml:"items,omitempty"`
 	// Maximum length.
-	MaxLength                       *uint64            `json:"maxLength,omitempty"                            yaml:"maxLength,omitempty"`
+	MaxLength *uint64 `json:"maxLength,omitempty"                            yaml:"maxLength,omitempty"`
 	// Maximum.
-	Maximum                         *int64             `json:"maximum,omitempty"                              yaml:"maximum,omitempty"`
+	Maximum *int64 `json:"maximum,omitempty"                              yaml:"maximum,omitempty"`
 	// Multiple of.
-	MultipleOf                      *int64             `json:"multipleOf,omitempty"                           yaml:"multipleOf,omitempty"`
+	MultipleOf *int64 `json:"multipleOf,omitempty"                           yaml:"multipleOf,omitempty"`
 	// Maximum contains.
-	MaxContains                     *uint64            `json:"maxContains,omitempty"                          yaml:"maxContains,omitempty"`
+	MaxContains *uint64 `json:"maxContains,omitempty"                          yaml:"maxContains,omitempty"`
 	// Minimum items.
-	MinItems                        *uint64            `json:"minItems,omitempty"                             yaml:"minItems,omitempty"`
+	MinItems *uint64 `json:"minItems,omitempty"                             yaml:"minItems,omitempty"`
 	// Type.
-	Type                            string             `json:"type"                                           yaml:"type"`
+	Type string `json:"type"                                           yaml:"type"`
 	// Pattern.
-	Pattern                         string             `json:"pattern,omitempty"                              yaml:"pattern,omitempty"`
+	Pattern string `json:"pattern,omitempty"                              yaml:"pattern,omitempty"`
 	// Description.
-	Description                     string             `json:"description,omitempty"                          yaml:"description,omitempty"`
+	Description string `json:"description,omitempty"                          yaml:"description,omitempty"`
 	// Enum.
-	Enum                            []string           `json:"enum,omitempty"                                 yaml:"enum,omitempty"`
+	Enum []string `json:"enum,omitempty"                                 yaml:"enum,omitempty"`
 	// Required.
-	Required                        []string           `json:"required,omitempty"                             yaml:"required,omitempty"`
+	Required []string `json:"required,omitempty"                             yaml:"required,omitempty"`
 	// Unique items.
-	UniqueItems                     bool               `json:"uniqueItems,omitempty"                          yaml:"uniqueItems,omitempty"`
+	UniqueItems bool `json:"uniqueItems,omitempty"                          yaml:"uniqueItems,omitempty"`
 	// Exclusive maximum.
-	ExclusiveMaximum                bool               `json:"exclusiveMaximum,omitempty"                     yaml:"exclusiveMaximum,omitempty"`
+	ExclusiveMaximum bool `json:"exclusiveMaximum,omitempty"                     yaml:"exclusiveMaximum,omitempty"`
 	// Exclusive minimum.
-	ExclusiveMinimum                bool               `json:"exclusiveMinimum,omitempty"                     yaml:"exclusiveMinimum,omitempty"`
+	ExclusiveMinimum bool `json:"exclusiveMinimum,omitempty"                     yaml:"exclusiveMinimum,omitempty"`
 	// Kubernetes preserve unknown fields.
-	KubernetesPreserveUnknownFields bool               `json:"x-kubernetes-preserve-unknown-fields,omitempty" yaml:"x-kubernetes-preserve-unknown-fields,omitempty"`
+	KubernetesPreserveUnknownFields bool `json:"x-kubernetes-preserve-unknown-fields,omitempty" yaml:"x-kubernetes-preserve-unknown-fields,omitempty"`
 }
 
 type VSchema struct {
 	// Name.
-	Name   string `json:"name"   yaml:"name"`
+	Name string `json:"name"   yaml:"name"`
 	// Type.
-	Type   string `json:"type"   yaml:"type"`
+	Type string `json:"type"   yaml:"type"`
 	// Anchor.
 	Anchor string `json:"anchor" yaml:"anchor"`
 	// Alias.
-	Alias  string `json:"alias"  yaml:"alias"`
+	Alias string `json:"alias"  yaml:"alias"`
 	Schema
 }
 

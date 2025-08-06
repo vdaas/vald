@@ -183,12 +183,12 @@ type updateStreamUpdateClient struct {
 }
 
 func (x *updateStreamUpdateClient) Send(m *payload.Update_Request) error {
-	return x.ClientStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *updateStreamUpdateClient) Recv() (*payload.Object_StreamLocation, error) {
 	m := new(payload.Object_StreamLocation)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -218,7 +218,7 @@ func (c *updateClient) UpdateTimestamp(
 
 // UpdateServer is the server API for Update service.
 // All implementations must embed UnimplementedUpdateServer
-// for forward compatibility
+// for forward compatibility.
 type UpdateServer interface {
 	// Overview
 	// Update RPC is the method to update a single vector.
@@ -393,12 +393,12 @@ type updateStreamUpdateServer struct {
 }
 
 func (x *updateStreamUpdateServer) Send(m *payload.Object_StreamLocation) error {
-	return x.ServerStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *updateStreamUpdateServer) Recv() (*payload.Update_Request, error) {
 	m := new(payload.Update_Request)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -446,7 +446,7 @@ func _Update_UpdateTimestamp_Handler(
 
 // Update_ServiceDesc is the grpc.ServiceDesc for Update service.
 // It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
+// and not to be introspected or modified (even as a copy).
 var Update_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "vald.v1.Update",
 	HandlerType: (*UpdateServer)(nil),

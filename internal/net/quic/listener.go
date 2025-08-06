@@ -25,8 +25,6 @@ import (
 
 type Listener struct {
 	quic.Listener
-
-	ctx context.Context
 }
 
 func Listen(ctx context.Context, addr string, tcfg *tls.Config) (net.Listener, error) {
@@ -56,17 +54,16 @@ func Listen(ctx context.Context, addr string, tcfg *tls.Config) (net.Listener, e
 	}
 	return &Listener{
 		Listener: *ql,
-		ctx:      ctx,
 	}, nil
 }
 
 func (l *Listener) Accept() (net.Conn, error) {
-	sess, err := l.Listener.Accept(l.ctx)
+	sess, err := l.Listener.Accept(context.Background())
 	if err != nil {
 		return nil, err
 	}
 
-	stream, err := sess.AcceptStream(l.ctx)
+	stream, err := sess.AcceptStream(context.Background())
 	if err != nil {
 		if errors.Is(err, io.EOF) {
 			// The session was closed gracefully by the peer

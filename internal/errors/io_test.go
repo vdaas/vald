@@ -15,7 +15,7 @@ package errors
 
 import "testing"
 
-func TestNewErrContextNotProvided(t *testing.T) {
+func TestErrContextNotProvided(t *testing.T) {
 	type want struct {
 		want error
 	}
@@ -55,7 +55,7 @@ func TestNewErrContextNotProvided(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := NewErrContextNotProvided
+			got := ErrContextNotProvided
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -63,7 +63,7 @@ func TestNewErrContextNotProvided(t *testing.T) {
 	}
 }
 
-func TestNewErrReaderNotProvided(t *testing.T) {
+func TestErrReaderNotProvided(t *testing.T) {
 	type want struct {
 		want error
 	}
@@ -103,7 +103,7 @@ func TestNewErrReaderNotProvided(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := NewErrReaderNotProvided
+			got := ErrReaderNotProvided
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -111,7 +111,7 @@ func TestNewErrReaderNotProvided(t *testing.T) {
 	}
 }
 
-func TestNewErrWriterNotProvided(t *testing.T) {
+func TestErrWriterNotProvided(t *testing.T) {
 	type want struct {
 		want error
 	}
@@ -151,7 +151,7 @@ func TestNewErrWriterNotProvided(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := NewErrWriterNotProvided
+			got := ErrWriterNotProvided
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}

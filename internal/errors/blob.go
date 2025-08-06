@@ -17,81 +17,81 @@
 package errors
 
 var (
-	// NewErrBlobNoSuchBucket represents a function to create no such bucket error.
-	NewErrBlobNoSuchBucket = func(err error, name string) error {
-		return &ErrBlobNoSuchBucket{
+	// NewBlobNoSuchBucketError represents a function to create no such bucket error.
+	NewBlobNoSuchBucketError = func(err error, name string) error {
+		return &BlobNoSuchBucketError{
 			err: Wrap(err, Errorf("bucket %s not found", name).Error()),
 		}
 	}
 
-	// NewErrBlobNoSuchKey represents a function to create no such key error.
-	NewErrBlobNoSuchKey = func(err error, key string) error {
-		return &ErrBlobNoSuchKey{
+	// NewBlobNoSuchKeyError represents a function to create no such key error.
+	NewBlobNoSuchKeyError = func(err error, key string) error {
+		return &BlobNoSuchKeyError{
 			err: Wrap(err, Errorf("key %s not found", key).Error()),
 		}
 	}
 
-	// NewErrBlobInvalidChunkRange represents a function to create invalid chunk range error.
-	NewErrBlobInvalidChunkRange = func(err error, rng string) error {
-		return &ErrBlobInvalidChunkRange{
+	// NewBlobInvalidChunkRangeError represents a function to create invalid chunk range error.
+	NewBlobInvalidChunkRangeError = func(err error, rng string) error {
+		return &BlobInvalidChunkRangeError{
 			err: Wrap(err, Errorf("chunk range %s is invalid", rng).Error()),
 		}
 	}
 )
 
-// ErrBlobNoSuchBucket represents no such bucket error of S3.
-type ErrBlobNoSuchBucket struct {
+// BlobNoSuchBucketError represents no such bucket error of S3.
+type BlobNoSuchBucketError struct {
 	err error
 }
 
 // Error returns the string representation of the internal error.
-func (e *ErrBlobNoSuchBucket) Error() string {
+func (e *BlobNoSuchBucketError) Error() string {
 	return e.err.Error()
 }
 
 // Unwrap unwraps and returns the internal error.
-func (e *ErrBlobNoSuchBucket) Unwrap() error {
+func (e *BlobNoSuchBucketError) Unwrap() error {
 	return e.err
 }
 
-// IsErrBlobNoSuchBucket returns if the error is ErrBlobNoSuchBucket.
+// IsErrBlobNoSuchBucket returns true if the error is ErrBlobNoSuchBucket.
 func IsErrBlobNoSuchBucket(err error) bool {
-	target := new(ErrBlobNoSuchBucket)
+	var target *BlobNoSuchBucketError
 	return As(err, &target)
 }
 
-// ErrBlobNoSuchKey represents no such key error of S3.
-type ErrBlobNoSuchKey struct {
+// BlobNoSuchKeyError represents no such key error of S3.
+type BlobNoSuchKeyError struct {
 	err error
 }
 
 // Error returns the string representation of the internal error.
-func (e *ErrBlobNoSuchKey) Error() string {
+func (e *BlobNoSuchKeyError) Error() string {
 	return e.err.Error()
 }
 
 // Unwrap unwraps and returns the internal error.
-func (e *ErrBlobNoSuchKey) Unwrap() error {
+func (e *BlobNoSuchKeyError) Unwrap() error {
 	return e.err
 }
 
-// IsErrBlobNoSuchKey returns if the error is ErrBlobNoSuchKey.
+// IsErrBlobNoSuchKey returns true if the error is ErrBlobNoSuchKey.
 func IsErrBlobNoSuchKey(err error) bool {
-	target := new(ErrBlobNoSuchKey)
+	var target *BlobNoSuchKeyError
 	return As(err, &target)
 }
 
-// ErrBlobInvalidChunkRange represents no invalid chunk range error of S3.
-type ErrBlobInvalidChunkRange struct {
+// BlobInvalidChunkRangeError represents no invalid chunk range error of S3.
+type BlobInvalidChunkRangeError struct {
 	err error
 }
 
 // Error returns the string representation of the internal error.
-func (e *ErrBlobInvalidChunkRange) Error() string {
+func (e *BlobInvalidChunkRangeError) Error() string {
 	return e.err.Error()
 }
 
 // Unwrap unwraps and returns the internal error.
-func (e *ErrBlobInvalidChunkRange) Unwrap() error {
+func (e *BlobInvalidChunkRangeError) Unwrap() error {
 	return e.err
 }

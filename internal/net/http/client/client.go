@@ -51,7 +51,7 @@ func NewWithTransport(rt http.RoundTripper, opts ...Option) (*http.Client, error
 	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(tr); err != nil {
 			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := new(errors.ErrCriticalOption)
+			e := new(errors.CriticalOptionError)
 			if errors.As(err, &e) {
 				log.Error(werr)
 				return nil, werr

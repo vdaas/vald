@@ -24,8 +24,8 @@ package errors
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -109,8 +109,8 @@ package errors
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -197,8 +197,8 @@ package errors
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -285,8 +285,8 @@ package errors
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -370,8 +370,8 @@ package errors
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -458,8 +458,8 @@ package errors
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

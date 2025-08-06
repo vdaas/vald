@@ -326,12 +326,12 @@ func TestErrPanicString(t *testing.T) {
 	}
 }
 
-type runtimeErr struct {
+type runtimeError struct {
 	err error
 }
 
-func (runtimeErr) RuntimeError() {}
-func (e runtimeErr) Error() string {
+func (runtimeError) RuntimeError() {}
+func (e runtimeError) Error() string {
 	return e.err.Error()
 }
 
@@ -358,7 +358,7 @@ func TestErrRuntimeError(t *testing.T) {
 		return nil
 	}
 	defaultErr := New("runtime panic string error")
-	defaultRuntimeErr := &runtimeErr{
+	defaultRuntimeErr := &runtimeError{
 		err: New("runtime error is occurred"),
 	}
 	tests := []test{

@@ -270,8 +270,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, map[string]string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -374,8 +374,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, map[string]string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -478,8 +478,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, map[string]string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -582,8 +582,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, map[string]string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -686,8 +686,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, map[string]string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -790,8 +790,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, map[string]string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -894,8 +894,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, map[string]string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -998,8 +998,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, map[string]string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -1102,8 +1102,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, map[string]string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -1206,8 +1206,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, map[string]string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -1307,8 +1307,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, map[string]string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -1399,8 +1399,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, map[string]string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -1491,8 +1491,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, bool) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -1583,8 +1583,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -1678,8 +1678,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *Selectors) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -1779,8 +1779,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *Selector) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -1871,8 +1871,8 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *ReadReplica) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

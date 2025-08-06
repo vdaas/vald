@@ -39,9 +39,9 @@ type GlobalConfig struct {
 	// Log represent log configuration.
 	Logging *Logging `json:"logging,omitempty" yaml:"logging,omitempty"`
 	// Version represent configuration file version.
-	Version string   `json:"version"           yaml:"version"`
+	Version string `json:"version"           yaml:"version"`
 	// TZ represent system time location .
-	TZ      string   `json:"time_zone"         yaml:"time_zone"`
+	TZ string `json:"time_zone"         yaml:"time_zone"`
 }
 
 const (

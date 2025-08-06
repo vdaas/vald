@@ -28,9 +28,9 @@ package v1
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -132,8 +132,8 @@ package v1
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *ValdBenchmarkScenario) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -232,8 +232,8 @@ package v1
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, runtime.Object) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -332,9 +332,9 @@ package v1
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -432,8 +432,8 @@ package v1
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *ValdBenchmarkScenarioList) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -528,8 +528,8 @@ package v1
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, runtime.Object) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -625,9 +625,9 @@ package v1
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -725,8 +725,8 @@ package v1
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *ValdBenchmarkScenarioSpec) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

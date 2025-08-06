@@ -34,7 +34,7 @@ func TestMain(m *testing.M) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, grpc.UnaryServerInterceptor) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -109,7 +109,7 @@ func TestMain(m *testing.M) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, grpc.StreamServerInterceptor) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

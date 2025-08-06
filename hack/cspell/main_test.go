@@ -26,9 +26,9 @@ package main
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, string, string, bool) error
+// 		args
+// 		want
+// 		checkFunc  func(want, string, bool) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
@@ -120,8 +120,8 @@ package main
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, map[string][]string, map[string]bool, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -214,8 +214,8 @@ package main
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, *CSpellConfig, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -303,8 +303,8 @@ package main
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -388,8 +388,8 @@ package main
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -465,7 +465,7 @@ package main
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

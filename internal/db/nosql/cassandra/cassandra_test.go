@@ -1228,13 +1228,13 @@ func Test_client_Open(t *testing.T) {
 		err error
 	}
 	type test struct {
-		fields     fields
 		want       want
 		args       args
 		checkFunc  func(*client, want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(c *client, w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1422,13 +1422,13 @@ func Test_client_Close(t *testing.T) {
 		err error
 	}
 	type test struct {
-		fields     fields
 		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 		name       string
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1584,13 +1584,13 @@ func Test_client_Query(t *testing.T) {
 		want *Queryx
 	}
 	type test struct {
-		fields     fields
 		want       want
 		checkFunc  func(want, *Queryx) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 		name       string
 		args       args
+		fields     fields
 	}
 	defaultCheckFunc := func(w want, got *Queryx) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -2011,348 +2011,3 @@ func TestBatch(t *testing.T) {
 		})
 	}
 }
-
-func TestEq(t *testing.T) {
-	type args struct {
-		column string
-	}
-	type want struct {
-		want Cmp
-	}
-	type test struct {
-		want       want
-		checkFunc  func(want, Cmp) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-		name       string
-		args       args
-	}
-	defaultCheckFunc := func(w want, got Cmp) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		{
-			name: "eq return qb.eq",
-			args: args{
-				column: "col",
-			},
-			want: want{
-				want: qb.Eq("col"),
-			},
-		},
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			got := Eq(test.args.column)
-			if err := checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestIn(t *testing.T) {
-	type args struct {
-		column string
-	}
-	type want struct {
-		want Cmp
-	}
-	type test struct {
-		want       want
-		checkFunc  func(want, Cmp) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-		name       string
-		args       args
-	}
-	defaultCheckFunc := func(w want, got Cmp) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		{
-			name: "in return qb.in",
-			args: args{
-				column: "col",
-			},
-			want: want{
-				want: qb.In("col"),
-			},
-		},
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			got := In(test.args.column)
-			if err := checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestContains(t *testing.T) {
-	type args struct {
-		column string
-	}
-	type want struct {
-		want Cmp
-	}
-	type test struct {
-		want       want
-		checkFunc  func(want, Cmp) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-		name       string
-		args       args
-	}
-	defaultCheckFunc := func(w want, got Cmp) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		{
-			name: "contains return qb.contains",
-			args: args{
-				column: "col",
-			},
-			want: want{
-				want: qb.Contains("col"),
-			},
-		},
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			got := Contains(test.args.column)
-			if err := checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestWrapErrorWithKeys(t *testing.T) {
-	type args struct {
-		err  error
-		keys []string
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-		name       string
-		args       args
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		{
-			name: "return error not found",
-			args: args{
-				err:  ErrNotFound,
-				keys: []string{"k1"},
-			},
-			want: want{
-				err: errors.ErrCassandraNotFound("k1"),
-			},
-		},
-		{
-			name: "return unavilable error",
-			args: args{
-				err: ErrUnavailable,
-			},
-			want: want{
-				err: errors.ErrCassandraUnavailable,
-			},
-		},
-		{
-			name: "return unsupported error",
-			args: args{
-				err: ErrUnsupported,
-			},
-			want: want{
-				err: ErrUnsupported,
-			},
-		},
-		{
-			name: "return too many stmts error",
-			args: args{
-				err: ErrTooManyStmts,
-			},
-			want: want{
-				err: ErrTooManyStmts,
-			},
-		},
-		{
-			name: "return use stmt error",
-			args: args{
-				err: ErrUseStmt,
-			},
-			want: want{
-				err: ErrUseStmt,
-			},
-		},
-		{
-			name: "return session closed error",
-			args: args{
-				err: ErrSessionClosed,
-			},
-			want: want{
-				err: ErrSessionClosed,
-			},
-		},
-		{
-			name: "return no connection error",
-			args: args{
-				err: ErrNoConnections,
-			},
-			want: want{
-				err: ErrNoConnections,
-			},
-		},
-		{
-			name: "return no keyspace error",
-			args: args{
-				err: ErrNoKeyspace,
-			},
-			want: want{
-				err: ErrNoKeyspace,
-			},
-		},
-		{
-			name: "return keyspace does not exist error",
-			args: args{
-				err: ErrKeyspaceDoesNotExist,
-			},
-			want: want{
-				err: ErrKeyspaceDoesNotExist,
-			},
-		},
-		{
-			name: "return no metadata error",
-			args: args{
-				err: ErrNoMetadata,
-			},
-			want: want{
-				err: ErrNoMetadata,
-			},
-		},
-		{
-			name: "return no hosts error",
-			args: args{
-				err: ErrNoHosts,
-			},
-			want: want{
-				err: ErrNoHosts,
-			},
-		},
-		{
-			name: "return no connection started error",
-			args: args{
-				err: ErrNoConnectionsStarted,
-			},
-			want: want{
-				err: ErrNoConnectionsStarted,
-			},
-		},
-		{
-			name: "return host query failed error",
-			args: args{
-				err: ErrHostQueryFailed,
-			},
-			want: want{
-				err: ErrHostQueryFailed,
-			},
-		},
-		{
-			name: "return other error",
-			args: args{
-				err: errors.New("err"),
-			},
-			want: want{
-				err: errors.New("err"),
-			},
-		},
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			err := WrapErrorWithKeys(test.args.err, test.args.keys...)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-// NOT IMPLEMENTED BELOW

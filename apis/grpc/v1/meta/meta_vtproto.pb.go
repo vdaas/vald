@@ -90,7 +90,7 @@ func (c *metaClient) Delete(
 
 // MetaServer is the server API for Meta service.
 // All implementations must embed UnimplementedMetaServer
-// for forward compatibility
+// for forward compatibility.
 type MetaServer interface {
 	Get(context.Context, *payload.Meta_Key) (*payload.Meta_Value, error)
 	Set(context.Context, *payload.Meta_KeyValue) (*payload.Empty, error)
@@ -191,7 +191,7 @@ func _Meta_Delete_Handler(
 
 // Meta_ServiceDesc is the grpc.ServiceDesc for Meta service.
 // It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
+// and not to be introspected or modified (even as a copy).
 var Meta_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "meta.v1.Meta",
 	HandlerType: (*MetaServer)(nil),

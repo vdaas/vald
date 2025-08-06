@@ -77,7 +77,7 @@ func TestNewReaderWithContext(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrReaderNotProvided,
+				err:  errors.ErrReaderNotProvided,
 			},
 		},
 		{
@@ -88,7 +88,7 @@ func TestNewReaderWithContext(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrContextNotProvided,
+				err:  errors.ErrContextNotProvided,
 			},
 		},
 	}
@@ -167,7 +167,7 @@ func TestNewReadCloserWithContext(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrReaderNotProvided,
+				err:  errors.ErrReaderNotProvided,
 			},
 		},
 		{
@@ -178,7 +178,7 @@ func TestNewReadCloserWithContext(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrContextNotProvided,
+				err:  errors.ErrContextNotProvided,
 			},
 		},
 	}
@@ -458,7 +458,7 @@ func TestNewWriterWithContext(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrWriterNotProvided,
+				err:  errors.ErrWriterNotProvided,
 			},
 		},
 		{
@@ -469,7 +469,7 @@ func TestNewWriterWithContext(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrContextNotProvided,
+				err:  errors.ErrContextNotProvided,
 			},
 		},
 	}
@@ -556,7 +556,7 @@ func TestNewWriteCloserWithContext(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrWriterNotProvided,
+				err:  errors.ErrWriterNotProvided,
 			},
 		},
 		{
@@ -567,7 +567,7 @@ func TestNewWriteCloserWithContext(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrContextNotProvided,
+				err:  errors.ErrContextNotProvided,
 			},
 		},
 	}
@@ -801,7 +801,7 @@ func Test_ctxWriter_Close(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, Reader) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -880,9 +880,9 @@ func Test_ctxWriter_Close(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
+// 		args
 // 		e          *eofReader
-// 		want       want
+// 		want
 // 		checkFunc  func(want, int, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -971,8 +971,8 @@ func Test_ctxWriter_Close(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, []byte, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)

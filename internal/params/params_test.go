@@ -78,19 +78,18 @@ func TestNew(t *testing.T) {
 				want: &parser{
 					// FIX: field order corrected to match parser.filePath struct.
 					filePath: struct {
-						keys        []string
 						defaultPath string
 						description string
+						keys        []string
 					}{
 						keys:        []string{"f", "file", "c", "config"},
 						defaultPath: "/etc/server/config.yaml",
 						description: "config file path",
 					},
-					// FIX: field order corrected to match parser.version struct.
 					version: struct {
+						description string
 						keys        []string
 						defaultFlag bool
-						description string
 					}{
 						keys:        []string{"v", "ver", "version"},
 						defaultFlag: false,
@@ -110,19 +109,18 @@ func TestNew(t *testing.T) {
 				want: &parser{
 					// FIX: field order corrected to match parser.filePath struct.
 					filePath: struct {
-						keys        []string
 						defaultPath string
 						description string
+						keys        []string
 					}{
 						keys:        []string{"f", "file", "c", "config", "t", "test"},
 						defaultPath: "/etc/server/config.yaml",
 						description: "config file path",
 					},
-					// FIX: field order corrected to match parser.version struct.
 					version: struct {
+						description string
 						keys        []string
 						defaultFlag bool
-						description string
 					}{
 						keys:        []string{"v", "ver", "version"},
 						defaultFlag: false,
@@ -164,7 +162,6 @@ func Test_parser_Parse(t *testing.T) {
 			description string
 			keys        []string
 		}
-		// FIX: field order corrected to match struct literal.
 		version struct {
 			description string
 			keys        []string
@@ -177,11 +174,11 @@ func Test_parser_Parse(t *testing.T) {
 		help bool
 	}
 	type test struct {
-		want       want
 		checkFunc  func(want, Data, bool, error) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
 		fields     fields
+		want       want
 		name       string
 		args       []string
 	}
@@ -423,21 +420,19 @@ func Test_parser_Parse(t *testing.T) {
 				defer test.afterFunc(tt)
 			}
 			p := &parser{
-				// FIX: field order corrected to match parser.filePath struct.
 				filePath: struct {
-					keys        []string
 					defaultPath string
 					description string
+					keys        []string
 				}{
 					keys:        test.fields.filePath.keys,
 					defaultPath: test.fields.filePath.defaultPath,
 					description: test.fields.filePath.description,
 				},
-				// FIX: field order corrected to match parser.version struct.
 				version: struct {
+					description string
 					keys        []string
 					defaultFlag bool
-					description string
 				}{
 					keys:        test.fields.version.keys,
 					defaultFlag: test.fields.version.defaultFlag,
@@ -606,8 +601,8 @@ func Test_data_ShowVersion(t *testing.T) {
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -725,8 +720,8 @@ func Test_data_ShowVersion(t *testing.T) {
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

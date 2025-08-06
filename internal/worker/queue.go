@@ -37,19 +37,19 @@ type Queue interface {
 
 type queue struct {
 	// eg is an error group.
-	eg      errgroup.Group
+	eg errgroup.Group
 	// qLen is a queue length.
-	qLen    atomic.Value
+	qLen atomic.Value
 	// running is a flag to check if the queue is running.
 	running atomic.Value
 	// inCh is a channel for input.
-	inCh    chan JobFunc
+	inCh chan JobFunc
 	// outCh is a channel for output.
-	outCh   chan JobFunc
+	outCh chan JobFunc
 	// buffer is a buffer size.
-	buffer  int
+	buffer int
 	// qcdur is a queue check duration.
-	qcdur   time.Duration
+	qcdur time.Duration
 }
 
 // NewQueue returns Queue if no error is occurred.

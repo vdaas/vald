@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// You may not use this file except in compliance with the License.
+// you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -13,16 +13,16 @@
 // limitations under the License.
 package errors
 
-// ErrInvalidOption represents the invalid option error.
-type ErrInvalidOption struct {
+// InvalidOptionError represents the invalid option error.
+type InvalidOptionError struct {
 	err    error
 	origin error
 }
 
-// NewErrInvalidOption represents a function to generate a new error of ErrInvalidOption that invalid option.
+// NewErrInvalidOption represents a function to generate a new error of InvalidOptionError that invalid option.
 func NewErrInvalidOption(name string, val any, errs ...error) error {
 	if len(errs) == 0 {
-		return &ErrInvalidOption{
+		return &InvalidOptionError{
 			err: Errorf("invalid option, name: %s, val: %v", name, val),
 		}
 	}
@@ -39,35 +39,35 @@ func NewErrInvalidOption(name string, val any, errs ...error) error {
 		}
 	}
 
-	return &ErrInvalidOption{
+	return &InvalidOptionError{
 		err:    Wrapf(e, "invalid option, name: %s, val: %v", name, val),
 		origin: e,
 	}
 }
 
-// Error returns a string of ErrInvalidOption.err.
-func (e *ErrInvalidOption) Error() string {
+// Error returns a string of InvalidOptionError.err.
+func (e *InvalidOptionError) Error() string {
 	if e.err == nil {
-		e.err = errExpectedErrIsNil("ErrInvalidOption")
+		e.err = errExpectedErrIsNil("InvalidOptionError")
 	}
 	return e.err.Error()
 }
 
-// Unwrap returns an origin error of ErrInvalidOption.
-func (e *ErrInvalidOption) Unwrap() error {
+// Unwrap returns an origin error of InvalidOptionError.
+func (e *InvalidOptionError) Unwrap() error {
 	return e.origin
 }
 
-// ErrCriticalOption represents the critical option error.
-type ErrCriticalOption struct {
+// CriticalOptionError represents the critical option error.
+type CriticalOptionError struct {
 	err    error
 	origin error
 }
 
-// NewErrCriticalOption represents a function to generate a new error of ErrCriticalOption that invalid option.
+// NewErrCriticalOption represents a function to generate a new error of CriticalOptionError that invalid option.
 func NewErrCriticalOption(name string, val any, errs ...error) error {
 	if len(errs) == 0 {
-		return &ErrCriticalOption{
+		return &CriticalOptionError{
 			err: Errorf("invalid critical option, name: %s, val: %v", name, val),
 		}
 	}
@@ -85,35 +85,35 @@ func NewErrCriticalOption(name string, val any, errs ...error) error {
 		}
 	}
 
-	return &ErrCriticalOption{
+	return &CriticalOptionError{
 		err:    Wrapf(e, "invalid critical option, name: %s, val: %v", name, val),
 		origin: e,
 	}
 }
 
-// Error returns a string of ErrCriticalOption.err.
-func (e *ErrCriticalOption) Error() string {
+// Error returns a string of CriticalOptionError.err.
+func (e *CriticalOptionError) Error() string {
 	if e.err == nil {
-		e.err = errExpectedErrIsNil("ErrCriticalOption")
+		e.err = errExpectedErrIsNil("CriticalOptionError")
 	}
 	return e.err.Error()
 }
 
-// Unwrap returns an origin error of ErrCriticalOption.
-func (e *ErrCriticalOption) Unwrap() error {
+// Unwrap returns an origin error of CriticalOptionError.
+func (e *CriticalOptionError) Unwrap() error {
 	return e.origin
 }
 
-// ErrIgnoredOption represents the ignored option error.
-type ErrIgnoredOption struct {
+// IgnoredOptionError represents the ignored option error.
+type IgnoredOptionError struct {
 	err    error
 	origin error
 }
 
-// NewErrIgnoredOption represents a function to generate a new error of ErrIgnoredOption that option is ignored.
+// NewErrIgnoredOption represents a function to generate a new error of IgnoredOptionError that option is ignored.
 func NewErrIgnoredOption(name string, errs ...error) error {
 	if len(errs) == 0 {
-		return &ErrIgnoredOption{
+		return &IgnoredOptionError{
 			err: Errorf("ignored option, name: %s", name),
 		}
 	}
@@ -130,21 +130,21 @@ func NewErrIgnoredOption(name string, errs ...error) error {
 		}
 	}
 
-	return &ErrIgnoredOption{
+	return &IgnoredOptionError{
 		err:    Wrapf(e, "ignored option, name: %s", name),
 		origin: e,
 	}
 }
 
-// Error returns a string of ErrIgnoredOption.err.
-func (e *ErrIgnoredOption) Error() string {
+// Error returns a string of IgnoredOptionError.err.
+func (e *IgnoredOptionError) Error() string {
 	if e.err == nil {
-		e.err = errExpectedErrIsNil("ErrIgnoredOption")
+		e.err = errExpectedErrIsNil("IgnoredOptionError")
 	}
 	return e.err.Error()
 }
 
-// Unwrap returns an origin error of ErrIgnoredOption.
-func (e *ErrIgnoredOption) Unwrap() error {
+// Unwrap returns an origin error of IgnoredOptionError.
+func (e *IgnoredOptionError) Unwrap() error {
 	return e.origin
 }

@@ -36,7 +36,6 @@ import (
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
-	"github.com/vdaas/vald/internal/k8s/vald"
 	kvald "github.com/vdaas/vald/internal/k8s/vald"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -832,20 +831,20 @@ func TestNGT_GetObject(t *testing.T) {
 
 	tests := []test{
 		{
-			"returns vector and timestamp when vector is found in vqueue",
-			testReturnFromVq,
+			name:     "returns vector and timestamp when vector is found in vqueue",
+			testfunc: testReturnFromVq,
 		},
 		{
-			"returns vector and timestamp when vector is found in kvs",
-			testReturnFromKvs,
+			name:     "returns vector and timestamp when vector is found in kvs",
+			testfunc: testReturnFromKvs,
 		},
 		{
-			"returns error when vector is not found in vector queue or kvs",
-			testNotFoundInBothVqAndKvs,
+			name:     "returns error when vector is not found in vector queue or kvs",
+			testfunc: testNotFoundInBothVqAndKvs,
 		},
 		{
-			"returns error when vector is not found in vq found in kvs but also in delete queue",
-			testFoundInBothIvqAndDvq,
+			name:     "returns error when vector is not found in vq found in kvs but also in delete queue",
+			testfunc: testFoundInBothIvqAndDvq,
 		},
 	}
 	for _, tc := range tests {
@@ -1132,8 +1131,8 @@ func TestExportIndexInfo(t *testing.T) {
 
 	tests := []test{
 		{
-			"export after create index one vector",
-			func(t *testing.T) {
+			name: "export after create index one vector",
+			testfunc: func(t *testing.T) {
 				mock := &k8s.PatcherMock{}
 				mock.On("ApplyPodAnnotations",
 					testify.Anything,
@@ -1166,8 +1165,8 @@ func TestExportIndexInfo(t *testing.T) {
 			},
 		},
 		{
-			"export after create index multiple vectors",
-			func(t *testing.T) {
+			name: "export after create index multiple vectors",
+			testfunc: func(t *testing.T) {
 				mock := &k8s.PatcherMock{}
 				mock.On("ApplyPodAnnotations",
 					testify.Anything,
@@ -1204,8 +1203,8 @@ func TestExportIndexInfo(t *testing.T) {
 			},
 		},
 		{
-			"export after create index multiple times",
-			func(t *testing.T) {
+			name: "export after create index multiple times",
+			testfunc: func(t *testing.T) {
 				mock := &k8s.PatcherMock{}
 				mock.On("ApplyPodAnnotations",
 					testify.Anything,
@@ -1245,8 +1244,8 @@ func TestExportIndexInfo(t *testing.T) {
 			},
 		},
 		{
-			"export after create index multiple vectors and save index",
-			func(t *testing.T) {
+			name: "export after create index multiple vectors and save index",
+			testfunc: func(t *testing.T) {
 				mock := &k8s.PatcherMock{}
 				mock.On("ApplyPodAnnotations",
 					testify.Anything,
@@ -1302,8 +1301,8 @@ func TestExportIndexInfo(t *testing.T) {
 			},
 		},
 		{
-			"export after inserting vectors",
-			func(t *testing.T) {
+			name: "export after inserting vectors",
+			testfunc: func(t *testing.T) {
 				mock := &k8s.PatcherMock{}
 				mock.On("ApplyPodAnnotations",
 					testify.Anything,
@@ -1690,8 +1689,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, *ngt, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -1827,9 +1826,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -2058,8 +2057,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -2194,9 +2193,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -2478,9 +2477,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -2764,9 +2763,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -3048,9 +3047,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -3334,9 +3333,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -3618,9 +3617,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -3904,9 +3903,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, <-chan error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -4191,9 +4190,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, *payload.Search_Response, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -4490,9 +4489,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, []float32, *payload.Search_Response, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -4789,9 +4788,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, *payload.Search_Response, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -5082,9 +5081,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, []float32, *payload.Search_Response, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -5375,9 +5374,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -5661,9 +5660,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -5950,9 +5949,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -6238,9 +6237,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -6521,9 +6520,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -6807,9 +6806,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -7094,9 +7093,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -7380,9 +7379,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -7668,9 +7667,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -7954,9 +7953,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -8237,9 +8236,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -8522,9 +8521,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -8808,9 +8807,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -9094,9 +9093,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -9377,9 +9376,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -9663,9 +9662,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -9949,9 +9948,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -10232,9 +10231,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -10518,9 +10517,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -10804,9 +10803,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -11086,9 +11085,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -11366,9 +11365,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -11645,9 +11644,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -11928,9 +11927,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -12212,9 +12211,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -12491,8 +12490,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -12767,9 +12766,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, uint32, bool) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -13054,9 +13053,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, []float32, int64, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -13344,9 +13343,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -13627,8 +13626,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, bool) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -13899,8 +13898,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, bool) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -14171,8 +14170,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, bool) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -14446,9 +14445,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, []string) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -14725,8 +14724,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, uint64) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -14997,8 +14996,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, uint64) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -15269,8 +15268,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, uint64) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -15539,8 +15538,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -15808,8 +15807,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, uint64) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -16080,8 +16079,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, uint64) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -16352,8 +16351,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, uint64) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -16624,8 +16623,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, int) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -16896,8 +16895,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, uint64) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -17170,9 +17169,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -17449,8 +17448,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *payload.Info_Index_Statistics, error) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -17724,8 +17723,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, bool) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -17997,8 +17996,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *payload.Info_Index_Property, error) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -18276,9 +18275,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, *payload.Search_Response, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -18559,8 +18558,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, string, string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -18835,8 +18834,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, string, string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -19111,8 +19110,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, string, string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -19390,9 +19389,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, string, string) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -19673,8 +19672,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, string, string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -19951,9 +19950,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -20233,9 +20232,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -20515,9 +20514,9 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)

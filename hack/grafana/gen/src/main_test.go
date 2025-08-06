@@ -11,21 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package src
-
-import (
-	"reflect"
-	"testing"
-
-	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
-	"github.com/grafana/grafana-foundation-sdk/go/prometheus"
-	"github.com/pkg/errors"
-	"github.com/vdaas/vald/internal/test/goleak"
-	"gopkg.in/yaml.v3"
-)
+package main
 
 // NOT IMPLEMENTED BELOW
-// 
+//
 // func Test_prometheusQuery(t *testing.T) {
 // 	type args struct {
 // 		query string
@@ -35,8 +24,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, *prometheus.DataqueryBuilder) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -65,7 +54,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -86,7 +75,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -102,23 +91,23 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			got := prometheusQuery(test.args.query)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func TestValdClusterOverview(t *testing.T) {
 // 	type want struct {
 // 		want *dashboard.DashboardBuilder
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, *dashboard.DashboardBuilder) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -144,7 +133,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -162,7 +151,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -178,23 +167,23 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			got := ValdClusterOverview()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func TestValdLBGateway(t *testing.T) {
 // 	type want struct {
 // 		want *dashboard.DashboardBuilder
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, *dashboard.DashboardBuilder) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -220,7 +209,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -238,7 +227,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -254,23 +243,23 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			got := ValdLBGateway()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func TestValdDiscoverer(t *testing.T) {
 // 	type want struct {
 // 		want *dashboard.DashboardBuilder
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, *dashboard.DashboardBuilder) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -296,7 +285,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -314,7 +303,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -330,23 +319,23 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			got := ValdDiscoverer()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func TestValdIndexManager(t *testing.T) {
 // 	type want struct {
 // 		want *dashboard.DashboardBuilder
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, *dashboard.DashboardBuilder) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -372,7 +361,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -390,7 +379,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -406,23 +395,23 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			got := ValdIndexManager()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func TestValdIndexCorrection(t *testing.T) {
 // 	type want struct {
 // 		want *dashboard.DashboardBuilder
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, *dashboard.DashboardBuilder) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -448,7 +437,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -466,7 +455,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -482,23 +471,23 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			got := ValdIndexCorrection()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func TestValdAgent(t *testing.T) {
 // 	type want struct {
 // 		want *dashboard.DashboardBuilder
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, *dashboard.DashboardBuilder) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -524,7 +513,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -542,7 +531,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -558,23 +547,23 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			got := ValdAgent()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func TestValdAgentMemory(t *testing.T) {
 // 	type want struct {
 // 		want *dashboard.DashboardBuilder
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, *dashboard.DashboardBuilder) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -600,7 +589,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -618,7 +607,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -634,23 +623,23 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			got := ValdAgentMemory()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func TestValdHelmOperator(t *testing.T) {
 // 	type want struct {
 // 		want *dashboard.DashboardBuilder
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, *dashboard.DashboardBuilder) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -676,7 +665,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -694,7 +683,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -710,23 +699,23 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			got := ValdHelmOperator()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func TestValdBenchmarkOperator(t *testing.T) {
 // 	type want struct {
 // 		want *dashboard.DashboardBuilder
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, *dashboard.DashboardBuilder) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -752,7 +741,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -770,7 +759,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -786,16 +775,16 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			got := ValdBenchmarkOperator()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_configMapTemplate(t *testing.T) {
 // 	type args struct {
 // 		header  string
@@ -807,8 +796,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, *yaml.Node) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -839,7 +828,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -862,7 +851,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -878,22 +867,22 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			got := configMapTemplate(test.args.header, test.args.id, test.args.content)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_main(t *testing.T) {
 // 	type want struct {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -916,7 +905,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -934,7 +923,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -950,7 +939,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			main()
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)

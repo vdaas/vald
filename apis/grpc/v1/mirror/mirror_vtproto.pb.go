@@ -75,7 +75,7 @@ func (c *mirrorClient) Register(
 
 // MirrorServer is the server API for Mirror service.
 // All implementations must embed UnimplementedMirrorServer
-// for forward compatibility
+// for forward compatibility.
 type MirrorServer interface {
 	// Overview
 	// Register RPC is the method to register other Vald Mirror Gateway targets.
@@ -133,7 +133,7 @@ func _Mirror_Register_Handler(
 
 // Mirror_ServiceDesc is the grpc.ServiceDesc for Mirror service.
 // It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
+// and not to be introspected or modified (even as a copy).
 var Mirror_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "mirror.v1.Mirror",
 	HandlerType: (*MirrorServer)(nil),

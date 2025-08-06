@@ -1436,7 +1436,7 @@ func TestReadDatasetI32(t *testing.T) {
 // 	type test struct {
 // 		name       string
 // 		key        Hdf5Key
-// 		want       want
+// 		want
 // 		checkFunc  func(want, string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

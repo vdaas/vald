@@ -116,51 +116,51 @@ type Client interface {
 // gRPCClient is an implementation of the Client interface.
 type gRPCClient struct {
 	// dialer is the custom net.Dialer.
-	dialer                 net.Dialer
+	dialer net.Dialer
 	// eg is the error group for managing background goroutines.
-	eg                     errgroup.Group
+	eg errgroup.Group
 	// cb is the circuit breaker.
-	cb                     circuitbreaker.CircuitBreaker
+	cb circuitbreaker.CircuitBreaker
 	// bo is the backoff strategy for retries.
-	bo                     backoff.Backoff
+	bo backoff.Backoff
 	// addrs is a set of initial addresses to connect to.
-	addrs                  map[string]struct{}
+	addrs map[string]struct{}
 	// stopMonitor is the function to stop the connection monitor.
-	stopMonitor            context.CancelFunc
+	stopMonitor context.CancelFunc
 	// ech is the error channel for the connection monitor.
-	ech                    <-chan error
+	ech <-chan error
 	// crl is the connection request list for pending reconnections.
-	crl                    sync.Map[string, bool]
+	crl sync.Map[string, bool]
 	// disableResolveDNSAddrs stores addresses for which DNS resolution should be disabled.
 	disableResolveDNSAddrs sync.Map[string, bool]
 	// conns stores the connection pools for each address.
-	conns                  sync.Map[string, pool.Conn]
+	conns sync.Map[string, pool.Conn]
 	// name is the name of the gRPC client, used for logging.
-	name                   string
+	name string
 	// roccd is the reconnection old connection closing duration.
-	roccd                  string
+	roccd string
 	// dopts are the default dial options.
-	dopts                  []DialOption
+	dopts []DialOption
 	// copts are the default call options.
-	copts                  []CallOption
+	copts []CallOption
 	// gbo is the gRPC backoff configuration.
-	gbo                    gbackoff.Config
+	gbo gbackoff.Config
 	// hcDur is the duration between health checks.
-	hcDur                  time.Duration
+	hcDur time.Duration
 	// mcd is the minimum connection timeout duration.
-	mcd                    time.Duration
+	mcd time.Duration
 	// prDur is the duration between pool rebalances.
-	prDur                  time.Duration
+	prDur time.Duration
 	// clientCount is the total number of active client connections.
-	clientCount            uint64
+	clientCount uint64
 	// poolSize is the number of connections per address in the pool.
-	poolSize               uint64
+	poolSize uint64
 	// monitorRunning indicates if the connection monitor is running.
-	monitorRunning         atomic.Bool
+	monitorRunning atomic.Bool
 	// resolveDNS enables DNS resolution for addresses.
-	resolveDNS             bool
+	resolveDNS bool
 	// enablePoolRebalance enables periodic rebalancing of connection pools.
-	enablePoolRebalance    bool
+	enablePoolRebalance bool
 }
 
 const (
@@ -804,7 +804,7 @@ func (g *gRPCClient) RoundRobin(
 				data, err = g.cb.Do(tctx, boName, func(cbctx context.Context) (any, error) {
 					data, ret, err = g.executeRPC(cbctx, p, addr, f)
 					if err != nil && !ret {
-						return data, errors.NewErrCircuitBreakerIgnorable(err)
+						return data, errors.NewCircuitBreakerIgnorableError(err)
 					}
 					return data, err
 				})
@@ -956,7 +956,7 @@ func (g *gRPCClient) do(
 				r, err = g.cb.Do(ictx, boName, func(ictx context.Context) (any, error) {
 					r, ret, err = g.executeRPC(ictx, p, addr, f)
 					if err != nil && !ret {
-						return r, errors.NewErrCircuitBreakerIgnorable(err)
+						return r, errors.NewCircuitBreakerIgnorableError(err)
 					}
 					return r, err
 				})

@@ -93,7 +93,7 @@ func (c *discovererClient) Services(
 
 // DiscovererServer is the server API for Discoverer service.
 // All implementations must embed UnimplementedDiscovererServer
-// for forward compatibility
+// for forward compatibility.
 type DiscovererServer interface {
 	// Represent the RPC to get the agent pods information.
 	Pods(context.Context, *payload.Discoverer_Request) (*payload.Info_Pods, error)
@@ -199,7 +199,7 @@ func _Discoverer_Services_Handler(
 
 // Discoverer_ServiceDesc is the grpc.ServiceDesc for Discoverer service.
 // It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
+// and not to be introspected or modified (even as a copy).
 var Discoverer_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "discoverer.v1.Discoverer",
 	HandlerType: (*DiscovererServer)(nil),

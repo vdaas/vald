@@ -167,12 +167,12 @@ type insertStreamInsertClient struct {
 }
 
 func (x *insertStreamInsertClient) Send(m *payload.Insert_Request) error {
-	return x.ClientStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *insertStreamInsertClient) Recv() (*payload.Object_StreamLocation, error) {
 	m := new(payload.Object_StreamLocation)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -191,7 +191,7 @@ func (c *insertClient) MultiInsert(
 
 // InsertServer is the server API for Insert service.
 // All implementations must embed UnimplementedInsertServer
-// for forward compatibility
+// for forward compatibility.
 type InsertServer interface {
 	// Overview
 	// Insert RPC is the method to add a new single vector.
@@ -344,12 +344,12 @@ type insertStreamInsertServer struct {
 }
 
 func (x *insertStreamInsertServer) Send(m *payload.Object_StreamLocation) error {
-	return x.ServerStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *insertStreamInsertServer) Recv() (*payload.Insert_Request, error) {
 	m := new(payload.Insert_Request)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -377,7 +377,7 @@ func _Insert_MultiInsert_Handler(
 
 // Insert_ServiceDesc is the grpc.ServiceDesc for Insert service.
 // It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
+// and not to be introspected or modified (even as a copy).
 var Insert_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "vald.v1.Insert",
 	HandlerType: (*InsertServer)(nil),

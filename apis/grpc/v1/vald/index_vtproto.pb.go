@@ -124,7 +124,7 @@ func (c *indexClient) IndexProperty(
 
 // IndexServer is the server API for Index service.
 // All implementations must embed UnimplementedIndexServer
-// for forward compatibility
+// for forward compatibility.
 type IndexServer interface {
 	// Overview
 	// Represent the RPC to get the index information.
@@ -291,7 +291,7 @@ func _Index_IndexProperty_Handler(
 
 // Index_ServiceDesc is the grpc.ServiceDesc for Index service.
 // It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
+// and not to be introspected or modified (even as a copy).
 var Index_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "vald.v1.Index",
 	HandlerType: (*IndexServer)(nil),

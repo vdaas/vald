@@ -30,9 +30,9 @@ type Limiter interface {
 
 type limiter struct {
 	// uber is a ratelimit.Limiter.
-	uber  ratelimit.Limiter
+	uber ratelimit.Limiter
 	// std is a rate.Limiter.
-	std   *rate.Limiter
+	std *rate.Limiter
 	// isStd is a flag to use std limiter.
 	isStd bool
 }

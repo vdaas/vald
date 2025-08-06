@@ -431,12 +431,12 @@ type searchStreamSearchClient struct {
 }
 
 func (x *searchStreamSearchClient) Send(m *payload.Search_Request) error {
-	return x.ClientStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *searchStreamSearchClient) Recv() (*payload.Search_StreamResponse, error) {
 	m := new(payload.Search_StreamResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -464,12 +464,12 @@ type searchStreamSearchByIDClient struct {
 }
 
 func (x *searchStreamSearchByIDClient) Send(m *payload.Search_IDRequest) error {
-	return x.ClientStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *searchStreamSearchByIDClient) Recv() (*payload.Search_StreamResponse, error) {
 	m := new(payload.Search_StreamResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -541,12 +541,12 @@ type searchStreamLinearSearchClient struct {
 }
 
 func (x *searchStreamLinearSearchClient) Send(m *payload.Search_Request) error {
-	return x.ClientStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *searchStreamLinearSearchClient) Recv() (*payload.Search_StreamResponse, error) {
 	m := new(payload.Search_StreamResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -574,12 +574,12 @@ type searchStreamLinearSearchByIDClient struct {
 }
 
 func (x *searchStreamLinearSearchByIDClient) Send(m *payload.Search_IDRequest) error {
-	return x.ClientStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *searchStreamLinearSearchByIDClient) Recv() (*payload.Search_StreamResponse, error) {
 	m := new(payload.Search_StreamResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -609,7 +609,7 @@ func (c *searchClient) MultiLinearSearchByID(
 
 // SearchServer is the server API for Search service.
 // All implementations must embed UnimplementedSearchServer
-// for forward compatibility
+// for forward compatibility.
 type SearchServer interface {
 	// Overview
 	// Search RPC is the method to search vector(s) similar to the request vector.
@@ -1083,12 +1083,12 @@ type searchStreamSearchServer struct {
 }
 
 func (x *searchStreamSearchServer) Send(m *payload.Search_StreamResponse) error {
-	return x.ServerStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *searchStreamSearchServer) Recv() (*payload.Search_Request, error) {
 	m := new(payload.Search_Request)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -1109,12 +1109,12 @@ type searchStreamSearchByIDServer struct {
 }
 
 func (x *searchStreamSearchByIDServer) Send(m *payload.Search_StreamResponse) error {
-	return x.ServerStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *searchStreamSearchByIDServer) Recv() (*payload.Search_IDRequest, error) {
 	m := new(payload.Search_IDRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -1215,12 +1215,12 @@ type searchStreamLinearSearchServer struct {
 }
 
 func (x *searchStreamLinearSearchServer) Send(m *payload.Search_StreamResponse) error {
-	return x.ServerStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *searchStreamLinearSearchServer) Recv() (*payload.Search_Request, error) {
 	m := new(payload.Search_Request)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -1241,12 +1241,12 @@ type searchStreamLinearSearchByIDServer struct {
 }
 
 func (x *searchStreamLinearSearchByIDServer) Send(m *payload.Search_StreamResponse) error {
-	return x.ServerStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *searchStreamLinearSearchByIDServer) Recv() (*payload.Search_IDRequest, error) {
 	m := new(payload.Search_IDRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -1294,7 +1294,7 @@ func _Search_MultiLinearSearchByID_Handler(
 
 // Search_ServiceDesc is the grpc.ServiceDesc for Search service.
 // It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
+// and not to be introspected or modified (even as a copy).
 var Search_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "vald.v1.Search",
 	HandlerType: (*SearchServer)(nil),

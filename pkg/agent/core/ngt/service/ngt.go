@@ -98,108 +98,57 @@ type (
 	}
 
 	ngt struct {
-		// NGT core service
-		core core.NGT
-		// temporary path for copy-on-write
-		tmpPath atomic.Value
-		// KVS for UUID and OID mapping
-		kvs kvs.BidiMap
-		// saving status flag
-		saving atomic.Value
-		// error group for goroutine management
-		eg errgroup.Group
-		// vector queue for insert and delete
-		vq vqueue.Queue
-		// indexing status flag
-		indexing atomic.Value
-		// kubernetes patcher
-		patcher client.Patcher
-		// file map for failed to remove OID from NGT
-		fmap map[string]int64
-		// index statistics cache
-		statisticsCache atomic.Pointer[payload.Info_Index_Statistics]
-		// NGT configuration
-		cfg *config.NGT
-		// base path for index
-		basePath string
-		// broken index path
-		brokenPath string
-		// old index path for backup
-		oldPath string
-		// pod name
-		podName string
-		// index path
-		path string
-		// pod namespace
-		podNamespace string
-		// options for NGT
-		opts []Option
-		// number of proactive GC execution
-		nogce uint64
-		// KVS DB concurrency
-		kvsdbConcurrency int
-		// auto index length limit
-		alen int
-		// auto index time limit
-		lim time.Duration
-		// auto index check duration
-		dur time.Duration
-		// auto save index duration
-		sdur time.Duration
-		// minimum load index timeout
-		minLit time.Duration
-		// maximum load index timeout
-		maxLit time.Duration
-		// load index timeout factor
-		litFactor time.Duration
-		// auto export index info duration
+		core                    core.NGT
+		tmpPath                 atomic.Value
+		kvs                     kvs.BidiMap
+		saving                  atomic.Value
+		eg                      errgroup.Group
+		vq                      vqueue.Queue
+		indexing                atomic.Value
+		patcher                 client.Patcher
+		fmap                    map[string]int64
+		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
+		cfg                     *config.NGT
+		basePath                string
+		brokenPath              string
+		oldPath                 string
+		podName                 string
+		path                    string
+		podNamespace            string
+		opts                    []Option
+		nogce                   uint64
+		kvsdbConcurrency        int
+		alen                    int
+		lim                     time.Duration
+		dur                     time.Duration
+		sdur                    time.Duration
+		minLit                  time.Duration
+		maxLit                  time.Duration
+		litFactor               time.Duration
 		exportIndexInfoDuration time.Duration
-		// broken index history limit
-		historyLimit int
-		// vector dimension
-		dim int
-		// number of processed vqueue
-		nopvq atomic.Uint64
-		// number of broken index count
-		nobic uint64
-		// initial delay for auto indexing
-		idelay time.Duration
-		// waiting for create index count
-		wfci uint64
-		// number of create index execution
-		nocie uint64
-		// last number of create index execution
-		lastNocie uint64
-		// copy-on-write mutex
-		cowmu sync.Mutex
-		// save mutex
-		smu sync.Mutex
-		// create index mutex
-		cimu sync.Mutex
-		// file map mutex
-		fmu sync.Mutex
-		// flushing status flag
-		flushing atomic.Bool
-		// default pool size
-		poolSize uint32
-		// default radius
-		radius float32
-		// default epsilon
-		epsilon float32
-		// disable create index daemon
-		dcd bool
-		// is read replica
-		isReadReplica bool
-		// enable export index info
-		enableExportIndexInfo bool
-		// enable proactive GC
-		enableProactiveGC bool
-		// enable copy-on-write
-		enableCopyOnWrite bool
-		// enable statistics
-		enableStatistics bool
-		// in-memory mode
-		inMem bool
+		historyLimit            int
+		dim                     int
+		nopvq                   atomic.Uint64
+		nobic                   uint64
+		idelay                  time.Duration
+		wfci                    uint64
+		nocie                   uint64
+		lastNocie               uint64
+		cowmu                   sync.Mutex
+		smu                     sync.Mutex
+		cimu                    sync.Mutex
+		fmu                     sync.Mutex
+		flushing                atomic.Bool
+		poolSize                uint32
+		radius                  float32
+		epsilon                 float32
+		dcd                     bool
+		isReadReplica           bool
+		enableExportIndexInfo   bool
+		enableProactiveGC       bool
+		enableCopyOnWrite       bool
+		enableStatistics        bool
+		inMem                   bool
 	}
 
 	contextSaveIndexTimeKey string
@@ -224,14 +173,14 @@ const (
 	saveIndexTimeKey contextSaveIndexTimeKey = "saveIndexTimeKey"
 )
 
-func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
+func New(ctx context.Context, cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	if cfg.PodName == "" && cfg.EnableExportIndexInfoToK8s {
 		return nil, errors.New("pod_name is empty. this must be set either from environment variable or from config file")
 	}
-	return newNGT(cfg, opts...)
+	return newNGT(ctx, cfg, opts...)
 }
 
-func newNGT(cfg *config.NGT, opts ...Option) (n *ngt, err error) {
+func newNGT(ctx context.Context, cfg *config.NGT, opts ...Option) (n *ngt, err error) {
 	n = &ngt{
 		podName:               cfg.PodName,
 		podNamespace:          cfg.PodNamespace,
@@ -258,7 +207,6 @@ func newNGT(cfg *config.NGT, opts ...Option) (n *ngt, err error) {
 
 	// prepare directories to store index only when it not in-memory mode
 	if !n.inMem {
-		ctx := context.Background()
 		err = n.prepareFolders(ctx)
 		if err != nil {
 			return nil, err
@@ -1336,7 +1284,7 @@ func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 	}
 
 	// renew instance
-	nn, err := newNGT(n.cfg, n.opts...)
+	nn, err := newNGT(ctx, n.cfg, n.opts...)
 	if err != nil {
 		return err
 	}

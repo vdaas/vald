@@ -39,15 +39,15 @@ type info struct {
 	// valdReplacer is a strings.Replacer.
 	valdReplacer *strings.Replacer
 	// rtCaller is a function to get runtime caller.
-	rtCaller     func(skip int) (pc uintptr, file string, line int, ok bool)
+	rtCaller func(skip int) (pc uintptr, file string, line int, ok bool)
 	// rtFuncForPC is a function to get runtime function for PC.
-	rtFuncForPC  func(pc uintptr) *runtime.Func
+	rtFuncForPC func(pc uintptr) *runtime.Func
 	// baseURL is a base URL.
-	baseURL      string
+	baseURL string
 	// detail is a Detail.
-	detail       Detail
+	detail Detail
 	// prepOnce is a sync.Once.
-	prepOnce     sync.Once
+	prepOnce sync.Once
 }
 
 // Detail represents environment information of system and stacktrace information.
@@ -166,7 +166,7 @@ func New(opts ...Option) (Info, error) {
 		if err := opt(i); err != nil {
 			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 
-			e := new(errors.ErrCriticalOption)
+			e := new(errors.CriticalOptionError)
 			if errors.As(err, &e) {
 				log.Error(werr)
 				return nil, werr

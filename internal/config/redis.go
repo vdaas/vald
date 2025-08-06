@@ -29,67 +29,67 @@ import (
 // Redis represents the configuration for redis cluster.
 type Redis struct {
 	// Net represents the network configuration.
-	Net                  *Net     `json:"tcp,omitempty"                     yaml:"net"`
+	Net *Net `json:"tcp,omitempty"                     yaml:"net"`
 	// TLS represents the TLS configuration.
-	TLS                  *TLS     `json:"tls,omitempty"                     yaml:"tls"`
+	TLS *TLS `json:"tls,omitempty"                     yaml:"tls"`
 	// MinRetryBackoff represents the minimum retry backoff.
-	MinRetryBackoff      string   `json:"min_retry_backoff,omitempty"       yaml:"min_retry_backoff"`
+	MinRetryBackoff string `json:"min_retry_backoff,omitempty"       yaml:"min_retry_backoff"`
 	// SentinelPassword represents the sentinel password.
-	SentinelPassword     string   `json:"sentinel_password,omitempty"       yaml:"sentinel_password"`
+	SentinelPassword string `json:"sentinel_password,omitempty"       yaml:"sentinel_password"`
 	// IdleTimeout represents the idle timeout.
-	IdleTimeout          string   `json:"idle_timeout,omitempty"            yaml:"idle_timeout"`
+	IdleTimeout string `json:"idle_timeout,omitempty"            yaml:"idle_timeout"`
 	// InitialPingDuration represents the initial ping duration.
-	InitialPingDuration  string   `json:"initial_ping_duration,omitempty"   yaml:"initial_ping_duration"`
+	InitialPingDuration string `json:"initial_ping_duration,omitempty"   yaml:"initial_ping_duration"`
 	// InitialPingTimeLimit represents the initial ping time limit.
-	InitialPingTimeLimit string   `json:"initial_ping_time_limit,omitempty" yaml:"initial_ping_time_limit"`
+	InitialPingTimeLimit string `json:"initial_ping_time_limit,omitempty" yaml:"initial_ping_time_limit"`
 	// KVPrefix represents the KV prefix.
-	KVPrefix             string   `json:"kv_prefix,omitempty"               yaml:"kv_prefix"`
+	KVPrefix string `json:"kv_prefix,omitempty"               yaml:"kv_prefix"`
 	// KeyPref represents the key prefix.
-	KeyPref              string   `json:"key_pref,omitempty"                yaml:"key_pref"`
+	KeyPref string `json:"key_pref,omitempty"                yaml:"key_pref"`
 	// MaxConnAge represents the max connection age.
-	MaxConnAge           string   `json:"max_conn_age,omitempty"            yaml:"max_conn_age"`
+	MaxConnAge string `json:"max_conn_age,omitempty"            yaml:"max_conn_age"`
 	// WriteTimeout represents the write timeout.
-	WriteTimeout         string   `json:"write_timeout,omitempty"           yaml:"write_timeout"`
+	WriteTimeout string `json:"write_timeout,omitempty"           yaml:"write_timeout"`
 	// VKPrefix represents the VK prefix.
-	VKPrefix             string   `json:"vk_prefix,omitempty"               yaml:"vk_prefix"`
+	VKPrefix string `json:"vk_prefix,omitempty"               yaml:"vk_prefix"`
 	// MaxRetryBackoff represents the max retry backoff.
-	MaxRetryBackoff      string   `json:"max_retry_backoff,omitempty"       yaml:"max_retry_backoff"`
+	MaxRetryBackoff string `json:"max_retry_backoff,omitempty"       yaml:"max_retry_backoff"`
 	// Username represents the username.
-	Username             string   `json:"username,omitempty"                yaml:"username"`
+	Username string `json:"username,omitempty"                yaml:"username"`
 	// DialTimeout represents the dial timeout.
-	DialTimeout          string   `json:"dial_timeout,omitempty"            yaml:"dial_timeout"`
+	DialTimeout string `json:"dial_timeout,omitempty"            yaml:"dial_timeout"`
 	// Network represents the network.
-	Network              string   `json:"network,omitempty"                 yaml:"network"`
+	Network string `json:"network,omitempty"                 yaml:"network"`
 	// IdleCheckFrequency represents the idle check frequency.
-	IdleCheckFrequency   string   `json:"idle_check_frequency,omitempty"    yaml:"idle_check_frequency"`
+	IdleCheckFrequency string `json:"idle_check_frequency,omitempty"    yaml:"idle_check_frequency"`
 	// ReadTimeout represents the read timeout.
-	ReadTimeout          string   `json:"read_timeout,omitempty"            yaml:"read_timeout"`
+	ReadTimeout string `json:"read_timeout,omitempty"            yaml:"read_timeout"`
 	// Password represents the password.
-	Password             string   `json:"password,omitempty"                yaml:"password"`
+	Password string `json:"password,omitempty"                yaml:"password"`
 	// PrefixDelimiter represents the prefix delimiter.
-	PrefixDelimiter      string   `json:"prefix_delimiter,omitempty"        yaml:"prefix_delimiter"`
+	PrefixDelimiter string `json:"prefix_delimiter,omitempty"        yaml:"prefix_delimiter"`
 	// SentinelMasterName represents the sentinel master name.
-	SentinelMasterName   string   `json:"sentinel_main_name,omitempty"      yaml:"sentinel_main_name"`
+	SentinelMasterName string `json:"sentinel_main_name,omitempty"      yaml:"sentinel_main_name"`
 	// PoolTimeout represents the pool timeout.
-	PoolTimeout          string   `json:"pool_timeout,omitempty"            yaml:"pool_timeout"`
+	PoolTimeout string `json:"pool_timeout,omitempty"            yaml:"pool_timeout"`
 	// Addrs represents the list of addresses.
-	Addrs                []string `json:"addrs,omitempty"                   yaml:"addrs"`
+	Addrs []string `json:"addrs,omitempty"                   yaml:"addrs"`
 	// PoolSize represents the pool size.
-	PoolSize             int      `json:"pool_size,omitempty"               yaml:"pool_size"`
+	PoolSize int `json:"pool_size,omitempty"               yaml:"pool_size"`
 	// DB represents the database.
-	DB                   int      `json:"db,omitempty"                      yaml:"db"`
+	DB int `json:"db,omitempty"                      yaml:"db"`
 	// MinIdleConns represents the minimum idle connections.
-	MinIdleConns         int      `json:"min_idle_conns,omitempty"          yaml:"min_idle_conns"`
+	MinIdleConns int `json:"min_idle_conns,omitempty"          yaml:"min_idle_conns"`
 	// MaxRetries represents the max retries.
-	MaxRetries           int      `json:"max_retries,omitempty"             yaml:"max_retries"`
+	MaxRetries int `json:"max_retries,omitempty"             yaml:"max_retries"`
 	// MaxRedirects represents the max redirects.
-	MaxRedirects         int      `json:"max_redirects,omitempty"           yaml:"max_redirects"`
+	MaxRedirects int `json:"max_redirects,omitempty"           yaml:"max_redirects"`
 	// RouteByLatency represents whether to route by latency.
-	RouteByLatency       bool     `json:"route_by_latency,omitempty"        yaml:"route_by_latency"`
+	RouteByLatency bool `json:"route_by_latency,omitempty"        yaml:"route_by_latency"`
 	// RouteRandomly represents whether to route randomly.
-	RouteRandomly        bool     `json:"route_randomly,omitempty"          yaml:"route_randomly"`
+	RouteRandomly bool `json:"route_randomly,omitempty"          yaml:"route_randomly"`
 	// ReadOnly represents whether to use read only.
-	ReadOnly             bool     `json:"read_only,omitempty"               yaml:"read_only"`
+	ReadOnly bool `json:"read_only,omitempty"               yaml:"read_only"`
 }
 
 // Bind binds the actual data from the Redis receiver fields.

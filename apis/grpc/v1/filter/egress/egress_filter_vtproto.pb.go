@@ -80,7 +80,7 @@ func (c *filterClient) FilterVector(
 
 // FilterServer is the server API for Filter service.
 // All implementations must embed UnimplementedFilterServer
-// for forward compatibility
+// for forward compatibility.
 type FilterServer interface {
 	// Represent the RPC to filter the distance.
 	FilterDistance(context.Context, *payload.Object_Distance) (*payload.Object_Distance, error)
@@ -158,7 +158,7 @@ func _Filter_FilterVector_Handler(
 
 // Filter_ServiceDesc is the grpc.ServiceDesc for Filter service.
 // It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
+// and not to be introspected or modified (even as a copy).
 var Filter_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "filter.egress.v1.Filter",
 	HandlerType: (*FilterServer)(nil),

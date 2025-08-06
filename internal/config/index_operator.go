@@ -18,32 +18,32 @@ import "github.com/vdaas/vald/internal/k8s"
 // IndexOperator represents the configurations for index k8s operator.
 type IndexOperator struct {
 	// JobTemplates represents the job templates for indexing.
-	JobTemplates                      IndexJobTemplates `json:"job_templates"                          yaml:"job_templates"`
+	JobTemplates IndexJobTemplates `json:"job_templates"                          yaml:"job_templates"`
 	// Namespace represent the namespace of this pod
-	Namespace                         string            `json:"namespace"                              yaml:"namespace"`
+	Namespace string `json:"namespace"                              yaml:"namespace"`
 	// AgentName represent agents meta_name for service discovery
-	AgentName                         string            `json:"agent_name"                             yaml:"agent_name"`
+	AgentName string `json:"agent_name"                             yaml:"agent_name"`
 	// AgentNamespace represent agent namespace location
-	AgentNamespace                    string            `json:"agent_namespace"                        yaml:"agent_namespace"`
+	AgentNamespace string `json:"agent_namespace"                        yaml:"agent_namespace"`
 	// RotatorName represent rotator name for service discovery
-	RotatorName                       string            `json:"rotator_name"                           yaml:"rotator_name"`
+	RotatorName string `json:"rotator_name"                           yaml:"rotator_name"`
 	// TargetReadReplicaIDAnnotationsKey represents the environment variable name for target read replica id.
-	TargetReadReplicaIDAnnotationsKey string            `json:"target_read_replica_id_annotations_key" yaml:"target_read_replica_id_annotations_key"`
+	TargetReadReplicaIDAnnotationsKey string `json:"target_read_replica_id_annotations_key" yaml:"target_read_replica_id_annotations_key"`
 	// ReadReplicaLabelKey represents the label key for read replica.
-	ReadReplicaLabelKey               string            `json:"read_replica_label_key"                 yaml:"read_replica_label_key"`
+	ReadReplicaLabelKey string `json:"read_replica_label_key"                 yaml:"read_replica_label_key"`
 	// RotationJobConcurrency represents indexing concurrency.
-	RotationJobConcurrency            uint              `json:"rotation_job_concurrency"               yaml:"rotation_job_concurrency"`
+	RotationJobConcurrency uint `json:"rotation_job_concurrency"               yaml:"rotation_job_concurrency"`
 	// ReadReplicaEnabled represents whether read replica is enabled or not.
-	ReadReplicaEnabled                bool              `json:"read_replica_enabled"                   yaml:"read_replica_enabled"`
+	ReadReplicaEnabled bool `json:"read_replica_enabled"                   yaml:"read_replica_enabled"`
 }
 
 type IndexJobTemplates struct {
 	// Rotate represents the job template for rotation.
-	Rotate     *k8s.Job `json:"rotate"     yaml:"rotate"`
+	Rotate *k8s.Job `json:"rotate"     yaml:"rotate"`
 	// Creation represents the job template for creation.
-	Creation   *k8s.Job `json:"creation"   yaml:"creation"`
+	Creation *k8s.Job `json:"creation"   yaml:"creation"`
 	// Save represents the job template for save.
-	Save       *k8s.Job `json:"save"       yaml:"save"`
+	Save *k8s.Job `json:"save"       yaml:"save"`
 	// Correction represents the job template for correction.
 	Correction *k8s.Job `json:"correction" yaml:"correction"`
 }

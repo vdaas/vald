@@ -95,15 +95,15 @@ func (key Hdf5Key) String() string {
 
 type data struct {
 	// path is a path.
-	path      string
+	path string
 	// train is a training data.
-	train     [][]float32
+	train [][]float32
 	// test is a test data.
-	test      [][]float32
+	test [][]float32
 	// neighbors is a list of neighbors.
 	neighbors [][]int
 	// name is a dataset name.
-	name      DatasetName
+	name DatasetName
 }
 
 func New(opts ...Option) (Data, error) {

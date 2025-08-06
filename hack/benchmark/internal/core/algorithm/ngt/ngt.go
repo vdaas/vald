@@ -37,13 +37,13 @@ const (
 type core struct {
 	ngt.NGT
 	// Index path.
-	idxPath    string
+	idxPath string
 	// Temporary directory.
-	tmpdir     string
+	tmpdir string
 	// Object type.
 	objectType ObjectType
 	// Dimension.
-	dimension  int
+	dimension int
 }
 
 func New(opts ...Option) (c.Bit32, error) {
@@ -64,6 +64,8 @@ func New(opts ...Option) (c.Bit32, error) {
 		typ = ngt.Uint8
 	case Float:
 		typ = ngt.Float
+	default:
+		typ = ngt.ObjectNone
 	}
 
 	n, err := ngt.New(

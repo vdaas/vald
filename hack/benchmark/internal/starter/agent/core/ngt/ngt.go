@@ -51,7 +51,7 @@ func (s *server) Run(ctx context.Context, tb testing.TB) func() {
 
 	info.Init(name)
 
-	daemon, err := usecase.New(s.cfg)
+	daemon, err := usecase.New(s.cfg) //nolint:contextcheck
 	if err != nil {
 		tb.Fatal(err)
 	}

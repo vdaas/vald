@@ -42,15 +42,10 @@ type Indexer interface {
 }
 
 type index struct {
-	// discoverer client.
-	client discoverer.Client
-	// target agent addresses.
-	targetAddrs []string
-
-	// creation pool size.
+	client           discoverer.Client
+	targetAddrs      []string
 	creationPoolSize uint32
-	// concurrency for create index.
-	concurrency int
+	concurrency      int
 }
 
 // New returns Indexer object if no error occurs.
@@ -59,8 +54,8 @@ func New(opts ...Option) (Indexer, error) {
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(idx); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := &errors.ErrCriticalOption{}
-			if errors.As(oerr, &e) {
+			var cerr *errors.CriticalOptionError
+			if errors.As(oerr, &cerr) {
 				log.Error(err)
 				return nil, oerr
 			}

@@ -23,9 +23,9 @@ type Route struct {
 	// HandlerFunc is a rest.Func.
 	HandlerFunc rest.Func
 	// Name is a name.
-	Name        string
+	Name string
 	// Pattern is a pattern.
-	Pattern     string
+	Pattern string
 	// Methods is a list of methods.
-	Methods     []string
+	Methods []string
 }

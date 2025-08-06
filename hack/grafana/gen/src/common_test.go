@@ -11,19 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package src
-
-import (
-	"reflect"
-	"testing"
-
-	"github.com/grafana/promql-builder/go/promql"
-	"github.com/pkg/errors"
-	"github.com/vdaas/vald/internal/test/goleak"
-)
+package main
 
 // NOT IMPLEMENTED BELOW
-// 
+//
 // func Test_addBasicLabel(t *testing.T) {
 // 	type args struct {
 // 		vector *promql.VectorExprBuilder
@@ -33,8 +24,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, *promql.VectorExprBuilder) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -63,7 +54,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -84,7 +75,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -100,16 +91,16 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			got := addBasicLabel(test.args.vector)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_addGRPCMatch(t *testing.T) {
 // 	type args struct {
 // 		vector *promql.VectorExprBuilder
@@ -121,8 +112,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, *promql.VectorExprBuilder) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -153,7 +144,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -176,7 +167,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -192,12 +183,12 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			got := addGRPCMatch(test.args.vector, test.args.method, test.args.match)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }

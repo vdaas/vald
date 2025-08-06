@@ -27,13 +27,13 @@ import (
 
 type cache[V any] struct {
 	// Hook for expired cache.
-	expiredHook    func(context.Context, string, V)
+	expiredHook func(context.Context, string, V)
 	// Expiration duration.
-	expireDur      time.Duration
+	expireDur time.Duration
 	// Expiration check duration.
 	expireCheckDur time.Duration
 	// Cacher type.
-	cacher         cacher.Type
+	cacher cacher.Type
 }
 
 // New returns the Cache instance or error.

@@ -41,17 +41,17 @@ type Cycle[S ~[]E, E any] interface {
 // It applies an optional modFunc to transform each element on‑the‑fly without precomputing the entire dataset.
 type cycle[S ~[]E, E any] struct {
 	// The original data slice.
-	array   S
+	array S
 	// Optional function to modify an element based on its overall index.
 	modFunc func(uint64, E) E
 	// Starting index after applying the offset.
-	start   uint64
+	start uint64
 	// Total number of elements to iterate over.
-	num     uint64
+	num uint64
 	// Size of the original slice.
-	size    uint64
+	size uint64
 	// Provided offset value.
-	offset  uint64
+	offset uint64
 }
 
 // New creates a new cycle iterator instance. It validates the input array and computes the starting index (offset modulo array size).

@@ -22,7 +22,7 @@ package os
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, string, error) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

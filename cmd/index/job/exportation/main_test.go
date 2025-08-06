@@ -11,22 +11,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package exportation
-
-import (
-	"testing"
-
-	"github.com/vdaas/vald/internal/test/goleak"
-)
+package main
 
 // NOT IMPLEMENTED BELOW
-// 
+//
 // func Test_main(t *testing.T) {
 // 	type want struct {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -49,7 +43,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -67,7 +61,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -83,7 +77,7 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			main()
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)

@@ -33,17 +33,17 @@ import (
 
 type writer struct {
 	// eg is an error group.
-	eg          errgroup.Group
+	eg errgroup.Group
 	// s3manager is a s3manager.S3Manager.
-	s3manager   s3manager.S3Manager
+	s3manager s3manager.S3Manager
 	// service is a s3iface.S3API.
-	service     s3iface.S3API
+	service s3iface.S3API
 	// pw is an io.WriteCloser.
-	pw          io.WriteCloser
+	pw io.WriteCloser
 	// wg is a sync.WaitGroup.
-	wg          *sync.WaitGroup
+	wg *sync.WaitGroup
 	// bucket is a bucket name.
-	bucket      string
+	bucket string
 	// contentType is a content type.
 	contentType string
 	// maxPartSize is a max part size.

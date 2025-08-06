@@ -50,10 +50,8 @@ const (
 )
 
 type gateway struct {
-	// discoverer client.
 	client discoverer.Client
-	// error group for managing goroutines.
-	eg errgroup.Group
+	eg     errgroup.Group
 }
 
 func NewGateway(opts ...Option) (gw Gateway, err error) {

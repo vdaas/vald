@@ -64,8 +64,8 @@ func NewDiscovery(opts ...DiscoveryOption) (dsc Discovery, err error) {
 	for _, opt := range append(defaultDiscovererOpts, opts...) {
 		if err := opt(d); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := &errors.ErrCriticalOption{}
-			if errors.As(err, &e) {
+			var cerr *errors.CriticalOptionError
+			if errors.As(oerr, &cerr) {
 				log.Error(oerr)
 				return nil, oerr
 			}

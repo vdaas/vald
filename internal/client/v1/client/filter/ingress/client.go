@@ -39,23 +39,23 @@ type Client interface {
 
 type client struct {
 	// gRPC client.
-	c     grpc.Client
+	c grpc.Client
 	// Map of connected clients.
-	cl    sync.Map[string, any]
+	cl sync.Map[string, any]
 	// List of addresses.
 	addrs []string
 }
 
 type specificAddrClient struct {
 	// gRPC client.
-	c    grpc.Client
+	c grpc.Client
 	// Address.
 	addr string
 }
 
 type multipleAddrsClient struct {
 	// gRPC client.
-	c     grpc.Client
+	c grpc.Client
 	// List of addresses.
 	addrs []string
 }

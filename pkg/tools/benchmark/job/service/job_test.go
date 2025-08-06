@@ -22,7 +22,7 @@ package service
 // 	type test struct {
 // 		name       string
 // 		jt         jobType
-// 		want       want
+// 		want
 // 		checkFunc  func(want, string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -101,8 +101,8 @@ package service
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, Job, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -202,7 +202,7 @@ package service
 // 		beforeJobNamespace string
 // 		beforeJobName      string
 // 		beforeJobDur       time.Duration
-// 		jobType            jobType
+// 		jobType
 // 		rps                int
 // 		concurrencyLimit   int
 // 		timeout            time.Duration
@@ -213,9 +213,9 @@ package service
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -384,7 +384,7 @@ package service
 // 		beforeJobNamespace string
 // 		beforeJobName      string
 // 		beforeJobDur       time.Duration
-// 		jobType            jobType
+// 		jobType
 // 		rps                int
 // 		concurrencyLimit   int
 // 		timeout            time.Duration
@@ -396,9 +396,9 @@ package service
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, <-chan error, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -570,7 +570,7 @@ package service
 // 		beforeJobNamespace string
 // 		beforeJobName      string
 // 		beforeJobDur       time.Duration
-// 		jobType            jobType
+// 		jobType
 // 		rps                int
 // 		concurrencyLimit   int
 // 		timeout            time.Duration
@@ -581,9 +581,9 @@ package service
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -740,8 +740,8 @@ package service
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, float64) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -827,8 +827,8 @@ package service
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, []float32) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)

@@ -496,7 +496,7 @@ func Test_server_CreateIndex(t *testing.T) {
 			}
 
 			eg, _ := errgroup.New(ctx)
-			ngt, err := service.New(test.fields.svcCfg, append(test.fields.svcOpts, service.WithErrGroup(eg))...)
+			ngt, err := service.New(ctx, test.fields.svcCfg, append(test.fields.svcOpts, service.WithErrGroup(eg))...)
 			if err != nil {
 				tt.Errorf("failed to init ngt service, error = %v", err)
 			}
@@ -1025,7 +1025,7 @@ func Test_server_SaveIndex(t *testing.T) {
 			}
 
 			eg, _ := errgroup.New(ctx)
-			ngt, err := service.New(test.fields.svcCfg, append(test.fields.svcOpts,
+			ngt, err := service.New(ctx, test.fields.svcCfg, append(test.fields.svcOpts,
 				service.WithErrGroup(eg),
 				service.WithIndexPath(test.fields.indexPath))...)
 			if err != nil {
@@ -1167,7 +1167,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 			wantVec := ir.GetVector()
 			wantVec.Timestamp = obj.Timestamp
 
-			if !reflect.DeepEqual(obj, ir.GetVector()) {
+			if !reflect.DeepEqual(obj, wantVec) {
 				return errors.Errorf("vector is not match, got: %v, want: %v", obj, ir)
 			}
 		}
@@ -1909,6 +1909,7 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 
 			eg, _ := errgroup.New(ctx)
 			ngt, err := service.New(
+				ctx,
 				test.fields.svcCfg,
 				append(test.fields.svcOpts,
 					service.WithErrGroup(eg),
@@ -2673,9 +2674,9 @@ func Test_server_IndexProperty(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, *payload.Info_Index_Detail, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -2802,9 +2803,9 @@ func Test_server_IndexProperty(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, *payload.Info_Index_Statistics, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -2931,9 +2932,9 @@ func Test_server_IndexProperty(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, *payload.Info_Index_StatisticsDetail, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)

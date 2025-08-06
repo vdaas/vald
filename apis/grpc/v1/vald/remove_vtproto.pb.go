@@ -210,12 +210,12 @@ type removeStreamRemoveClient struct {
 }
 
 func (x *removeStreamRemoveClient) Send(m *payload.Remove_Request) error {
-	return x.ClientStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *removeStreamRemoveClient) Recv() (*payload.Object_StreamLocation, error) {
 	m := new(payload.Object_StreamLocation)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -234,7 +234,7 @@ func (c *removeClient) MultiRemove(
 
 // RemoveServer is the server API for Remove service.
 // All implementations must embed UnimplementedRemoveServer
-// for forward compatibility
+// for forward compatibility.
 type RemoveServer interface {
 	// Overview
 	// Remove RPC is the method to remove a single vector.
@@ -445,12 +445,12 @@ type removeStreamRemoveServer struct {
 }
 
 func (x *removeStreamRemoveServer) Send(m *payload.Object_StreamLocation) error {
-	return x.ServerStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *removeStreamRemoveServer) Recv() (*payload.Remove_Request, error) {
 	m := new(payload.Remove_Request)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -478,7 +478,7 @@ func _Remove_MultiRemove_Handler(
 
 // Remove_ServiceDesc is the grpc.ServiceDesc for Remove service.
 // It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
+// and not to be introspected or modified (even as a copy).
 var Remove_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "vald.v1.Remove",
 	HandlerType: (*RemoveServer)(nil),

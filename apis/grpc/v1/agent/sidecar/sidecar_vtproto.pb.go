@@ -48,7 +48,7 @@ func NewSidecarClient(cc grpc.ClientConnInterface) SidecarClient {
 
 // SidecarServer is the server API for Sidecar service.
 // All implementations must embed UnimplementedSidecarServer
-// for forward compatibility
+// for forward compatibility.
 type SidecarServer interface {
 	mustEmbedUnimplementedSidecarServer()
 }
@@ -71,7 +71,7 @@ func RegisterSidecarServer(s grpc.ServiceRegistrar, srv SidecarServer) {
 
 // Sidecar_ServiceDesc is the grpc.ServiceDesc for Sidecar service.
 // It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
+// and not to be introspected or modified (even as a copy).
 var Sidecar_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "sidecar.v1.Sidecar",
 	HandlerType: (*SidecarServer)(nil),

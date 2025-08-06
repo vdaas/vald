@@ -253,12 +253,12 @@ type filterStreamSearchObjectClient struct {
 }
 
 func (x *filterStreamSearchObjectClient) Send(m *payload.Search_ObjectRequest) error {
-	return x.ClientStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *filterStreamSearchObjectClient) Recv() (*payload.Search_StreamResponse, error) {
 	m := new(payload.Search_StreamResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -297,12 +297,12 @@ type filterStreamInsertObjectClient struct {
 }
 
 func (x *filterStreamInsertObjectClient) Send(m *payload.Insert_ObjectRequest) error {
-	return x.ClientStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *filterStreamInsertObjectClient) Recv() (*payload.Object_StreamLocation, error) {
 	m := new(payload.Object_StreamLocation)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -352,12 +352,12 @@ type filterStreamUpdateObjectClient struct {
 }
 
 func (x *filterStreamUpdateObjectClient) Send(m *payload.Update_ObjectRequest) error {
-	return x.ClientStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *filterStreamUpdateObjectClient) Recv() (*payload.Object_StreamLocation, error) {
 	m := new(payload.Object_StreamLocation)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -407,12 +407,12 @@ type filterStreamUpsertObjectClient struct {
 }
 
 func (x *filterStreamUpsertObjectClient) Send(m *payload.Upsert_ObjectRequest) error {
-	return x.ClientStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *filterStreamUpsertObjectClient) Recv() (*payload.Object_StreamLocation, error) {
 	m := new(payload.Object_StreamLocation)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -431,7 +431,7 @@ func (c *filterClient) MultiUpsertObject(
 
 // FilterServer is the server API for Filter service.
 // All implementations must embed UnimplementedFilterServer
-// for forward compatibility
+// for forward compatibility.
 type FilterServer interface {
 	// Overview
 	// SearchObject RPC is the method to search object(s) similar to request object.
@@ -727,12 +727,12 @@ type filterStreamSearchObjectServer struct {
 }
 
 func (x *filterStreamSearchObjectServer) Send(m *payload.Search_StreamResponse) error {
-	return x.ServerStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *filterStreamSearchObjectServer) Recv() (*payload.Search_ObjectRequest, error) {
 	m := new(payload.Search_ObjectRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -773,12 +773,12 @@ type filterStreamInsertObjectServer struct {
 }
 
 func (x *filterStreamInsertObjectServer) Send(m *payload.Object_StreamLocation) error {
-	return x.ServerStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *filterStreamInsertObjectServer) Recv() (*payload.Insert_ObjectRequest, error) {
 	m := new(payload.Insert_ObjectRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -839,12 +839,12 @@ type filterStreamUpdateObjectServer struct {
 }
 
 func (x *filterStreamUpdateObjectServer) Send(m *payload.Object_StreamLocation) error {
-	return x.ServerStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *filterStreamUpdateObjectServer) Recv() (*payload.Update_ObjectRequest, error) {
 	m := new(payload.Update_ObjectRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -905,12 +905,12 @@ type filterStreamUpsertObjectServer struct {
 }
 
 func (x *filterStreamUpsertObjectServer) Send(m *payload.Object_StreamLocation) error {
-	return x.ServerStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *filterStreamUpsertObjectServer) Recv() (*payload.Upsert_ObjectRequest, error) {
 	m := new(payload.Upsert_ObjectRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -938,7 +938,7 @@ func _Filter_MultiUpsertObject_Handler(
 
 // Filter_ServiceDesc is the grpc.ServiceDesc for Filter service.
 // It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
+// and not to be introspected or modified (even as a copy).
 var Filter_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "vald.v1.Filter",
 	HandlerType: (*FilterServer)(nil),

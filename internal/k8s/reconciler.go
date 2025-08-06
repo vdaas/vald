@@ -53,23 +53,23 @@ type ResourceController interface {
 
 type controller struct {
 	// eg is an error group.
-	eg                      errgroup.Group
+	eg errgroup.Group
 	// mgr is a manager.Manager.
-	mgr                     manager.Manager
+	mgr manager.Manager
 	// der is a net.Dialer.
-	der                     net.Dialer
+	der net.Dialer
 	// name is a name.
-	name                    string
+	name string
 	// merticsAddr is a metrics address.
-	merticsAddr             string
+	merticsAddr string
 	// leaderElectionID is a leader election ID.
-	leaderElectionID        string
+	leaderElectionID string
 	// leaderElectionNamespace is a leader election namespace.
 	leaderElectionNamespace string
 	// rcs is a list of ResourceController.
-	rcs                     []ResourceController
+	rcs []ResourceController
 	// leaderElection is a flag to enable leader election.
-	leaderElection          bool
+	leaderElection bool
 }
 
 func New(opts ...Option) (cl Controller, err error) {

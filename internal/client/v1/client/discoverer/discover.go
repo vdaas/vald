@@ -52,41 +52,41 @@ type Client interface {
 
 type client struct {
 	// gRPC client.
-	client              grpc.Client
+	client grpc.Client
 	// gRPC client for read replica.
-	readClient          grpc.Client
+	readClient grpc.Client
 	// Error group.
-	eg                  errgroup.Group
+	eg errgroup.Group
 	// Discoverer client.
-	dscClient           grpc.Client
+	dscClient grpc.Client
 	// List of addresses.
-	addrs               atomic.Pointer[[]string]
+	addrs atomic.Pointer[[]string]
 	// onDisconnect hook.
-	onDisconnect        func(ctx context.Context, c Client, addr string) error
+	onDisconnect func(ctx context.Context, c Client, addr string) error
 	// onDiscover hook.
-	onDiscover          func(ctx context.Context, c Client, addrs []string) error
+	onDiscover func(ctx context.Context, c Client, addrs []string) error
 	// onConnect hook.
-	onConnect           func(ctx context.Context, c Client, addr string) error
+	onConnect func(ctx context.Context, c Client, addr string) error
 	// Node name.
-	nodeName            string
+	nodeName string
 	// Name.
-	name                string
+	name string
 	// Namespace.
-	namespace           string
+	namespace string
 	// DNS.
-	dns                 string
+	dns string
 	// gRPC options.
-	opts                []grpc.Option
+	opts []grpc.Option
 	// Discoverer duration.
-	dscDur              time.Duration
+	dscDur time.Duration
 	// Port.
-	port                int
+	port int
 	// Number of read replicas.
 	readReplicaReplicas uint64
 	// Round robin counter.
-	roundRobin          atomic.Uint64
+	roundRobin atomic.Uint64
 	// Auto connect flag.
-	autoconn            bool
+	autoconn bool
 }
 
 func New(opts ...Option) (d Client, err error) {

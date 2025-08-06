@@ -25,9 +25,9 @@ const (
 
 type largeDataset struct {
 	// Training dataset.
-	train     x1b.BillionScaleVectors
+	train x1b.BillionScaleVectors
 	// Query dataset.
-	query     x1b.BillionScaleVectors
+	query x1b.BillionScaleVectors
 	// Distances for the ground truth.
 	distances x1b.FloatVectors
 	*dataset

@@ -1,21 +1,7 @@
 package target
 
-import (
-	"context"
-	"reflect"
-	"testing"
-
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/test/goleak"
-	"sigs.k8s.io/controller-runtime/pkg/builder"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-)
-
 // NOT IMPLEMENTED BELOW
-// 
+//
 // func TestNew(t *testing.T) {
 // 	type args struct {
 // 		opts []Option
@@ -26,8 +12,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, MirrorTargetWatcher, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -59,7 +45,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -80,7 +66,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -96,16 +82,16 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			got, err := New(test.args.opts...)
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_reconciler_addListOpts(t *testing.T) {
 // 	type args struct {
 // 		opt client.ListOption
@@ -121,9 +107,9 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -156,7 +142,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -184,7 +170,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -207,7 +193,7 @@ import (
 // 				onReconcile: test.fields.onReconcile,
 // 				lopts:       test.fields.lopts,
 // 			}
-// 
+//
 // 			r.addListOpts(test.args.opt)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
@@ -215,7 +201,7 @@ import (
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_reconciler_Reconcile(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
@@ -234,9 +220,9 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, reconcile.Result, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -276,7 +262,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -305,7 +291,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -328,16 +314,16 @@ import (
 // 				onReconcile: test.fields.onReconcile,
 // 				lopts:       test.fields.lopts,
 // 			}
-// 
+//
 // 			gotRes, err := r.Reconcile(test.args.ctx, test.args.in1)
 // 			if err := checkFunc(test.want, gotRes, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_reconciler_GetName(t *testing.T) {
 // 	type fields struct {
 // 		mgr         manager.Manager
@@ -351,8 +337,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -385,7 +371,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -410,7 +396,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -433,16 +419,16 @@ import (
 // 				onReconcile: test.fields.onReconcile,
 // 				lopts:       test.fields.lopts,
 // 			}
-// 
+//
 // 			got := r.GetName()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_reconciler_NewReconciler(t *testing.T) {
 // 	type args struct {
 // 		in0 context.Context
@@ -460,9 +446,9 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, reconcile.Reconciler) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -499,7 +485,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -528,7 +514,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -551,16 +537,16 @@ import (
 // 				onReconcile: test.fields.onReconcile,
 // 				lopts:       test.fields.lopts,
 // 			}
-// 
+//
 // 			got := r.NewReconciler(test.args.in0, test.args.mgr)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_reconciler_For(t *testing.T) {
 // 	type fields struct {
 // 		mgr         manager.Manager
@@ -575,8 +561,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, client.Object, []builder.ForOption) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -612,7 +598,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -637,7 +623,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -660,16 +646,16 @@ import (
 // 				onReconcile: test.fields.onReconcile,
 // 				lopts:       test.fields.lopts,
 // 			}
-// 
+//
 // 			got, got1 := r.For()
 // 			if err := checkFunc(test.want, got, got1); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_reconciler_Owns(t *testing.T) {
 // 	type fields struct {
 // 		mgr         manager.Manager
@@ -684,8 +670,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, client.Object, []builder.OwnsOption) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -721,7 +707,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -746,7 +732,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -769,16 +755,16 @@ import (
 // 				onReconcile: test.fields.onReconcile,
 // 				lopts:       test.fields.lopts,
 // 			}
-// 
+//
 // 			got, got1 := r.Owns()
 // 			if err := checkFunc(test.want, got, got1); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_reconciler_Watches(t *testing.T) {
 // 	type fields struct {
 // 		mgr         manager.Manager
@@ -794,8 +780,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, client.Object, handler.EventHandler, []builder.WatchesOption) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -834,7 +820,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -859,7 +845,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -882,12 +868,12 @@ import (
 // 				onReconcile: test.fields.onReconcile,
 // 				lopts:       test.fields.lopts,
 // 			}
-// 
+//
 // 			got, got1, got2 := r.Watches()
 // 			if err := checkFunc(test.want, got, got1, got2); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }

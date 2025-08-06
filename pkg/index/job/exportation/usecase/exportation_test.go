@@ -13,23 +13,8 @@
 // limitations under the License.
 package usecase
 
-import (
-	"context"
-	"reflect"
-	"testing"
-
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/observability"
-	"github.com/vdaas/vald/internal/runner"
-	"github.com/vdaas/vald/internal/servers/starter"
-	"github.com/vdaas/vald/internal/sync/errgroup"
-	"github.com/vdaas/vald/internal/test/goleak"
-	"github.com/vdaas/vald/pkg/index/job/exportation/config"
-	"github.com/vdaas/vald/pkg/index/job/exportation/service"
-)
-
 // NOT IMPLEMENTED BELOW
-// 
+//
 // func TestNew(t *testing.T) {
 // 	type args struct {
 // 		cfg *config.Data
@@ -40,8 +25,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, runner.Runner, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -73,7 +58,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -94,7 +79,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -110,16 +95,16 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			got, err := New(test.args.cfg)
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_run_PreStart(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
@@ -136,9 +121,9 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -174,7 +159,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -202,7 +187,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -225,16 +210,16 @@ import (
 // 				server:        test.fields.server,
 // 				exporter:      test.fields.exporter,
 // 			}
-// 
+//
 // 			err := r.PreStart(test.args.ctx)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_run_Start(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
@@ -252,9 +237,9 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, <-chan error, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -293,7 +278,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -321,7 +306,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -344,16 +329,16 @@ import (
 // 				server:        test.fields.server,
 // 				exporter:      test.fields.exporter,
 // 			}
-// 
+//
 // 			got, err := r.Start(test.args.ctx)
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_run_PreStop(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
@@ -370,9 +355,9 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -408,7 +393,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -436,7 +421,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -459,16 +444,16 @@ import (
 // 				server:        test.fields.server,
 // 				exporter:      test.fields.exporter,
 // 			}
-// 
+//
 // 			err := r.PreStop(test.args.ctx)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_run_Stop(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
@@ -485,9 +470,9 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -523,7 +508,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -551,7 +536,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -574,16 +559,16 @@ import (
 // 				server:        test.fields.server,
 // 				exporter:      test.fields.exporter,
 // 			}
-// 
+//
 // 			err := r.Stop(test.args.ctx)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_run_PostStop(t *testing.T) {
 // 	type args struct {
 // 		in0 context.Context
@@ -600,9 +585,9 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -638,7 +623,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -666,7 +651,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -689,12 +674,12 @@ import (
 // 				server:        test.fields.server,
 // 				exporter:      test.fields.exporter,
 // 			}
-// 
+//
 // 			err := r.PostStop(test.args.in0)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }

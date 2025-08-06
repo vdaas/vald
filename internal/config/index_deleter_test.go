@@ -33,8 +33,8 @@ package config
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *IndexDeleter) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

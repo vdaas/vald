@@ -21,7 +21,7 @@ package metrics
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, Meter) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

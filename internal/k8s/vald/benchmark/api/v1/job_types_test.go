@@ -22,9 +22,9 @@ package v1
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		args       args
+// 		args
 // 		in         *BenchmarkDataset
-// 		want       want
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -103,7 +103,7 @@ package v1
 // 	type test struct {
 // 		name       string
 // 		in         *BenchmarkDataset
-// 		want       want
+// 		want
 // 		checkFunc  func(want, *BenchmarkDataset) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -179,9 +179,9 @@ package v1
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		args       args
+// 		args
 // 		in         *BenchmarkDatasetRange
-// 		want       want
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -260,7 +260,7 @@ package v1
 // 	type test struct {
 // 		name       string
 // 		in         *BenchmarkDatasetRange
-// 		want       want
+// 		want
 // 		checkFunc  func(want, *BenchmarkDatasetRange) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -336,9 +336,9 @@ package v1
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		args       args
+// 		args
 // 		in         *BenchmarkJobRule
-// 		want       want
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -417,7 +417,7 @@ package v1
 // 	type test struct {
 // 		name       string
 // 		in         *BenchmarkJobRule
-// 		want       want
+// 		want
 // 		checkFunc  func(want, *BenchmarkJobRule) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -513,9 +513,9 @@ package v1
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -673,8 +673,8 @@ package v1
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *BenchmarkJobSpec) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -810,9 +810,9 @@ package v1
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		args       args
+// 		args
 // 		in         *BenchmarkTarget
-// 		want       want
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -891,7 +891,7 @@ package v1
 // 	type test struct {
 // 		name       string
 // 		in         *BenchmarkTarget
-// 		want       want
+// 		want
 // 		checkFunc  func(want, *BenchmarkTarget) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -973,9 +973,9 @@ package v1
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -1077,8 +1077,8 @@ package v1
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *ValdBenchmarkJob) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -1177,8 +1177,8 @@ package v1
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, runtime.Object) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -1277,9 +1277,9 @@ package v1
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -1377,8 +1377,8 @@ package v1
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *ValdBenchmarkJobList) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -1473,8 +1473,8 @@ package v1
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, runtime.Object) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

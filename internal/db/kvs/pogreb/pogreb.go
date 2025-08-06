@@ -48,7 +48,7 @@ func New(opts ...Option) (_ DB, err error) {
 	for _, opt := range append(deafultOpts, opts...) {
 		if err := opt(db); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := &errors.ErrCriticalOption{}
+			e := &errors.CriticalOptionError{}
 			if errors.As(oerr, &e) {
 				log.Error(err)
 				return nil, oerr

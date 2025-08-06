@@ -62,8 +62,8 @@ func New(replicaID string, opts ...Option) (Rotator, error) {
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(r); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := &errors.ErrCriticalOption{}
-			if errors.As(oerr, &e) {
+			var cerr *errors.CriticalOptionError
+			if errors.As(oerr, &cerr) {
 				log.Error(err)
 				return nil, oerr
 			}

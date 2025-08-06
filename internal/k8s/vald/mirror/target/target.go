@@ -51,26 +51,26 @@ const (
 
 type reconciler struct {
 	// mgr is a manager.Manager.
-	mgr         manager.Manager
+	mgr manager.Manager
 	// name is a name.
-	name        string
+	name string
 	// onError is a function to call on error.
-	onError     func(err error)
+	onError func(err error)
 	// onReconcile is a function to call on reconcile.
 	onReconcile func(ctx context.Context, mm map[string]Target)
 	// lopts is a list of client.ListOption.
-	lopts       []client.ListOption
+	lopts []client.ListOption
 }
 
 type Target struct {
 	// Colocation is a colocation.
 	Colocation string
 	// Host is a host.
-	Host       string
+	Host string
 	// Phase is a phase.
-	Phase      MirrorTargetPhase
+	Phase MirrorTargetPhase
 	// Port is a port.
-	Port       int
+	Port int
 }
 
 func New(opts ...Option) (MirrorTargetWatcher, error) {
@@ -78,8 +78,8 @@ func New(opts ...Option) (MirrorTargetWatcher, error) {
 	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(r); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := &errors.ErrCriticalOption{}
-			if errors.As(err, &e) {
+			var cerr *errors.CriticalOptionError
+			if errors.As(oerr, &cerr) {
 				log.Error(oerr)
 				return nil, oerr
 			}

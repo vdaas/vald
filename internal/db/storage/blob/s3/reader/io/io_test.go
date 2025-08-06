@@ -21,7 +21,7 @@ package io
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, IO) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -101,9 +101,9 @@ package io
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
+// 		args
 // 		c          *ctxio
-// 		want       want
+// 		want
 // 		checkFunc  func(want, io.Reader, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -195,9 +195,9 @@ package io
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
+// 		args
 // 		c          *ctxio
-// 		want       want
+// 		want
 // 		checkFunc  func(want, io.ReadCloser, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)

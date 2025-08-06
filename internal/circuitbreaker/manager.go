@@ -46,7 +46,7 @@ func NewCircuitBreaker(opts ...Option) (CircuitBreaker, error) {
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(bm); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := &errors.ErrCriticalOption{}
+			e := &errors.CriticalOptionError{}
 			if errors.As(oerr, &e) {
 				log.Error(oerr)
 				return nil, oerr

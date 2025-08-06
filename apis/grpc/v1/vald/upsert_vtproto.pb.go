@@ -171,12 +171,12 @@ type upsertStreamUpsertClient struct {
 }
 
 func (x *upsertStreamUpsertClient) Send(m *payload.Upsert_Request) error {
-	return x.ClientStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *upsertStreamUpsertClient) Recv() (*payload.Object_StreamLocation, error) {
 	m := new(payload.Object_StreamLocation)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -195,7 +195,7 @@ func (c *upsertClient) MultiUpsert(
 
 // UpsertServer is the server API for Upsert service.
 // All implementations must embed UnimplementedUpsertServer
-// for forward compatibility
+// for forward compatibility.
 type UpsertServer interface {
 	// Overview
 	// Upsert RPC is the method to update the inserted vector to a new single vector or add a new single vector if not inserted before.
@@ -352,12 +352,12 @@ type upsertStreamUpsertServer struct {
 }
 
 func (x *upsertStreamUpsertServer) Send(m *payload.Object_StreamLocation) error {
-	return x.ServerStream.SendMsg(m)
+	return x.SendMsg(m)
 }
 
 func (x *upsertStreamUpsertServer) Recv() (*payload.Upsert_Request, error) {
 	m := new(payload.Upsert_Request)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+	if err := x.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
@@ -385,7 +385,7 @@ func _Upsert_MultiUpsert_Handler(
 
 // Upsert_ServiceDesc is the grpc.ServiceDesc for Upsert service.
 // It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
+// and not to be introspected or modified (even as a copy).
 var Upsert_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "vald.v1.Upsert",
 	HandlerType: (*UpsertServer)(nil),

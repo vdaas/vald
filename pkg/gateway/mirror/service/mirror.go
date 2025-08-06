@@ -63,20 +63,13 @@ func NewMirrorClient(conn *grpc.ClientConn) MirrorClient {
 }
 
 type mirr struct {
-	// error group for managing goroutines.
-	eg errgroup.Group
-	// gateway service object.
-	gateway Gateway
-	// map of mirror addresses.
-	addrs sync.Map[string, any]
-	// map of self mirror addresses.
+	eg            errgroup.Group
+	gateway       Gateway
+	addrs         sync.Map[string, any]
 	selfMirrAddrs sync.Map[string, any]
-	// map of gateway addresses.
-	gwAddrs sync.Map[string, any]
-	// list of self mirror targets.
-	selfMirrTgts []*payload.Mirror_Target
-	// registration duration.
-	registerDur time.Duration
+	gwAddrs       sync.Map[string, any]
+	selfMirrTgts  []*payload.Mirror_Target
+	registerDur   time.Duration
 }
 
 // NewMirror creates the Mirror object with optional configuration options.
@@ -86,8 +79,8 @@ func NewMirror(opts ...MirrorOption) (_ Mirror, err error) {
 	for _, opt := range append(defaultMirrOpts, opts...) {
 		if err := opt(m); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := &errors.ErrCriticalOption{}
-			if errors.As(err, &e) {
+			var cerr *errors.CriticalOptionError
+			if errors.As(oerr, &cerr) {
 				log.Error(oerr)
 				return nil, oerr
 			}

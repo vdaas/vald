@@ -921,8 +921,8 @@ func TestCassandra_Opts(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *PoolConfig) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -1023,8 +1023,8 @@ func TestCassandra_Opts(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *RetryPolicy) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -1118,8 +1118,8 @@ func TestCassandra_Opts(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *ReconnectionPolicy) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -1211,8 +1211,8 @@ func TestCassandra_Opts(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *HostFilter) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

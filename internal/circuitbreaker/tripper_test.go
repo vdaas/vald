@@ -24,9 +24,9 @@ package circuitbreaker
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
+// 		args
 // 		f          TripperFunc
-// 		want       want
+// 		want
 // 		checkFunc  func(want, bool) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -111,8 +111,8 @@ package circuitbreaker
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, Tripper) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)

@@ -107,114 +107,114 @@ type (
 	}
 	hostFilter struct {
 		// dcHost is a data center host.
-		dcHost    string
+		dcHost string
 		// whiteList is a list of white list.
 		whiteList []string
 		// enable is a flag to enable host filter.
-		enable    bool
+		enable bool
 	}
 	// skipcq: SCC-U1000
 	events struct {
 		// DisableNodeStatusEvents is a flag to disable node status events.
 		DisableNodeStatusEvents bool
 		// DisableTopologyEvents is a flag to disable topology events.
-		DisableTopologyEvents   bool
+		DisableTopologyEvents bool
 		// DisableSchemaEvents is a flag to disable schema events.
-		DisableSchemaEvents     bool
+		DisableSchemaEvents bool
 	}
 	client struct {
 		// cluster is a cluster config.
-		cluster                  ClusterConfig
+		cluster ClusterConfig
 		// dialer is a gocql dialer.
-		dialer                   gocql.Dialer
+		dialer gocql.Dialer
 		// rawDialer is a net dialer.
-		rawDialer                net.Dialer
+		rawDialer net.Dialer
 		// frameHeaderObserver is a frame header observer.
-		frameHeaderObserver      FrameHeaderObserver
+		frameHeaderObserver FrameHeaderObserver
 		// connectObserver is a connect observer.
-		connectObserver          ConnectObserver
+		connectObserver ConnectObserver
 		// batchObserver is a batch observer.
-		batchObserver            BatchObserver
+		batchObserver BatchObserver
 		// queryObserver is a query observer.
-		queryObserver            QueryObserver
+		queryObserver QueryObserver
 		// compressor is a gocql compressor.
-		compressor               gocql.Compressor
+		compressor gocql.Compressor
 		// tls is a tls config.
-		tls                      *tls.Config
+		tls *tls.Config
 		// session is a gocql session.
-		session                  *gocql.Session
+		session *gocql.Session
 		// authProvider is a function to get auth provider.
-		authProvider             func(h *gocql.HostInfo) (gocql.Authenticator, error)
+		authProvider func(h *gocql.HostInfo) (gocql.Authenticator, error)
 		// tlsCAPath is a path to tls ca.
-		tlsCAPath                string
+		tlsCAPath string
 		// tlsCertPath is a path to tls cert.
-		tlsCertPath              string
+		tlsCertPath string
 		// cqlVersion is a cql version.
-		cqlVersion               string
+		cqlVersion string
 		// keyspace is a keyspace.
-		keyspace                 string
+		keyspace string
 		// password is a password.
-		password                 string
+		password string
 		// tlsKeyPath is a path to tls key.
-		tlsKeyPath               string
+		tlsKeyPath string
 		// username is a username.
-		username                 string
+		username string
 		// poolConfig is a pool config.
-		poolConfig               poolConfig
+		poolConfig poolConfig
 		// hosts is a list of hosts.
-		hosts                    []string
+		hosts []string
 		// hostFilter is a host filter.
-		hostFilter               hostFilter
+		hostFilter hostFilter
 		// retryPolicy is a retry policy.
-		retryPolicy              retryPolicy
+		retryPolicy retryPolicy
 		// reconnectionPolicy is a reconnection policy.
-		reconnectionPolicy       reconnectionPolicy
+		reconnectionPolicy reconnectionPolicy
 		// reconnectInterval is a reconnect interval.
-		reconnectInterval        time.Duration
+		reconnectInterval time.Duration
 		// port is a port.
-		port                     int
+		port int
 		// pageSize is a page size.
-		pageSize                 int
+		pageSize int
 		// socketKeepalive is a socket keepalive.
-		socketKeepalive          time.Duration
+		socketKeepalive time.Duration
 		// protoVersion is a proto version.
-		protoVersion             int
+		protoVersion int
 		// maxRoutingKeyInfo is a max routing key info.
-		maxRoutingKeyInfo        int
+		maxRoutingKeyInfo int
 		// maxWaitSchemaAgreement is a max wait schema agreement.
-		maxWaitSchemaAgreement   time.Duration
+		maxWaitSchemaAgreement time.Duration
 		// writeCoalesceWaitTime is a write coalesce wait time.
-		writeCoalesceWaitTime    time.Duration
+		writeCoalesceWaitTime time.Duration
 		// timeout is a timeout.
-		timeout                  time.Duration
+		timeout time.Duration
 		// connectTimeout is a connect timeout.
-		connectTimeout           time.Duration
+		connectTimeout time.Duration
 		// maxPreparedStmts is a max prepared stmts.
-		maxPreparedStmts         int
+		maxPreparedStmts int
 		// numConns is a number of conns.
-		numConns                 int
+		numConns int
 		// consistency is a gocql consistency.
-		consistency              gocql.Consistency
+		consistency gocql.Consistency
 		// serialConsistency is a gocql serial consistency.
-		serialConsistency        gocql.SerialConsistency
+		serialConsistency gocql.SerialConsistency
 		// disableSkipMetadata is a flag to disable skip metadata.
-		disableSkipMetadata      bool
+		disableSkipMetadata bool
 		// disableSchemaEvents is a flag to disable schema events.
-		disableSchemaEvents      bool
+		disableSchemaEvents bool
 		// disableTopologyEvents is a flag to disable topology events.
-		disableTopologyEvents    bool
+		disableTopologyEvents bool
 		// defaultIdempotence is a flag to default idempotence.
-		defaultIdempotence       bool
+		defaultIdempotence bool
 		// disableNodeStatusEvents is a flag to disable node status events.
-		disableNodeStatusEvents  bool
+		disableNodeStatusEvents bool
 		// disableInitialHostLookup is a flag to disable initial host lookup.
 		disableInitialHostLookup bool
 		// ignorePeerAddr is a flag to ignore peer addr.
-		ignorePeerAddr           bool
+		ignorePeerAddr bool
 		// defaultTimestamp is a flag to default timestamp.
-		defaultTimestamp         bool
+		defaultTimestamp bool
 		// enableHostVerification is a flag to enable host verification.
-		enableHostVerification   bool
+		enableHostVerification bool
 	}
 )
 
@@ -225,7 +225,7 @@ func New(opts ...Option) (Cassandra, error) {
 		if err := opt(c); err != nil {
 			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 
-			e := new(errors.ErrCriticalOption)
+			e := new(errors.CriticalOptionError)
 			if errors.As(err, &e) {
 				log.Error(werr)
 				return nil, werr

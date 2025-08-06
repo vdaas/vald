@@ -502,14 +502,12 @@ func Test_server_ListenAndServe(t *testing.T) {
 			s := &server{
 				mode: test.field.mode,
 				eg:   test.field.eg,
-				// FIX: field order corrected to match server.http struct.
-				// FIX: field order corrected to match server.http struct.
 				http: struct {
-					srv      *http.Server
 					h        http.Handler
+					srv      *http.Server
 					h2srv    *http2.Server
-					enableH2 bool
 					starter  func(net.Listener) error
+					enableH2 bool
 				}{
 					starter: test.field.httpSrvStarter,
 				},
@@ -665,14 +663,12 @@ func Test_server_Shutdown(t *testing.T) {
 			s := &server{
 				mode: test.field.mode,
 				eg:   test.field.eg,
-				// FIX: field order corrected to match server.http struct.
-				// FIX: field order corrected to match server.http struct.
 				http: struct {
-					srv      *http.Server
 					h        http.Handler
+					srv      *http.Server
 					h2srv    *http2.Server
-					enableH2 bool
 					starter  func(net.Listener) error
+					enableH2 bool
 				}{
 					srv: test.field.httpSrv,
 				},

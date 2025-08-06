@@ -21,19 +21,19 @@ import "github.com/vdaas/vald/internal/tls"
 // TLS represent the TLS configuration for server.
 type TLS struct {
 	// Cert represent the certificate environment variable key used to start server.
-	Cert               string `json:"cert"                 yaml:"cert"`
+	Cert string `json:"cert"                 yaml:"cert"`
 	// Key represent the private key environment variable key used to start server.
-	Key                string `json:"key"                  yaml:"key"`
+	Key string `json:"key"                  yaml:"key"`
 	// CA represent the CA certificate environment variable key used to start server.
-	CA                 string `json:"ca"                   yaml:"ca"`
+	CA string `json:"ca"                   yaml:"ca"`
 	// ServerName represents the tls Server SNI.
-	ServerName         string `json:"server_name"          yaml:"server_name"`
+	ServerName string `json:"server_name"          yaml:"server_name"`
 	// ClientAuth represents the tls ClientAuth Type for Server
-	ClientAuth         string `json:"client_auth"          yaml:"client_auth"`
+	ClientAuth string `json:"client_auth"          yaml:"client_auth"`
 	// Enable represent the server enable TLS or not.
-	Enabled            bool   `json:"enabled"              yaml:"enabled"`
+	Enabled bool `json:"enabled"              yaml:"enabled"`
 	// InsecureSkipVerify represent enable/disable skip SSL certificate verification
-	InsecureSkipVerify bool   `json:"insecure_skip_verify" yaml:"insecure_skip_verify"`
+	InsecureSkipVerify bool `json:"insecure_skip_verify" yaml:"insecure_skip_verify"`
 }
 
 // Bind returns TLS object whose every value except Enabled is field value of environment value.

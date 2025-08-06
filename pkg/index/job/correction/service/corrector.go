@@ -72,8 +72,8 @@ func New(opts ...Option) (_ Corrector, err error) {
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(c); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := &errors.ErrCriticalOption{}
-			if errors.As(oerr, &e) {
+			var cerr *errors.CriticalOptionError
+			if errors.As(oerr, &cerr) {
 				log.Error(err)
 				return nil, oerr
 			}

@@ -26,11 +26,8 @@ import (
 )
 
 type router struct {
-	// handler is a rest.Handler.
 	handler rest.Handler
-	// eg is an error group.
 	eg      errgroup.Group
-	// timeout is a timeout.
 	timeout string
 }
 

@@ -46,41 +46,41 @@ type Dialer interface {
 
 type dialer struct {
 	// dnsCache is a cacher.Cache.
-	dnsCache              cacher.Cache[*dialerCache]
+	dnsCache cacher.Cache[*dialerCache]
 	// ctrl is a control.SocketController.
-	ctrl                  control.SocketController
+	ctrl control.SocketController
 	// dialer is a function to dial.
-	dialer                func(ctx context.Context, network, addr string) (Conn, error)
+	dialer func(ctx context.Context, network, addr string) (Conn, error)
 	// der is a net.Dialer.
-	der                   *net.Dialer
+	der *net.Dialer
 	// tlsConfig is a tls.Config.
-	tlsConfig             *tls.Config
+	tlsConfig *tls.Config
 	// addrs is a sync.Map.
-	addrs                 sync.Map[string, *addrInfo]
+	addrs sync.Map[string, *addrInfo]
 	// dnsRefreshDurationStr is a DNS refresh duration string.
 	dnsRefreshDurationStr string
 	// dnsCacheExpirationStr is a DNS cache expiration string.
 	dnsCacheExpirationStr string
 	// dnsCacheExpiration is a DNS cache expiration.
-	dnsCacheExpiration    time.Duration
+	dnsCacheExpiration time.Duration
 	// dialerTimeout is a dialer timeout.
-	dialerTimeout         time.Duration
+	dialerTimeout time.Duration
 	// dialerKeepalive is a dialer keepalive.
-	dialerKeepalive       time.Duration
+	dialerKeepalive time.Duration
 	// dialerFallbackDelay is a dialer fallback delay.
-	dialerFallbackDelay   time.Duration
+	dialerFallbackDelay time.Duration
 	// dnsRefreshDuration is a DNS refresh duration.
-	dnsRefreshDuration    time.Duration
+	dnsRefreshDuration time.Duration
 	// sockFlg is a control.SocketFlag.
-	sockFlg               control.SocketFlag
+	sockFlg control.SocketFlag
 	// tmu is a sync.RWMutex.
-	tmu                   sync.RWMutex
+	tmu sync.RWMutex
 	// dnsCachedOnce is a sync.Once.
-	dnsCachedOnce         sync.Once
+	dnsCachedOnce sync.Once
 	// dialerDualStack is a flag to enable dual stack.
-	dialerDualStack       bool
+	dialerDualStack bool
 	// enableDNSCache is a flag to enable DNS cache.
-	enableDNSCache        bool
+	enableDNSCache bool
 }
 
 type addrInfo struct {

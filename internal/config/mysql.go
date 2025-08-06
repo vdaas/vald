@@ -26,39 +26,39 @@ import (
 // MySQL represent the mysql configuration.
 type MySQL struct {
 	// TLS represents the TLS configuration.
-	TLS                  *TLS   `json:"tls"                     yaml:"tls"`
+	TLS *TLS `json:"tls"                     yaml:"tls"`
 	// Net represents the network configuration.
-	Net                  *Net   `json:"net"                     yaml:"net"`
+	Net *Net `json:"net"                     yaml:"net"`
 	// ConnMaxLifeTime represents the connection max life time.
-	ConnMaxLifeTime      string `json:"conn_max_life_time"      yaml:"conn_max_life_time"`
+	ConnMaxLifeTime string `json:"conn_max_life_time"      yaml:"conn_max_life_time"`
 	// Timezone represents the timezone.
-	Timezone             string `json:"timezone"                yaml:"timezone"`
+	Timezone string `json:"timezone"                yaml:"timezone"`
 	// Network represents the network.
-	Network              string `json:"network"                 yaml:"network"`
+	Network string `json:"network"                 yaml:"network"`
 	// User represents the user.
-	User                 string `json:"user"                    yaml:"user"`
+	User string `json:"user"                    yaml:"user"`
 	// Pass represents the password.
-	Pass                 string `json:"pass"                    yaml:"pass"`
+	Pass string `json:"pass"                    yaml:"pass"`
 	// Name represents the name.
-	Name                 string `json:"name"                    yaml:"name"`
+	Name string `json:"name"                    yaml:"name"`
 	// Charset represents the charset.
-	Charset              string `json:"charset"                 yaml:"charset"`
+	Charset string `json:"charset"                 yaml:"charset"`
 	// Host represents the host.
-	Host                 string `json:"host"                    yaml:"host"`
+	Host string `json:"host"                    yaml:"host"`
 	// InitialPingTimeLimit represents the initial ping time limit.
 	InitialPingTimeLimit string `json:"initial_ping_time_limit" yaml:"initial_ping_time_limit"`
 	// InitialPingDuration represents the initial ping duration.
-	InitialPingDuration  string `json:"initial_ping_duration"   yaml:"initial_ping_duration"`
+	InitialPingDuration string `json:"initial_ping_duration"   yaml:"initial_ping_duration"`
 	// DB represents the database.
-	DB                   string `json:"db"                      yaml:"db"`
+	DB string `json:"db"                      yaml:"db"`
 	// SocketPath represents the socket path.
-	SocketPath           string `json:"socket_path"             yaml:"socket_path"`
+	SocketPath string `json:"socket_path"             yaml:"socket_path"`
 	// MaxIdleConns represents the max idle conns.
-	MaxIdleConns         int    `json:"max_idle_conns"          yaml:"max_idle_conns"`
+	MaxIdleConns int `json:"max_idle_conns"          yaml:"max_idle_conns"`
 	// MaxOpenConns represents the max open conns.
-	MaxOpenConns         int    `json:"max_open_conns"          yaml:"max_open_conns"`
+	MaxOpenConns int `json:"max_open_conns"          yaml:"max_open_conns"`
 	// Port represents the port.
-	Port                 uint16 `json:"port"                    yaml:"port"`
+	Port uint16 `json:"port"                    yaml:"port"`
 }
 
 // Bind returns MySQL object whose some string value is filed value or environment value.

@@ -148,14 +148,13 @@ func Test_redisClient_ping(t *testing.T) {
 		err   error
 	}
 	type test struct {
-		want       want
 		args       args
+		want       want
 		checkFunc  func(want, Redis, error) error
 		beforeFunc func(context.Context)
 		afterFunc  func(context.Context)
 		name       string
 		fields     fields
-		ctx        context.Context
 	}
 	defaultCheckFunc := func(w want, gotR Redis, err error) error {
 		if !errors.Is(err, w.err) {
@@ -177,7 +176,6 @@ func Test_redisClient_ping(t *testing.T) {
 			return test{
 				name: "returns nil when the ping success",
 				args: args{},
-				ctx:  t.Context(),
 				fields: fields{
 					initialPingDuration:  time.Millisecond,
 					initialPingTimeLimit: time.Second,
@@ -196,7 +194,6 @@ func Test_redisClient_ping(t *testing.T) {
 			return test{
 				name: "returns ping failed error when the ping fails and reached the ping time limit",
 				args: args{},
-				ctx:  t.Context(),
 				fields: fields{
 					initialPingDuration:  time.Millisecond,
 					initialPingTimeLimit: 3 * time.Millisecond,
@@ -222,11 +219,12 @@ func Test_redisClient_ping(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			ctx := tt.Context()
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.ctx)
+				test.beforeFunc(ctx)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.ctx)
+				defer test.afterFunc(ctx)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -238,7 +236,7 @@ func Test_redisClient_ping(t *testing.T) {
 				client:               test.fields.client,
 			}
 
-			gotR, err := rc.ping(test.ctx)
+			gotR, err := rc.ping(ctx)
 			if err := checkFunc(test.want, gotR, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -290,7 +288,6 @@ func Test_redisClient_setClient(t *testing.T) {
 		afterFunc  func(context.Context)
 		name       string
 		fields     fields
-		ctx        context.Context
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -302,7 +299,6 @@ func Test_redisClient_setClient(t *testing.T) {
 		{
 			name: "returns error when addrs not specified",
 			args: args{},
-			ctx:  t.Context(),
 			want: want{
 				err: errors.ErrRedisAddrsNotFound,
 			},
@@ -311,7 +307,6 @@ func Test_redisClient_setClient(t *testing.T) {
 		{
 			name: "returns error when addrs is empty",
 			args: args{},
-			ctx:  t.Context(),
 			fields: fields{
 				addrs: []string{},
 			},
@@ -323,7 +318,6 @@ func Test_redisClient_setClient(t *testing.T) {
 		{
 			name: "returns nil when addrs is single addr",
 			args: args{},
-			ctx:  t.Context(),
 			fields: fields{
 				addrs: []string{"127.0.0.1:6379"},
 			},
@@ -333,7 +327,6 @@ func Test_redisClient_setClient(t *testing.T) {
 		{
 			name: "returns nil when addrs is single addr and it is empty string",
 			args: args{},
-			ctx:  t.Context(),
 			fields: fields{
 				addrs: []string{""},
 			},
@@ -345,7 +338,6 @@ func Test_redisClient_setClient(t *testing.T) {
 		{
 			name: "returns nil when addrs is multiple addrs",
 			args: args{},
-			ctx:  t.Context(),
 			fields: fields{
 				addrs: []string{
 					"127.0.0.1:6379",
@@ -374,11 +366,12 @@ func Test_redisClient_setClient(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			ctx := tt.Context()
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.ctx)
+				test.beforeFunc(ctx)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.ctx)
+				defer test.afterFunc(ctx)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -416,7 +409,7 @@ func Test_redisClient_setClient(t *testing.T) {
 				hooks:                test.fields.hooks,
 			}
 
-			err := rc.setClient(test.ctx)
+			err := rc.setClient(ctx)
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -682,14 +675,13 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		want       want
 		args       args
+		want       want
 		checkFunc  func(want, *redis.ClusterClient, error) error
 		beforeFunc func(context.Context)
 		afterFunc  func(context.Context)
 		name       string
 		fields     fields
-		ctx        context.Context
 	}
 	defaultCheckFunc := func(w want, got *redis.ClusterClient, err error) error {
 		if !errors.Is(err, w.err) {
@@ -702,9 +694,7 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns error when first element of addrs is empty string",
 			args: args{},
-			ctx:  t.Context(),
 			fields: fields{
 				addrs: []string{""},
 			},
@@ -754,7 +744,6 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 			return test{
 				name: "returns redis.Client successfully",
 				args: args{},
-				ctx:  t.Context(),
 				fields: fields{
 					addrs:              []string{"127.0.0.1:6379"},
 					dialerFunc:         dialer,
@@ -841,11 +830,12 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			ctx := tt.Context()
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(ctx)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(ctx)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -883,7 +873,7 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 				hooks:                test.fields.hooks,
 			}
 
-			got, err := rc.newClusterClient(test.ctx)
+			got, err := rc.newClusterClient(ctx)
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -929,14 +919,13 @@ func Test_redisClient_Connect(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		want       want
 		args       args
+		want       want
 		checkFunc  func(want, Redis, error) error
 		beforeFunc func(context.Context)
 		afterFunc  func(context.Context)
 		name       string
 		fields     fields
-		ctx        context.Context
 	}
 	defaultCheckFunc := func(w want, got Redis, err error) error {
 		if !errors.Is(err, w.err) {
@@ -957,7 +946,6 @@ func Test_redisClient_Connect(t *testing.T) {
 			return test{
 				name: "returns error when addrs not specified",
 				args: args{},
-				ctx:  t.Context(),
 				fields: fields{
 					addrs:  []string{""},
 					dialer: dialer,
@@ -977,7 +965,6 @@ func Test_redisClient_Connect(t *testing.T) {
 			return test{
 				name: "returns error when an invalid addrs specified",
 				args: args{},
-				ctx:  t.Context(),
 				fields: fields{
 					addrs:                []string{"127.0.0.1:6379"},
 					initialPingTimeLimit: time.Microsecond,
@@ -996,11 +983,12 @@ func Test_redisClient_Connect(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			ctx := tt.Context()
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.ctx)
+				test.beforeFunc(ctx)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.ctx)
+				defer test.afterFunc(ctx)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1038,7 +1026,7 @@ func Test_redisClient_Connect(t *testing.T) {
 				hooks:                test.fields.hooks,
 			}
 
-			got, err := rc.Connect(test.ctx)
+			got, err := rc.Connect(ctx)
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

@@ -38,7 +38,7 @@ type Client interface {
 type agentClient struct {
 	vald.Client
 	// gRPC client.
-	c     grpc.Client
+	c grpc.Client
 	// List of addresses.
 	addrs []string
 }

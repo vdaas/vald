@@ -206,8 +206,8 @@ func TestNGT_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *KVSDB) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -295,8 +295,8 @@ func TestNGT_Bind(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *VQueue) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

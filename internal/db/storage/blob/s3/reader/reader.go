@@ -37,31 +37,31 @@ import (
 
 type reader struct {
 	// eg is an error group.
-	eg             errgroup.Group
+	eg errgroup.Group
 	// service is a s3iface.S3API.
-	service        s3iface.S3API
+	service s3iface.S3API
 	// pr is an io.ReadCloser.
-	pr             io.ReadCloser
+	pr io.ReadCloser
 	// ctxio is a ctxio.IO.
-	ctxio          ctxio.IO
+	ctxio ctxio.IO
 	// bo is a backoff.Backoff.
-	bo             backoff.Backoff
+	bo backoff.Backoff
 	// wg is a sync.WaitGroup.
-	wg             *sync.WaitGroup
+	wg *sync.WaitGroup
 	// bucket is a bucket name.
-	bucket         string
+	bucket string
 	// backoffOpts is a list of backoff options.
-	backoffOpts    []backoff.Option
+	backoffOpts []backoff.Option
 	// maxChunkSize is a max chunk size.
-	maxChunkSize   int64
+	maxChunkSize int64
 	// backoffEnabled is a flag to enable backoff.
 	backoffEnabled bool
 }
 
 var (
-	errBlobNoSuchBucket      = new(errors.ErrBlobNoSuchBucket)
-	errBlobNoSuchKey         = new(errors.ErrBlobNoSuchKey)
-	errBlobInvalidChunkRange = new(errors.ErrBlobInvalidChunkRange)
+	errBlobNoSuchBucket      = new(errors.BlobNoSuchBucketError)
+	errBlobNoSuchKey         = new(errors.BlobNoSuchKeyError)
+	errBlobInvalidChunkRange = new(errors.BlobInvalidChunkRangeError)
 )
 
 // Reader is an interface that groups the basic Read and Close and Open methods.
@@ -189,11 +189,11 @@ func (r *reader) getObject(
 		if errors.As(err, &aerr) {
 			switch aerr.Code() {
 			case s3.ErrCodeNoSuchBucket:
-				return nil, errors.NewErrBlobNoSuchBucket(err, r.bucket)
+				return nil, errors.NewBlobNoSuchBucketError(err, r.bucket)
 			case s3.ErrCodeNoSuchKey:
-				return nil, errors.NewErrBlobNoSuchKey(err, key)
+				return nil, errors.NewBlobNoSuchKeyError(err, key)
 			case "InvalidRange":
-				return nil, errors.NewErrBlobInvalidChunkRange(err, *rng)
+				return nil, errors.NewBlobInvalidChunkRangeError(err, *rng)
 			}
 		}
 		return nil, err

@@ -26,22 +26,14 @@ import (
 
 type server struct {
 	vald.UnimplementedValdServer
-	// error group for managing goroutines.
-	eg errgroup.Group
-	// gateway service object.
-	gateway service.Gateway
-	// gateway name.
-	name string
-	// gateway IP address.
-	ip string
-	// timeout duration.
-	timeout time.Duration
-	// number of replicas.
-	replica int
-	// stream concurrency.
+	eg                errgroup.Group
+	gateway           service.Gateway
+	name              string
+	ip                string
+	timeout           time.Duration
+	replica           int
 	streamConcurrency int
-	// multiple operation concurrency.
-	multiConcurrency int
+	multiConcurrency  int
 }
 
 const apiName = "vald/gateway/lb"

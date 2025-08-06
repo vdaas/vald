@@ -21,33 +21,33 @@ type Transport struct {
 	// RoundTripper represents the round trip configuration for transport.
 	RoundTripper *RoundTripper `json:"round_tripper" yaml:"round_tripper"`
 	// Backoff represents the backoff configuration for transport.
-	Backoff      *Backoff      `json:"backoff"       yaml:"backoff"`
+	Backoff *Backoff `json:"backoff"       yaml:"backoff"`
 }
 
 // RoundTripper represents the round trip configuration for transport.
 type RoundTripper struct {
 	// TLSHandshakeTimeout represents the TLS handshake timeout.
-	TLSHandshakeTimeout   string `json:"tls_handshake_timeout"    yaml:"tls_handshake_timeout"`
+	TLSHandshakeTimeout string `json:"tls_handshake_timeout"    yaml:"tls_handshake_timeout"`
 	// IdleConnTimeout represents the idle connection timeout.
-	IdleConnTimeout       string `json:"idle_conn_timeout"        yaml:"idle_conn_timeout"`
+	IdleConnTimeout string `json:"idle_conn_timeout"        yaml:"idle_conn_timeout"`
 	// ResponseHeaderTimeout represents the response header timeout.
 	ResponseHeaderTimeout string `json:"response_header_timeout"  yaml:"response_header_timeout"`
 	// ExpectContinueTimeout represents the expect continue timeout.
 	ExpectContinueTimeout string `json:"expect_continue_timeout"  yaml:"expect_continue_timeout"`
 	// MaxIdleConns represents the max idle connections.
-	MaxIdleConns          int    `json:"max_idle_conns"           yaml:"max_idle_conns"`
+	MaxIdleConns int `json:"max_idle_conns"           yaml:"max_idle_conns"`
 	// MaxIdleConnsPerHost represents the max idle connections per host.
-	MaxIdleConnsPerHost   int    `json:"max_idle_conns_per_host"  yaml:"max_idle_conns_per_host"`
+	MaxIdleConnsPerHost int `json:"max_idle_conns_per_host"  yaml:"max_idle_conns_per_host"`
 	// MaxConnsPerHost represents the max connections per host.
-	MaxConnsPerHost       int    `json:"max_conns_per_host"       yaml:"max_conns_per_host"`
+	MaxConnsPerHost int `json:"max_conns_per_host"       yaml:"max_conns_per_host"`
 	// MaxResponseHeaderSize represents the max response header size.
-	MaxResponseHeaderSize int64  `json:"max_response_header_size" yaml:"max_response_header_size"`
+	MaxResponseHeaderSize int64 `json:"max_response_header_size" yaml:"max_response_header_size"`
 	// WriteBufferSize represents the write buffer size.
-	WriteBufferSize       int64  `json:"write_buffer_size"        yaml:"write_buffer_size"`
+	WriteBufferSize int64 `json:"write_buffer_size"        yaml:"write_buffer_size"`
 	// ReadBufferSize represents the read buffer size.
-	ReadBufferSize        int64  `json:"read_buffer_size"         yaml:"read_buffer_size"`
+	ReadBufferSize int64 `json:"read_buffer_size"         yaml:"read_buffer_size"`
 	// ForceAttemptHTTP2 represents whether to force attempt HTTP2.
-	ForceAttemptHTTP2     bool   `json:"force_attempt_http_2"     yaml:"force_attempt_http_2"`
+	ForceAttemptHTTP2 bool `json:"force_attempt_http_2"     yaml:"force_attempt_http_2"`
 }
 
 // Bind binds the actual data from the RoundTripper receiver fields.

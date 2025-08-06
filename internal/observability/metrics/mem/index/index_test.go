@@ -21,7 +21,7 @@ package index
 // 	}
 // 	type test struct {
 // 		name       string
-// 		want       want
+// 		want
 // 		checkFunc  func(want, metrics.Metric) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -98,7 +98,7 @@ package index
 // 	type test struct {
 // 		name       string
 // 		m          *memoryMetrics
-// 		want       want
+// 		want
 // 		checkFunc  func(want, []metrics.View, error) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -180,9 +180,9 @@ package index
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
+// 		args
 // 		m          *memoryMetrics
-// 		want       want
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)

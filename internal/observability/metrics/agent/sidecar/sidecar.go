@@ -43,15 +43,15 @@ type MetricsHook interface {
 
 type sidecarMetrics struct {
 	// info is a backup info.
-	info           *observer.BackupInfo
+	info *observer.BackupInfo
 	// storageTypeKey is a storage type key.
 	storageTypeKey string
 	// bucketNameKey is a bucket name key.
-	bucketNameKey  string
+	bucketNameKey string
 	// filenameKey is a filename key.
-	filenameKey    string
+	filenameKey string
 	// mu is a sync.Mutex.
-	mu             sync.Mutex
+	mu sync.Mutex
 }
 
 func New() MetricsHook {

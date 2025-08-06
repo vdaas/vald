@@ -17,10 +17,9 @@
 package rand
 
 import (
-	"sync/atomic"
-
 	"github.com/kpango/fastime"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
 type rand struct {

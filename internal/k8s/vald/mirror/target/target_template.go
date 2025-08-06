@@ -25,8 +25,8 @@ func NewMirrorTargetTemplate(opts ...MirrorTargetOption) (*MirrorTarget, error) 
 	for _, opt := range append(defaultMirrorTargetOptions, opts...) {
 		if err := opt(mt); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := &errors.ErrCriticalOption{}
-			if errors.As(err, &e) {
+			var cerr *errors.CriticalOptionError
+			if errors.As(oerr, &cerr) {
 				log.Error(oerr)
 				return nil, oerr
 			}

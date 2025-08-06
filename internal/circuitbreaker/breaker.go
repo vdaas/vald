@@ -16,43 +16,43 @@ package circuitbreaker
 import (
 	"context"
 	"reflect"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
 type breaker struct {
 	// Tripper for closed state.
-	closedErrShouldTrip   Tripper
+	closedErrShouldTrip Tripper
 	// Tripper for half-open state.
 	halfOpenErrShouldTrip Tripper
 	// Count of successes and failures.
-	count                 *count
+	count *count
 	// Breaker key for logging.
-	key                   string
+	key string
 	// Minimum samples.
-	minSamples            int64
+	minSamples int64
 	// Open timeout.
-	openTimeout           time.Duration
+	openTimeout time.Duration
 	// Open expiration.
-	openExp               int64
+	openExp int64
 	// Closed refresh timeout.
-	closedRefreshTimeout  time.Duration
+	closedRefreshTimeout time.Duration
 	// Closed refresh expiration.
-	closedRefreshExp      int64
+	closedRefreshExp int64
 	// Tripped flag.
-	tripped               int32
+	tripped int32
 	// Closed error rate.
-	closedErrRate         float32
+	closedErrRate float32
 	// Half-open error rate.
-	halfOpenErrRate       float32
+	halfOpenErrRate float32
 }
 
 var (
-	serr  = new(errors.ErrCircuitBreakerMarkWithSuccess)
-	igerr = new(errors.ErrCircuitBreakerIgnorable)
+	serr  = new(errors.CircuitBreakerMarkWithSuccessError)
+	igerr = new(errors.CircuitBreakerIgnorableError)
 )
 
 func newBreaker(key string, opts ...BreakerOption) (*breaker, error) {
@@ -63,7 +63,7 @@ func newBreaker(key string, opts ...BreakerOption) (*breaker, error) {
 	for _, opt := range append(defaultBreakerOpts, opts...) {
 		if err := opt(b); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := &errors.ErrCriticalOption{}
+			e := &errors.CriticalOptionError{}
 			if errors.As(oerr, &e) {
 				log.Error(oerr)
 				return nil, oerr
@@ -94,16 +94,16 @@ func (b *breaker) do(
 	if err != nil {
 		if errors.As(err, &serr) {
 			b.success()
-			return nil, b.currentState(), func() *errors.ErrCircuitBreakerMarkWithSuccess {
-				target := &errors.ErrCircuitBreakerMarkWithSuccess{}
+			return nil, b.currentState(), func() *errors.CircuitBreakerMarkWithSuccessError {
+				target := &errors.CircuitBreakerMarkWithSuccessError{}
 				_ = errors.As(err, &target)
 				return target
 			}().Unwrap()
 		}
 
 		if errors.As(err, &igerr) {
-			return nil, b.currentState(), func() *errors.ErrCircuitBreakerIgnorable {
-				target := &errors.ErrCircuitBreakerIgnorable{}
+			return nil, b.currentState(), func() *errors.CircuitBreakerIgnorableError {
+				target := &errors.CircuitBreakerIgnorableError{}
 				_ = errors.As(err, &target)
 				return target
 			}().Unwrap()

@@ -29,26 +29,26 @@ import (
 
 type CSpellConfig struct {
 	// Map of ignored words by file.
-	IgnoreWordsMap   map[string][]string `json:"ignoreWordsMap,omitempty"`
+	IgnoreWordsMap map[string][]string `json:"ignoreWordsMap,omitempty"`
 	// Version of the configuration.
-	Version          string              `json:"version"`
+	Version string `json:"version"`
 	// Language of the configuration.
-	Language         string              `json:"language"`
+	Language string `json:"language"`
 	// List of imported configurations.
-	Import           []string            `json:"import"`
+	Import []string `json:"import"`
 	// List of ignored paths.
-	IgnorePaths      []string            `json:"ignorePaths"`
+	IgnorePaths []string `json:"ignorePaths"`
 	// List of patterns.
-	Patterns         []PatternEntry      `json:"patterns,omitempty"`
+	Patterns []PatternEntry `json:"patterns,omitempty"`
 	// List of ignored regular expressions.
-	IgnoreRegExpList []string            `json:"ignoreRegExpList,omitempty"`
+	IgnoreRegExpList []string `json:"ignoreRegExpList,omitempty"`
 	// List of ignored words.
-	IgnoreWords      []string            `json:"ignoreWords,omitempty"`
+	IgnoreWords []string `json:"ignoreWords,omitempty"`
 }
 
 type PatternEntry struct {
 	// Name of the pattern.
-	Name    string `json:"name"`
+	Name string `json:"name"`
 	// Pattern.
 	Pattern string `json:"pattern"`
 }

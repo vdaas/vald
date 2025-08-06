@@ -16,25 +16,25 @@ package config
 // IndexDeleter represents the configurations for index deletion.
 type IndexDeleter struct {
 	// Discoverer represents agent discoverer service configuration.
-	Discoverer       *DiscovererClient `json:"discoverer"         yaml:"discoverer"`
+	Discoverer *DiscovererClient `json:"discoverer"         yaml:"discoverer"`
 	// IndexID represent target delete ID
-	IndexID          string            `json:"index_id"           yaml:"index_id"`
+	IndexID string `json:"index_id"           yaml:"index_id"`
 	// AgentName represent agents meta_name for service discovery
-	AgentName        string            `json:"agent_name"         yaml:"agent_name"`
+	AgentName string `json:"agent_name"         yaml:"agent_name"`
 	// AgentNamespace represent agent namespace location
-	AgentNamespace   string            `json:"agent_namespace"    yaml:"agent_namespace"`
+	AgentNamespace string `json:"agent_namespace"    yaml:"agent_namespace"`
 	// AgentDNS represent agents dns A record for service discovery
-	AgentDNS         string            `json:"agent_dns"          yaml:"agent_dns"`
+	AgentDNS string `json:"agent_dns"          yaml:"agent_dns"`
 	// NodeName represents node name
-	NodeName         string            `json:"node_name"          yaml:"node_name"`
+	NodeName string `json:"node_name"          yaml:"node_name"`
 	// TargetAddrs represents indexing target addresses.
-	TargetAddrs      []string          `json:"target_addrs"       yaml:"target_addrs"`
+	TargetAddrs []string `json:"target_addrs"       yaml:"target_addrs"`
 	// AgentPort represent agent port number
-	AgentPort        int               `json:"agent_port"         yaml:"agent_port"`
+	AgentPort int `json:"agent_port"         yaml:"agent_port"`
 	// Concurrency represents indexing concurrency.
-	Concurrency      int               `json:"concurrency"        yaml:"concurrency"`
+	Concurrency int `json:"concurrency"        yaml:"concurrency"`
 	// DeletionPoolSize represents batch pool size for indexing.
-	DeletionPoolSize uint32            `json:"deletion_pool_size" yaml:"deletion_pool_size"`
+	DeletionPoolSize uint32 `json:"deletion_pool_size" yaml:"deletion_pool_size"`
 }
 
 func (ic *IndexDeleter) Bind() *IndexDeleter {

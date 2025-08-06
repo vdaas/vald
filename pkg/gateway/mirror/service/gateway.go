@@ -45,10 +45,8 @@ type Gateway interface {
 
 type gateway struct {
 	// client is the Mirror gateway client for other clusters and the Vald gateway (e.g. LB gateway) client for the own cluster.
-	client mirror.Client
-	// errgroup for managing goroutines.
-	eg errgroup.Group
-	// pod name.
+	client  mirror.Client
+	eg      errgroup.Group
 	podName string
 }
 
@@ -58,8 +56,8 @@ func NewGateway(opts ...Option) (Gateway, error) {
 	for _, opt := range append(defaultGatewayOpts, opts...) {
 		if err := opt(g); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := &errors.ErrCriticalOption{}
-			if errors.As(err, &e) {
+			var cerr *errors.CriticalOptionError
+			if errors.As(oerr, &cerr) {
 				log.Error(oerr)
 				return nil, oerr
 			}

@@ -19,31 +19,31 @@ package config
 // AgentSidecar represents the configuration for the agent sidecar.
 type AgentSidecar struct {
 	// BlobStorage represent blob storage configurations
-	BlobStorage           *Blob         `json:"blob_storage"            yaml:"blob_storage"`
+	BlobStorage *Blob `json:"blob_storage"            yaml:"blob_storage"`
 	// Client represent HTTP client configurations
-	Client                *Client       `json:"client"                  yaml:"client"`
+	Client *Client `json:"client"                  yaml:"client"`
 	// RestoreBackoff represent backoff configurations for restoring process
-	RestoreBackoff        *Backoff      `json:"restore_backoff"         yaml:"restore_backoff"`
+	RestoreBackoff *Backoff `json:"restore_backoff"         yaml:"restore_backoff"`
 	// Compress represent compression configurations
-	Compress              *CompressCore `json:"compress"                yaml:"compress"`
+	Compress *CompressCore `json:"compress"                yaml:"compress"`
 	// Filename represent backup filename
-	Filename              string        `json:"filename"                yaml:"filename"`
+	Filename string `json:"filename"                yaml:"filename"`
 	// PostStopTimeout represent timeout duration for file changing during post stop
-	PostStopTimeout       string        `json:"post_stop_timeout"       yaml:"post_stop_timeout"`
+	PostStopTimeout string `json:"post_stop_timeout"       yaml:"post_stop_timeout"`
 	// Mode represents sidecar mode
-	Mode                  string        `json:"mode"                    yaml:"mode"`
+	Mode string `json:"mode"                    yaml:"mode"`
 	// FilenameSuffix represent suffix of backup filename
-	FilenameSuffix        string        `json:"filename_suffix"         yaml:"filename_suffix"`
+	FilenameSuffix string `json:"filename_suffix"         yaml:"filename_suffix"`
 	// AutoBackupDuration represent checking loop duration for auto backup execution
-	AutoBackupDuration    string        `json:"auto_backup_duration"    yaml:"auto_backup_duration"`
+	AutoBackupDuration string `json:"auto_backup_duration"    yaml:"auto_backup_duration"`
 	// WatchDir represents watch target directory for backup
-	WatchDir              string        `json:"watch_dir"               yaml:"watch_dir"`
+	WatchDir string `json:"watch_dir"               yaml:"watch_dir"`
 	// AutoBackupEnabled represent auto backup triggered by timer is enabled or not
-	AutoBackupEnabled     bool          `json:"auto_backup_enabled"     yaml:"auto_backup_enabled"`
+	AutoBackupEnabled bool `json:"auto_backup_enabled"     yaml:"auto_backup_enabled"`
 	// RestoreBackoffEnabled represent backoff enabled or not
-	RestoreBackoffEnabled bool          `json:"restore_backoff_enabled" yaml:"restore_backoff_enabled"`
+	RestoreBackoffEnabled bool `json:"restore_backoff_enabled" yaml:"restore_backoff_enabled"`
 	// WatchEnabled represent auto backup triggered by file changes is enabled or not
-	WatchEnabled          bool          `json:"watch_enabled"           yaml:"watch_enabled"`
+	WatchEnabled bool `json:"watch_enabled"           yaml:"watch_enabled"`
 }
 
 // Bind binds the actual data from the AgentSidecar receiver fields.

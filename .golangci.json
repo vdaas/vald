@@ -112,6 +112,24 @@
         },
         {
           "linters": [
+            "containedctx"
+          ],
+          "path": "internal/io/io\\.go"
+        },
+        {
+          "linters": [
+            "containedctx"
+          ],
+          "path": "internal/net/http/json/json_test\\.go"
+        },
+        {
+          "linters": [
+            "containedctx"
+          ],
+          "path": "internal/sync/singleflight/singleflight_test\\.go"
+        },
+        {
+          "linters": [
             "depguard"
           ],
           "path": "internal/errors/errors\\.go"

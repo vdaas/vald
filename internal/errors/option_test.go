@@ -20,7 +20,7 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-func TestNewErrInvalidOption(t *testing.T) {
+func TestNewInvalidOptionError(t *testing.T) {
 	type args struct {
 		name string
 		val  any
@@ -50,13 +50,13 @@ func TestNewErrInvalidOption(t *testing.T) {
 			name := "WithPort"
 			val := 9000
 			return test{
-				name: "return ErrInvalidOption when name and val have a value and errs is empty.",
+				name: "return InvalidOptionError when name and val have a value and errs is empty.",
 				args: args{
 					name: name,
 					val:  val,
 				},
 				want: want{
-					want: &ErrInvalidOption{
+					want: &InvalidOptionError{
 						err: Errorf("invalid option, name: %s, val: %v", name, val),
 					},
 				},
@@ -70,14 +70,14 @@ func TestNewErrInvalidOption(t *testing.T) {
 			}
 			e := errs[0]
 			return test{
-				name: "return ErrInvalidOption when all of parameter has value.",
+				name: "return InvalidOptionError when all of parameter has value.",
 				args: args{
 					name: name,
 					val:  val,
 					errs: errs,
 				},
 				want: want{
-					want: &ErrInvalidOption{
+					want: &InvalidOptionError{
 						err:    Wrapf(e, "invalid option, name: %s, val: %v", name, val),
 						origin: e,
 					},
@@ -93,14 +93,14 @@ func TestNewErrInvalidOption(t *testing.T) {
 			}
 			e := errs[1]
 			return test{
-				name: "return ErrInvalidOption when all of parameter has value and errs has nil as value.",
+				name: "return InvalidOptionError when all of parameter has value and errs has nil as value.",
 				args: args{
 					name: name,
 					val:  val,
 					errs: errs,
 				},
 				want: want{
-					want: &ErrInvalidOption{
+					want: &InvalidOptionError{
 						err:    Wrapf(e, "invalid option, name: %s, val: %v", name, val),
 						origin: e,
 					},
@@ -115,13 +115,13 @@ func TestNewErrInvalidOption(t *testing.T) {
 			}
 			e := Wrap(errs[1], errs[0].Error())
 			return test{
-				name: "return ErrInvalidOption when name is nil and val and errs have values.",
+				name: "return InvalidOptionError when name is nil and val and errs have values.",
 				args: args{
 					val:  val,
 					errs: errs,
 				},
 				want: want{
-					want: &ErrInvalidOption{
+					want: &InvalidOptionError{
 						err:    Wrapf(e, "invalid option, name: , val: %v", val),
 						origin: e,
 					},
@@ -136,13 +136,13 @@ func TestNewErrInvalidOption(t *testing.T) {
 			}
 			e := Wrap(errs[1], errs[0].Error())
 			return test{
-				name: "return ErrInvalidOption when val is nil and name and errs have values.",
+				name: "return InvalidOptionError when val is nil and name and errs have values.",
 				args: args{
 					name: name,
 					errs: errs,
 				},
 				want: want{
-					want: &ErrInvalidOption{
+					want: &InvalidOptionError{
 						err:    Wrapf(e, "invalid option, name: %s, val: %v", name, nil),
 						origin: e,
 					},
@@ -174,7 +174,7 @@ func TestNewErrInvalidOption(t *testing.T) {
 	}
 }
 
-func TestErrInvalidOption_Error(t *testing.T) {
+func TestInvalidOptionError_Error(t *testing.T) {
 	type T = string
 	type fields struct {
 		err    error
@@ -213,7 +213,7 @@ func TestErrInvalidOption_Error(t *testing.T) {
 			name:   "return string when e.err is nil.",
 			fields: fields{},
 			want: want{
-				want: "expected err is nil: ErrInvalidOption",
+				want: "expected err is nil: InvalidOptionError",
 			},
 		},
 	}
@@ -233,7 +233,7 @@ func TestErrInvalidOption_Error(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &ErrInvalidOption{
+			e := &InvalidOptionError{
 				err:    test.fields.err,
 				origin: test.fields.origin,
 			}
@@ -245,7 +245,7 @@ func TestErrInvalidOption_Error(t *testing.T) {
 	}
 }
 
-func TestErrInvalidOption_Unwrap(t *testing.T) {
+func TestInvalidOptionError_Unwrap(t *testing.T) {
 	type T = error
 	type fields struct {
 		err    error
@@ -302,7 +302,7 @@ func TestErrInvalidOption_Unwrap(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &ErrInvalidOption{
+			e := &InvalidOptionError{
 				err:    test.fields.err,
 				origin: test.fields.origin,
 			}
@@ -314,7 +314,7 @@ func TestErrInvalidOption_Unwrap(t *testing.T) {
 	}
 }
 
-func TestNewErrCriticalOption(t *testing.T) {
+func TestNewCriticalOptionError(t *testing.T) {
 	type T = error
 	type args struct {
 		name string
@@ -345,13 +345,13 @@ func TestNewErrCriticalOption(t *testing.T) {
 			name := "WithPort"
 			val := 9000
 			return test{
-				name: "return ErrCriticalOption when name and val have a value and errs is empty.",
+				name: "return CriticalOptionError when name and val have a value and errs is empty.",
 				args: args{
 					name: name,
 					val:  val,
 				},
 				want: want{
-					want: &ErrCriticalOption{
+					want: &CriticalOptionError{
 						err: Errorf("invalid critical option, name: %s, val: %v", name, val),
 					},
 				},
@@ -365,14 +365,14 @@ func TestNewErrCriticalOption(t *testing.T) {
 			}
 			e := errs[0]
 			return test{
-				name: "return ErrCriticalOption when all of parameter has value.",
+				name: "return CriticalOptionError when all of parameter has value.",
 				args: args{
 					name: name,
 					val:  val,
 					errs: errs,
 				},
 				want: want{
-					want: &ErrCriticalOption{
+					want: &CriticalOptionError{
 						err:    Wrapf(e, "invalid critical option, name: %s, val: %v", name, val),
 						origin: e,
 					},
@@ -388,14 +388,14 @@ func TestNewErrCriticalOption(t *testing.T) {
 			}
 			e := errs[1]
 			return test{
-				name: "return ErrCriticalOption when all of parameter has value and errs has nil as value.",
+				name: "return CriticalOptionError when all of parameter has value and errs has nil as value.",
 				args: args{
 					name: name,
 					val:  val,
 					errs: errs,
 				},
 				want: want{
-					want: &ErrCriticalOption{
+					want: &CriticalOptionError{
 						err:    Wrapf(e, "invalid critical option, name: %s, val: %v", name, val),
 						origin: e,
 					},
@@ -410,13 +410,13 @@ func TestNewErrCriticalOption(t *testing.T) {
 			}
 			e := Wrap(errs[1], errs[0].Error())
 			return test{
-				name: "return ErrCriticalOption when name is nil and val and errs have values.",
+				name: "return CriticalOptionError when name is nil and val and errs have values.",
 				args: args{
 					val:  val,
 					errs: errs,
 				},
 				want: want{
-					want: &ErrCriticalOption{
+					want: &CriticalOptionError{
 						err:    Wrapf(e, "invalid critical option, name: , val: %v", val),
 						origin: e,
 					},
@@ -431,13 +431,13 @@ func TestNewErrCriticalOption(t *testing.T) {
 			}
 			e := Wrap(errs[1], errs[0].Error())
 			return test{
-				name: "return ErrCriticalOption when val is nil and name and errs have values.",
+				name: "return CriticalOptionError when val is nil and name and errs have values.",
 				args: args{
 					name: name,
 					errs: errs,
 				},
 				want: want{
-					want: &ErrCriticalOption{
+					want: &CriticalOptionError{
 						err:    Wrapf(e, "invalid critical option, name: %s, val: %v", name, nil),
 						origin: e,
 					},
@@ -469,7 +469,7 @@ func TestNewErrCriticalOption(t *testing.T) {
 	}
 }
 
-func TestErrCriticalOption_Error(t *testing.T) {
+func TestCriticalOptionError_Error(t *testing.T) {
 	type T = string
 	type fields struct {
 		err    error
@@ -507,7 +507,7 @@ func TestErrCriticalOption_Error(t *testing.T) {
 			name:   "return string when e.err is nil",
 			fields: fields{},
 			want: want{
-				want: "expected err is nil: ErrCriticalOption",
+				want: "expected err is nil: CriticalOptionError",
 			},
 		},
 	}
@@ -527,7 +527,7 @@ func TestErrCriticalOption_Error(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &ErrCriticalOption{
+			e := &CriticalOptionError{
 				err:    test.fields.err,
 				origin: test.fields.origin,
 			}
@@ -539,7 +539,7 @@ func TestErrCriticalOption_Error(t *testing.T) {
 	}
 }
 
-func TestErrCriticalOption_Unwrap(t *testing.T) {
+func TestCriticalOptionError_Unwrap(t *testing.T) {
 	type T = error
 	type fields struct {
 		err    error
@@ -595,7 +595,7 @@ func TestErrCriticalOption_Unwrap(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &ErrCriticalOption{
+			e := &CriticalOptionError{
 				err:    test.fields.err,
 				origin: test.fields.origin,
 			}
@@ -607,7 +607,7 @@ func TestErrCriticalOption_Unwrap(t *testing.T) {
 	}
 }
 
-func TestNewErrIgnoredOption(t *testing.T) {
+func TestNewIgnoredOptionError(t *testing.T) {
 	type args struct {
 		name string
 		errs []error
@@ -635,12 +635,12 @@ func TestNewErrIgnoredOption(t *testing.T) {
 		func() test {
 			name := "WithPort"
 			return test{
-				name: "return ErrIgnoredOption when name and val have a value and errs is empty.",
+				name: "return IgnoredOptionError when name and val have a value and errs is empty.",
 				args: args{
 					name: name,
 				},
 				want: want{
-					want: &ErrIgnoredOption{
+					want: &IgnoredOptionError{
 						err: Errorf("ignored option, name: %s", name),
 					},
 				},
@@ -653,13 +653,13 @@ func TestNewErrIgnoredOption(t *testing.T) {
 			}
 			e := errs[0]
 			return test{
-				name: "return ErrIgnoredOption when all of parameter has value.",
+				name: "return IgnoredOptionError when all of parameter has value.",
 				args: args{
 					name: name,
 					errs: errs,
 				},
 				want: want{
-					want: &ErrIgnoredOption{
+					want: &IgnoredOptionError{
 						err:    Wrapf(e, "ignored option, name: %s", name),
 						origin: e,
 					},
@@ -674,13 +674,13 @@ func TestNewErrIgnoredOption(t *testing.T) {
 			}
 			e := errs[1]
 			return test{
-				name: "return ErrIgnoredOption when all of parameter has value and errs has nil as value.",
+				name: "return IgnoredOptionError when all of parameter has value and errs has nil as value.",
 				args: args{
 					name: name,
 					errs: errs,
 				},
 				want: want{
-					want: &ErrIgnoredOption{
+					want: &IgnoredOptionError{
 						err:    Wrapf(e, "ignored option, name: %s", name),
 						origin: e,
 					},
@@ -694,12 +694,12 @@ func TestNewErrIgnoredOption(t *testing.T) {
 			}
 			e := Wrap(errs[1], errs[0].Error())
 			return test{
-				name: "return ErrIgnoredOption when name is nil and val and errs have values.",
+				name: "return IgnoredOptionError when name is nil and val and errs have values.",
 				args: args{
 					errs: errs,
 				},
 				want: want{
-					want: &ErrIgnoredOption{
+					want: &IgnoredOptionError{
 						err:    Wrapf(e, "ignored option, name: "),
 						origin: e,
 					},
@@ -714,13 +714,13 @@ func TestNewErrIgnoredOption(t *testing.T) {
 			}
 			e := Wrap(errs[1], errs[0].Error())
 			return test{
-				name: "return ErrIgnoredOption when val is nil and name and errs have values.",
+				name: "return IgnoredOptionError when val is nil and name and errs have values.",
 				args: args{
 					name: name,
 					errs: errs,
 				},
 				want: want{
-					want: &ErrIgnoredOption{
+					want: &IgnoredOptionError{
 						err:    Wrapf(e, "ignored option, name: %s", name),
 						origin: e,
 					},
@@ -752,7 +752,7 @@ func TestNewErrIgnoredOption(t *testing.T) {
 	}
 }
 
-func TestErrIgnoredOption_Error(t *testing.T) {
+func TestIgnoredOptionError_Error(t *testing.T) {
 	type T = string
 	type fields struct {
 		err    error
@@ -791,7 +791,7 @@ func TestErrIgnoredOption_Error(t *testing.T) {
 			name:   "return string when e.err is nil.",
 			fields: fields{},
 			want: want{
-				want: "expected err is nil: ErrIgnoredOption",
+				want: "expected err is nil: IgnoredOptionError",
 			},
 		},
 	}
@@ -811,7 +811,7 @@ func TestErrIgnoredOption_Error(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &ErrIgnoredOption{
+			e := &IgnoredOptionError{
 				err:    test.fields.err,
 				origin: test.fields.origin,
 			}
@@ -823,7 +823,7 @@ func TestErrIgnoredOption_Error(t *testing.T) {
 	}
 }
 
-func TestErrIgnoredOption_Unwrap(t *testing.T) {
+func TestIgnoredOptionError_Unwrap(t *testing.T) {
 	type T = error
 	type fields struct {
 		err    error
@@ -880,7 +880,7 @@ func TestErrIgnoredOption_Unwrap(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &ErrIgnoredOption{
+			e := &IgnoredOptionError{
 				err:    test.fields.err,
 				origin: test.fields.origin,
 			}

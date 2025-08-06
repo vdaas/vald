@@ -13,16 +13,8 @@
 // limitations under the License.
 package config
 
-import (
-	"reflect"
-	"testing"
-
-	"github.com/pkg/errors"
-	"github.com/vdaas/vald/internal/test/goleak"
-)
-
 // NOT IMPLEMENTED BELOW
-// 
+//
 // func TestIndexExporter_Bind(t *testing.T) {
 // 	type fields struct {
 // 		Gateway                         *GRPCClient
@@ -36,8 +28,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, *IndexExporter) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -70,7 +62,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -95,7 +87,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -118,12 +110,12 @@ import (
 // 				IndexPath:                       test.fields.IndexPath,
 // 				Concurrency:                     test.fields.Concurrency,
 // 			}
-// 
+//
 // 			got := e.Bind()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }

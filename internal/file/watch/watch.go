@@ -38,11 +38,11 @@ type Watcher interface {
 
 type watch struct {
 	// eg is an error group.
-	eg       errgroup.Group
+	eg errgroup.Group
 	// w is a fsnotify.Watcher.
-	w        *fsnotify.Watcher
+	w *fsnotify.Watcher
 	// dirs is a map of directories.
-	dirs     map[string]struct{}
+	dirs map[string]struct{}
 	// onChange is a function to call on change.
 	onChange func(ctx context.Context, name string) error
 	// onCreate is a function to call on create.
@@ -52,13 +52,13 @@ type watch struct {
 	// onDelete is a function to call on delete.
 	onDelete func(ctx context.Context, name string) error
 	// onWrite is a function to call on write.
-	onWrite  func(ctx context.Context, name string) error
+	onWrite func(ctx context.Context, name string) error
 	// onChmod is a function to call on chmod.
-	onChmod  func(ctx context.Context, name string) error
+	onChmod func(ctx context.Context, name string) error
 	// onError is a function to call on error.
-	onError  func(ctx context.Context, err error) error
+	onError func(ctx context.Context, err error) error
 	// mu is a sync.RWMutex.
-	mu       sync.RWMutex
+	mu sync.RWMutex
 }
 
 // New returns Watcher implementation.

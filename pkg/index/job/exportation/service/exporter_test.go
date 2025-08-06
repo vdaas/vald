@@ -13,21 +13,8 @@
 // limitations under the License.
 package service
 
-import (
-	"context"
-	"reflect"
-	"testing"
-	"time"
-
-	vc "github.com/vdaas/vald/internal/client/v1/client/vald"
-	"github.com/vdaas/vald/internal/db/kvs/pogreb"
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/sync/errgroup"
-	"github.com/vdaas/vald/internal/test/goleak"
-)
-
 // NOT IMPLEMENTED BELOW
-// 
+//
 // func TestNew(t *testing.T) {
 // 	type args struct {
 // 		opts []Option
@@ -38,8 +25,8 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, Exporter, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -71,7 +58,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -92,7 +79,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -108,16 +95,16 @@ import (
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 
+//
 // 			got, err := New(test.args.opts...)
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_export_StartClient(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
@@ -137,9 +124,9 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, <-chan error, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -180,7 +167,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -210,7 +197,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -235,16 +222,16 @@ import (
 // 				backgroundSyncInterval:       test.fields.backgroundSyncInterval,
 // 				backgroundCompactionInterval: test.fields.backgroundCompactionInterval,
 // 			}
-// 
+//
 // 			got, err := e.StartClient(test.args.ctx)
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_export_Start(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
@@ -263,9 +250,9 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -303,7 +290,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -333,7 +320,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -358,16 +345,16 @@ import (
 // 				backgroundSyncInterval:       test.fields.backgroundSyncInterval,
 // 				backgroundCompactionInterval: test.fields.backgroundCompactionInterval,
 // 			}
-// 
+//
 // 			err := e.Start(test.args.ctx)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_export_doExportIndex(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
@@ -386,9 +373,9 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -426,7 +413,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -456,7 +443,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -481,16 +468,16 @@ import (
 // 				backgroundSyncInterval:       test.fields.backgroundSyncInterval,
 // 				backgroundCompactionInterval: test.fields.backgroundCompactionInterval,
 // 			}
-// 
+//
 // 			err := e.doExportIndex(test.args.ctx)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }
-// 
+//
 // func Test_export_PreStop(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
@@ -509,9 +496,9 @@ import (
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -549,7 +536,7 @@ import (
 // 		       },
 // 		   },
 // 		*/
-// 
+//
 // 		// TODO test cases
 // 		/*
 // 		   func() test {
@@ -579,7 +566,7 @@ import (
 // 		   }(),
 // 		*/
 // 	}
-// 
+//
 // 	for _, tc := range tests {
 // 		test := tc
 // 		t.Run(test.name, func(tt *testing.T) {
@@ -604,12 +591,12 @@ import (
 // 				backgroundSyncInterval:       test.fields.backgroundSyncInterval,
 // 				backgroundCompactionInterval: test.fields.backgroundCompactionInterval,
 // 			}
-// 
+//
 // 			err := e.PreStop(test.args.ctx)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-// 
+//
 // 		})
 // 	}
 // }

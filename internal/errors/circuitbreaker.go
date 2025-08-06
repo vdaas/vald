@@ -20,20 +20,20 @@ var (
 	ErrCircuitBreakerOpenState = New("circuit breaker is open")
 )
 
-type ErrCircuitBreakerIgnorable struct {
+type CircuitBreakerIgnorableError struct {
 	err error
 }
 
-func NewErrCircuitBreakerIgnorable(err error) error {
+func NewCircuitBreakerIgnorableError(err error) error {
 	if err == nil {
 		return nil
 	}
-	return &ErrCircuitBreakerIgnorable{
+	return &CircuitBreakerIgnorableError{
 		err: err,
 	}
 }
 
-func (e *ErrCircuitBreakerIgnorable) Error() string {
+func (e *CircuitBreakerIgnorableError) Error() string {
 	var errstr string
 	if e.err != nil {
 		errstr = ": " + e.err.Error()
@@ -41,24 +41,24 @@ func (e *ErrCircuitBreakerIgnorable) Error() string {
 	return "circuit breaker ignorable error" + errstr
 }
 
-func (e *ErrCircuitBreakerIgnorable) Unwrap() error {
+func (e *CircuitBreakerIgnorableError) Unwrap() error {
 	return e.err
 }
 
-type ErrCircuitBreakerMarkWithSuccess struct {
+type CircuitBreakerMarkWithSuccessError struct {
 	err error
 }
 
-func NewErrCircuitBreakerMarkWithSuccess(err error) error {
+func NewCircuitBreakerMarkWithSuccessError(err error) error {
 	if err == nil {
 		return nil
 	}
-	return &ErrCircuitBreakerMarkWithSuccess{
+	return &CircuitBreakerMarkWithSuccessError{
 		err: err,
 	}
 }
 
-func (e *ErrCircuitBreakerMarkWithSuccess) Error() string {
+func (e *CircuitBreakerMarkWithSuccessError) Error() string {
 	var errstr string
 	if e.err != nil {
 		errstr = ": " + e.err.Error()
@@ -66,6 +66,6 @@ func (e *ErrCircuitBreakerMarkWithSuccess) Error() string {
 	return "circuit breaker mark with success" + errstr
 }
 
-func (e *ErrCircuitBreakerMarkWithSuccess) Unwrap() error {
+func (e *CircuitBreakerMarkWithSuccessError) Unwrap() error {
 	return e.err
 }

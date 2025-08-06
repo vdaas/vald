@@ -969,7 +969,7 @@ func Test_reader_getObject(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrBlobNoSuchBucket(awserr.New(s3.ErrCodeNoSuchBucket, "", nil), "vald"),
+				err:  errors.NewBlobNoSuchBucketError(awserr.New(s3.ErrCodeNoSuchBucket, "", nil), "vald"),
 			},
 		},
 
@@ -990,7 +990,7 @@ func Test_reader_getObject(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrBlobNoSuchKey(awserr.New(s3.ErrCodeNoSuchKey, "", nil), "vald"),
+				err:  errors.NewBlobNoSuchKeyError(awserr.New(s3.ErrCodeNoSuchKey, "", nil), "vald"),
 			},
 		},
 
@@ -1011,7 +1011,7 @@ func Test_reader_getObject(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.NewErrBlobInvalidChunkRange(awserr.New("InvalidRange", "", nil), "bytes=2-11"),
+				err:  errors.NewBlobInvalidChunkRangeError(awserr.New("InvalidRange", "", nil), "bytes=2-11"),
 			},
 		},
 

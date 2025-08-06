@@ -16,6 +16,7 @@ package pogreb
 import (
 	"context"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -347,7 +348,6 @@ func Test_db_Range(t *testing.T) {
 		afterFunc  func(*testing.T, DB, args)
 		name       string
 		args       args
-		ctx        context.Context
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -374,7 +374,6 @@ func Test_db_Range(t *testing.T) {
 						return true
 					},
 				},
-				ctx: t.Context(),
 				checkFunc: func(w want, err error) error {
 					if err := defaultCheckFunc(w, err); err != nil {
 						return err
@@ -402,8 +401,6 @@ func Test_db_Range(t *testing.T) {
 		}(),
 		func() test {
 			got := make(map[string][]byte)
-			ctx, cancel := context.WithCancel(t.Context())
-			cancel()
 			return test{
 				name: "Fails to get all keys when the context is canceled",
 				args: args{
@@ -416,7 +413,6 @@ func Test_db_Range(t *testing.T) {
 						return true
 					},
 				},
-				ctx: ctx,
 				checkFunc: func(w want, err error) error {
 					if err := defaultCheckFunc(w, err); err != nil {
 						return err
@@ -469,7 +465,14 @@ func Test_db_Range(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			err = d.Range(test.ctx, test.args.f)
+			ctx := t.Context()
+			if strings.Contains(test.name, "canceled") {
+				var cancel context.CancelFunc
+				ctx, cancel = context.WithCancel(ctx)
+				cancel()
+			}
+
+			err = d.Range(ctx, test.args.f)
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -597,9 +600,9 @@ func Test_db_Len(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -705,9 +708,9 @@ func Test_db_Len(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)

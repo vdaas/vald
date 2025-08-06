@@ -22,7 +22,7 @@ package circuitbreaker
 // 	type test struct {
 // 		name       string
 // 		s          State
-// 		want       want
+// 		want
 // 		checkFunc  func(want, string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

@@ -58,25 +58,25 @@ type (
 
 	usearch struct {
 		// index struct
-		index            *core.Index
+		index *core.Index
 		// mutex
-		mu               *sync.RWMutex
+		mu *sync.RWMutex
 		// index path
-		idxPath          string
+		idxPath string
 		// dimension
-		dimension        uint
+		dimension uint
 		// connectivity
-		connectivity     uint
+		connectivity uint
 		// expansion add
-		expansionAdd     uint
+		expansionAdd uint
 		// expansion search
-		expansionSearch  uint
+		expansionSearch uint
 		// quantization type
 		quantizationType core.Quantization
 		// metric type
-		metricType       core.Metric
+		metricType core.Metric
 		// multi
-		multi            bool
+		multi bool
 	}
 )
 

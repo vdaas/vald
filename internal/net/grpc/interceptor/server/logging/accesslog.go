@@ -39,26 +39,26 @@ const (
 
 type AccessLogEntity struct {
 	// Error is an error.
-	Error     error                `json:"error,omitempty"     yaml:"error"`
+	Error error `json:"error,omitempty"     yaml:"error"`
 	// GRPC is a gRPC entity.
-	GRPC      *AccessLogGRPCEntity `json:"grpc,omitempty"      yaml:"grpc"`
+	GRPC *AccessLogGRPCEntity `json:"grpc,omitempty"      yaml:"grpc"`
 	// TraceID is a trace ID.
-	TraceID   string               `json:"traceID,omitempty"   yaml:"traceID"`
+	TraceID string `json:"traceID,omitempty"   yaml:"traceID"`
 	// StartTime is a start time.
-	StartTime int64                `json:"startTime,omitempty" yaml:"startTime"`
+	StartTime int64 `json:"startTime,omitempty" yaml:"startTime"`
 	// EndTime is an end time.
-	EndTime   int64                `json:"endTime,omitempty"   yaml:"endTime"`
+	EndTime int64 `json:"endTime,omitempty"   yaml:"endTime"`
 	// Latency is a latency.
-	Latency   int64                `json:"latency,omitempty"   yaml:"latency"`
+	Latency int64 `json:"latency,omitempty"   yaml:"latency"`
 }
 
 type AccessLogGRPCEntity struct {
 	// Kind is a kind.
-	Kind    string `json:"kind,omitempty"    yaml:"kind"`
+	Kind string `json:"kind,omitempty"    yaml:"kind"`
 	// Service is a service.
 	Service string `json:"service,omitempty" yaml:"service"`
 	// Method is a method.
-	Method  string `json:"method,omitempty"  yaml:"method"`
+	Method string `json:"method,omitempty"  yaml:"method"`
 }
 
 func (e AccessLogEntity) String() (str string) {

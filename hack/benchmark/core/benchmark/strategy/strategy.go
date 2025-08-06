@@ -30,11 +30,11 @@ import (
 
 type strategy struct {
 	// 32-bit algorithm core.
-	core32    algorithm.Bit32
+	core32 algorithm.Bit32
 	// 64-bit algorithm core.
-	core64    algorithm.Bit64
+	core64 algorithm.Bit64
 	// Closer for the algorithm core.
-	closer    algorithm.Closer
+	closer algorithm.Closer
 	// Initialization function for the 32-bit algorithm core.
 	initBit32 func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
 	// Initialization function for the 64-bit algorithm core.
@@ -44,15 +44,15 @@ type strategy struct {
 	// Pre-property function for the 64-bit algorithm core.
 	preProp64 func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
 	// Property function for the 32-bit algorithm core.
-	prop32    func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (any, error)
+	prop32 func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (any, error)
 	// Property function for the 64-bit algorithm core.
-	prop64    func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (any, error)
+	prop64 func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (any, error)
 	// Name of the property.
-	propName  string
+	propName string
 	// Algorithm mode.
-	mode      algorithm.Mode
+	mode algorithm.Mode
 	// Whether to run in parallel.
-	parallel  bool
+	parallel bool
 }
 
 func newStrategy(opts ...StrategyOption) benchmark.Strategy {

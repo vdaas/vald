@@ -42,22 +42,39 @@ import (
 
 type server struct {
 	vald.UnimplementedValdServerWithFilter
-	ingress           ingress.Client
-	egress            egress.Client
-	gateway           client.Client
-	eg                errgroup.Group
-	Vectorizer        string
+	// ingress client.
+	ingress ingress.Client
+	// egress client.
+	egress egress.Client
+	// gateway client.
+	gateway client.Client
+	// error group for managing goroutines.
+	eg errgroup.Group
+	// Vectorizer is a vectorizer.
+	Vectorizer string
+	// defaultVectorizer is a default vectorizer.
 	defaultVectorizer string
-	name              string
-	ip                string
-	copts             []grpc.CallOption
-	DistanceFilters   []string
-	ObjectFilters     []string
-	SearchFilters     []string
-	InsertFilters     []string
-	UpdateFilters     []string
-	UpsertFilters     []string
-	defaultFilters    []string
+	// name is a name.
+	name string
+	// ip is an IP address.
+	ip string
+	// copts is a list of call options.
+	copts []grpc.CallOption
+	// DistanceFilters is a list of distance filters.
+	DistanceFilters []string
+	// ObjectFilters is a list of object filters.
+	ObjectFilters []string
+	// SearchFilters is a list of search filters.
+	SearchFilters []string
+	// InsertFilters is a list of insert filters.
+	InsertFilters []string
+	// UpdateFilters is a list of update filters.
+	UpdateFilters []string
+	// UpsertFilters is a list of upsert filters.
+	UpsertFilters []string
+	// defaultFilters is a list of default filters.
+	defaultFilters []string
+	// streamConcurrency is a stream concurrency.
 	streamConcurrency int
 }
 

@@ -36,7 +36,7 @@ type Client interface {
 
 type client struct {
 	// gRPC client.
-	c     grpc.Client
+	c grpc.Client
 	// List of addresses.
 	addrs []string
 }

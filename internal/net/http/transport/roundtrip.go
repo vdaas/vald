@@ -54,7 +54,7 @@ func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
 		return e.doRoundTrip(req)
 	}
 	_, err = e.bo.Do(req.Context(), func(ctx context.Context) (any, bool, error) {
-		r, err := e.doRoundTrip(req)
+		r, err := e.doRoundTrip(req) //nolint:bodyclose
 		// FIX: Do not close the response body here, the caller is responsible for it.
 		if err != nil {
 			return nil, errors.Is(err, errors.ErrTransportRetryable), err

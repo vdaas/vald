@@ -31,7 +31,7 @@ import (
 
 type timeout struct {
 	// eg is an error group.
-	eg  errgroup.Group
+	eg errgroup.Group
 	// dur is a duration.
 	dur time.Duration
 }

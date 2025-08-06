@@ -12703,8 +12703,7 @@ func (m *Search_Request) UnmarshalVT(dAtA []byte) error {
 				if postIndex > l {
 					return io.ErrUnexpectedEOF
 				}
-				var elementCount int
-				elementCount = packedLen / 4
+				elementCount := packedLen / 4
 				if elementCount != 0 && len(m.Vector) == 0 {
 					m.Vector = make([]float32, 0, elementCount)
 				}
@@ -17607,8 +17606,7 @@ func (m *Object_Vector) UnmarshalVT(dAtA []byte) error {
 				if postIndex > l {
 					return io.ErrUnexpectedEOF
 				}
-				var elementCount int
-				elementCount = packedLen / 4
+				elementCount := packedLen / 4
 				if elementCount != 0 && len(m.Vector) == 0 {
 					m.Vector = make([]float32, 0, elementCount)
 				}

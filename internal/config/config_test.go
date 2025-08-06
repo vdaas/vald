@@ -1456,8 +1456,14 @@ func TestMerge(t *testing.T) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotDst, w.wantDst) {
-			gb, _ := json.Marshal(gotDst)
-			wb, _ := json.Marshal(w.wantDst)
+			gb, err := json.Marshal(gotDst)
+			if err != nil {
+				return err
+			}
+			wb, err := json.Marshal(w.wantDst)
+			if err != nil {
+				return err
+			}
 			return errors.Errorf("got:  \"%s\",\n\t\t\t\twant: \"%s\"", string(gb), string(wb))
 		}
 		return nil

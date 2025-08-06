@@ -93,7 +93,7 @@ func (c *agentClient) CreateAndSaveIndex(
 
 // AgentServer is the server API for Agent service.
 // All implementations must embed UnimplementedAgentServer
-// for forward compatibility
+// for forward compatibility.
 type AgentServer interface {
 	// Represent the creating index RPC.
 	CreateIndex(context.Context, *payload.Control_CreateIndexRequest) (*payload.Empty, error)
@@ -197,7 +197,7 @@ func _Agent_CreateAndSaveIndex_Handler(
 
 // Agent_ServiceDesc is the grpc.ServiceDesc for Agent service.
 // It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
+// and not to be introspected or modified (even as a copy).
 var Agent_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "core.v1.Agent",
 	HandlerType: (*AgentServer)(nil),

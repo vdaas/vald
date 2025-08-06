@@ -50,13 +50,13 @@ type Modifier interface {
 // and precomputes a noise table using a fast Gaussian generator. These values remain constant as long as the dataset is unchanged.
 type noiseGenerator struct {
 	// noiseTable is a precomputed noise table.
-	noiseTable               []float32
+	noiseTable []float32
 	// noiseTableDivisionFactor is a division factor for computing the noise table size.
 	noiseTableDivisionFactor uint64
 	// minNoiseTableSize is a minimum allowed size for the noise table.
-	minNoiseTableSize        uint64
+	minNoiseTableSize uint64
 	// noiseLevelFactor is a fraction of the average standard deviation used as noise level.
-	noiseLevelFactor         float32
+	noiseLevelFactor float32
 }
 
 // New constructs a new noiseGenerator instance using the Functional Option Pattern.

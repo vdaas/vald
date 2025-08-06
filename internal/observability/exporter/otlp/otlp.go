@@ -67,7 +67,7 @@ func New(opts ...Option) (exporter.Exporter, error) {
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(e); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := &errors.ErrCriticalOption{}
+			e := &errors.CriticalOptionError{}
 			if errors.As(err, &e) {
 				log.Error(oerr)
 				return nil, oerr

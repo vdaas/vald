@@ -36,15 +36,10 @@ type Server interface {
 type server struct {
 	agent.UnimplementedAgentServer
 	vald.UnimplementedValdServer
-	// faiss is a service.Faiss.
 	faiss             service.Faiss
-	// eg is an error group.
 	eg                errgroup.Group
-	// name is a name.
 	name              string
-	// ip is an IP address.
 	ip                string
-	// streamConcurrency is a stream concurrency.
 	streamConcurrency int
 }
 
@@ -62,8 +57,8 @@ func New(opts ...Option) (Server, error) {
 		if err := opt(s); err != nil {
 			werr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 
-			e := new(errors.ErrCriticalOption)
-			if errors.As(err, &e) {
+			var cerr *errors.CriticalOptionError
+			if errors.As(werr, &cerr) {
 				log.Error(werr)
 				return nil, werr
 			}

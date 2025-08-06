@@ -23,7 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-func TestNewErrBlobNoSuchBucket(t *testing.T) {
+func TestNewBlobNoSuchBucketError(t *testing.T) {
 	type args struct {
 		err  error
 		name string
@@ -89,7 +89,7 @@ func TestNewErrBlobNoSuchBucket(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := NewErrBlobNoSuchBucket(test.args.err, test.args.name)
+			got := NewBlobNoSuchBucketError(test.args.err, test.args.name)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -97,7 +97,7 @@ func TestNewErrBlobNoSuchBucket(t *testing.T) {
 	}
 }
 
-func TestNewErrBlobNoSuchKey(t *testing.T) {
+func TestNewBlobNoSuchKeyError(t *testing.T) {
 	type args struct {
 		err error
 		key string
@@ -163,7 +163,7 @@ func TestNewErrBlobNoSuchKey(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := NewErrBlobNoSuchKey(test.args.err, test.args.key)
+			got := NewBlobNoSuchKeyError(test.args.err, test.args.key)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -171,7 +171,7 @@ func TestNewErrBlobNoSuchKey(t *testing.T) {
 	}
 }
 
-func TestErrBlobNoSuchBucket_Error(t *testing.T) {
+func TestBlobNoSuchBucketError_Error(t *testing.T) {
 	type fields struct {
 		err error
 	}
@@ -218,7 +218,7 @@ func TestErrBlobNoSuchBucket_Error(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &ErrBlobNoSuchBucket{
+			e := &BlobNoSuchBucketError{
 				err: test.fields.err,
 			}
 
@@ -230,7 +230,7 @@ func TestErrBlobNoSuchBucket_Error(t *testing.T) {
 	}
 }
 
-func TestIsErrBlobNoSuchBucket(t *testing.T) {
+func TestIsBlobNoSuchBucket(t *testing.T) {
 	type args struct {
 		err error
 	}
@@ -253,18 +253,18 @@ func TestIsErrBlobNoSuchBucket(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns true when the error is ErrBlobNoSuchBucket",
+			name: "returns true when the error is BlobNoSuchBucketError",
 			args: args{
-				err: &ErrBlobNoSuchBucket{New("no such bucket err")},
+				err: &BlobNoSuchBucketError{New("no such bucket err")},
 			},
 			want: want{
 				want: true,
 			},
 		},
 		{
-			name: "returns false when the error is not ErrBlobNoSuchBucket",
+			name: "returns false when the error is not BlobNoSuchBucketError",
 			args: args{
-				err: &ErrBlobNoSuchKey{New("no such key err")},
+				err: &BlobNoSuchKeyError{New("no such key err")},
 			},
 			want: want{
 				want: false,
@@ -304,7 +304,7 @@ func TestIsErrBlobNoSuchBucket(t *testing.T) {
 	}
 }
 
-func TestErrBlobNoSuchKey_Error(t *testing.T) {
+func TestBlobNoSuchKeyError_Error(t *testing.T) {
 	type fields struct {
 		err error
 	}
@@ -351,7 +351,7 @@ func TestErrBlobNoSuchKey_Error(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &ErrBlobNoSuchKey{
+			e := &BlobNoSuchKeyError{
 				err: test.fields.err,
 			}
 
@@ -363,7 +363,7 @@ func TestErrBlobNoSuchKey_Error(t *testing.T) {
 	}
 }
 
-func TestIsErrBlobNoSuchKey(t *testing.T) {
+func TestIsBlobNoSuchKey(t *testing.T) {
 	type args struct {
 		err error
 	}
@@ -386,18 +386,18 @@ func TestIsErrBlobNoSuchKey(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "returns true when the error is ErrBlobNoSuchKey",
+			name: "returns true when the error is BlobNoSuchKeyError",
 			args: args{
-				err: &ErrBlobNoSuchKey{New("no such key err")},
+				err: &BlobNoSuchKeyError{New("no such key err")},
 			},
 			want: want{
 				want: true,
 			},
 		},
 		{
-			name: "returns false when the error is not ErrBlobNoSuchKey",
+			name: "returns false when the error is not BlobNoSuchKeyError",
 			args: args{
-				err: &ErrBlobNoSuchBucket{New("no such bucket err")},
+				err: &BlobNoSuchBucketError{New("no such bucket err")},
 			},
 			want: want{
 				want: false,
@@ -437,7 +437,7 @@ func TestIsErrBlobNoSuchKey(t *testing.T) {
 	}
 }
 
-func TestErrBlobNoSuchBucket_Unwrap(t *testing.T) {
+func TestBlobNoSuchBucketError_Unwrap(t *testing.T) {
 	type fields struct {
 		err error
 	}
@@ -496,7 +496,7 @@ func TestErrBlobNoSuchBucket_Unwrap(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &ErrBlobNoSuchBucket{
+			e := &BlobNoSuchBucketError{
 				err: test.fields.err,
 			}
 
@@ -508,7 +508,7 @@ func TestErrBlobNoSuchBucket_Unwrap(t *testing.T) {
 	}
 }
 
-func TestErrBlobNoSuchKey_Unwrap(t *testing.T) {
+func TestBlobNoSuchKeyError_Unwrap(t *testing.T) {
 	type fields struct {
 		err error
 	}
@@ -567,7 +567,7 @@ func TestErrBlobNoSuchKey_Unwrap(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &ErrBlobNoSuchKey{
+			e := &BlobNoSuchKeyError{
 				err: test.fields.err,
 			}
 
@@ -590,8 +590,8 @@ func TestErrBlobNoSuchKey_Unwrap(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -678,8 +678,8 @@ func TestErrBlobNoSuchKey_Unwrap(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

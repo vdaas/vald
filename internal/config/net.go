@@ -25,27 +25,27 @@ import (
 // Net represents the network configuration tcp, udp, unix domain socket.
 type Net struct {
 	// DNS represents the configuration for resolving DNS.
-	DNS          *DNS          `json:"dns,omitempty"           yaml:"dns"`
+	DNS *DNS `json:"dns,omitempty"           yaml:"dns"`
 	// Dialer represents the configuration for dial.
-	Dialer       *Dialer       `json:"dialer,omitempty"        yaml:"dialer"`
+	Dialer *Dialer `json:"dialer,omitempty"        yaml:"dialer"`
 	// SocketOption represents the socket configurations.
 	SocketOption *SocketOption `json:"socket_option,omitempty" yaml:"socket_option"`
 	// TLS represents the TLS configurations.
-	TLS          *TLS          `json:"tls,omitempty"           yaml:"tls"`
+	TLS *TLS `json:"tls,omitempty"           yaml:"tls"`
 	// Network represents the network type.
-	Network      string        `json:"network,omitempty"       yaml:"network"`
+	Network string `json:"network,omitempty"       yaml:"network"`
 }
 
 // Dialer represents the configuration for dial.
 type Dialer struct {
 	// Timeout represents the timeout for dial.
-	Timeout          string `json:"timeout,omitempty"            yaml:"timeout"`
+	Timeout string `json:"timeout,omitempty"            yaml:"timeout"`
 	// Keepalive represents the keepalive for dial.
-	Keepalive        string `json:"keepalive,omitempty"          yaml:"keepalive"`
+	Keepalive string `json:"keepalive,omitempty"          yaml:"keepalive"`
 	// FallbackDelay represents the fallback delay for dial.
-	FallbackDelay    string `json:"fallback_delay,omitempty"     yaml:"fallback_delay"`
+	FallbackDelay string `json:"fallback_delay,omitempty"     yaml:"fallback_delay"`
 	// DualStackEnabled represents whether to enable dual stack for dial.
-	DualStackEnabled bool   `json:"dual_stack_enabled,omitempty" yaml:"dual_stack_enabled"`
+	DualStackEnabled bool `json:"dual_stack_enabled,omitempty" yaml:"dual_stack_enabled"`
 }
 
 // DNS represents the configuration for resolving DNS.
@@ -55,27 +55,27 @@ type DNS struct {
 	// CacheExpiration represents the cache expiration for DNS.
 	CacheExpiration string `json:"cache_expiration,omitempty" yaml:"cache_expiration"`
 	// CacheEnabled represents whether to enable cache for DNS.
-	CacheEnabled    bool   `json:"cache_enabled,omitempty"    yaml:"cache_enabled"`
+	CacheEnabled bool `json:"cache_enabled,omitempty"    yaml:"cache_enabled"`
 }
 
 // SocketOption represents the socket configurations.
 type SocketOption struct {
 	// ReusePort represents whether to reuse port.
-	ReusePort                bool `json:"reuse_port,omitempty"                  yaml:"reuse_port"`
+	ReusePort bool `json:"reuse_port,omitempty"                  yaml:"reuse_port"`
 	// ReuseAddr represents whether to reuse address.
-	ReuseAddr                bool `json:"reuse_addr,omitempty"                  yaml:"reuse_addr"`
+	ReuseAddr bool `json:"reuse_addr,omitempty"                  yaml:"reuse_addr"`
 	// TCPFastOpen represents whether to enable TCP fast open.
-	TCPFastOpen              bool `json:"tcp_fast_open,omitempty"               yaml:"tcp_fast_open"`
+	TCPFastOpen bool `json:"tcp_fast_open,omitempty"               yaml:"tcp_fast_open"`
 	// TCPNoDelay represents whether to enable TCP no delay.
-	TCPNoDelay               bool `json:"tcp_no_delay,omitempty"                yaml:"tcp_no_delay"`
+	TCPNoDelay bool `json:"tcp_no_delay,omitempty"                yaml:"tcp_no_delay"`
 	// TCPCork represents whether to enable TCP cork.
-	TCPCork                  bool `json:"tcp_cork,omitempty"                    yaml:"tcp_cork"`
+	TCPCork bool `json:"tcp_cork,omitempty"                    yaml:"tcp_cork"`
 	// TCPQuickAck represents whether to enable TCP quick ack.
-	TCPQuickAck              bool `json:"tcp_quick_ack,omitempty"               yaml:"tcp_quick_ack"`
+	TCPQuickAck bool `json:"tcp_quick_ack,omitempty"               yaml:"tcp_quick_ack"`
 	// TCPDeferAccept represents whether to enable TCP defer accept.
-	TCPDeferAccept           bool `json:"tcp_defer_accept,omitempty"            yaml:"tcp_defer_accept"`
+	TCPDeferAccept bool `json:"tcp_defer_accept,omitempty"            yaml:"tcp_defer_accept"`
 	// IPTransparent represents whether to enable IP transparent.
-	IPTransparent            bool `json:"ip_transparent,omitempty"              yaml:"ip_transparent"`
+	IPTransparent bool `json:"ip_transparent,omitempty"              yaml:"ip_transparent"`
 	// IPRecoverDestinationAddr represents whether to recover destination address.
 	IPRecoverDestinationAddr bool `json:"ip_recover_destination_addr,omitempty" yaml:"ip_recover_destination_addr"`
 }

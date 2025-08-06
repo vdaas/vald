@@ -26,8 +26,8 @@ package noise
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, Modifier) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -118,8 +118,8 @@ package noise
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, Func) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

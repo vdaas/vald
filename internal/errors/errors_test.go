@@ -1319,11 +1319,11 @@ type interErr struct {
 	msg string
 }
 
-type uncomparableErr struct {
+type UncomparableError struct {
 	err []interErr
 }
 
-func (err uncomparableErr) Error() string {
+func (err UncomparableError) Error() string {
 	str := ""
 	for _, e := range err.err {
 		str += e.msg
@@ -1331,27 +1331,27 @@ func (err uncomparableErr) Error() string {
 	return fmt.Sprint(str)
 }
 
-type wrapErr struct {
+type WrapError struct {
 	err error
 }
 
-func (err wrapErr) Error() string {
+func (err WrapError) Error() string {
 	return err.err.Error()
 }
 
-func (err wrapErr) Unwrap() error {
+func (err WrapError) Unwrap() error {
 	return err.err
 }
 
-type isErr struct {
+type IsError struct {
 	err error
 }
 
-func (err isErr) Error() string {
+func (err IsError) Error() string {
 	return err.err.Error()
 }
 
-func (err isErr) Is(e error) bool {
+func (err IsError) Is(e error) bool {
 	return err.err.Error() == e.Error()
 }
 
@@ -1415,7 +1415,7 @@ func TestIs(t *testing.T) {
 			name: "return true when err is comparable error and target is uncomparable error and both err msg is same.",
 			args: args{
 				err: New("err is occurred"),
-				target: uncomparableErr{
+				target: UncomparableError{
 					[]interErr{
 						{
 							msg: "err is occurred",
@@ -1431,7 +1431,7 @@ func TestIs(t *testing.T) {
 			name: "return false when err is comparable error and target is uncomparable error and both err msg is not same.",
 			args: args{
 				err: New("err is occurred"),
-				target: uncomparableErr{
+				target: UncomparableError{
 					[]interErr{
 						{
 							msg: "invalid parameter",
@@ -1444,10 +1444,10 @@ func TestIs(t *testing.T) {
 		{
 			name: "return true when err is wrapped comparable error and target is uncomparable error and err.err.Error() and target msg are same.",
 			args: args{
-				err: wrapErr{
+				err: WrapError{
 					err: New("invalid parameter"),
 				},
-				target: uncomparableErr{
+				target: UncomparableError{
 					[]interErr{
 						{
 							msg: "invalid parameter",
@@ -1462,10 +1462,10 @@ func TestIs(t *testing.T) {
 		{
 			name: "return false when err is wrapped comparable error and target is uncomparable error and err.err.Error() and target msg are not same.",
 			args: args{
-				err: wrapErr{
+				err: WrapError{
 					err: New("err is occurred"),
 				},
-				target: uncomparableErr{
+				target: UncomparableError{
 					[]interErr{
 						{
 							msg: "invalid parameter",
@@ -1478,20 +1478,20 @@ func TestIs(t *testing.T) {
 		{
 			name: "return false when err is comparable error with Is() implemented and target is uncomparable error and target msg is empty.",
 			args: args{
-				err: isErr{
+				err: IsError{
 					err: New("err is occurred"),
 				},
-				target: uncomparableErr{},
+				target: UncomparableError{},
 			},
 			want: want{},
 		},
 		{
 			name: "return true when err is comparable error with Is() implemented and target is uncomparable error and target msg is not empty.",
 			args: args{
-				err: isErr{
+				err: IsError{
 					err: New("err is occurred"),
 				},
-				target: uncomparableErr{
+				target: UncomparableError{
 					[]interErr{
 						{
 							msg: "err is occurred",
@@ -1744,8 +1744,8 @@ func TestJoin(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, bool) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -1832,8 +1832,8 @@ func TestJoin(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, bool) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -1920,8 +1920,8 @@ func TestJoin(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, bool) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -2007,8 +2007,8 @@ func TestJoin(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -2092,8 +2092,8 @@ func TestJoin(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -2180,8 +2180,8 @@ func TestJoin(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, string) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -2268,8 +2268,8 @@ func TestJoin(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, []error) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)

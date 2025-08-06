@@ -48,15 +48,15 @@ type BenchmarkJobTpl interface {
 
 type benchmarkJobTpl struct {
 	// jobTpl is a k8s.Job.
-	jobTpl             k8s.Job
+	jobTpl k8s.Job
 	// containerName is a container name.
-	containerName      string
+	containerName string
 	// containerImageName is a container image name.
 	containerImageName string
 	// configMapName is a config map name.
-	configMapName      string
+	configMapName string
 	// imagePullPolicy is an image pull policy.
-	imagePullPolicy    ImagePullPolicy
+	imagePullPolicy ImagePullPolicy
 }
 
 func NewBenchmarkJob(opts ...BenchmarkJobTplOption) (BenchmarkJobTpl, error) {

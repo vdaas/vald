@@ -20,10 +20,10 @@ package errgroup
 import (
 	"context"
 	"runtime"
-	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/semaphore"
 )
 
@@ -43,21 +43,21 @@ type Group interface {
 // group is the concrete implementation of Group.
 type group struct {
 	// egctx is a context.Context.
-	egctx      context.Context
+	egctx context.Context
 	// cancel is a context.CancelCauseFunc.
-	cancel     context.CancelCauseFunc
+	cancel context.CancelCauseFunc
 	// sem is a semaphore.Weighted.
-	sem        *semaphore.Weighted
+	sem *semaphore.Weighted
 	// emap is a map of error messages.
-	emap       map[string]struct{}
+	emap map[string]struct{}
 	// errs is a list of errors.
-	errs       []error
+	errs []error
 	// wg is a sync.WaitGroup.
-	wg         sync.WaitGroup
+	wg sync.WaitGroup
 	// limit is a limit.
-	limit      atomic.Int64
+	limit atomic.Int64
 	// mu is a sync.RWMutex.
-	mu         sync.RWMutex
+	mu sync.RWMutex
 	// cancelOnce is a sync.Once.
 	cancelOnce sync.Once
 }

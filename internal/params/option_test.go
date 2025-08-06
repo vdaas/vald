@@ -60,9 +60,9 @@ func TestWithConfigFilePathKeys(t *testing.T) {
 				obj: &T{
 					// FIX: field order corrected to match parser.filePath struct.
 					filePath: struct {
-						keys        []string
 						defaultPath string
 						description string
+						keys        []string
 					}{
 						keys: []string{
 							"key1",
@@ -132,9 +132,9 @@ func TestWithConfigFilePathDefault(t *testing.T) {
 				obj: &T{
 					// FIX: field order corrected to match parser.filePath struct.
 					filePath: struct {
-						keys        []string
 						defaultPath string
 						description string
+						keys        []string
 					}{
 						defaultPath: "path",
 					},
@@ -202,9 +202,9 @@ func TestWithConfigFileDescription(t *testing.T) {
 				obj: &T{
 					// FIX: field order corrected to match parser.filePath struct.
 					filePath: struct {
-						keys        []string
 						defaultPath string
 						description string
+						keys        []string
 					}{
 						description: "desc",
 					},
@@ -274,9 +274,9 @@ func TestWithVersionKeys(t *testing.T) {
 				obj: &T{
 					// FIX: field order corrected to match parser.version struct.
 					version: struct {
+						description string
 						keys        []string
 						defaultFlag bool
-						description string
 					}{
 						keys: []string{
 							"key1",
@@ -346,9 +346,9 @@ func TestWithVersionFlagDefault(t *testing.T) {
 				obj: &T{
 					// FIX: field order corrected to match parser.version struct.
 					version: struct {
+						description string
 						keys        []string
 						defaultFlag bool
-						description string
 					}{
 						defaultFlag: true,
 					},
@@ -416,9 +416,9 @@ func TestWithVersionDescription(t *testing.T) {
 				obj: &T{
 					// FIX: field order corrected to match parser.version struct.
 					version: struct {
+						description string
 						keys        []string
 						defaultFlag bool
-						description string
 					}{
 						description: "desc",
 					},
@@ -463,8 +463,8 @@ func TestWithVersionDescription(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, Option) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -548,8 +548,8 @@ func TestWithVersionDescription(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, Option) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -633,8 +633,8 @@ func TestWithVersionDescription(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, Option) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)

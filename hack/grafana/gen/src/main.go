@@ -209,7 +209,7 @@ func main() {
 		// Maintainer of the project.
 		Maintainer string
 		// Current year.
-		Year       int
+		Year int
 	}{
 		Year:       time.Now().Year(),
 		Maintainer: maintainer,

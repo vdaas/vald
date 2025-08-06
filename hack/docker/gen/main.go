@@ -296,20 +296,20 @@ ENTRYPOINT ["{{.BinDir}}/{{.AppName}}"]
 type (
 	Workflow struct {
 		// Jobs to run.
-		Jobs Jobs   `yaml:"jobs"`
+		Jobs Jobs `yaml:"jobs"`
 		// Name of the workflow.
 		Name string `yaml:"name"`
 		// Events that trigger the workflow.
-		On   On     `yaml:"on"`
+		On On `yaml:"on"`
 	}
 
 	On struct {
 		// Schedule to run the workflow.
-		Schedule          Schedule    `yaml:"schedule,omitempty"`
+		Schedule Schedule `yaml:"schedule,omitempty"`
 		// Push event.
-		Push              Push        `yaml:"push"`
+		Push Push `yaml:"push"`
 		// Pull request event.
-		PullRequest       PullRequest `yaml:"pull_request"`
+		PullRequest PullRequest `yaml:"pull_request"`
 		// Pull request target event.
 		PullRequestTarget PullRequest `yaml:"pull_request_target"`
 	}
@@ -323,7 +323,7 @@ type (
 		// Branches to trigger the workflow.
 		Branches []string `yaml:"branches"`
 		// Tags to trigger the workflow.
-		Tags     []string `yaml:"tags"`
+		Tags []string `yaml:"tags"`
 	}
 
 	PullRequest struct {
@@ -340,16 +340,16 @@ type (
 
 	Build struct {
 		// Action to use.
-		Uses    string `yaml:"uses"`
+		Uses string `yaml:"uses"`
 		// Parameters for the action.
-		With    With   `yaml:"with"`
+		With With `yaml:"with"`
 		// Secrets to use.
 		Secrets string `yaml:"secrets"`
 	}
 
 	With struct {
 		// Target to build.
-		Target    string `yaml:"target"`
+		Target string `yaml:"target"`
 		// Platforms to build for.
 		Platforms string `yaml:"platforms,omitempty"`
 	}
@@ -359,65 +359,65 @@ type (
 
 	Data struct {
 		// Build arguments.
-		Arguments         map[string]string
+		Arguments map[string]string
 		// Environment variables.
-		Environments      map[string]string
+		Environments map[string]string
 		// Root directory.
-		RootDir           string
+		RootDir string
 		// Build platforms.
-		BuildPlatforms    string
+		BuildPlatforms string
 		// Application name.
-		AppName           string
+		AppName string
 		// Binary directory.
-		BinDir            string
+		BinDir string
 		// Runtime tag.
-		RuntimeTag        string
+		RuntimeTag string
 		// Build stage name.
-		BuildStageName    string
+		BuildStageName string
 		// Build user.
-		BuildUser         string
+		BuildUser string
 		// Builder image.
-		BuilderImage      string
+		BuilderImage string
 		// Builder tag.
-		BuilderTag        string
+		BuilderTag string
 		// Maintainer.
-		Maintainer        string
+		Maintainer string
 		// Name.
-		Name              string
+		Name string
 		// Package directory.
-		PackageDir        string
+		PackageDir string
 		// Runtime image.
-		RuntimeImage      string
+		RuntimeImage string
 		// Runtime user.
-		RuntimeUser       string
+		RuntimeUser string
 		// Preprocess commands.
-		Preprocess        []string
+		Preprocess []string
 		// Extra images.
-		ExtraImages       []string
+		ExtraImages []string
 		// Stage files.
-		StageFiles        []string
+		StageFiles []string
 		// Run mounts.
-		RunMounts         []string
+		RunMounts []string
 		// Entrypoints.
-		Entrypoints       []string
+		Entrypoints []string
 		// Slice of environment variables.
 		EnvironmentsSlice []string
 		// Extra copies.
-		ExtraCopies       []string
+		ExtraCopies []string
 		// Run commands.
-		RunCommands       []string
+		RunCommands []string
 		// Extra packages.
-		ExtraPackages     []string
+		ExtraPackages []string
 		// Pull request paths.
-		PullRequestPaths  []string
+		PullRequestPaths []string
 		// Container type.
-		ContainerType     ContainerType
+		ContainerType ContainerType
 		// Year.
-		Year              int
+		Year int
 		// Whether to alias the image.
-		AliasImage        bool
+		AliasImage bool
 		// Whether the config exists.
-		ConfigExists      bool
+		ConfigExists bool
 	}
 	ContainerType int
 )
@@ -984,6 +984,7 @@ func main() {
 					rustProtoPath,
 					rustVersionPath,
 				)
+			default:
 			}
 			if strings.EqualFold(data.Name, agentFaiss) || data.ContainerType == Rust {
 				data.PullRequestPaths = append(data.PullRequestPaths, faissVersionPath)

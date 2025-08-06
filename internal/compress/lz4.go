@@ -27,9 +27,9 @@ import (
 
 type lz4Compressor struct {
 	// Gob compressor.
-	gobc             Compressor
+	gobc Compressor
 	// Lz4 implementation.
-	lz4              lz4.LZ4
+	lz4 lz4.LZ4
 	// Compression level.
 	compressionLevel int
 }

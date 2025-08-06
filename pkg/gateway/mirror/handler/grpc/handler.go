@@ -44,19 +44,12 @@ type Server interface {
 type server struct {
 	vald.UnimplementedValdServer
 	mirror.UnimplementedMirrorServer
-	// error group for managing goroutines.
-	eg errgroup.Group
-	// gateway service object.
-	gateway service.Gateway
-	// mirror service object.
-	mirror service.Mirror
-	// Vald address.
-	vAddr string
-	// gateway name.
-	name string
-	// gateway IP address.
-	ip string
-	// stream concurrency.
+	eg                errgroup.Group
+	gateway           service.Gateway
+	mirror            service.Mirror
+	vAddr             string
+	name              string
+	ip                string
 	streamConcurrency int
 }
 
@@ -68,8 +61,8 @@ func New(opts ...Option) (Server, error) {
 	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(s); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-			e := &errors.ErrCriticalOption{}
-			if errors.As(err, &e) {
+			var cerr *errors.CriticalOptionError
+			if errors.As(oerr, &cerr) {
 				log.Error(oerr)
 				return nil, oerr
 			}

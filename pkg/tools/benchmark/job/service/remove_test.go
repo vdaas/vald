@@ -38,7 +38,7 @@ package service
 // 		beforeJobNamespace string
 // 		beforeJobName      string
 // 		beforeJobDur       time.Duration
-// 		jobType            jobType
+// 		jobType
 // 		rps                int
 // 		concurrencyLimit   int
 // 		timeout            time.Duration
@@ -49,9 +49,9 @@ package service
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
