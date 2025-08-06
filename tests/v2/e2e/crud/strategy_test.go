@@ -224,18 +224,18 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 					config.OpSearchByID,
 					config.OpLinearSearch,
 					config.OpLinearSearchByID:
-					r.processSearch(ttt, ctx, train, test, neighbors, e)
+					return r.processSearch(ttt, ctx, train, test, neighbors, e)
 				case config.OpInsert,
 					config.OpUpdate,
 					config.OpUpsert,
 					config.OpRemove,
 					config.OpRemoveByTimestamp:
-					r.processModification(ttt, ctx, train, e)
+					return r.processModification(ttt, ctx, train, e)
 				case config.OpObject,
 					config.OpListObject,
 					config.OpTimestamp,
 					config.OpExists:
-					r.processObject(ttt, ctx, train, e)
+					return r.processObject(ttt, ctx, train, e)
 				}
 			case config.OpIndexInfo,
 				config.OpIndexDetail,
@@ -250,7 +250,7 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 					log.Infof("finished %s execution in %s, type: %s, mode: %s, execution: %d",
 						e.Name, time.Since(start).String(), e.Type, e.Mode, idx)
 				}()
-				r.processIndex(ttt, ctx, e)
+				return r.processIndex(ttt, ctx, e)
 			case config.OpCreateIndex,
 				config.OpSaveIndex,
 				config.OpCreateAndSaveIndex:
@@ -261,7 +261,7 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 					log.Infof("finished %s execution in %s, type: %s, mode: %s, execution: %d",
 						e.Name, time.Since(start).String(), e.Type, e.Mode, idx)
 				}()
-				r.processAgent(t, ctx, e)
+				return r.processAgent(t, ctx, e)
 			case config.OpKubernetes:
 				if e.Kubernetes != nil {
 					start := time.Now()
@@ -351,13 +351,18 @@ func executeWithRepeats(
 	t *testing.T,
 	ctx context.Context,
 	name, prefix string,
-	repeats uint64,
+	repeats *config.Repeats,
 	fn func(*testing.T, context.Context) error,
 ) (err error) {
 	t.Helper()
-	if repeats > 1 {
-		for idx := range repeats {
+	if repeats.Enabled {
+		idx := uint64(0)
+		for {
+			if repeats.ExitCondition == config.Count && idx >= repeats.Count {
+				break
+			}
 			task := fmt.Sprintf("Repeat %s for %s (%d/%d)", prefix, name, idx+1, repeats)
+			idx++
 			select {
 			case <-ctx.Done():
 				err = ctx.Err()
@@ -369,13 +374,28 @@ func executeWithRepeats(
 			default:
 			}
 			log.Info(task)
-			t.Run(task, func(tt *testing.T) {
-				tt.Helper()
-				ierr := fn(tt, ctx)
-				if ierr != nil && errors.IsNot(ierr, context.Canceled, context.DeadlineExceeded) {
-					err = errors.Join(err, ierr)
+			if repeats.ExitCondition == config.Success {
+				if err == nil {
+					log.Infof("successfully finished %s, exiting repeat loop", task)
+					break
 				}
-			})
+				if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
+					log.Warnf("failed to finish %s, error: %v, will retry", task, err)
+					continue
+				}
+				// timeout
+				break
+			}
+			// repeats.ExitCondition == config.Count or config.Timeout
+			ierr := fn(t, ctx)
+			if ierr != nil {
+				if errors.IsNot(ierr, context.Canceled, context.DeadlineExceeded) {
+					err = errors.Join(err, ierr)
+				} else {
+					// timeout
+					break
+				}
+			}
 		}
 		return err
 	}

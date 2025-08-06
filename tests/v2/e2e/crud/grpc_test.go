@@ -27,7 +27,6 @@ import (
 	"strconv"
 	"sync/atomic"
 	"testing"
-	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/iter"
@@ -202,36 +201,26 @@ func single[Q, R proto.Message](
 	req Q,
 	call grpcCall[Q, R],
 	callback ...callback[R],
-) {
+) error {
 	t.Helper()
 	if plan.BaseConfig != nil && plan.BaseConfig.Limiter != nil {
 		plan.BaseConfig.Limiter.Wait(ctx)
 	}
 	// Execute the modify gRPC call.
-	timeout, _ := plan.RetryUntilSuccessTimeout.Duration()
-	start := time.Now()
-	var res R
-	var err error
-	for {
-		res, err = call(ctx, req)
-		err = handleGRPCCall(t, err, res, plan)
-		if err == nil {
-			break
-		}
-		if time.Since(start) >= timeout {
-			t.Error(fmt.Errorf("timeout reached: %w", err))
-			return
-		}
+	res, err := call(ctx, req)
+	err = handleGRPCCall(t, err, res, plan)
+	if err != nil {
+		return err
 	}
 
 	for _, cb := range callback {
 		if cb != nil {
 			if !cb(t, idx, res, err) {
-				return
+				return fmt.Errorf("callback failed for idx: %d, err: %v", idx, err)
 			}
 		}
 	}
-	return
+	return nil
 }
 
 func unary[Q, R proto.Message](
@@ -242,7 +231,7 @@ func unary[Q, R proto.Message](
 	call grpcCall[Q, R],
 	newReq newRequest[Q],
 	callback ...callback[R],
-) {
+) error {
 	t.Helper()
 	// Create an error group to manage concurrent requests.
 	eg, ctx := errgroup.New(ctx)
@@ -256,12 +245,11 @@ func unary[Q, R proto.Message](
 		idx := i
 		// Execute request in a goroutine.
 		eg.Go(func() error {
-			single(t, ctx, idx, plan, newReq(t, idx, strconv.FormatUint(idx, 10), vec, plan), call, callback...)
-			return nil
+			return single(t, ctx, idx, plan, newReq(t, idx, strconv.FormatUint(idx, 10), vec, plan), call, callback...)
 		})
 	}
 	// Wait for all goroutines to complete.
-	eg.Wait()
+	return eg.Wait()
 }
 
 func multi[Q, M, R proto.Message](
@@ -273,7 +261,7 @@ func multi[Q, M, R proto.Message](
 	addReqs newRequest[Q],
 	toReq newMultiRequest[Q, M],
 	callbacks ...callback[R],
-) {
+) error {
 	t.Helper()
 	eg, ctx := errgroup.New(ctx)
 	// Set the concurrency limit from the plan configuration.
@@ -302,16 +290,14 @@ func multi[Q, M, R proto.Message](
 			// Meset the bulk request slice for the next batch.
 			reqs = reqs[:0]
 			eg.Go(func() error {
-				single(t, ctx, idx, plan, toReq(t, batch...), call, callbacks...)
-				return nil
+				return single(t, ctx, idx, plan, toReq(t, batch...), call, callbacks...)
 			})
 		}
 	}
 	eg.Go(func() error {
-		single(t, ctx, data.Len(), plan, toReq(t, reqs...), call, callbacks...)
-		return nil
+		return single(t, ctx, data.Len(), plan, toReq(t, reqs...), call, callbacks...)
 	})
-	eg.Wait()
+	return eg.Wait()
 }
 
 func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](

@@ -126,52 +126,53 @@ func (r *runner) processModification(
 	ctx context.Context,
 	train iter.Cycle[[][]float32, []float32],
 	plan *config.Execution,
-) {
+) error {
 	t.Helper()
 	if plan == nil {
 		t.Fatal("modification plan is nil")
-		return
+		return nil
 	}
 	switch plan.Type {
 	case config.OpInsert:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
-			unary(t, ctx, train, plan, r.client.Insert, insertRequest)
+			return unary(t, ctx, train, plan, r.client.Insert, insertRequest)
 		case config.OperationMultiple:
-			multi(t, ctx, train, plan, r.client.MultiInsert, insertRequest, insertMultipleRequest)
+			return multi(t, ctx, train, plan, r.client.MultiInsert, insertRequest, insertMultipleRequest)
 		case config.OperationStream:
 			stream(t, ctx, train, plan, r.client.StreamInsert, insertRequest)
 		}
 	case config.OpUpdate:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
-			unary(t, ctx, train, plan, r.client.Update, updateRequest)
+			return unary(t, ctx, train, plan, r.client.Update, updateRequest)
 		case config.OperationMultiple:
-			multi(t, ctx, train, plan, r.client.MultiUpdate, updateRequest, updateMultipleRequest)
+			return multi(t, ctx, train, plan, r.client.MultiUpdate, updateRequest, updateMultipleRequest)
 		case config.OperationStream:
 			stream(t, ctx, train, plan, r.client.StreamUpdate, updateRequest)
 		}
 	case config.OpUpsert:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
-			unary(t, ctx, train, plan, r.client.Upsert, upsertRequest)
+			return unary(t, ctx, train, plan, r.client.Upsert, upsertRequest)
 		case config.OperationMultiple:
-			multi(t, ctx, train, plan, r.client.MultiUpsert, upsertRequest, upsertMultipleRequest)
+			return multi(t, ctx, train, plan, r.client.MultiUpsert, upsertRequest, upsertMultipleRequest)
 		case config.OperationStream:
 			stream(t, ctx, train, plan, r.client.StreamUpsert, upsertRequest)
 		}
 	case config.OpRemove:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
-			unary(t, ctx, train, plan, r.client.Remove, removeRequest)
+			return unary(t, ctx, train, plan, r.client.Remove, removeRequest)
 		case config.OperationMultiple:
-			multi(t, ctx, train, plan, r.client.MultiRemove, removeRequest, removeMultipleRequest)
+			return multi(t, ctx, train, plan, r.client.MultiRemove, removeRequest, removeMultipleRequest)
 		case config.OperationStream:
 			stream(t, ctx, train, plan, r.client.StreamRemove, removeRequest)
 		}
 	case config.OpRemoveByTimestamp:
-		single(t, ctx, 0, plan, removeByTimestampRequest(t, 0, "", nil, plan), r.client.RemoveByTimestamp)
+		return single(t, ctx, 0, plan, removeByTimestampRequest(t, 0, "", nil, plan), r.client.RemoveByTimestamp)
 	}
+	return nil
 }
 
 func toModificationConfig(plan *config.Execution) (ts int64, skip bool) {
