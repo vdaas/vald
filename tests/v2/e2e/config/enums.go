@@ -149,4 +149,5 @@ type ExitCondition string
 const (
 	Count   ExitCondition = "count"
 	Success ExitCondition = "success"
+	Timeout ExitCondition = "timeout"
 )
