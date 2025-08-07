@@ -367,6 +367,23 @@ func executeWithRepeats(
 			} else {
 				task = fmt.Sprintf("Repeat %s for %s (%d), ExitCondition: %s", prefix, name, idx+1, repeats.ExitCondition)
 			}
+			if idx >= 0 {
+				if wait := repeats.Interval; wait != "" {
+					dur, werr := wait.Duration()
+					if werr != nil {
+						t.Errorf("failed to parse wait duration: %s, error: %v", wait, werr)
+						return err
+					}
+					if dur > 0 {
+						log.Infof("Waiting interval: %s for %s", repeats.Interval, task)
+						select {
+						case <-ctx.Done():
+							return ctx.Err()
+						case <-time.After(dur):
+						}
+					}
+				}
+			}
 			idx++
 			select {
 			case <-ctx.Done():
