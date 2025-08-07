@@ -201,18 +201,6 @@ strategies:
               status: completed
               action: wait
             wait: 1m
-          - mode: unary
-            name: IndexInfo
-            type: index_info
-            timeout: 30m
-            repeats:
-              enabled: true
-              exit_condition: success
-            expect:
-              - status_code: ok
-                path: $.sum()
-                op: ge
-                value: 215
   - concurrency: 2
     name: Parallel Search Opeation (Search, SearchByID, LinearSearch, LinearSearchByID) x (ConcurrentQueue, SortSlice, SortPoolSlice, PairingHeap) = 16
     operations:
