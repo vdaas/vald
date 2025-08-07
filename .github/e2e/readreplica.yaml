@@ -204,6 +204,7 @@ strategies:
           - mode: unary
             name: IndexInfo
             type: index_info
+            timeout: 30m
             repeats:
               enabled: true
               exit_condition: success
