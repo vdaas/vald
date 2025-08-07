@@ -186,6 +186,11 @@ strategies:
             num: 105
             qps: 35
             wait: 2m
+          - mode: unary
+            name: CreateIndex
+            type: create_index
+            expect:
+              - status_code: ok
           - name: Check rotate job
             type: kubernetes
             mode: other
