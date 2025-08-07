@@ -425,7 +425,9 @@ strategies:
           - mode: unary
             name: IndexInfo
             type: index_info
-            retry_until_success_timeout: 30m
+            repeats:
+              enabled: true
+              exit_condition: success
             expect:
               - status_code: ok
                 path: $.sum()
