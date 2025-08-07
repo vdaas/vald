@@ -397,24 +397,24 @@ func executeWithRepeats(
 			}
 			log.Info(task)
 			ierr := fn(t, ctx)
-			if repeats.ExitCondition == config.Success {
-				if ierr == nil {
-					log.Infof("successfully finished %s, exiting repeat loop", task)
-					break
-				}
-				if errors.IsNot(ierr, context.Canceled, context.DeadlineExceeded) {
-					log.Warnf("failed to finish %s, error: %v, will retry", task, ierr)
-					continue
-				}
-				// timeout
-				break
-			}
-			// repeats.ExitCondition == config.Count or config.Timeout
 			if ierr != nil {
+				if repeats.ExitCondition == config.Success {
+					if ierr == nil {
+						log.Infof("successfully finished %s, exiting repeat loop", task)
+						break
+					}
+					if errors.IsNot(ierr, context.Canceled, context.DeadlineExceeded) {
+						log.Warnf("failed to finish %s, error: %v, will retry", task, ierr)
+						continue
+					}
+				}
 				if errors.IsNot(ierr, context.Canceled, context.DeadlineExceeded) {
 					err = errors.Join(err, ierr)
 				} else {
 					// timeout
+					if repeats.ExitCondition != config.Timeout {
+							t.Error("timeout occurred during execution of", task)
+					}
 					break
 				}
 			}
