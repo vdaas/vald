@@ -413,7 +413,7 @@ func executeWithRepeats(
 				} else {
 					// timeout
 					if repeats.ExitCondition != config.Timeout {
-							t.Error("timeout occurred during execution of", task)
+						t.Error("timeout occurred during execution of", task)
 					}
 					break
 				}
