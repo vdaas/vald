@@ -116,6 +116,8 @@ RUST_VERSION              := $(eval RUST_VERSION := $(shell cat versions/RUST_VE
 TELEPRESENCE_VERSION      := $(eval TELEPRESENCE_VERSION := $(shell cat versions/TELEPRESENCE_VERSION))$(TELEPRESENCE_VERSION)
 YQ_VERSION                := $(eval YQ_VERSION := $(shell cat versions/YQ_VERSION))$(YQ_VERSION)
 ZLIB_VERSION              := $(eval ZLIB_VERSION := $(shell cat versions/ZLIB_VERSION))$(ZLIB_VERSION)
+SNAPSHOTTER_VERSION       := $(eval SNAPSHOTTER_VERSION := $(shell cat versions/SNAPSHOTTER_VERSION))$(SNAPSHOTTER_VERSION)
+CSI_DRIVER_HOST_PATH_VERSION := $(eval CSI_DRIVER_HOST_PATH_VERSION := $(shell cat versions/CSI_DRIVER_HOST_PATH_VERSION))$(CSI_DRIVER_HOST_PATH_VERSION)
 
 OTEL_OPERATOR_RELEASE_NAME ?= opentelemetry-operator
 PROMETHEUS_RELEASE_NAME    ?= prometheus
@@ -374,7 +376,7 @@ E2E_TARGET_NAME                    ?= vald-lb-gateway
 E2E_TARGET_NAMESPACE               ?= default
 E2E_TARGET_POD_NAME                ?= $(eval E2E_TARGET_POD_NAME := $(shell kubectl get pods --selector=app=$(E2E_TARGET_NAME) -n $(E2E_TARGET_NAMESPACE) | tail -1 | cut -f1 -d " "))$(E2E_TARGET_POD_NAME)
 E2E_TARGET_PORT                    ?= 8081
-E2E_TIMEOUT                        ?= 30m
+E2E_TIMEOUT                        ?= 60m
 E2E_UPDATE_COUNT                   ?= 10
 E2E_UPSERT_COUNT                   ?= 10
 E2E_WAIT_FOR_CREATE_INDEX_DURATION ?= 8m
@@ -928,6 +930,7 @@ include Makefile.d/e2e.mk
 include Makefile.d/git.mk
 include Makefile.d/helm.mk
 include Makefile.d/k3d.mk
+include Makefile.d/k0s.mk
 include Makefile.d/k8s.mk
 include Makefile.d/kind.mk
 include Makefile.d/minikube.mk
