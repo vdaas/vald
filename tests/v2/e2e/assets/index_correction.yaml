@@ -157,7 +157,7 @@ strategies:
             retry_until_success_timeout: 5m
             expect:
               - status_code: ok
-                path: $.*
+                path: $.sum()
                 value: _E2E_EXPECTED_INDEX_
   - concurrency: 1
     name: Index Correction -> Check the number of Replica
@@ -186,7 +186,7 @@ strategies:
             type: index_info
             expect:
               - status_code: ok
-                path: $.*
+                path: $.sum()
                 value: _E2E_EXPECTED_INDEX_
   - concurrency: 1
     name: Kill an agent -> Index Correction -> Check the number of Replica
@@ -196,6 +196,7 @@ strategies:
           - name: KillAgent
             type: kubernetes
             mode: other
+            wait: 10s
             kubernetes:
               kind: pod
               namespace: default
@@ -206,7 +207,7 @@ strategies:
             type: index_info
             expect:
               - status_code: ok
-                path: $.*
+                path: $.sum()
                 op: lt
                 value: _E2E_EXPECTED_INDEX_
           - name: IndexCorrection
@@ -231,5 +232,5 @@ strategies:
             type: index_info
             expect:
               - status_code: ok
-                path: $.*
+                path: $.sum()
                 value: _E2E_EXPECTED_INDEX_

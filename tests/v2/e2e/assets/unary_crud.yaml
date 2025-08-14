@@ -223,7 +223,6 @@ strategies:
             expect:
               - status_code: ok
                 path: $.stored
-                op: gt
                 value: _E2E_EXPECTED_INDEX_
   - concurrency: 4
     name: Parallel Search Opeation (Search, SearchByID, LinearSearch, LinearSearchByID) x (ConcurrentQueue, SortSlice, SortPoolSlice, PairingHeap) = 16

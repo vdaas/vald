@@ -23,7 +23,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"strconv"
 
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/encoding/json"
@@ -63,30 +62,6 @@ func (c *GlobalConfig) Bind() *GlobalConfig {
 	return c
 }
 
-func replaceEnvInValues(v any) any {
-	switch val := v.(type) {
-	case string:
-		str := GetActualValue(val)
-		// Return number if the string is a valid number because string to number conversion is not supported in the yaml package.
-		if n, err := strconv.ParseUint(str, 10, 64); err == nil {
-			return n
-		}
-		return str
-	case []any:
-		for i, e := range val {
-			val[i] = replaceEnvInValues(e)
-		}
-		return val
-	case map[string]any:
-		for k, e := range val {
-			val[k] = replaceEnvInValues(e)
-		}
-		return val
-	default:
-		return val
-	}
-}
-
 // Read returns config struct or error when decoding the configuration file to actually *Config struct.
 func Read[T any](path string, cfg T) (err error) {
 	f, err := file.Open(path, os.O_RDONLY, fs.ModePerm)
@@ -102,29 +77,20 @@ func Read[T any](path string, cfg T) (err error) {
 			err = f.Close()
 		}
 	}()
-	data, err := io.ReadAll(f)
-	if err != nil {
-		return err
-	}
-	var raw map[string]any
 	switch ext := filepath.Ext(path); ext {
 	case ".yaml", ".yml":
-		if err := yaml.Unmarshal(data, &raw); err != nil {
+		var data []byte
+		data, err = io.ReadAll(f)
+		if err != nil {
 			return err
 		}
+		err = yaml.Unmarshal(data, cfg)
 	case ".json":
-		if err := json.Unmarshal(data, &raw); err != nil {
-			return err
-		}
+		err = json.Decode(f, cfg)
 	default:
-		return errors.ErrUnsupportedConfigFileType(ext)
+		err = errors.ErrUnsupportedConfigFileType(ext)
 	}
-	replaced := replaceEnvInValues(raw)
-	intermediate, err := yaml.Marshal(replaced)
-	if err != nil {
-		return err
-	}
-	return yaml.Unmarshal(intermediate, &cfg)
+	return err
 }
 
 // GetActualValue returns the environment variable value if the val has prefix and suffix "_",
