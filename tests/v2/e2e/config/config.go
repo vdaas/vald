@@ -901,9 +901,22 @@ func replaceEnvInValues(v any) any {
 	switch val := v.(type) {
 	case string:
 		str := config.GetActualValue(val)
-		// Return number if the string is a valid number because string to number conversion is not supported in the yaml package.
-		if n, err := strconv.ParseUint(str, 10, 64); err == nil {
-			return n
+		// Convert env-injected scalars to native types so yaml.Unmarshal can bind to typed fields.
+		// Preference order: signed ints, floats, then big uints; handle true/false explicitly (not 0/1).
+		if i, err := strconv.ParseInt(str, 10, 64); err == nil {
+			return i
+		}
+		if f, err := strconv.ParseFloat(str, 64); err == nil {
+			return f
+		}
+		if u, err := strconv.ParseUint(str, 10, 64); err == nil {
+			return u
+		}
+		switch strings.ToLower(str) {
+		case "true":
+			return true
+		case "false":
+			return false
 		}
 		return str
 	case []any:
