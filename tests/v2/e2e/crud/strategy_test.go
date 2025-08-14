@@ -367,7 +367,7 @@ func executeWithRepeats(
 			} else {
 				task = fmt.Sprintf("Repeat %s for %s (%d), ExitCondition: %s", prefix, name, idx+1, repeats.ExitCondition)
 			}
-			if idx >= 0 {
+			if idx > 0 {
 				if wait := repeats.Interval; wait != "" {
 					dur, werr := wait.Duration()
 					if werr != nil {
