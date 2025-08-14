@@ -261,7 +261,7 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 					log.Infof("finished %s execution in %s, type: %s, mode: %s, execution: %d",
 						e.Name, time.Since(start).String(), e.Type, e.Mode, idx)
 				}()
-				return r.processAgent(t, ctx, e)
+				return r.processAgent(ttt, ctx, e)
 			case config.OpKubernetes:
 				if e.Kubernetes != nil {
 					start := time.Now()
