@@ -138,8 +138,9 @@ mod tests {
     use bytes::{Buf, BufMut, Bytes, BytesMut};
     use opentelemetry::{
         propagation::TextMapCompositePropagator,
-        trace::{FutureExt, TraceContextExt, Tracer},
+        trace::{FutureExt, Span, TraceContextExt, Tracer},
     };
+    use opentelemetry_otlp::{Protocol, WithExportConfig, WithTonicConfig};
     use opentelemetry_sdk::propagation::{BaggagePropagator, TraceContextPropagator};
     use prost::Message;
     use proto::{
@@ -161,6 +162,7 @@ mod tests {
         transport::{Channel, Server},
         Request, Response, Status,
     };
+    use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
     // tonic-mock uses old version of http_body, so we need to implement below ourselves.
     #[derive(Clone)]
@@ -417,21 +419,59 @@ mod tests {
         assert_eq!(received_vectors.len(), 10);
 
         sleep(shutdown_duration).await;
+        // Comment: Logs to notify the completion of the main request processing.
+        log::info!("end");
     }
 
     #[tokio::test]
     async fn test_bidirectional_stream_over_network() {
-        let _logger = flexi_logger::Logger::try_with_str("debug")
-            .unwrap()
-            .start()
-            .unwrap();
+        // Jaeger for Docker Deploy Command: docker run --rm --name jaeger -e COLLECTOR_ZIPKIN_HOST_PORT=:9411 -p 16686:16686 cr.jaegertracing.io/jaegertracing/jaeger:2.9.0
+        // Test Command Line: cargo test --package agent --bin agent -- handler::common::tests::test_bidirectional_stream_over_network --exact --show-output
+
+        // Comment: Temporarily commented out to display debug logs via tracing_subscriber::fmt::layer() below.
+        //let _logger = flexi_logger::Logger::try_with_str("debug")
+        //    .unwrap()
+        //    .start()
+        //    .unwrap();
+        tracing_subscriber::registry()
+            .with(tracing_subscriber::fmt::layer())
+            .init();
         opentelemetry::global::set_text_map_propagator(TextMapCompositePropagator::new(vec![
             Box::new(TraceContextPropagator::new()),
             Box::new(BaggagePropagator::new()),
         ]));
-        let exporter = opentelemetry_stdout::SpanExporter::default();
+        // Comment: Commented out for a stdout-exporter for debugging.
+        //let exporter = opentelemetry_stdout::SpanExporter::default();
+        // Comment: Changed to use the otel-collector.
+        let exporter = opentelemetry_otlp::SpanExporter::builder()
+            //.with_http()
+            .with_tonic()
+            // with_protocol():
+            //.with_protocol(Protocol::Grpc)
+            //.with_protocol(Protocol::HttpJson)
+            //.with_protocol(Protocol::HttpBinary)
+            //.with_endpoint("grpc://locahost:4317")
+            .with_endpoint("http://localhost:4318/v1/traces")
+            //.with_timeout(Duration::from_secs(5))
+            //.with_metadata(tonic::metadata::MetadataMap::new())
+            .build()
+            .unwrap();
+        // Comment: Implemented this because information needed to be displayed in the Jaeger UI might be missing.
+        //let provider = opentelemetry_sdk::trace::TracerProvider::builder()
+        //    .with_simple_exporter(exporter)
+        //    //.with_batch_exporter(exporter, opentelemetry_sdk::runtime::Tokio)
+        //    .with_config(opentelemetry_sdk::trace::Config::default().with_resource(
+        //        opentelemetry_sdk::Resource::new(vec![opentelemetry::KeyValue::new(
+        //            "service.name",
+        //            "your-app-service",
+        //        )]),
+        //    ))
+        //    .build();
         let provider = opentelemetry_sdk::trace::TracerProvider::builder()
-            .with_simple_exporter(exporter)
+            .with_batch_exporter(exporter, opentelemetry_sdk::runtime::Tokio)
+            .with_sampler(opentelemetry_sdk::trace::Sampler::AlwaysOn)
+            .with_resource(opentelemetry_sdk::Resource::default())
+            .with_id_generator(opentelemetry_sdk::trace::RandomIdGenerator::default())
             .build();
         opentelemetry::global::set_tracer_provider(provider);
         let tracer = opentelemetry::global::tracer("vdaas/vald");
@@ -445,6 +485,45 @@ mod tests {
         )
         .with_context(cx)
         .await;
+        opentelemetry::global::shutdown_tracer_provider();
+
+        // Comment: A sleep process to prevent the possibility of a deadlock caused by the thread closing before the test is complete and span information is sent.
+        log::info!("sleep start");
+        sleep(Duration::from_secs(10)).await;
+        log::info!("sleep end");
+    }
+
+    #[tokio::test]
+    async fn test_jaeger_export() {
+        // Comment: A minimal test code for sending trace information to Jaeger.
+        tracing_subscriber::registry()
+            .with(tracing_subscriber::fmt::layer())
+            .init();
+        let exporter = opentelemetry_otlp::SpanExporter::builder()
+            .with_tonic()
+            .with_endpoint("http://localhost:4317")
+            .with_timeout(Duration::from_secs(5))
+            .build()
+            .unwrap();
+
+        let provider = opentelemetry_sdk::trace::TracerProvider::builder()
+            .with_simple_exporter(exporter)
+            .build();
+
+        opentelemetry::global::set_tracer_provider(provider);
+
+        let tracer = opentelemetry::global::tracer("test-service");
+
+        log::info!("span start");
+        //let mut span = tracer.start("simple_test_span");
+        //span.end();
+        tracer.in_span("doing_work", |_cx| {
+            // Your application logic here...
+        });
+        log::info!("span end");
+
+        tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
+
         opentelemetry::global::shutdown_tracer_provider();
     }
 
