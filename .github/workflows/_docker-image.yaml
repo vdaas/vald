@@ -74,7 +74,7 @@ jobs:
             platforms="${TARGET_PLATFORMS}"
           fi
           echo "PLATFORMS is determined: ${platforms}"
-          json=$(jq -R -s 'split(",")' <<< "$platforms")
+          json=$(jq -Rsc 'split(",")' <<< "$platforms")
           echo "result=$json" >> $GITHUB_OUTPUT
         env:
           TARGET_PLATFORMS: ${{ inputs.platforms }}
