@@ -67,6 +67,7 @@ const (
 	indexSave           = "index-save"
 	managerIndex        = "manager-index"
 	readreplicaRotate   = "readreplica-rotate"
+	e2e                 = "e2e"
 
 	organization          = "vdaas"
 	repository            = "vald"
@@ -445,6 +446,10 @@ var (
 		"make rust/target/release/${APP_NAME}",
 		"mv \"rust/target/release/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
 		"rm -rf rust/target",
+	}
+	e2eBuildCommands = []string{
+		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}/${REPO}\" NAME=\"${REPO}\" ${PKG}/${APP_NAME}",
+		"mv \"${PKG}/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
 	}
 
 	defaultMounts = []string{
@@ -831,6 +836,14 @@ func main() {
 				"make hdf5/install",
 			},
 		},
+		"vald-e2e": {
+			AppName:       "e2e",
+			PackageDir:    "tests/v2/e2e",
+			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
+			Preprocess: []string{
+				"make hdf5/install",
+			},
+		},
 		"vald-buildbase": {
 			AppName:      "buildbase",
 			AliasImage:   true,
@@ -1091,6 +1104,8 @@ jobs:
 					commands = append(commands, goBuildCommands...)
 				} else if strings.HasPrefix(data.PackageDir, "example") && file.Exists(file.Join(os.Args[1], data.PackageDir)) {
 					commands = append(commands, goExampleBuildCommands...)
+				} else if strings.HasPrefix(data.PackageDir, "tests/v2/e2e") && file.Exists(file.Join(os.Args[1], data.PackageDir)) {
+					commands = append(commands, e2eBuildCommands...)
 				}
 				data.RunCommands = commands
 				mounts := make([]string, 0, len(defaultMounts)+len(goDefaultMounts))
