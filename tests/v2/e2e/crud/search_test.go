@@ -156,20 +156,20 @@ func (r *runner) processSearch(
 	test, train iter.Cycle[[][]float32, []float32],
 	neighbors iter.Cycle[[][]int, []int],
 	plan *config.Execution,
-) {
+) error {
 	t.Helper()
 	if plan == nil {
 		t.Fatal("search operation plan is nil")
-		return
+		return nil
 	}
 
 	if plan.BaseConfig == nil {
 		t.Fatal("base configuration is nil")
-		return
+		return nil
 	}
 	if plan.Search == nil {
 		t.Fatal("search configuration is nil")
-		return
+		return nil
 	}
 
 	switch plan.Type {
@@ -177,10 +177,10 @@ func (r *runner) processSearch(
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
 			// For unary search requests, use the generic unarySearch function with the searchRequest builder.
-			unary(t, ctx, test, plan, r.client.Search, searchRequest, checkUnarySearchResponse(neighbors))
+			return unary(t, ctx, test, plan, r.client.Search, searchRequest, checkUnarySearchResponse(neighbors))
 		case config.OperationMultiple:
 			// For bulk search requests, use the generic multiSearch function with searchRequest and searchMultiRequest builders.
-			multi(t, ctx, test, plan, r.client.MultiSearch, searchRequest, searchMultiRequest, checkMultiSearchResponse(neighbors))
+			return multi(t, ctx, test, plan, r.client.MultiSearch, searchRequest, searchMultiRequest, checkMultiSearchResponse(neighbors))
 		case config.OperationStream:
 			// For streaming search requests, use the generic streamSearch function with the searchRequest builder.
 			stream(t, ctx, test, plan, r.client.StreamSearch, searchRequest, checkStreamSearchResponse(neighbors))
@@ -188,31 +188,32 @@ func (r *runner) processSearch(
 	case config.OpSearchByID:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
-			unary(t, ctx, train, plan, r.client.SearchByID, searchIDRequest, checkUnarySearchResponse(neighbors))
+			return unary(t, ctx, train, plan, r.client.SearchByID, searchIDRequest, checkUnarySearchResponse(neighbors))
 		case config.OperationMultiple:
-			multi(t, ctx, train, plan, r.client.MultiSearchByID, searchIDRequest, searchMultiIDRequest, checkMultiSearchResponse(neighbors))
+			return multi(t, ctx, train, plan, r.client.MultiSearchByID, searchIDRequest, searchMultiIDRequest, checkMultiSearchResponse(neighbors))
 		case config.OperationStream:
 			stream(t, ctx, train, plan, r.client.StreamSearchByID, searchIDRequest, checkStreamSearchResponse(neighbors))
 		}
 	case config.OpLinearSearch:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
-			unary(t, ctx, test, plan, r.client.LinearSearch, searchRequest, checkUnarySearchResponse(neighbors))
+			return unary(t, ctx, test, plan, r.client.LinearSearch, searchRequest, checkUnarySearchResponse(neighbors))
 		case config.OperationMultiple:
-			multi(t, ctx, test, plan, r.client.MultiLinearSearch, searchRequest, searchMultiRequest, checkMultiSearchResponse(neighbors))
+			return multi(t, ctx, test, plan, r.client.MultiLinearSearch, searchRequest, searchMultiRequest, checkMultiSearchResponse(neighbors))
 		case config.OperationStream:
 			stream(t, ctx, test, plan, r.client.StreamLinearSearch, searchRequest, checkStreamSearchResponse(neighbors))
 		}
 	case config.OpLinearSearchByID:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
-			unary(t, ctx, test, plan, r.client.LinearSearchByID, searchIDRequest, checkUnarySearchResponse(neighbors))
+			return unary(t, ctx, test, plan, r.client.LinearSearchByID, searchIDRequest, checkUnarySearchResponse(neighbors))
 		case config.OperationMultiple:
-			multi(t, ctx, train, plan, r.client.MultiLinearSearchByID, searchIDRequest, searchMultiIDRequest, checkMultiSearchResponse(neighbors))
+			return multi(t, ctx, train, plan, r.client.MultiLinearSearchByID, searchIDRequest, searchMultiIDRequest, checkMultiSearchResponse(neighbors))
 		case config.OperationStream:
 			stream(t, ctx, train, plan, r.client.StreamLinearSearchByID, searchIDRequest, checkStreamSearchResponse(neighbors))
 		}
 	}
+	return nil
 }
 
 func checkUnarySearchResponse(

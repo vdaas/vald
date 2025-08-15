@@ -55,17 +55,17 @@ func (r *runner) processObject(
 	ctx context.Context,
 	train iter.Cycle[[][]float32, []float32],
 	plan *config.Execution,
-) {
+) error {
 	t.Helper()
 	if plan == nil {
 		t.Fatal("object operation plan is nil")
-		return
+		return nil
 	}
 	switch plan.Type {
 	case config.OpObject:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
-			unary(t, ctx, train, plan, r.client.GetObject, objectRequest)
+			return unary(t, ctx, train, plan, r.client.GetObject, objectRequest)
 		case config.OperationMultiple:
 			t.Errorf("unsupported Object operation %s for %s", plan.Mode, plan.Type)
 		case config.OperationStream:
@@ -74,14 +74,14 @@ func (r *runner) processObject(
 	case config.OpTimestamp:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
-			unary(t, ctx, train, plan, r.client.GetTimestamp, timestampRequest)
+			return unary(t, ctx, train, plan, r.client.GetTimestamp, timestampRequest)
 		case config.OperationMultiple, config.OperationStream:
 			t.Errorf("unsupported Timestamp operation %s for %s", plan.Mode, plan.Type)
 		}
 	case config.OpExists:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
-			unary(t, ctx, train, plan, r.client.Exists, existsRequest)
+			return unary(t, ctx, train, plan, r.client.Exists, existsRequest)
 		case config.OperationMultiple, config.OperationStream:
 			t.Errorf("unsupported Exists operation %s for %s", plan.Mode, plan.Type)
 		}
@@ -93,7 +93,7 @@ func (r *runner) processObject(
 			stream, err := r.client.StreamListObject(ctx, new(payload.Object_List_Request))
 			if err != nil {
 				t.Error(err)
-				return
+				return nil
 			}
 			cnt := uint64(0)
 			defer stream.CloseSend()
@@ -102,7 +102,7 @@ func (r *runner) processObject(
 				res, err := stream.Recv()
 				if err != nil {
 					if err == io.EOF {
-						return
+						return nil
 					}
 					if res != nil && res.GetStatus() != nil {
 						_ = handleGRPCWithStatusCode(t, err, codes.Code(res.GetStatus().GetCode()), res, plan)
@@ -113,10 +113,11 @@ func (r *runner) processObject(
 				}
 				t.Logf("successfully get vector %v", res.GetVector())
 				if cnt >= train.Len() {
-					return
+					return nil
 				}
 
 			}
 		}
 	}
+	return nil
 }

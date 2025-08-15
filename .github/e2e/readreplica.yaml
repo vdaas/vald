@@ -425,11 +425,14 @@ strategies:
           - mode: unary
             name: IndexInfo
             type: index_info
+            repeats:
+              enabled: true
+              exit_condition: success
             expect:
               - status_code: ok
                 path: $.sum()
                 op: ge
-                value: 150
+                value: 215
           - name: Flush
             mode: unary
             type: flush
