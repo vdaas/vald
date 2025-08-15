@@ -74,7 +74,7 @@ jobs:
             platforms="${TARGET_PLATFORMS}"
           fi
           echo "PLATFORMS is determined: ${platforms}"
-          json=$(jq -Rsc 'split(",")' <<< "$platforms")
+          json=$(jq -Rsc '[split(",") | .[] | gsub("\n"; "")]' <<< "$platforms")
           echo "result=$json" >> $GITHUB_OUTPUT
         env:
           TARGET_PLATFORMS: ${{ inputs.platforms }}
@@ -83,6 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup-matrix
     strategy:
+      max-parallel: 1
       matrix:
         platform: ${{ fromJson(needs.setup-matrix.outputs.platforms) }}
     if: >-
@@ -147,13 +148,20 @@ jobs:
         uses: ./.github/actions/docker-build
         with:
           target: ${{ inputs.target }}
-          platforms: ${{ matrix.platform }}
+          platform: ${{ matrix.platform }}
           builder: ${{ steps.buildx.outputs.name }}
       - name: Scan the Docker image
         if: startsWith(github.ref, 'refs/tags/')
         uses: ./.github/actions/scan-docker-image
         with:
-          image_ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}"
+          image_ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ matrix.platform }}"
+      - name: Unify multiple platforms
+        run: |
+          docker buildx imagetools create \
+            --tag "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}" \
+            "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-amd64" \
+            "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-arm64"
+
   slack:
     runs-on: ubuntu-latest
     needs: [build]

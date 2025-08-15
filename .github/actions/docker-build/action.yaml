@@ -24,9 +24,9 @@ inputs:
     description: "Buildx builder name"
     required: true
     default: ""
-  platforms:
-    description: "If it is specified, specified platforms will be used."
-    required: false
+  platform:
+    description: "Build platform"
+    required: true
     default: ""
 outputs:
   IMAGE_NAME:
@@ -88,13 +88,13 @@ runs:
           REMOTE="true" \
           DOCKER="docker" \
           BUILDKIT_INLINE_CACHE=0 \
-          DOCKER_OPTS="--platform ${{ inputs.platforms }} --builder ${BUILDER} ${LABEL_OPTS} \
+          DOCKER_OPTS="--platform ${{ inputs.platform }} --builder ${BUILDER} ${LABEL_OPTS} \
           --label org.opencontainers.image.version=${PRIMARY_TAG} \
           --label org.opencontainers.image.title=${TARGET} \
           --label org.opencontainers.image.created=\"$(date --rfc-3339=ns)\" \
           --label org.opencontainers.image.licenses=\"Apache 2.0\"" \
           EXTRA_ARGS="${EXTRA_TAGS}" \
-          TAG="${PRIMARY_TAG}" \
+          TAG="${PRIMARY_TAG}-${{contains(inputs.platform, 'arm64') && 'arm64' || 'amd64' }}" \
           docker/build/${TARGET}
       env:
         TARGET: ${{ inputs.target }}
