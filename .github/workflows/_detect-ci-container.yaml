@@ -44,7 +44,7 @@ jobs:
     outputs:
       TAG: ${{ steps.get_tag_name.outputs.TAG }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Determine Docker image tag
         id: determine_tag_name
         uses: ./.github/actions/determine-docker-image-tag

@@ -26,7 +26,7 @@ jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/dump-context
   client-go:
     uses: ./.github/workflows/_update-protobuf.yaml
