@@ -20,14 +20,14 @@ jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/dump-context
   triage:
     name: Triage
     runs-on: ubuntu-latest
     if: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0

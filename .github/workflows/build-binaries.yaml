@@ -22,7 +22,7 @@ jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/dump-context
   detect-ci-container:
     uses: ./.github/workflows/_detect-ci-container.yaml
@@ -35,7 +35,7 @@ jobs:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 10
       - name: Set Git config
@@ -54,7 +54,7 @@ jobs:
     needs:
       - build-linux
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: artifacts-linux
           path: tmp/linux
