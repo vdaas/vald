@@ -94,7 +94,7 @@ runs:
           --label org.opencontainers.image.created=\"$(date --rfc-3339=ns)\" \
           --label org.opencontainers.image.licenses=\"Apache 2.0\"" \
           EXTRA_ARGS="${EXTRA_TAGS}" \
-          TAG="${PRIMARY_TAG}-${{contains(inputs.platform, 'arm64') && 'arm64' || 'amd64' }}" \
+          TAG="${PRIMARY_TAG}-${{ contains(inputs.platform, 'arm64') && 'arm64' || 'amd64' }}" \
           docker/build/${TARGET}
       env:
         TARGET: ${{ inputs.target }}
