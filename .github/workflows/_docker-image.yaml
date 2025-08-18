@@ -168,7 +168,7 @@ jobs:
             --tag "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}" \
             "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ contains(matrix.platform, 'arm64') && 'arm64' || 'amd64' }}" && \
           docker buildx imagetools create \
-            --tag "gcr.io/${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}" \
+            --tag "ghcr.io/${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}" \
             "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ contains(matrix.platform, 'arm64') && 'arm64' || 'amd64' }}"
 
   slack:
