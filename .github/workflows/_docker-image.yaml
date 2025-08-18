@@ -83,6 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup-matrix
     strategy:
+      max-parallel: 1
       matrix:
         platform: ${{ fromJson(needs.setup-matrix.outputs.platforms) }}
     if: >-
