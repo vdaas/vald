@@ -83,7 +83,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup-matrix
     strategy:
-      max-parallel: 1
       matrix:
         platform: ${{ fromJson(needs.setup-matrix.outputs.platforms) }}
     if: >-
@@ -157,10 +156,9 @@ jobs:
           image_ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ matrix.platform }}"
       - name: Unify multiple platforms
         run: |
-          docker buildx imagetools create \
+          docker buildx imagetools create --append \
             --tag "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}" \
-            "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-amd64" \
-            "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-arm64"
+            "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ matrix.platform }}"
 
   slack:
     runs-on: ubuntu-latest
