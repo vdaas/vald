@@ -157,12 +157,18 @@ jobs:
           image_ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ contains(matrix.platform, 'arm64') && 'arm64' || 'amd64' }}"
       - name: Unify multiple platforms
         run: |
+          # Append images to the unified tag, create a new one if not exists
           docker buildx imagetools create --append \
             --tag "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}" \
+            "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ contains(matrix.platform, 'arm64') && 'arm64' || 'amd64' }}" && \
+          docker buildx imagetools create --append \
+            --tag "ghcr.io/${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}" \
             "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ contains(matrix.platform, 'arm64') && 'arm64' || 'amd64' }}" || \
-                                                                                                                          # If the image does not exist, create a new one
           docker buildx imagetools create \
             --tag "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}" \
+            "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ contains(matrix.platform, 'arm64') && 'arm64' || 'amd64' }}" && \
+          docker buildx imagetools create \
+            --tag "gcr.io/${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}" \
             "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ contains(matrix.platform, 'arm64') && 'arm64' || 'amd64' }}"
 
   slack:
