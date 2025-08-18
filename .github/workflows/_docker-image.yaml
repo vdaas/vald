@@ -158,6 +158,10 @@ jobs:
         run: |
           docker buildx imagetools create --append \
             --tag "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}" \
+            "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ contains(matrix.platform, 'arm64') && 'arm64' || 'amd64' }}" || \
+                                                                                                                          # If the image does not exist, create a new one
+          docker buildx imagetools create \
+            --tag "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}" \
             "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ contains(matrix.platform, 'arm64') && 'arm64' || 'amd64' }}"
 
   slack:
