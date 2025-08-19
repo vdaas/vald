@@ -1,43 +1,69 @@
 ---
 marp: true
-title: Grafana Foundation SDK を使った Grafana Dashboard as Code
+title: OSS分散ベクトルエンジンVald
 theme: vald
 paginate: true
 footer: © vdaas/vald
 ---
 
-# Grafana Foundation SDK を使った
-# Grafana Dashboard as Code
+# OSS分散ベクトル検索エンジンValdと最新の取り組み
 
 <div class="center">
 Vald: Cloud Native Distributed Vector Database
 </div>
 
 <div class="center">
-Matts966
+LINEヤフー株式会社 Matts966
 </div>
 
-<div class="center">
+<!-- <div class="center">
 <img class="border" src="image-6.png" />
 <p>資料URL</p>
-</div>
+</div> -->
 
 ---
 
 ## 自己紹介
 
-松井誠泰
-- OSSのベクトルデータベースValdチームに転職して2ヶ月目
+松井誠泰（GitHub: Matts966）
+- LINEヤフー、OSSのベクトルデータベースValdチームに転職して半年
 - 趣味
   - 🍺 🍶 🥃 ☕️ 💻 📖 🚲
 - [github.com/Matts966](https://github.com/Matts966)
 
 ---
 
+## お品書き
+
+- Valdのご紹介
+- 最新の取り組み
+  - Grafana Foundation SDKを用いたGrafana Dashboard as Code
+  - E2E V2: YAMLで宣言的にテストシナリオを記述
+- ベクトルDB選定のすすめ
+
+---
+
+## Valdのご紹介
+
+- Kubernetes上で分散されたベクトル検索エンジン
+- オープンソース・CNCF Landscape プロジェクト
+- 公式サイト: [vald.vdaas.org](https://vald.vdaas.org)
+
+[![bg contain right:60%](image-7.png)](https://landscape.cncf.io/?item=app-definition-and-development--database--vald)
+
+---
+
+## 最新の取り組み
+
+1. **Grafana Foundation SDKを用いたGrafana Dashboard as Code**
+2. E2E V2: YAMLで宣言的にテストシナリオを記述
+
+---
+
 ## Grafanaボード管理の課題
 
 - コンポーネント毎にボード・パネルをたくさん管理
-  - コンポーネントかなり違うものの共通化の余地あり
+  - コンポーネントがかなり違うものの共通化の余地あり
     - 繰り返し、条件分岐したい
   - パネル毎にアップグレード作業
 - JSONでバージョン管理はしていたものの
@@ -45,6 +71,7 @@ Matts966
 
 ![bg contain right:20%](image-3.png)
 
+<!-- 
 ---
 
 ## Grafana Dashboard as Codeの選択肢 - JSONベース
@@ -64,7 +91,7 @@ Matts966
 | Grizzly                | CLIでリソースとして管理可能 | CLIが便利・Jsonnet使える                                       |
 | Grafonnet              | Jsonnetで生成               | 繰り返し処理など対応                                           |
 | Grabana                | Goで記述、宣言的            | 唯一JSON逆生成可能、開発は `grafana-foundation-sdk` に移行傾向 |
-| grafana-foundation-sdk | 公式SDK（Go等）             | ⭐️**本日のお題**⭐️                                               |
+| grafana-foundation-sdk | 公式SDK（Go等）             | ⭐️**本日のお題**⭐️                                               | -->
 
 <!--
 ---
@@ -182,16 +209,6 @@ go get github.com/grafana/grafana-foundation-sdk/go@v11.6.x+cog-v0.0.x
 
 ---
 
-## デメリット
-
-- grabanaではサポートされていたJSONからのコード生成がない
-  - 最初導入する時だけはちょっと大変
-- GUIでの操作ができない
-  - やるとすると、操作の手順を覚えて関数呼び出しに書き直すイメージ
-  - ここが気になる場合、 Grizzly や Git Sync、自前の自動化がおすすめ
-
----
-
 ## 注意点
 
 ![bg fit right:60%](image.png)
@@ -216,19 +233,48 @@ go get github.com/grafana/grafana-foundation-sdk/go@v11.6.x+cog-v0.0.x
 
 ---
 
-## おすすめの選び方
+## 最新の取り組み
 
-- 繰り返しが少ない → Grafana12の新機能でGUIから反映できるGit Sync
-- 共通基盤開発など再利用性重視 → `grafana-foundation-sdk`
-  - 今後Go/TypeScript/Python/Javaで自動化していくなら `grafana-foundation-sdk` がおすすめ
+1. Grafana Foundation SDKを用いたGrafana Dashboard as Code
+2. **E2E V2: YAMLで宣言的にテストシナリオを記述**
 
 ---
 
-## 参考リンク
+## E2Eの悩み
 
-- [Three years of Grafana dashboards as code](https://blog.kevingomez.fr/2023/03/07/three-years-of-grafana-dashboards-as-code/)
-  - `grabana` の作者の方で、今は Grafana Labs で `grafana-foundation-sdk` を開発されている方のブログ
-- [grafana-foundation-sdk GitHub](https://github.com/grafana/grafana-foundation-sdk)
+- CRUDの処理がたくさんあるが、コードで書いていると冗長になりがち
+- 違うコードベースに同じようなコードが散らばる
+- データを取り出してアサートする流れも煩雑になりがち
+
+---
+
+## E2E V2: YAMLで宣言的にテストシナリオを記述
+
+- 得られた成果
+  - 環境が変わってもYAMLをもとにk8s JobでE2Eが走る
+  - パスで結果を取り出し、アサートできる
+  - 並列実行・Loop処理を用いた負荷試験
+- Future Work
+  - PBT: Property Based Testing
+
+![bg fit right:30%](image-9.png)
+
+---
+
+## ベクトルDB選定のすすめ
+
+- CNCFにはハイブリッドサーチをサポートするOpenSearchもあり、検索用途で :+1:
+- 推薦・検出などベクトル検索だけ必要で、パフォーマンス重視の方にはValdは :+1:
+
+|検索手法|エンジン|90 %ile (ms)|99 %ile (ms)|MRR|
+|--|--|--|--|--|
+|全文検索|OpenSearch|10.42|23.79|0.605|
+|ハイブリッドサーチ|OpenSearch|21.56|28.823|**0.661**|
+|ベクトル検索|OpenSearch|9.60|11.87|0.619|
+|ベクトル検索|Vald|**1.93**|**2.363**|0.615|
+
+[検索エンジン選定ガイド：ベクトル検索・全文検索からハイブリッドサーチまで](https://techblog.lycorp.co.jp/ja/20241225b)
+[LINEヤフー Tech Blog](https://techblog.lycorp.co.jp/ja/20241225b)
 
 ---
 
