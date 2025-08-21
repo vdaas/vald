@@ -101,7 +101,6 @@ ifeq ($(REMOTE),true)
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg RUST_VERSION=$(RUST_VERSION) \
 		--build-arg MAINTAINER=$(MAINTAINER) \
-		--attest type=sbom,generator=$(DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE) \
 		--provenance=mode=max \
 		-t $(CRORG)/$(IMAGE):$(TAG) \
 		-t $(GHCRORG)/$(IMAGE):$(TAG) \
