@@ -162,18 +162,18 @@ jobs:
           alter_org=`make docker/name/org/alter`
           alter_image_name=`make ORG="${alter_org}" docker/name/${{ inputs.target }}`
           # Append images to the unified tag, create a new one if not exists
-          docker buildx imagetools create --append \
+          (docker buildx imagetools create --append \
             --tag "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}" \
             "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ contains(matrix.platform, 'arm64') && 'arm64' || 'amd64' }}" && \
           docker buildx imagetools create --append \
             --tag "$alter_image_name:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}" \
-            "$alter_image_name:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ contains(matrix.platform, 'arm64') && 'arm64' || 'amd64' }}" || \
-          docker buildx imagetools create \
+            "$alter_image_name:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ contains(matrix.platform, 'arm64') && 'arm64' || 'amd64' }}") || \
+          (docker buildx imagetools create \
             --tag "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}" \
             "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ contains(matrix.platform, 'arm64') && 'arm64' || 'amd64' }}" && \
           docker buildx imagetools create \
             --tag "$alter_image_name:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}" \
-            "$alter_image_name:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ contains(matrix.platform, 'arm64') && 'arm64' || 'amd64' }}"
+            "$alter_image_name:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ contains(matrix.platform, 'arm64') && 'arm64' || 'amd64' }}")
 
   slack:
     runs-on: ubuntu-latest
