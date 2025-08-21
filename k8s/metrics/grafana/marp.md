@@ -15,9 +15,11 @@ Vald: Cloud Native Distributed Vector Database
 <div class="center">
 LINEヤフー株式会社 Matts966
 </div>
+<br>
 
 <div class="center">
-<img class="border" src="QR_684080.png" />
+
+![alt text width:300](speakerdeck_vald.png)
 <p>資料URL</p>
 </div>
 
@@ -230,9 +232,9 @@ go get github.com/grafana/grafana-foundation-sdk/go@v11.6.x+cog-v0.0.x
 
 ## 結果
 
-- [github.com/vdaas/vald/pull/2937](github.com/vdaas/vald/pull/2937)
+<div class="center">
 
-![alt text](QR_752053.png)
+![alt text width:200](github_vald.png)
 
 - コード量を1万行近く削減
 - ほぼ同じボードを再現
