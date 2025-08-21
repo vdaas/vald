@@ -1,6 +1,6 @@
 ---
 marp: true
-title: OSS分散ベクトルエンジンVald
+title: OSS分散ベクトル検索エンジンValdと最新の取り組み
 theme: vald
 paginate: true
 footer: © vdaas/vald
@@ -16,20 +16,20 @@ Vald: Cloud Native Distributed Vector Database
 LINEヤフー株式会社 Matts966
 </div>
 
-<!-- <div class="center">
-<img class="border" src="image-6.png" />
+<div class="center">
+<img class="border" src="QR_684080.png" />
 <p>資料URL</p>
-</div> -->
+</div>
 
 ---
 
 ## 自己紹介
 
-松井誠泰（GitHub: Matts966）
-- LINEヤフー、OSSのベクトルデータベースValdチームに転職して半年
+松井誠泰（GitHub: [Matts966](https://github.com/Matts966)）
+- LINEヤフー株式会社
+  - OSSのベクトルデータベースValdチームに転職して半年
 - 趣味
   - 🍺 🍶 🥃 ☕️ 💻 📖 🚲
-- [github.com/Matts966](https://github.com/Matts966)
 
 ---
 
@@ -45,9 +45,15 @@ LINEヤフー株式会社 Matts966
 
 ## Valdのご紹介
 
-- Kubernetes上で分散されたベクトル検索エンジン
-- オープンソース・CNCF Landscape プロジェクト
-- 公式サイト: [vald.vdaas.org](https://vald.vdaas.org)
+- クラウドネイティブな分散近似近傍ベクトルDB
+- オープンソース
+- CNCF Landscape
+<!-- - 公式サイト: [vald.vdaas.org](https://vald.vdaas.org) -->
+
+<div class="center">
+  <img src="qr.png" />
+  <p><a href="https://vald.vdaas.org">vald.vdaas.org</a></p>
+</div>
 
 [![bg contain right:60%](image-7.png)](https://landscape.cncf.io/?item=app-definition-and-development--database--vald)
 
@@ -179,6 +185,7 @@ LINEヤフー株式会社 Matts966
 
 - メソッドチェーンで書けるので、補完に沿って書ける
 - テキストなのでLLMの力を借りやすい
+- GUIから出力できるJSONからGoへの自動変換が可能
 
 ![alt text](image-1.png)
 
@@ -203,7 +210,7 @@ go get github.com/grafana/grafana-foundation-sdk/go@v11.6.x+cog-v0.0.x
 
 <div class="center">
 
-![alt text](image-2.png)
+![width:800px](image-2.png)
 
 </div>
 
@@ -224,10 +231,29 @@ go get github.com/grafana/grafana-foundation-sdk/go@v11.6.x+cog-v0.0.x
 ## 結果
 
 - [github.com/vdaas/vald/pull/2937](github.com/vdaas/vald/pull/2937)
+
+![alt text](QR_752053.png)
+
 - コード量を1万行近く削減
 - ほぼ同じボードを再現
 
 ![alt text](image-4.png)
+
+
+<!-- 
+| Board | Before | After |
+|--------|--------|--------|
+| Agent Memory | <img width="1920" alt="image" src="https://github.com/user-attachments/assets/a902cf2a-69ba-44e0-aca5-cbe7e0566622" /><img width="1919" alt="image" src="https://github.com/user-attachments/assets/6215c298-bff5-416f-b1be-c7b90891c13c" /><img width="1920" alt="image" src="https://github.com/user-attachments/assets/cb076d4e-8aa2-4a80-a25d-30bded3d8c39" /> | <img width="1920" alt="image" src="https://github.com/user-attachments/assets/aea85f5e-bdbf-4689-9b93-41d0eeefc0c7" /><img width="1914" alt="image" src="https://github.com/user-attachments/assets/6a9f374b-815b-405c-8cb2-d3b6ee592a66" /><img width="1920" alt="image" src="https://github.com/user-attachments/assets/16056e2b-81d7-4d69-8605-9879fb514ff8" /> |
+| Cluster Overview | <img width="1916" alt="image" src="https://github.com/user-attachments/assets/3e385e6d-5fbe-4186-9c4d-5ac688d6d357" /><img width="1920" alt="image" src="https://github.com/user-attachments/assets/b7e057a3-d026-4fe6-9d66-803fcfd13344" /><img width="1920" alt="image" src="https://github.com/user-attachments/assets/d7abad81-cb6c-401d-b1d4-f9e9d3f27164" /> | <img width="1920" alt="image" src="https://github.com/user-attachments/assets/0cb13301-868a-49e6-b169-267e98dcb9a0" /><img width="1920" alt="image" src="https://github.com/user-attachments/assets/f0bfa68b-9d6f-4dd9-bf88-e8c663e406fa" /><img width="1920" alt="image" src="https://github.com/user-attachments/assets/cd39f505-32e7-4662-b7de-9a34293b2c67" /> |
+| Discoverer | <img width="1920" alt="image" src="https://github.com/user-attachments/assets/1a1465d3-e2d4-4988-b6a2-266c9f54338a" /> | <img width="1920" alt="image" src="https://github.com/user-attachments/assets/44715b59-a728-4a72-b699-ed05db1fc596" /> |
+| LB Gateway | <img width="1920" alt="image" src="https://github.com/user-attachments/assets/3b311790-1ca4-4cb4-8952-2163b534f597" /> | <img width="1920" alt="image" src="https://github.com/user-attachments/assets/e44f51cf-5e3c-404b-91f9-f05f0267b259" /> |
+| Agent | <img width="1920" alt="image" src="https://github.com/user-attachments/assets/ace72cdb-5d3e-42d8-915a-25b5639a9f86" /><img width="1920" alt="image" src="https://github.com/user-attachments/assets/8a9c0b00-e3ee-4cc3-a915-e4ede2be0cb6" /> | <img width="1920" alt="image" src="https://github.com/user-attachments/assets/474bdc86-a650-4a35-b2d6-ad601662632f" /><img width="1920" alt="image" src="https://github.com/user-attachments/assets/f17ca7bc-c51b-41df-8cb4-9bcfb17f13fb" /> | 
+| Benchmark Operator | <img width="1920" alt="image" src="https://github.com/user-attachments/assets/5bf084f7-5dc2-4f71-ac23-b671adb27ba9" /><img width="1920" alt="image" src="https://github.com/user-attachments/assets/e444e6f9-9375-4723-9291-c554ca8a9bb1" /> | <img width="1920" alt="image" src="https://github.com/user-attachments/assets/835ddbe4-b50f-4e93-aebb-05eb62814d05" /><img width="1920" alt="image" src="https://github.com/user-attachments/assets/e84d56c2-1667-4c43-9151-e15d022c3150" /> |
+| Helm Operator | <img width="1920" alt="image" src="https://github.com/user-attachments/assets/ff04df50-7c83-40a1-bf11-757cf2101e03" /> | <img width="1920" alt="image" src="https://github.com/user-attachments/assets/29652b77-88d7-4f76-97e8-ed3f90bf156b" /> |
+| Index Correction | <img width="1920" alt="image" src="https://github.com/user-attachments/assets/12d22561-e9e9-4b40-b2a5-2c2427554f0c" /> | <img width="1920" alt="image" src="https://github.com/user-attachments/assets/7c66ddc9-0787-4da9-b3f8-3067875d70f2" /> |
+| Index Manager | <img width="1920" alt="image" src="https://github.com/user-attachments/assets/7400e4e1-8ec4-46ac-ace7-e2f33714d35f" /> | <img width="1920" alt="image" src="https://github.com/user-attachments/assets/36d5da3e-0a2c-4a26-b49d-f1b5341e28b8" /> |
+-->
+<!-- </div> -->
 
 ![bg fit right:60%](image-5.png)
 
@@ -251,7 +277,8 @@ go get github.com/grafana/grafana-foundation-sdk/go@v11.6.x+cog-v0.0.x
 ## E2E V2: YAMLで宣言的にテストシナリオを記述
 
 - 得られた成果
-  - 環境が変わってもYAMLをもとにk8s JobでE2Eが走る
+  - ジェネリクスを用いた汎用k8s, gRPCクライアント
+  - 別環境でもYAMLをもとにk8s JobでE2Eが走る
   - パスで結果を取り出し、アサートできる
   - 並列実行・Loop処理を用いた負荷試験
 - Future Work
@@ -266,12 +293,16 @@ go get github.com/grafana/grafana-foundation-sdk/go@v11.6.x+cog-v0.0.x
 - CNCFにはハイブリッドサーチをサポートするOpenSearchもあり、検索用途で :+1:
 - 推薦・検出などベクトル検索だけ必要で、パフォーマンス重視の方にはValdは :+1:
 
+<div class="table">
+
 |検索手法|エンジン|90 %ile (ms)|99 %ile (ms)|MRR|
 |--|--|--|--|--|
 |全文検索|OpenSearch|10.42|23.79|0.605|
 |ハイブリッドサーチ|OpenSearch|21.56|28.823|**0.661**|
 |ベクトル検索|OpenSearch|9.60|11.87|0.619|
 |ベクトル検索|Vald|**1.93**|**2.363**|0.615|
+
+</div>
 
 [検索エンジン選定ガイド：ベクトル検索・全文検索からハイブリッドサーチまで](https://techblog.lycorp.co.jp/ja/20241225b)
 [LINEヤフー Tech Blog](https://techblog.lycorp.co.jp/ja/20241225b)

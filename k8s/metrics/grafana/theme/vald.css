@@ -61,3 +61,33 @@ footer {
     border: solid 1px;
     border-color: rgb(0, 186, 177);
 }
+
+.table {
+table {
+  table-layout: fixed;   /* セル幅を固定 */
+  width: 100%;           /* 表全体をページ幅に広げる */
+  border-collapse: collapse; 
+}
+table th, table td {
+  border: 1px solid #333; 
+  text-align: center; 
+  width: 200px;          /* 全列の幅を統一 */
+  word-wrap: break-word; /* 長い文字を折り返す */
+}
+}
+
+
+.table2 {
+table {
+  table-layout: fixed;   /* セル幅を固定 */
+  width: 100%;           /* 表全体をページ幅に広げる */
+  border-collapse: collapse; 
+}
+table th, table td {
+  border: 1px solid #333; 
+  text-align: center; 
+  width: 10px;          /* 全列の幅を統一 */
+  word-wrap: break-word; /* 長い文字を折り返す */
+  margin-right:0;
+}
+}
