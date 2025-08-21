@@ -246,6 +246,8 @@ jobs:
           username: ${{ secrets.PACKAGE_USER }}
           password: ${{ secrets.PACKAGE_TOKEN }}
       - name: Unify multiple platforms
+        env:
+          TARGET: ${{ inputs.target }}
         run: |
           image_name=`make docker/name/${TARGET}`
           alter_org=`make docker/name/org/alter`
