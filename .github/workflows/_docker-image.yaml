@@ -234,6 +234,7 @@ jobs:
     if: ${{ always() && (needs.build-amd64.result == 'success' || needs.build-arm64.result == 'success') }}
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
