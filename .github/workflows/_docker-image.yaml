@@ -160,8 +160,7 @@ jobs:
       - id: set-digest
         run: |
           REF="${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-amd64"
-          digest=$(docker buildx imagetools inspect --raw "$REF" \
- | jq -r '.manifests[]? | select(.platform.os=="linux" and .platform.architecture=="amd64") | .digest')
+          digest=$(docker buildx imagetools inspect --raw "$REF" | jq -r '.manifests[]? | select(.platform.os=="linux" and .platform.architecture=="amd64") | .digest')
           echo "digest=${digest}" >> $GITHUB_OUTPUT
   build-arm64:
     runs-on: ubuntu-latest
@@ -227,8 +226,7 @@ jobs:
       - id: set-digest
         run: |
           REF="${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-arm64"
-          digest=$(docker buildx imagetools inspect --raw "$REF" \
- | jq -r '.manifests[]? | select(.platform.os=="linux" and .platform.architecture=="arm64") | .digest')
+          digest=$(docker buildx imagetools inspect --raw "$REF" | jq -r '.manifests[]? | select(.platform.os=="linux" and .platform.architecture=="arm64") | .digest')
           echo "digest=${digest}" >> $GITHUB_OUTPUT
 
   unify:
