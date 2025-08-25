@@ -19,6 +19,7 @@ use futures::{Stream, StreamExt};
 use serde::{Serialize, de::DeserializeOwned};
 use sled::{
     Db, IVec, Tree,
+    transaction::{ConflictableTransactionError, TransactionError},
 };
 use std::borrow::Borrow;
 use std::fmt::Debug;
@@ -107,11 +108,37 @@ where
                         source: Box::new(e),
                     })?;
 
-            Ok(tree.insert(key_bytes.as_slice(), IVec::from(encoded_payload.clone())))
+            let transaction_result = (&tree).transaction(move |tx| {
+                let is_new;
+                if let Some(old_payload_ivec) = tx.get(key_bytes.as_slice())? {
+                    is_new = false;
+                    let (old_val_bytes, _): (Vec<u8>, u128) =
+                        bincode::decode_from_slice(&old_payload_ivec, bincode_standard())
+                            .map(|(decoded, _)| decoded)
+                            .map_err(|e| {
+                                ConflictableTransactionError::Abort(Error::Codec {
+                                    source: Box::new(e),
+                                })
+                            })?;
+                    tx.remove(old_val_bytes.as_slice())?;
+                } else {
+                    is_new = true;
+                }
+
+                tx.insert(key_bytes.as_slice(), IVec::from(encoded_payload.clone()))?;
+                
+                Ok(is_new)
+            });
+
+            transaction_result.map_err(|e: TransactionError<Error>| {
+                Error::SledTransaction {
+                    source: Box::new(e),
+                }
+            })
         })
         .await??;
 
-        if let Ok(_) = was_inserted {
+        if was_inserted {
             self.len.fetch_add(1, Ordering::SeqCst);
         }
 
@@ -127,11 +154,35 @@ where
     {
         let tree = self.tree.clone();
         let encoded_input = self.codec.encode(key)?;
-        let result = tree.remove(encoded_input.as_slice())?;
+        let deleted_bytes =
+            tokio::task::spawn_blocking(move || -> Result<Option<Vec<u8>>, Error> {
+                let transaction_result = (&tree).transaction(move |tx| {
+                    if let Some(payload_ivec) = tx.remove(encoded_input.as_slice())? {
+                        let (inverse_key_bytes, _): (Vec<u8>, u128) =
+                            bincode::decode_from_slice(&payload_ivec, bincode_standard())
+                                .map(|(decoded, _)| decoded)
+                                .map_err(|e| {
+                                    ConflictableTransactionError::Abort(Error::Codec {
+                                        source: Box::new(e),
+                                    })
+                                })?;
+                        Ok(Some(inverse_key_bytes))
+                    } else {
+                        Ok(None)
+                    }
+                });
 
-        if let Some(result) = result {
+                transaction_result.map_err(|e: TransactionError<Error>| {
+                    Error::SledTransaction {
+                        source: Box::new(e),
+                    }
+                })
+            })
+            .await??;
+
+        if let Some(bytes_to_decode) = deleted_bytes {
             self.len.fetch_sub(1, Ordering::SeqCst);
-            self.codec.decode(&result)
+            self.codec.decode(&bytes_to_decode)
         } else {
             Err(Error::NotFound)
         }
