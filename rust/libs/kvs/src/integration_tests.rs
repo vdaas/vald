@@ -223,7 +223,7 @@ async fn test_bidimap_concurrent_access() {
 #[tokio::test]
 async fn test_unidimap_crud_and_len() {
     let (path, _guard) = setup("unidimap_crud_and_len");
-    let map = BidiBuilder::new(&path).build().await.unwrap();
+    let map = UnidiBuilder::new(&path).build().await.unwrap();
     assert_eq!(map.len(), 0);
 
     map.set("alpha".to_string(), "one".to_string(), 123)
@@ -243,7 +243,6 @@ async fn test_unidimap_crud_and_len() {
     let (v2, ts2) = map.get("alpha").await.unwrap();
     assert_eq!(v2, "uno");
     assert_eq!(ts2, 456);
-    assert!(map.get_inverse("one").await.is_err());
 
     let removed = map.delete("alpha").await.unwrap();
     assert_eq!(removed, "uno");
@@ -252,23 +251,9 @@ async fn test_unidimap_crud_and_len() {
 }
 
 #[tokio::test]
-async fn test_unidimap_delete_inverse() {
-    let (path, _guard) = setup("unidimap_delete_inverse");
-    let map = BidiBuilder::new(&path).build().await.unwrap();
-    map.set("a".to_string(), "1".to_string(), 1).await.unwrap();
-    assert_eq!(map.len(), 1);
-
-    let removed_key = map.delete_inverse("1").await.unwrap();
-    assert_eq!(removed_key, "a");
-    assert_eq!(map.len(), 0);
-    assert!(map.get("a").await.is_err());
-    assert!(map.get_inverse("1").await.is_err());
-}
-
-#[tokio::test]
 async fn test_unidimap_range_callback() {
     let (path, _guard) = setup("unidimap_range_callback");
-    let map = BidiBuilder::new(&path).build().await.unwrap();
+    let map = UnidiBuilder::new(&path).build().await.unwrap();
     let mut expected = HashMap::new();
     for i in 0..10 {
         let k = format!("key{}", i);
@@ -294,7 +279,7 @@ async fn test_unidimap_range_callback() {
 #[tokio::test]
 async fn test_unidimap_range_stream() {
     let (path, _guard) = setup("unidimap_range_stream");
-    let map = BidiBuilder::new(&path).build().await.unwrap();
+    let map = UnidiBuilder::new(&path).build().await.unwrap();
     let mut expected = HashMap::new();
     for i in 0..10 {
         let k = format!("key{}", i);
@@ -319,7 +304,7 @@ async fn test_unidimap_range_stream() {
 async fn test_unidimap_disable_scan_on_startup() {
     let (path, _guard) = setup("unidimap_disable_scan_on_startup");
     {
-        let map = BidiBuilder::<String, String>::new(&path)
+        let map = UnidiBuilder::<String, String>::new(&path)
             .build()
             .await
             .unwrap();
@@ -328,7 +313,7 @@ async fn test_unidimap_disable_scan_on_startup() {
         map.flush().await.unwrap();
     }
 
-    let map = BidiBuilder::<String, String>::new(&path)
+    let map = UnidiBuilder::<String, String>::new(&path)
         .disable_scan_on_startup()
         .build()
         .await
@@ -343,7 +328,7 @@ async fn test_unidimap_disable_scan_on_startup() {
 #[tokio::test]
 async fn test_unidimap_concurrent_access() {
     let (path, _guard) = setup("unidimap_concurrent_access");
-    let map = BidiBuilder::new(&path).build().await.unwrap();
+    let map = UnidiBuilder::new(&path).build().await.unwrap();
 
     let num_items = 100;
     let items: Vec<_> = (0..num_items)
@@ -369,10 +354,6 @@ async fn test_unidimap_concurrent_access() {
             let (read_v, read_ts) = map.get(k.as_str()).await.unwrap();
             assert_eq!(read_v, v);
             assert_eq!(read_ts, ts);
-
-            let (read_k, read_ts_inv) = map.get_inverse(v.as_str()).await.unwrap();
-            assert_eq!(read_k, k);
-            assert_eq!(read_ts_inv, ts);
         });
     }
     while let Some(res) = set.join_next().await {
@@ -380,18 +361,13 @@ async fn test_unidimap_concurrent_access() {
     }
 
     let mut set = JoinSet::new();
-    for (i, (k, v, _)) in items.iter().enumerate() {
+    for (_, (k, v, _)) in items.iter().enumerate() {
         let map = map.clone();
         let k = k.clone();
         let v = v.clone();
         set.spawn(async move {
-            if i % 2 == 0 {
-                let deleted_v = map.delete(k.as_str()).await.unwrap();
-                assert_eq!(deleted_v, v);
-            } else {
-                let deleted_k = map.delete_inverse(v.as_str()).await.unwrap();
-                assert_eq!(deleted_k, k);
-            }
+            let deleted_v = map.delete(k.as_str()).await.unwrap();
+            assert_eq!(deleted_v, v);
         });
     }
     while let Some(res) = set.join_next().await {
