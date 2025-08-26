@@ -263,7 +263,7 @@ jobs:
 
           docker buildx imagetools create \
             --tag "$image_name:${{ needs.build-amd64.outputs.primary_tag }}" \
-            ${{ needs.build-amd64.outputs.extra_tags }}" \
+            ${{ needs.build-amd64.outputs.extra_tags }} \
             $refs
 
   slack:
