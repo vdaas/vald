@@ -84,6 +84,7 @@ jobs:
     needs: setup-matrix
     permissions:
       packages: write
+<<<<<<< HEAD
     strategy:
       max-parallel: 1
       matrix:
@@ -104,6 +105,12 @@ jobs:
         startsWith(github.ref, 'refs/tags/') ||
         (github.event_name == 'schedule')
       }}
+=======
+    outputs:
+      digest: ${{ steps.set-digest.outputs.digest }}
+      primary_tag: ${{ steps.build_and_publish.outputs.PRIMARY_TAG }}
+      extra_tags: ${{ steps.build_and_publish.outputs.EXTRA_TAGS }}
+>>>>>>> bc7161bfe (hotfix: Use extra tags to push nightly (#3189))
     steps:
       - name: Get ref
         id: ref
@@ -159,6 +166,7 @@ jobs:
           image_ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ contains(matrix.platform, 'arm64') && 'arm64' || 'amd64' }}"
       - name: Unify multiple platforms
         run: |
+<<<<<<< HEAD
           alter_org=`make docker/name/org/alter`
           alter_image_name=`make ORG="${alter_org}" docker/name/${{ inputs.target }}`
           # Append images to the unified tag, create a new one if not exists
@@ -174,6 +182,22 @@ jobs:
           docker buildx imagetools create \
             --tag "$alter_image_name:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}" \
             "$alter_image_name:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ contains(matrix.platform, 'arm64') && 'arm64' || 'amd64' }}")
+=======
+          image_name=`make docker/name/${TARGET}`
+          echo "IMAGE_NAME is: ${image_name}"
+          echo "IMAGE_NAME=${image_name}" >> $GITHUB_OUTPUT
+
+          AMD="${{ needs.build-amd64.outputs.digest }}"
+          ARM="${{ needs.build-arm64.outputs.digest }}"
+          refs=""
+          [ -n "$AMD" ] && refs="$image_name@$AMD"
+          [ -n "$ARM" ] && refs="$refs $image_name@$ARM"
+
+          docker buildx imagetools create \
+            --tag "$image_name:${{ needs.build-amd64.outputs.primary_tag }}" \
+            ${{ needs.build-amd64.outputs.extra_tags }} \
+            $refs
+>>>>>>> bc7161bfe (hotfix: Use extra tags to push nightly (#3189))
 
   slack:
     runs-on: ubuntu-latest
