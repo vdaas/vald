@@ -104,7 +104,6 @@ jobs:
     outputs:
       digest: ${{ steps.set-digest.outputs.digest }}
       primary_tag: ${{ steps.build_and_publish.outputs.PRIMARY_TAG }}
-      extra_tags: ${{ steps.build_and_publish.outputs.EXTRA_TAGS }}
     steps:
       - name: Get ref
         id: ref
@@ -252,19 +251,30 @@ jobs:
           TARGET: ${{ inputs.target }}
         run: |
           image_name=`make docker/name/${TARGET}`
+          alter_org=`make docker/name/org/alter`
+          alter_image_name=`make ORG="${alter_org}" docker/name/${TARGET}`
           echo "IMAGE_NAME is: ${image_name}"
+          echo "ALTER_IMAGE_NAME is: ${alter_image_name}"
           echo "IMAGE_NAME=${image_name}" >> $GITHUB_OUTPUT
+          echo "ALTER_IMAGE_NAME=${alter_image_name}" >> $GITHUB_OUTPUT
 
           AMD="${{ needs.build-amd64.outputs.digest }}"
           ARM="${{ needs.build-arm64.outputs.digest }}"
           refs=""
-          [ -n "$AMD" ] && refs="$image_name@$AMD"
-          [ -n "$ARM" ] && refs="$refs $image_name@$ARM"
+          alter_refs=""
+          [ -n "$AMD" ] && \
+            refs="$image_name@$AMD" && \
+            alter_refs="$alter_image_name@$AMD"
+          [ -n "$ARM" ] && \
+            refs="$refs $image_name@$ARM" && \
+            alter_refs="$alter_refs $alter_image_name@$ARM"
 
           docker buildx imagetools create \
             --tag "$image_name:${{ needs.build-amd64.outputs.primary_tag }}" \
-            ${{ needs.build-amd64.outputs.extra_tags }} \
             $refs
+          docker buildx imagetools create \
+            --tag "$alter_image_name:${{ needs.build-amd64.outputs.primary_tag }}" \
+            $alter_refs
 
   slack:
     runs-on: ubuntu-latest
