@@ -25,19 +25,20 @@
 //! its robust transactional capabilities, ensuring data consistency for bidirectional mappings.
 use std::sync::Arc;
 
-pub mod error;
-use error::Error;
-
-pub mod codec;
-use codec::{BincodeCodec, Codec};
-
-pub mod types;
-
-pub mod map;
 pub mod bidirectional_map;
+pub mod codec;
+pub mod error;
+pub mod map;
+pub mod types;
 pub mod unidirectional_map;
 
-use crate::{bidirectional_map::BidirectionalMap, map::Map, unidirectional_map::UnidirectionalMap};
+use crate::{
+    bidirectional_map::BidirectionalMap,
+    codec::{BincodeCodec, Codec},
+    error::Error,
+    map::Map,
+    unidirectional_map::UnidirectionalMap,
+};
 
 /// A builder for creating `Map` instances.
 ///

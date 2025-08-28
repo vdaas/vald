@@ -24,8 +24,8 @@ use tracing::instrument;
 use std::{borrow::Borrow, sync::Arc};
 use std::sync::atomic::AtomicUsize;
 
-use crate::{codec::Codec, map::Map, types::{KeyType, ValueType}};
-use crate::error::Error;
+use crate::{codec::Codec, error::Error, map::Map, types::{KeyType, ValueType}};
+
 
 const TREE_NAME: &str = "tree";
 /// A map implementation that stores key-value pairs in a single Sled tree.
