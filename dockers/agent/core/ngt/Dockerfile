@@ -46,18 +46,7 @@ ENV USER=root
 ENV PATH=${GOPATH}/bin:${GOROOT}/bin:/usr/local/bin:${PATH}
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
-RUN --mount=type=bind,target=.,rw \
-    --mount=type=tmpfs,target=/tmp \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked,id=${APP_NAME}-${TARGETARCH} \
-    --mount=type=cache,target=/var/cache/apt,sharing=locked,id=${APP_NAME}-${TARGETARCH} \
-    --mount=type=cache,target=/_cache/sccache,sharing=locked,id=sccache-${TARGETARCH} \
-    --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
-    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
-    --mount=type=tmpfs,target="${GOPATH}/src" \
-    set -ex \
-    && rm -f /etc/apt/apt.conf.d/docker-clean \
-    && echo 'APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
+RUN set -ex \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends --fix-missing \
@@ -85,6 +74,14 @@ RUN --mount=type=bind,target=.,rw \
     && locale-gen ${LANGUAGE} \
     && update-locale LANG=${LANGUAGE} \
     && dpkg-reconfigure -f noninteractive tzdata \
+#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
+RUN --mount=type=bind,target=.,rw \
+    --mount=type=tmpfs,target=/tmp \
+    --mount=type=cache,target=/_cache/sccache,sharing=locked,id=sccache-${TARGETARCH} \
+    --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
+    --mount=type=tmpfs,target="${GOPATH}/src" \
+    set -ex \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
     && make ngt/install \

@@ -47,17 +47,7 @@ ENV RUSTUP_HOME=${RUST_HOME}/rustup
 ENV PATH=${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:/usr/local/bin:${PATH}
 WORKDIR ${HOME}/rust/src/github.com/${ORG}/${REPO}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
-RUN --mount=type=bind,target=.,rw \
-    --mount=type=tmpfs,target=/tmp \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked,id=${APP_NAME}-${TARGETARCH} \
-    --mount=type=cache,target=/var/cache/apt,sharing=locked,id=${APP_NAME}-${TARGETARCH} \
-    --mount=type=cache,target=/_cache/sccache,sharing=locked,id=sccache-${TARGETARCH} \
-    --mount=type=cache,target="${CARGO_HOME}/registry",sharing=locked,id="cargo-registry-${TARGETARCH}" \
-    --mount=type=cache,target="${CARGO_HOME}/git",sharing=locked,id="cargo-git-${TARGETARCH}" \
-    set -ex \
-    && rm -f /etc/apt/apt.conf.d/docker-clean \
-    && echo 'APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
+RUN set -ex \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends --fix-missing \
@@ -86,6 +76,13 @@ RUN --mount=type=bind,target=.,rw \
     && locale-gen ${LANGUAGE} \
     && update-locale LANG=${LANGUAGE} \
     && dpkg-reconfigure -f noninteractive tzdata \
+#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
+RUN --mount=type=bind,target=.,rw \
+    --mount=type=tmpfs,target=/tmp \
+    --mount=type=cache,target=/_cache/sccache,sharing=locked,id=sccache-${TARGETARCH} \
+    --mount=type=cache,target="${CARGO_HOME}/registry",sharing=locked,id="cargo-registry-${TARGETARCH}" \
+    --mount=type=cache,target="${CARGO_HOME}/git",sharing=locked,id="cargo-git-${TARGETARCH}" \
+    set -ex \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \
     && make ngt/install \
     && make faiss/install \
