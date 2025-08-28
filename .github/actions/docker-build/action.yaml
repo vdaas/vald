@@ -109,6 +109,8 @@ runs:
       shell: bash
       id: build_and_push
       run: |
+        REF_SLUG="${{ github.ref_name }}"
+        REF_SLUG="${REF_SLUG//\//-}"
         make \
           REMOTE="true" \
           DOCKER="docker" \
@@ -120,7 +122,7 @@ runs:
           --label org.opencontainers.image.licenses=\"Apache 2.0\"" \
           EXTRA_ARGS="${EXTRA_TAGS}" \
           TAG="${PRIMARY_TAG}" \
-          REF="${{ github.ref_name }}" \
+          REF=$REF_SLUG \
           docker/build/${TARGET}
       env:
         TARGET: ${{ inputs.target }}
