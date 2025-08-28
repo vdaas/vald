@@ -21,7 +21,7 @@ use crate::error::Error;
 
 /// A trait for defining custom serialization and deserialization logic.
 ///
-/// This allows `BidiMap` to be generic over the data format, enabling users to
+/// This allows `Map` to be generic over the data format, enabling users to
 /// plug in their preferred serialization framework (e.g., Bincode, JSON, Protobuf).
 pub trait Codec: Send + Sync + 'static {
     /// Serializes a given value into a byte vector.
@@ -49,4 +49,3 @@ impl Codec for BincodeCodec {
             })
     }
 }
-
