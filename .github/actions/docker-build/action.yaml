@@ -120,6 +120,7 @@ runs:
           --label org.opencontainers.image.licenses=\"Apache 2.0\"" \
           EXTRA_ARGS="${EXTRA_TAGS}" \
           TAG="${PRIMARY_TAG}" \
+          REF="${{ github.ref_name }}" \
           docker/build/${TARGET}
       env:
         TARGET: ${{ inputs.target }}
