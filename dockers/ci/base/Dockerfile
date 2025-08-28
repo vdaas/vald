@@ -28,8 +28,8 @@ ARG TARGETOS
 ARG GO_VERSION
 ARG RUST_VERSION
 ENV APP_NAME=ci-container
-ENV CC="sccache gcc"
-ENV CXX="sccache g++"
+ENV CC=gcc
+ENV CXX=g++
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GO111MODULE=on
 ENV GOPATH=/go

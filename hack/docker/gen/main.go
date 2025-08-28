@@ -424,8 +424,8 @@ var (
 		"RUSTC_WRAPPER": "/usr/bin/sccache",
 	}
 	clangDefaultEnvironments = map[string]string{
-		"CC":  "\"sccache gcc\"",
-		"CXX": "\"sccache g++\"",
+		"CC":  "gcc",
+		"CXX": "g++",
 	}
 	goInstallCommands = []string{
 		"make GOPATH=\"${GOPATH}\" GOROOT=\"${GOROOT}\" GO_VERSION=\"${GO_VERSION}\" go/install",
