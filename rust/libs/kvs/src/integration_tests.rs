@@ -129,13 +129,13 @@ async fn test_range_callback<M: Map<K = String, V = String, C = BincodeCodec>>(p
 #[tokio::test]
 async fn test_bidirectional_map_range_callback() {
     let (path, _guard) = setup("bidirectional_map_range_callback");
-    let _ = test_range_callback::<BidirectionalMap<String, String, BincodeCodec>>(&path);
+    test_range_callback::<BidirectionalMap<String, String, BincodeCodec>>(&path).await;
 }
 
 #[tokio::test]
 async fn test_unidirectional_map_range_callback() {
     let (path, _guard) = setup("unidirectional_map_range_callback");
-    let _ = test_range_callback::<UnidirectionalMap<String, String, BincodeCodec>>(&path);
+    test_range_callback::<UnidirectionalMap<String, String, BincodeCodec>>(&path).await;
 }
 
 async fn test_range_stream<M: Map<K = String, V = String, C = BincodeCodec>>(path: &str) {
@@ -163,13 +163,13 @@ async fn test_range_stream<M: Map<K = String, V = String, C = BincodeCodec>>(pat
 #[tokio::test]
 async fn test_bidirectional_map_range_stream() {
     let (path, _guard) = setup("bidirectional_map_range_stream");
-    let _ = test_range_stream::<BidirectionalMap<String, String, BincodeCodec>>(&path);
+    test_range_stream::<BidirectionalMap<String, String, BincodeCodec>>(&path).await;
 }
 
 #[tokio::test]
 async fn test_unidirectional_map_range_stream() {
     let (path, _guard) = setup("unidirectional_map_range_stream");
-    let _ = test_range_stream::<UnidirectionalMap<String, String, BincodeCodec>>(&path);
+    test_range_stream::<UnidirectionalMap<String, String, BincodeCodec>>(&path).await;
 }
 
 async fn test_disable_scan_on_startup<M: Map<K = String, V = String, C = BincodeCodec>>(path: &str) {
@@ -198,20 +198,22 @@ async fn test_disable_scan_on_startup<M: Map<K = String, V = String, C = Bincode
 #[tokio::test]
 async fn test_bidirectional_map_disable_scan_on_startup() {
     let (path, _guard) = setup("bidirectional_map_disable_scan_on_startup");
-    let _ = test_disable_scan_on_startup::<BidirectionalMap<String, String, BincodeCodec>>(&path);
+    test_disable_scan_on_startup::<BidirectionalMap<String, String, BincodeCodec>>(&path).await;
 }
 
 #[tokio::test]
 async fn test_unidirectional_map_disable_scan_on_startup() {
     let (path, _guard) = setup("unidirectional_map_disable_scan_on_startup");
-    let _ = test_disable_scan_on_startup::<UnidirectionalMap<String, String, BincodeCodec>>(&path);
+    test_disable_scan_on_startup::<UnidirectionalMap<String, String, BincodeCodec>>(&path).await;
 }
 
-async fn test_concurrent_access<M, F1, F2>(path: &str, mut f1: F1, mut f2: F2)
+async fn test_concurrent_access<M, F1, F2, Fut1, Fut2>(path: &str, f1: F1, f2: F2)
 where
     M: Map<K = String, V = String, C = BincodeCodec>,
-    F1: FnMut(Arc<M>, String, String, u128) -> () + Send + Copy + 'static,
-    F2: FnMut(Arc<M>, String, String, usize) -> () + Send + Copy + 'static,
+    F1: Fn(Arc<M>, String, String, u128) -> Fut1 + Send + Sync + Copy + 'static,
+    F2: Fn(Arc<M>, String, String, usize) -> Fut2 + Send + Sync + Copy + 'static,
+    Fut1: Future<Output = ()> + Send,
+    Fut2: Future<Output = ()> + Send,
 {
     let map = MapBuilder::<M>::new(&path).build().await.unwrap();
 
@@ -224,7 +226,7 @@ where
     for (k, v, ts) in items.clone() {
         let map = map.clone();
         set.spawn(async move {
-            let _ = map.set(k, v, ts).await;
+            map.set(k, v, ts).await.unwrap();
         });
     }
     while let Some(res) = set.join_next().await {
@@ -236,7 +238,7 @@ where
     for (k, v, ts) in items.clone() {
         let map = map.clone();
         set.spawn(async move {
-            f1(map, k, v, ts)
+            f1(map, k, v, ts).await;
         });
     }
     while let Some(res) = set.join_next().await {
@@ -249,7 +251,7 @@ where
         let k = k.clone();
         let v = v.clone();
         set.spawn(async move {
-            f2(map, k, v, i)
+            f2(map, k, v, i).await;
         });
     }
     while let Some(res) = set.join_next().await {
@@ -262,45 +264,38 @@ where
 #[tokio::test]
 async fn test_bidirectional_map_concurrent_access() {
     let (path, _guard) = setup("bidirectional_map_concurrent_access");
-    let f1 = |map: Arc<BidirectionalMap<String, String, BincodeCodec>>, key: String, value: String, timestamp: u128|{
-        let _ = async {
-            let (read_v, read_ts) = map.get(key.as_str()).await.unwrap();
-            assert_eq!(read_v, value);
-            assert_eq!(read_ts, timestamp);
-            let (read_k, read_ts_inv) = map.get_inverse(value.as_str()).await.unwrap();
-            assert_eq!(read_k, key);
-            assert_eq!(read_ts_inv, timestamp);
-        };
+    let f1 = |map: Arc<BidirectionalMap<String, String, BincodeCodec>>, key: String, value: String, timestamp: u128| async move {
+        let (read_v, read_ts) = map.get(key.as_str()).await.unwrap();
+        assert_eq!(read_v, value);
+        assert_eq!(read_ts, timestamp);
+        let (read_k, read_ts_inv) = map.get_inverse(value.as_str()).await.unwrap();
+        assert_eq!(read_k, key);
+        assert_eq!(read_ts_inv, timestamp);
     };
-    let f2 = |map: Arc<BidirectionalMap<String, String, BincodeCodec>>, key: String, value: String, i: usize| {
-        let _ = async {
-            if i % 2 == 0 {
-                let deleted_v = map.delete(key.as_str()).await.unwrap();
-                assert_eq!(deleted_v, value);
-            } else {
-                let deleted_k = map.delete_inverse(value.as_str()).await.unwrap();
-                assert_eq!(deleted_k, key);
-            }
-        };
+    let f2 = |map: Arc<BidirectionalMap<String, String, BincodeCodec>>, key: String, value: String, i: usize| async move {
+        if i % 2 == 0 {
+            let deleted_v = map.delete(key.as_str()).await.unwrap();
+            assert_eq!(deleted_v, value);
+        } else {
+            let deleted_k = map.delete_inverse(value.as_str()).await.unwrap();
+            assert_eq!(deleted_k, key);
+        }
     };
-    let _ = test_concurrent_access(&path, f1, f2);
+    test_concurrent_access(&path, f1, f2).await;
 }
 
 #[tokio::test]
 async fn test_unidirectional_map_concurrent_access() {
     let (path, _guard) = setup("unidirectional_map_concurrent_access");
-    let f1 = |map: Arc<UnidirectionalMap<String, String, BincodeCodec>>, key: String, value: String, timestamp: u128| {
-        let _ = async {
-            let (read_v, read_ts) = map.get(key.as_str()).await.unwrap();
-            assert_eq!(read_v, value);
-            assert_eq!(read_ts, timestamp);
-        };
+    let f1 = |map: Arc<UnidirectionalMap<String, String, BincodeCodec>>, key: String, value: String, timestamp: u128| async move {
+        let (read_v, read_ts) = map.get(key.as_str()).await.unwrap();
+        assert_eq!(read_v, value);
+        assert_eq!(read_ts, timestamp);
     };
-    let f2 = |map: Arc<UnidirectionalMap<String, String, BincodeCodec>>, key: String, value: String, _: usize| {
-        let _ = async {
-            let deleted_v = map.delete(key.as_str()).await.unwrap();
-            assert_eq!(deleted_v, value);
-        };
+    let f2 = |map: Arc<UnidirectionalMap<String, String, BincodeCodec>>, key: String, value: String, _: usize| async move {
+        let deleted_v = map.delete(key.as_str()).await.unwrap();
+        assert_eq!(deleted_v, value);
     };
-    let _ = test_concurrent_access(&path, f1, f2);
+    test_concurrent_access(&path, f1, f2).await;
 }
+
