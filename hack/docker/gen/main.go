@@ -239,11 +239,7 @@ WORKDIR {{.RootDir}}/${ORG}/${REPO}
 COPY {{$files}}
 {{- end}}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
-RUN {{RunMounts .RunMounts}} \
-    set -ex \
-    && rm -f /etc/apt/apt.conf.d/docker-clean \
-    && echo 'APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
+RUN set -ex \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends --fix-missing \
@@ -265,6 +261,9 @@ RUN {{RunMounts .RunMounts}} \
     && locale-gen ${LANGUAGE} \
     && update-locale LANG=${LANGUAGE} \
     && dpkg-reconfigure -f noninteractive tzdata \
+#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
+RUN {{RunMounts .RunMounts}} \
+    set -ex \
     && {{RunCommands .RunCommands}}
 {{- if and (not (eq (ContainerName .ContainerType) "%s")) (not (eq (ContainerName .ContainerType) "%s"))}}
 # skipcq: DOK-DL3026,DOK-DL3007
@@ -453,8 +452,6 @@ var (
 	defaultMounts = []string{
 		"--mount=type=bind,target=.,rw",
 		"--mount=type=tmpfs,target=/tmp",
-		"--mount=type=cache,target=/var/lib/apt,sharing=locked,id=${APP_NAME}-${TARGETARCH}",
-		"--mount=type=cache,target=/var/cache/apt,sharing=locked,id=${APP_NAME}-${TARGETARCH}",
 		"--mount=type=cache,target=/_cache/sccache,sharing=locked,id=sccache-${TARGETARCH}",
 	}
 	goDefaultMounts = []string{
