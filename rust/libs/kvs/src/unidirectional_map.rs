@@ -109,22 +109,7 @@ fn set_transaction_func(t: Tree) -> impl FnOnce(Vec<u8>, Vec<u8>, u128) -> Resul
                 source: Box::new(e),
             }))?;
         (&t).transaction(move |tx| {
-            let is_new;
-            if let Some(old_payload_ivec) = tx.get(key.as_slice())? {
-                is_new = false;
-                let (old_val_bytes, _): (Vec<u8>, u128) =
-                    bincode::decode_from_slice(&old_payload_ivec, bincode_standard())
-                        .map(|(decoded, _)| decoded)
-                        .map_err(|e| {
-                            ConflictableTransactionError::Abort(Error::Codec {
-                                source: Box::new(e),
-                            })
-                        })?;
-                tx.remove(old_val_bytes.as_slice())?;
-            } else {
-                is_new = true;
-            }
-
+            let is_new= !tx.get(key.as_slice())?.is_some();
             tx.insert(key.as_slice(), IVec::from(encoded_payload.clone()))?;
             
             Ok(is_new)
