@@ -93,10 +93,10 @@ ifeq ($(REMOTE),true)
 	@echo "starting remote build for $(IMAGE):$(TAG)"
 	DOCKER_BUILDKIT=1 $(DOCKER) buildx build \
 		$(DOCKER_OPTS) \
-		--cache-to type=gha,scope=$(TAG)-buildcache,mode=max \
-		--cache-to type=registry,ref=$(GHCRORG)/$(IMAGE):$(TAG)-buildcache,mode=max \
-		--cache-from type=gha,scope=$(TAG)-buildcache \
-		--cache-from type=registry,ref=$(GHCRORG)/$(IMAGE):$(TAG)-buildcache \
+		--cache-to type=gha,mode=max \
+		--cache-to type=registry,mode=max \
+		--cache-from type=gha \
+		--cache-from type=registry \
 		--build-arg BUILDKIT_INLINE_CACHE=$(BUILDKIT_INLINE_CACHE) \
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg RUST_VERSION=$(RUST_VERSION) \
