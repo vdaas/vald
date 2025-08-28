@@ -14,14 +14,11 @@
 // limitations under the License.
 //
 
-use crate::unidirectional_map::UnidirectionalMap;
-
 use super::*;
 use futures::stream::StreamExt;
 use std::collections::HashMap;
 use std::fs;
 use tokio::task::JoinSet;
-use bidirectional_map::BidirectionalMap;
 
 const TEST_DB_BASE_PATH: &str = "./test_db";
 
