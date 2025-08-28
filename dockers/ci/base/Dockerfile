@@ -98,7 +98,7 @@ RUN set -ex \
 RUN --mount=type=bind,target=.,rw \
     --mount=type=tmpfs,target=/tmp \
     --mount=type=cache,target=/_cache/sccache,sharing=locked,id=sccache-${TARGETARCH} \
-    --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target="${GOPATH}/pkg",id="go-pkg-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
     --mount=type=tmpfs,target="${GOPATH}/src" \
     --mount=type=cache,target="${CARGO_HOME}/registry",sharing=locked,id="cargo-registry-${TARGETARCH}" \
