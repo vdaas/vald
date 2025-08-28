@@ -67,6 +67,6 @@ jobs:
       - name: Go build
         env:
           CC: "sccache gcc"
-          CXX: "sccache gcc"
+          CXX: "sccache g++"
         run: |
           make binary/build
