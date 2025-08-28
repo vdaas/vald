@@ -212,7 +212,6 @@ $(LIB_PATH)/libz.a: $(LIB_PATH)
 	&& cd $(TEMP_DIR)/zlib \
 	&& mkdir -p build \
 	&& cd build \
-	&& sccache --start-server \
 	&& cmake -DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DBUILD_SHARED_LIBS=OFF \
@@ -244,7 +243,6 @@ $(LIB_PATH)/libhdf5.a: $(LIB_PATH) \
 	&& tar -xzvf $(TEMP_DIR)/hdf5.tar.gz -C $(TEMP_DIR)/hdf5 --strip-components 1 \
 	&& mkdir -p $(TEMP_DIR)/hdf5/build \
 	&& cd $(TEMP_DIR)/hdf5/build \
-	&& sccache --start-server \
 	&& cmake -DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DBUILD_SHARED_LIBS=OFF \
