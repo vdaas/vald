@@ -239,6 +239,7 @@ WORKDIR {{.RootDir}}/${ORG}/${REPO}
 COPY {{$files}}
 {{- end}}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
 RUN set -ex \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
     && apt-get update -y \
@@ -261,7 +262,7 @@ RUN set -ex \
     && locale-gen ${LANGUAGE} \
     && update-locale LANG=${LANGUAGE} \
     && dpkg-reconfigure -f noninteractive tzdata \
-#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
+#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086
 RUN {{RunMounts .RunMounts}} \
     set -ex \
     && {{RunCommands .RunCommands}}
