@@ -71,6 +71,8 @@ RUN set -ex \
     libopenblas-dev \
     gfortran \
     pkg-config \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
