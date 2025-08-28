@@ -62,6 +62,7 @@ impl<K: KeyType, V: ValueType, C: Codec> Map for BidirectionalMap<K, V, C> {
         &self.codec
     }
 
+    #[instrument(skip(self, key))]
     fn get<Q>(&self, key: &Q) -> impl Future<Output = Result<(Self::V, u128), Error>> + Send
     where
         Self::K: Borrow<Q>,
@@ -70,6 +71,7 @@ impl<K: KeyType, V: ValueType, C: Codec> Map for BidirectionalMap<K, V, C> {
         self.perform_get(key, &self.primary_tree)
     }
 
+    #[instrument(skip(self, key, value))]
     fn set(&self, key: Self::K, value: Self::V, timestamp: u128) -> impl Future<Output = Result<(), Error>> + Send {
         let pt = self.primary_tree.clone();
         let st = self.secondary_tree.clone();
