@@ -76,7 +76,7 @@ RUN set -ex \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
     && locale-gen ${LANGUAGE} \
     && update-locale LANG=${LANGUAGE} \
-    && dpkg-reconfigure -f noninteractive tzdata \
+    && dpkg-reconfigure -f noninteractive tzdata
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086
 RUN --mount=type=bind,target=.,rw \
     --mount=type=tmpfs,target=/tmp \
