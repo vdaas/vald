@@ -56,9 +56,7 @@ RUN --mount=type=bind,target=.,rw \
     set -ex \
     && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
-    && apt-get clean \
     && apt-get update -y \
-    && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --fix-missing \
     build-essential \
     ca-certificates \
@@ -81,9 +79,6 @@ RUN --mount=type=bind,target=.,rw \
     && locale-gen ${LANGUAGE} \
     && update-locale LANG=${LANGUAGE} \
     && dpkg-reconfigure -f noninteractive tzdata \
-    && apt-get clean \
-    && apt-get autoclean -y \
-    && apt-get autoremove -y \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
     && make ngt/install \

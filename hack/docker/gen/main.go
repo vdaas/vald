@@ -244,9 +244,7 @@ RUN {{RunMounts .RunMounts}} \
     set -ex \
     && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
-    && apt-get clean \
     && apt-get update -y \
-    && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --fix-missing \
     build-essential \
     ca-certificates \
@@ -266,9 +264,6 @@ RUN {{RunMounts .RunMounts}} \
     && locale-gen ${LANGUAGE} \
     && update-locale LANG=${LANGUAGE} \
     && dpkg-reconfigure -f noninteractive tzdata \
-    && apt-get clean \
-    && apt-get autoclean -y \
-    && apt-get autoremove -y \
     && {{RunCommands .RunCommands}}
 {{- if and (not (eq (ContainerName .ContainerType) "%s")) (not (eq (ContainerName .ContainerType) "%s"))}}
 # skipcq: DOK-DL3026,DOK-DL3007
@@ -517,14 +512,9 @@ var (
 
 	devContainerPreprocess = []string{
 		"curl -fsSL https://deb.nodesource.com/setup_current.x | bash -",
-		"apt-get clean",
 		"apt-get update -y",
-		"apt-get upgrade -y",
 		"apt-get install -y --no-install-recommends --fix-missing nodejs",
 		"npm install -g npm@latest",
-		"apt-get clean",
-		"apt-get autoclean -y",
-		"apt-get autoremove -y",
 		"make delve/install",
 		"make gomodifytags/install",
 		"make gopls/install",

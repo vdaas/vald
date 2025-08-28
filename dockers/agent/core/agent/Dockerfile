@@ -53,9 +53,7 @@ RUN --mount=type=bind,target=.,rw \
     set -ex \
     && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
-    && apt-get clean \
     && apt-get update -y \
-    && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --fix-missing \
     build-essential \
     ca-certificates \
@@ -79,9 +77,6 @@ RUN --mount=type=bind,target=.,rw \
     && locale-gen ${LANGUAGE} \
     && update-locale LANG=${LANGUAGE} \
     && dpkg-reconfigure -f noninteractive tzdata \
-    && apt-get clean \
-    && apt-get autoclean -y \
-    && apt-get autoremove -y \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \
     && make ngt/install \
     && make faiss/install \
