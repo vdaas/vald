@@ -474,7 +474,6 @@ var (
 		"libssl-dev",
 		"unzip",
 		"sccache",
-		"lld",
 		"ninja-build",
 	}
 	ngtBuildDeps = []string{

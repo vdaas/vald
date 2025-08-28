@@ -172,11 +172,11 @@ CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 TEST_LDFLAGS = $(LDFLAGS) $(CGO_LDFLAGS)
 
 ifeq ($(GOARCH),amd64)
-CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl -fuse-ld=lld
+CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
 CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?= -m64
 else ifeq ($(GOARCH),arm64)
-CFLAGS ?= -fuse-ld=lld
+CFLAGS ?=
 ifeq ($(GOOS),darwin)
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lz -ldl -lm
 CFLAGS = -I $(shell brew --prefix hdf5)/include

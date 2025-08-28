@@ -63,7 +63,6 @@ RUN set -ex \
     libssl-dev \
     unzip \
     sccache \
-    lld \
     ninja-build \
     liblapack-dev \
     libomp-dev \
