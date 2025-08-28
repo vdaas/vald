@@ -516,6 +516,7 @@ var (
 
 	devContainerPreprocess = []string{
 		"curl -fsSL https://deb.nodesource.com/setup_current.x | bash -",
+		"apt-get clean",
 		"apt-get update -y",
 		"apt-get install -y --no-install-recommends --fix-missing nodejs",
 		"npm install -g npm@latest",
