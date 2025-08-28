@@ -639,6 +639,7 @@ docs/overview/component/mirror-gateway.md
 docs/overview/data-flow.md
 docs/performance/benchmark.md
 docs/performance/continuous-benchmark.md
+docs/performance/loadtest.md
 docs/performance/tuning-search-performance.md
 docs/support/FAQ.md
 docs/support/contacts.md
