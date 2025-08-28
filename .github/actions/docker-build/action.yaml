@@ -109,7 +109,7 @@ runs:
       shell: bash
       id: build_and_push
       run: |
-        REF_SLUG="${{ github.ref_name }}"
+        REF_SLUG="${{ github.head_ref || github.ref_name }}"
         REF_SLUG="${REF_SLUG//\//-}"
         make \
           REMOTE="true" \
