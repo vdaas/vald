@@ -106,8 +106,8 @@ RUN --mount=type=bind,target=.,rw \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \
-    && curl -fsSL https://deb.nodesource.com/setup_current.x | bash - \
     && apt-get clean \
+    && curl -fsSL https://deb.nodesource.com/setup_current.x | bash - \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends --fix-missing nodejs \
     && npm install -g npm@latest \
