@@ -88,6 +88,7 @@ RUN --mount=type=bind,target=.,rw \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \
     && make ngt/install \
     && make faiss/install \
+    && sccache --show-stats || true \
     && make rust/target/release/${APP_NAME} \
     && mv "rust/target/release/${APP_NAME}" "/usr/bin/${APP_NAME}" \
     && rm -rf rust/target

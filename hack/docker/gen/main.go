@@ -98,6 +98,7 @@ const (
 	ngtPreprocess     = "make ngt/install"
 	faissPreprocess   = "make faiss/install"
 	usearchPreprocess = "make usearch/install"
+	sccacheStats      = "sccache --show-stats || true"
 
 	helmOperatorRootdir   = "/opt/helm"
 	helmOperatorWatchFile = helmOperatorRootdir + "/watches.yaml"
@@ -665,13 +666,13 @@ func main() {
 			AppName:       "ngt",
 			PackageDir:    agent + "/core/ngt",
 			ExtraPackages: append(clangBuildDeps, ngtBuildDeps...),
-			Preprocess:    []string{ngtPreprocess},
+			Preprocess:    []string{ngtPreprocess, sccacheStats},
 		},
 		"vald-" + agentFaiss: {
 			AppName:       "faiss",
 			PackageDir:    agent + "/core/faiss",
 			ExtraPackages: append(clangBuildDeps, ngtBuildDeps...),
-			Preprocess:    []string{faissPreprocess},
+			Preprocess:    []string{faissPreprocess, sccacheStats},
 		},
 		"vald-" + agent: {
 			AppName:       agent,
@@ -683,6 +684,7 @@ func main() {
 			Preprocess: []string{
 				ngtPreprocess,
 				faissPreprocess,
+				sccacheStats,
 			},
 		},
 		"vald-" + agentSidecar: {
@@ -743,6 +745,7 @@ func main() {
 			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
 			Preprocess: []string{
 				"make hdf5/install",
+				sccacheStats,
 			},
 		},
 		"vald-benchmark-operator": {
@@ -797,7 +800,7 @@ func main() {
 				append(ngtBuildDeps,
 					append(rustBuildDeps,
 						devContainerDeps...)...)...)...),
-			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess, usearchPreprocess),
+			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess, usearchPreprocess, sccacheStats),
 			Entrypoints: []string{"/bin/bash"},
 		},
 		"vald-dev-container": {
@@ -815,7 +818,8 @@ func main() {
 			Preprocess: append(devContainerPreprocess,
 				append(ciContainerPreprocess,
 					ngtPreprocess,
-					faissPreprocess)...),
+					faissPreprocess,
+					sccacheStats)...),
 		},
 		"vald-example-client": {
 			AppName:       "client",
@@ -823,6 +827,7 @@ func main() {
 			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
 			Preprocess: []string{
 				"make hdf5/install",
+				sccacheStats,
 			},
 		},
 		"vald-e2e": {
@@ -831,6 +836,7 @@ func main() {
 			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
 			Preprocess: []string{
 				"make hdf5/install",
+				sccacheStats,
 			},
 		},
 		"vald-buildbase": {
