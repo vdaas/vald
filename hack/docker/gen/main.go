@@ -462,6 +462,10 @@ var (
 		"--mount=type=cache,target=\"${HOME}/.cache/go-build\",id=\"go-build-${TARGETARCH}\"",
 		"--mount=type=tmpfs,target=\"${GOPATH}/src\"",
 	}
+	rustDefaultMounts = []string{
+		"--mount=type=cache,target=\"${CARGO_HOME}/registry\",sharing=locked,id=\"cargo-registry-${TARGETARCH}\"",
+		"--mount=type=cache,target=\"${CARGO_HOME}/git\",sharing=locked,id=\"cargo-git-${TARGETARCH}\"",
+	}
 
 	clangBuildDeps = []string{
 		"cmake",
@@ -1106,7 +1110,10 @@ jobs:
 				}
 				commands = append(commands, rustBuildCommands...)
 				data.RunCommands = commands
-				data.RunMounts = defaultMounts
+				mounts := make([]string, 0, len(defaultMounts)+len(rustDefaultMounts))
+				mounts = append(mounts, defaultMounts...)
+				mounts = append(mounts, rustDefaultMounts...)
+				data.RunMounts = mounts
 			case DevContainer, CIContainer:
 				data.Environments = appendM(data.Environments, goDefaultEnvironments, rustDefaultEnvironments, clangDefaultEnvironments)
 				data.RootDir = goWorkdir
@@ -1117,9 +1124,10 @@ jobs:
 				}
 				commands = append(commands, "rm -rf {{.RootDir}}/${ORG}/${REPO}/*")
 				data.RunCommands = commands
-				mounts := make([]string, 0, len(defaultMounts)+len(goDefaultMounts))
+				mounts := make([]string, 0, len(defaultMounts)+len(goDefaultMounts)+len(rustDefaultMounts))
 				mounts = append(mounts, defaultMounts...)
 				mounts = append(mounts, goDefaultMounts...)
+				mounts = append(mounts, rustDefaultMounts...)
 				data.RunMounts = mounts
 			case HelmOperator:
 				data.Environments = appendM(data.Environments, goDefaultEnvironments)
