@@ -422,8 +422,8 @@ var (
 		"RUSTC_WRAPPER": "/usr/bin/sccache",
 	}
 	clangDefaultEnvironments = map[string]string{
-		"CC":  "gcc",
-		"CXX": "g++",
+		"CC":  "sccache gcc",
+		"CXX": "sccache g++",
 	}
 	goInstallCommands = []string{
 		"make GOPATH=\"${GOPATH}\" GOROOT=\"${GOROOT}\" GO_VERSION=\"${GO_VERSION}\" go/install",
@@ -474,6 +474,7 @@ var (
 		"libssl-dev",
 		"unzip",
 		"sccache",
+		"lld",
 		"ninja-build",
 	}
 	ngtBuildDeps = []string{

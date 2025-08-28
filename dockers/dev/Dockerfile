@@ -28,8 +28,8 @@ ARG TARGETOS
 ARG GO_VERSION
 ARG RUST_VERSION
 ENV APP_NAME=dev-container
-ENV CC=gcc
-ENV CXX=g++
+ENV CC=sccache gcc
+ENV CXX=sccache g++
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GO111MODULE=on
 ENV GOPATH=/go
@@ -82,6 +82,7 @@ RUN --mount=type=bind,target=.,rw \
     libssl-dev \
     unzip \
     sccache \
+    lld \
     ninja-build \
     liblapack-dev \
     libomp-dev \

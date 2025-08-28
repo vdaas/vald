@@ -73,6 +73,7 @@ RUN --mount=type=bind,target=.,rw \
     libssl-dev \
     unzip \
     sccache \
+    lld \
     ninja-build \
     liblapack-dev \
     libomp-dev \

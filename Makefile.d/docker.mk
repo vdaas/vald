@@ -93,26 +93,26 @@ ifeq ($(REMOTE),true)
 	@echo "starting remote build for $(IMAGE):$(TAG)"
 	DOCKER_BUILDKIT=1 $(DOCKER) buildx build \
 		$(DOCKER_OPTS) \
-        --cache-to=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-amd64-shared,mode=max,platform=linux/amd64 \
-        --cache-to=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-amd64-$(REF),mode=max,platform=linux/amd64 \
-        --cache-to=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-arm64-shared,mode=max,platform=linux/arm64 \
-        --cache-to=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-arm64-$(REF),mode=max,platform=linux/arm64 \
 		--cache-to=type=gha,scope=buildcache-$(IMAGE)-amd64-shared,mode=max,platform=linux/amd64 \
 		--cache-to=type=gha,scope=buildcache-$(IMAGE)-amd64-$(REF),mode=max,platform=linux/amd64 \
 		--cache-to=type=gha,scope=buildcache-$(IMAGE)-arm64-shared,mode=max,platform=linux/arm64 \
 		--cache-to=type=gha,scope=buildcache-$(IMAGE)-arm64-$(REF),mode=max,platform=linux/arm64 \
+    --cache-to=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-amd64-shared,mode=max,platform=linux/amd64 \
+    --cache-to=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-amd64-$(REF),mode=max,platform=linux/amd64 \
+    --cache-to=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-arm64-shared,mode=max,platform=linux/arm64 \
+    --cache-to=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-arm64-$(REF),mode=max,platform=linux/arm64 \
+		--cache-from=type=gha,scope=buildcache-$(IMAGE)-amd64-$(REF) \
+		--cache-from=type=gha,scope=buildcache-$(IMAGE)-amd64-main \
+		--cache-from=type=gha,scope=buildcache-$(IMAGE)-amd64-shared \
+		--cache-from=type=gha,scope=buildcache-$(IMAGE)-arm64-$(REF) \
+		--cache-from=type=gha,scope=buildcache-$(IMAGE)-arm64-main \
+		--cache-from=type=gha,scope=buildcache-$(IMAGE)-arm64-shared \
 		--cache-from=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-amd64-$(REF) \
 		--cache-from=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-amd64-main \
 		--cache-from=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-amd64-shared \
 		--cache-from=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-arm64-$(REF) \
 		--cache-from=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-arm64-main \
 		--cache-from=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-arm64-shared \
-		--cache-from=type=gha,scope=buildcache-$(IMAGE)-amd64-shared \
-		--cache-from=type=gha,scope=buildcache-$(IMAGE)-amd64-main \
-		--cache-from=type=gha,scope=buildcache-$(IMAGE)-amd64-$(REF) \
-		--cache-from=type=gha,scope=buildcache-$(IMAGE)-arm64-shared \
-		--cache-from=type=gha,scope=buildcache-$(IMAGE)-arm64-main \
-		--cache-from=type=gha,scope=buildcache-$(IMAGE)-arm64-$(REF) \
 		--build-arg BUILDKIT_INLINE_CACHE=$(BUILDKIT_INLINE_CACHE) \
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg RUST_VERSION=$(RUST_VERSION) \
