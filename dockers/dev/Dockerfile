@@ -65,7 +65,7 @@ RUN --mount=type=bind,target=.,rw \
     --mount=type=cache,target="${CARGO_HOME}/git",sharing=locked,id="cargo-git-${TARGETARCH}" \
     set -ex \
     && rm -f /etc/apt/apt.conf.d/docker-clean \
-    && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
+    && echo 'APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends --fix-missing \
