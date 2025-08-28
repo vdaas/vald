@@ -40,6 +40,7 @@ ENV LC_ALL=en_US.UTF-8
 ENV ORG=vdaas
 ENV PKG=index/job/creation
 ENV REPO=vald
+ENV SCCACHE_DIR=/_cache/sccache
 ENV TZ=Etc/UTC
 ENV USER=root
 ENV PATH=${GOPATH}/bin:${GOROOT}/bin:/usr/local/bin:${PATH}
@@ -50,10 +51,12 @@ RUN --mount=type=bind,target=.,rw \
     --mount=type=tmpfs,target=/tmp \
     --mount=type=cache,target=/var/lib/apt,sharing=locked,id=${APP_NAME}-${TARGETARCH} \
     --mount=type=cache,target=/var/cache/apt,sharing=locked,id=${APP_NAME}-${TARGETARCH} \
+    --mount=type=cache,target=/_cache/sccache,sharing=locked,id=sccache-${TARGETARCH} \
     --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
     --mount=type=tmpfs,target="${GOPATH}/src" \
     set -ex \
+    && rm -f /etc/apt/apt.conf.d/docker-clean \
     && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
     && apt-get update -y \

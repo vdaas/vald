@@ -42,7 +42,9 @@ ENV LC_ALL=en_US.UTF-8
 ENV ORG=vdaas
 ENV PKG=dev
 ENV REPO=vald
+ENV RUSTC_WRAPPER=/usr/bin/sccache
 ENV RUST_HOME=/usr/local/lib/rust
+ENV SCCACHE_DIR=/_cache/sccache
 ENV TZ=Etc/UTC
 ENV USER=root
 ENV CARGO_HOME=${RUST_HOME}/cargo
@@ -55,10 +57,12 @@ RUN --mount=type=bind,target=.,rw \
     --mount=type=tmpfs,target=/tmp \
     --mount=type=cache,target=/var/lib/apt,sharing=locked,id=${APP_NAME}-${TARGETARCH} \
     --mount=type=cache,target=/var/cache/apt,sharing=locked,id=${APP_NAME}-${TARGETARCH} \
+    --mount=type=cache,target=/_cache/sccache,sharing=locked,id=sccache-${TARGETARCH} \
     --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
     --mount=type=tmpfs,target="${GOPATH}/src" \
     set -ex \
+    && rm -f /etc/apt/apt.conf.d/docker-clean \
     && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
     && apt-get update -y \
@@ -75,6 +79,8 @@ RUN --mount=type=bind,target=.,rw \
     gcc \
     libssl-dev \
     unzip \
+    sccache \
+    ninja-build \
     liblapack-dev \
     libomp-dev \
     libopenblas-dev \
@@ -102,29 +108,17 @@ RUN --mount=type=bind,target=.,rw \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends --fix-missing nodejs \
     && npm install -g npm@latest \
-    && make delve/install \
-    && make gomodifytags/install \
-    && make gopls/install \
-    && make gotests/install \
-    && make impl/install \
-    && make staticcheck/install \
     && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps GO_CLEAN_DEPS=false \
     && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} golangci-lint/install \
     && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} gotestfmt/install \
-    && make cmake/install \
     && make buf/install \
     && make hdf5/install \
     && make helm-docs/install \
     && make helm/install \
     && make k3d/install \
-    && make k9s/install \
     && make kind/install \
     && make kubectl/install \
-    && make kubelinter/install \
-    && make minikube/install \
     && make reviewdog/install \
-    && make stern/install \
-    && make telepresence/install \
     && make tparse/install \
     && make yq/install \
     && make docker-cli/install \

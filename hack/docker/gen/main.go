@@ -242,6 +242,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
 RUN {{RunMounts .RunMounts}} \
     set -ex \
+    && rm -f /etc/apt/apt.conf.d/docker-clean \
     && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
     && apt-get update -y \
@@ -405,6 +406,7 @@ var (
 		"TZ":              "Etc/UTC",
 		"PATH":            "${PATH}:" + usrLocalBinaryDir,
 		"REPO":            repository,
+		"SCCACHE_DIR":     "/_cache/sccache",
 	}
 	goDefaultEnvironments = map[string]string{
 		"GOROOT":      "/opt/go",
@@ -413,10 +415,11 @@ var (
 		"PATH":        "${PATH}:${GOROOT}/bin:${GOPATH}/bin:" + usrLocalBinaryDir,
 	}
 	rustDefaultEnvironments = map[string]string{
-		"RUST_HOME":   usrLocalLibDir + "/rust",
-		"RUSTUP_HOME": "${RUST_HOME}/rustup",
-		"CARGO_HOME":  "${RUST_HOME}/cargo",
-		"PATH":        "${PATH}:${RUSTUP_HOME}/bin:${CARGO_HOME}/bin:" + usrLocalBinaryDir,
+		"RUST_HOME":     usrLocalLibDir + "/rust",
+		"RUSTUP_HOME":   "${RUST_HOME}/rustup",
+		"CARGO_HOME":    "${RUST_HOME}/cargo",
+		"PATH":          "${PATH}:${RUSTUP_HOME}/bin:${CARGO_HOME}/bin:" + usrLocalBinaryDir,
+		"RUSTC_WRAPPER": "/usr/bin/sccache",
 	}
 	clangDefaultEnvironments = map[string]string{
 		"CC":  "gcc",
@@ -452,6 +455,7 @@ var (
 		"--mount=type=tmpfs,target=/tmp",
 		"--mount=type=cache,target=/var/lib/apt,sharing=locked,id=${APP_NAME}-${TARGETARCH}",
 		"--mount=type=cache,target=/var/cache/apt,sharing=locked,id=${APP_NAME}-${TARGETARCH}",
+		"--mount=type=cache,target=/_cache/sccache,sharing=locked,id=sccache-${TARGETARCH}",
 	}
 	goDefaultMounts = []string{
 		"--mount=type=cache,target=\"${GOPATH}/pkg\",id=\"go-build-${TARGETARCH}\"",
@@ -465,6 +469,8 @@ var (
 		"gcc",
 		"libssl-dev",
 		"unzip",
+		"sccache",
+		"ninja-build",
 	}
 	ngtBuildDeps = []string{
 		"liblapack-dev",
@@ -491,20 +497,14 @@ var (
 		"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps GO_CLEAN_DEPS=false",
 		"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} golangci-lint/install",
 		"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} gotestfmt/install",
-		"make cmake/install",
 		"make buf/install",
 		"make hdf5/install",
 		"make helm-docs/install",
 		"make helm/install",
 		"make k3d/install",
-		"make k9s/install",
 		"make kind/install",
 		"make kubectl/install",
-		"make kubelinter/install",
-		"make minikube/install",
 		"make reviewdog/install",
-		"make stern/install",
-		"make telepresence/install",
 		"make tparse/install",
 		"make yq/install",
 		"make docker-cli/install",
@@ -515,12 +515,6 @@ var (
 		"apt-get update -y",
 		"apt-get install -y --no-install-recommends --fix-missing nodejs",
 		"npm install -g npm@latest",
-		"make delve/install",
-		"make gomodifytags/install",
-		"make gopls/install",
-		"make gotests/install",
-		"make impl/install",
-		"make staticcheck/install",
 	}
 )
 

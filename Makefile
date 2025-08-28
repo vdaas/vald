@@ -760,6 +760,7 @@ ngt/install: $(USR_LOCAL)/include/NGT/Capi.h
 $(USR_LOCAL)/include/NGT/Capi.h:
 	git clone --depth 1 --branch v$(NGT_VERSION) https://github.com/yahoojapan/NGT $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \
+	sccache --start-server && \
 	cmake -DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DBUILD_SHARED_LIBS=OFF \
@@ -769,6 +770,8 @@ $(USR_LOCAL)/include/NGT/Capi.h:
 		-DCMAKE_C_FLAGS="$(CFLAGS)" \
 		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
 		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-DCMAKE_C_COMPILER_LAUNCHER=sccache \
+		-DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
 		-B $(TEMP_DIR)/NGT-$(NGT_VERSION)/build $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build -j$(CORES) ngt
 	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build install
@@ -783,6 +786,7 @@ $(LIB_PATH)/libfaiss.a:
 	curl -fsSL https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz -o $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz
 	tar zxf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz -C $(TEMP_DIR)/
 	cd $(TEMP_DIR)/faiss-$(FAISS_VERSION) && \
+	sccache --start-server && \
 	cmake -DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DBUILD_SHARED_LIBS=OFF \
@@ -794,6 +798,8 @@ $(LIB_PATH)/libfaiss.a:
 		-DCMAKE_C_FLAGS="$(LDFLAGS)" \
 		-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_LDFLAGS)" \
 		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-DCMAKE_C_COMPILER_LAUNCHER=sccache \
+		-DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
 		-B $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build $(TEMP_DIR)/faiss-$(FAISS_VERSION)
 	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build -j$(CORES) faiss
 	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build install
@@ -807,6 +813,7 @@ usearch/install: $(USR_LOCAL)/include/usearch.h
 $(USR_LOCAL)/include/usearch.h:
 	git clone --depth 1 --recursive --branch v$(USEARCH_VERSION) https://github.com/unum-cloud/usearch $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
 	cd $(TEMP_DIR)/usearch-$(USEARCH_VERSION) && \
+	sccache --start-server && \
 	cmake -DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DBUILD_SHARED_LIBS=OFF \
@@ -820,6 +827,8 @@ $(USR_LOCAL)/include/usearch.h:
 		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
 		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
 		-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
+		-DCMAKE_C_COMPILER_LAUNCHER=sccache \
+		-DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
 		-B $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
 	cmake --build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build -j$(CORES)
 	cmake --install $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build --prefix=$(USR_LOCAL)
@@ -836,12 +845,15 @@ $(USR_LOCAL)/include/usearch.h:
 cmake/install:
 	git clone --depth 1 --branch v$(CMAKE_VERSION) https://github.com/Kitware/CMake.git $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
 	cd $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION) && \
+	sccache --start-server && \
 	cmake -DCMAKE_BUILD_TYPE=Release \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_TESTING=OFF \
 		-DCMAKE_C_FLAGS="$(CFLAGS)" \
 		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
 		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-DCMAKE_C_COMPILER_LAUNCHER=sccache \
+		-DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
 		-B $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
 	make -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build -j$(CORES) cmake
 	make -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build install
