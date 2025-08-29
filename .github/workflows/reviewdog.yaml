@@ -68,7 +68,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ~/.cache/sccache
+            /_cache/sccache
           key: sccache-go
       - name: Go build
         env:
