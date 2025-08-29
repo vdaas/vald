@@ -53,8 +53,7 @@ jobs:
         (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
         (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/v')) ||
         startsWith(github.ref, 'refs/tags/') ||
-        (github.event_name == 'schedule') ||
-        github.event.action == 'labeled' && github.event.label.name == 'actions/build/arm64'
+        (github.event_name == 'schedule')
       }}
     steps:
       - name: Get ref
@@ -102,7 +101,7 @@ jobs:
         uses: ./.github/actions/docker-build
         with:
           target: ${{ inputs.target }}
-          platforms: ${{github.event.action == 'labeled' && github.event.label.name == 'actions/build/arm64' && "linux/arm64" || inputs.platforms }}
+          platforms: ${{ inputs.platforms }}
           builder: ${{ steps.buildx.outputs.name }}
       - name: Scan the Docker image
         if: startsWith(github.ref, 'refs/tags/')
