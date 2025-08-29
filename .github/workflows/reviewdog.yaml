@@ -66,6 +66,7 @@ jobs:
         run: cargo install sccache --locked
       - name: Cache sccache
         uses: actions/cache@v3
+        key: sccache-go
         with:
           path: |
             ~/.cache/sccache
@@ -75,3 +76,4 @@ jobs:
           CXX: "sccache g++"
         run: |
           make binary/build
+          sccache --show-stats
