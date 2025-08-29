@@ -66,10 +66,10 @@ jobs:
         run: cargo install sccache --locked
       - name: Cache sccache
         uses: actions/cache@v3
-        key: sccache-go
         with:
           path: |
             ~/.cache/sccache
+          key: sccache-go
       - name: Go build
         env:
           CC: "sccache gcc"
