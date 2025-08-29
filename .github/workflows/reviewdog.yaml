@@ -62,11 +62,10 @@ jobs:
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.9
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2.11
+        with:
+          create-symlink: true
       - name: Go build
-        env:
-          CC: "sccache gcc"
-          CXX: "sccache g++"
         run: |
           make binary/build
