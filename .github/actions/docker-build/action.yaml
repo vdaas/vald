@@ -124,7 +124,7 @@ runs:
           /tmp/cache/cargo/registry-arm64
           /tmp/cache/cargo/git-amd64
           /tmp/cache/cargo/git-arm64
-        key: build-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+        key: build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
         restore-keys: |
           build-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-
           build-${{ inputs.target }}-${{ hashFiles('go.sum') }}-
