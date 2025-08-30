@@ -98,7 +98,7 @@ const (
 	ngtPreprocess     = "make ngt/install"
 	faissPreprocess   = "make faiss/install"
 	usearchPreprocess = "make usearch/install"
-	sccacheStats      = "sccache --show-stats || true"
+	sccacheStats      = "sccache --show-stats"
 
 	helmOperatorRootdir   = "/opt/helm"
 	helmOperatorWatchFile = helmOperatorRootdir + "/watches.yaml"
