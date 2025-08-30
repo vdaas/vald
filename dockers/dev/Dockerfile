@@ -127,7 +127,6 @@ RUN --mount=type=bind,target=.,rw \
     && make docker-cli/install \
     && make ngt/install \
     && make faiss/install \
-    && sccache --show-stats \
-    && rm -rf ${GOPATH}/src/github.com/${ORG}/${REPO}/*
+    && sccache --show-stats
 # skipcq: DOK-DL3002
 USER root:root

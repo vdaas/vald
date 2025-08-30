@@ -1129,7 +1129,6 @@ jobs:
 				if data.Preprocess != nil {
 					commands = append(commands, data.Preprocess...)
 				}
-				commands = append(commands, "rm -rf {{.RootDir}}/${ORG}/${REPO}/*")
 				data.RunCommands = commands
 				mounts := make([]string, 0, len(defaultMounts)+len(goDefaultMounts)+len(rustDefaultMounts))
 				mounts = append(mounts, defaultMounts...)
