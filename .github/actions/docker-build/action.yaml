@@ -114,7 +114,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: |
-          /tmp/cache/cache/sccache-amd64
+          /tmp/cache/_cache/sccache-amd64
           /tmp/cache/_cache/sccache-arm64
           /tmp/cache/go/pkg-amd64
           /tmp/cache/go/pkg-arm64
