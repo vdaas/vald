@@ -109,7 +109,7 @@ runs:
     - name: arch key
       shell: bash
       run: |
-        PLATFORMS=${{ replace(steps.determine_platforms.outputs.PLATFORMS }}
+        PLATFORMS=${{ steps.determine_platforms.outputs.PLATFORMS }}
         PLATFORMS=${PLATFORMS//,/-}
         echo PLATFORMS_KEY=${PLATFORMS} >> $GITHUB_ENV
     - name: Cache sccache
