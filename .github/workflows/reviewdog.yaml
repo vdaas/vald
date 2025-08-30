@@ -69,7 +69,14 @@ jobs:
         with:
           path: |
             /_cache/sccache
-          key: sccache-go
+            ${GOPATH}/pkg
+            ${HOME}/.cache/go-build
+            ${CARGO_HOME}/registry
+            ${CARGO_HOME}/git
+          key: build-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}
+          restore-keys: |
+            build-${{ hashFiles('go.sum') }}
+            build-
       - name: Go build
         env:
           CC: "sccache gcc"
