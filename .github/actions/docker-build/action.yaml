@@ -107,6 +107,7 @@ runs:
         SECONDARY_TAGS: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
     - shell: bash
       run: |
+        mkdir -p /tmp/cache
         cd /tmp/cache
         mkdir -p _cache/sccache-amd64 _cache/sccache-arm64 go/pkg-amd64 go/pkg-arm64 root/.cache/go-build-amd64 root/.cache/go-build-arm64 cargo/registry-amd64 cargo/registry-arm64 cargo/git-amd64 cargo/git-arm64
     - name: Cache sccache
