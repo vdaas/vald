@@ -107,7 +107,7 @@ runs:
         SECONDARY_TAGS: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
     - shell: bash
       run: |
-        mkdir -p /_cache/sccache-amd64 /_cache/sccache-arm64 /go/pkg-amd64 /go/pkg-arm64 /root/.cache/go-build-amd64 /root/.cache/go-build-arm64 ${CARGO_HOME}/registry-amd64 ${CARGO_HOME}/registry-arm64 ${CARGO_HOME}/git-amd64 ${CARGO_HOME}/git-arm64
+        sudo mkdir -p /_cache/sccache-amd64 /_cache/sccache-arm64 /go/pkg-amd64 /go/pkg-arm64 /root/.cache/go-build-amd64 /root/.cache/go-build-arm64 ${CARGO_HOME}/registry-amd64 ${CARGO_HOME}/registry-arm64 ${CARGO_HOME}/git-amd64 ${CARGO_HOME}/git-arm64
     - name: Cache sccache
       uses: actions/cache@v3
       with:
