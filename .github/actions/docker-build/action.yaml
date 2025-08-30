@@ -107,9 +107,17 @@ runs:
         SECONDARY_TAGS: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
     - shell: bash
       run: |
-        mkdir -p /tmp/cache
-        cd /tmp/cache
-        mkdir -p _cache/sccache-amd64 _cache/sccache-arm64 go/pkg-amd64 go/pkg-arm64 root/.cache/go-build-amd64 root/.cache/go-build-arm64 cargo/registry-amd64 cargo/registry-arm64 cargo/git-amd64 cargo/git-arm64
+        mkdir -p \
+          /tmp/cache/_cache/sccache-amd64 \
+          /tmp/cache/_cache/sccache-arm64 \
+          /tmp/cache/go/pkg-amd64 \
+          /tmp/cache/go/pkg-arm64 \
+          /tmp/cache/root/.cache/go-build-amd64 \
+          /tmp/cache/root/.cache/go-build-arm64 \
+          /tmp/cache/cargo/registry-amd64 \
+          /tmp/cache/cargo/registry-arm64 \
+          /tmp/cache/cargo/git-amd64 \
+          /tmp/cache/cargo/git-arm64
     - name: Cache sccache
       uses: actions/cache@v3
       with:
@@ -126,10 +134,10 @@ runs:
           /tmp/cache/cargo/git-arm64
         key: build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
         restore-keys: |
-          build-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-
-          build-${{ inputs.target }}-${{ hashFiles('go.sum') }}-
-          build-${{ inputs.target }}-
-          build-
+          build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-
+          build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-
+          build-v2-${{ inputs.target }}-
+          build-v2-
     - name: Build and Push
       shell: bash
       id: build_and_push
