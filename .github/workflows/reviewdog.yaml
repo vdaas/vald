@@ -67,8 +67,8 @@ jobs:
         with:
           path: |
             /_cache/sccache
-            ${GOPATH}/pkg
-            ${HOME}/.cache/go-build
+            /go/pkg
+            /root/.cache/go-build
             ${CARGO_HOME}/registry
             ${CARGO_HOME}/git
           key: build-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}
