@@ -97,12 +97,12 @@ RUN set -ex \
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
 RUN --mount=type=bind,target=.,rw \
     --mount=type=tmpfs,target=/tmp \
-    --mount=type=bind,source="/_cache/sccache-${TARGETARCH}",target=/_cache/sccache,rw \
-    --mount=type=bind,source="${GOPATH}/pkg-${TARGETARCH}",target="${GOPATH}/pkg",rw \
-    --mount=type=bind,source="${HOME}/.cache/go-build-${TARGETARCH}",target="{HOME}/.cache/go-build",rw \
+    --mount=type=bind,source="_cache/sccache-${TARGETARCH}",target=/_cache/sccache,rw \
+    --mount=type=bind,source="go/pkg-${TARGETARCH}",target="${GOPATH}/pkg",rw \
+    --mount=type=bind,source="root/.cache/go-build-${TARGETARCH}",target="{HOME}/.cache/go-build",rw \
     --mount=type=tmpfs,target="${GOPATH}/src" \
-    --mount=type=bind,source="${CARGO_HOME}/registry-${TARGETARCH}",target="${CARGO_HOME}/registry",rw \
-    --mount=type=bind,source="${CARGO_HOME}/git-${TARGETARCH}",target="${CARGO_HOME}/git",rw \
+    --mount=type=bind,source="cargo/registry-${TARGETARCH}",target="${CARGO_HOME}/registry",rw \
+    --mount=type=bind,source="cargo/git-${TARGETARCH}",target="${CARGO_HOME}/git",rw \
     set -ex \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
