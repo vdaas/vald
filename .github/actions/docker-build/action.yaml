@@ -108,8 +108,7 @@ runs:
     - name: Cache sccache
       uses: actions/cache@v3
       with:
-        path: |
-          /tmp/cache
+        path: /tmp/cache
         key: build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-amd64${{ contains(steps.determine_platforms.outputs.PLATFORMS, 'linux/arm64') ? '-arm64' : '' }}
         restore-keys: |
           build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-amd64${{ contains(steps.determine_platforms.outputs.PLATFORMS, 'linux/arm64') ? "-arm64" : "" }}
