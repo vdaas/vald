@@ -98,7 +98,7 @@ RUN --mount=type=bind,target=.,rw \
     --mount=type=tmpfs,target=/tmp \
     --mount=type=cache,target=/_cache/sccache \
     --mount=type=cache,target="${GOPATH}/pkg" \
-    --mount=type=cache,,target="${HOME}/.cache/go-build" \
+    --mount=type=cache,target="${HOME}/.cache/go-build" \
     --mount=type=tmpfs,target="${GOPATH}/src" \
     --mount=type=cache,target="${CARGO_HOME}/registry" \
     --mount=type=cache,target="${CARGO_HOME}/git" \

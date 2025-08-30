@@ -460,7 +460,7 @@ var (
 	}
 	goDefaultMounts = []string{
 		"--mount=type=cache,target=\"${GOPATH}/pkg\"",
-		"--mount=type=cache,,target=\"${HOME}/.cache/go-build\"",
+		"--mount=type=cache,target=\"${HOME}/.cache/go-build\"",
 		"--mount=type=tmpfs,target=\"${GOPATH}/src\"",
 	}
 	rustDefaultMounts = []string{
