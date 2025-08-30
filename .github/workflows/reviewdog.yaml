@@ -62,8 +62,6 @@ jobs:
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Install sccache
-        run: cargo install sccache --locked
       - name: Cache sccache
         uses: actions/cache@v3
         with:
