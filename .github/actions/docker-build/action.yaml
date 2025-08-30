@@ -105,35 +105,15 @@ runs:
         IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
         ALTER_IMAGE_NAME: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
         SECONDARY_TAGS: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
-    - shell: bash
-      run: |
-        mkdir -p \
-          /tmp/cache/_cache/sccache-amd64 \
-          /tmp/cache/_cache/sccache-arm64 \
-          /tmp/cache/go/pkg-amd64 \
-          /tmp/cache/go/pkg-arm64 \
-          /tmp/cache/root/.cache/go-build-amd64 \
-          /tmp/cache/root/.cache/go-build-arm64 \
-          /tmp/cache/cargo/registry-amd64 \
-          /tmp/cache/cargo/registry-arm64 \
-          /tmp/cache/cargo/git-amd64 \
-          /tmp/cache/cargo/git-arm64
     - name: Cache sccache
       uses: actions/cache@v3
       with:
         path: |
-          /tmp/cache/_cache/sccache-amd64
-          /tmp/cache/_cache/sccache-arm64
-          /tmp/cache/go/pkg-amd64
-          /tmp/cache/go/pkg-arm64
-          /tmp/cache/root/.cache/go-build-amd64
-          /tmp/cache/root/.cache/go-build-arm64
-          /tmp/cache/cargo/registry-amd64
-          /tmp/cache/cargo/registry-arm64
-          /tmp/cache/cargo/git-amd64
-          /tmp/cache/cargo/git-arm64
-        key: build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+          /tmp/cache
+        key: build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-amd64${{ contains(steps.determine_platforms.outputs.PLATFORMS, 'linux/arm64') ? "-arm64" : "" }}
         restore-keys: |
+          build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-amd64${{ contains(steps.determine_platforms.outputs.PLATFORMS, 'linux/arm64') ? "-arm64" : "" }}
+          build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-
           build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-
           build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-
           build-v2-${{ inputs.target }}-
