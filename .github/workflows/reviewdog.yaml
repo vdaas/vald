@@ -69,8 +69,8 @@ jobs:
             /_cache/sccache
             /go/pkg
             /root/.cache/go-build
-            ${CARGO_HOME}/registry
-            ${CARGO_HOME}/git
+            /usr/local/lib/rust/cargo/registry
+            /usr/local/lib/rust/cargo/git
           key: build-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}
           restore-keys: |
             build-${{ hashFiles('go.sum') }}
