@@ -265,7 +265,7 @@ RUN set -ex \
     && locale-gen ${LANGUAGE} \
     && update-locale LANG=${LANGUAGE} \
     && dpkg-reconfigure -f noninteractive tzdata
-#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
+#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008, DOK-DL3009
 RUN {{RunMounts .RunMounts}} \
     set -ex \
     && {{RunCommands .RunCommands}}
@@ -520,7 +520,6 @@ var (
 		"curl -fsSL https://deb.nodesource.com/setup_current.x | bash -",
 		"apt-get update -y",
 		"apt-get install -y --no-install-recommends --fix-missing nodejs",
-		"apt-get clean",
 		"npm install -g npm@latest",
 	}
 )

@@ -65,7 +65,7 @@ RUN set -ex \
     && locale-gen ${LANGUAGE} \
     && update-locale LANG=${LANGUAGE} \
     && dpkg-reconfigure -f noninteractive tzdata
-#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
+#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008, DOK-DL3009
 RUN --mount=type=bind,target=.,rw \
     --mount=type=tmpfs,target=/tmp \
     --mount=type=bind,source="_cache/sccache-${TARGETARCH}",target=/_cache/sccache,rw \
