@@ -107,22 +107,22 @@ runs:
         SECONDARY_TAGS: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
     - shell: bash
       run: |
-        cd /var/cache
+        cd /tmp/cache
         mkdir -p _cache/sccache-amd64 _cache/sccache-arm64 go/pkg-amd64 go/pkg-arm64 root/.cache/go-build-amd64 root/.cache/go-build-arm64 cargo/registry-amd64 cargo/registry-arm64 cargo/git-amd64 cargo/git-arm64
     - name: Cache sccache
       uses: actions/cache@v3
       with:
         path: |
-          /var/cache/cache/sccache-amd64
-          /var/cache/_cache/sccache-arm64
-          /var/cache/go/pkg-amd64
-          /var/cache/go/pkg-arm64
-          /var/cache/root/.cache/go-build-amd64
-          /var/cache/root/.cache/go-build-arm64
-          /var/cache/cargo/registry-amd64
-          /var/cache/cargo/registry-arm64
-          /var/cache/cargo/git-amd64
-          /var/cache/cargo/git-arm64
+          /tmp/cache/cache/sccache-amd64
+          /tmp/cache/_cache/sccache-arm64
+          /tmp/cache/go/pkg-amd64
+          /tmp/cache/go/pkg-arm64
+          /tmp/cache/root/.cache/go-build-amd64
+          /tmp/cache/root/.cache/go-build-arm64
+          /tmp/cache/cargo/registry-amd64
+          /tmp/cache/cargo/registry-arm64
+          /tmp/cache/cargo/git-amd64
+          /tmp/cache/cargo/git-arm64
         key: build-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
         restore-keys: |
           build-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-
