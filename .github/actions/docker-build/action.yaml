@@ -106,11 +106,17 @@ runs:
         IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
         ALTER_IMAGE_NAME: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
         SECONDARY_TAGS: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
+    - name: arch key
+      shell: bash
+      run: |
+        PLATFORMS=${{ replace(steps.determine_platforms.outputs.PLATFORMS }}
+        PLATFORMS=${PLATFORMS//,/-}
+        echo PLATFORMS_KEY=${PLATFORMS} >> $GITHUB_ENV
     - name: Cache sccache
       uses: actions/cache@v3
       with:
         path: /tmp/cache
-        key: build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-${{ steps.determine_platforms.outputs.PLATFORMS }}
+        key: build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-${{ env.PLATFORMS_KEY }}
         restore-keys: |
           build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-${{ steps.determine_platforms.outputs.PLATFORMS }}
           build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-
