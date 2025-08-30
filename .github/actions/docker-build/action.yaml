@@ -118,7 +118,7 @@ runs:
         path: /tmp/cache
         key: build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-${{ env.PLATFORMS_KEY }}
         restore-keys: |
-          build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-${{ steps.determine_platforms.outputs.PLATFORMS }}
+          build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-${{ env.PLATFORMS_KEY }}
           build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-
           build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-
           build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-
