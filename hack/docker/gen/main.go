@@ -520,6 +520,7 @@ var (
 		"curl -fsSL https://deb.nodesource.com/setup_current.x | bash -",
 		"apt-get update -y",
 		"apt-get install -y --no-install-recommends --fix-missing nodejs",
+		"apt-get clean",
 		"npm install -g npm@latest",
 	}
 )
