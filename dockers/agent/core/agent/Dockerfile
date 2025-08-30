@@ -81,9 +81,9 @@ RUN set -ex \
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
 RUN --mount=type=bind,target=.,rw \
     --mount=type=tmpfs,target=/tmp \
-    --mount=type=cache,target=/_cache/sccache,sharing=locked,id=sccache-${TARGETARCH} \
-    --mount=type=cache,target="${CARGO_HOME}/registry",sharing=locked,id="cargo-registry-${TARGETARCH}" \
-    --mount=type=cache,target="${CARGO_HOME}/git",sharing=locked,id="cargo-git-${TARGETARCH}" \
+    --mount=type=bind,source="/_cache/sccache-${TARGETARCH}",target=/_cache/sccache \
+    --mount=type=bind,source="${CARGO_HOME}/registry-${TARGETARCH}",target="${CARGO_HOME}/registry" \
+    --mount=type=bind,source="${CARGO_HOME}/git-${TARGETARCH}",target="${CARGO_HOME}/git" \
     set -ex \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \
     && make ngt/install \

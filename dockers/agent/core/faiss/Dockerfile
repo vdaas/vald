@@ -79,9 +79,9 @@ RUN set -ex \
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
 RUN --mount=type=bind,target=.,rw \
     --mount=type=tmpfs,target=/tmp \
-    --mount=type=cache,target=/_cache/sccache,sharing=locked,id=sccache-${TARGETARCH} \
-    --mount=type=cache,target="${GOPATH}/pkg",id="go-pkg-${TARGETARCH}" \
-    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
+    --mount=type=bind,source="/_cache/sccache-${TARGETARCH}",target=/_cache/sccache \
+    --mount=type=bind,source="${GOPATH}/pkg-${TARGETARCH}",target="${GOPATH}/pkg" \
+    --mount=type=bind,source="${HOME}/.cache/go-build-${TARGETARCH}",target="{HOME}/.cache/go-build" \
     --mount=type=tmpfs,target="${GOPATH}/src" \
     set -ex \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
