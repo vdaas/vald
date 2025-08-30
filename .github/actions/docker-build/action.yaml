@@ -122,9 +122,10 @@ runs:
           cargo/registry-arm64
           cargo/git-amd64
           cargo/git-arm64
-        key: build-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}
+        key: build-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
         restore-keys: |
-          build-${{ hashFiles('go.sum') }}
+          build-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-
+          build-${{ hashFiles('go.sum') }}-
           build-
     - name: Build and Push
       shell: bash
