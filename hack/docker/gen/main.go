@@ -456,16 +456,16 @@ var (
 	defaultMounts = []string{
 		"--mount=type=bind,target=.,rw",
 		"--mount=type=tmpfs,target=/tmp",
-		"--mount=type=bind,source=\"/_cache/sccache-${TARGETARCH}\",target=/_cache/sccache",
+		"--mount=type=bind,source=\"/_cache/sccache-${TARGETARCH}\",target=/_cache/sccache,rw",
 	}
 	goDefaultMounts = []string{
-		"--mount=type=bind,source=\"${GOPATH}/pkg-${TARGETARCH}\",target=\"${GOPATH}/pkg\"",
-		"--mount=type=bind,source=\"${HOME}/.cache/go-build-${TARGETARCH}\",target=\"{HOME}/.cache/go-build\"",
+		"--mount=type=bind,source=\"${GOPATH}/pkg-${TARGETARCH}\",target=\"${GOPATH}/pkg\",rw",
+		"--mount=type=bind,source=\"${HOME}/.cache/go-build-${TARGETARCH}\",target=\"{HOME}/.cache/go-build\",rw",
 		"--mount=type=tmpfs,target=\"${GOPATH}/src\"",
 	}
 	rustDefaultMounts = []string{
-		"--mount=type=bind,source=\"${CARGO_HOME}/registry-${TARGETARCH}\",target=\"${CARGO_HOME}/registry\"",
-		"--mount=type=bind,source=\"${CARGO_HOME}/git-${TARGETARCH}\",target=\"${CARGO_HOME}/git\"",
+		"--mount=type=bind,source=\"${CARGO_HOME}/registry-${TARGETARCH}\",target=\"${CARGO_HOME}/registry\",rw",
+		"--mount=type=bind,source=\"${CARGO_HOME}/git-${TARGETARCH}\",target=\"${CARGO_HOME}/git\",rw",
 	}
 
 	clangBuildDeps = []string{
