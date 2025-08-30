@@ -105,7 +105,8 @@ runs:
         IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
         ALTER_IMAGE_NAME: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
         SECONDARY_TAGS: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
-    - run: |
+    - shell: bash
+      run: |
         mkdir -p /_cache/sccache-amd64 /_cache/sccache-arm64 /go/pkg-amd64 /go/pkg-arm64 /root/.cache/go-build-amd64 /root/.cache/go-build-arm64 ${CARGO_HOME}/registry-amd64 ${CARGO_HOME}/registry-arm64 ${CARGO_HOME}/git-amd64 ${CARGO_HOME}/git-arm64
     - name: Cache sccache
       uses: actions/cache@v3
