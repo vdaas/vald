@@ -89,6 +89,7 @@ docker/platforms:
 .PHONY: docker/build/image
 ## Generalized docker build function
 docker/build/image:
+ifeq ($(REMOTE),true)
 # TODO: Make this multi-arch cache simpler after this issue is resolved.
 # https://github.com/docker/buildx/discussions/1382
 # NOTE: concurrent multi platform build failed on GitHub Actions.
