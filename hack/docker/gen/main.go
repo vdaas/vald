@@ -265,8 +265,7 @@ RUN {{RunMounts .RunMounts}} \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
     && locale-gen ${LANGUAGE} \
     && update-locale LANG=${LANGUAGE} \
-    && dpkg-reconfigure -f noninteractive tzdata
-    && set -ex \
+    && dpkg-reconfigure -f noninteractive tzdata \
     && {{RunCommands .RunCommands}}
 {{- if and (not (eq (ContainerName .ContainerType) "%s")) (not (eq (ContainerName .ContainerType) "%s"))}}
 # skipcq: DOK-DL3026,DOK-DL3007

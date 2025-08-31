@@ -86,8 +86,7 @@ RUN --mount=type=bind,target=.,rw \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
     && locale-gen ${LANGUAGE} \
     && update-locale LANG=${LANGUAGE} \
-    && dpkg-reconfigure -f noninteractive tzdata
-    && set -ex \
+    && dpkg-reconfigure -f noninteractive tzdata \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \
     && make ngt/install \
     && make faiss/install \

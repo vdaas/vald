@@ -85,8 +85,7 @@ RUN --mount=type=bind,target=.,rw \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
     && locale-gen ${LANGUAGE} \
     && update-locale LANG=${LANGUAGE} \
-    && dpkg-reconfigure -f noninteractive tzdata
-    && set -ex \
+    && dpkg-reconfigure -f noninteractive tzdata \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
     && make ngt/install \
