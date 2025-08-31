@@ -23,21 +23,20 @@
 //!
 //! The implementation uses `sled` as its underlying persistent storage engine to leverage
 //! its robust transactional capabilities, ensuring data consistency for bidirectional mappings.
-use std::sync::Arc;
+use std::{path::Path, sync::Arc};
 
-pub mod bidirectional_map;
 pub mod codec;
 pub mod error;
 pub mod map;
 pub mod types;
-pub mod unidirectional_map;
+
+mod bidirectional_map;
+mod unidirectional_map;
 
 use crate::{
-    bidirectional_map::BidirectionalMap,
     codec::{BincodeCodec, Codec},
     error::Error,
     map::Map,
-    unidirectional_map::UnidirectionalMap,
 };
 
 /// A builder for creating `Map` instances.
@@ -47,6 +46,7 @@ use crate::{
 pub struct MapBuilder<M: Map, C: Codec = BincodeCodec> {
     path: String,
     codec: C,
+    config: Config,
     scan_on_startup: bool,
     _marker: std::marker::PhantomData<M>,
 }
@@ -63,6 +63,7 @@ impl<M: Map<C = BincodeCodec>> MapBuilder<M, BincodeCodec> {
         Self {
             path: path.as_ref().to_string(),
             codec: BincodeCodec::default(),
+            config: Config::default(),
             scan_on_startup: true,
             _marker: std::marker::PhantomData,
         }
@@ -79,6 +80,7 @@ impl<M: Map<C = C>, C: Codec> MapBuilder<M, C> {
         MapBuilder {
             path: self.path,
             codec: new_codec,
+            config: self.config,
             scan_on_startup: self.scan_on_startup,
             _marker: std::marker::PhantomData,
         }
@@ -93,6 +95,36 @@ impl<M: Map<C = C>, C: Codec> MapBuilder<M, C> {
         self
     }
 
+    /// https://docs.rs/sled/0.34.7/sled/struct.Config.html#method.cache_capacity
+    pub fn cache_capacity(mut self, to: u64) -> Self {
+        self.config = self.config.cache_capacity(to);
+        self
+    }
+
+    /// https://docs.rs/sled/0.34.7/sled/struct.Config.html#method.mode
+    pub fn mode(mut self, to: Mode) -> Self {
+        self.config = self.config.mode(to);
+        self
+    }
+
+    /// https://docs.rs/sled/0.34.7/sled/struct.Config.html#method.use_compression
+    pub fn use_compression(mut self, to: bool) -> Self {
+        self.config = self.config.use_compression(to);
+        self
+    }
+
+    /// https://docs.rs/sled/0.34.7/sled/struct.Config.html#method.compression_factor
+    pub fn compression_factor(mut self, to: i32) -> Self {
+        self.config = self.config.compression_factor(to);
+        self
+    }
+
+    /// https://docs.rs/sled/0.34.7/sled/struct.Config.html#method.print_profile_on_drop
+    pub fn print_profile_on_drop(mut self, to: bool) -> Self {
+        self.config = self.config.print_profile_on_drop(to);
+        self
+    }
+
     /// Builds the map, initializing the database.
     ///
     /// This method creates the database file and initializes the map.
@@ -102,17 +134,30 @@ impl<M: Map<C = C>, C: Codec> MapBuilder<M, C> {
             tokio::fs::create_dir_all(dir).await?;
         }
 
-        let path = self.path.clone();
-        let db = tokio::task::spawn_blocking(move || sled::open(path)).await??;
+        let db = tokio::task::spawn_blocking(move || {
+            self.config.path(Path::new(&self.path)).open()
+        }).await??;
 
-        let inner = Arc::new(M::new(db, self.scan_on_startup, self.codec)?);
+        let map = Arc::new(M::new(db, self.scan_on_startup, self.codec)?);
 
-        Ok(inner)
+        Ok(map)
     }
 }
 
+/// A type alias for a `sled::Config`
+pub type Config = sled::Config;
+
+/// A type alias for a `sled::Mode`
+pub type Mode = sled::Mode;
+
+/// A type alias for a `BidirectionalMap`
+pub type BidirectionalMap<K, V, C> = bidirectional_map::BidirectionalMap<K, V, C>;
+
 /// A type alias for a `MapBuilder` that creates a `BidirectionalMap`.
 pub type BidirectionalMapBuilder<K, V, C> = MapBuilder<BidirectionalMap<K, V, C>, C>;
+
+/// A type alias for a `UnidirectionalMap`
+pub type UnidirectionalMap<K, V, C> = unidirectional_map::UnidirectionalMap<K, V, C>;
 
 /// A type alias for a `MapBuilder` that creates a `UnidirectionalMap`.
 pub type UnidirectionalMapBuilder<K, V, C> = MapBuilder<UnidirectionalMap<K, V, C>, C>;
