@@ -55,8 +55,8 @@ RUN --mount=type=bind,target=.,rw \
     --mount=type=cache,target=/_cache/sccache,sharing=locked,id=sccache-${TARGETARCH} \
     --mount=type=cache,target="/go/pkg",id="go-pkg-${TARGETARCH}" \
     --mount=type=cache,target="/root/.cache/go-build",id="go-build-${TARGETARCH}" \
-    --mount=type=cache,target="/usr/local/lib/rust/cargo/registry",sharing=locked,id="cargo-registry-${TARGETARCH}" \
-    --mount=type=cache,target="/usr/local/lib/rust/cargo/git",sharing=locked,id="cargo-git-${TARGETARCH}" \
+    --mount=type=cache,target="${CARGO_HOME}/registry",sharing=locked,id="cargo-registry-${TARGETARCH}" \
+    --mount=type=cache,target="${CARGO_HOME}/git",sharing=locked,id="cargo-git-${TARGETARCH}" \
     set -ex \
     && rm -f /etc/apt/apt.conf.d/docker-clean \
     && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache \
