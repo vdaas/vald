@@ -241,9 +241,10 @@ COPY {{$files}}
 {{- end}}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008, DOK-DL3009
-RUN set -ex \
-		&& rm -f /etc/apt/apt.conf.d/docker-clean \
-		&& echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache \
+RUN {{RunMounts .RunMounts}} \
+    set -ex \
+    && rm -f /etc/apt/apt.conf.d/docker-clean \
+    && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends --fix-missing \
