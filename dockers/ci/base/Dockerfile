@@ -54,6 +54,8 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008, DOK-DL3009
 RUN set -ex \
+		&& rm -f /etc/apt/apt.conf.d/docker-clean \
+		&& echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends --fix-missing \
@@ -86,24 +88,13 @@ RUN set -ex \
     libaec-dev \
     sed \
     zip \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
     && locale-gen ${LANGUAGE} \
     && update-locale LANG=${LANGUAGE} \
     && dpkg-reconfigure -f noninteractive tzdata
-#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008, DOK-DL3009
-RUN --mount=type=bind,target=.,rw \
-    --mount=type=tmpfs,target=/tmp \
-    --mount=type=cache,target=/_cache/sccache \
-    --mount=type=cache,target="${GOPATH}/pkg" \
-    --mount=type=cache,target="${HOME}/.cache/go-build" \
-    --mount=type=tmpfs,target="${GOPATH}/src" \
-    --mount=type=cache,target="${CARGO_HOME}/registry" \
-    --mount=type=cache,target="${CARGO_HOME}/git" \
-    set -ex \
+    && set -ex \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \
@@ -124,7 +115,8 @@ RUN --mount=type=bind,target=.,rw \
     && make ngt/install \
     && make faiss/install \
     && make usearch/install \
-    && sccache --show-stats
+    && sccache --show-stats \
+    && rm -rf ${GOPATH}/src/github.com/${ORG}/${REPO}/*
 # skipcq: DOK-DL3002
 USER root:root
 ENTRYPOINT ["/bin/bash"]

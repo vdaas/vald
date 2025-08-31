@@ -49,6 +49,8 @@ WORKDIR ${HOME}/rust/src/github.com/${ORG}/${REPO}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008, DOK-DL3009
 RUN set -ex \
+		&& rm -f /etc/apt/apt.conf.d/docker-clean \
+		&& echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends --fix-missing \
@@ -70,21 +72,13 @@ RUN set -ex \
     libopenblas-dev \
     gfortran \
     pkg-config \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
     && locale-gen ${LANGUAGE} \
     && update-locale LANG=${LANGUAGE} \
     && dpkg-reconfigure -f noninteractive tzdata
-#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008, DOK-DL3009
-RUN --mount=type=bind,target=.,rw \
-    --mount=type=tmpfs,target=/tmp \
-    --mount=type=cache,target=/_cache/sccache \
-    --mount=type=cache,target="${CARGO_HOME}/registry" \
-    --mount=type=cache,target="${CARGO_HOME}/git" \
-    set -ex \
+    && set -ex \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \
     && make ngt/install \
     && make faiss/install \
