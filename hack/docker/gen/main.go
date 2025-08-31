@@ -454,8 +454,8 @@ var (
 	defaultMounts = []string{
 		"--mount=type=bind,target=.,rw",
 		"--mount=type=tmpfs,target=/tmp",
-		"--mount=type=cache,target=/var/cache/apt,sharing=locked",
-		"--mount=type=cache,target=/var/lib/apt,sharing=locked",
+		"--mount=type=cache,target=/var/cache/apt,sharing=locked,id=apt-cache-${TARGETARCH}",
+		"--mount=type=cache,target=/var/lib/apt,sharing=locked,id=apt-lib-${TARGETARCH}",
 		"--mount=type=cache,target=/_cache/sccache,sharing=locked,id=sccache-${TARGETARCH}",
 		"--mount=type=cache,target=\"/go/pkg\",id=\"go-pkg-${TARGETARCH}\"",
 		"--mount=type=cache,target=\"/root/.cache/go-build\",id=\"go-build-${TARGETARCH}\"",
