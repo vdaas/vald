@@ -826,6 +826,11 @@ $(USR_LOCAL)/include/usearch.h:
 		-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
 		-DCMAKE_C_COMPILER_LAUNCHER=sccache \
 		-DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
+ifeq ($(shell uname -m),aarch64)
+		-DSIMSIMD_NATIVE_BF16=0 \
+		-DSIMSIMD_TARGET_NEON_BF16=0 \
+		-DSIMSIMD_TARGET_SVE_BF16=0 \
+endif
 		-B $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
 	cmake --build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build -j$(CORES)
 	cmake --install $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build --prefix=$(USR_LOCAL)
