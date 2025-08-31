@@ -130,6 +130,7 @@ runs:
       with:
         builder: ${{ inputs.builder }}
         cache-dir: cache-mount
+        # mount cache is similar among all the dockerfiles under the dockers directory
         dockerfile: dockers/tests/v2/e2e/Dockerfile
         skip-extraction: ${{ steps.cache.outputs.cache-hit }}
     - name: Build and Push
