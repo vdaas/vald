@@ -23,7 +23,7 @@ $(BINDIR)/helm:
 	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
 	TAR_NAME=helm-$(HELM_VERSION)-$(OS)-$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) \
 	    && cd $(TEMP_DIR) \
-	    && curl -fsSL --retry 5 --retry-all-errors --retry-delay 3 \
+	    && curl -fsSL --retry 5 --retry-all-errors --retry-delay 3 --http1.1 --tlsv1.2 \
 				"https://get.helm.sh/$${TAR_NAME}.tar.gz" -o "$(TEMP_DIR)/$${TAR_NAME}" \
 	    && tar -xzvf "$(TEMP_DIR)/$${TAR_NAME}" --strip=1 \
 	    && mv helm $(BINDIR)/helm
