@@ -107,7 +107,6 @@ ifeq ($(findstring amd64,$(PLATFORM)),amd64)
 		--cache-to=type=gha,scope=buildcache-$(IMAGE)-amd64-$(REF),mode=max \
 		--cache-to=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-amd64-shared,mode=max \
 		--cache-to=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-amd64-$(REF),mode=max \
-		--cache-to=type=local,dest=/tmp/cache/amd64 \
 		--build-arg BUILDKIT_INLINE_CACHE=$(BUILDKIT_INLINE_CACHE) \
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg RUST_VERSION=$(RUST_VERSION) \
@@ -135,7 +134,6 @@ ifeq ($(findstring arm64,$(PLATFORM)),arm64)
 		--cache-to=type=gha,scope=buildcache-$(IMAGE)-arm64-$(REF),mode=max \
 		--cache-to=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-arm64-shared,mode=max \
 		--cache-to=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-arm64-$(REF),mode=max \
-		--cache-to=type=local,dest=/tmp/cache/arm64 \
 		--build-arg BUILDKIT_INLINE_CACHE=$(BUILDKIT_INLINE_CACHE) \
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg RUST_VERSION=$(RUST_VERSION) \

@@ -113,17 +113,32 @@ runs:
         PLATFORMS=${PLATFORMS//,/-}
         echo PLATFORMS_KEY=${PLATFORMS} >> $GITHUB_ENV
     - name: Cache sccache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
+      id: cache
       with:
-        path: /tmp/cache
-        key: build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-${{ env.PLATFORMS_KEY }}
+        path: cache-mount
+        key: cache-mount-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-${{ env.PLATFORMS_KEY }}
         restore-keys: |
-          build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-${{ env.PLATFORMS_KEY }}
-          build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-
-          build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-
-          build-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-
-          build-v2-${{ inputs.target }}-
-          build-v2-
+          cache-mount-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-${{ env.PLATFORMS_KEY }}
+          cache-mount-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-
+          cache-mount-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-
+          cache-mount-${{ inputs.target }}-${{ hashFiles('go.sum') }}-
+          cache-mount-${{ inputs.target }}-
+          cache-mount-
+    - name: Restore Docker cache mounts
+      uses: reproducible-containers/buildkit-cache-dance@v3
+      with:
+        builder: ${{ inputs.builder }}
+        cache-dir: cache-mount
+        cache-map: |
+          {
+            "_cache-sccache": "/_cache/sccache",
+            "go-pkg": "/go/pkg",
+            "go-build": "/go/.cache/go-build",
+            "cargo-registry": "/usr/local/lib/rust/cargo/registry",
+            "cargo-git": "/usr/local/lib/rust/cargo/git",
+          }
+        skip-extraction: ${{ steps.cache.outputs.cache-hit }}
     - name: Build and Push
       shell: bash
       id: build_and_push
