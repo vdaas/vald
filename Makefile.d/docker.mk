@@ -90,24 +90,10 @@ docker/platforms:
 ## Generalized docker build function
 docker/build/image:
 ifeq ($(REMOTE),true)
-# TODO: Make this multi-arch cache simpler after this issue is resolved.
-# https://github.com/docker/buildx/discussions/1382
-# NOTE: concurrent multi platform build failed on GitHub Actions.
-ifeq ($(findstring amd64,$(PLATFORM)),amd64)
+	@echo "starting remote build for $(IMAGE):$(TAG)"
 	DOCKER_BUILDKIT=1 $(DOCKER) buildx build \
 		$(DOCKER_OPTS) \
-		--platform linux/amd64 \
-		--cache-from=type=gha,scope=buildcache-$(IMAGE)-amd64-$(REF) \
-		--cache-from=type=gha,scope=buildcache-$(IMAGE)-amd64-main \
-		--cache-from=type=gha,scope=buildcache-$(IMAGE)-amd64-shared \
-		--cache-from=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-amd64-$(REF) \
-		--cache-from=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-amd64-main \
-		--cache-from=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-amd64-shared \
-		--cache-from=type=local,src=/tmp/cache/amd64 \
-		--cache-to=type=gha,scope=buildcache-$(IMAGE)-amd64-shared,mode=max \
-		--cache-to=type=gha,scope=buildcache-$(IMAGE)-amd64-$(REF),mode=max \
-		--cache-to=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-amd64-shared,mode=max \
-		--cache-to=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-amd64-$(REF),mode=max \
+		--platform $(PLATFORM) \
 		--build-arg BUILDKIT_INLINE_CACHE=$(BUILDKIT_INLINE_CACHE) \
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg RUST_VERSION=$(RUST_VERSION) \
@@ -119,34 +105,6 @@ ifeq ($(findstring amd64,$(PLATFORM)),amd64)
 		$(EXTRA_ARGS) \
 		--output type=registry,oci-mediatypes=true,compression=zstd,compression-level=5,force-compression=true,push=true \
 		-f $(DOCKERFILE) $(ROOTDIR)
-endif
-ifeq ($(findstring arm64,$(PLATFORM)),arm64)
-	DOCKER_BUILDKIT=1 $(DOCKER) buildx build \
-		$(DOCKER_OPTS) \
-		--platform linux/arm64 \
-		--cache-from=type=gha,scope=buildcache-$(IMAGE)-arm64-$(REF) \
-		--cache-from=type=gha,scope=buildcache-$(IMAGE)-arm64-main \
-		--cache-from=type=gha,scope=buildcache-$(IMAGE)-arm64-shared \
-		--cache-from=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-arm64-$(REF) \
-		--cache-from=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-arm64-main \
-		--cache-from=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-arm64-shared \
-		--cache-from=type=local,src=/tmp/cache/arm64 \
-		--cache-to=type=gha,scope=buildcache-$(IMAGE)-arm64-shared,mode=max \
-		--cache-to=type=gha,scope=buildcache-$(IMAGE)-arm64-$(REF),mode=max \
-		--cache-to=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-arm64-shared,mode=max \
-		--cache-to=type=registry,ref=$(GHCRORG)/$(IMAGE):buildcache-arm64-$(REF),mode=max \
-		--build-arg BUILDKIT_INLINE_CACHE=$(BUILDKIT_INLINE_CACHE) \
-		--build-arg GO_VERSION=$(GO_VERSION) \
-		--build-arg RUST_VERSION=$(RUST_VERSION) \
-		--build-arg MAINTAINER=$(MAINTAINER) \
-		--attest type=sbom,generator=$(DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE) \
-		--provenance=mode=max \
-		-t $(CRORG)/$(IMAGE):$(TAG) \
-		-t $(GHCRORG)/$(IMAGE):$(TAG) \
-		$(EXTRA_ARGS) \
-		--output type=registry,oci-mediatypes=true,compression=zstd,compression-level=5,force-compression=true,push=true \
-		-f $(DOCKERFILE) $(ROOTDIR)
-endif
 else
 	@echo "starting local build for $(IMAGE):$(TAG)"
 	DOCKER_BUILDKIT=1 $(DOCKER) build \

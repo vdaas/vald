@@ -242,6 +242,8 @@ COPY {{$files}}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008, DOK-DL3009
 RUN set -ex \
+		&& rm -f /etc/apt/apt.conf.d/docker-clean \
+		&& echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends --fix-missing \
@@ -257,17 +259,13 @@ RUN set -ex \
 {{- range $epkg := .ExtraPackages }}
     {{$epkg}} \
 {{- end}}
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
     && locale-gen ${LANGUAGE} \
     && update-locale LANG=${LANGUAGE} \
     && dpkg-reconfigure -f noninteractive tzdata
-#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008, DOK-DL3009
-RUN {{RunMounts .RunMounts}} \
-    set -ex \
+    && set -ex \
     && {{RunCommands .RunCommands}}
 {{- if and (not (eq (ContainerName .ContainerType) "%s")) (not (eq (ContainerName .ContainerType) "%s"))}}
 # skipcq: DOK-DL3026,DOK-DL3007
@@ -456,17 +454,18 @@ var (
 	defaultMounts = []string{
 		"--mount=type=bind,target=.,rw",
 		"--mount=type=tmpfs,target=/tmp",
-		"--mount=type=cache,target=/_cache/sccache",
+		"--mount=type=cache,target=/var/cache/apt,sharing=locked",
+		"--mount=type=cache,target=/var/lib/apt,sharing=locked",
+		"--mount=type=cache,target=/_cache/sccache,sharing=locked,id=sccache-${TARGETARCH}",
+		"--mount=type=cache,target=\"${GOPATH}/pkg\",id=\"go-pkg-${TARGETARCH}\"",
+		"--mount=type=cache,target=\"${HOME}/.cache/go-build\",id=\"go-build-${TARGETARCH}\"",
+		"--mount=type=cache,target=\"${CARGO_HOME}/registry\",sharing=locked,id=\"cargo-registry-${TARGETARCH}\"",
+		"--mount=type=cache,target=\"${CARGO_HOME}/git\",sharing=locked,id=\"cargo-git-${TARGETARCH}\"",
 	}
 	goDefaultMounts = []string{
-		"--mount=type=cache,target=\"${GOPATH}/pkg\"",
-		"--mount=type=cache,target=\"${HOME}/.cache/go-build\"",
 		"--mount=type=tmpfs,target=\"${GOPATH}/src\"",
 	}
-	rustDefaultMounts = []string{
-		"--mount=type=cache,target=\"${CARGO_HOME}/registry\"",
-		"--mount=type=cache,target=\"${CARGO_HOME}/git\"",
-	}
+	rustDefaultMounts = []string{}
 
 	clangBuildDeps = []string{
 		"cmake",
@@ -1129,6 +1128,7 @@ jobs:
 				if data.Preprocess != nil {
 					commands = append(commands, data.Preprocess...)
 				}
+				commands = append(commands, "rm -rf {{.RootDir}}/${ORG}/${REPO}/*")
 				data.RunCommands = commands
 				mounts := make([]string, 0, len(defaultMounts)+len(goDefaultMounts)+len(rustDefaultMounts))
 				mounts = append(mounts, defaultMounts...)
