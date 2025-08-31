@@ -129,16 +129,7 @@ runs:
       with:
         builder: ${{ inputs.builder }}
         cache-dir: cache-mount
-        cache-map: |
-          {
-            "var-cache-apt": "/var/cache/apt",
-            "var-lib-apt": "/var/lib/apt",
-            "_cache-sccache": "/_cache/sccache",
-            "go-pkg": "/go/pkg",
-            "go-build": "/root/.cache/go-build",
-            "cargo-registry": "/usr/local/lib/rust/cargo/registry",
-            "cargo-git": "/usr/local/lib/rust/cargo/git"
-          }
+        dockerfile: dockers/tests/v2/e2e/Dockerfile
         skip-extraction: ${{ steps.cache.outputs.cache-hit }}
     - name: Build and Push
       shell: bash
