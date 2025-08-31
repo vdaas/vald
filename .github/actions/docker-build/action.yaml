@@ -81,8 +81,7 @@ runs:
           platforms="${TARGET_PLATFORMS}"
         fi
         echo "PLATFORMS is determined: ${platforms}"
-        # echo "PLATFORMS=${platforms}" >> $GITHUB_OUTPUT
-        echo "PLATFORMS=linux/arm64" >> $GITHUB_OUTPUT
+        echo "PLATFORMS=${platforms}" >> $GITHUB_OUTPUT
       env:
         TARGET_PLATFORMS: ${{ inputs.platforms }}
         PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
