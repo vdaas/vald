@@ -457,10 +457,10 @@ var (
 		"--mount=type=cache,target=/var/cache/apt,sharing=locked",
 		"--mount=type=cache,target=/var/lib/apt,sharing=locked",
 		"--mount=type=cache,target=/_cache/sccache,sharing=locked,id=sccache-${TARGETARCH}",
-		"--mount=type=cache,target=\"${GOPATH}/pkg\",id=\"go-pkg-${TARGETARCH}\"",
-		"--mount=type=cache,target=\"${HOME}/.cache/go-build\",id=\"go-build-${TARGETARCH}\"",
-		"--mount=type=cache,target=\"${CARGO_HOME}/registry\",sharing=locked,id=\"cargo-registry-${TARGETARCH}\"",
-		"--mount=type=cache,target=\"${CARGO_HOME}/git\",sharing=locked,id=\"cargo-git-${TARGETARCH}\"",
+		"--mount=type=cache,target=\"/go/pkg\",id=\"go-pkg-${TARGETARCH}\"",
+		"--mount=type=cache,target=\"/root/.cache/go-build\",id=\"go-build-${TARGETARCH}\"",
+		"--mount=type=cache,target=\"/usr/local/lib/rust/cargo/registry\",sharing=locked,id=\"cargo-registry-${TARGETARCH}\"",
+		"--mount=type=cache,target=\"/usr/local/lib/rust/cargo/git\",sharing=locked,id=\"cargo-git-${TARGETARCH}\"",
 	}
 	goDefaultMounts = []string{
 		"--mount=type=tmpfs,target=\"${GOPATH}/src\"",
