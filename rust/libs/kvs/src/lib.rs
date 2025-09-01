@@ -28,8 +28,8 @@ use std::{path::Path, sync::Arc};
 pub mod codec;
 pub mod error;
 pub mod map;
+pub mod types;
 
-mod types;
 mod bidirectional_map;
 mod unidirectional_map;
 
@@ -154,15 +154,16 @@ impl<M: Map<C = C>, C: Codec> MapBuilder<M, C> {
     }
 }
 
-/// Re-exports `sled::Config` to allow for easier configuration of the database.
+/// Re-exports `sled::Config` to allow for configuration of the `Map``.
 pub use sled::Config;
-/// Re-exports `sled::Mode` to allow for easier configuration of the database.
+/// Re-exports `sled::Mode` to allow for configuration of the `Map`.
 pub use sled::Mode;
 
 /// Re-exports the `BidirectionalMap` implementation.
 ///
 /// A map that allows for lookups of both keys and values.
 pub use crate::bidirectional_map::BidirectionalMap;
+
 /// Re-exports the `UnidirectionalMap` implementation.
 ///
 /// A standard key-value map.
