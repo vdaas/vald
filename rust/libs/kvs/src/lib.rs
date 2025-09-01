@@ -28,8 +28,8 @@ use std::{path::Path, sync::Arc};
 pub mod codec;
 pub mod error;
 pub mod map;
-pub mod types;
 
+mod types;
 mod bidirectional_map;
 mod unidirectional_map;
 
@@ -95,31 +95,41 @@ impl<M: Map<C = C>, C: Codec> MapBuilder<M, C> {
         self
     }
 
-    /// https://docs.rs/sled/0.34.7/sled/struct.Config.html#method.cache_capacity
+    /// Sets the cache capacity in bytes for the database.
+    ///
+    /// See: https://docs.rs/sled/0.34.7/sled/struct.Config.html#method.cache_capacity
     pub fn cache_capacity(mut self, to: u64) -> Self {
         self.config = self.config.cache_capacity(to);
         self
     }
 
-    /// https://docs.rs/sled/0.34.7/sled/struct.Config.html#method.mode
+    /// Sets the database access mode.
+    ///
+    /// See: https://docs.rs/sled/0.34.7/sled/struct.Config.html#method.mode
     pub fn mode(mut self, to: Mode) -> Self {
         self.config = self.config.mode(to);
         self
     }
 
-    /// https://docs.rs/sled/0.34.7/sled/struct.Config.html#method.use_compression
+    /// Enables or disables transparent zstd compression.
+    ///
+    /// See: https://docs.rs/sled/0.34.7/sled/struct.Config.html#method.use_compression
     pub fn use_compression(mut self, to: bool) -> Self {
         self.config = self.config.use_compression(to);
         self
     }
 
-    /// https://docs.rs/sled/0.34.7/sled/struct.Config.html#method.compression_factor
+    /// Sets the zstd compression factor.
+    ///
+    /// See: https://docs.rs/sled/0.34.7/sled/struct.Config.html#method.compression_factor
     pub fn compression_factor(mut self, to: i32) -> Self {
         self.config = self.config.compression_factor(to);
         self
     }
 
-    /// https://docs.rs/sled/0.34.7/sled/struct.Config.html#method.print_profile_on_drop
+    /// If set to `true`, prints performance statistics when the `Db` is dropped.
+    ///
+    /// See: https://docs.rs/sled/0.34.7/sled/struct.Config.html#method.print_profile_on_drop
     pub fn print_profile_on_drop(mut self, to: bool) -> Self {
         self.config = self.config.print_profile_on_drop(to);
         self
@@ -144,20 +154,22 @@ impl<M: Map<C = C>, C: Codec> MapBuilder<M, C> {
     }
 }
 
-/// A type alias for a `sled::Config`
-pub type Config = sled::Config;
+/// Re-exports `sled::Config` to allow for easier configuration of the database.
+pub use sled::Config;
+/// Re-exports `sled::Mode` to allow for easier configuration of the database.
+pub use sled::Mode;
 
-/// A type alias for a `sled::Mode`
-pub type Mode = sled::Mode;
-
-/// A type alias for a `BidirectionalMap`
-pub type BidirectionalMap<K, V, C> = bidirectional_map::BidirectionalMap<K, V, C>;
+/// Re-exports the `BidirectionalMap` implementation.
+///
+/// A map that allows for lookups of both keys and values.
+pub use crate::bidirectional_map::BidirectionalMap;
+/// Re-exports the `UnidirectionalMap` implementation.
+///
+/// A standard key-value map.
+pub use crate::unidirectional_map::UnidirectionalMap;
 
 /// A type alias for a `MapBuilder` that creates a `BidirectionalMap`.
 pub type BidirectionalMapBuilder<K, V, C> = MapBuilder<BidirectionalMap<K, V, C>, C>;
-
-/// A type alias for a `UnidirectionalMap`
-pub type UnidirectionalMap<K, V, C> = unidirectional_map::UnidirectionalMap<K, V, C>;
 
 /// A type alias for a `MapBuilder` that creates a `UnidirectionalMap`.
 pub type UnidirectionalMapBuilder<K, V, C> = MapBuilder<UnidirectionalMap<K, V, C>, C>;
