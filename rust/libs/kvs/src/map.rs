@@ -21,6 +21,7 @@ use sled::{
     Db, Tree,
     transaction::TransactionError,
 };
+use tracing::instrument;
 use std::borrow::Borrow;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -102,6 +103,7 @@ pub trait Map: Sized + Sync + Send + 'static {
     /// # Arguments
     ///
     /// * `f` - The callback function to apply to each key-value pair.
+    #[instrument(skip(self, f))]
     fn range<F>(&self, mut f: F) -> impl Future<Output = Result<(), Error>> + Send
     where
         F: FnMut(&Self::K, &Self::V, u128) -> Result<bool, Error> + Send + 'static,
@@ -119,6 +121,7 @@ pub trait Map: Sized + Sync + Send + 'static {
     }
 
     /// Returns a stream over all key-value pairs in the map.
+    #[instrument(skip(self))]
     fn range_stream(&self) -> impl Stream<Item = Result<(Self::K, Self::V, u128), Error>> + Send {
         let codec = self._codec().clone();
         let tree = self._tree().clone();
@@ -149,11 +152,13 @@ pub trait Map: Sized + Sync + Send + 'static {
     }
 
     /// Returns the number of elements in the map.
+    #[instrument(skip(self))]
     fn len(&self) -> usize {
         self._len().load(Ordering::Relaxed)
     }
 
     /// Flushes all pending writes to the disk, ensuring durability.
+    #[instrument(skip(self))]
     fn flush(&self) -> impl Future<Output = Result<(), Error>> + Send {
         let db = self._db().clone();
         async {

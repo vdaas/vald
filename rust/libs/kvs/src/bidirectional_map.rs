@@ -71,7 +71,7 @@ impl<K: KeyType, V: ValueType, C: Codec> Map for BidirectionalMap<K, V, C> {
         self.perform_get(key, &self.primary_tree)
     }
 
-    #[instrument(skip(self, key, value))]
+    #[instrument(skip(self, key, value, timestamp))]
     fn set(&self, key: Self::K, value: Self::V, timestamp: u128) -> impl Future<Output = Result<(), Error>> + Send {
         let pt = self.primary_tree.clone();
         let st = self.secondary_tree.clone();
@@ -132,6 +132,9 @@ impl<K: KeyType, V: ValueType, C: Codec> BidirectionalMap<K, V, C> {
     }
 }
 
+// --- Private Helper Methods ---
+
+/// function generator for set transaction
 fn set_transaction_func(t1: Tree, t2: Tree) -> impl FnOnce(Vec<u8>, Vec<u8>, u128) -> Result<bool, TransactionError<Error>> + Send + 'static {
     move |key: Vec<u8>, value: Vec<u8>, timestamp: u128| -> Result<bool, TransactionError<Error>> {
         let encoded_key_payload = bincode::encode_to_vec((key.clone(), timestamp), bincode_standard())
@@ -170,7 +173,7 @@ fn set_transaction_func(t1: Tree, t2: Tree) -> impl FnOnce(Vec<u8>, Vec<u8>, u12
     }
 }
 
-
+/// function generator for delete transaction
 fn delete_transaction_func(t1: Tree, t2: Tree) -> impl FnOnce(Vec<u8>) -> Result<Option<Vec<u8>>, TransactionError<Error>> + Send + 'static {
     move |key: Vec<u8>| -> Result<Option<Vec<u8>>, TransactionError<Error>> {
         (&t1, &t2).transaction(move |(tx1, tx2)| {

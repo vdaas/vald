@@ -70,7 +70,7 @@ impl<K: KeyType, V: ValueType, C: Codec> Map for UnidirectionalMap<K, V, C> {
         self.perform_get(key, &self.tree)
     }
 
-    #[instrument(skip(self, key, value))]
+    #[instrument(skip(self, key, value, timestamp))]
     fn set(&self, key: Self::K, value: Self::V, timestamp: u128) -> impl Future<Output = Result<(), Error>> + Send {
         let t = self.tree.clone();
         let f = set_transaction_func(t);
@@ -102,6 +102,9 @@ impl<K: KeyType, V: ValueType, C: Codec> Map for UnidirectionalMap<K, V, C> {
     }
 }
 
+// --- Private Helper Methods ---
+
+/// function generator for set transaction
 fn set_transaction_func(t: Tree) -> impl FnOnce(Vec<u8>, Vec<u8>, u128) -> Result<bool, TransactionError<Error>> + Send + 'static {
     move |key: Vec<u8>, value: Vec<u8>, timestamp: u128| -> Result<bool, TransactionError<Error>> {
         let encoded_payload = bincode::encode_to_vec((value.clone(), timestamp), bincode_standard())
@@ -117,6 +120,7 @@ fn set_transaction_func(t: Tree) -> impl FnOnce(Vec<u8>, Vec<u8>, u128) -> Resul
     }
 }
 
+/// function generator for delete transaction
 fn delete_transaction_func(t: Tree) -> impl FnOnce(Vec<u8>) -> Result<Option<Vec<u8>>, TransactionError<Error>> + Send + 'static {
     move |key: Vec<u8>| -> Result<Option<Vec<u8>>, TransactionError<Error>> {
         (&t).transaction(move |tx| {
