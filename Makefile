@@ -805,6 +805,14 @@ $(LIB_PATH)/libfaiss.a:
 	rm -rf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz $(TEMP_DIR)/faiss-$(FAISS_VERSION)
 	ldconfig
 
+ifeq ($(shell uname -m),aarch64)
+	USEARCH_ADDITIONAL_FLAGS = \
+		-DSIMSIMD_NATIVE_BF16=0 \
+		-DSIMSIMD_TARGET_NEON_BF16=0 \
+		-DSIMSIMD_TARGET_SVE_BF16=0
+else
+	USEARCH_ADDITIONAL_FLAGS =
+endif
 .PHONY: usearch/install
 ## install usearch
 usearch/install: $(USR_LOCAL)/include/usearch.h
@@ -826,11 +834,7 @@ $(USR_LOCAL)/include/usearch.h:
 		-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
 		-DCMAKE_C_COMPILER_LAUNCHER=sccache \
 		-DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
-ifeq ($(shell uname -m),aarch64)
-		-DSIMSIMD_NATIVE_BF16=0 \
-		-DSIMSIMD_TARGET_NEON_BF16=0 \
-		-DSIMSIMD_TARGET_SVE_BF16=0 \
-endif
+		$(USEARCH_ADDITIONAL_FLAGS) \
 		-B $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
 	cmake --build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build -j$(CORES)
 	cmake --install $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build --prefix=$(USR_LOCAL)
