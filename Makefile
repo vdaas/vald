@@ -805,17 +805,17 @@ $(LIB_PATH)/libfaiss.a:
 	rm -rf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz $(TEMP_DIR)/faiss-$(FAISS_VERSION)
 	ldconfig
 
+.PHONY: usearch/install
+## install usearch
+usearch/install: $(USR_LOCAL)/include/usearch.h
 ifeq ($(shell uname -m),aarch64)
-	USEARCH_ADDITIONAL_FLAGS = \
+	USEARCH_ADDITIONAL_FLAGS ?= \
 		-DSIMSIMD_NATIVE_BF16=0 \
 		-DSIMSIMD_TARGET_NEON_BF16=0 \
 		-DSIMSIMD_TARGET_SVE_BF16=0
 else
-	USEARCH_ADDITIONAL_FLAGS =
+	USEARCH_ADDITIONAL_FLAGS ?=
 endif
-.PHONY: usearch/install
-## install usearch
-usearch/install: $(USR_LOCAL)/include/usearch.h
 $(USR_LOCAL)/include/usearch.h:
 	git clone --depth 1 --recursive --branch v$(USEARCH_VERSION) https://github.com/unum-cloud/usearch $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
 	cd $(TEMP_DIR)/usearch-$(USEARCH_VERSION) && \
