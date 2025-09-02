@@ -34,21 +34,19 @@ proto/paths/print:
 
 .PHONY: proto/deps
 ## install protobuf dependencies
-proto/deps: \
-	$(GOBIN)/buf \
-	$(GOBIN)/protoc-gen-doc
+proto/deps:
+	@echo "Proto dependencies are now managed via go.mod tool directive"
 
 .PHONY: proto/clean/deps
 ## uninstall all protobuf dependencies
 proto/clean/deps:
-	rm -rf $(GOBIN)/buf
-	rm -rf $(GOBIN)/protoc-gen-doc
+	@echo "Proto dependencies are now managed via go.mod tool directive"
 
-$(GOBIN)/buf:
-	$(call go-install, github.com/bufbuild/buf/cmd/buf)
+.PHONY: buf/install
+buf/install:
+	@echo "buf is now managed via go.mod tool directive. Use: go tool buf ..."
 
-$(GOBIN)/protoc-gen-doc:
-	$(call go-install, github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc)
+
 
 $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto:
 	curl -fsSL https://raw.githubusercontent.com/googleapis/googleapis/master/google/rpc/error_details.proto -o $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto
@@ -60,8 +58,8 @@ proto/gen/code: \
 	$(PROTOS) \
 	proto/deps
 	@$(call green, "generating pb.go and swagger.json files and documents for API v1...")
-	buf format -w
-	buf generate
+	go tool buf format -w
+	go tool buf generate
 	make proto/replace
 
 proto/gen/api/docs: \
@@ -73,7 +71,7 @@ proto/gen/api/docs/payload: $(ROOTDIR)/apis/docs/v1/payload.md.tmpl
 
 $(ROOTDIR)/apis/docs/v1/payload.md.tmpl: $(ROOTDIR)/apis/proto/v1/payload/payload.proto $(ROOTDIR)/apis/docs/v1/payload.tmpl
 	@$(call green,"generating payload v1...")
-	buf generate --template=apis/docs/buf.gen.payload.yaml
+	go tool buf generate --template=apis/docs/buf.gen.payload.yaml
 
 $(ROOTDIR)/apis/docs/v1/%.md: $(ROOTDIR)/apis/proto/v1/vald/%.proto $(ROOTDIR)/apis/docs/v1/payload.md.tmpl $(ROOTDIR)/apis/docs/v1/doc.tmpl
 	@$(call green,"generating documents for API v1...")
