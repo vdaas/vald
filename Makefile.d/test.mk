@@ -18,27 +18,24 @@
 
 .PHONY: tparse/install
 ## install tparse
-tparse/install: \
-        $(GOPATH)bin/tparse
+tparse/install:
+	@echo "tparse is now managed via go.mod tool directive. Use: go tool tparse ..."
 
-$(GOPATH)bin/tparse:
-	$(call go-install, github.com/mfridman/tparse)
+
 
 .PHONY: gotestfmt/install
 ## install gotestfmt
-gotestfmt/install: \
-        $(GOPATH)bin/gotestfmt
+gotestfmt/install:
+	@echo "gotestfmt is now managed via go.mod tool directive. Use: go tool gotestfmt ..."
 
-$(GOPATH)bin/gotestfmt:
-	$(call go-install, github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt)
+
 
 .PHONY: gotests/install
 ## install gotests
-gotests/install: \
-        $(GOPATH)bin/gotests
+gotests/install:
+	@echo "gotests is now managed via go.mod tool directive. Use: go tool gotests ..."
 
-$(GOPATH)bin/gotests:
-	$(call go-install, github.com/cweill/gotests/gotests)
+
 
 ## run tests for cmd, internal, pkg
 test:
