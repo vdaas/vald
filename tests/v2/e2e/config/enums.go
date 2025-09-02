@@ -46,6 +46,10 @@ const (
 	OpIndexProperty         OperationType = "index_property"
 	OpFlush                 OperationType = "flush"
 
+	OpCreateIndex        OperationType = "create_index"
+	OpSaveIndex          OperationType = "save_index"
+	OpCreateAndSaveIndex OperationType = "create_and_save_index"
+
 	OpKubernetes OperationType = "kubernetes"
 	OpClient     OperationType = "client"
 	OpWait       OperationType = "wait"
@@ -138,4 +142,12 @@ const (
 	Gt Operator = "gt"
 	Le Operator = "le"
 	Lt Operator = "lt"
+)
+
+type ExitCondition string
+
+const (
+	Count   ExitCondition = "count"
+	Success ExitCondition = "success"
+	Timeout ExitCondition = "timeout"
 )

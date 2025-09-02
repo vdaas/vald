@@ -60,6 +60,17 @@ func passThrough[M proto.Message](t *testing.T, msg M) any {
 	return msg
 }
 
+func emptyCallback[M proto.Message](name string) callback[M] {
+	return func(t *testing.T, _ uint64, _ M, err error) bool {
+		t.Helper()
+		if err != nil {
+			log.Errorf("%s operation returned error: %v", name, err)
+			return false
+		}
+		return true
+	}
+}
+
 func printCallback[M proto.Message](unwrap func(t *testing.T, msg M) any) callback[M] {
 	return func(t *testing.T, idx uint64, msg M, err error) bool {
 		t.Helper()
@@ -105,14 +116,14 @@ func handleGRPCWithStatusCode(
 	for _, expect := range plan.Expect {
 		if expect.StatusCode != "" && !expect.StatusCode.Equals(code.String()) {
 			err := fmt.Errorf("unexpected gRPC response received expected: %s, got: %s", expect.StatusCode, code)
-			log.Errorf("❌ assert failed, err: %v\n", err)
+			log.Errorf("❌ assert failed, err: %v", err)
 			errs = append(errs, err)
 			continue
 		}
 		if expect.Value != nil {
 			val, err := jsonpath.JSONPathEval(protoJSON, expect.Path)
 			if err != nil {
-				log.Errorf("❌ assert failed, err: %v\n", err)
+				log.Errorf("❌ assert failed, err: %v", err)
 				errs = append(errs, fmt.Errorf("failed to evaluate JSONPath: %s, JSON: %s, err: %s", expect.Path, protoJSON, err))
 				continue
 			}
@@ -156,13 +167,13 @@ func handleGRPCWithStatusCode(
 				errs = append(errs, fmt.Errorf("unsupported operator '%s' for JSONPath %s", expect.Op, expect.Path))
 				continue
 			}
-			log.Infof("✅ assert_%v passed, expected: %v actual: %v\n", expect.Op, expect.Value, val)
+			log.Infof("✅ assert_%v passed, expected: %v actual: %v", expect.Op, expect.Value, val)
 		}
 		return nil
 	}
 
 	err = errors.Join(errs...)
-	log.Errorf("❌ assert failed, err: %v\n", err)
+	log.Errorf("❌ assert failed, err: %v", err)
 	return err
 }
 
@@ -190,26 +201,26 @@ func single[Q, R proto.Message](
 	req Q,
 	call grpcCall[Q, R],
 	callback ...callback[R],
-) {
+) error {
 	t.Helper()
 	if plan.BaseConfig != nil && plan.BaseConfig.Limiter != nil {
 		plan.BaseConfig.Limiter.Wait(ctx)
 	}
 	// Execute the modify gRPC call.
 	res, err := call(ctx, req)
-	if err = handleGRPCCall(t, err, res, plan); err != nil {
-		t.Error(err.Error())
-		return
+	err = handleGRPCCall(t, err, res, plan)
+	if err != nil {
+		return err
 	}
 
 	for _, cb := range callback {
 		if cb != nil {
 			if !cb(t, idx, res, err) {
-				return
+				return fmt.Errorf("callback failed for idx: %d, err: %v", idx, err)
 			}
 		}
 	}
-	return
+	return nil
 }
 
 func unary[Q, R proto.Message](
@@ -220,7 +231,7 @@ func unary[Q, R proto.Message](
 	call grpcCall[Q, R],
 	newReq newRequest[Q],
 	callback ...callback[R],
-) {
+) error {
 	t.Helper()
 	// Create an error group to manage concurrent requests.
 	eg, ctx := errgroup.New(ctx)
@@ -234,12 +245,11 @@ func unary[Q, R proto.Message](
 		idx := i
 		// Execute request in a goroutine.
 		eg.Go(func() error {
-			single(t, ctx, idx, plan, newReq(t, idx, strconv.FormatUint(idx, 10), vec, plan), call, callback...)
-			return nil
+			return single(t, ctx, idx, plan, newReq(t, idx, strconv.FormatUint(idx, 10), vec, plan), call, callback...)
 		})
 	}
 	// Wait for all goroutines to complete.
-	eg.Wait()
+	return eg.Wait()
 }
 
 func multi[Q, M, R proto.Message](
@@ -251,7 +261,7 @@ func multi[Q, M, R proto.Message](
 	addReqs newRequest[Q],
 	toReq newMultiRequest[Q, M],
 	callbacks ...callback[R],
-) {
+) error {
 	t.Helper()
 	eg, ctx := errgroup.New(ctx)
 	// Set the concurrency limit from the plan configuration.
@@ -280,16 +290,14 @@ func multi[Q, M, R proto.Message](
 			// Meset the bulk request slice for the next batch.
 			reqs = reqs[:0]
 			eg.Go(func() error {
-				single(t, ctx, idx, plan, toReq(t, batch...), call, callbacks...)
-				return nil
+				return single(t, ctx, idx, plan, toReq(t, batch...), call, callbacks...)
 			})
 		}
 	}
 	eg.Go(func() error {
-		single(t, ctx, data.Len(), plan, toReq(t, reqs...), call, callbacks...)
-		return nil
+		return single(t, ctx, data.Len(), plan, toReq(t, reqs...), call, callbacks...)
 	})
-	eg.Wait()
+	return eg.Wait()
 }
 
 func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](

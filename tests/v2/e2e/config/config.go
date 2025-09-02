@@ -22,6 +22,7 @@
 package config
 
 import (
+	"runtime"
 	"strconv"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -57,7 +58,7 @@ type Data struct {
 type Strategy struct {
 	TimeConfig  `             yaml:",inline"              json:",inline"`
 	Name        string       `yaml:"name"                 json:"name,omitempty"`
-	Repeats     uint64       `yaml:"repeats"              json:"repeats,omitempty"`
+	Repeats     *Repeats     `yaml:"repeats"              json:"repeats,omitempty"`
 	Concurrency uint64       `yaml:"concurrency"          json:"concurrency,omitempty"`
 	Operations  []*Operation `yaml:"operations,omitempty" json:"operations,omitempty"`
 }
@@ -66,7 +67,7 @@ type Strategy struct {
 type Operation struct {
 	TimeConfig `             yaml:",inline"              json:",inline"`
 	Name       string       `yaml:"name,omitempty"       json:"name,omitempty"`
-	Repeats    uint64       `yaml:"repeats"              json:"repeats,omitempty"`
+	Repeats    *Repeats     `yaml:"repeats"              json:"repeats,omitempty"`
 	Executions []*Execution `yaml:"executions,omitempty" json:"executions,omitempty"`
 }
 
@@ -75,10 +76,11 @@ type Execution struct {
 	*BaseConfig  `                    yaml:",inline,omitempty"      json:",inline,omitempty"`
 	TimeConfig   `                    yaml:",inline"                json:",inline"`
 	Name         string              `yaml:"name"                   json:"name,omitempty"`
-	Repeats      uint64              `yaml:"repeats"                json:"repeats,omitempty"`
+	Repeats      *Repeats            `yaml:"repeats"                json:"repeats,omitempty"`
 	Type         OperationType       `yaml:"type"                   json:"type,omitempty"`
 	Mode         OperationMode       `yaml:"mode"                   json:"mode,omitempty"`
 	Search       *SearchQuery        `yaml:"search,omitempty"       json:"search,omitempty"`
+	Agent        *AgentConfig        `yaml:"agent,omitempty"        json:"agent,omitempty"`
 	Kubernetes   *KubernetesConfig   `yaml:"kubernetes,omitempty"   json:"kubernetes,omitempty"`
 	Modification *ModificationConfig `yaml:"modification,omitempty" json:"modification,omitempty"`
 	Expect       []Expect            `yaml:"expect,omitempty"       json:"expect,omitempty"`
@@ -120,6 +122,11 @@ type ModificationConfig struct {
 	Timestamp            int64 `yaml:"timestamp,omitempty"               json:"timestamp,omitempty"`
 }
 
+// AgentConfig represents settings for agent for createting index
+type AgentConfig struct {
+	PoolSize uint32 `yaml:"pool_size,omitempty" json:"pool_size,omitempty"`
+}
+
 // KubernetesConfig holds Kubernetes-specific settings.
 type KubernetesConfig struct {
 	Kind          KubernetesKind   `yaml:"kind"           json:"kind,omitempty"`
@@ -159,6 +166,14 @@ type Expect struct {
 	Path       string     `yaml:"path,omitempty"        json:"path,omitempty"`
 	Op         Operator   `yaml:"op,omitempty"          json:"op,omitempty"`
 	Value      any        `yaml:"value,omitempty"       json:"value,omitempty"`
+}
+
+// Repeats holds the repeat configuration for operations.
+type Repeats struct {
+	Enabled       bool                    `yaml:"enabled,omitempty"        json:"enabled,omitempty"`
+	ExitCondition ExitCondition           `yaml:"exit_condition,omitempty" json:"exit_condition,omitempty"`
+	Count         uint64                  `yaml:"count,omitempty"          json:"count,omitempty"`
+	Interval      timeutil.DurationString `yaml:"interval,omitempty"       json:"interval,omitempty"`
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -283,6 +298,9 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 			if ex.StatusCode, err = ex.StatusCode.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind StatusCodes for Execution %s of type %s", e.Name, e.Type)
 			}
+			if e.Mode != OperationUnary && ex.Value != nil {
+				return nil, errors.Wrapf(errors.ErrInvalidConfig, "Expect.Value is only supported for unary operations in Execution %s of type %s", e.Name, e.Type)
+			}
 			if ex.Op, err = ex.Op.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind Expect.Op for Execution %s of type %s", e.Name, e.Type)
 			}
@@ -344,6 +362,15 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 		OpIndexStatisticsDetail,
 		OpIndexProperty,
 		OpFlush:
+	case OpCreateIndex,
+		OpSaveIndex,
+		OpCreateAndSaveIndex:
+		if e.Agent == nil {
+			e.Agent = new(AgentConfig)
+		}
+		if e.Agent.PoolSize == 0 {
+			e.Agent.PoolSize = uint32(runtime.GOMAXPROCS(-1))
+		}
 	case OpKubernetes:
 		if e.Kubernetes != nil {
 			if ek, err := e.Kubernetes.Bind(); err != nil {
@@ -751,23 +778,23 @@ func (t *TimeConfig) GetTimeout() timeutil.DurationString {
 	return t.Timeout
 }
 
-type Repeats interface {
-	GetRepeats() uint64
+type Repeater interface {
+	GetRepeats() *Repeats
 }
 
-func (d Data) GetRepeats() uint64 {
-	return 0 // Data level repetition is not supported. Use Strategy, Operation, or Execution level repetition instead, as these levels are designed to handle repeated operations.
+func (d Data) GetRepeats() *Repeats {
+	return &Repeats{} // Data level repetition is not supported. Use Strategy, Operation, or Execution level repetition instead, as these levels are designed to handle repeated operations.
 }
 
-func (s Strategy) GetRepeats() uint64 {
+func (s Strategy) GetRepeats() *Repeats {
 	return s.Repeats
 }
 
-func (o Operation) GetRepeats() uint64 {
+func (o Operation) GetRepeats() *Repeats {
 	return o.Repeats
 }
 
-func (e Execution) GetRepeats() uint64 {
+func (e Execution) GetRepeats() *Repeats {
 	return e.Repeats
 }
 

@@ -38,7 +38,7 @@ inputs:
   wait_for_timeout:
     description: "Timeout used for waiting for pods"
     required: false
-    default: "600s"
+    default: "6000s"
   use_local_charts:
     description: "If you want to use local charts, set this to true."
     required: false

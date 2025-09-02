@@ -16,11 +16,12 @@
 time_zone: UTC
 logging:
   format: raw
-  level: info
+  level: debug
   logger: glg
 dataset:
   name: _E2E_DATASET_PATH_
 kubernetes:
+  kube_config: $HOME/.kube/config
   port_forward:
     enabled: true
     local_port: 8082
@@ -73,18 +74,20 @@ target:
     keepalive:
       permit_without_stream: false
       time: ""
-      timeout: 300s
-    max_call_attempts: 10
+      timeout: 30s
+    max_call_attempts: 0
     max_header_list_size: 0
     max_msg_size: 0
-    min_connection_timeout: 200s
+    min_connection_timeout: 20s
     net:
       dialer:
         dual_stack_enabled: true
-        keepalive: true
-        timeout: 30s
+        keepalive: ""
+        timeout: ""
       dns:
-        cache_enabled: false
+        cache_enabled: true
+        cache_expiration: 1h
+        refresh_duration: 30m
       network: tcp
       socket_option:
         ip_recover_destination_addr: false
@@ -100,18 +103,18 @@ target:
         ca: /path/to/ca
         cert: /path/to/cert
         enabled: false
-        insecure_skip_verify: false
+        insecure_skip_verify: true
         key: /path/to/key
     read_buffer_size: 0
     shared_write_buffer: false
-    timeout: 30s
+    timeout: ""
     user_agent: Vald-gRPC
     write_buffer_size: 0
   tls:
     ca: /path/to/ca
     cert: /path/to/cert
     enabled: false
-    insecure_skip_verify: false
+    insecure_skip_verify: true
     key: /path/to/key
 metadata:
   key1: sample metadata value1
@@ -150,7 +153,7 @@ strategies:
   #               min_num: 2
   #               ration: 0
   #               nprobe: 0
-  #               timeout: 30s
+  #               timeout: 3s
   #             - k: 20
   #               radius: -1
   #               epsilon: 0.05
@@ -175,190 +178,211 @@ strategies:
   #             name: "vald-agent"
   #             action: rollout
   - concurrency: 1
-    name: Insert -> Check rotate job
+    name: check Index Property
     operations:
-      - name: Insert -> Check rotate job
+      - name: IndexProperty
         executions:
+          - mode: unary
+            name: IndexProperty
+            type: index_property
+            wait: 3s
+  - concurrency: 1
+    name: Initial Insert and CreateIndex
+    operations:
+      - name: Insert -> CreateIndex -> IndexInfo
+        executions:
+          - name: Flush
+            mode: unary
+            type: flush
+            wait: 20s
+          - mode: unary
+            name: IndexInfo
+            type: index_info
+            expect:
+              - value: {}
           - name: Insert
             type: insert
             mode: unary
-            parallelism: 4
-            num: 105
-            qps: 35
-            wait: 2m
-          - name: Check rotate job
-            type: kubernetes
-            mode: other
-            kubernetes:
-              kind: job
-              namespace: default
-              label_selector: "app=vald-readreplica-rotate"
-              status: completed
-              action: wait
-            wait: 1m
-  - concurrency: 2
+            parallelism: 10
+            num: 60000
+            qps: 3000
+            wait: 5s
+          - mode: unary
+            name: CreateIndex
+            type: create_index
+            expect:
+              - status_code: ok
+          - mode: unary
+            name: IndexInfo
+            type: index_info
+            expect:
+              - status_code: ok
+                path: $.stored
+                op: gt
+                value: 30000
+  - concurrency: 4
     name: Parallel Search Opeation (Search, SearchByID, LinearSearch, LinearSearchByID) x (ConcurrentQueue, SortSlice, SortPoolSlice, PairingHeap) = 16
     operations:
       - name: Search Operation
         executions:
           - name: Search with ConcurrentQueue
             type: search
-            mode: stream
-            parallelism: 2
-            num: 10
+            mode: unary
+            parallelism: 10
+            num: 1000
             search:
-              timeout: 1000s
+              timeout: 3s
               algorithm: cq
           - name: Search with SortSlice
             type: search
-            mode: stream
-            parallelism: 2
-            num: 10
+            mode: unary
+            parallelism: 10
+            num: 1000
             search:
-              timeout: 1000s
+              timeout: 3s
               algorithm: ss
           - name: Search with SortPoolSlice
             type: search
-            mode: stream
-            parallelism: 2
-            num: 10
+            mode: unary
+            parallelism: 10
+            num: 1000
             search:
-              timeout: 1000s
+              timeout: 3s
               algorithm: ps
           - name: Search with PairingHeap
             type: search
-            mode: stream
-            parallelism: 2
-            num: 10
+            mode: unary
+            parallelism: 10
+            num: 1000
             search:
-              timeout: 1000s
+              timeout: 3s
               algorithm: ph
       - name: SearchByID Operation
         executions:
           - name: SearchByID with ConcurrentQueue
             type: search_by_id
-            mode: stream
-            parallelism: 2
-            num: 10
+            mode: unary
+            parallelism: 10
+            num: 1000
             search:
-              timeout: 1000s
+              timeout: 3s
               algorithm: cq
           - name: SearchByID with SortSlice
             type: search_by_id
-            mode: stream
-            parallelism: 2
-            num: 10
+            mode: unary
+            parallelism: 10
+            num: 1000
             search:
-              timeout: 1000s
+              timeout: 3s
               algorithm: ss
           - name: SearchByID with SortPoolSlice
             type: search_by_id
-            mode: stream
-            parallelism: 2
-            num: 10
+            mode: unary
+            parallelism: 10
+            num: 1000
             search:
-              timeout: 1000s
+              timeout: 3s
               algorithm: ps
           - name: SearchByID with PairingHeap
             type: search_by_id
-            mode: stream
-            parallelism: 2
-            num: 10
+            mode: unary
+            parallelism: 10
+            num: 1000
             search:
-              timeout: 1000s
+              timeout: 3s
               algorithm: ph
       - name: LinearSearch Operation
         executions:
           - name: LinearSearch with ConcurrentQueue
             type: linear_search
-            mode: stream
-            parallelism: 2
-            num: 10
+            mode: unary
+            parallelism: 10
+            num: 1000
             search:
-              timeout: 1000s
+              timeout: 3s
               algorithm: cq
           - name: LinearSearch with SortSlice
             type: linear_search
-            mode: stream
-            parallelism: 2
-            num: 10
+            mode: unary
+            parallelism: 10
+            num: 1000
             search:
-              timeout: 1000s
+              timeout: 3s
               algorithm: ss
           - name: LinearSearch with SortPoolSlice
             type: linear_search
-            mode: stream
-            parallelism: 2
-            num: 10
+            mode: unary
+            parallelism: 10
+            num: 1000
             search:
-              timeout: 1000s
+              timeout: 3s
               algorithm: ps
           - name: LinearSearch with PairingHeap
             type: linear_search
-            mode: stream
-            parallelism: 2
-            num: 10
+            mode: unary
+            parallelism: 10
+            num: 1000
             search:
-              timeout: 1000s
+              timeout: 3s
               algorithm: ph
       - name: LinearSearchByID Operation
         executions:
           - name: LinearSearchByID with ConcurrentQueue
             type: linear_search_by_id
-            mode: stream
-            parallelism: 2
-            num: 10
+            mode: unary
+            parallelism: 10
+            num: 1000
             search:
-              timeout: 1000s
+              timeout: 3s
               algorithm: cq
           - name: LinearSearchByID with SortSlice
             type: linear_search_by_id
-            mode: stream
-            parallelism: 2
-            num: 10
+            mode: unary
+            parallelism: 10
+            num: 1000
             search:
-              timeout: 1000s
+              timeout: 3s
               algorithm: ss
           - name: LinearSearchByID with SortPoolSlice
             type: linear_search_by_id
-            mode: stream
-            parallelism: 2
-            num: 10
+            mode: unary
+            parallelism: 10
+            num: 1000
             search:
-              timeout: 1000s
+              timeout: 3s
               algorithm: ps
           - name: LinearSearchByID with PairingHeap
             type: linear_search_by_id
-            mode: stream
-            parallelism: 2
-            num: 10
+            mode: unary
+            parallelism: 10
+            num: 1000
             search:
-              timeout: 1000s
+              timeout: 3s
               algorithm: ph
-  - concurrency: 1
-    name: GetObject/Exists/GetTimestamp Operation
+  - concurrency: 3
+    name: GetObject/Exists/GetTimestamp Opeation
     operations:
       - name: GetObject Operation
         executions:
           - name: GetObject
             type: object
-            mode: stream
-            parallelism: 4
-            num: 10
+            mode: unary
+            parallelism: 10
+            num: 1000
       - name: Exists Operation
         executions:
           - name: Exists
             type: exists
             mode: unary
-            parallelism: 4
-            num: 10
+            parallelism: 10
+            num: 1000
       - name: GetTimestamp Operation
         executions:
           - name: GetTimestamp
             type: timestamp
             mode: unary
-            parallelism: 4
-            num: 10
+            parallelism: 10
+            num: 1000
   - concurrency: 1
     name: Update -> Index Detail
     operations:
@@ -366,38 +390,57 @@ strategies:
         executions:
           - name: Update
             type: update
-            mode: stream
-            parallelism: 2
-            num: 100
-            offset: 100
-            wait: 2m
+            mode: unary
+            parallelism: 10
+            num: 10000
+            offset: 10000
+          - mode: unary
+            name: CreateIndex
+            type: create_index
+            expect:
+              - status_code: ok
           - name: IndexDetail
             type: index_detail
             mode: unary
   - concurrency: 2
-    name: Remove with Upsert -> Index stats and detail
+    name: Remove with Upsert
     operations:
       - name: Remove IndexStatistics Operation
         executions:
           - name: Remove
             type: remove
-            mode: stream
-            parallelism: 2
-            num: 100
-          - name: IndexStatistics
-            type: index_statistics
             mode: unary
+            parallelism: 10
+            num: 10000
       - name: Upsert IndexDetail Operation
         executions:
           - name: Upsert
             type: upsert
-            mode: stream
-            parallelism: 2
-            num: 100
+            mode: unary
+            parallelism: 10
+            num: 10000
+    wait: 5s
+  - concurrency: 1
+    name: CreateIndex
+    operations:
+      - name: CreateIndex
+        executions:
+          - mode: unary
+            name: CreateIndex
+            type: create_index
+            expect:
+              - status_code: ok
+  - concurrency: 1
+    name: IndexStatistics -> IndexDetail
+    operations:
+      - name: IndexStatistics and IndexDetail
+        executions:
+          - name: IndexStatistics
+            type: index_statistics
+            mode: unary
           - name: IndexDetail
             type: index_detail
             mode: unary
-    wait: 2m
   - concurrency: 1
     name: RemoveByTimestamp -> IndexDetail -> Upsert -> IndexDetail
     operations:
@@ -406,38 +449,40 @@ strategies:
           - name: RemoveByTimestamp
             mode: unary
             type: remove_by_timestamp
-            wait: 2m
             num: 1
+          - mode: unary
+            name: CreateIndex
+            type: create_index
+            expect:
+              - status_code: ok
           - name: IndexDetail
             mode: unary
             type: index_detail
           - name: Upsert
-            parallelism: 4
-            mode: stream
-            num: 100
-            offset: 200
+            parallelism: 10
+            mode: unary
+            num: 10000
+            offset: 20000
             type: upsert
-            wait: 2m
-  - concurrency: 1
-    name: IndexInfo -> Flush -> IndexInfo
-    operations:
-      - executions:
           - mode: unary
-            name: IndexInfo
-            type: index_info
-            repeats:
-              enabled: true
-              exit_condition: success
+            name: CreateIndex
+            type: create_index
             expect:
               - status_code: ok
-                path: $.sum()
-                op: ge
-                value: 215
+          - name: IndexDetail
+            mode: unary
+            type: index_detail
+  - concurrency: 1
+    name: IndexStatistics -> Flush -> IndexInfo
+    operations:
+      - executions:
+          - name: IndexStatistics
+            mode: unary
+            type: index_statistics
           - name: Flush
             mode: unary
             type: flush
+            wait: 20s
           - name: IndexInfo
             mode: unary
             type: index_info
-            expect:
-              - value: {}
