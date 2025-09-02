@@ -266,13 +266,13 @@ k8s/vald-readreplica/deploy: k8s/vald/deploy
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb || true
 	kubectl get pods
 	kubectl wait --for=delete pod -l app=vald-lb-gateway --timeout=600s
-	
+
 	kubectl apply -f $(TEMP_DIR)/vald-readreplica/templates
 	sleep 5
 
 	kubectl get pods
-	kubectl wait --for=condition=ready pod -l app=vald-agent --timeout=600s
-	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=vald-readreplica --timeout=600s
+	kubectl wait --for=condition=ready pod -l app=vald-agent --timeout=3600s
+	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=vald-readreplica --timeout=3600s
 
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb || true
@@ -532,6 +532,7 @@ k8s/otel/collector/delete:
 .PHONY: k8s/monitoring/deploy
 ## deploy monitoring stack
 k8s/monitoring/deploy: \
+	k8s/external/cert-manager/deploy \
 	k8s/metrics/jaeger/deploy \
 	k8s/metrics/prometheus/operator/deploy \
 	k8s/metrics/grafana/deploy \
@@ -546,6 +547,7 @@ k8s/monitoring/delete: \
 	k8s/metrics/grafana/delete \
 	k8s/metrics/jaeger/delete \
 	k8s/metrics/prometheus/operator/delete \
+	k8s/external/cert-manager/delete
 
 .PHONY: k8s/e2e/deploy
 ## deploy e2e job

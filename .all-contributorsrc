@@ -255,6 +255,16 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "jumpei527",
+      "name": "Jumpei Tanikawa",
+      "avatar_url": "https://avatars.githubusercontent.com/u/146912434?v=4",
+      "profile": "https://github.com/jumpei527",
+      "contributions": [
+        "code",
+        "maintenance"
+      ]
     }
   ],
   "contributorsPerLine": 7,
