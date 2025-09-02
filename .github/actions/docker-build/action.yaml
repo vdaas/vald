@@ -117,14 +117,14 @@ runs:
       id: cache
       with:
         path: cache-mount
-        key: cache-mount-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-${{ env.PLATFORMS_KEY }}
+        key: cache-mount-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-${{ env.PLATFORMS_KEY }}
         restore-keys: |
-          cache-mount-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-${{ env.PLATFORMS_KEY }}
-          cache-mount-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-
-          cache-mount-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-
-          cache-mount-${{ inputs.target }}-${{ hashFiles('go.sum') }}-
-          cache-mount-${{ inputs.target }}-
-          cache-mount-
+          cache-mount-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-${{ env.PLATFORMS_KEY }}
+          cache-mount-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-
+          cache-mount-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-
+          cache-mount-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-
+          cache-mount-v2-${{ inputs.target }}-
+          cache-mount-v2-
     - name: Restore Docker cache mounts
       uses: reproducible-containers/buildkit-cache-dance@v3
       with:
