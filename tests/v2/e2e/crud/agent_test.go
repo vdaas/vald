@@ -27,24 +27,25 @@ import (
 	"github.com/vdaas/vald/tests/v2/e2e/config"
 )
 
-func (r *runner) processAgent(t *testing.T, ctx context.Context, plan *config.Execution) {
+func (r *runner) processAgent(t *testing.T, ctx context.Context, plan *config.Execution) error {
 	t.Helper()
 	if plan == nil {
 		t.Fatalf("index operation plan is nil")
-		return
+		return nil
 	}
 	switch plan.Type {
 	case config.OpCreateIndex:
-		single(t, ctx, 0, plan, &payload.Control_CreateIndexRequest{
+		return single(t, ctx, 0, plan, &payload.Control_CreateIndexRequest{
 			PoolSize: plan.Agent.PoolSize,
 		}, r.aclient.CreateIndex, emptyCallback[*payload.Empty](plan.Name))
 	case config.OpSaveIndex:
-		single(t, ctx, 0, plan, new(payload.Empty), r.aclient.SaveIndex, emptyCallback[*payload.Empty](plan.Name))
+		return single(t, ctx, 0, plan, new(payload.Empty), r.aclient.SaveIndex, emptyCallback[*payload.Empty](plan.Name))
 	case config.OpCreateAndSaveIndex:
-		single(t, ctx, 0, plan, &payload.Control_CreateIndexRequest{
+		return single(t, ctx, 0, plan, &payload.Control_CreateIndexRequest{
 			PoolSize: plan.Agent.PoolSize,
 		}, r.aclient.CreateAndSaveIndex, emptyCallback[*payload.Empty](plan.Name))
 	default:
 		t.Fatalf("unsupported agent operation: %s", plan.Type)
 	}
+	return nil
 }
