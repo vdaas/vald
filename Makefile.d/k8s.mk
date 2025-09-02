@@ -266,13 +266,13 @@ k8s/vald-readreplica/deploy: k8s/vald/deploy
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb || true
 	kubectl get pods
 	kubectl wait --for=delete pod -l app=vald-lb-gateway --timeout=600s
-	
+
 	kubectl apply -f $(TEMP_DIR)/vald-readreplica/templates
 	sleep 5
 
 	kubectl get pods
-	kubectl wait --for=condition=ready pod -l app=vald-agent --timeout=600s
-	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=vald-readreplica --timeout=600s
+	kubectl wait --for=condition=ready pod -l app=vald-agent --timeout=3600s
+	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=vald-readreplica --timeout=3600s
 
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb || true

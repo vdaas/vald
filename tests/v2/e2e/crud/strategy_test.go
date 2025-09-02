@@ -224,18 +224,18 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 					config.OpSearchByID,
 					config.OpLinearSearch,
 					config.OpLinearSearchByID:
-					r.processSearch(ttt, ctx, train, test, neighbors, e)
+					return r.processSearch(ttt, ctx, train, test, neighbors, e)
 				case config.OpInsert,
 					config.OpUpdate,
 					config.OpUpsert,
 					config.OpRemove,
 					config.OpRemoveByTimestamp:
-					r.processModification(ttt, ctx, train, e)
+					return r.processModification(ttt, ctx, train, e)
 				case config.OpObject,
 					config.OpListObject,
 					config.OpTimestamp,
 					config.OpExists:
-					r.processObject(ttt, ctx, train, e)
+					return r.processObject(ttt, ctx, train, e)
 				}
 			case config.OpIndexInfo,
 				config.OpIndexDetail,
@@ -250,7 +250,7 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 					log.Infof("finished %s execution in %s, type: %s, mode: %s, execution: %d",
 						e.Name, time.Since(start).String(), e.Type, e.Mode, idx)
 				}()
-				r.processIndex(ttt, ctx, e)
+				return r.processIndex(ttt, ctx, e)
 			case config.OpCreateIndex,
 				config.OpSaveIndex,
 				config.OpCreateAndSaveIndex:
@@ -261,7 +261,7 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 					log.Infof("finished %s execution in %s, type: %s, mode: %s, execution: %d",
 						e.Name, time.Since(start).String(), e.Type, e.Mode, idx)
 				}()
-				r.processAgent(t, ctx, e)
+				return r.processAgent(ttt, ctx, e)
 			case config.OpKubernetes:
 				if e.Kubernetes != nil {
 					start := time.Now()
@@ -289,7 +289,7 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 
 func executeWithTimings[T interface {
 	config.Timing
-	config.Repeats
+	config.Repeater
 }](
 	t *testing.T,
 	ctx context.Context,
@@ -351,13 +351,40 @@ func executeWithRepeats(
 	t *testing.T,
 	ctx context.Context,
 	name, prefix string,
-	repeats uint64,
+	repeats *config.Repeats,
 	fn func(*testing.T, context.Context) error,
 ) (err error) {
 	t.Helper()
-	if repeats > 1 {
-		for idx := range repeats {
-			task := fmt.Sprintf("Repeat %s for %s (%d/%d)", prefix, name, idx+1, repeats)
+	if repeats != nil && repeats.Enabled {
+		idx := uint64(0)
+		for {
+			var task string
+			if repeats.ExitCondition == config.Count {
+				task = fmt.Sprintf("Repeat %s for %s (%d/%d)", prefix, name, idx+1, repeats.Count)
+				if idx >= repeats.Count {
+					break
+				}
+			} else {
+				task = fmt.Sprintf("Repeat %s for %s (%d), ExitCondition: %s", prefix, name, idx+1, repeats.ExitCondition)
+			}
+			if idx > 0 {
+				if wait := repeats.Interval; wait != "" {
+					dur, werr := wait.Duration()
+					if werr != nil {
+						t.Errorf("failed to parse wait duration: %s, error: %v", wait, werr)
+						return err
+					}
+					if dur > 0 {
+						log.Infof("Waiting interval: %s for %s", repeats.Interval, task)
+						select {
+						case <-ctx.Done():
+							return ctx.Err()
+						case <-time.After(dur):
+						}
+					}
+				}
+			}
+			idx++
 			select {
 			case <-ctx.Done():
 				err = ctx.Err()
@@ -369,13 +396,28 @@ func executeWithRepeats(
 			default:
 			}
 			log.Info(task)
-			t.Run(task, func(tt *testing.T) {
-				tt.Helper()
-				ierr := fn(tt, ctx)
-				if ierr != nil && errors.IsNot(ierr, context.Canceled, context.DeadlineExceeded) {
-					err = errors.Join(err, ierr)
+			ierr := fn(t, ctx)
+			if ierr != nil {
+				if repeats.ExitCondition == config.Success {
+					if ierr == nil {
+						log.Infof("successfully finished %s, exiting repeat loop", task)
+						break
+					}
+					if errors.IsNot(ierr, context.Canceled, context.DeadlineExceeded) {
+						log.Warnf("failed to finish %s, error: %v, will retry", task, ierr)
+						continue
+					}
 				}
-			})
+				if errors.IsNot(ierr, context.Canceled, context.DeadlineExceeded) {
+					err = errors.Join(err, ierr)
+				} else {
+					// timeout
+					if repeats.ExitCondition != config.Timeout {
+						t.Error("timeout occurred during execution of", task)
+					}
+					break
+				}
+			}
 		}
 		return err
 	}
