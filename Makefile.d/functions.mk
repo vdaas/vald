@@ -38,7 +38,7 @@ define profile-web
 endef
 
 define go-lint
-	golangci-lint run --config .golangci.yaml --fix
+	golangci-lint run --config $(ROOTDIR)/.golangci.json --fix
 endef
 
 define go-vet
@@ -116,6 +116,40 @@ define go-example-build
 		main.go
 endef
 
+define go-e2e-build
+	echo $(GO_SOURCES_INTERNAL)
+	echo $(PBGOS)
+	echo $(shell find $(ROOTDIR)/$1 -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	CFLAGS="$(CFLAGS)" \
+	CXXFLAGS="$(CXXFLAGS)" \
+	CGO_ENABLED=$(CGO_ENABLED) \
+	CGO_CXXFLAGS="$2" \
+	CGO_FFLAGS="$2" \
+	CGO_LDFLAGS="$2" \
+	GO111MODULE=on \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	GOPRIVATE=$(GOPRIVATE) \
+	GO_VERSION=$(GO_VERSION) \
+	go test \
+		-c \
+		-v \
+		-race \
+		-mod=readonly \
+		-tags "e2e" \
+		-ldflags "-extldflags '-static' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(if $(filter 1,$(strip $(CGO_ENABLED))),true,false)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)'" \
+		-o $(ROOTDIR)/$3 \
+		$(ROOTDIR)/$1
+endef
+
 define telepresence
 	[ -z $(SWAP_IMAGE) ] && IMAGE=$2 || IMAGE=$(SWAP_IMAGE) \
 	&& echo "telepresence replaces $(SWAP_DEPLOYMENT_TYPE)/$1 with $${IMAGE}:$(SWAP_TAG)" \
@@ -131,6 +165,7 @@ define run-v2-e2e-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CGO_CFLAGS="$(CGO_CFLAGS)" \
 	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
 	E2E_ADDR="$(E2E_BIND_HOST):$(E2E_BIND_PORT)" \
 	E2E_BIND_HOST="$(E2E_BIND_HOST)" \

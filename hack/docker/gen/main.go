@@ -67,6 +67,7 @@ const (
 	indexSave           = "index-save"
 	managerIndex        = "manager-index"
 	readreplicaRotate   = "readreplica-rotate"
+	e2e                 = "e2e"
 
 	organization          = "vdaas"
 	repository            = "vald"
@@ -445,6 +446,10 @@ var (
 		"mv \"rust/target/release/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
 		"rm -rf rust/target",
 	}
+	e2eBuildCommands = []string{
+		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}/${REPO}\" NAME=\"${REPO}\" ${PKG}/${APP_NAME}",
+		"mv \"${PKG}/${APP_NAME}\" \"{{$.BinDir}}/${APP_NAME}\"",
+	}
 
 	defaultMounts = []string{
 		"--mount=type=bind,target=.,rw",
@@ -469,8 +474,6 @@ var (
 		"liblapack-dev",
 		"libomp-dev",
 		"libopenblas-dev",
-	}
-	faissBuildDeps = []string{
 		"gfortran",
 	}
 	rustBuildDeps = []string{
@@ -504,6 +507,7 @@ var (
 		"make stern/install",
 		"make telepresence/install",
 		"make yq/install",
+		"make docker-cli/install",
 	}
 
 	devContainerPreprocess = []string{
@@ -666,12 +670,10 @@ func main() {
 			Preprocess:    []string{ngtPreprocess},
 		},
 		"vald-" + agentFaiss: {
-			AppName:    "faiss",
-			PackageDir: agent + "/core/faiss",
-			ExtraPackages: append(clangBuildDeps,
-				append(ngtBuildDeps,
-					faissBuildDeps...)...),
-			Preprocess: []string{faissPreprocess},
+			AppName:       "faiss",
+			PackageDir:    agent + "/core/faiss",
+			ExtraPackages: append(clangBuildDeps, ngtBuildDeps...),
+			Preprocess:    []string{faissPreprocess},
 		},
 		"vald-" + agent: {
 			AppName:       agent,
@@ -679,9 +681,7 @@ func main() {
 			ContainerType: Rust,
 			RuntimeImage:  "gcr.io/distroless/cc-debian12",
 			ExtraPackages: append(clangBuildDeps,
-				append(ngtBuildDeps,
-					append(faissBuildDeps,
-						rustBuildDeps...)...)...),
+				append(ngtBuildDeps, rustBuildDeps...)...),
 			Preprocess: []string{
 				ngtPreprocess,
 				faissPreprocess,
@@ -726,6 +726,10 @@ func main() {
 		"vald-index-deletion": {
 			AppName:    "index-deletion",
 			PackageDir: "index/job/deletion",
+		},
+		"vald-index-exportation": {
+			AppName:    "index-exportation",
+			PackageDir: "index/job/exportation",
 		},
 		"vald-readreplica-rotate": {
 			AppName:    "readreplica-rotate",
@@ -791,11 +795,10 @@ func main() {
 			ContainerType: CIContainer,
 			PackageDir:    "ci/base",
 			RuntimeUser:   defaultBuildUser,
-			ExtraPackages: append([]string{"npm"}, append(clangBuildDeps,
+			ExtraPackages: append([]string{"npm", "sudo"}, append(clangBuildDeps,
 				append(ngtBuildDeps,
-					append(faissBuildDeps,
-						append(rustBuildDeps,
-							devContainerDeps...)...)...)...)...),
+					append(rustBuildDeps,
+						devContainerDeps...)...)...)...),
 			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess, usearchPreprocess),
 			Entrypoints: []string{"/bin/bash"},
 		},
@@ -809,9 +812,8 @@ func main() {
 			PackageDir:    "dev",
 			ExtraPackages: append(clangBuildDeps,
 				append(ngtBuildDeps,
-					append(faissBuildDeps,
-						append(rustBuildDeps,
-							devContainerDeps...)...)...)...),
+					append(rustBuildDeps,
+						devContainerDeps...)...)...),
 			Preprocess: append(devContainerPreprocess,
 				append(ciContainerPreprocess,
 					ngtPreprocess,
@@ -820,6 +822,14 @@ func main() {
 		"vald-example-client": {
 			AppName:       "client",
 			PackageDir:    "example/client",
+			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
+			Preprocess: []string{
+				"make hdf5/install",
+			},
+		},
+		"vald-e2e": {
+			AppName:       "e2e",
+			PackageDir:    "tests/v2/e2e",
 			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
 			Preprocess: []string{
 				"make hdf5/install",
@@ -1085,6 +1095,8 @@ jobs:
 					commands = append(commands, goBuildCommands...)
 				} else if strings.HasPrefix(data.PackageDir, "example") && file.Exists(file.Join(os.Args[1], data.PackageDir)) {
 					commands = append(commands, goExampleBuildCommands...)
+				} else if strings.HasPrefix(data.PackageDir, "tests/v2/e2e") && file.Exists(file.Join(os.Args[1], data.PackageDir)) {
+					commands = append(commands, e2eBuildCommands...)
 				}
 				data.RunCommands = commands
 				mounts := make([]string, 0, len(defaultMounts)+len(goDefaultMounts))

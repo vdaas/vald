@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 .PHONY: minikube/install
 minikube/install: $(BINDIR)/minikube
 
@@ -31,6 +32,7 @@ minikube/start:
 	minikube addons enable csi-hostpath-driver
 	minikube addons disable storage-provisioner
 	minikube addons disable default-storageclass
+	minikube addons enable metrics-server
 	kubectl patch storageclass csi-hostpath-sc -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
 .PHONY: minikube/delete

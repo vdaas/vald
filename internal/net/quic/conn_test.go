@@ -18,7 +18,7 @@ package quic
 // func TestNewConn(t *testing.T) {
 // 	type args struct {
 // 		ctx  context.Context
-// 		conn quic.Connection
+// 		conn *quic.Conn
 // 	}
 // 	type want struct {
 // 		want net.Conn
@@ -109,7 +109,7 @@ package quic
 //
 // func TestConn_Close(t *testing.T) {
 // 	type fields struct {
-// 		Connection quic.Connection
+// 		Connection *quic.Conn
 // 		Stream     quic.Stream
 // 	}
 // 	type want struct {
@@ -301,7 +301,7 @@ package quic
 // 		tcfg *tls.Config
 // 	}
 // 	type fields struct {
-// 		connectionCache sync.Map[string, quic.Connection]
+// 		connectionCache sync.Map[string, *quic.Conn]
 // 	}
 // 	type want struct {
 // 		want net.Conn
@@ -404,7 +404,7 @@ package quic
 //
 // func Test_qconn_Close(t *testing.T) {
 // 	type fields struct {
-// 		connectionCache sync.Map[string, quic.Connection]
+// 		connectionCache sync.Map[string, *quic.Conn]
 // 	}
 // 	type want struct {
 // 		err error

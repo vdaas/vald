@@ -13,29 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: vald-lb-gateway
-  labels:
-    app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.16
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.16
-    app.kubernetes.io/component: gateway-lb
-spec:
-  maxReplicas: 9
-  minReplicas: 3
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: vald-lb-gateway
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 80
-status:
+[package]
+name = "vqueue"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+tokio-stream = "0.1"
+futures = "0.3"
+async-trait = "0.1"
+sled = "0.34"
+serde = { version = "1.0", features = ["derive"] }
+bincode = "2.0.1"
+thiserror = "2.0"
+moka = { version = "0.12", features = ["future"] }
+
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

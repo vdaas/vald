@@ -42,12 +42,12 @@ func ValdClusterOverview() *dashboard.DashboardBuilder {
 
 	addCompletedRPCPanel(builder, "Vald LB Gateway: ", "$ReplicaSet", "$ValdGatewayPodName")
 	addLatencyPanel(builder, "Vald LB Gateway: ", "$ReplicaSet", "$ValdGatewayPodName", "$ValdGatewayContainerName", ".*", true)
-	addCompletedRPCPanel(builder, "Vald Agent: ", "$ReplicaSet", "$ValdAgentPodName")
-	addLatencyPanel(builder, "Vald Agent: ", "$ReplicaSet", "$ValdAgentPodName", "$ValdAgentContainerName", ".*Index$", false)
+	addCompletedRPCPanel(builder, "Vald Agent: ", "$ReplicaSet", "$PodName")
+	addLatencyPanel(builder, "Vald Agent: ", "$ReplicaSet", "$PodName", "$ContainerName", ".*Index$", false)
 	addBackoffPanel(builder)
 	addBackoffPerRPCPanel(builder)
 	addCircuitBreakerState(builder)
-	addLatencyPanel(builder, "Vald Agent Index: ", "$ReplicaSet", "$ValdAgentPodName", "$ValdAgentContainerName", ".*Index$", true)
+	addLatencyPanel(builder, "Vald Agent Index: ", "$ReplicaSet", "$PodName", "$ContainerName", ".*Index$", true)
 	repeatOverview(builder)
 	return builder.Time("now-5m", "now")
 }

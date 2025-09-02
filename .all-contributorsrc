@@ -234,6 +234,37 @@
         "bug",
         "code"
       ]
+    },
+    {
+      "login": "Matts966",
+      "name": "Matts966",
+      "avatar_url": "https://avatars.githubusercontent.com/u/28551465?v=4",
+      "profile": "https://github.com/Matts966",
+      "contributions": [
+        "code",
+        "infra",
+        "maintenance",
+        "review"
+      ]
+    },
+    {
+      "login": "Kynea0b",
+      "name": "Kynea0b",
+      "avatar_url": "https://avatars.githubusercontent.com/u/52264064?v=4",
+      "profile": "https://github.com/Kynea0b",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "jumpei527",
+      "name": "Jumpei Tanikawa",
+      "avatar_url": "https://avatars.githubusercontent.com/u/146912434?v=4",
+      "profile": "https://github.com/jumpei527",
+      "contributions": [
+        "code",
+        "maintenance"
+      ]
     }
   ],
   "contributorsPerLine": 7,

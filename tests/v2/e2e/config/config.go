@@ -22,6 +22,7 @@
 package config
 
 import (
+	"runtime"
 	"strconv"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -42,38 +43,44 @@ import (
 
 // Data represents the complete configuration for the application.
 type Data struct {
-	config.GlobalConfig `json:",inline,omitempty" yaml:",inline,omitempty"`
+	config.GlobalConfig `json:",inline" yaml:",inline"`
+	TimeConfig          `json:",inline" yaml:",inline"`
 	Target              *config.GRPCClient `json:"target,omitempty"          yaml:"target,omitempty"`
 	Strategies          []*Strategy        `json:"strategies,omitempty"      yaml:"strategies,omitempty"`
 	Dataset             *Dataset           `json:"dataset,omitempty"         yaml:"dataset,omitempty"`
 	Kubernetes          *Kubernetes        `json:"kubernetes,omitempty"      yaml:"kubernetes,omitempty"`
 	Metadata            map[string]string  `json:"metadata,omitempty"        yaml:"metadata,omitempty"`
 	MetaString          string             `json:"metadata_string,omitempty" yaml:"metadata_string,omitempty"`
+	FilePath            string             `json:"-"                         yaml:"-"`
 }
 
 // Strategy represents a test strategy.
 type Strategy struct {
-	TimeConfig  `             yaml:",inline,omitempty"    json:",inline,omitempty"`
+	TimeConfig  `             yaml:",inline"              json:",inline"`
 	Name        string       `yaml:"name"                 json:"name,omitempty"`
+	Repeats     *Repeats     `yaml:"repeats"              json:"repeats,omitempty"`
 	Concurrency uint64       `yaml:"concurrency"          json:"concurrency,omitempty"`
 	Operations  []*Operation `yaml:"operations,omitempty" json:"operations,omitempty"`
 }
 
 // Operation represents an individual operation configuration.
 type Operation struct {
-	TimeConfig `             yaml:",inline,omitempty"    json:",inline,omitempty"`
+	TimeConfig `             yaml:",inline"              json:",inline"`
 	Name       string       `yaml:"name,omitempty"       json:"name,omitempty"`
+	Repeats    *Repeats     `yaml:"repeats"              json:"repeats,omitempty"`
 	Executions []*Execution `yaml:"executions,omitempty" json:"executions,omitempty"`
 }
 
 // Execution represents the execution details for a given operation.
 type Execution struct {
 	*BaseConfig  `                    yaml:",inline,omitempty"      json:",inline,omitempty"`
-	TimeConfig   `                    yaml:",inline,omitempty"      json:",inline,omitempty"`
+	TimeConfig   `                    yaml:",inline"                json:",inline"`
 	Name         string              `yaml:"name"                   json:"name,omitempty"`
+	Repeats      *Repeats            `yaml:"repeats"                json:"repeats,omitempty"`
 	Type         OperationType       `yaml:"type"                   json:"type,omitempty"`
 	Mode         OperationMode       `yaml:"mode"                   json:"mode,omitempty"`
 	Search       *SearchQuery        `yaml:"search,omitempty"       json:"search,omitempty"`
+	Agent        *AgentConfig        `yaml:"agent,omitempty"        json:"agent,omitempty"`
 	Kubernetes   *KubernetesConfig   `yaml:"kubernetes,omitempty"   json:"kubernetes,omitempty"`
 	Modification *ModificationConfig `yaml:"modification,omitempty" json:"modification,omitempty"`
 	Expect       []Expect            `yaml:"expect,omitempty"       json:"expect,omitempty"`
@@ -113,6 +120,11 @@ type SearchQuery struct {
 type ModificationConfig struct {
 	SkipStrictExistCheck bool  `yaml:"skip_strict_exist_check,omitempty" json:"skip_strict_exist_check,omitempty"`
 	Timestamp            int64 `yaml:"timestamp,omitempty"               json:"timestamp,omitempty"`
+}
+
+// AgentConfig represents settings for agent for createting index
+type AgentConfig struct {
+	PoolSize uint32 `yaml:"pool_size,omitempty" json:"pool_size,omitempty"`
 }
 
 // KubernetesConfig holds Kubernetes-specific settings.
@@ -156,6 +168,14 @@ type Expect struct {
 	Value      any        `yaml:"value,omitempty"       json:"value,omitempty"`
 }
 
+// Repeats holds the repeat configuration for operations.
+type Repeats struct {
+	Enabled       bool                    `yaml:"enabled,omitempty"        json:"enabled,omitempty"`
+	ExitCondition ExitCondition           `yaml:"exit_condition,omitempty" json:"exit_condition,omitempty"`
+	Count         uint64                  `yaml:"count,omitempty"          json:"count,omitempty"`
+	Interval      timeutil.DurationString `yaml:"interval,omitempty"       json:"interval,omitempty"`
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Bind Section
 ////////////////////////////////////////////////////////////////////////////////
@@ -182,21 +202,26 @@ func (d *Data) Bind() (bound *Data, err error) {
 			var bs *Strategy
 			if bs, err = strategy.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind strategy: %s", strategy.Name)
+			} else if bs != nil {
+				d.Strategies[cnt] = bs
+				cnt++
 			}
-			d.Strategies[cnt] = bs
-			cnt++
 		}
 	}
 	// Bind Dataset.
 	if d.Dataset != nil {
-		if d.Dataset, err = d.Dataset.Bind(); err != nil {
+		if ds, err := d.Dataset.Bind(); err != nil {
 			return nil, errors.Wrapf(err, "failed to bind dataset configuration for %s", d.Dataset.Name)
+		} else if ds != nil {
+			d.Dataset = ds
 		}
 	}
 	// Bind Kubernetes.
 	if d.Kubernetes != nil {
-		if d.Kubernetes, err = d.Kubernetes.Bind(); err != nil {
+		if k, err := d.Kubernetes.Bind(); err != nil {
 			return nil, errors.Wrapf(err, "failed to bind Kubernetes configuration for %s", d.Kubernetes.KubeConfig)
+		} else if k != nil {
+			d.Kubernetes = k
 		}
 	}
 	// Process metadata.
@@ -225,9 +250,10 @@ func (s *Strategy) Bind() (bound *Strategy, err error) {
 			var bo *Operation
 			if bo, err = op.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind operation: %s", op.Name)
+			} else if bo != nil {
+				s.Operations[cnt] = bo
+				cnt++
 			}
-			s.Operations[cnt] = bo
-			cnt++
 		}
 	}
 	return s, nil
@@ -240,12 +266,15 @@ func (o *Operation) Bind() (bound *Operation, err error) {
 	}
 	o.Name = config.GetActualValue(o.Name)
 	o.TimeConfig.Bind()
-	for i, exec := range o.Executions {
+	var cnt int
+	for _, exec := range o.Executions {
 		var be *Execution
 		if be, err = exec.Bind(); err != nil {
 			return nil, errors.Wrapf(err, "failed to bind execution: %s", exec.Name)
+		} else if be != nil {
+			o.Executions[cnt] = be
+			cnt++
 		}
-		o.Executions[i] = be
 	}
 	return o, nil
 }
@@ -268,6 +297,9 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 		for i, ex := range e.Expect {
 			if ex.StatusCode, err = ex.StatusCode.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind StatusCodes for Execution %s of type %s", e.Name, e.Type)
+			}
+			if e.Mode != OperationUnary && ex.Value != nil {
+				return nil, errors.Wrapf(errors.ErrInvalidConfig, "Expect.Value is only supported for unary operations in Execution %s of type %s", e.Name, e.Type)
 			}
 			if ex.Op, err = ex.Op.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind Expect.Op for Execution %s of type %s", e.Name, e.Type)
@@ -306,8 +338,10 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 			if e.Search == nil {
 				return nil, errors.Errorf("missing required fields on SearchQuery for Execution %s of type %s", e.Name, e.Type)
 			}
-			if e.Search, err = e.Search.Bind(); err != nil {
+			if sq, err := e.Search.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind SearchQuery for Execution %s of type %s", e.Name, e.Type)
+			} else if sq != nil {
+				e.Search = sq
 			}
 		case OpInsert,
 			OpUpdate,
@@ -315,8 +349,10 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 			OpRemove,
 			OpRemoveByTimestamp:
 			if e.Modification != nil {
-				if e.Modification, err = e.Modification.Bind(); err != nil {
+				if m, err := e.Modification.Bind(); err != nil {
 					return nil, errors.Wrapf(err, "failed to bind ModificationConfig for Execution %s of type %s", e.Name, e.Type)
+				} else if m != nil {
+					e.Modification = m
 				}
 			}
 		}
@@ -326,13 +362,22 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 		OpIndexStatisticsDetail,
 		OpIndexProperty,
 		OpFlush:
+	case OpCreateIndex,
+		OpSaveIndex,
+		OpCreateAndSaveIndex:
+		if e.Agent == nil {
+			e.Agent = new(AgentConfig)
+		}
+		if e.Agent.PoolSize == 0 {
+			e.Agent.PoolSize = uint32(runtime.GOMAXPROCS(-1))
+		}
 	case OpKubernetes:
 		if e.Kubernetes != nil {
-			ek, err := e.Kubernetes.Bind()
-			if err != nil {
+			if ek, err := e.Kubernetes.Bind(); err != nil {
 				return nil, errors.Wrapf(err, "failed to bind Kubernetes configuration for Execution: %s, detail %v", e.Name, e.Kubernetes)
+			} else if ek != nil {
+				e.Kubernetes = ek
 			}
-			e.Kubernetes = ek
 		}
 	case OpClient:
 		// do nothing
@@ -373,7 +418,7 @@ func (sq *SearchQuery) Bind() (bound *SearchQuery, err error) {
 	if sq.Radius == 0 {
 		sq.Radius = -1
 	}
-	switch trimStringForCompare(sq.AlgorithmString) {
+	switch strings.TrimForCompare(sq.AlgorithmString) {
 	case "concurrentqueue", "queue", "cqueue", "cq":
 		sq.Algorithm = payload.Search_ConcurrentQueue
 	case "sortslice", "slice", "sslice", "ss":
@@ -401,7 +446,7 @@ func (ot OperationType) Bind() (bound OperationType, err error) {
 	if ot == "" {
 		return "", errors.Wrap(errors.ErrInvalidConfig, "missing required fields on OperationType")
 	}
-	switch trimStringForCompare(config.GetActualValue(ot)) {
+	switch strings.TrimForCompare(config.GetActualValue(ot)) {
 	case "search", "ser", "s":
 		return OpSearch, nil
 	case "searchbyid", "serid", "sid", "sbyid":
@@ -452,7 +497,7 @@ func (ot OperationType) Bind() (bound OperationType, err error) {
 
 // Bind expands environment variables for OperationMode.
 func (om OperationMode) Bind() (bound OperationMode, err error) {
-	switch trimStringForCompare(config.GetActualValue(om)) {
+	switch strings.TrimForCompare(config.GetActualValue(om)) {
 	case "unary", "un", "u":
 		return OperationUnary, nil
 	case "stream", "str", "s":
@@ -466,7 +511,7 @@ func (om OperationMode) Bind() (bound OperationMode, err error) {
 
 // Bind expands environment variables for StatusCode.
 func (op Operator) Bind() (bound Operator, err error) {
-	switch trimStringForCompare(config.GetActualValue(op)) {
+	switch strings.TrimForCompare(config.GetActualValue(op)) {
 	case Le, Lt, Ge, Gt, Eq, Ne:
 		return op, nil
 	case "":
@@ -477,7 +522,7 @@ func (op Operator) Bind() (bound Operator, err error) {
 
 // Bind expands environment variables for StatusCode.
 func (sc StatusCode) Bind() (bound StatusCode, err error) {
-	switch trimStringForCompare(config.GetActualValue(sc)) {
+	switch strings.TrimForCompare(config.GetActualValue(sc)) {
 	case StatusCodeOK:
 		return StatusCodeOK, nil
 	case StatusCodeCanceled:
@@ -518,7 +563,7 @@ func (sc StatusCode) Bind() (bound StatusCode, err error) {
 
 // Bind expands environment variables for KubernetesKind.
 func (kk KubernetesKind) Bind() (bound KubernetesKind, err error) {
-	switch trimStringForCompare(config.GetActualValue(kk)) {
+	switch strings.TrimForCompare(config.GetActualValue(kk)) {
 	case "configmap", "config", "cm":
 		return ConfigMap, nil
 	case "cronjob", "cron", "cj":
@@ -543,7 +588,7 @@ func (kk KubernetesKind) Bind() (bound KubernetesKind, err error) {
 
 // Bind expands environment variables for KubernetesAction.
 func (ka KubernetesAction) Bind() (bound KubernetesAction, err error) {
-	switch trimStringForCompare(config.GetActualValue(ka)) {
+	switch strings.TrimForCompare(config.GetActualValue(ka)) {
 	case "rollout", "roll", "ro":
 		return KubernetesActionRollout, nil
 	case "delete", "del", "d":
@@ -568,7 +613,7 @@ func (ka KubernetesAction) Bind() (bound KubernetesAction, err error) {
 
 // Bind expands environment variables for KubernetesAction.
 func (ks KubernetesStatus) Bind() (bound KubernetesStatus, err error) {
-	switch trimStringForCompare(config.GetActualValue(ks)) {
+	switch strings.TrimForCompare(config.GetActualValue(ks)) {
 	case "unknown", "u":
 		return KubernetesStatusUnknown, nil
 	case "pending", "pen", "p":
@@ -654,6 +699,9 @@ func (pf *PortForward) Bind() (bound *PortForward, err error) {
 	if pf == nil {
 		return nil, errors.Wrap(errors.ErrInvalidConfig, "missing required fields on PortForward")
 	}
+	if !pf.Enabled {
+		return pf, nil
+	}
 	pf.ServiceName = config.GetActualValue(pf.ServiceName)
 	pf.Namespace = config.GetActualValue(pf.Namespace)
 	if pf.ServiceName == "" {
@@ -730,6 +778,26 @@ func (t *TimeConfig) GetTimeout() timeutil.DurationString {
 	return t.Timeout
 }
 
+type Repeater interface {
+	GetRepeats() *Repeats
+}
+
+func (d Data) GetRepeats() *Repeats {
+	return &Repeats{} // Data level repetition is not supported. Use Strategy, Operation, or Execution level repetition instead, as these levels are designed to handle repeated operations.
+}
+
+func (s Strategy) GetRepeats() *Repeats {
+	return s.Repeats
+}
+
+func (o Operation) GetRepeats() *Repeats {
+	return o.Repeats
+}
+
+func (e Execution) GetRepeats() *Repeats {
+	return e.Repeats
+}
+
 // Equals compares StatusCode with a given string ignoring case.
 func (sc StatusCode) Equals(c string) bool {
 	bound, _ := sc.Bind() // error ignored as Bind never errors
@@ -737,7 +805,7 @@ func (sc StatusCode) Equals(c string) bool {
 }
 
 func (sc StatusCode) Status() codes.Code {
-	switch trimStringForCompare(sc) {
+	switch strings.TrimForCompare(sc) {
 	case StatusCodeOK:
 		return codes.OK
 	case StatusCodeCanceled:
@@ -792,7 +860,7 @@ func (p Port) Port() uint16 {
 }
 
 func (ks KubernetesStatus) Status() kubernetes.ResourceStatus {
-	switch trimStringForCompare(ks) {
+	switch strings.TrimForCompare(ks) {
 	case KubernetesStatusUnknown:
 		return kubernetes.StatusUnknown
 	case KubernetesStatusPending:
@@ -853,11 +921,5 @@ func Load(path string) (cfg *Data, err error) {
 		return nil, errors.Wrapf(err, "failed to bind configuration from %s", path)
 	}
 	log.Debug(config.ToRawYaml(cfg))
-	return
-}
-
-var reps = strings.NewReplacer(" ", "", "-", "", "_", "", ":", "", ";", "", ",", "", ".", "")
-
-func trimStringForCompare[S ~string](str S) S {
-	return S(reps.Replace(string(str)))
+	return cfg, nil
 }

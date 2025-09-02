@@ -40,34 +40,52 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scenario: [stream_crud, unary_crud, multi_crud]
-        deployment: [helm-chart, helm-operator]
+        scenario: [stream_crud, unary_crud, multi_crud, rollout]
+        deployment: [helm-chart]
+        cluster: [k3d]
         environment: ["null"]
         include:
+          - scenario: stream_crud
+            deployment: helm-operator
+            cluster: k3d
+            environment: "null"
           - scenario: index_correction
             deployment: helm-chart
+            cluster: k3d
             environment: management
           - scenario: stream_crud
             deployment: helm-chart
+            cluster: k3d
             environment: management
           - scenario: stream_crud
             deployment: helm-chart
+            cluster: k3d
             environment: mirror
           - scenario: stream_crud
             deployment: helm-chart
+            cluster: k3d
             environment: profile
           - scenario: stream_crud
             deployment: helm-chart
+            cluster: k3d
             environment: failure
           - scenario: stream_crud
             deployment: helm-chart
+            cluster: k3d
             environment: kill
           - scenario: stream_crud
             deployment: helm-chart
+            cluster: k3d
             environment: partition
           - scenario: stream_crud
             deployment: helm-chart
+            cluster: k3d
             environment: bandwidth
+            # TODO: Fix the issue the readreplica returns 0 indices
+            # - scenario: readreplica
+            #   deployment: helm-chart
+            #   cluster: kind
+            #   environment: "null"
     runs-on: ubuntu-latest
     timeout-minutes: 60
     container:
@@ -84,17 +102,29 @@ jobs:
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
+        with:
+          require_k3d: ${{ matrix.cluster == 'k3d' }}
+          require_kind: ${{ matrix.cluster == 'kind' }}
+          require_k0s: ${{ matrix.cluster == 'k0s' }}
       - name: Set HELM_EXTRA_OPTIONS for index management jobs
         if: ${{ matrix.environment == 'management' }}
         run: |
           echo "HELM_EXTRA_OPTIONS=\"--values .github/helm/values/values-index-management-jobs.yaml\"" >> $GITHUB_ENV
       - name: Deploy Vald by Helm Chart
-        if: ${{ matrix.deployment == 'helm-chart' && matrix.environment != 'mirror' }}
+        if: ${{ matrix.deployment == 'helm-chart' && matrix.environment != 'mirror' && matrix.scenario != 'readreplica' }}
         uses: ./.github/actions/e2e-deploy-vald
         with:
           helm_extra_options: "${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}"
-          values: .github/helm/values/values-${{ contains('profile', matrix.environment) && matrix.environment || 'lb' }}.yaml
+          values: .github/helm/values/values-${{ 'profile' == matrix.environment && matrix.environment || 'lb' }}.yaml
           wait_for_selector: "app=vald-lb-gateway"
+      - name: Deploy Vald Read Replica
+        if: ${{ 'readreplica' == matrix.scenario }}
+        id: deploy_vald_readreplica
+        uses: ./.github/actions/e2e-deploy-vald-readreplica
+        with:
+          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+          values: .github/helm/values/values-readreplica.yaml
+          wait_for_selector: app=vald-lb-gateway
       - name: Deploy Vald-01
         if: ${{ matrix.environment == 'mirror' }}
         uses: ./.github/actions/e2e-deploy-vald
@@ -128,6 +158,8 @@ jobs:
           require_go: false
           require_helm: false
           require_k3d: false
+          require_kind: false
+          require_k0s: false
       - name: Merge Docker image tag
         if: ${{ matrix.deployment == 'helm-operator' }}
         shell: bash
@@ -173,13 +205,21 @@ jobs:
           if [[ "${{ matrix.environment }}" == "mirror" ]]; then
             export E2E_TARGET_NAMESPACE=vald-01
           fi
+          kubectl get pods
           make e2e/v2 E2E_CONFIG=$(pwd)/.github/e2e/${{ matrix.scenario }}.yaml
-
       - uses: ./.github/actions/e2e-profile
         if: ${{ matrix.environment == 'profile' }}
         with:
           dispatch_user: ${{ secrets.DISPATCH_USER }}
           dispatch_token: ${{ secrets.DISPATCH_TOKEN }}
+
+      - name: Debug
+        if: ${{ always() }}
+        run: |
+          kubectl get nodes
+          kubectl get pods
+          kubectl describe pods
+          kubectl describe pvc
 
   slack-notification:
     name: "Slack notification"

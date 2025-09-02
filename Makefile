@@ -42,12 +42,14 @@ HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 INDEX_CORRECTION_IMAGE          = $(NAME)-index-correction
 INDEX_CREATION_IMAGE            = $(NAME)-index-creation
 INDEX_DELETION_IMAGE            = $(NAME)-index-deletion
+INDEX_EXPORTATION_IMAGE         = $(NAME)-index-exportation
 INDEX_OPERATOR_IMAGE            = $(NAME)-index-operator
 INDEX_SAVE_IMAGE                = $(NAME)-index-save
 LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 MIRROR_GATEWAY_IMAGE            = $(NAME)-mirror-gateway
 READREPLICA_ROTATE_IMAGE        = $(NAME)-readreplica-rotate
+E2E_IMAGE                       = $(NAME)-e2e
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
 DEADLINK_CHECK_PATH            ?= ""
@@ -114,6 +116,8 @@ RUST_VERSION              := $(eval RUST_VERSION := $(shell cat versions/RUST_VE
 TELEPRESENCE_VERSION      := $(eval TELEPRESENCE_VERSION := $(shell cat versions/TELEPRESENCE_VERSION))$(TELEPRESENCE_VERSION)
 YQ_VERSION                := $(eval YQ_VERSION := $(shell cat versions/YQ_VERSION))$(YQ_VERSION)
 ZLIB_VERSION              := $(eval ZLIB_VERSION := $(shell cat versions/ZLIB_VERSION))$(ZLIB_VERSION)
+SNAPSHOTTER_VERSION       := $(eval SNAPSHOTTER_VERSION := $(shell cat versions/SNAPSHOTTER_VERSION))$(SNAPSHOTTER_VERSION)
+CSI_DRIVER_HOST_PATH_VERSION := $(eval CSI_DRIVER_HOST_PATH_VERSION := $(shell cat versions/CSI_DRIVER_HOST_PATH_VERSION))$(CSI_DRIVER_HOST_PATH_VERSION)
 
 OTEL_OPERATOR_RELEASE_NAME ?= opentelemetry-operator
 PROMETHEUS_RELEASE_NAME    ?= prometheus
@@ -161,8 +165,8 @@ PROTO_MIRROR_API_DOCS := $(PROTO_MIRROR_APIS:$(ROOTDIR)/apis/proto/v1/mirror/%.p
 
 LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -O3 -ffast-math -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
 
-NGT_LDFLAGS = -fopenmp -lopenblas -llapack
-FAISS_LDFLAGS = $(NGT_LDFLAGS) -lgfortran
+NGT_LDFLAGS = -fopenmp -lopenblas -llapack -lgfortran
+FAISS_LDFLAGS = $(NGT_LDFLAGS)
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl -lm
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 TEST_LDFLAGS = $(LDFLAGS) $(CGO_LDFLAGS)
@@ -173,6 +177,12 @@ CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?= -m64
 else ifeq ($(GOARCH),arm64)
 CFLAGS ?=
+ifeq ($(GOOS),darwin)
+HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lz -ldl -lm
+CFLAGS = -I $(shell brew --prefix hdf5)/include
+CGO_CFLAGS ?= $(CFLAGS)
+CGO_LDFLAGS = -L $(shell brew --prefix hdf5)/lib -L $(shell brew --prefix zlib)/lib $(HDF5_LDFLAGS)
+endif
 CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?= -march=armv8-a
 else
@@ -366,7 +376,7 @@ E2E_TARGET_NAME                    ?= vald-lb-gateway
 E2E_TARGET_NAMESPACE               ?= default
 E2E_TARGET_POD_NAME                ?= $(eval E2E_TARGET_POD_NAME := $(shell kubectl get pods --selector=app=$(E2E_TARGET_NAME) -n $(E2E_TARGET_NAMESPACE) | tail -1 | cut -f1 -d " "))$(E2E_TARGET_POD_NAME)
 E2E_TARGET_PORT                    ?= 8081
-E2E_TIMEOUT                        ?= 30m
+E2E_TIMEOUT                        ?= 60m
 E2E_UPDATE_COUNT                   ?= 10
 E2E_UPSERT_COUNT                   ?= 10
 E2E_WAIT_FOR_CREATE_INDEX_DURATION ?= 8m
@@ -920,9 +930,11 @@ include Makefile.d/e2e.mk
 include Makefile.d/git.mk
 include Makefile.d/helm.mk
 include Makefile.d/k3d.mk
+include Makefile.d/k0s.mk
 include Makefile.d/k8s.mk
 include Makefile.d/kind.mk
 include Makefile.d/minikube.mk
 include Makefile.d/proto.mk
 include Makefile.d/test.mk
 include Makefile.d/tools.mk
+include Makefile.d/tls.mk

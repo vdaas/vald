@@ -77,19 +77,18 @@ func TestE2EStrategy(t *testing.T) {
 				if pfd != nil {
 					pfd.Stop()
 				}
-				t.Fatalf("failed to portforward: %v", err)
+				t.Fatalf("failed to construct portforward client: %v", err)
 			}
-			defer pfd.Stop()
 			_, err = pfd.Start(ctx)
 			if err != nil {
 				if pfd != nil {
 					pfd.Stop()
 				}
-				t.Fatalf("failed to portforward: %v", err)
+				t.Fatalf("failed to start portforward: %v", err)
 			}
+			defer pfd.Stop()
 		}
 	}
-
 	r.client, ctx, err = newClient(t, ctx, cfg.Metadata)
 	if err != nil {
 		t.Fatalf("failed to create client: %v", err)
@@ -101,12 +100,10 @@ func TestE2EStrategy(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to start client: %v", err)
 	}
-
 	r.aclient, err = agent.New(agent.WithValdClient(r.client))
 	if err != nil {
 		t.Fatalf("failed to create agent client: %v", err)
 	}
-
 	go func() {
 		select {
 		case <-ctx.Done():
@@ -124,10 +121,17 @@ func TestE2EStrategy(t *testing.T) {
 		}
 	}()
 	t.Logf("connected addrs: %v", r.client.GRPCClient().ConnectedAddrs(ctx))
-
-	for i, st := range cfg.Strategies {
-		r.processStrategy(t, ctx, i, st)
-	}
+	t.Run("Run E2E V2 Scenarios", func(tt *testing.T) {
+		if err := executeWithTimings(tt, ctx, cfg, cfg.FilePath, "e2e", func(ttt *testing.T, ctx context.Context) error {
+			ttt.Helper()
+			for i, st := range cfg.Strategies {
+				r.processStrategy(ttt, ctx, i, st)
+			}
+			return nil
+		}); err != nil {
+			tt.Errorf("failed to process operations: %v", err)
+		}
+	})
 }
 
 func (r *runner) processStrategy(t *testing.T, ctx context.Context, idx int, st *config.Strategy) {
@@ -135,9 +139,9 @@ func (r *runner) processStrategy(t *testing.T, ctx context.Context, idx int, st 
 	if r == nil || st == nil {
 		return
 	}
-
 	t.Run(fmt.Sprintf("#%d: strategy=%s", idx, st.Name), func(tt *testing.T) {
 		if err := executeWithTimings(tt, ctx, st, st.Name, "strategy", func(ttt *testing.T, ctx context.Context) error {
+			ttt.Helper()
 			eg, egctx := errgroup.New(ctx)
 			if st.Concurrency > 0 {
 				eg.SetLimit(int(st.Concurrency))
@@ -145,7 +149,6 @@ func (r *runner) processStrategy(t *testing.T, ctx context.Context, idx int, st 
 			} else {
 				ttt.Logf("concurrency is not set, the operations will execute concurrently with no limit (%d)", len(st.Operations))
 			}
-
 			for i, op := range st.Operations {
 				if op != nil {
 					i, op := i, op
@@ -155,7 +158,6 @@ func (r *runner) processStrategy(t *testing.T, ctx context.Context, idx int, st 
 					})
 				}
 			}
-
 			return eg.Wait()
 		}); err != nil {
 			tt.Errorf("failed to process operations: %v", err)
@@ -192,6 +194,7 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 
 	t.Run(fmt.Sprintf("#%d: execution=%s type=%s mode=%s", idx, e.Name, e.Type, e.Mode), func(tt *testing.T) {
 		if err := executeWithTimings(tt, ctx, e, e.Name, "execution", func(ttt *testing.T, ctx context.Context) error {
+			ttt.Helper()
 			switch e.Type {
 			case config.OpSearch,
 				config.OpSearchByID,
@@ -221,18 +224,18 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 					config.OpSearchByID,
 					config.OpLinearSearch,
 					config.OpLinearSearchByID:
-					r.processSearch(ttt, ctx, train, test, neighbors, e)
+					return r.processSearch(ttt, ctx, train, test, neighbors, e)
 				case config.OpInsert,
 					config.OpUpdate,
 					config.OpUpsert,
 					config.OpRemove,
 					config.OpRemoveByTimestamp:
-					r.processModification(ttt, ctx, train, e)
+					return r.processModification(ttt, ctx, train, e)
 				case config.OpObject,
 					config.OpListObject,
 					config.OpTimestamp,
 					config.OpExists:
-					r.processObject(ttt, ctx, train, e)
+					return r.processObject(ttt, ctx, train, e)
 				}
 			case config.OpIndexInfo,
 				config.OpIndexDetail,
@@ -247,7 +250,18 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 					log.Infof("finished %s execution in %s, type: %s, mode: %s, execution: %d",
 						e.Name, time.Since(start).String(), e.Type, e.Mode, idx)
 				}()
-				r.processIndex(ttt, ctx, e)
+				return r.processIndex(ttt, ctx, e)
+			case config.OpCreateIndex,
+				config.OpSaveIndex,
+				config.OpCreateAndSaveIndex:
+				start := time.Now()
+				log.Infof("started %s execution at %s, type: %s, mode: %s, execution: %d",
+					e.Name, start.Format("2006-01-02 15:04:05"), e.Type, e.Mode, idx)
+				defer func() {
+					log.Infof("finished %s execution in %s, type: %s, mode: %s, execution: %d",
+						e.Name, time.Since(start).String(), e.Type, e.Mode, idx)
+				}()
+				return r.processAgent(ttt, ctx, e)
 			case config.OpKubernetes:
 				if e.Kubernetes != nil {
 					start := time.Now()
@@ -273,13 +287,16 @@ func (r *runner) processExecution(t *testing.T, ctx context.Context, idx int, e 
 	})
 }
 
-func executeWithTimings[T config.Timing](
+func executeWithTimings[T interface {
+	config.Timing
+	config.Repeater
+}](
 	t *testing.T,
 	ctx context.Context,
 	cfg T,
 	name, prefix string,
 	fn func(*testing.T, context.Context) error,
-) error {
+) (err error) {
 	t.Helper()
 	if delay := cfg.GetDelay(); delay != "" {
 		dur, err := delay.Duration()
@@ -296,7 +313,6 @@ func executeWithTimings[T config.Timing](
 		}
 	}
 
-	var cancel context.CancelFunc = func() {}
 	if timeout := cfg.GetTimeout(); timeout != "" {
 		dur, err := timeout.Duration()
 		if err != nil {
@@ -304,12 +320,13 @@ func executeWithTimings[T config.Timing](
 		}
 		if dur > 0 {
 			t.Logf("timeout is set to %s, this %s/%s will stop after %s", timeout, prefix, name, dur.String())
+			var cancel context.CancelFunc
 			ctx, cancel = context.WithTimeout(ctx, dur)
+			defer cancel()
 		}
 	}
-	defer cancel()
 
-	err := fn(t, ctx)
+	err = executeWithRepeats(t, ctx, name, prefix, cfg.GetRepeats(), fn)
 
 	if wait := cfg.GetWait(); wait != "" {
 		dur, werr := wait.Duration()
@@ -328,6 +345,83 @@ func executeWithTimings[T config.Timing](
 	}
 
 	return err
+}
+
+func executeWithRepeats(
+	t *testing.T,
+	ctx context.Context,
+	name, prefix string,
+	repeats *config.Repeats,
+	fn func(*testing.T, context.Context) error,
+) (err error) {
+	t.Helper()
+	if repeats != nil && repeats.Enabled {
+		idx := uint64(0)
+		for {
+			var task string
+			if repeats.ExitCondition == config.Count {
+				task = fmt.Sprintf("Repeat %s for %s (%d/%d)", prefix, name, idx+1, repeats.Count)
+				if idx >= repeats.Count {
+					break
+				}
+			} else {
+				task = fmt.Sprintf("Repeat %s for %s (%d), ExitCondition: %s", prefix, name, idx+1, repeats.ExitCondition)
+			}
+			if idx > 0 {
+				if wait := repeats.Interval; wait != "" {
+					dur, werr := wait.Duration()
+					if werr != nil {
+						t.Errorf("failed to parse wait duration: %s, error: %v", wait, werr)
+						return err
+					}
+					if dur > 0 {
+						log.Infof("Waiting interval: %s for %s", repeats.Interval, task)
+						select {
+						case <-ctx.Done():
+							return ctx.Err()
+						case <-time.After(dur):
+						}
+					}
+				}
+			}
+			idx++
+			select {
+			case <-ctx.Done():
+				err = ctx.Err()
+				log.Warnf("context canceled due to %s during %s", err.Error(), task)
+				if err != nil && errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
+					return err
+				}
+				return nil
+			default:
+			}
+			log.Info(task)
+			ierr := fn(t, ctx)
+			if ierr != nil {
+				if repeats.ExitCondition == config.Success {
+					if ierr == nil {
+						log.Infof("successfully finished %s, exiting repeat loop", task)
+						break
+					}
+					if errors.IsNot(ierr, context.Canceled, context.DeadlineExceeded) {
+						log.Warnf("failed to finish %s, error: %v, will retry", task, ierr)
+						continue
+					}
+				}
+				if errors.IsNot(ierr, context.Canceled, context.DeadlineExceeded) {
+					err = errors.Join(err, ierr)
+				} else {
+					// timeout
+					if repeats.ExitCondition != config.Timeout {
+						t.Error("timeout occurred during execution of", task)
+					}
+					break
+				}
+			}
+		}
+		return err
+	}
+	return fn(t, ctx)
 }
 
 func newClient(

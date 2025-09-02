@@ -37,10 +37,12 @@ docker/build: \
 	docker/build/index-correction \
 	docker/build/index-creation \
 	docker/build/index-deletion \
+	docker/build/index-exportation \
 	docker/build/index-operator \
 	docker/build/index-save \
 	docker/build/manager-index \
-	docker/build/readreplica-rotate
+	docker/build/readreplica-rotate \
+	docker/build/e2e
 
 docker/xpanes/build:
 	@xpanes -s -c "make -f $(ROOTDIR)/Makefile {}" \
@@ -64,11 +66,13 @@ docker/xpanes/build:
 		docker/build/index-correction \
 		docker/build/index-creation \
 		docker/build/index-deletion \
+		docker/build/index-exportation \
 		docker/build/index-operator \
 		docker/build/index-save \
 		docker/build/manager-index \
 		docker/build/operator/helm \
-		docker/build/readreplica-rotate
+		docker/build/readreplica-rotate \
+		docker/build/e2e
 
 .PHONY: docker/name/org
 docker/name/org:
@@ -340,6 +344,17 @@ docker/build/index-deletion:
 		IMAGE=$(INDEX_DELETION_IMAGE) \
 		docker/build/image
 
+.PHONY: docker/name/index-exportation
+docker/name/index-exportation:
+	@echo "$(ORG)/$(INDEX_EXPORTATION_IMAGE)"
+
+.PHONY: docker/build/index-exportation
+## build index-exportation image
+docker/build/index-exportation:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/exportation/Dockerfile" \
+		IMAGE=$(INDEX_EXPORTATION_IMAGE) \
+		docker/build/image
+
 .PHONY: docker/name/index-operator
 docker/name/index-operator:
 	@echo "$(ORG)/$(INDEX_OPERATOR_IMAGE)"
@@ -395,4 +410,15 @@ docker/build/example-client:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/example/client/Dockerfile" \
 		IMAGE=$(EXAMPLE_CLIENT_IMAGE) \
 		DOCKER_OPTS="$${DOCKER_OPTS:+$${DOCKER_OPTS}} --build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
+		docker/build/image
+
+.PHONY: docker/name/e2e
+docker/name/e2e:
+	@echo "$(ORG)/$(E2E_IMAGE)"
+
+.PHONY: docker/build/e2e
+## build e2e docker image
+docker/build/e2e:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/tests/v2/e2e/Dockerfile" \
+		IMAGE=$(E2E_IMAGE) \
 		docker/build/image

@@ -27,26 +27,27 @@ import (
 	"github.com/vdaas/vald/tests/v2/e2e/config"
 )
 
-func (r *runner) processIndex(t *testing.T, ctx context.Context, plan *config.Execution) {
+func (r *runner) processIndex(t *testing.T, ctx context.Context, plan *config.Execution) error {
 	t.Helper()
 	if plan == nil {
 		t.Fatalf("index operation plan is nil")
-		return
+		return nil
 	}
 	switch plan.Type {
 	case config.OpIndexInfo:
-		single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexInfo, printCallback[*payload.Info_Index_Count](passThrough))
+		return single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexInfo, printCallback[*payload.Info_Index_Count](passThrough))
 	case config.OpIndexDetail:
-		single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexDetail, printCallback[*payload.Info_Index_Detail](passThrough))
+		return single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexDetail, printCallback[*payload.Info_Index_Detail](passThrough))
 	case config.OpIndexStatistics:
-		single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexStatistics, printCallback[*payload.Info_Index_Statistics](passThrough))
+		return single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexStatistics, printCallback[*payload.Info_Index_Statistics](passThrough))
 	case config.OpIndexStatisticsDetail:
-		single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexStatisticsDetail, printCallback[*payload.Info_Index_StatisticsDetail](passThrough))
+		return single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexStatisticsDetail, printCallback[*payload.Info_Index_StatisticsDetail](passThrough))
 	case config.OpIndexProperty:
-		single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexProperty, printCallback[*payload.Info_Index_PropertyDetail](passThrough))
+		return single(t, ctx, 0, plan, new(payload.Empty), r.client.IndexProperty, printCallback[*payload.Info_Index_PropertyDetail](passThrough))
 	case config.OpFlush:
-		single(t, ctx, 0, plan, new(payload.Flush_Request), r.client.Flush, printCallback[*payload.Info_Index_Count](passThrough))
+		return single(t, ctx, 0, plan, new(payload.Flush_Request), r.client.Flush, printCallback[*payload.Info_Index_Count](passThrough))
 	default:
 		t.Fatalf("unsupported index operation: %s", plan.Type)
 	}
+	return nil
 }

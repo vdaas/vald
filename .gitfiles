@@ -22,6 +22,7 @@
 .fossa.yml
 .gitattributes
 .gitfiles
+.gitguardian.yaml
 .github/ISSUE_TEMPLATE/bug_report.md
 .github/ISSUE_TEMPLATE/feature_request.md
 .github/ISSUE_TEMPLATE/security_issue_report.md
@@ -49,6 +50,8 @@
 .github/conflint.yaml
 .github/e2e/index_correction.yaml
 .github/e2e/multi_crud.yaml
+.github/e2e/readreplica.yaml
+.github/e2e/rollout.yaml
 .github/e2e/stream_crud.yaml
 .github/e2e/unary_crud.yaml
 .github/helm/values/vald-mirror-target.yaml
@@ -93,6 +96,7 @@
 .github/workflows/dockers-ci-container-image.yaml
 .github/workflows/dockers-dev-container-image.yaml
 .github/workflows/dockers-discoverer-k8s-image.yaml
+.github/workflows/dockers-e2e-image.yaml
 .github/workflows/dockers-example-client-image.yaml
 .github/workflows/dockers-gateway-filter-image.yaml
 .github/workflows/dockers-gateway-lb-image.yaml
@@ -102,6 +106,7 @@
 .github/workflows/dockers-index-correction-image.yaml
 .github/workflows/dockers-index-creation-image.yaml
 .github/workflows/dockers-index-deletion-image.yaml
+.github/workflows/dockers-index-exportation-image.yaml
 .github/workflows/dockers-index-operator-image.yaml
 .github/workflows/dockers-index-save-image.yaml
 .github/workflows/dockers-manager-index-image.yaml
@@ -153,12 +158,14 @@ Makefile.d/e2e.mk
 Makefile.d/functions.mk
 Makefile.d/git.mk
 Makefile.d/helm.mk
+Makefile.d/k0s.mk
 Makefile.d/k3d.mk
 Makefile.d/k8s.mk
 Makefile.d/kind.mk
 Makefile.d/minikube.mk
 Makefile.d/proto.mk
 Makefile.d/test.mk
+Makefile.d/tls.mk
 Makefile.d/tools.mk
 README.md
 SECURITY.md
@@ -528,6 +535,8 @@ cmd/index/job/deletion/doc.go
 cmd/index/job/deletion/main.go
 cmd/index/job/deletion/main_test.go
 cmd/index/job/deletion/sample.yaml
+cmd/index/job/exportation/main.go
+cmd/index/job/exportation/sample.yaml
 cmd/index/job/readreplica/rotate/doc.go
 cmd/index/job/readreplica/rotate/main.go
 cmd/index/job/readreplica/rotate/main_test.go
@@ -589,6 +598,7 @@ dockers/gateway/mirror/Dockerfile
 dockers/index/job/correction/Dockerfile
 dockers/index/job/creation/Dockerfile
 dockers/index/job/deletion/Dockerfile
+dockers/index/job/exportation/Dockerfile
 dockers/index/job/readreplica/rotate/Dockerfile
 dockers/index/job/save/Dockerfile
 dockers/index/operator/Dockerfile
@@ -597,6 +607,7 @@ dockers/manager/index/README.md
 dockers/operator/helm/Dockerfile
 dockers/operator/helm/README.md
 dockers/template.md
+dockers/tests/v2/e2e/Dockerfile
 dockers/tools/benchmark/job/Dockerfile
 dockers/tools/benchmark/operator/Dockerfile
 docs/api/README.md
@@ -628,6 +639,7 @@ docs/overview/component/mirror-gateway.md
 docs/overview/data-flow.md
 docs/performance/benchmark.md
 docs/performance/continuous-benchmark.md
+docs/performance/loadtest.md
 docs/performance/tuning-search-performance.md
 docs/support/FAQ.md
 docs/support/contacts.md
@@ -918,6 +930,7 @@ internal/config/index_creation.go
 internal/config/index_creation_test.go
 internal/config/index_deleter.go
 internal/config/index_deleter_test.go
+internal/config/index_exporter.go
 internal/config/index_operator.go
 internal/config/index_operator_test.go
 internal/config/index_save.go
@@ -1482,7 +1495,6 @@ internal/observability/trace/doc.go
 internal/observability/trace/status.go
 internal/observability/trace/status_test.go
 internal/observability/trace/trace.go
-internal/observability/trace/trace_option.go
 internal/observability/trace/trace_test.go
 internal/os/doc.go
 internal/os/hostname.go
@@ -1523,9 +1535,6 @@ internal/servers/starter/option.go
 internal/servers/starter/option_test.go
 internal/servers/starter/starter.go
 internal/servers/starter/starter_test.go
-internal/servers/starter/testdata/dummyCa.pem
-internal/servers/starter/testdata/dummyServer.crt
-internal/servers/starter/testdata/dummyServer.key
 internal/strings/doc.go
 internal/strings/strings.go
 internal/strings/strings_benchmark_test.go
@@ -1572,11 +1581,6 @@ internal/test/data/strings/doc.go
 internal/test/data/strings/strings.go
 internal/test/data/strings/strings_benchmark_test.go
 internal/test/data/strings/strings_test.go
-internal/test/data/tls/dummyCa.pem
-internal/test/data/tls/dummyServer.crt
-internal/test/data/tls/dummyServer.key
-internal/test/data/tls/invalid.crt
-internal/test/data/tls/invalid.pem
 internal/test/data/vector/doc.go
 internal/test/data/vector/gen.go
 internal/test/data/vector/gen_test.go
@@ -1586,6 +1590,7 @@ internal/test/data/vector/noise/noise_test.go
 internal/test/data/vector/noise/option.go
 internal/test/data/vector/noise/option_test.go
 internal/test/doc.go
+internal/test/framework.go
 internal/test/goleak/doc.go
 internal/test/goleak/goleak.go
 internal/test/goleak/goleak_test.go
@@ -1646,6 +1651,7 @@ k8s/agent/priorityclass.yaml
 k8s/agent/statefulset.yaml
 k8s/agent/svc.yaml
 k8s/debug/kind/config.yaml
+k8s/debug/kind/e2e.yaml
 k8s/discoverer/clusterrole.yaml
 k8s/discoverer/clusterrolebinding.yaml
 k8s/discoverer/configmap.yaml
@@ -1660,7 +1666,6 @@ k8s/external/minio/svc.yaml
 k8s/gateway/gateway/ing.yaml
 k8s/gateway/gateway/lb/configmap.yaml
 k8s/gateway/gateway/lb/deployment.yaml
-k8s/gateway/gateway/lb/hpa.yaml
 k8s/gateway/gateway/lb/pdb.yaml
 k8s/gateway/gateway/lb/priorityclass.yaml
 k8s/gateway/gateway/lb/svc.yaml
@@ -1745,6 +1750,7 @@ k8s/operator/helm/operator.yaml
 k8s/operator/helm/serviceaccount.yaml
 k8s/operator/helm/svc.yaml
 k8s/readreplica/configmap.yaml
+k8s/tests/v2/e2e/job.yaml
 k8s/tools/benchmark/job/clusterrole.yaml
 k8s/tools/benchmark/job/clusterrolebinding.yaml
 k8s/tools/benchmark/job/serviceaccount.yaml
@@ -2092,6 +2098,10 @@ pkg/index/job/deletion/service/options_test.go
 pkg/index/job/deletion/usecase/deletion.go
 pkg/index/job/deletion/usecase/deletion_test.go
 pkg/index/job/deletion/usecase/doc.go
+pkg/index/job/exportation/config/config.go
+pkg/index/job/exportation/service/exporter.go
+pkg/index/job/exportation/service/options.go
+pkg/index/job/exportation/usecase/exportation.go
 pkg/index/job/readreplica/rotate/config/config.go
 pkg/index/job/readreplica/rotate/config/config_test.go
 pkg/index/job/readreplica/rotate/config/doc.go
@@ -2270,7 +2280,8 @@ rust/libs/proto/src/payload.v1.rs
 rust/libs/proto/src/rpc.v1.rs
 rust/libs/proto/src/sidecar.v1.tonic.rs
 rust/libs/proto/src/vald.v1.tonic.rs
-rust/rust-toolchain
+rust/libs/vqueue/Cargo.toml
+rust/libs/vqueue/src/lib.rs
 rust/rust-toolchain.toml
 tests/chaos/chart/.helmignore
 tests/chaos/chart/Chart.yaml
@@ -2297,6 +2308,7 @@ tests/e2e/performance/max_vector_dim_test.go
 tests/e2e/pkg/agent/core/ngt/service/ngt_e2s_test.go
 tests/e2e/sidecar/sidecar_test.go
 tests/performance/max_vector_dim_test.go
+tests/v2/e2e/assets/agent_crud.yaml
 tests/v2/e2e/assets/index_correction.yaml
 tests/v2/e2e/assets/multi_crud.yaml
 tests/v2/e2e/assets/rollout.yaml
@@ -2304,6 +2316,7 @@ tests/v2/e2e/assets/stream_crud.yaml
 tests/v2/e2e/assets/unary_crud.yaml
 tests/v2/e2e/config/config.go
 tests/v2/e2e/config/enums.go
+tests/v2/e2e/crud/agent_test.go
 tests/v2/e2e/crud/crud_test.go
 tests/v2/e2e/crud/dataset_test.go
 tests/v2/e2e/crud/grpc_test.go
@@ -2324,6 +2337,7 @@ tests/v2/e2e/kubernetes/status.go
 versions/BUF_VERSION
 versions/CHAOS_MESH_VERSION
 versions/CMAKE_VERSION
+versions/CSI_DRIVER_HOST_PATH_VERSION
 versions/DOCKER_VERSION
 versions/FAISS_VERSION
 versions/GOLANGCILINT_VERSION
@@ -2345,6 +2359,7 @@ versions/PROMETHEUS_STACK_VERSION
 versions/PROTOBUF_VERSION
 versions/REVIEWDOG_VERSION
 versions/RUST_VERSION
+versions/SNAPSHOTTER_VERSION
 versions/TELEPRESENCE_VERSION
 versions/USEARCH_VERSION
 versions/VALD_VERSION

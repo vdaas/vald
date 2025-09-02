@@ -23,6 +23,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/params"
 	"github.com/vdaas/vald/internal/strings"
@@ -46,8 +47,15 @@ func TestMain(m *testing.M) {
 			},
 		),
 	).Parse()
-	if fail || err != nil || p.ConfigFilePath() == "" {
+	if fail || err != nil {
 		log.Fatalf("failed to parse the parameters: %v", err)
+	}
+	if p.ShowVersion() {
+		log.Info(info.Version)
+		os.Exit(0)
+	}
+	if p.ConfigFilePath() == "" {
+		log.Fatalf("config file is necessary for e2e tests")
 	}
 
 	if testing.Short() {
@@ -55,7 +63,8 @@ func TestMain(m *testing.M) {
 		os.Exit(0)
 	}
 
-	cfg, err = config.Load(p.ConfigFilePath())
+	fp := p.ConfigFilePath()
+	cfg, err = config.Load(fp)
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
@@ -64,5 +73,6 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("failed to load dataset: %v", err)
 	}
+	cfg.FilePath = fp
 	os.Exit(m.Run())
 }

@@ -275,3 +275,11 @@ $(BINDIR)/yq:
 	    && curl -fsSL https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_$(OS)_$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/yq \
 	    && chmod a+x $(BINDIR)/yq
 
+.PHONY: docker-cli/install
+docker-cli/install: $(BINDIR)/docker
+
+$(BINDIR)/docker: $(BINDIR)
+	curl -fsSL https://download.docker.com/linux/static/stable/$(shell uname -m)/docker-$(shell echo $(DOCKER_VERSION) | cut -c2-).tgz -o $(TEMP_DIR)/docker.tgz \
+		&& tar -xzvf $(TEMP_DIR)/docker.tgz -C $(TEMP_DIR) \
+		&& mv $(TEMP_DIR)/docker/docker $(BINDIR) \
+		&& rm -rf $(TEMP_DIR)/docker{.tgz,}

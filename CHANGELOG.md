@@ -1,5 +1,124 @@
 # CHANGELOG
 
+## v1.7.17
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.7.17</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.7.17</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.7.17</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.7.17</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.7.17</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.7.17</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.7.17</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.7.17</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.7.17</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.7.17</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.7.17</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.7.17</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.7.17</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.7.17</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.7.17)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.7.17/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.17/charts/vald-helm-operator/README.md)
+
+### Changes
+
+:sparkles: New feature
+[VALD-125] feat: Implement index exporter [#2746](https://github.com/vdaas/vald/pull/2746)
+
+[VALD-147] add server_config [#2958](https://github.com/vdaas/vald/pull/2958)
+
+[VALD-147] implement AccessLogMiddleware [#2991](https://github.com/vdaas/vald/pull/2991)
+
+[VALD-148] Generate grafana boards by grafana-foundation-sdk Go [#2937](https://github.com/vdaas/vald/pull/2937)
+
+[VALD-322] e2e/v2: Support selector for wait action [#2956](https://github.com/vdaas/vald/pull/2956)
+
+[VALD-325] E2E V2: Index Correction Job [#3000](https://github.com/vdaas/vald/pull/3000)
+
+[VALD-336] Implement expect in E2E v2 to assert API results [#2971](https://github.com/vdaas/vald/pull/2971)
+
+[VALD-351] Add Rust version VQueue prototype implementation [#2998](https://github.com/vdaas/vald/pull/2998)
+
+Add git-lfs to dev container image [#2978](https://github.com/vdaas/vald/pull/2978)
+
+Fix dashboard variables in overview board (#3030) (#3042)
+
+[VALD-359] Support Mac C flags (#3040) (#3044)
+
+Support prometheus without container label (#3043) (#3045)
+
+:zap: Improve performance
+
+improve rangeConns's performance for Release v1.7.17 (#3039) (#3041)
+
+:bug: Bugfix
+[BUGFIX] use client config for tls dialer [#2938](https://github.com/vdaas/vald/pull/2938)
+
+[Bugfix] prevent nil pointer panic for internal/config/grpc.go [#3017](https://github.com/vdaas/vald/pull/3017)
+
+[VALD-148] hotfix: Fix name & despcription of metrics [#2981](https://github.com/vdaas/vald/pull/2981)
+
+Avoid concurrent assignment of stream client in RoundRobin [#2954](https://github.com/vdaas/vald/pull/2954)
+
+fix: make format has conflicts in some targets [#2977](https://github.com/vdaas/vald/pull/2977)
+
+:pencil2: Document
+docs: Fix a typo in the value that specified the service name [#3005](https://github.com/vdaas/vald/pull/3005)
+
+docs: add Kynea0b as a contributor for doc [#3006](https://github.com/vdaas/vald/pull/3006)
+
+docs: add Matts966 as a contributor for code, infra, and 2 more [#3007](https://github.com/vdaas/vald/pull/3007)
+
+:white_check_mark: Testing
+E2E V2 CI [#2950](https://github.com/vdaas/vald/pull/2950)
+
+:green_heart: CI
+feat: automatically resolve go.mod & go.sum conflicts in backport workflow [#2980](https://github.com/vdaas/vald/pull/2980)
+
+:chart_with_upwards_trend: Metrics/Tracing
+[VALD-148] Generate grafana boards by grafana-foundation-sdk Go [#2937](https://github.com/vdaas/vald/pull/2937)
+
 ## v1.7.16
 
 ### Docker images
@@ -308,17 +427,14 @@
 ## Summary by CodeRabbit
 
 - **New Features**
-
   - Added several new contributors to the project, enhancing community involvement.
   - Introduced a new configuration file for spell checking, improving documentation quality.
   - Expanded the project with new configuration files, documentation, and source code for enhanced functionality.
 
 - **Bug Fixes**
-
   - Updated version information in issue templates for accuracy.
 
 - **Documentation**
-
   - Improved clarity in the pull request template and updated version information.
 
 - **Chores**
@@ -392,7 +508,6 @@
 ### [Bugfix]
 
 - **General Fixes**
-
   1. Fix index correction process [#2565](https://github.com/vdaas/vald/pull/2565) ([#2566](https://github.com/vdaas/vald/pull/2566))
   2. libquadmath is not available on ARM [#2559](https://github.com/vdaas/vald/pull/2559)
   3. fix: add checkout option [#2545](https://github.com/vdaas/vald/pull/2545) ([#2546](https://github.com/vdaas/vald/pull/2546))
@@ -404,12 +519,10 @@
   9. Fix the logic to determine docker image [#2410](https://github.com/vdaas/vald/pull/2410) ([#2420](https://github.com/vdaas/vald/pull/2420))
 
 - **Backport and Release-Related**
-
   1. Fix workflow trigger for backport pr creation [#2471](https://github.com/vdaas/vald/pull/2471) ([#2472](https://github.com/vdaas/vald/pull/2472))
   2. Fix output settings to determine-docker-image-tag action and release branch build tag name [#2423](https://github.com/vdaas/vald/pull/2423) ([#2425](https://github.com/vdaas/vald/pull/2425))
 
 - **E2E and Index**
-
   1. Fix e2e for read replica and add e2e for index operator [#2455](https://github.com/vdaas/vald/pull/2455) ([#2459](https://github.com/vdaas/vald/pull/2459))
   2. Fix index job logic to pass DNS A record [#2438](https://github.com/vdaas/vald/pull/2438) ([#2448](https://github.com/vdaas/vald/pull/2448))
 
@@ -420,20 +533,17 @@
 ### [Enhancement]
 
 - **General Improvements**
-
   1. Update dependencies, C++ standard, and improve Dockerfiles for better build systems and localization [#2549](https://github.com/vdaas/vald/pull/2549) ([#2557](https://github.com/vdaas/vald/pull/2557))
   2. Implement ngt Statistics API [#2539](https://github.com/vdaas/vald/pull/2539) ([#2547](https://github.com/vdaas/vald/pull/2547))
   3. refactor index manager service add index service API to expose index informations [#2525](https://github.com/vdaas/vald/pull/2525) ([#2532](https://github.com/vdaas/vald/pull/2532))
 
 - **API and Logic Changes**
-
   1. Change default image tag from latest to nightly [#2516](https://github.com/vdaas/vald/pull/2516) ([#2518](https://github.com/vdaas/vald/pull/2518))
   2. update large top-K ratio handling logic [#2509](https://github.com/vdaas/vald/pull/2509) ([#2511](https://github.com/vdaas/vald/pull/2511))
   3. add inner product distance type for ngt [#2454](https://github.com/vdaas/vald/pull/2454) ([#2458](https://github.com/vdaas/vald/pull/2458))
   4. Implement index operator logic for read replica rotation [#2444](https://github.com/vdaas/vald/pull/2444) ([#2456](https://github.com/vdaas/vald/pull/2456))
 
 - **Performance and Optimization**
-
   1. update deps & add validation for Flush API when agent is Read Only [#2433](https://github.com/vdaas/vald/pull/2433) ([#2436](https://github.com/vdaas/vald/pull/2436))
   2. Add `index-operator` template implementation [#2375](https://github.com/vdaas/vald/pull/2375) ([#2424](https://github.com/vdaas/vald/pull/2424))
 
