@@ -38,13 +38,17 @@ proto/deps:
 	@echo "Proto dependencies are now managed via go.mod tool directive"
 
 .PHONY: proto/clean/deps
-## uninstall all protobuf dependencies
+## uninstall all protobuf dependencies (now managed via go.mod tool directive)
 proto/clean/deps:
-	@echo "Proto dependencies are now managed via go.mod tool directive"
+	@echo "Proto dependencies are now managed via go.mod tool directive. No action needed."
 
 .PHONY: buf/install
 buf/install:
 	@echo "buf is now managed via go.mod tool directive. Use: go tool buf ..."
+
+.PHONY: protoc-gen-doc/install
+protoc-gen-doc/install:
+	@echo "protoc-gen-doc is now managed via go.mod tool directive. Use: go tool protoc-gen-doc ..."
 
 
 

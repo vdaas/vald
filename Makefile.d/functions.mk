@@ -507,9 +507,9 @@ define gen-deadlink-checker
 endef
 
 define gen-api-document
-	buf generate --template=apis/docs/buf.gen.tmpl.yaml --path $2
+	go tool buf generate --template=apis/docs/buf.gen.tmpl.yaml --path $2
 	cat apis/docs/v1/payload.md.tmpl apis/docs/v1/_doc.md.tmpl > apis/docs/v1/doc.md.tmpl; \
-	buf generate --template=apis/docs/buf.gen.doc.yaml --path $2; \
+	go tool buf generate --template=apis/docs/buf.gen.doc.yaml --path $2; \
 	mv $(ROOTDIR)/apis/docs/v1/doc.md $1; \
 	rm apis/docs/v1/*doc.md.tmpl
 endef
