@@ -23,34 +23,34 @@ $(BINDIR)/golangci-lint:
 		| sh -s -- -b $(BINDIR) $(GOLANGCILINT_VERSION)
 
 .PHONY: goimports/install
-goimports/install: $(GOBIN)/goimports
+goimports/install:
+	@echo "goimports is now managed via go.mod tool directive. Use: go tool goimports ..."
 
-$(GOBIN)/goimports:
-	$(call go-install, golang.org/x/tools/cmd/goimports)
+
 
 .PHONY: strictgoimports/install
-strictgoimports/install: $(GOBIN)/strictgoimports
+strictgoimports/install:
+	@echo "strictgoimports is now managed via go.mod tool directive. Use: go tool strictgoimports ..."
 
-$(GOBIN)/strictgoimports:
-	$(call go-install, github.com/momotaro98/strictgoimports/cmd/strictgoimports)
+
 
 .PHONY: gofumpt/install
-gofumpt/install: $(GOBIN)/gofumpt
+gofumpt/install:
+	@echo "gofumpt is now managed via go.mod tool directive. Use: go tool gofumpt ..."
 
-$(GOBIN)/gofumpt:
-	$(call go-install, mvdan.cc/gofumpt)
+
 
 .PHONY: golines/install
-golines/install: $(GOBIN)/golines
+golines/install:
+	@echo "golines is now managed via go.mod tool directive. Use: go tool golines ..."
 
-$(GOBIN)/golines:
-	$(call go-install, github.com/segmentio/golines)
+
 
 .PHONY: crlfmt/install
-crlfmt/install: $(GOBIN)/crlfmt
+crlfmt/install:
+	@echo "crlfmt is now managed via go.mod tool directive. Use: go tool crlfmt ..."
 
-$(GOBIN)/crlfmt:
-	$(call go-install, github.com/cockroachdb/crlfmt)
+
 
 .PHONY: prettier/install
 prettier/install: $(NPM_GLOBAL_PREFIX)/bin/prettier
@@ -128,58 +128,58 @@ $(BINDIR)/buf:
 	chmod +x "${BINDIR}/buf"
 
 .PHONY: k9s/install
-k9s/install: $(GOPATH)/bin/k9s
+k9s/install:
+	@echo "k9s is now managed via go.mod tool directive. Use: go tool k9s ..."
 
-$(GOPATH)/bin/k9s:
-	$(call go-install, github.com/derailed/k9s)
+
 
 .PHONY: stern/install
-stern/install: $(GOPATH)/bin/stern
+stern/install:
+	@echo "stern is now managed via go.mod tool directive. Use: go tool stern ..."
 
-$(GOPATH)/bin/stern:
-	$(call go-install, github.com/stern/stern)
+
 
 .PHONY: yamlfmt/install
-yamlfmt/install: $(GOPATH)/bin/yamlfmt
+yamlfmt/install:
+	@echo "yamlfmt is now managed via go.mod tool directive. Use: go tool yamlfmt ..."
 
-$(GOPATH)/bin/yamlfmt:
-	$(call go-install, github.com/google/yamlfmt/cmd/yamlfmt)
+
 
 .PHONY: gopls/install
-gopls/install: $(GOPATH)/bin/gopls
+gopls/install:
+	@echo "gopls is now managed via go.mod tool directive. Use: go tool gopls ..."
 
-$(GOPATH)/bin/gopls:
-	$(call go-install, golang.org/x/tools/gopls)
+
 
 .PHONY: gomodifytags/install
-gomodifytags/install: $(GOPATH)/bin/gomodifytags
+gomodifytags/install:
+	@echo "gomodifytags is now managed via go.mod tool directive. Use: go tool gomodifytags ..."
 
-$(GOPATH)/bin/gomodifytags:
-	$(call go-install, github.com/fatih/gomodifytags)
+
 
 .PHONY: impl/install
-impl/install: $(GOPATH)/bin/impl
+impl/install:
+	@echo "impl is now managed via go.mod tool directive. Use: go tool impl ..."
 
-$(GOPATH)/bin/impl:
-	$(call go-install, github.com/josharian/impl)
+
 
 .PHONY: goplay/install
-goplay/install: $(GOPATH)/bin/goplay
+goplay/install:
+	@echo "goplay is now managed via go.mod tool directive. Use: go tool goplay ..."
 
-$(GOPATH)/bin/goplay:
-	$(call go-install, github.com/haya14busa/goplay/cmd/goplay)
+
 
 .PHONY: delve/install
-delve/install: $(GOPATH)/bin/dlv
+delve/install:
+	@echo "delve is now managed via go.mod tool directive. Use: go tool dlv ..."
 
-$(GOPATH)/bin/dlv:
-	$(call go-install, github.com/go-delve/delve/cmd/dlv)
+
 
 .PHONY: staticcheck/install
-staticcheck/install: $(GOPATH)/bin/staticcheck
+staticcheck/install:
+	@echo "staticcheck is now managed via go.mod tool directive. Use: go tool staticcheck ..."
 
-$(GOPATH)/bin/staticcheck:
-	$(call go-install, honnef.co/go/tools/cmd/staticcheck)
+
 
 .PHONY: go/install
 go/install: $(GOROOT)/bin/go
