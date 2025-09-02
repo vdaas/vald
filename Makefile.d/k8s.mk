@@ -532,6 +532,7 @@ k8s/otel/collector/delete:
 .PHONY: k8s/monitoring/deploy
 ## deploy monitoring stack
 k8s/monitoring/deploy: \
+	k8s/external/cert-manager/deploy \
 	k8s/metrics/jaeger/deploy \
 	k8s/metrics/prometheus/operator/deploy \
 	k8s/metrics/grafana/deploy \
@@ -546,6 +547,7 @@ k8s/monitoring/delete: \
 	k8s/metrics/grafana/delete \
 	k8s/metrics/jaeger/delete \
 	k8s/metrics/prometheus/operator/delete \
+	k8s/external/cert-manager/delete
 
 .PHONY: k8s/e2e/deploy
 ## deploy e2e job
