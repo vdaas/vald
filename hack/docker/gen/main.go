@@ -427,7 +427,6 @@ var (
 		"CXX": "g++",
 	}
 	goInstallCommands = []string{
-		"make GOPATH=\"${GOPATH}\" GOROOT=\"${GOROOT}\" GO_VERSION=\"${GO_VERSION}\" go/install",
 		"make GOPATH=\"${GOPATH}\" GOROOT=\"${GOROOT}\" GO_VERSION=\"${GO_VERSION}\" go/download",
 	}
 	rustInstallCommands = []string{
@@ -491,10 +490,7 @@ var (
 
 	ciContainerPreprocess = []string{
 		"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps GO_CLEAN_DEPS=false",
-		"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} golangci-lint/install",
-		"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} gotestfmt/install",
 		"make cmake/install",
-		"make buf/install",
 		"make hdf5/install",
 		"make helm-docs/install",
 		"make helm/install",
@@ -507,7 +503,6 @@ var (
 		"make reviewdog/install",
 		"make stern/install",
 		"make telepresence/install",
-		"make tparse/install",
 		"make yq/install",
 	}
 
@@ -521,12 +516,8 @@ var (
 		"apt-get clean",
 		"apt-get autoclean -y",
 		"apt-get autoremove -y",
-		"make delve/install",
-		"make gomodifytags/install",
-		"make gopls/install",
-		"make gotests/install",
-		"make impl/install",
-		"make staticcheck/install",
+		"make k9s/install",
+		"make stern/install",
 	}
 )
 
