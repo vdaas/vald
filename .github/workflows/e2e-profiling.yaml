@@ -138,14 +138,14 @@ jobs:
             for t in heap cpu goroutine threadcreate
             do
               echo "generating: graphs/${svc}-${t}-${GITHUB_SHA::6}.svg"
-              pprof --svg profiles/${svc}-${t}.pb > graphs/${svc}-${t}-${GITHUB_SHA::6}.svg
+              go tool pprof --svg profiles/${svc}-${t}.pb > graphs/${svc}-${t}-${GITHUB_SHA::6}.svg
               echo "generating: graphs/${svc}-${t}-${GITHUB_SHA::6}.png"
-              pprof --png profiles/${svc}-${t}.pb > graphs/${svc}-${t}-${GITHUB_SHA::6}.png
+              go tool pprof --png profiles/${svc}-${t}.pb > graphs/${svc}-${t}-${GITHUB_SHA::6}.png
               if [ -f profiles-main/${svc}-${t}.pb ]; then
                 echo "generating: graphs/${svc}-${t}-main-${GITHUB_SHA::6}.svg"
-                pprof --svg -base=profiles-main/${svc}-${t}.pb profiles/${svc}-${t}.pb > graphs/${svc}-${t}-diff-${tag}-${GITHUB_SHA::6}.svg
+                go tool pprof --svg -base=profiles-main/${svc}-${t}.pb profiles/${svc}-${t}.pb > graphs/${svc}-${t}-diff-${tag}-${GITHUB_SHA::6}.svg
                 echo "generating: graphs/${svc}-${t}-main-${GITHUB_SHA::6}.png"
-                pprof --png -base=profiles-main/${svc}-${t}.pb profiles/${svc}-${t}.pb > graphs/${svc}-${t}-diff-${tag}-${GITHUB_SHA::6}.png
+                go tool pprof --png -base=profiles-main/${svc}-${t}.pb profiles/${svc}-${t}.pb > graphs/${svc}-${t}-diff-${tag}-${GITHUB_SHA::6}.png
               else
                 echo "skipping: profiles-main/${svc}-${t}.pb does not exist."
               fi
