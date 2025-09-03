@@ -18,7 +18,7 @@ defaults:
     level: info
   server_config:
     metrics:
-      go tool pprof:
+      pprof:
         enabled: true
         server:
           http:
