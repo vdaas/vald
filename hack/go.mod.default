@@ -2,6 +2,27 @@ module github.com/vdaas/vald
 
 go 1.24.5
 
+tool (
+	github.com/bufbuild/buf/cmd/buf
+	github.com/cockroachdb/crlfmt
+	github.com/cweill/gotests/gotests
+	github.com/derailed/k9s
+	github.com/fatih/gomodifytags
+	github.com/go-delve/delve/cmd/dlv
+	github.com/google/yamlfmt/cmd/yamlfmt
+	github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt
+	github.com/haya14busa/goplay/cmd/goplay
+	github.com/josharian/impl
+	github.com/mfridman/tparse
+	github.com/momotaro98/strictgoimports/cmd/strictgoimports
+	github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
+	github.com/segmentio/golines
+	github.com/stern/stern
+	golang.org/x/tools/cmd/goimports
+	honnef.co/go/tools/cmd/staticcheck
+	mvdan.cc/gofumpt
+)
+
 replace (
 	cloud.google.com/go => cloud.google.com/go upgrade
 	cloud.google.com/go/bigquery => cloud.google.com/go/bigquery upgrade
@@ -239,7 +260,6 @@ replace (
 	github.com/prashantv/gostub => github.com/prashantv/gostub upgrade
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang upgrade
 	github.com/prometheus/client_model => github.com/prometheus/client_model upgrade
-	github.com/prometheus/common => github.com/prometheus/common upgrade
 	github.com/prometheus/procfs => github.com/prometheus/procfs upgrade
 	github.com/prometheus/prometheus => github.com/prometheus/prometheus upgrade
 	github.com/quasilyte/go-ruleguard => github.com/quasilyte/go-ruleguard upgrade

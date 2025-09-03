@@ -26,31 +26,36 @@ $(BINDIR)/golangci-lint:
 goimports/install: $(GOBIN)/goimports
 
 $(GOBIN)/goimports:
-	$(call go-install, golang.org/x/tools/cmd/goimports)
+	$(call go-tool-install)
 
 .PHONY: strictgoimports/install
 strictgoimports/install: $(GOBIN)/strictgoimports
 
 $(GOBIN)/strictgoimports:
-	$(call go-install, github.com/momotaro98/strictgoimports/cmd/strictgoimports)
+	$(call go-tool-install)
 
 .PHONY: gofumpt/install
 gofumpt/install: $(GOBIN)/gofumpt
 
 $(GOBIN)/gofumpt:
-	$(call go-install, mvdan.cc/gofumpt)
+	$(call go-tool-install)
 
 .PHONY: golines/install
 golines/install: $(GOBIN)/golines
 
 $(GOBIN)/golines:
-	$(call go-install, github.com/segmentio/golines)
+	$(call go-tool-install)
 
 .PHONY: crlfmt/install
 crlfmt/install: $(GOBIN)/crlfmt
 
 $(GOBIN)/crlfmt:
-	$(call go-install, github.com/cockroachdb/crlfmt)
+	$(call go-tool-install)
+
+.PHONY: go/tools/install
+## install all Go tools using go tool directive
+go/tools/install:
+	go tool install all
 
 .PHONY: prettier/install
 prettier/install: $(NPM_GLOBAL_PREFIX)/bin/prettier
