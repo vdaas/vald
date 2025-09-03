@@ -52,11 +52,6 @@ crlfmt/install: $(GOBIN)/crlfmt
 $(GOBIN)/crlfmt:
 	$(call go-tool-install)
 
-.PHONY: go/tools/install
-## install all Go tools using go tool directive
-go/tools/install:
-	go tool install all
-
 .PHONY: prettier/install
 prettier/install: $(NPM_GLOBAL_PREFIX)/bin/prettier
 $(NPM_GLOBAL_PREFIX)/bin/prettier:
