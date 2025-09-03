@@ -307,7 +307,7 @@ replace (
 	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v1.38.0
 	go.opentelemetry.io/otel/sdk/metric => go.opentelemetry.io/otel/sdk/metric v1.38.0
 	go.opentelemetry.io/otel/trace => go.opentelemetry.io/otel/trace v1.38.0
-	go.opentelemetry.io/proto/otlp => go.opentelemetry.io/proto/otlp v1.7.1
+	go.opentelemetry.io/proto/otlp => go.opentelemetry.io/proto/otlp v1.8.0
 	go.starlark.net => go.starlark.net v0.0.0-20250902172013-a68d1868cff7
 	go.uber.org/atomic => go.uber.org/atomic v1.11.0
 	go.uber.org/automaxprocs => go.uber.org/automaxprocs v1.6.0
@@ -365,7 +365,7 @@ replace (
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.21.0
 	sigs.k8s.io/json => sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730
 	sigs.k8s.io/kustomize => sigs.k8s.io/kustomize v2.0.3+incompatible
-	sigs.k8s.io/structured-merge-diff/v6 => sigs.k8s.io/structured-merge-diff/v6 v6.1.0
+	sigs.k8s.io/structured-merge-diff/v4 => sigs.k8s.io/structured-merge-diff/v4 v4.7.0
 	sigs.k8s.io/yaml => sigs.k8s.io/yaml v1.6.0
 )
 
