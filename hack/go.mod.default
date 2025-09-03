@@ -20,7 +20,6 @@ tool (
 	github.com/segmentio/golines
 	github.com/stern/stern
 	golang.org/x/tools/cmd/goimports
-	golang.org/x/tools/gopls
 	mvdan.cc/gofumpt
 )
 
@@ -261,7 +260,6 @@ replace (
 	github.com/prashantv/gostub => github.com/prashantv/gostub upgrade
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang upgrade
 	github.com/prometheus/client_model => github.com/prometheus/client_model upgrade
-	github.com/prometheus/common => github.com/prometheus/common upgrade
 	github.com/prometheus/procfs => github.com/prometheus/procfs upgrade
 	github.com/prometheus/prometheus => github.com/prometheus/prometheus upgrade
 	github.com/quasilyte/go-ruleguard => github.com/quasilyte/go-ruleguard upgrade
