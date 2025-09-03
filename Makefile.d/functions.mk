@@ -27,13 +27,13 @@ define mkdir
 endef
 
 define profile-web
-	go tool pprof -http=":6061" \
+	pprof -http=":6061" \
 		$1.bin \
 		$1.cpu.out &
-	go tool pprof -http=":6062" \
+	pprof -http=":6062" \
 		$1.bin \
 		$1.mem.out &
-	go tool trace -http=":6063" \
+	trace -http=":6063" \
 		$1.trace.out
 endef
 
@@ -507,9 +507,13 @@ define gen-deadlink-checker
 endef
 
 define gen-api-document
-	go tool buf generate --template=apis/docs/buf.gen.tmpl.yaml --path $2
+	buf generate --template=apis/docs/buf.gen.tmpl.yaml --path $2
 	cat apis/docs/v1/payload.md.tmpl apis/docs/v1/_doc.md.tmpl > apis/docs/v1/doc.md.tmpl; \
-	go tool buf generate --template=apis/docs/buf.gen.doc.yaml --path $2; \
+	buf generate --template=apis/docs/buf.gen.doc.yaml --path $2; \
 	mv $(ROOTDIR)/apis/docs/v1/doc.md $1; \
 	rm apis/docs/v1/*doc.md.tmpl
+endef
+
+define tools-install
+	go install tool;
 endef

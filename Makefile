@@ -527,11 +527,12 @@ init: \
 
 .PHONY: tools/install
 ## install development tools
-tools/install: \
-	helm/install \
-	kind/install \
-	telepresence/install \
-	textlint/install
+tools/install:
+	@set -e; \
+	for t in buf protoc-gen-doc tparse gotestfmt gotests goimports strictgoimports gofumpt golines crlfmt stern yamlfmt impl goplay dlv staticcheck; do \
+		echo "warming $$t ..."; \
+		$$t -h >/dev/null 2>&1 || true; \
+	done
 
 .PHONY: update
 ## update deps, license, and run golines, gofumpt, goimports
@@ -573,65 +574,56 @@ remove/empty/file: \
 .PHONY: format/go
 ## run golines, gofumpt, goimports for all go files
 format/go: \
-	crlfmt/install \
-	golines/install \
-	gofumpt/install \
-	strictgoimports/install \
-	goimports/install \
 	files
 	@echo "Formatting Go files..."
 	@cat $(ROOTDIR)/.gitfiles | grep -e "\.go$$" | grep -v "_test\.go$$" | xargs -I {} -P$(CORES) bash -c '\
 	        echo "Formatting Go file {}" && \
-		$(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH) {} && \
-		$(GOBIN)/strictgoimports -w {} && \
-		$(GOBIN)/goimports -w {} && \
-		$(GOBIN)/crlfmt -w -diff=false {} && \
-		$(GOBIN)/gofumpt -w {}'
+		golines -w -m $(GOLINES_MAX_WIDTH) {} && \
+		strictgoimports -w {} && \
+		goimports -w {} && \
+		crlfmt -w -diff=false {} && \
+		gofumpt -w {}'
 	@echo "Go formatting complete."
 
 .PHONY: format/go/test
 ## run golines, gofumpt, goimports for go test files
 format/go/test: \
-	crlfmt/install \
-	golines/install \
-	gofumpt/install \
-	strictgoimports/install \
-	goimports/install \
 	files
 	@echo "Formatting Go Test files..."
 	@cat $(ROOTDIR)/.gitfiles | grep -e "_test\.go$$" | xargs -I {} -P$(CORES) bash -c '\
 	        echo "Formatting Go Test file {}" && \
-		$(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH) {} && \
-		$(GOBIN)/strictgoimports -w {} && \
-		$(GOBIN)/goimports -w {} && \
-		$(GOBIN)/crlfmt -w -diff=false {} && \
-		$(GOBIN)/gofumpt -w {}'
+		golines -w -m $(GOLINES_MAX_WIDTH) {} && \
+		strictgoimports -w {} && \
+		goimports -w {} && \
+		crlfmt -w -diff=false {} && \
+		gofumpt -w {}'
 	@echo "Go test file formatting complete."
 
 .PHONY: format/go/diff
-## run golines, gofumpt, goimports for go diff files
-format/go/diff: \
-	crlfmt/install \
-	golines/install \
-	gofumpt/install \
-	strictgoimports/install \
-	goimports/install \
-	files
-	@echo "Formatting Go Test files..."
-	@git diff --name-only --diff-filter=ACM HEAD | grep -e ".go$$" | xargs -I {} -P$(CORES) bash -c '\
-	        echo "Formatting Go file {}" && \
-		$(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH) {} && \
-		$(GOBIN)/strictgoimports -w {} && \
-		$(GOBIN)/goimports -w {} && \
-		$(GOBIN)/crlfmt -w -diff=false {} && \
-		$(GOBIN)/gofumpt -w {}'
-	@echo "Go file formatting complete."
+## check Go format differences on changed files
+format/go/diff: files
+	@echo "Checking Go format..."
+	@set -e; \
+	files=$$(git diff --name-only --diff-filter=ACMRT HEAD -- '*.go'); \
+	[ -z "$$files" ] && { echo "OK (no changed .go files)"; exit 0; }; \
+	issues=""; \
+	gofumpt_issues=$$(gofumpt -l $$files 2>/dev/null || true); \
+	[ -n "$$gofumpt_issues" ] && issues="$$issues\n$$gofumpt_issues"; \
+	goimports_issues=$$(goimports -l $$files 2>/dev/null || true); \
+	[ -n "$$goimports_issues" ] && issues="$$issues\n$$goimports_issues"; \
+	golines_issues=$$(golines -l $$files 2>/dev/null || true); \
+	[ -n "$$golines_issues" ] && issues="$$issues\n$$golines_issues"; \
+	strict_issues=$$(echo "$$files" | xargs -r strictgoimports -n 2>&1 | grep -v "Usage:" || true); \
+	[ -n "$$strict_issues" ] && issues="$$issues\n$$strict_issues"; \
+	crlfmt_issues=$$(echo "$$files" | xargs -r crlfmt -w=false -diff=true 2>/dev/null | grep -E '^\+\+\+ b/' | sed 's@^+++ b/@@' | sort -u || true); \
+	[ -n "$$crlfmt_issues" ] && issues="$$issues\n$$crlfmt_issues"; \
+	if [ -n "$$issues" ]; then printf "Needs-formatting:%s\n" "$$issues"; exit 1; fi; \
+	echo "OK"
 
 .PHONY: format/yaml
 format/yaml: \
-	prettier/install\
-	yamlfmt/install \
 	files
+	@command -v prettier >/dev/null 2>&1 || make prettier/install
 	@echo "Formatting YAML files..."
 	- @cat $(ROOTDIR)/.gitfiles | grep -E '\.ya?ml\b' | grep -Ev '(templates|s3)' | xargs -I {} -P$(CORES) bash -c '\
 		echo "Formatting YAML file {}" && \
@@ -640,20 +632,17 @@ format/yaml: \
 	@echo "YAML file formatting complete."
 
 .PHONY: format/yaml/diff
-format/yaml/diff: \
-	prettier/install\
-	yamlfmt/install \
-	files
-	@echo "Formatting YAML files..."
-	- @git diff --name-only --diff-filter=ACM HEAD | grep -E '\.ya?ml\b' | grep -Ev '(templates|s3)' | xargs -I {} -P$(CORES) bash -c '\
-		echo "Formatting YAML file {}" && \
-		yamlfmt {} && \
-		prettier --write {}'
-	@echo "YAML file formatting complete."
+format/yaml/diff: files
+	@command -v prettier >/dev/null 2>&1 || make prettier/install
+	@echo "Checking YAML format..."
+	@set -e; \
+	files="$$(git ls-files | grep -E '\.ya?ml$$' | grep -Ev '(templates|s3)' || true)"; \
+	[ -z "$$files" ] || yamlfmt -lint $$files
 
 .PHONY: format/md
 format/md: \
 	prettier/install
+	@command -v prettier >/dev/null 2>&1 || make prettier/install
 	prettier --write \
 	    "$(ROOTDIR)/charts/**/*.md" \
 	    "$(ROOTDIR)/apis/**/*.md" \
@@ -663,6 +652,7 @@ format/md: \
 .PHONY: format/json
 format/json: \
 	prettier/install
+	@command -v prettier >/dev/null 2>&1 || make prettier/install
 	prettier --write \
 	    "$(ROOTDIR)/.cspell.json" \
 	    "$(ROOTDIR)/apis/**/*.json" \
@@ -670,8 +660,7 @@ format/json: \
 	    "$(ROOTDIR)/hack/**/*.json"
 
 .PHONY: format/proto
-format/proto: \
-	buf/install
+format/proto:
 	buf format -w
 
 .PHONY: deps
@@ -683,11 +672,6 @@ deps: \
 .PHONY: deps/install
 ## install dependencies
 deps/install: \
-	crlfmt/install \
-	golines/install \
-	gofumpt/install \
-	strictgoimports/install \
-	goimports/install \
 	prettier/install \
 	go/deps \
 	go/example/deps \

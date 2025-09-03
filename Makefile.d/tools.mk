@@ -24,31 +24,31 @@ $(BINDIR)/golangci-lint:
 
 .PHONY: goimports/install
 goimports/install:
-	@echo "goimports is now managed via go.mod tool directive. Use: go tool goimports ..."
+	@echo "goimports is now managed via go.mod tool directive. Use: goimports ..."
 
 
 
 .PHONY: strictgoimports/install
 strictgoimports/install:
-	@echo "strictgoimports is now managed via go.mod tool directive. Use: go tool strictgoimports ..."
+	@echo "strictgoimports is now managed via go.mod tool directive. Use: strictgoimports ..."
 
 
 
 .PHONY: gofumpt/install
 gofumpt/install:
-	@echo "gofumpt is now managed via go.mod tool directive. Use: go tool gofumpt ..."
+	@echo "gofumpt is now managed via go.mod tool directive. Use: gofumpt ..."
 
 
 
 .PHONY: golines/install
 golines/install:
-	@echo "golines is now managed via go.mod tool directive. Use: go tool golines ..."
+	@echo "golines is now managed via go.mod tool directive. Use: golines ..."
 
 
 
 .PHONY: crlfmt/install
 crlfmt/install:
-	@echo "crlfmt is now managed via go.mod tool directive. Use: go tool crlfmt ..."
+	@echo "crlfmt is now managed via go.mod tool directive. Use: crlfmt ..."
 
 
 
@@ -129,55 +129,55 @@ $(BINDIR)/buf:
 
 .PHONY: k9s/install
 k9s/install:
-	@echo "k9s is now managed via go.mod tool directive. Use: go tool k9s ..."
+	@echo "k9s is now managed via go.mod tool directive. Use: k9s ..."
 
 
 
 .PHONY: stern/install
 stern/install:
-	@echo "stern is now managed via go.mod tool directive. Use: go tool stern ..."
+	@echo "stern is now managed via go.mod tool directive. Use: stern ..."
 
 
 
 .PHONY: yamlfmt/install
 yamlfmt/install:
-	@echo "yamlfmt is now managed via go.mod tool directive. Use: go tool yamlfmt ..."
+	@echo "yamlfmt is now managed via go.mod tool directive. Use: yamlfmt ..."
 
 
 
 .PHONY: gopls/install
 gopls/install:
-	@echo "gopls is now managed via go.mod tool directive. Use: go tool gopls ..."
+	@echo "gopls is now managed via go.mod tool directive. Use: gopls ..."
 
 
 
 .PHONY: gomodifytags/install
 gomodifytags/install:
-	@echo "gomodifytags is now managed via go.mod tool directive. Use: go tool gomodifytags ..."
+	@echo "gomodifytags is now managed via go.mod tool directive. Use: gomodifytags ..."
 
 
 
 .PHONY: impl/install
 impl/install:
-	@echo "impl is now managed via go.mod tool directive. Use: go tool impl ..."
+	@echo "impl is now managed via go.mod tool directive. Use: impl ..."
 
 
 
 .PHONY: goplay/install
 goplay/install:
-	@echo "goplay is now managed via go.mod tool directive. Use: go tool goplay ..."
+	@echo "goplay is now managed via go.mod tool directive. Use: goplay ..."
 
 
 
 .PHONY: delve/install
 delve/install:
-	@echo "delve is now managed via go.mod tool directive. Use: go tool dlv ..."
+	@echo "delve is now managed via go.mod tool directive. Use: dlv ..."
 
 
 
 .PHONY: staticcheck/install
 staticcheck/install:
-	@echo "staticcheck is now managed via go.mod tool directive. Use: go tool staticcheck ..."
+	@echo "staticcheck is now managed via go.mod tool directive. Use: staticcheck ..."
 
 
 

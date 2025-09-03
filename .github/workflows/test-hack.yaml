@@ -74,6 +74,6 @@ jobs:
       - name: Run tests for hack packages / gotestfmt
         run: |
           TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/hack/gotestfmt
-      - name: Print go tool tparse result
+      - name: Print tparse result
         run: |
-          go tool tparse -notests -smallscreen -sort cover -format markdown -file ${GITHUB_WORKSPACE}/test-hack-gotestfmt-result.json
+          tparse -notests -smallscreen -sort cover -format markdown -file ${GITHUB_WORKSPACE}/test-hack-gotestfmt-result.json

@@ -62,9 +62,9 @@ jobs:
       - name: Run tests for cmd packages / gotestfmt
         run: |
           TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/cmd/gotestfmt
-      - name: Print go tool tparse result
+      - name: Print tparse result
         run: |
-          go tool tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-cmd-gotestfmt-result.json"
+          tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-cmd-gotestfmt-result.json"
   test-internal:
     name: Run tests for internal packages
     runs-on: ubuntu-latest
@@ -82,9 +82,9 @@ jobs:
       - name: Run tests for internal packages / gotestfmt
         run: |
           TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/internal/gotestfmt
-      - name: Print go tool tparse result
+      - name: Print tparse result
         run: |
-          go tool tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-internal-gotestfmt-result.json"
+          tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-internal-gotestfmt-result.json"
   test-pkg:
     name: Run tests for pkg packages
     runs-on: ubuntu-latest
@@ -102,6 +102,6 @@ jobs:
       - name: Run tests for pkg packages / gotestfmt
         run: |
           TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/pkg/gotestfmt
-      - name: Print go tool tparse result
+      - name: Print tparse result
         run: |
-          go tool tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-pkg-gotestfmt-result.json"
+          tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-pkg-gotestfmt-result.json"

@@ -429,6 +429,8 @@ var (
 	}
 	goInstallCommands = []string{
 		"make GOPATH=\"${GOPATH}\" GOROOT=\"${GOROOT}\" GO_VERSION=\"${GO_VERSION}\" go/download",
+		"make GOPATH=\"${GOPATH}\" GOROOT=\"${GOROOT}\" GO_VERSION=\"${GO_VERSION}\" go/install",
+		"make GOPATH=\"${GOPATH}\" GOROOT=\"${GOROOT}\" GO_VERSION=\"${GO_VERSION}\" tools/install",
 	}
 	rustInstallCommands = []string{
 		"make RUST_VERSION=\"${RUST_VERSION}\" rust/install",
@@ -508,6 +510,7 @@ var (
 		"make telepresence/install",
 		"make yq/install",
 		"make docker-cli/install",
+		"make tools/install",
 	}
 
 	devContainerPreprocess = []string{
@@ -522,6 +525,7 @@ var (
 		"apt-get autoremove -y",
 		"make k9s/install",
 		"make stern/install",
+		"make tools/install",
 	}
 )
 

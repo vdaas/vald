@@ -44,11 +44,11 @@ proto/clean/deps:
 
 .PHONY: buf/install
 buf/install:
-	@echo "buf is now managed via go.mod tool directive. Use: go tool buf ..."
+	@echo "buf is now managed via go.mod tool directive. Use: buf ..."
 
 .PHONY: protoc-gen-doc/install
 protoc-gen-doc/install:
-	@echo "protoc-gen-doc is now managed via go.mod tool directive. Use: go tool protoc-gen-doc ..."
+	@echo "protoc-gen-doc is now managed via go.mod tool directive. Use: protoc-gen-doc ..."
 
 
 
@@ -62,8 +62,8 @@ proto/gen/code: \
 	$(PROTOS) \
 	proto/deps
 	@$(call green, "generating pb.go and swagger.json files and documents for API v1...")
-	go tool buf format -w
-	go tool buf generate
+	buf format -w
+	buf generate
 	make proto/replace
 
 proto/gen/api/docs: \
@@ -75,7 +75,7 @@ proto/gen/api/docs/payload: $(ROOTDIR)/apis/docs/v1/payload.md.tmpl
 
 $(ROOTDIR)/apis/docs/v1/payload.md.tmpl: $(ROOTDIR)/apis/proto/v1/payload/payload.proto $(ROOTDIR)/apis/docs/v1/payload.tmpl
 	@$(call green,"generating payload v1...")
-	go tool buf generate --template=apis/docs/buf.gen.payload.yaml
+	buf generate --template=apis/docs/buf.gen.payload.yaml
 
 $(ROOTDIR)/apis/docs/v1/%.md: $(ROOTDIR)/apis/proto/v1/vald/%.proto $(ROOTDIR)/apis/docs/v1/payload.md.tmpl $(ROOTDIR)/apis/docs/v1/doc.tmpl
 	@$(call green,"generating documents for API v1...")

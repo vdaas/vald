@@ -87,7 +87,7 @@ bench/datasets/large/deep1b: \
 
 pprof/%.cpu.svg: \
 	pprof/%.bin
-	go tool pprof \
+	pprof \
 	    --svg \
 	    $< \
 	    $(patsubst %.svg,%.out,$@) \
@@ -95,7 +95,7 @@ pprof/%.cpu.svg: \
 
 pprof/%.mem.svg: \
 	pprof/%.bin
-	go tool pprof \
+	pprof \
 	    --svg \
 	    $< \
 	    $(patsubst %.svg,%.out,$@) \
