@@ -357,7 +357,7 @@ replace (
 	k8s.io/client-go => k8s.io/client-go v0.33.2
 	k8s.io/component-base => k8s.io/component-base v0.33.2
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.130.1
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20250902184714-7fc278399c7f
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20231129212854-f0671cc7e66a
 	k8s.io/kubernetes => k8s.io/kubernetes v0.33.2
 	k8s.io/metrics => k8s.io/metrics v0.33.2
 	nhooyr.io/websocket => nhooyr.io/websocket v1.8.17
@@ -653,9 +653,10 @@ require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/cel-go v0.26.0 // indirect
-	github.com/google/gnostic-models v0.7.0 // indirect
+	github.com/google/gnostic-models v0.6.9 // indirect
 	github.com/google/go-containerregistry v0.20.6 // indirect
 	github.com/google/go-dap v0.12.0 // indirect
+	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/licensecheck v0.3.1 // indirect
 	github.com/google/pprof v0.0.0-20250830080959-101d87ff5bc3 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
@@ -889,5 +890,4 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.19.0 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.6.0 // indirect
-	sigs.k8s.io/structured-merge-diff/v6 v6.2.0 // indirect
 )
