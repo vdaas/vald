@@ -19,6 +19,7 @@ jobs:
   check-filenames:
     name: Enforce .yaml (no .yml allowed)
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
       - name: Check for .yml files (warn only)
@@ -40,33 +41,13 @@ jobs:
     name: actionlint
     runs-on: ubuntu-latest
     needs: check-filenames
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Install shellcheck (optional)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y shellcheck
-      - name: Collect workflow YAMLs (exclude yamllint.yaml)
-        id: list
-        shell: bash
-        run: |
-          set -eo pipefail
-          shopt -s nullglob
-          files=(.github/workflows/*.yaml)
-          filtered=()
-          for f in "${files[@]}"; do
-            [[ "$(basename "$f")" == "yamllint.yaml" ]] && continue
-            filtered+=("$f")
-          done
-          if (( ${#filtered[@]} == 0 )); then
-            echo "paths=" >> "$GITHUB_OUTPUT"
-          else
-            {
-              echo "paths<<EOF"
-              printf "%s\n" "${filtered[@]}"
-              echo "EOF"
-            } >> "$GITHUB_OUTPUT"
-          fi
+          sudo apt-get -qq update
+          sudo apt-get -y -qq install shellcheck
       - name: Run actionlint via reviewdog (diff-focused)
         uses: reviewdog/action-actionlint@v1
         with:
@@ -75,19 +56,19 @@ jobs:
           level: error
           filter_mode: file
           actionlint_flags: --shellcheck
-          paths: ${{ steps.list.outputs.paths }}
 
   actionlint-fullscan:
     name: actionlint (full scan on demand)
     runs-on: ubuntu-latest
     needs: check-filenames
     if: ${{ github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - name: Install shellcheck
         run: |
-          sudo apt-get update
-          sudo apt-get install -y shellcheck
+          sudo apt-get -qq update
+          sudo apt-get -y -qq install shellcheck
       - name: Run actionlint via reviewdog (full scan, no filter)
         uses: reviewdog/action-actionlint@v1
         with:
@@ -96,3 +77,18 @@ jobs:
           level: error
           filter_mode: nofilter
           actionlint_flags: --shellcheck
+
+  # yamllint:
+  #   name: yamllint (workflows)
+  #   runs-on: ubuntu-latest
+  #   needs: check-filenames
+  #   timeout-minutes: 5
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Run yamllint (use .github/workflows/yamllint.yaml)
+  #       uses: ibiqlik/action-yamllint@v3
+  #       with:
+  #         config_file: ".github/workflows/yamllint.yaml"
+  #         file_or_dir: ".github/workflows"
+  #         format: github
+  #         strict: true
