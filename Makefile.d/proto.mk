@@ -45,10 +45,10 @@ proto/clean/deps:
 	rm -rf $(GOBIN)/protoc-gen-doc
 
 $(GOBIN)/buf:
-	$(call go-install, github.com/bufbuild/buf/cmd/buf)
+	$(call go-tool-install)
 
 $(GOBIN)/protoc-gen-doc:
-	$(call go-install, github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc)
+	$(call go-tool-install)
 
 $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto:
 	curl -fsSL https://raw.githubusercontent.com/googleapis/googleapis/master/google/rpc/error_details.proto -o $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto
