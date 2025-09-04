@@ -268,7 +268,8 @@ make init
 [![All Contributors](https://img.shields.io/badge/all_contributors-23-orange.svg?style=flat-square)](#contributors)
 =======
 [![All Contributors](https://img.shields.io/badge/all_contributors-25-orange.svg?style=flat-square)](#contributors)
->>>>>>> 54af52c63 (Migrate go tool (#3209))
+
+> > > > > > > 54af52c63 (Migrate go tool (#3209))
 
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
