@@ -166,6 +166,24 @@ func ValdBenchmarkOperator() *dashboard.DashboardBuilder {
 	return builder.Time("now-3h", "now")
 }
 
+func ValdOtelCollector() *dashboard.DashboardBuilder {
+	builder := dashboard.NewDashboardBuilder("Vald Otel Collector").Uid("11-vald-otel-collector")
+	addVariables(builder, "opentelemetry-collector.*", "5m")
+
+	builder.WithRow(dashboard.NewRowBuilder("Stats"))
+	addStatPanels(builder)
+
+	builder.WithRow(dashboard.NewRowBuilder("Time Series"))
+	addCPUPanel(builder)
+	addMemoryPanel(builder)
+	addOtelQueuePanel(builder)
+	addOtelSpanDropPanel(builder)
+	addOtelMetricDropPanel(builder)
+	addOtelNetworkPanel(builder)
+
+	return builder.Time("now-3h", "now")
+}
+
 func configMapTemplate(header string, id string, content string) *yaml.Node {
 	return &yaml.Node{
 		HeadComment: header,
@@ -219,7 +237,7 @@ func main() {
 	// Required to correctly unmarshal panels and dataqueries
 	plugins.RegisterDefaultPlugins()
 
-	for _, builder := range []func() *dashboard.DashboardBuilder{ValdClusterOverview, ValdLBGateway, ValdDiscoverer, ValdIndexManager, ValdAgent, ValdIndexCorrection, ValdAgentMemory, ValdHelmOperator, ValdBenchmarkOperator} {
+	for _, builder := range []func() *dashboard.DashboardBuilder{ValdClusterOverview, ValdLBGateway, ValdDiscoverer, ValdIndexManager, ValdAgent, ValdIndexCorrection, ValdAgentMemory, ValdHelmOperator, ValdBenchmarkOperator, ValdOtelCollector} {
 		dashboardModel, err := builder().Build()
 		if err != nil {
 			panic(err)

@@ -780,6 +780,7 @@ hack/grafana/gen/src/const.go
 hack/grafana/gen/src/helm.go
 hack/grafana/gen/src/index_correction.go
 hack/grafana/gen/src/main.go
+hack/grafana/gen/src/otel.go
 hack/grafana/gen/src/overview.go
 hack/grafana/gen/src/puzzle.go
 hack/grafana/gen/src/stat.go
@@ -1703,6 +1704,7 @@ k8s/metrics/grafana/dashboards/07-vald-helm-operator.yaml
 k8s/metrics/grafana/dashboards/08-vald-lb-gateway.yaml
 k8s/metrics/grafana/dashboards/09-vald-index-correction.yaml
 k8s/metrics/grafana/dashboards/10-vald-benchmark-operator.yaml
+k8s/metrics/grafana/dashboards/11-vald-otel-collector.yaml
 k8s/metrics/grafana/dashboards/99-vald-agent-memory.yaml
 k8s/metrics/grafana/deployment.yaml
 k8s/metrics/grafana/kustomization.yaml
