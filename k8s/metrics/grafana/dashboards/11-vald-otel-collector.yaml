@@ -346,11 +346,6 @@ data:
               "expr": "otelcol_exporter_queue_size{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"}",
               "legendFormat": "Queue Size - {{pod}}",
               "refId": ""
-            },
-            {
-              "expr": "otelcol_exporter_queue_capacity{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"}",
-              "legendFormat": "Queue Capacity - {{pod}}",
-              "refId": ""
             }
           ],
           "title": "OpenTelemetry Queue Metrics",

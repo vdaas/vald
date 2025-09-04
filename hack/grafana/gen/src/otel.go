@@ -14,10 +14,6 @@ func addOtelQueuePanel(builder *dashboard.DashboardBuilder) {
 			WithTarget(
 				prometheusQuery("otelcol_exporter_queue_size{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"}").
 					LegendFormat("Queue Size - {{pod}}"),
-			).
-			WithTarget(
-				prometheusQuery("otelcol_exporter_queue_capacity{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"}").
-					LegendFormat("Queue Capacity - {{pod}}"),
 			),
 	)
 }
