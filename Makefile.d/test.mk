@@ -22,7 +22,7 @@ tparse/install: \
         $(GOPATH)bin/tparse
 
 $(GOPATH)bin/tparse:
-	$(call go-install, github.com/mfridman/tparse)
+	$(call go-tool-install)
 
 .PHONY: gotestfmt/install
 ## install gotestfmt
@@ -30,7 +30,7 @@ gotestfmt/install: \
         $(GOPATH)bin/gotestfmt
 
 $(GOPATH)bin/gotestfmt:
-	$(call go-install, github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt)
+	$(call go-tool-install)
 
 .PHONY: gotests/install
 ## install gotests
@@ -38,7 +38,7 @@ gotests/install: \
         $(GOPATH)bin/gotests
 
 $(GOPATH)bin/gotests:
-	$(call go-install, github.com/cweill/gotests/gotests)
+	$(call go-tool-install)
 
 ## run tests for cmd, internal, pkg
 test: certs/gen
