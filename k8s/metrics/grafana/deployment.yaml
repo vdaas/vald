@@ -53,6 +53,8 @@ spec:
               mountPath: /var/lib/grafana/dashboards/09
             - name: grafana-dashboards-vald-benchmark-operator
               mountPath: /var/lib/grafana/dashboards/10
+            - name: grafana-dashboards-vald-otel-collector
+              mountPath: /var/lib/grafana/dashboards/11
             - name: grafana-dashboards-vald-agent-memory
               mountPath: /var/lib/grafana/dashboards/99
       volumes:
@@ -100,3 +102,7 @@ spec:
           configMap:
             defaultMode: 420
             name: grafana-dashboards-vald-benchmark-operator
+        - name: grafana-dashboards-vald-otel-collector
+          configMap:
+            defaultMode: 420
+            name: grafana-dashboards-vald-otel-collector
