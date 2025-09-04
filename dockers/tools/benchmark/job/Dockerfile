@@ -40,25 +40,28 @@ ENV LC_ALL=en_US.UTF-8
 ENV ORG=vdaas
 ENV PKG=tools/benchmark/job
 ENV REPO=vald
+ENV SCCACHE_DIR=/_cache/sccache
 ENV TZ=Etc/UTC
 ENV USER=root
 ENV PATH=${GOPATH}/bin:${GOROOT}/bin:/usr/local/bin:${PATH}
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
+#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008, DOK-DL3009
 RUN --mount=type=bind,target=.,rw \
     --mount=type=tmpfs,target=/tmp \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked,id=${APP_NAME} \
-    --mount=type=cache,target=/var/cache/apt,sharing=locked,id=${APP_NAME} \
-    --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
-    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target=/var/cache/apt,sharing=locked,id=apt-cache-${TARGETARCH} \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked,id=apt-lib-${TARGETARCH} \
+    --mount=type=cache,target=/_cache/sccache,sharing=locked,id=sccache-${TARGETARCH} \
+    --mount=type=cache,target="/go/pkg",id="go-pkg-${TARGETARCH}" \
+    --mount=type=cache,target="/root/.cache/go-build",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target="/usr/local/lib/rust/cargo/registry",sharing=locked,id="cargo-registry-${TARGETARCH}" \
+    --mount=type=cache,target="/usr/local/lib/rust/cargo/git",sharing=locked,id="cargo-git-${TARGETARCH}" \
     --mount=type=tmpfs,target="${GOPATH}/src" \
     set -ex \
-    && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
+    && rm -f /etc/apt/apt.conf.d/docker-clean \
+    && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
-    && apt-get clean \
     && apt-get update -y \
-    && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --fix-missing \
     build-essential \
     ca-certificates \
@@ -71,6 +74,8 @@ RUN --mount=type=bind,target=.,rw \
     gcc \
     libssl-dev \
     unzip \
+    sccache \
+    ninja-build \
     libaec-dev \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
@@ -78,12 +83,10 @@ RUN --mount=type=bind,target=.,rw \
     && locale-gen ${LANGUAGE} \
     && update-locale LANG=${LANGUAGE} \
     && dpkg-reconfigure -f noninteractive tzdata \
-    && apt-get clean \
-    && apt-get autoclean -y \
-    && apt-get autoremove -y \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
     && make hdf5/install \
+    && sccache --show-stats \
     && make GOARCH="${TARGETARCH}" GOOS="${TARGETOS}" REPO="${ORG}/${REPO}" NAME="${REPO}" cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 # skipcq: DOK-DL3026,DOK-DL3007

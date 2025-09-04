@@ -81,7 +81,8 @@ runs:
           platforms="${TARGET_PLATFORMS}"
         fi
         echo "PLATFORMS is determined: ${platforms}"
-        echo "PLATFORMS=${platforms}" >> $GITHUB_OUTPUT
+        # echo "PLATFORMS=${platforms}" >> $GITHUB_OUTPUT
+        echo "PLATFORMS=linux/amd64,linux/arm64" >> $GITHUB_OUTPUT
       env:
         TARGET_PLATFORMS: ${{ inputs.platforms }}
         PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
@@ -105,21 +106,51 @@ runs:
         IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
         ALTER_IMAGE_NAME: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
         SECONDARY_TAGS: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
+    - name: arch key
+      shell: bash
+      run: |
+        PLATFORMS=${{ steps.determine_platforms.outputs.PLATFORMS }}
+        PLATFORMS=${PLATFORMS//,/-}
+        echo PLATFORMS_KEY=${PLATFORMS} >> $GITHUB_ENV
+    - name: Cache sccache
+      uses: actions/cache@v4
+      id: cache
+      with:
+        path: cache-mount
+        key: cache-mount-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-${{ env.PLATFORMS_KEY }}
+        restore-keys: |
+          cache-mount-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-${{ env.PLATFORMS_KEY }}
+          cache-mount-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}-
+          cache-mount-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}-
+          cache-mount-v2-${{ inputs.target }}-${{ hashFiles('go.sum') }}-
+          cache-mount-v2-${{ inputs.target }}-
+          cache-mount-v2-
+    - name: Restore Docker cache mounts
+      uses: reproducible-containers/buildkit-cache-dance@v3
+      with:
+        builder: ${{ inputs.builder }}
+        cache-dir: cache-mount
+        # mount cache is similar among all the dockerfiles under the dockers directory
+        dockerfile: dockers/tests/v2/e2e/Dockerfile
+        skip-extraction: ${{ steps.cache.outputs.cache-hit }}
     - name: Build and Push
       shell: bash
       id: build_and_push
       run: |
+        REF_SLUG="${{ github.head_ref || github.ref_name }}"
+        REF_SLUG="${REF_SLUG//\//-}"
         make \
           REMOTE="true" \
           DOCKER="docker" \
-          BUILDKIT_INLINE_CACHE=0 \
-          DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${LABEL_OPTS} \
+          DOCKER_OPTS="--builder ${BUILDER} ${LABEL_OPTS} \
           --label org.opencontainers.image.version=${PRIMARY_TAG} \
           --label org.opencontainers.image.title=${TARGET} \
           --label org.opencontainers.image.created=\"$(date --rfc-3339=ns)\" \
           --label org.opencontainers.image.licenses=\"Apache 2.0\"" \
           EXTRA_ARGS="${EXTRA_TAGS}" \
           TAG="${PRIMARY_TAG}" \
+          REF=$REF_SLUG \
+          PLATFORM=${PLATFORMS} \
           docker/build/${TARGET}
       env:
         TARGET: ${{ inputs.target }}

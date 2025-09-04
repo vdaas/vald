@@ -62,6 +62,23 @@ jobs:
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - name: Cache sccache
+        uses: actions/cache@v3
+        with:
+          path: |
+            /_cache/sccache
+            /go/pkg
+            /root/.cache/go-build
+            /usr/local/lib/rust/cargo/registry
+            /usr/local/lib/rust/cargo/git
+          key: build-${{ hashFiles('go.sum') }}-${{ hashFiles('rust/Cargo.lock') }}
+          restore-keys: |
+            build-${{ hashFiles('go.sum') }}
+            build-
       - name: Go build
+        env:
+          CC: "sccache gcc"
+          CXX: "sccache g++"
         run: |
           make binary/build
+          sccache --show-stats

@@ -98,6 +98,7 @@ const (
 	ngtPreprocess     = "make ngt/install"
 	faissPreprocess   = "make faiss/install"
 	usearchPreprocess = "make usearch/install"
+	sccacheStats      = "sccache --show-stats"
 
 	helmOperatorRootdir   = "/opt/helm"
 	helmOperatorWatchFile = helmOperatorRootdir + "/watches.yaml"
@@ -239,14 +240,13 @@ WORKDIR {{.RootDir}}/${ORG}/${REPO}
 COPY {{$files}}
 {{- end}}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
+#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008, DOK-DL3009
 RUN {{RunMounts .RunMounts}} \
     set -ex \
-    && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
+    && rm -f /etc/apt/apt.conf.d/docker-clean \
+    && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
-    && apt-get clean \
     && apt-get update -y \
-    && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --fix-missing \
     build-essential \
     ca-certificates \
@@ -266,9 +266,6 @@ RUN {{RunMounts .RunMounts}} \
     && locale-gen ${LANGUAGE} \
     && update-locale LANG=${LANGUAGE} \
     && dpkg-reconfigure -f noninteractive tzdata \
-    && apt-get clean \
-    && apt-get autoclean -y \
-    && apt-get autoremove -y \
     && {{RunCommands .RunCommands}}
 {{- if and (not (eq (ContainerName .ContainerType) "%s")) (not (eq (ContainerName .ContainerType) "%s"))}}
 # skipcq: DOK-DL3026,DOK-DL3007
@@ -410,6 +407,7 @@ var (
 		"TZ":              "Etc/UTC",
 		"PATH":            "${PATH}:" + usrLocalBinaryDir,
 		"REPO":            repository,
+		"SCCACHE_DIR":     "/_cache/sccache",
 	}
 	goDefaultEnvironments = map[string]string{
 		"GOROOT":      "/opt/go",
@@ -418,10 +416,11 @@ var (
 		"PATH":        "${PATH}:${GOROOT}/bin:${GOPATH}/bin:" + usrLocalBinaryDir,
 	}
 	rustDefaultEnvironments = map[string]string{
-		"RUST_HOME":   usrLocalLibDir + "/rust",
-		"RUSTUP_HOME": "${RUST_HOME}/rustup",
-		"CARGO_HOME":  "${RUST_HOME}/cargo",
-		"PATH":        "${PATH}:${RUSTUP_HOME}/bin:${CARGO_HOME}/bin:" + usrLocalBinaryDir,
+		"RUST_HOME":     usrLocalLibDir + "/rust",
+		"RUSTUP_HOME":   "${RUST_HOME}/rustup",
+		"CARGO_HOME":    "${RUST_HOME}/cargo",
+		"PATH":          "${PATH}:${RUSTUP_HOME}/bin:${CARGO_HOME}/bin:" + usrLocalBinaryDir,
+		"RUSTC_WRAPPER": "/usr/bin/sccache",
 	}
 	clangDefaultEnvironments = map[string]string{
 		"CC":  "gcc",
@@ -455,14 +454,18 @@ var (
 	defaultMounts = []string{
 		"--mount=type=bind,target=.,rw",
 		"--mount=type=tmpfs,target=/tmp",
-		"--mount=type=cache,target=/var/lib/apt,sharing=locked,id=${APP_NAME}",
-		"--mount=type=cache,target=/var/cache/apt,sharing=locked,id=${APP_NAME}",
+		"--mount=type=cache,target=/var/cache/apt,sharing=locked,id=apt-cache-${TARGETARCH}",
+		"--mount=type=cache,target=/var/lib/apt,sharing=locked,id=apt-lib-${TARGETARCH}",
+		"--mount=type=cache,target=/_cache/sccache,sharing=locked,id=sccache-${TARGETARCH}",
+		"--mount=type=cache,target=\"/go/pkg\",id=\"go-pkg-${TARGETARCH}\"",
+		"--mount=type=cache,target=\"/root/.cache/go-build\",id=\"go-build-${TARGETARCH}\"",
+		"--mount=type=cache,target=\"/usr/local/lib/rust/cargo/registry\",sharing=locked,id=\"cargo-registry-${TARGETARCH}\"",
+		"--mount=type=cache,target=\"/usr/local/lib/rust/cargo/git\",sharing=locked,id=\"cargo-git-${TARGETARCH}\"",
 	}
 	goDefaultMounts = []string{
-		"--mount=type=cache,target=\"${GOPATH}/pkg\",id=\"go-build-${TARGETARCH}\"",
-		"--mount=type=cache,target=\"${HOME}/.cache/go-build\",id=\"go-build-${TARGETARCH}\"",
 		"--mount=type=tmpfs,target=\"${GOPATH}/src\"",
 	}
+	rustDefaultMounts = []string{}
 
 	clangBuildDeps = []string{
 		"cmake",
@@ -470,6 +473,8 @@ var (
 		"gcc",
 		"libssl-dev",
 		"unzip",
+		"sccache",
+		"ninja-build",
 	}
 	ngtBuildDeps = []string{
 		"liblapack-dev",
@@ -496,41 +501,25 @@ var (
 		"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps GO_CLEAN_DEPS=false",
 		"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} golangci-lint/install",
 		"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} gotestfmt/install",
-		"make cmake/install",
 		"make buf/install",
 		"make hdf5/install",
 		"make helm-docs/install",
 		"make helm/install",
 		"make k3d/install",
-		"make k9s/install",
 		"make kind/install",
 		"make kubectl/install",
-		"make kubelinter/install",
-		"make minikube/install",
 		"make reviewdog/install",
-		"make stern/install",
-		"make telepresence/install",
 		"make tparse/install",
 		"make yq/install",
 		"make docker-cli/install",
 	}
 
 	devContainerPreprocess = []string{
-		"curl -fsSL https://deb.nodesource.com/setup_current.x | bash -",
 		"apt-get clean",
+		"curl -fsSL https://deb.nodesource.com/setup_current.x | bash -",
 		"apt-get update -y",
-		"apt-get upgrade -y",
 		"apt-get install -y --no-install-recommends --fix-missing nodejs",
 		"npm install -g npm@latest",
-		"apt-get clean",
-		"apt-get autoclean -y",
-		"apt-get autoremove -y",
-		"make delve/install",
-		"make gomodifytags/install",
-		"make gopls/install",
-		"make gotests/install",
-		"make impl/install",
-		"make staticcheck/install",
 	}
 )
 
@@ -676,13 +665,13 @@ func main() {
 			AppName:       "ngt",
 			PackageDir:    agent + "/core/ngt",
 			ExtraPackages: append(clangBuildDeps, ngtBuildDeps...),
-			Preprocess:    []string{ngtPreprocess},
+			Preprocess:    []string{ngtPreprocess, sccacheStats},
 		},
 		"vald-" + agentFaiss: {
 			AppName:       "faiss",
 			PackageDir:    agent + "/core/faiss",
 			ExtraPackages: append(clangBuildDeps, ngtBuildDeps...),
-			Preprocess:    []string{faissPreprocess},
+			Preprocess:    []string{faissPreprocess, sccacheStats},
 		},
 		"vald-" + agent: {
 			AppName:       agent,
@@ -694,6 +683,7 @@ func main() {
 			Preprocess: []string{
 				ngtPreprocess,
 				faissPreprocess,
+				sccacheStats,
 			},
 		},
 		"vald-" + agentSidecar: {
@@ -754,6 +744,7 @@ func main() {
 			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
 			Preprocess: []string{
 				"make hdf5/install",
+				sccacheStats,
 			},
 		},
 		"vald-benchmark-operator": {
@@ -808,7 +799,7 @@ func main() {
 				append(ngtBuildDeps,
 					append(rustBuildDeps,
 						devContainerDeps...)...)...)...),
-			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess, usearchPreprocess),
+			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess, usearchPreprocess, sccacheStats),
 			Entrypoints: []string{"/bin/bash"},
 		},
 		"vald-dev-container": {
@@ -826,7 +817,8 @@ func main() {
 			Preprocess: append(devContainerPreprocess,
 				append(ciContainerPreprocess,
 					ngtPreprocess,
-					faissPreprocess)...),
+					faissPreprocess,
+					sccacheStats)...),
 		},
 		"vald-example-client": {
 			AppName:       "client",
@@ -834,6 +826,7 @@ func main() {
 			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
 			Preprocess: []string{
 				"make hdf5/install",
+				sccacheStats,
 			},
 		},
 		"vald-e2e": {
@@ -842,6 +835,7 @@ func main() {
 			ExtraPackages: append(clangBuildDeps, "libaec-dev"),
 			Preprocess: []string{
 				"make hdf5/install",
+				sccacheStats,
 			},
 		},
 		"vald-buildbase": {
@@ -1122,7 +1116,10 @@ jobs:
 				}
 				commands = append(commands, rustBuildCommands...)
 				data.RunCommands = commands
-				data.RunMounts = defaultMounts
+				mounts := make([]string, 0, len(defaultMounts)+len(rustDefaultMounts))
+				mounts = append(mounts, defaultMounts...)
+				mounts = append(mounts, rustDefaultMounts...)
+				data.RunMounts = mounts
 			case DevContainer, CIContainer:
 				data.Environments = appendM(data.Environments, goDefaultEnvironments, rustDefaultEnvironments, clangDefaultEnvironments)
 				data.RootDir = goWorkdir
@@ -1133,9 +1130,10 @@ jobs:
 				}
 				commands = append(commands, "rm -rf {{.RootDir}}/${ORG}/${REPO}/*")
 				data.RunCommands = commands
-				mounts := make([]string, 0, len(defaultMounts)+len(goDefaultMounts))
+				mounts := make([]string, 0, len(defaultMounts)+len(goDefaultMounts)+len(rustDefaultMounts))
 				mounts = append(mounts, defaultMounts...)
 				mounts = append(mounts, goDefaultMounts...)
+				mounts = append(mounts, rustDefaultMounts...)
 				data.RunMounts = mounts
 			case HelmOperator:
 				data.Environments = appendM(data.Environments, goDefaultEnvironments)
