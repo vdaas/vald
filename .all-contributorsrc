@@ -265,6 +265,16 @@
         "code",
         "maintenance"
       ]
+    },
+    {
+      "login": "Sh1ragami",
+      "name": "白神 晴陽",
+      "avatar_url": "https://avatars.githubusercontent.com/u/132182457?v=4",
+      "profile": "https://aiel.jp",
+      "contributions": [
+        "tool",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
