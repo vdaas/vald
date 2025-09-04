@@ -26,6 +26,10 @@ define go-install
 	    $1@latest
 endef
 
+define go-tool-install
+	go install tool
+endef
+
 define mkdir
 	mkdir -p $1
 endef
