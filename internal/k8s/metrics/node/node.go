@@ -93,7 +93,7 @@ func (r *reconciler) Reconcile(
 				RequeueAfter: time.Second,
 			}
 		}
-		return
+		return res, err
 	}
 
 	nodes := make(map[string]Node, len(m.Items))
@@ -113,7 +113,7 @@ func (r *reconciler) Reconcile(
 		r.onReconcile(nodes)
 	}
 
-	return
+	return res, err
 }
 
 func (r *reconciler) GetName() string {

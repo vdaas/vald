@@ -54,7 +54,7 @@ func (c *client) Open(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
-	return
+	return err
 }
 
 func (c *client) Close() error {
