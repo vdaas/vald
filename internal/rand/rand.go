@@ -39,7 +39,7 @@ func Uint32() (x uint32) {
 	r := pool.Get().(*rand)
 	x = r.Uint32()
 	pool.Put(r)
-	return
+	return x
 }
 
 func LimitedUint32(max uint64) uint32 {
@@ -59,7 +59,7 @@ func (r *rand) Uint32() (x uint32) {
 	x ^= x >> 17
 	x ^= x << 5
 	atomic.StoreUint32(r.x, x)
-	return
+	return x
 }
 
 func (r *rand) init() *rand {
