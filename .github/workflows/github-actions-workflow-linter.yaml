@@ -19,36 +19,41 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout (pinned)
+        uses: actions/checkout@PINNED_SHA # v4.x
+        with:
+          persist-credentials: false
       - name: Check for .yml files
         shell: bash
         run: |
+          echo "::group::Scan '.yml' in .github/workflows"
           set -eo pipefail
           mapfile -t ymls < <(find .github/workflows -type f -name "*.yml" | sort || true)
           if (( ${#ymls[@]} > 0 )); then
-            echo "::group::Found .yml files (please rename to .yaml)"
             for file in "${ymls[@]}"; do
               printf '::warning file=%s,title=Invalid Extension::The file "%s" should be renamed to ".yaml".\n' "$file" "$file"
             done
-            echo "::endgroup::"
           else
             echo "All good: only .yaml files are present."
           fi
+          echo "::endgroup::"
 
   actionlint:
-    name: actionlint
+    name: actionlint (Checks only)
     runs-on: ubuntu-latest
     needs: check-filenames
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout (pinned)
+        uses: actions/checkout@PINNED_SHA
+        with:
+          persist-credentials: false
       - name: Install shellcheck
         run: |
           sudo apt-get -qq update
           sudo apt-get -y -qq install shellcheck
-
-      - name: Run actionlint via reviewdog
-        uses: reviewdog/action-actionlint@v1
+      - name: Run actionlint via reviewdog (nofilter)
+        uses: reviewdog/action-actionlint@PINNED_SHA
         env:
           SHELLCHECK_OPTS: -S error
         with:
@@ -60,17 +65,52 @@ jobs:
           fail_level: error
           actionlint_flags: ./.github/workflows
 
-  workflow-yamllint:
-    name: workflow-yamllint
+  ghalint:
+    name: ghalint (policies)
     runs-on: ubuntu-latest
     needs: check-filenames
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - name: Run yamllint
-        uses: ibiqlik/action-yamllint@v3
+      - name: Checkout (pinned)
+        uses: actions/checkout@PINNED_SHA
         with:
-          config_file: ".github/workflows/workflow-yamllint.yaml"
-          file_or_dir: ".github/workflows"
-          format: github
-          strict: false
+          persist-credentials: false
+
+      - name: Run ghalint
+        uses: koki-develop/github-actions-lint/ghalint@PINNED_SHA
+        with:
+          # action-path: ./.github/actions/**/action.yml
+
+  zizmor:
+    name: zizmor (security)
+    runs-on: ubuntu-latest
+    needs: check-filenames
+    timeout-minutes: 10
+    steps:
+      - name: Checkout (pinned)
+        uses: actions/checkout@PINNED_SHA
+        with:
+          persist-credentials: false
+      - name: Run zizmor (auditor)
+        uses: koki-develop/github-actions-lint/zizmor@PINNED_SHA
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          persona: auditor
+
+  # workflow-yamllint:
+  #   name: workflow-yamllint
+  #   runs-on: ubuntu-latest
+  #   needs: check-filenames
+  #   timeout-minutes: 5
+  #   steps:
+  #     - name: Checkout (pinned)
+  #       uses: actions/checkout@PINNED_SHA
+  #       with:
+  #         persist-credentials: false
+  #     - name: Run yamllint
+  #       uses: ibiqlik/action-yamllint@PINNED_SHA # v3
+  #       with:
+  #         config_file: ".github/workflows/yamllint.yaml"
+  #         file_or_dir: ".github/workflows"
+  #         format: github
+  #         strict: false
