@@ -61,6 +61,7 @@ RUN --mount=type=bind,target=.,rw \
     set -ex \
     && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
+    && sudo sed -i 's|http://archive.ubuntu.com/ubuntu/|http://ftp.riken.jp/Linux/ubuntu/|g' /etc/apt/sources.list \
     && apt-get clean \
     && apt-get update -y \
     && apt-get upgrade -y \
