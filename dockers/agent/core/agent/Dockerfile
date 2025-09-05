@@ -54,6 +54,12 @@ RUN --mount=type=bind,target=.,rw \
     && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
     && sed -i 's|http://archive.ubuntu.com/ubuntu/|http://ftp.riken.jp/Linux/ubuntu/|g' /etc/apt/sources.list \
+    && APT_MIRROR="https://ftp.riken.jp/Linux/ubuntu" \
+    && for f in /etc/apt/sources.list /etc/apt/sources.list.d/*.list; do \
+			[ -f "$f" ] && sed -i -E "s|https?://(archive|security).ubuntu.com/ubuntu|${APT_MIRROR}|g; s|https?://ports.ubuntu.com/ubuntu-ports|${APT_MIRROR}|g" "$f" || true; \
+    done \
+    && apt-get clean \
+    && apt-get update -y -o Acquire::Retries=5 -o Acquire::http::Timeout=30 \
     && apt-get clean \
     && apt-get update -y \
     && apt-get upgrade -y \
