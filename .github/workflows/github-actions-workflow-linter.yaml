@@ -1,9 +1,10 @@
-name: GitHub Actions Workflow Linter
+name: "GitHub Actions Workflow Lint"
 
 on:
   pull_request:
-    # paths:
-    #   - ".github/workflows/*"
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - ".github/workflows/*"
 
 permissions:
   contents: read
@@ -14,103 +15,73 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check-filenames:
-    name: Enforce .yaml
+  workflow-lint:
+    name: Lint GitHub Workflows
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 20
     steps:
-      - name: Checkout (pinned)
-        uses: actions/checkout@PINNED_SHA # v4.x
+      - name: Harden runner egress
+        uses: step-security/harden-runner@v2
         with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
           persist-credentials: false
-      - name: Check for .yml files
-        shell: bash
+
+      - name: Install tools
         run: |
-          echo "::group::Scan '.yml' in .github/workflows"
-          set -eo pipefail
-          mapfile -t ymls < <(find .github/workflows -type f -name "*.yml" | sort || true)
-          if (( ${#ymls[@]} > 0 )); then
-            for file in "${ymls[@]}"; do
-              printf '::warning file=%s,title=Invalid Extension::The file "%s" should be renamed to ".yaml".\n' "$file" "$file"
-            done
-          else
-            echo "All good: only .yaml files are present."
+          sudo apt-get update -qq
+          sudo apt-get install -y shellcheck
+          curl -sSfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b $HOME/bin
+          echo 0 > error_count.txt
+
+      - name: Run actionlint
+        run: |
+          if ! actionlint .github/workflows \
+            | $HOME/bin/reviewdog -efm="%f:%l:%c: %m" \
+              -name="actionlint" \
+              -reporter=github-pr-check \
+              -level=error; then
+            echo $(( $(cat error_count.txt) + 1 )) > error_count.txt
           fi
-          echo "::endgroup::"
-
-  actionlint:
-    name: actionlint (Checks only)
-    runs-on: ubuntu-latest
-    needs: check-filenames
-    timeout-minutes: 10
-    steps:
-      - name: Checkout (pinned)
-        uses: actions/checkout@PINNED_SHA
-        with:
-          persist-credentials: false
-      - name: Install shellcheck
-        run: |
-          sudo apt-get -qq update
-          sudo apt-get -y -qq install shellcheck
-      - name: Run actionlint via reviewdog (nofilter)
-        uses: reviewdog/action-actionlint@PINNED_SHA
         env:
-          SHELLCHECK_OPTS: -S error
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-check
-          tool_name: 'Workflow Linter: actionlint'
-          level: error
-          filter_mode: nofilter
-          fail_level: error
-          actionlint_flags: ./.github/workflows
-
-  ghalint:
-    name: ghalint (policies)
-    runs-on: ubuntu-latest
-    needs: check-filenames
-    timeout-minutes: 10
-    steps:
-      - name: Checkout (pinned)
-        uses: actions/checkout@PINNED_SHA
-        with:
-          persist-credentials: false
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run ghalint
-        uses: koki-develop/github-actions-lint/ghalint@PINNED_SHA
-        with:
-          # action-path: ./.github/actions/**/action.yml
+        run: |
+          if ! ghalint run .github/workflows \
+            | $HOME/bin/reviewdog -efm="%f:%l:%c: %m" \
+              -name="ghalint" \
+              -reporter=github-pr-check \
+              -level=error; then
+            echo $(( $(cat error_count.txt) + 1 )) > error_count.txt
+          fi
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
 
-  zizmor:
-    name: zizmor (security)
-    runs-on: ubuntu-latest
-    needs: check-filenames
-    timeout-minutes: 10
-    steps:
-      - name: Checkout (pinned)
-        uses: actions/checkout@PINNED_SHA
-        with:
-          persist-credentials: false
-      - name: Run zizmor (auditor)
-        uses: koki-develop/github-actions-lint/zizmor@PINNED_SHA
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          persona: auditor
+      - name: Run zizmor
+        run: |
+          if ! zizmor .github/workflows \
+            | $HOME/bin/reviewdog -efm="%f:%l:%c: %m" \
+              -name="zizmor" \
+              -reporter=github-pr-check \
+              -level=warning; then
+            echo $(( $(cat error_count.txt) + 1 )) > error_count.txt
+          fi
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
 
-  # workflow-yamllint:
-  #   name: workflow-yamllint
-  #   runs-on: ubuntu-latest
-  #   needs: check-filenames
-  #   timeout-minutes: 5
-  #   steps:
-  #     - name: Checkout (pinned)
-  #       uses: actions/checkout@PINNED_SHA
-  #       with:
-  #         persist-credentials: false
-  #     - name: Run yamllint
-  #       uses: ibiqlik/action-yamllint@PINNED_SHA # v3
-  #       with:
-  #         config_file: ".github/workflows/yamllint.yaml"
-  #         file_or_dir: ".github/workflows"
-  #         format: github
-  #         strict: false
+      - name: Fail if any errors
+        run: |
+          count=$(cat error_count.txt)
+          if [ "$count" -gt 0 ]; then
+            echo "Lint errors found: $count"
+            exit 1
+          else
+            echo "No lint errors found"
+          fi
