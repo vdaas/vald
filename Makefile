@@ -570,6 +570,29 @@ remove/empty/file: \
 	files
 	@cat $(ROOTDIR)/.gitfiles | grep -vE '^\s*#' | grep -v gitkeep | xargs -I {} -P$(CORES) -n1 sh -c 'if [ -f "{}" ] && [ -z "$$(tr -d '\''[:space:]'\'' < "{}")" ]; then rm "{}"; fi'
 
+.PHONY: workflow/lint actionlint/lint ghalint/lint zizmor/lint
+
+workflow/lint: \
+	actionlint/install \
+	ghalint/install \
+	zizmor/install
+	@echo "Linting workflow files..."
+	@printf '%s\0' \
+		"actionlint/lint" \
+		"ghalint/lint" \
+		"zizmor/lint" \
+	| xargs -0 -I{} -P$(CORES) $(MAKE) --no-print-directory {}
+	@echo "Workflow linting completed."
+
+actionlint/lint:
+	@$(GOBIN)/actionlint
+
+ghalint/lint:
+	@$(GOBIN)/ghalint run .github/workflows
+
+zizmor/lint:
+	@$(BINDIR)/zizmor .github/workflows
+
 .PHONY: format/go
 ## run golines, gofumpt, goimports for all go files
 format/go: \

@@ -1,0 +1,47 @@
+name: GitHub Actions Workflow Linter
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - ".github/workflows/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workflows-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  workflow-lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: versions/GO_VERSION
+          cache: true
+
+      - name: Cargo cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: cargo-${{ runner.os }}-${{ hashFiles('versions/RUST_VERSION') }}
+
+      - name: Lint workflows
+        run: make -k workflow/lint
+        env:
+          BINDIR: ${{ runner.temp }}/bin
+          CARGO_HOME: $HOME/.cargo
+          RUSTUP_HOME: $HOME/.rustup
