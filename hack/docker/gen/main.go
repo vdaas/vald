@@ -254,6 +254,7 @@ RUN {{RunMounts .RunMounts}} \
          -e "s|^URIs: https?://ports\.ubuntu\.com/ubuntu-ports$|URIs: ${APT_MIRROR}|g" \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get update -y -o Acquire::Retries=5 -o Acquire::https::Timeout=30 \
+    && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --fix-missing \
     build-essential \
     ca-certificates \
