@@ -244,15 +244,16 @@ RUN {{RunMounts .RunMounts}} \
     set -ex \
     && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
-    && sed -i 's|http://archive.ubuntu.com/ubuntu/|http://ftp.riken.jp/Linux/ubuntu/|g' /etc/apt/sources.list \
+    && echo 'Acquire::ForceIPv4 "true";' > /etc/apt/apt.conf.d/99force-ipv4 \
     && APT_MIRROR="https://ftp.riken.jp/Linux/ubuntu" \
-    && for f in /etc/apt/sources.list /etc/apt/sources.list.d/*.list; do \
-			[ -f "$f" ] && sed -i -E "s|https?://(archive|security).ubuntu.com/ubuntu|${APT_MIRROR}|g; s|https?://ports.ubuntu.com/ubuntu-ports|${APT_MIRROR}|g" "$f" || true; \
-    done \
-    && apt-get clean \
+    && grep -RlE 'ubuntu\.com|ports\.ubuntu\.com' /etc/apt \
+       | xargs -r sed -i -E \
+         -e "s|https?://(archive|security)\.ubuntu\.com/ubuntu|${APT_MIRROR}|g" \
+         -e "s|https?://ports\.ubuntu\.com/ubuntu-ports|${APT_MIRROR}|g" \
+         -e "s|^URIs: https?://(archive|security)\.ubuntu\.com/ubuntu$|URIs: ${APT_MIRROR}|g" \
+         -e "s|^URIs: https?://ports\.ubuntu\.com/ubuntu-ports$|URIs: ${APT_MIRROR}|g" \
+    && rm -rf /var/lib/apt/lists/* \
     && apt-get update -y -o Acquire::Retries=5 -o Acquire::http::Timeout=30 \
-    && apt-get clean \
-    && apt-get update -y \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --fix-missing \
     build-essential \
