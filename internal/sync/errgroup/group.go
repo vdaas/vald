@@ -86,7 +86,7 @@ func Init(ctx context.Context) (egctx context.Context) {
 	once.Do(func() {
 		instance, egctx = New(ctx)
 	})
-	return
+	return egctx
 }
 
 // Get returns the global errgroup instance, initializing it if necessary.

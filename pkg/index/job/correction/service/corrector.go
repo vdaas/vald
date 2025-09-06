@@ -400,7 +400,7 @@ func (c *correct) loadReplicaInfo(
 			return nil
 		},
 	)
-	return
+	return found, skipped, latest, latestAgent, err
 }
 
 func (c *correct) getLatestObject(

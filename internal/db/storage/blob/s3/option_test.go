@@ -339,7 +339,7 @@ func TestWithMaxPartSize(t *testing.T) {
 				},
 				err: func() (err error) {
 					err = errors.Join(errors.New("byte quantity must be a positive integer with a unit of measurement like M, MB, MiB, G, GiB, or GB"), errors.ErrParseUnitFailed("a"))
-					return
+					return err
 				}(),
 			},
 		},
@@ -436,7 +436,7 @@ func TestWithMaxChunkSize(t *testing.T) {
 				},
 				err: func() (err error) {
 					err = errors.Join(errors.New("byte quantity must be a positive integer with a unit of measurement like M, MB, MiB, G, GiB, or GB"), errors.ErrParseUnitFailed("a"))
-					return
+					return err
 				}(),
 			},
 		},

@@ -492,7 +492,7 @@ func (d *dialer) tlsHandshake(
 func (d *dialer) cacheExpireHook(ctx context.Context, addr string, dc *dialerCache) {
 	if err := safety.RecoverFunc(func() (err error) {
 		dc, err = d.lookup(ctx, addr)
-		return
+		return err
 	})(); err != nil {
 		if dc != nil {
 			log.Errorf("dns cache expiration hook process returned error: %v\tfor addr:\t%s\tips: %v\tlen: %d", err, addr, dc.ips, dc.Len())

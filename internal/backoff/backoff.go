@@ -81,7 +81,7 @@ func (b *backoff) Do(
 	ctx context.Context, f func(ctx context.Context) (val any, retryable bool, err error),
 ) (res any, err error) {
 	if f == nil {
-		return
+		return res, err
 	}
 	var ret bool
 	res, ret, err = f(ctx)

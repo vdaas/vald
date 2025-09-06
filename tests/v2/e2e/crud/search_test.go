@@ -264,14 +264,14 @@ func getIndexFromSearchResponse(t *testing.T, res *payload.Search_Response) (idx
 	t.Helper()
 	if res == nil {
 		t.Error("search response is nil")
-		return
+		return idx
 	}
 	id, _, _ := strings.Cut(res.GetRequestId(), "-")
 	var err error
 	idx, err = strconv.ParseUint(id, 10, 64)
 	if err != nil {
 		t.Errorf("failed to parse request id %s: %v", id, err)
-		return
+		return idx
 	}
 	return idx
 }

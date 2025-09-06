@@ -77,7 +77,7 @@ func genF32Slice(n, dim int, gen func() float32) (ret [][]float32) {
 		}
 		ret = append(ret, v)
 	}
-	return
+	return ret
 }
 
 // UniformDistributedFloat32VectorGenerator returns n float32 vectors with dim dimension and their values under Uniform distribution.
@@ -121,7 +121,7 @@ func genUint8Slice(n, dim int, gen func() uint8) (ret [][]uint8) {
 		}
 		ret = append(ret, v)
 	}
-	return
+	return ret
 }
 
 // UniformDistributedUint8VectorGenerator returns n uint8 vectors with dim dimension and their values under Uniform distribution.
@@ -183,5 +183,5 @@ func ConvertVectorsUint8ToFloat32(vectors [][]uint8) (ret [][]float32) {
 		}
 		ret = append(ret, fvec)
 	}
-	return
+	return ret
 }

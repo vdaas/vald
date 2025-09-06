@@ -30,7 +30,7 @@ jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/dump-context
   detect-ci-container:
     uses: ./.github/workflows/_detect-ci-container.yaml
@@ -45,7 +45,7 @@ jobs:
         password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
       - name: Check out code.
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
@@ -66,7 +66,7 @@ jobs:
         password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
       - name: Check out code.
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
@@ -88,7 +88,7 @@ jobs:
       options: "--add-host=host.docker.internal:host-gateway"
     steps:
       - name: Check out code.
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}

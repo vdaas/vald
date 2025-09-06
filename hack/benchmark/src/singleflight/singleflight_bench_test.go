@@ -180,7 +180,7 @@ func calcAverage(in []Result) (out Result) {
 	}
 	out.HitRate = sum / float64(len(in))
 
-	return
+	return out
 }
 
 func calcVariance(in []Result) (out Result) {
@@ -196,7 +196,7 @@ func calcVariance(in []Result) (out Result) {
 	}
 	out.HitRate = sum / float64(len(in))
 
-	return
+	return out
 }
 
 func Benchmark_group_Do_with_vald_internal_singleflight(b *testing.B) {

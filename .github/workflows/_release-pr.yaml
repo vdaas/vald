@@ -29,7 +29,7 @@ jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/dump-context
   detect-ci-container:
     uses: ./.github/workflows/_detect-ci-container.yaml
@@ -49,7 +49,7 @@ jobs:
       PREPARE_RELEASE_BRANCH_NAME: prepare/${{ inputs.release_branch_name }}
       RELEASE_TAG: ${{ inputs.release_tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
