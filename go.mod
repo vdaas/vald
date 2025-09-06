@@ -24,15 +24,15 @@ tool (
 )
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.121.6
+	cloud.google.com/go => cloud.google.com/go v0.122.0
 	cloud.google.com/go/bigquery => cloud.google.com/go/bigquery v1.70.0
-	cloud.google.com/go/compute => cloud.google.com/go/compute v1.44.0
+	cloud.google.com/go/compute => cloud.google.com/go/compute v1.45.0
 	cloud.google.com/go/datastore => cloud.google.com/go/datastore v1.20.0
 	cloud.google.com/go/firestore => cloud.google.com/go/firestore v1.18.0
 	cloud.google.com/go/iam => cloud.google.com/go/iam v1.5.2
 	cloud.google.com/go/kms => cloud.google.com/go/kms v1.22.0
 	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.24.2
-	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub v1.50.0
+	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub v1.50.1
 	cloud.google.com/go/secretmanager => cloud.google.com/go/secretmanager v1.15.0
 	cloud.google.com/go/storage => cloud.google.com/go/storage v1.56.1
 	cloud.google.com/go/trace => cloud.google.com/go/trace v1.11.6
@@ -46,7 +46,7 @@ replace (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore => github.com/Azure/azure-sdk-for-go/sdk/azcore v1.19.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity => github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.11.0
 	github.com/Azure/azure-sdk-for-go/sdk/internal => github.com/Azure/azure-sdk-for-go/sdk/internal v1.11.2
-	github.com/Azure/go-amqp => github.com/Azure/go-amqp v1.4.0
+	github.com/Azure/go-amqp => github.com/Azure/go-amqp v1.5.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20250128162915-33e12ab7683c+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.30
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.24
@@ -175,7 +175,7 @@ replace (
 	github.com/google/gofuzz => github.com/google/gofuzz v1.2.0
 	github.com/google/martian => github.com/google/martian v2.1.0+incompatible
 	github.com/google/martian/v3 => github.com/google/martian/v3 v3.3.3
-	github.com/google/pprof => github.com/google/pprof v0.0.0-20250902232947-5eec23c92c42
+	github.com/google/pprof => github.com/google/pprof v0.0.0-20250903194437-c28834ac2320
 	github.com/google/shlex => github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/subcommands => github.com/google/subcommands v1.2.0
 	github.com/google/uuid => github.com/google/uuid v1.6.0
@@ -247,7 +247,7 @@ replace (
 	github.com/niemeyer/pretty => github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e
 	github.com/nxadm/tail => github.com/nxadm/tail v1.4.11
 	github.com/onsi/ginkgo => github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/ginkgo/v2 => github.com/onsi/ginkgo/v2 v2.25.2
+	github.com/onsi/ginkgo/v2 => github.com/onsi/ginkgo/v2 v2.25.3
 	github.com/onsi/gomega => github.com/onsi/gomega v1.38.2
 	github.com/peterbourgon/diskv => github.com/peterbourgon/diskv v2.0.1+incompatible
 	github.com/phpdave11/gofpdf => github.com/phpdave11/gofpdf v1.4.3
@@ -259,7 +259,7 @@ replace (
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.9
 	github.com/pmezard/go-difflib => github.com/pmezard/go-difflib v1.0.0
 	github.com/prashantv/gostub => github.com/prashantv/gostub v1.1.0
-	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.23.0
+	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/client_model => github.com/prometheus/client_model v0.6.2
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.17.0
 	github.com/prometheus/prometheus => github.com/prometheus/prometheus v1.99.0
@@ -403,7 +403,7 @@ require (
 	github.com/quic-go/quic-go v0.54.0
 	github.com/scylladb/gocqlx v0.0.0-00010101000000-000000000000
 	github.com/stretchr/testify v1.11.1
-	github.com/unum-cloud/usearch/golang v0.0.0-20250831111817-ff50d79c5239
+	github.com/unum-cloud/usearch/golang v0.0.0-20250904130807-fd6279af6bc2
 	github.com/zeebo/xxh3 v1.0.2
 	go.etcd.io/bbolt v1.3.11
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.62.0
@@ -772,7 +772,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_golang v1.22.0 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
-	github.com/prometheus/common v0.65.0 // indirect
+	github.com/prometheus/common v0.66.1 // indirect
 	github.com/prometheus/procfs v0.16.1 // indirect
 	github.com/pseudomuto/protoc-gen-doc v1.5.1 // indirect
 	github.com/pseudomuto/protokit v0.2.0 // indirect

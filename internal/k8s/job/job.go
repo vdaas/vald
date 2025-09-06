@@ -93,7 +93,7 @@ func (r *reconciler) Reconcile(
 				RequeueAfter: time.Second,
 			}, nil
 		}
-		return
+		return res, err
 	}
 
 	jobs := r.jobsByAppNamePool.Get().(map[string][]k8s.Job)
@@ -121,7 +121,7 @@ func (r *reconciler) Reconcile(
 
 	r.jobsByAppNamePool.Put(jobs)
 
-	return
+	return res, err
 }
 
 // GetName returns the name of resource controller.
