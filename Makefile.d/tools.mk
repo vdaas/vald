@@ -212,7 +212,7 @@ $(LIB_PATH)/libz.a: $(LIB_PATH)
 	&& cd $(TEMP_DIR)/zlib \
 	&& mkdir -p build \
 	&& cd build \
-	&& cmake  -DCMAKE_BUILD_TYPE=Release \
+	&& cmake -DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_STATIC_EXECS=ON \
@@ -225,6 +225,8 @@ $(LIB_PATH)/libz.a: $(LIB_PATH)
 		-DCMAKE_C_FLAGS="$(CFLAGS)" \
 		-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
 		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-DCMAKE_C_COMPILER_LAUNCHER=sccache \
+		-DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
 		-B $(TEMP_DIR)/zlib/build $(TEMP_DIR)/zlib \
 	&& make -j$(CORES) \
 	&& make install \
@@ -257,6 +259,8 @@ $(LIB_PATH)/libhdf5.a: $(LIB_PATH) \
 		-DCMAKE_C_FLAGS="$(CFLAGS)" \
 		-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
 		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-DCMAKE_C_COMPILER_LAUNCHER=sccache \
+		-DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
 		-B $(TEMP_DIR)/hdf5/build $(TEMP_DIR)/hdf5 \
 	&& make -j$(CORES) \
 	&& make install \

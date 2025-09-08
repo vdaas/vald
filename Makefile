@@ -769,6 +769,8 @@ $(USR_LOCAL)/include/NGT/Capi.h:
 		-DCMAKE_C_FLAGS="$(CFLAGS)" \
 		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
 		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-DCMAKE_C_COMPILER_LAUNCHER=sccache \
+		-DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
 		-B $(TEMP_DIR)/NGT-$(NGT_VERSION)/build $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build -j$(CORES) ngt
 	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build install
@@ -794,6 +796,8 @@ $(LIB_PATH)/libfaiss.a:
 		-DCMAKE_C_FLAGS="$(LDFLAGS)" \
 		-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_LDFLAGS)" \
 		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-DCMAKE_C_COMPILER_LAUNCHER=sccache \
+		-DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
 		-B $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build $(TEMP_DIR)/faiss-$(FAISS_VERSION)
 	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build -j$(CORES) faiss
 	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build install
@@ -804,6 +808,11 @@ $(LIB_PATH)/libfaiss.a:
 .PHONY: usearch/install
 ## install usearch
 usearch/install: $(USR_LOCAL)/include/usearch.h
+ifeq ($(shell uname -m),aarch64)
+USEARCH_ADDITIONAL_FLAGS := -DSIMSIMD_NATIVE_BF16=0 -DSIMSIMD_TARGET_NEON_BF16=0 -DSIMSIMD_TARGET_SVE_BF16=0
+else
+USEARCH_ADDITIONAL_FLAGS :=
+endif
 $(USR_LOCAL)/include/usearch.h:
 	git clone --depth 1 --recursive --branch v$(USEARCH_VERSION) https://github.com/unum-cloud/usearch $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
 	cd $(TEMP_DIR)/usearch-$(USEARCH_VERSION) && \
@@ -820,6 +829,9 @@ $(USR_LOCAL)/include/usearch.h:
 		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
 		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
 		-DCMAKE_INSTALL_LIBDIR=$(LIB_PATH) \
+		-DCMAKE_C_COMPILER_LAUNCHER=sccache \
+		-DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
+		$(USEARCH_ADDITIONAL_FLAGS) \
 		-B $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)
 	cmake --build $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build -j$(CORES)
 	cmake --install $(TEMP_DIR)/usearch-$(USEARCH_VERSION)/build --prefix=$(USR_LOCAL)
@@ -842,6 +854,8 @@ cmake/install:
 		-DCMAKE_C_FLAGS="$(CFLAGS)" \
 		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
 		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-DCMAKE_C_COMPILER_LAUNCHER=sccache \
+		-DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
 		-B $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
 	make -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build -j$(CORES) cmake
 	make -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build install
