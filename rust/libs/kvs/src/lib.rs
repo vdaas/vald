@@ -48,15 +48,15 @@ use crate::{
 };
 
 /// A builder for constructing a `BidiMap` instance with custom configurations.
-pub struct BidiBuilder<K, V, C: Codec = BincodeCodec> {
+pub struct BidirectionalMapBuilder<K, V, C: Codec = BincodeCodec> {
     path: String,
     codec: C,
     scan_on_startup: bool,
     _marker: std::marker::PhantomData<(K, V)>,
 }
 
-impl<K:KeyType, V: ValueType> BidiBuilder<K, V, BincodeCodec> {
-    /// Creates a new `BidiBuilder` with a specified database path and the default `BincodeCodec`.
+impl<K:KeyType, V: ValueType> BidirectionalMapBuilder<K, V, BincodeCodec> {
+    /// Creates a new `BidirectionalMapBuilder` with a specified database path and the default `BincodeCodec`.
     pub fn new(path: impl AsRef<str>) -> Self {
         Self {
             path: path.as_ref().to_string(),
@@ -67,10 +67,10 @@ impl<K:KeyType, V: ValueType> BidiBuilder<K, V, BincodeCodec> {
     }
 }
 
-impl<K: KeyType, V: ValueType, C: Codec> BidiBuilder<K, V, C> {
+impl<K: KeyType, V: ValueType, C: Codec> BidirectionalMapBuilder<K, V, C> {
     /// Sets a custom codec for the `BidiMap`, returning a new builder instance.
-    pub fn codec<NewC: Codec>(self, new_codec: NewC) -> BidiBuilder<K, V, NewC> {
-        BidiBuilder {
+    pub fn codec<NewC: Codec>(self, new_codec: NewC) -> BidirectionalMapBuilder<K, V, NewC> {
+        BidirectionalMapBuilder {
             path: self.path,
             codec: new_codec,
             scan_on_startup: self.scan_on_startup,
@@ -85,7 +85,7 @@ impl<K: KeyType, V: ValueType, C: Codec> BidiBuilder<K, V, C> {
     }
 
     /// Builds the `BidiMap`, initializing the database.
-    pub async fn build(self) -> Result<Arc<BidiInner<K, V, C>>, Error> {
+    pub async fn build(self) -> Result<Arc<BidirectionalMap<K, V, C>>, Error> {
         if let Some(dir) = std::path::Path::new(&self.path).parent() {
             tokio::fs::create_dir_all(dir).await?;
         }
@@ -98,7 +98,7 @@ impl<K: KeyType, V: ValueType, C: Codec> BidiBuilder<K, V, C> {
 
         let initial_len = if self.scan_on_startup { uo.len() } else { 0 };
 
-        let inner = Arc::new(BidiInner {
+        let inner = Arc::new(BidirectionalMap {
             db: Arc::new(db),
             uo,
             ou,
@@ -112,7 +112,7 @@ impl<K: KeyType, V: ValueType, C: Codec> BidiBuilder<K, V, C> {
 }
 
 /// The internal struct holding the state and logic of the `BidiMap`.
-pub struct BidiInner<K, V, C: Codec> {
+pub struct BidirectionalMap<K, V, C: Codec> {
     db: Arc<Db>,
     uo: Tree,
     ou: Tree,
@@ -121,7 +121,7 @@ pub struct BidiInner<K, V, C: Codec> {
     _marker: std::marker::PhantomData<(K, V)>,
 }
 
-impl<K: KeyType, V: ValueType, C: Codec> BidiInner<K, V, C> {
+impl<K: KeyType, V: ValueType, C: Codec> BidirectionalMap<K, V, C> {
     /// Retrieves the value and timestamp associated with a given key.
     #[instrument(skip(self, key))]
     pub async fn get<Q>(&self, key: &Q) -> Result<(V, u128), Error>
@@ -396,7 +396,7 @@ mod integration_tests {
     #[tokio::test]
     async fn test_crud_and_len() {
         let (path, _guard) = setup("crud_and_len");
-        let map = BidiBuilder::new(&path).build().await.unwrap();
+        let map = BidirectionalMapBuilder::new(&path).build().await.unwrap();
         assert_eq!(map.len(), 0);
 
         map.set("alpha".to_string(), "one".to_string(), 123)
@@ -427,7 +427,7 @@ mod integration_tests {
     #[tokio::test]
     async fn test_delete_inverse() {
         let (path, _guard) = setup("delete_inverse");
-        let map = BidiBuilder::new(&path).build().await.unwrap();
+        let map = BidirectionalMapBuilder::new(&path).build().await.unwrap();
         map.set("a".to_string(), "1".to_string(), 1).await.unwrap();
         assert_eq!(map.len(), 1);
 
@@ -441,7 +441,7 @@ mod integration_tests {
     #[tokio::test]
     async fn test_range_callback() {
         let (path, _guard) = setup("range_callback");
-        let map = BidiBuilder::new(&path).build().await.unwrap();
+        let map = BidirectionalMapBuilder::new(&path).build().await.unwrap();
         let mut expected = HashMap::new();
         for i in 0..10 {
             let k = format!("key{}", i);
@@ -467,7 +467,7 @@ mod integration_tests {
     #[tokio::test]
     async fn test_range_stream() {
         let (path, _guard) = setup("range_stream");
-        let map = BidiBuilder::new(&path).build().await.unwrap();
+        let map = BidirectionalMapBuilder::new(&path).build().await.unwrap();
         let mut expected = HashMap::new();
         for i in 0..10 {
             let k = format!("key{}", i);
@@ -492,7 +492,7 @@ mod integration_tests {
     async fn test_disable_scan_on_startup() {
         let (path, _guard) = setup("disable_scan_on_startup");
         {
-            let map = BidiBuilder::<String, String>::new(&path)
+            let map = BidirectionalMapBuilder::<String, String>::new(&path)
                 .build()
                 .await
                 .unwrap();
@@ -501,7 +501,7 @@ mod integration_tests {
             map.flush().await.unwrap();
         }
 
-        let map = BidiBuilder::<String, String>::new(&path)
+        let map = BidirectionalMapBuilder::<String, String>::new(&path)
             .disable_scan_on_startup()
             .build()
             .await
@@ -516,7 +516,7 @@ mod integration_tests {
     #[tokio::test]
     async fn test_concurrent_access() {
         let (path, _guard) = setup("concurrent_access");
-        let map = BidiBuilder::new(&path).build().await.unwrap();
+        let map = BidirectionalMapBuilder::new(&path).build().await.unwrap();
 
         let num_items = 100;
         let items: Vec<_> = (0..num_items)
