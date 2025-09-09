@@ -60,7 +60,7 @@ func TestNewGzip(t *testing.T) {
 				want: &gzipCompressor{
 					gobc: func() (gob Compressor) {
 						gob, _ = NewGob()
-						return
+						return gob
 					}(),
 					compressionLevel: gzip.DefaultCompression,
 					gzip:             gzip.New(),

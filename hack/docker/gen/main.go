@@ -455,12 +455,8 @@ var (
 	defaultMounts = []string{
 		"--mount=type=bind,target=.,rw",
 		"--mount=type=tmpfs,target=/tmp",
-		"--mount=type=cache,target=/var/lib/apt,sharing=locked,id=${APP_NAME}",
-		"--mount=type=cache,target=/var/cache/apt,sharing=locked,id=${APP_NAME}",
 	}
 	goDefaultMounts = []string{
-		"--mount=type=cache,target=\"${GOPATH}/pkg\",id=\"go-build-${TARGETARCH}\"",
-		"--mount=type=cache,target=\"${HOME}/.cache/go-build\",id=\"go-build-${TARGETARCH}\"",
 		"--mount=type=tmpfs,target=\"${GOPATH}/src\"",
 	}
 
@@ -894,6 +890,9 @@ func main() {
 				data.PullRequestPaths = append(data.PullRequestPaths,
 					apisProtoPath,
 					hackPath,
+					goModPath,
+					goSumPath,
+					goVersionPath,
 				)
 			case Go:
 				data.PullRequestPaths = append(data.PullRequestPaths,

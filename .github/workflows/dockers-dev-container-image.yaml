@@ -37,8 +37,11 @@ on:
       - Makefile.d/**
       - apis/proto/**
       - dockers/dev/Dockerfile
+      - go.mod
+      - go.sum
       - hack/**
       - hack/docker/gen/main.go
+      - versions/GO_VERSION
   pull_request_target:
     types:
       - opened
@@ -53,8 +56,11 @@ on:
       - Makefile.d/**
       - apis/proto/**
       - dockers/dev/Dockerfile
+      - go.mod
+      - go.sum
       - hack/**
       - hack/docker/gen/main.go
+      - versions/GO_VERSION
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml
