@@ -246,4 +246,9 @@ jobs:
     uses: ./.github/workflows/_docker-image.yaml
     with:
       target: index-deletion
-    secrets: inherit
+    secrets:
+      PACKAGE_USER: ${{ secrets.PACKAGE_USER }}
+      PACKAGE_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
+    permissions:
+      contents: read
+      packages: write

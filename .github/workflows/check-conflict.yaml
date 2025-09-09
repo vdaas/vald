@@ -18,16 +18,25 @@ on:
   pull_request:
 jobs:
   dump-contexts-to-log:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/dump-context
   check-conflict:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
       - name: Set Git config

@@ -25,16 +25,37 @@ on:
         type: string
         description: "The release tag"
         required: true
+    secrets:
+      PACKAGE_USER:
+        required: true
+      PACKAGE_TOKEN:
+        required: true
+      DISPATCH_TOKEN:
+        required: true
+      GPG_PRIVATE_KEY:
+        required: true
+      DISPATCH_USER:
+        required: true
 jobs:
   dump-contexts-to-log:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/dump-context
   detect-ci-container:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     uses: ./.github/workflows/_detect-ci-container.yaml
-    secrets: inherit
   create:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     needs:
       - dump-contexts-to-log
       - detect-ci-container
@@ -51,6 +72,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
       - name: Set Git config

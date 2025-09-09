@@ -76,4 +76,7 @@ jobs:
     uses: ./.github/workflows/_docker-image.yaml
     with:
       target: agent
-    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+    timeout-minutes: 60

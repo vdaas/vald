@@ -24,20 +24,33 @@ env:
   TARGET_LABEL_NAME_PREFIX: "actions/backport/"
   BACKPORT_BRANCH_NAME_PREFIX: "backport"
   FETCHED_GITHUB_INFO_PATH: /tmp/github_info.json
-  GITHUB_USER: ${{ secrets.DISPATCH_USER }}
-  GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
 jobs:
   dump-contexts-to-log:
+    env:
+      GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+      GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+    permissions:
+      contents: read
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/dump-context
   create:
+    env:
+      GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+      GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+    permissions:
+      contents: read
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     needs: [dump-contexts-to-log]
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
       - name: Set Git config

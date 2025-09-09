@@ -46,13 +46,23 @@ env:
   DATASET_ARGS: fashion-mnist
 jobs:
   dump-contexts-to-log:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/dump-context
   detect-ci-container:
+    permissions:
+      contents: read
     uses: ./.github/workflows/_detect-ci-container.yaml
   grpc-sequential:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     name: grpc-sequential
     runs-on: ubuntu-latest
     needs: [detect-ci-container]
@@ -64,6 +74,8 @@ jobs:
       options: "--add-host host.docker.internal:host-gateway"
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
@@ -83,6 +95,9 @@ jobs:
             ./pprof/agent/sequential/grpc.cpu.svg
             ./pprof/agent/sequential/grpc.mem.svg
   grpc-stream:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     name: grpc-stream
     runs-on: ubuntu-latest
     needs: [detect-ci-container]
@@ -94,6 +109,8 @@ jobs:
       options: "--add-host host.docker.internal:host-gateway"
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}

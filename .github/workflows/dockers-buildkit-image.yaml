@@ -67,4 +67,9 @@ jobs:
     with:
       target: buildkit
       platforms: linux/amd64,linux/arm64
-    secrets: inherit
+    secrets:
+      PACKAGE_USER: ${{ secrets.PACKAGE_USER }}
+      PACKAGE_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
+    permissions:
+      contents: read
+      packages: write
