@@ -24,7 +24,7 @@ use tracing::instrument;
 use std::{borrow::Borrow, sync::Arc};
 use std::sync::atomic::AtomicUsize;
 
-use crate::{codec::Codec, error::Error, map::Map, types::{KeyType, ValueType}};
+use crate::map::{codec::Codec, error::Error, base::MapBase, types::{KeyType, ValueType}};
 
 
 const TREE_NAME: &str = "tree";
@@ -40,7 +40,7 @@ pub struct UnidirectionalMap<K: KeyType, V: ValueType, C: Codec> {
     _marker: std::marker::PhantomData<(K, V)>,
 }
 
-impl<K: KeyType, V: ValueType, C: Codec> Map for UnidirectionalMap<K, V, C> {
+impl<K: KeyType, V: ValueType, C: Codec> MapBase for UnidirectionalMap<K, V, C> {
     type K = K;
     type V = V;
     type C = C;
