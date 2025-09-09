@@ -35,72 +35,17 @@ use std::fmt::Debug;
 use std::hash::Hash;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use thiserror::Error;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 use tracing::instrument;
 
-/// Custom error type for all operations within the `BidiMap`.
-///
-/// This enum consolidates errors from various sources into a single, well-defined
-/// error type, making error handling for the library's users more straightforward.
-#[derive(Error, Debug)]
-pub enum BidiError {
-    #[error("item not found")]
-    NotFound,
-    /// Errors from the underlying `sled` database.
-    #[error("sled db error")]
-    Sled(#[from] sled::Error),
-    /// I/O errors.
-    #[error("I/O error")]
-    Io(#[from] std::io::Error),
-    /// Errors that occur during a `sled` transaction, including conflicts or custom aborts.
-    #[error("sled transaction error")]
-    SledTransaction {
-        #[source]
-        source: Box<dyn std::error::Error + Send + Sync>,
-    },
-    /// Error during serialization or deserialization.
-    #[error("codec error")]
-    Codec {
-        #[source]
-        source: Box<dyn std::error::Error + Send + Sync>,
-    },
-    /// Error related to internal Tokio task management, typically from `spawn_blocking`.
-    #[error("internal task error")]
-    Internal(#[from] tokio::task::JoinError),
-}
+pub mod codec;
+pub mod error;
 
-/// A trait for defining custom serialization and deserialization logic.
-///
-/// This allows `BidiMap` to be generic over the data format, enabling users to
-/// plug in their preferred serialization framework (e.g., Bincode, JSON, Protobuf).
-pub trait Codec: Send + Sync + 'static {
-    /// Serializes a given value into a byte vector.
-    fn encode<T: Serialize + Encode + ?Sized>(&self, v: &T) -> Result<Vec<u8>, BidiError>;
-    /// Deserializes a byte slice into a value of a specific type.
-    fn decode<T: DeserializeOwned + Decode<()>>(&self, bytes: &[u8]) -> Result<T, BidiError>;
-}
-
-/// The default codec implementation using `bincode`.
-#[derive(Clone, Debug, Default)]
-pub struct BincodeCodec;
-
-impl Codec for BincodeCodec {
-    fn encode<T: Serialize + Encode + ?Sized>(&self, v: &T) -> Result<Vec<u8>, BidiError> {
-        bincode::encode_to_vec(v, bincode_standard()).map_err(|e| BidiError::Codec {
-            source: Box::new(e),
-        })
-    }
-
-    fn decode<T: DeserializeOwned + Decode<()>>(&self, bytes: &[u8]) -> Result<T, BidiError> {
-        bincode::decode_from_slice(bytes, bincode_standard())
-            .map(|(decoded, _)| decoded)
-            .map_err(|e| BidiError::Codec {
-                source: Box::new(e),
-            })
-    }
-}
+use crate::{
+    codec::{Codec, BincodeCodec},
+    error::Error,
+};
 
 /// A builder for constructing a `BidiMap` instance with custom configurations.
 pub struct BidiBuilder<K, V, C: Codec = BincodeCodec> {
@@ -188,7 +133,7 @@ where
     }
 
     /// Builds the `BidiMap`, initializing the database.
-    pub async fn build(self) -> Result<Arc<BidiInner<K, V, C>>, BidiError> {
+    pub async fn build(self) -> Result<Arc<BidiInner<K, V, C>>, Error> {
         if let Some(dir) = std::path::Path::new(&self.path).parent() {
             tokio::fs::create_dir_all(dir).await?;
         }
@@ -251,7 +196,7 @@ where
 {
     /// Retrieves the value and timestamp associated with a given key.
     #[instrument(skip(self, key))]
-    pub async fn get<Q>(&self, key: &Q) -> Result<(V, u128), BidiError>
+    pub async fn get<Q>(&self, key: &Q) -> Result<(V, u128), Error>
     where
         K: Borrow<Q>,
         Q: Serialize + Encode + ?Sized,
@@ -261,7 +206,7 @@ where
 
     /// Retrieves the key and timestamp associated with a given value.
     #[instrument(skip(self, value))]
-    pub async fn get_inverse<Q>(&self, value: &Q) -> Result<(K, u128), BidiError>
+    pub async fn get_inverse<Q>(&self, value: &Q) -> Result<(K, u128), Error>
     where
         V: Borrow<Q>,
         Q: Serialize + Encode + ?Sized,
@@ -271,22 +216,22 @@ where
 
     /// Inserts or updates a key-value pair with a specified timestamp.
     #[instrument(skip(self, key, value))]
-    pub async fn set(&self, key: K, value: V, timestamp: u128) -> Result<(), BidiError> {
+    pub async fn set(&self, key: K, value: V, timestamp: u128) -> Result<(), Error> {
         let uo = self.uo.clone();
         let ou = self.ou.clone();
         let codec = self.codec.clone();
 
-        let was_inserted = tokio::task::spawn_blocking(move || -> Result<bool, BidiError> {
+        let was_inserted = tokio::task::spawn_blocking(move || -> Result<bool, Error> {
             let key_bytes = codec.encode(&key)?;
             let val_bytes = codec.encode(&value)?;
             let encoded_payload =
                 bincode::encode_to_vec((val_bytes.clone(), timestamp), bincode_standard())
-                    .map_err(|e| BidiError::Codec {
+                    .map_err(|e| Error::Codec {
                         source: Box::new(e),
                     })?;
             let encoded_inverse_payload =
                 bincode::encode_to_vec((key_bytes.clone(), timestamp), bincode_standard())
-                    .map_err(|e| BidiError::Codec {
+                    .map_err(|e| Error::Codec {
                         source: Box::new(e),
                     })?;
 
@@ -298,7 +243,7 @@ where
                         bincode::decode_from_slice(&old_payload_ivec, bincode_standard())
                             .map(|(decoded, _)| decoded)
                             .map_err(|e| {
-                                ConflictableTransactionError::Abort(BidiError::Codec {
+                                ConflictableTransactionError::Abort(Error::Codec {
                                     source: Box::new(e),
                                 })
                             })?;
@@ -316,8 +261,8 @@ where
                 Ok(is_new)
             });
 
-            transaction_result.map_err(|e: TransactionError<BidiError>| {
-                BidiError::SledTransaction {
+            transaction_result.map_err(|e: TransactionError<Error>| {
+                Error::SledTransaction {
                     source: Box::new(e),
                 }
             })
@@ -333,7 +278,7 @@ where
 
     /// Deletes a pair by its key and returns the associated value.
     #[instrument(skip(self, key))]
-    pub async fn delete<Q>(&self, key: &Q) -> Result<V, BidiError>
+    pub async fn delete<Q>(&self, key: &Q) -> Result<V, Error>
     where
         K: Borrow<Q>,
         Q: Serialize + Encode + ?Sized,
@@ -343,7 +288,7 @@ where
 
     /// Deletes a pair by its value and returns the associated key.
     #[instrument(skip(self, value))]
-    pub async fn delete_inverse<Q>(&self, value: &Q) -> Result<K, BidiError>
+    pub async fn delete_inverse<Q>(&self, value: &Q) -> Result<K, Error>
     where
         V: Borrow<Q>,
         Q: Serialize + Encode + ?Sized,
@@ -352,9 +297,9 @@ where
     }
 
     /// Iterates over all key-value pairs using a callback function.
-    pub async fn range<F>(&self, mut f: F) -> Result<(), BidiError>
+    pub async fn range<F>(&self, mut f: F) -> Result<(), Error>
     where
-        F: FnMut(&K, &V, u128) -> Result<bool, BidiError> + Send + 'static,
+        F: FnMut(&K, &V, u128) -> Result<bool, Error> + Send + 'static,
     {
         let mut stream = self.range_stream();
         while let Some(item) = stream.next().await {
@@ -368,7 +313,7 @@ where
     }
 
     /// Returns a stream over all key-value pairs in the map.
-    pub fn range_stream(&self) -> impl Stream<Item = Result<(K, V, u128), BidiError>> + Send {
+    pub fn range_stream(&self) -> impl Stream<Item = Result<(K, V, u128), Error>> + Send {
         let codec = self.codec.clone();
         let uo = self.uo.clone();
         let (tx, rx) = mpsc::channel(128);
@@ -380,7 +325,7 @@ where
                     let (v_b, ts): (Vec<u8>, u128) =
                         bincode::decode_from_slice(&payload_ivec, bincode_standard())
                             .map(|(decoded, _)| decoded)
-                            .map_err(|e| BidiError::Codec {
+                            .map_err(|e| Error::Codec {
                                 source: Box::new(e),
                             })?;
                     let k: K = codec.decode(&k_ivec)?;
@@ -403,7 +348,7 @@ where
     }
 
     /// Flushes all pending writes to the disk, ensuring durability.
-    pub async fn flush(&self) -> Result<(), BidiError> {
+    pub async fn flush(&self) -> Result<(), Error> {
         let db = self.db.clone();
         tokio::task::spawn_blocking(move || db.flush()).await??;
         Ok(())
@@ -416,7 +361,7 @@ where
         &self,
         input: &Input,
         tree: &Tree,
-    ) -> Result<(Output, u128), BidiError>
+    ) -> Result<(Output, u128), Error>
     where
         Input: Serialize + Encode + ?Sized,
         Output: DeserializeOwned + Decode<()> + Send + 'static,
@@ -425,13 +370,13 @@ where
         let codec = self.codec.clone();
         let encoded_input = self.codec.encode(input)?;
 
-        tokio::task::spawn_blocking(move || -> Result<(Output, u128), BidiError> {
-            let payload_ivec = t.get(encoded_input)?.ok_or(BidiError::NotFound)?;
+        tokio::task::spawn_blocking(move || -> Result<(Output, u128), Error> {
+            let payload_ivec = t.get(encoded_input)?.ok_or(Error::NotFound)?;
 
             let (output_bytes, ts): (Vec<u8>, u128) =
                 bincode::decode_from_slice(&payload_ivec, bincode_standard())
                     .map(|(decoded, _)| decoded)
-                    .map_err(|e| BidiError::Codec {
+                    .map_err(|e| Error::Codec {
                         source: Box::new(e),
                     })?;
             let output = codec.decode(&output_bytes)?;
@@ -447,7 +392,7 @@ where
         input: &Input,
         primary_tree: &Tree,
         inverse_tree: &Tree,
-    ) -> Result<Output, BidiError>
+    ) -> Result<Output, Error>
     where
         Input: Serialize + Encode + ?Sized,
         Output: DeserializeOwned + Decode<()> + Send + 'static,
@@ -458,14 +403,14 @@ where
         let encoded_input = self.codec.encode(input)?;
 
         let deleted_bytes =
-            tokio::task::spawn_blocking(move || -> Result<Option<Vec<u8>>, BidiError> {
+            tokio::task::spawn_blocking(move || -> Result<Option<Vec<u8>>, Error> {
                 let transaction_result = (&pt, &it).transaction(move |(primary_tx, inverse_tx)| {
                     if let Some(payload_ivec) = primary_tx.remove(encoded_input.as_slice())? {
                         let (inverse_key_bytes, _): (Vec<u8>, u128) =
                             bincode::decode_from_slice(&payload_ivec, bincode_standard())
                                 .map(|(decoded, _)| decoded)
                                 .map_err(|e| {
-                                    ConflictableTransactionError::Abort(BidiError::Codec {
+                                    ConflictableTransactionError::Abort(Error::Codec {
                                         source: Box::new(e),
                                     })
                                 })?;
@@ -476,8 +421,8 @@ where
                     }
                 });
 
-                transaction_result.map_err(|e: TransactionError<BidiError>| {
-                    BidiError::SledTransaction {
+                transaction_result.map_err(|e: TransactionError<Error>| {
+                    Error::SledTransaction {
                         source: Box::new(e),
                     }
                 })
@@ -488,7 +433,7 @@ where
             self.len.fetch_sub(1, Ordering::SeqCst);
             codec.decode(&bytes_to_decode)
         } else {
-            Err(BidiError::NotFound)
+            Err(Error::NotFound)
         }
     }
 }
