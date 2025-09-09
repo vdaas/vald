@@ -329,7 +329,7 @@ type (
 	Build struct {
 		Uses           string            `yaml:"uses"`
 		With           With              `yaml:"with"`
-		Secrets        string            `yaml:"secrets,omitempty"`
+		Secrets        map[string]string `yaml:"secrets,omitempty"`
 		Permissions    map[string]string `yaml:"permissions"`
 		TimeoutMinutes int               `yaml:"timeout-minutes"`
 	}
@@ -1010,7 +1010,6 @@ jobs:
     with:
       target: "`+data.Name+`"
       platforms: ""
-    secrets: "inherit"
 `), &workflow)
 			if err != nil {
 				return fmt.Errorf("Error decoding YAML: %v", err)
@@ -1038,7 +1037,10 @@ jobs:
 			}
 			workflow.Jobs.Build.TimeoutMinutes = 60
 
-			workflow.Jobs.Build.Secrets = ""
+			workflow.Jobs.Build.Secrets = map[string]string{
+				"PACKAGE_USER":  "${{ secrets.PACKAGE_USER }}",
+				"PACKAGE_TOKEN": "${{ secrets.PACKAGE_TOKEN }}",
+			}
 
 			workflowYamlTmp, err := yaml.Marshal(workflow)
 			if err != nil {
