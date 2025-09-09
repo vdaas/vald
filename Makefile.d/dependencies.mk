@@ -80,6 +80,7 @@ go/deps:
 	sed -i "s/#.*//" $(ROOTDIR)/go.mod
 	GOTOOLCHAIN=go$(GO_VERSION) GOPRIVATE=$(GOPRIVATE) go mod tidy
 	GOTOOLCHAIN=go$(GO_VERSION) go get -u all 2>/dev/null || true
+	# TODO: Avoid go get after go get -u all
 	GOTOOLCHAIN=go$(GO_VERSION) go get github.com/unum-cloud/usearch/golang@$(shell git ls-remote https://github.com/unum-cloud/usearch refs/tags/v$(USEARCH_VERSION) | cut -f1)
 
 .PHONY: go/example/deps
