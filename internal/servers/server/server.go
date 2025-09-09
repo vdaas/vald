@@ -381,7 +381,7 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 				s.mu.RLock()
 				if !s.enableRestart || s.shuttingDown {
 					s.mu.RUnlock()
-					return
+					return err
 				}
 				s.mu.RUnlock()
 				log.Infof("%s server %s stopped", s.mode.String(), s.name)

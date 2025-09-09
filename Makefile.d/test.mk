@@ -200,7 +200,7 @@ test/internal/gotestfmt: \
 	GODEBUG=$(GODEBUG) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) -ldflags="-linkmode=external" $(ROOTDIR)/internal/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
-	| gotestfmt -showteststatus
+	| gotestfmt -showteststatus -hide="all"
 	$(MAKE) certs/clean
 
 .PHONY: test/pkg/gotestfmt
