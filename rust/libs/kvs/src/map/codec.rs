@@ -17,7 +17,7 @@
 use bincode::{Decode, Encode, config::standard as bincode_standard};
 use serde::{Serialize, de::DeserializeOwned};
 
-use crate::error::Error;
+use crate::map::error::Error;
 
 /// A trait for defining custom serialization and deserialization logic.
 ///

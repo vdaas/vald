@@ -37,11 +37,7 @@ use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 use tracing::instrument;
 
-pub mod codec;
-pub mod error;
-pub mod types;
-
-use crate::{
+use crate::map::{
     codec::{Codec, BincodeCodec},
     error::Error,
     types::{KeyType, ValueType},
