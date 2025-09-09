@@ -31,8 +31,6 @@ use sled::{
     transaction::{ConflictableTransactionError, TransactionError, Transactional},
 };
 use std::borrow::Borrow;
-use std::fmt::Debug;
-use std::hash::Hash;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use tokio::sync::mpsc;
@@ -41,10 +39,12 @@ use tracing::instrument;
 
 pub mod codec;
 pub mod error;
+pub mod types;
 
 use crate::{
     codec::{Codec, BincodeCodec},
     error::Error,
+    types::{KeyType, ValueType},
 };
 
 /// A builder for constructing a `BidiMap` instance with custom configurations.
@@ -55,31 +55,7 @@ pub struct BidiBuilder<K, V, C: Codec = BincodeCodec> {
     _marker: std::marker::PhantomData<(K, V)>,
 }
 
-impl<K, V> BidiBuilder<K, V, BincodeCodec>
-where
-    K: Serialize
-        + DeserializeOwned
-        + Encode
-        + Decode<()>
-        + Eq
-        + Hash
-        + Clone
-        + Send
-        + Sync
-        + Debug
-        + 'static,
-    V: Serialize
-        + DeserializeOwned
-        + Encode
-        + Decode<()>
-        + Eq
-        + Hash
-        + Clone
-        + Send
-        + Sync
-        + Debug
-        + 'static,
-{
+impl<K:KeyType, V: ValueType> BidiBuilder<K, V, BincodeCodec> {
     /// Creates a new `BidiBuilder` with a specified database path and the default `BincodeCodec`.
     pub fn new(path: impl AsRef<str>) -> Self {
         Self {
@@ -91,31 +67,7 @@ where
     }
 }
 
-impl<K, V, C: Codec> BidiBuilder<K, V, C>
-where
-    K: Serialize
-        + DeserializeOwned
-        + Encode
-        + Decode<()>
-        + Eq
-        + Hash
-        + Clone
-        + Send
-        + Sync
-        + Debug
-        + 'static,
-    V: Serialize
-        + DeserializeOwned
-        + Encode
-        + Decode<()>
-        + Eq
-        + Hash
-        + Clone
-        + Send
-        + Sync
-        + Debug
-        + 'static,
-{
+impl<K: KeyType, V: ValueType, C: Codec> BidiBuilder<K, V, C> {
     /// Sets a custom codec for the `BidiMap`, returning a new builder instance.
     pub fn codec<NewC: Codec>(self, new_codec: NewC) -> BidiBuilder<K, V, NewC> {
         BidiBuilder {
@@ -169,31 +121,7 @@ pub struct BidiInner<K, V, C: Codec> {
     _marker: std::marker::PhantomData<(K, V)>,
 }
 
-impl<K, V, C: Codec> BidiInner<K, V, C>
-where
-    K: Serialize
-        + DeserializeOwned
-        + Encode
-        + Decode<()>
-        + Eq
-        + Hash
-        + Clone
-        + Send
-        + Sync
-        + Debug
-        + 'static,
-    V: Serialize
-        + DeserializeOwned
-        + Encode
-        + Decode<()>
-        + Eq
-        + Hash
-        + Clone
-        + Send
-        + Sync
-        + Debug
-        + 'static,
-{
+impl<K: KeyType, V: ValueType, C: Codec> BidiInner<K, V, C> {
     /// Retrieves the value and timestamp associated with a given key.
     #[instrument(skip(self, key))]
     pub async fn get<Q>(&self, key: &Q) -> Result<(V, u128), Error>
