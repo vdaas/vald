@@ -65,6 +65,7 @@ go/deps:
         		$(ROOTDIR)/go.sum \
         		$(ROOTDIR)/go.mod 2>/dev/null; \
         	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod ; \
+			sed -i "s/#.*//" $(ROOTDIR)/go.mod ; \
         	GOPRIVATE=$(GOPRIVATE) go mod tidy ; \
         	go clean -cache -modcache -testcache -i -r ; \
         	rm -rf $(ROOTDIR)/vendor \
@@ -73,10 +74,13 @@ go/deps:
         		$(ROOTDIR)/go.sum \
         		$(ROOTDIR)/go.mod 2>/dev/null; \
         	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod ; \
+			sed -i "s/#.*//" $(ROOTDIR)/go.mod ; \
 	fi
 	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod
-	GOPRIVATE=$(GOPRIVATE) go mod tidy
-	go get -u all 2>/dev/null || true
+	sed -i "s/#.*//" $(ROOTDIR)/go.mod
+	GOTOOLCHAIN=go$(GO_VERSION) GOPRIVATE=$(GOPRIVATE) go mod tidy
+	GOTOOLCHAIN=go$(GO_VERSION) go get -u all 2>/dev/null || true
+	GOTOOLCHAIN=go$(GO_VERSION) go get github.com/unum-cloud/usearch/golang@$(shell git ls-remote https://github.com/unum-cloud/usearch refs/tags/v$(USEARCH_VERSION) | cut -f1)
 
 .PHONY: go/example/deps
 ## install Go package dependencies

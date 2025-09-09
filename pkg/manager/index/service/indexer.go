@@ -145,7 +145,7 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 				//  execute SaveIndex in concurrent.
 				idx.eg.Go(safety.RecoverFunc(func() (err error) {
 					if !mu.TryLock() {
-						return
+						return err
 					}
 					defer mu.Unlock()
 					defer st.Reset(idx.saveIndexDuration)
@@ -165,7 +165,7 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 				//  execute SaveIndex in concurrent.
 				idx.eg.Go(safety.RecoverFunc(func() (err error) {
 					if !mu.TryLock() {
-						return
+						return err
 					}
 					defer mu.Unlock()
 					defer stl.Reset(idx.saveIndexDurationLimit)

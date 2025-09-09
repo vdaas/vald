@@ -530,5 +530,5 @@ func load(path string) (train, test [][]float32, err error) {
 		return nil, nil, err
 	}
 
-	return
+	return train, test, err
 }
