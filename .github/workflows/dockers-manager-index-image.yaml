@@ -267,8 +267,10 @@ jobs:
     with:
       target: manager-index
     secrets:
-      PACKAGE_USER: ${{ secrets.PACKAGE_USER }}
+      DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
       PACKAGE_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
+      PACKAGE_USER: ${{ secrets.PACKAGE_USER }}
     permissions:
       contents: read
       packages: write
