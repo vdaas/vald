@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+// Package errdetails provides error detail for gRPC status
 package errdetails
 
 import (
@@ -22,7 +23,6 @@ import (
 	"strconv"
 
 	"github.com/vdaas/vald/apis/grpc/v1/rpc/errdetails"
-	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
@@ -31,7 +31,6 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 	spb "google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type (
@@ -55,123 +54,32 @@ const (
 	ValdResourceOwner          = "vdaas.org vald team <vald@vdaas.org>"
 	ValdGRPCResourceTypePrefix = "github.com/vdaas/vald/apis/grpc/v1"
 
-	typePrefix   = "type.googleapis.com/google.rpc."
-	typePrefixV1 = "type.googleapis.com/rpc.v1."
+	typePrefix = "type.googleapis.com/google.rpc."
 )
 
 var (
-	DebugInfoMessageName                    = string(new(DebugInfo).ProtoReflect().Descriptor().FullName().Name())
-	ErrorInfoMessageName                    = string(new(ErrorInfo).ProtoReflect().Descriptor().FullName().Name())
-	BadRequestMessageName                   = string(new(BadRequest).ProtoReflect().Descriptor().FullName().Name())
-	BadRequestFieldViolationMessageName     = string(new(BadRequestFieldViolation).ProtoReflect().Descriptor().FullName().Name())
-	LocalizedMessageMessageName             = string(new(LocalizedMessage).ProtoReflect().Descriptor().FullName().Name())
-	PreconditionFailureMessageName          = string(new(PreconditionFailure).ProtoReflect().Descriptor().FullName().Name())
-	PreconditionFailureViolationMessageName = string(new(PreconditionFailureViolation).ProtoReflect().Descriptor().FullName().Name())
-	HelpMessageName                         = string(new(Help).ProtoReflect().Descriptor().FullName().Name())
-	HelpLinkMessageName                     = string(new(HelpLink).ProtoReflect().Descriptor().FullName().Name())
-	QuotaFailureMessageName                 = string(new(QuotaFailure).ProtoReflect().Descriptor().FullName().Name())
-	QuotaFailureViolationMessageName        = string(new(QuotaFailureViolation).ProtoReflect().Descriptor().FullName().Name())
-	RequestInfoMessageName                  = string(new(RequestInfo).ProtoReflect().Descriptor().FullName().Name())
-	ResourceInfoMessageName                 = string(new(ResourceInfo).ProtoReflect().Descriptor().FullName().Name())
-	RetryInfoMessageName                    = string(new(RetryInfo).ProtoReflect().Descriptor().FullName().Name())
+	debugInfoMessageName                    = new(DebugInfo).ProtoReflect().Descriptor().FullName().Name()
+	errorInfoMessageName                    = new(ErrorInfo).ProtoReflect().Descriptor().FullName().Name()
+	badRequestMessageName                   = new(BadRequest).ProtoReflect().Descriptor().FullName().Name()
+	badRequestFieldViolationMessageName     = new(BadRequestFieldViolation).ProtoReflect().Descriptor().FullName().Name()
+	localizedMessageMessageName             = new(LocalizedMessage).ProtoReflect().Descriptor().FullName().Name()
+	preconditionFailureMessageName          = new(PreconditionFailure).ProtoReflect().Descriptor().FullName().Name()
+	preconditionFailureViolationMessageName = new(PreconditionFailureViolation).ProtoReflect().Descriptor().FullName().Name()
+	helpMessageName                         = new(Help).ProtoReflect().Descriptor().FullName().Name()
+	helpLinkMessageName                     = new(HelpLink).ProtoReflect().Descriptor().FullName().Name()
+	quotaFailureMessageName                 = new(QuotaFailure).ProtoReflect().Descriptor().FullName().Name()
+	quotaFailureViolationMessageName        = new(QuotaFailureViolation).ProtoReflect().Descriptor().FullName().Name()
+	requestInfoMessageName                  = new(RequestInfo).ProtoReflect().Descriptor().FullName().Name()
+	resourceInfoMessageName                 = new(ResourceInfo).ProtoReflect().Descriptor().FullName().Name()
+	retryInfoMessageName                    = new(RetryInfo).ProtoReflect().Descriptor().FullName().Name()
 )
-
-type Details struct {
-	Details []Detail `json:"details,omitempty" yaml:"details"`
-}
 
 type Detail struct {
 	TypeURL string        `json:"type_url,omitempty" yaml:"type_url"`
 	Message proto.Message `json:"message,omitempty"  yaml:"message"`
 }
 
-func (d *Detail) MarshalJSON() (body []byte, err error) {
-	if d == nil {
-		return nil, nil
-	}
-	typeName := strings.TrimPrefix(strings.TrimPrefix(d.TypeURL, typePrefix), typePrefixV1)
-	switch typeName {
-	case DebugInfoMessageName:
-		m, ok := d.Message.(*DebugInfo)
-		if ok {
-			body, err = m.MarshalJSON()
-		}
-	case ErrorInfoMessageName:
-		m, ok := d.Message.(*ErrorInfo)
-		if ok {
-			body, err = m.MarshalJSON()
-		}
-	case BadRequestFieldViolationMessageName:
-		m, ok := d.Message.(*BadRequestFieldViolation)
-		if ok {
-			body, err = m.MarshalJSON()
-		}
-	case BadRequestMessageName:
-		m, ok := d.Message.(*BadRequest)
-		if ok {
-			body, err = m.MarshalJSON()
-		}
-	case LocalizedMessageMessageName:
-		m, ok := d.Message.(*LocalizedMessage)
-		if ok {
-			body, err = m.MarshalJSON()
-		}
-	case PreconditionFailureViolationMessageName:
-		m, ok := d.Message.(*PreconditionFailureViolation)
-		if ok {
-			body, err = m.MarshalJSON()
-		}
-	case PreconditionFailureMessageName:
-		m, ok := d.Message.(*PreconditionFailure)
-		if ok {
-			body, err = m.MarshalJSON()
-		}
-	case HelpLinkMessageName:
-		m, ok := d.Message.(*HelpLink)
-		if ok {
-			body, err = m.MarshalJSON()
-		}
-	case HelpMessageName:
-		m, ok := d.Message.(*Help)
-		if ok {
-			body, err = m.MarshalJSON()
-		}
-	case QuotaFailureViolationMessageName:
-		m, ok := d.Message.(*QuotaFailureViolation)
-		if ok {
-			body, err = m.MarshalJSON()
-		}
-	case QuotaFailureMessageName:
-		m, ok := d.Message.(*QuotaFailure)
-		if ok {
-			body, err = m.MarshalJSON()
-		}
-	case RequestInfoMessageName:
-		m, ok := d.Message.(*RequestInfo)
-		if ok {
-			body, err = m.MarshalJSON()
-		}
-	case ResourceInfoMessageName:
-		m, ok := d.Message.(*ResourceInfo)
-		if ok {
-			body, err = m.MarshalJSON()
-		}
-	case RetryInfoMessageName:
-		m, ok := d.Message.(*RetryInfo)
-		if ok {
-			body, err = m.MarshalJSON()
-		}
-	default:
-		body, err = protojson.Marshal(d.Message)
-	}
-	if err != nil || body == nil {
-		log.Warnf("failed to Marshal type: %s, object %#v to JSON body %v, error: %v", typeName, d, body, err)
-		return nil, err
-	}
-	return body, nil
-}
-
-func decodeDetails(objs ...any) (details []Detail) {
+func decodeDetails(objs ...interface{}) (details []Detail) {
 	if objs == nil {
 		return nil
 	}
@@ -185,9 +93,9 @@ func decodeDetails(objs ...any) (details []Detail) {
 			v = v.Elem()
 		}
 		if v.Kind() == reflect.Slice || v.Kind() == reflect.Array {
-			iobjs := make([]any, 0, v.Len())
+			iobjs := make([]interface{}, 0, v.Len())
 			for i := 0; i < v.Len(); i++ {
-				var val any
+				var val interface{}
 				if v.Index(i).Kind() == reflect.Ptr {
 					val = v.Index(i).Elem().Interface()
 				} else {
@@ -301,7 +209,7 @@ func decodeDetails(objs ...any) (details []Detail) {
 	return details
 }
 
-func Serialize(objs ...any) string {
+func Serialize(objs ...interface{}) string {
 	var (
 		b   []byte
 		err error
@@ -311,14 +219,14 @@ func Serialize(objs ...any) string {
 	case 0:
 		return fmt.Sprint(objs...)
 	case 1:
-		b, err = msgs[0].MarshalJSON()
+		b, err = json.Marshal(msgs[0])
 	default:
-		b, err = json.Marshal(&Details{Details: msgs})
+		b, err = json.Marshal(msgs)
 	}
-	if err != nil || b == nil {
+	if err != nil {
 		return fmt.Sprint(objs...)
 	}
-	return conv.Btoa(b)
+	return string(b)
 }
 
 func AnyToErrorDetail(a *types.Any) proto.Message {
@@ -326,118 +234,101 @@ func AnyToErrorDetail(a *types.Any) proto.Message {
 		return nil
 	}
 	var err error
-	typeName := strings.TrimPrefix(strings.TrimPrefix(a.GetTypeUrl(), typePrefix), typePrefixV1)
-	switch typeName {
-	case DebugInfoMessageName:
+	switch proto.Name(strings.TrimPrefix(a.GetTypeUrl(), typePrefix)) {
+	case debugInfoMessageName:
 		var m DebugInfo
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case ErrorInfoMessageName:
+	case errorInfoMessageName:
 		var m ErrorInfo
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case BadRequestFieldViolationMessageName:
+	case badRequestFieldViolationMessageName:
 		var m BadRequestFieldViolation
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case BadRequestMessageName:
+	case badRequestMessageName:
 		var m BadRequest
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case LocalizedMessageMessageName:
+	case localizedMessageMessageName:
 		var m LocalizedMessage
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case PreconditionFailureViolationMessageName:
+	case preconditionFailureViolationMessageName:
 		var m PreconditionFailureViolation
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case PreconditionFailureMessageName:
+	case preconditionFailureMessageName:
 		var m PreconditionFailure
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case HelpLinkMessageName:
+	case helpLinkMessageName:
 		var m HelpLink
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case HelpMessageName:
+	case helpMessageName:
 		var m Help
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case QuotaFailureViolationMessageName:
+	case quotaFailureViolationMessageName:
 		var m QuotaFailureViolation
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case QuotaFailureMessageName:
+	case quotaFailureMessageName:
 		var m QuotaFailure
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case RequestInfoMessageName:
+	case requestInfoMessageName:
 		var m RequestInfo
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case ResourceInfoMessageName:
+	case resourceInfoMessageName:
 		var m ResourceInfo
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	case RetryInfoMessageName:
+	case retryInfoMessageName:
 		var m RetryInfo
 		err = types.UnmarshalAny(a, &m)
 		if err == nil {
 			return &m
 		}
-	default:
-		m, err := a.UnmarshalNew()
-		if err == nil {
-			return m
-		}
-
 	}
 	if err != nil {
-		log.Warnf("failed to Unmarshal type: %s, object %#v to JSON error: %v", typeName, a, err)
+		log.Warn(err)
 	}
 	return a.ProtoReflect().Interface()
 }
 
-func DebugInfoFromInfoDetail(v *info.Detail) (debug *DebugInfo) {
-	debug = new(DebugInfo)
-	if v.StackTrace != nil {
-		debug.StackEntries = make([]string, 0, len(v.StackTrace))
-		for i, stack := range v.StackTrace {
-			debug.StackEntries = append(debug.GetStackEntries(), "id: "+strconv.Itoa(i)+" stack_trace: "+stack.ShortString())
-		}
-		v.StackTrace = nil
-	}
-	detail, err := json.Marshal(v)
-	if err != nil {
-		log.Warnf("failed to Marshal object %#v to JSON error: %v", v, err)
-		debug.Detail = strings.Join(append(append([]string{
+func DebugInfoFromInfoDetail(v *info.Detail) *DebugInfo {
+	debug := &DebugInfo{
+		Detail: strings.Join(append(append([]string{
 			"Version:", v.Version, ",",
 			"Name:", v.ServerName, ",",
 			"GitCommit:", v.GitCommit, ",",
@@ -448,9 +339,18 @@ func DebugInfoFromInfoDetail(v *info.Detail) (debug *DebugInfo) {
 			"GOOS:", v.GoOS, ",",
 			"CGO_Enabled:", v.CGOEnabled, ",",
 			"BuildCPUInfo: [",
-		}, v.BuildCPUInfoFlags...), "]"), " ")
-	} else {
-		debug.Detail = string(detail)
+		}, v.BuildCPUInfoFlags...), "]"), " "),
+	}
+	if debug.GetStackEntries() == nil {
+		debug.StackEntries = make([]string, 0, len(v.StackTrace))
+	}
+	for i, stack := range v.StackTrace {
+		debug.StackEntries = append(debug.GetStackEntries(), strings.Join([]string{
+			"id:",
+			strconv.Itoa(i),
+			"stack_trace:",
+			stack.String(),
+		}, " "))
 	}
 	return debug
 }
