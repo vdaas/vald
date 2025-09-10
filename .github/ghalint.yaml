@@ -15,17 +15,6 @@
 #
 
 excludes:
-  # --- Temporarily exclude secrets placed in job env (limited to minimum necessary) ---
-  - policy_name: job_secrets
-    workflow_file_path: .github/workflows/reviewdog-markdown.yaml
-    job_name: textlint
-  - policy_name: job_secrets
-    workflow_file_path: .github/workflows/backport.yaml
-    job_name: dump-contexts-to-log
-  - policy_name: job_secrets
-    workflow_file_path: .github/workflows/backport.yaml
-    job_name: create
-
   # --- Suppress policy that action refs should be fixed to full SHA ---
   - policy_name: action_ref_should_be_full_length_commit_sha
     action_name: actions/checkout
