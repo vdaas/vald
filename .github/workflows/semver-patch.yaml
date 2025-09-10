@@ -79,7 +79,6 @@ jobs:
   release-pr:
     permissions:
       contents: read
-    timeout-minutes: 60
     if: ${{ needs.semver-auto.outputs.RELEASE == 'true' }}
     needs:
       - semver-auto
