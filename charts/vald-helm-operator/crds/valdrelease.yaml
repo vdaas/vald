@@ -6584,6 +6584,9 @@ spec:
                               type: string
                             servicePort:
                               type: string
+                            tls:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
                           type: object
                         initContainers:
                           items:
