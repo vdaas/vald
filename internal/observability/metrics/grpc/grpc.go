@@ -16,6 +16,7 @@ package grpc
 import (
 	"github.com/vdaas/vald/internal/observability/metrics"
 	api "go.opentelemetry.io/otel/metric"
+	view "go.opentelemetry.io/otel/sdk/metric"
 )
 
 const (
