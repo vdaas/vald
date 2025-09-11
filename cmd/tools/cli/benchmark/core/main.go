@@ -32,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/net/http/metrics"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"gonum.org/v1/hdf5"
 )
 
@@ -219,7 +220,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go func() {
+	errgroup.Go(func() error {
 		const timeout = time.Second * 5
 		defer wg.Done()
 		srv := &http.Server{
@@ -227,10 +228,17 @@ func main() {
 			Handler:           metrics.NewPProfHandler(),
 			ReadHeaderTimeout: timeout,
 		}
-		go srv.ListenAndServe()
+		errgroup.Go(func() error {
+			err := srv.ListenAndServe()
+			if err != nil {
+				log.Error(err)
+			}
+			return nil
+		})
 		<-ctx.Done()
 		srv.Shutdown(context.Background())
-	}()
+		return nil
+	})
 
 	vectors, _, _ := load(os.Getenv("DATA_PATH"))
 	log.Infof("# of vectors: %v", len(vectors))
