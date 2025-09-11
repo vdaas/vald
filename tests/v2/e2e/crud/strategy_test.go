@@ -104,16 +104,17 @@ func TestE2EStrategy(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create agent client: %v", err)
 	}
-	go func() {
+	errgroup.Go(func() error {
 		select {
 		case <-ctx.Done():
-			return
+			return nil
 		case err := <-ech:
 			if err != nil {
 				t.Errorf("client daemon returned error: %v", err)
 			}
 		}
-	}()
+		return nil
+	})
 	defer func() {
 		err = r.client.Stop(ctx)
 		if err != nil {

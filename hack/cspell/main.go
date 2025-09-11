@@ -25,6 +25,7 @@ import (
 
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type CSpellConfig struct {
@@ -169,12 +170,12 @@ func parseCspellResult(filePath string, th int) (map[string][]string, map[string
 	for scanner.Scan() {
 		line := scanner.Text()
 		wg.Add(1)
-		go func() {
+		errgroup.Go(func() error {
 			defer wg.Done()
 			// Extract the unknown word
 			if path, word, ok := extractLine(line); ok {
 				if sufReg.MatchString(word) {
-					return
+					return nil
 				}
 				lword := strings.ToLower(word)
 				mu.Lock()
@@ -199,7 +200,8 @@ func parseCspellResult(filePath string, th int) (map[string][]string, map[string
 				}
 				mu.Unlock()
 			}
-		}()
+			return nil
+		})
 	}
 
 	wg.Wait()

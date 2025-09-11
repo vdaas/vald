@@ -29,7 +29,7 @@ plugins:
     out: apis/grpc
     opt:
       - paths=source_relative
-      - features=grpc+marshal+unmarshal+size+equal+clone
+      - features=grpc+marshal+unmarshal+marshal_strict+unmarshal_unsafe+size+equal+clone+pool
   - remote: buf.build/community/mfridman-go-json
     out: apis/grpc
     opt: paths=source_relative
