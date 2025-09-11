@@ -529,7 +529,8 @@ func (p *pool) Reconnect(ctx context.Context, force bool) (Conn, error) {
 }
 
 // Disconnect gracefully closes all connections in the pool.
-func (p *pool) Disconnect(ctx context.Context) (err error) {
+func (p *pool) Disconnect(_ context.Context) (err error) {
+	ctx := context.Background()
 	log.Warn("Disconnecting pool...")
 	p.closing.Store(true)
 	defer p.closing.Store(false)
