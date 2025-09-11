@@ -98,7 +98,7 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 		isIPv4, isIPv6 bool
 		port           uint16
 	)
-	p.host, p.port, _, isIPv4, isIPv6, err = net.Parse(ctx, p.addr)
+	p.host, p.port, _, isIPv4, isIPv6, err = net.Parse(p.addr)
 	p.isIP = isIPv4 || isIPv6
 	if err != nil {
 		log.Warnf("failed to parse addr %s: %s", p.addr, err)
