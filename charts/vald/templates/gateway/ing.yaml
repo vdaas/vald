@@ -314,7 +314,8 @@ spec:
         pathType: {{ $lb.ingress.pathType }}
         {{- end }}
       {{- end }}
-  {{- if $gateway.ingress.tls }}
+  {{- $tls := index .Values.gateway.lb.ingress.tls 0 | default dict }}
+  {{- if or (gt (len (default (list) $tls.hosts)) 0) (default "" $tls.secretName) }}
   tls:
     {{- range $tls := $gateway.ingress.tls }}
     {{- if $tls.hosts }}

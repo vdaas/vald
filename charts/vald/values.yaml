@@ -1251,9 +1251,8 @@ gateway:
       # @schema {"name": "gateway.lb.ingress.tls", "type": "array", "items": {"type": "array", "items": {"type": "object"}}}
       # gateway.lb.ingress.tls -- ingress tls config
       tls:
-        - hosts:
-            - lb.gateway.vald.vdaas.org
-          secretName: vald-lb-gateway-tls
+        - hosts: []
+          secretName: ""
       # @schema {"name": "gateway.lb.ingress.defaultBackend", "type": "object"}
       # gateway.lb.ingress.defaultBackend -- defaultBackend config
       defaultBackend:
