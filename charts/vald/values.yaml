@@ -1592,6 +1592,14 @@ gateway:
         # @schema {"name": "gateway.filter.gateway_config.egress_filter.distance_filters", "type": "array", "items": {"type": "string"}}
         # gateway.filter.gateway_config.egress_filter.distance_filters -- distance egress vector filter targets
         distance_filters: []
+    # @schema {"name": "gateway.filter.serviceAccount", "type": "object"}
+    serviceAccount:
+      # @schema {"name": "gateway.filter.serviceAccount.enabled", "type": "boolean"}
+      # gateway.filter.serviceAccount.enabled -- creates service account
+      enabled: true
+      # @schema {"name": "gateway.filter.serviceAccount.name", "type": "string"}
+      # gateway.filter.serviceAccount.name -- name of service account
+      name: gateway-filter
   # @schema {"name": "gateway.mirror", "type": "object"}
   mirror:
     # @schema {"name": "gateway.mirror.enabled", "type": "boolean"}
