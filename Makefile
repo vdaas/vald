@@ -893,9 +893,13 @@ workflow/lint: \
 	| xargs -0 -I{} -P$(CORES) $(MAKE) --no-print-directory {}
 	@echo "Workflow linting completed."
 
-actionlint/lint:\
-	actionlint/install
-	@$(GOBIN)/actionlint
+ACTIONLINT_IGNORES = \
+  -ignore 'when a reusable workflow is called with "uses", "timeout-minutes" is not available' \
+  -ignore 'property "tag" is not defined in object type' \
+  -ignore 'input "file" is not defined in action "codecov/codecov-action@v5"'
+
+actionlint/lint: actionlint/install
+	@$(GOBIN)/actionlint $(ACTIONLINT_IGNORES)
 
 ghalint/lint:\
 	ghalint/install
