@@ -324,7 +324,7 @@ func WithDefaultEpsilon(epsilon float32) Option {
 		}
 		n.epsilon = epsilon
 		ne := n.GetErrorBuffer()
-		if C.ngt_set_property_epsilon_for_creation(n.prop, epsilon, ne.err) == ErrorCode {
+		if C.ngt_set_property_epsilon_for_creation(n.prop, C.float(epsilon), ne.err) == ErrorCode {
 			err := errors.ErrFailedToSetDefaultEpsilon(n.newGoError(ne))
 			return errors.NewErrCriticalOption("defaultEpsilon", epsilon, err)
 		}
