@@ -387,7 +387,7 @@ func (e *Execution) Bind() (bound *Execution, err error) {
 		return nil, errors.Wrapf(errors.ErrInvalidConfig, "unsupported operation type %s for Execution %s", e.Type, e.Name)
 	}
 	bound = e
-	return
+	return bound, err
 }
 
 // Bind binds the TimeConfig by expanding environment variables.

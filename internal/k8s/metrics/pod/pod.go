@@ -93,7 +93,7 @@ func (r *reconciler) Reconcile(
 				RequeueAfter: time.Second,
 			}
 		}
-		return
+		return res, err
 	}
 
 	var (
@@ -126,7 +126,7 @@ func (r *reconciler) Reconcile(
 		r.onReconcile(pods)
 	}
 
-	return
+	return res, err
 }
 
 func (r *reconciler) GetName() string {

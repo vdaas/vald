@@ -222,5 +222,5 @@ func load(path string) (ids []string, train, test [][]float32, err error) {
 		ids = append(ids, fuid.String())
 	}
 
-	return
+	return ids, train, test, err
 }
