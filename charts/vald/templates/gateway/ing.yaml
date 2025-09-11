@@ -316,6 +316,20 @@ spec:
       {{- end }}
   {{- if $gateway.ingress.tls }}
   tls:
-    {{- toYaml $gateway.ingress.tls | nindent 4 }}
+    {{- range $tls := $gateway.ingress.tls }}
+    {{- if $tls.hosts }}
+    - hosts:
+      {{- range $host := $tls.hosts }}
+      - {{ $host | quote }}
+      {{- end }}
+      {{- if $tls.secretName }}
+      secretName: {{ $tls.secretName }}
+      {{- end }}
+    {{- else }}
+    {{- if $tls.secretName }}
+    - secretName: {{ $tls.secretName }}
+    {{- end }}
+    {{- end }}
   {{- end }}
+{{- end }}
 {{- end }}
