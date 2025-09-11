@@ -17,50 +17,96 @@
 package grpc
 
 import (
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/proto"
+	"google.golang.org/grpc/encoding"
+	"google.golang.org/grpc/mem"
 )
 
 // Codec represents a gRPC codec.
-type Codec struct{}
+type Codec struct {
+	fallback encoding.CodecV2
+}
 
 // Name represents the codec name.
 const Name = "proto"
 
+var bufferPool = mem.NewTieredBufferPool(
+	256,     // 256B
+	512,     // 512B
+	1<<10,   // 1KB
+	2<<10,   // 2KB
+	4<<10,   // 4KB (go page size)
+	16<<10,  // 16KB (max HTTP/2 frame size used by gRPC)
+	32<<10,  // 32KB (default buffer size for io.Copy)
+	64<<10,  // 64KB
+	128<<10, // 128KB
+	256<<10, // 256KB
+	512<<10, // 512KB
+	1<<20,   // 1MB
+	2<<20,   // 2MB
+	4<<20,   // 4MB
+	16<<20,  // 16MB
+)
+
 type vtprotoMessage interface {
+	SizeVT() int
+	MarshalToSizedBufferVT([]byte) (int, error)
 	MarshalVT() ([]byte, error)
 	UnmarshalVT([]byte) error
 }
 
 // Marshal returns byte slice representing the proto message marshalling result.
-func (Codec) Marshal(obj any) (data []byte, err error) {
-	switch v := obj.(type) {
+func (c Codec) Marshal(obj any) (data mem.BufferSlice, err error) {
+	switch m := obj.(type) {
 	case vtprotoMessage:
-		data, err = v.MarshalVT()
+		size := m.SizeVT()
+		if mem.IsBelowBufferPoolingThreshold(size) {
+			buf := make([]byte, size)
+			if _, err := m.MarshalToSizedBufferVT(buf[:size]); err != nil {
+				return nil, err
+			}
+			return mem.BufferSlice{mem.SliceBuffer(buf)}, nil
+		}
+		buf := bufferPool.Get(size)
+		if _, err := m.MarshalToSizedBufferVT((*buf)[:size]); err != nil {
+			bufferPool.Put(buf)
+			return nil, err
+		}
+
+		return mem.BufferSlice{mem.NewBuffer(buf, bufferPool)}, nil
 	case proto.Message:
-		data, err = proto.Marshal(v)
+		buf, err := proto.Marshal(m)
+		if err != nil {
+			return nil, err
+		}
+		return mem.BufferSlice{mem.SliceBuffer(buf)}, nil
 	default:
-		err = errors.ErrInvalidProtoMessageType(v)
+		return c.fallback.Marshal(obj)
 	}
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
 }
 
 // Unmarshal parses the byte stream data into v.
-func (Codec) Unmarshal(data []byte, obj any) (err error) {
-	switch v := obj.(type) {
+func (c Codec) Unmarshal(data mem.BufferSlice, obj any) (err error) {
+	switch m := obj.(type) {
 	case vtprotoMessage:
-		err = v.UnmarshalVT(data)
+		buf := data.MaterializeToBuffer(bufferPool)
+		defer buf.Free()
+		return m.UnmarshalVT(buf.ReadOnlyData())
 	case proto.Message:
-		err = proto.Unmarshal(data, v)
+		buf := data.MaterializeToBuffer(bufferPool)
+		defer buf.Free()
+		return proto.Unmarshal(buf.ReadOnlyData(), m)
 	default:
-		err = errors.ErrInvalidProtoMessageType(v)
+		return c.fallback.Unmarshal(data, m)
 	}
-	return err
 }
 
 func (Codec) Name() string {
 	return Name
+}
+
+func init() {
+	encoding.RegisterCodecV2(&Codec{
+		fallback: encoding.GetCodecV2(Name),
+	})
 }

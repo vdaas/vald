@@ -24,7 +24,7 @@ jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/dump-context
   semver-auto:
     runs-on: ubuntu-latest
@@ -34,7 +34,7 @@ jobs:
       RELEASE_TAG: ${{ steps.upgrade_semver.outputs.RELEASE_TAG }}
       RELEASE: ${{ steps.setup_for_release.outputs.RELEASE }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
