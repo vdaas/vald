@@ -4995,6 +4995,12 @@ spec:
                               type: string
                             servicePort:
                               type: string
+                            tls:
+                              items:
+                                items:
+                                  type: object
+                                type: array
+                              type: array
                           type: object
                         initContainers:
                           items:
@@ -7826,6 +7832,12 @@ spec:
                               type: string
                             servicePort:
                               type: string
+                            tls:
+                              items:
+                                items:
+                                  type: object
+                                type: array
+                              type: array
                           type: object
                         initContainers:
                           items:
