@@ -14,14 +14,8 @@
 package grpc
 
 import (
-	"context"
-	"math"
-
-	"github.com/vdaas/vald/internal/net/grpc/pool"
-	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	api "go.opentelemetry.io/otel/metric"
-	view "go.opentelemetry.io/otel/sdk/metric"
 )
 
 const (
