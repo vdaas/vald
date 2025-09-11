@@ -314,4 +314,8 @@ spec:
         pathType: {{ $lb.ingress.pathType }}
         {{- end }}
       {{- end }}
+  {{- if $gateway.ingress.tls }}
+  tls:
+    {{- toYaml $gateway.ingress.tls | nindent 4 }}
+  {{- end }}
 {{- end }}

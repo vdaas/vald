@@ -1248,6 +1248,9 @@ gateway:
       # @schema {"name": "gateway.lb.ingress.servicePort", "type": "string"}
       # gateway.lb.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
+      # @schema {"name": "gateway.lb.ingress.tls", "type": "object"}
+      # gateway.lb.ingress.tls -- ingress tls config
+      tls: []
       # @schema {"name": "gateway.lb.ingress.defaultBackend", "type": "object"}
       # gateway.lb.ingress.defaultBackend -- defaultBackend config
       defaultBackend:
