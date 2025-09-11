@@ -81,27 +81,6 @@ func (*grpcServerMetrics) View() ([]metrics.View, error) {
 
 func (gm *grpcServerMetrics) Register(m metrics.Meter) error {
 	// The metrics are dynamically registered at the grpc server interceptor package,
-	healthyConn, err := m.Int64ObservableGauge(
-		PoolConnMetricsName,
-		metrics.WithDescription(PoolConnMetricsDescription),
-		metrics.WithUnit(metrics.Dimensionless),
-	)
-	if err != nil {
-		return err
-	}
-	_, err = m.RegisterCallback(
-		func(ctx context.Context, o api.Observer) error {
-			ms := pool.Metrics(ctx)
-			if len(ms) == 0 {
-				return nil
-			}
-			for name, cnt := range ms {
-				if cnt <= math.MaxInt64 {
-					o.ObserveInt64(healthyConn, int64(cnt), api.WithAttributes(attribute.String(gm.poolTargetAddrKey, name)))
-				}
-			}
-			return nil
-		}, healthyConn,
-	)
-	return err
+	// so do nothing in this part
+	return nil
 }
