@@ -84,6 +84,7 @@ type pool struct {
 
 const defaultPoolSize = 4
 
+
 func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 	p := new(pool)
 
