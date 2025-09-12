@@ -1127,7 +1127,7 @@ func (g *gRPCClient) Disconnect(ctx context.Context, addr string) error {
 		atomic.AddUint64(&g.clientCount, ^uint64(0))
 	}
 	log.Debugf("gRPC %s connection pool addr = %s will disconnect soon...", g.name, addr)
-	err := p.Disconnect(ctx)
+	err := p.Disconnect()
 	if err != nil {
 		if span != nil {
 			span.RecordError(err)
