@@ -87,8 +87,8 @@ RUN --mount=type=bind,target=.,rw \
     libaec-dev \
     sed \
     zip \
-    && update-ca-certificates \
     && make helm/install \
+    && update-ca-certificates \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
