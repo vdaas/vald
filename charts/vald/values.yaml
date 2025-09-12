@@ -262,7 +262,7 @@ defaults:
             enable_admin: true
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_channelz", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.enable_channelz -- gRPC server channelz option
-            enable_channelz: true
+            enable_channelz: false
           # @schema {"name": "defaults.server_config.servers.grpc.server.socket_option", "alias": "socket_option"}
           socket_option:
             # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
