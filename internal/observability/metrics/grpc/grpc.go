@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -14,43 +14,30 @@
 package grpc
 
 import (
-	"context"
-	"math"
-
-	"github.com/vdaas/vald/internal/net/grpc/pool"
-	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
-	api "go.opentelemetry.io/otel/metric"
 	view "go.opentelemetry.io/otel/sdk/metric"
 )
 
 const (
-	LatencyMetricsName        = "server_latency"
-	LatencyMetricsDescription = "Server latency in milliseconds, by method"
+	latencyMetricsName        = "server_latency"
+	latencyMetricsDesctiption = "Server latency in milliseconds, by method"
 
-	CompletedRPCsMetricsName        = "server_completed_rpcs"
-	CompletedRPCsMetricsDescription = "Count of RPCs by method and status"
-
-	PoolConnMetricsName        = "server_pool_conn"
-	PoolConnMetricsDescription = "Count of healthy pool connections by target address"
+	completedRPCsMetricsName        = "server_completed_rpcs"
+	completedRPCsMetricsDescription = "Count of RPCs by method and status"
 )
 
-type grpcServerMetrics struct {
-	poolTargetAddrKey string
-}
+type grpcServerMetrics struct{}
 
 func New() metrics.Metric {
-	return &grpcServerMetrics{
-		"target_address",
-	}
+	return &grpcServerMetrics{}
 }
 
 func (*grpcServerMetrics) View() ([]metrics.View, error) {
 	return []metrics.View{
 		view.NewView(
 			view.Instrument{
-				Name:        LatencyMetricsName,
-				Description: LatencyMetricsDescription,
+				Name:        latencyMetricsName,
+				Description: latencyMetricsDesctiption,
 			},
 			view.Stream{
 				Aggregation: view.AggregationExplicitBucketHistogram{
@@ -60,17 +47,8 @@ func (*grpcServerMetrics) View() ([]metrics.View, error) {
 		),
 		view.NewView(
 			view.Instrument{
-				Name:        CompletedRPCsMetricsName,
-				Description: CompletedRPCsMetricsDescription,
-			},
-			view.Stream{
-				Aggregation: view.AggregationSum{},
-			},
-		),
-		view.NewView(
-			view.Instrument{
-				Name:        PoolConnMetricsName,
-				Description: PoolConnMetricsDescription,
+				Name:        completedRPCsMetricsName,
+				Description: completedRPCsMetricsDescription,
 			},
 			view.Stream{
 				Aggregation: view.AggregationSum{},
@@ -79,29 +57,8 @@ func (*grpcServerMetrics) View() ([]metrics.View, error) {
 	}, nil
 }
 
-func (gm *grpcServerMetrics) Register(m metrics.Meter) error {
+func (*grpcServerMetrics) Register(metrics.Meter) error {
 	// The metrics are dynamically registered at the grpc server interceptor package,
-	healthyConn, err := m.Int64ObservableGauge(
-		PoolConnMetricsName,
-		metrics.WithDescription(PoolConnMetricsDescription),
-		metrics.WithUnit(metrics.Dimensionless),
-	)
-	if err != nil {
-		return err
-	}
-	_, err = m.RegisterCallback(
-		func(ctx context.Context, o api.Observer) error {
-			ms := pool.Metrics(ctx)
-			if len(ms) == 0 {
-				return nil
-			}
-			for name, cnt := range ms {
-				if cnt <= math.MaxInt64 {
-					o.ObserveInt64(healthyConn, int64(cnt), api.WithAttributes(attribute.String(gm.poolTargetAddrKey, name)))
-				}
-			}
-			return nil
-		}, healthyConn,
-	)
-	return err
+	// so do nothing in this part
+	return nil
 }
