@@ -5775,6 +5775,13 @@ spec:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
                           type: object
+                        serviceAccount:
+                          properties:
+                            enabled:
+                              type: boolean
+                            name:
+                              type: string
+                          type: object
                         serviceType:
                           enum:
                             - ClusterIP
@@ -7369,6 +7376,13 @@ spec:
                             labels:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
+                          type: object
+                        serviceAccount:
+                          properties:
+                            enabled:
+                              type: boolean
+                            name:
+                              type: string
                           type: object
                         serviceType:
                           enum:
