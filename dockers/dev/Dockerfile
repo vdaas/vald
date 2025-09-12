@@ -114,6 +114,7 @@ RUN --mount=type=bind,target=.,rw \
     && make gotests/install \
     && make impl/install \
     && make staticcheck/install \
+    && update-ca-certificates \
     && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps GO_CLEAN_DEPS=false \
     && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} golangci-lint/install \
     && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} gotestfmt/install \
