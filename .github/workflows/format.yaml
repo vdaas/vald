@@ -40,9 +40,8 @@ jobs:
     timeout-minutes: 60
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
-    needs: [detect-ci-container]
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
@@ -112,9 +111,8 @@ jobs:
     timeout-minutes: 60
     if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
     runs-on: ubuntu-latest
-    needs: [detect-ci-container]
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
       credentials:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}

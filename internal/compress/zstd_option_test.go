@@ -64,7 +64,7 @@ func TestWithZstdGob(t *testing.T) {
 				obj: &T{
 					gobc: func() (c Compressor) {
 						c, _ = NewGob()
-						return
+						return c
 					}(),
 				},
 			},
