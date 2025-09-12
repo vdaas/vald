@@ -23,7 +23,7 @@ jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/dump-context
   format:
     if: ${{ github.event_name == 'push' }}
@@ -34,7 +34,7 @@ jobs:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
@@ -101,7 +101,7 @@ jobs:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
