@@ -63,7 +63,7 @@ data:
             max_send_message_size: 0
             num_stream_workers: 0
             read_buffer_size: 0
-            shared_write_buffer: false
+            shared_write_buffer: true
             wait_for_handlers: true
             write_buffer_size: 0
           mode: GRPC

@@ -103,7 +103,7 @@ target:
         insecure_skip_verify: false
         key: /path/to/key
     read_buffer_size: 0
-    shared_write_buffer: false
+    shared_write_buffer: true
     timeout: ""
     user_agent: Vald-gRPC
     write_buffer_size: 0

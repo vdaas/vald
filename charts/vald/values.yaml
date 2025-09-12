@@ -250,7 +250,7 @@ defaults:
               - "RecoverInterceptor"
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.shared_write_buffer", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.shared_write_buffer -- gRPC server write buffer sharing option
-            shared_write_buffer: false
+            shared_write_buffer: true
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.wait_for_handlers", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.wait_for_handlers -- gRPC server wait for handlers when stop
             wait_for_handlers: true
@@ -811,7 +811,7 @@ defaults:
         insecure: true
         # @schema {"name": "defaults.grpc.client.dial_option.shared_write_buffer", "type": "boolean"}
         # defaults.grpc.client.dial_option.shared_write_buffer -- gRPC client dial option sharing write buffer
-        shared_write_buffer: false
+        shared_write_buffer: true
         # @schema {"name": "defaults.grpc.client.dial_option.authority", "type": "string"}
         # defaults.grpc.client.dial_option.authority -- gRPC client dial option authority
         authority: ""
