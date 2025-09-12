@@ -527,6 +527,7 @@ var (
 		"make gotests/install",
 		"make impl/install",
 		"make staticcheck/install",
+		"update-ca-certificates",
 	}
 )
 
