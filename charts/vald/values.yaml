@@ -817,7 +817,7 @@ defaults:
         authority: ""
         # @schema {"name": "defaults.grpc.client.dial_option.idle_timeout", "type": "string"}
         # defaults.grpc.client.dial_option.idle_timeout -- gRPC client dial option idle_timeout
-        idle_timeout: "1h"
+        idle_timeout: ""
         # @schema {"name": "defaults.grpc.client.dial_option.user_agent", "type": "string"}
         # defaults.grpc.client.dial_option.user_agent -- gRPC client dial option user_agent
         user_agent: "Vald-gRPC"

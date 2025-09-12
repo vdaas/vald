@@ -286,7 +286,7 @@ data:
             backoff_multiplier: 1.6
             disable_retry: false
             enable_backoff: false
-            idle_timeout: 1h
+            idle_timeout: ""
             initial_connection_window_size: 2097152
             initial_window_size: 1048576
             insecure: true
