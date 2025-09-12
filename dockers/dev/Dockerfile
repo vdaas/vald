@@ -87,7 +87,6 @@ RUN --mount=type=bind,target=.,rw \
     libaec-dev \
     sed \
     zip \
-    && make helm/install \
     && update-ca-certificates \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
@@ -123,6 +122,7 @@ RUN --mount=type=bind,target=.,rw \
     && make buf/install \
     && make hdf5/install \
     && make helm-docs/install \
+    && make helm/install \
     && make k3d/install \
     && make k9s/install \
     && make kind/install \
