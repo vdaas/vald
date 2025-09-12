@@ -66,5 +66,4 @@ jobs:
     uses: ./.github/workflows/_docker-image.yaml
     with:
       target: dev-container
-      platforms: linux/arm64
     secrets: inherit
