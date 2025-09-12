@@ -855,7 +855,8 @@ lint: \
 	docs/lint \
 	files/lint \
 	vet \
-	go/lint
+	go/lint \
+	workflow/lint
 
 .PHONY: go/lint
 go/lint:
@@ -877,6 +878,44 @@ docs/lint:\
 files/lint: \
 	files/cspell \
 	files/textlint
+
+.PHONY: workflow/lint actionlint/lint ghalint/lint zizmor/lint
+## run lint for workflow files
+workflow/lint: \
+	actionlint/install \
+	ghalint/install \
+	zizmor/install \
+	pinact/install 
+	@echo "Linting workflow files..."
+	@echo "Running pinact first..."
+	@$(MAKE) --no-print-directory pinact/lint
+	@echo "Running other lints in parallel..."
+	@printf '%s\0' \
+		"actionlint/lint" \
+		"ghalint/lint" \
+		"zizmor/lint" \
+	| xargs -0 -I{} -P$(CORES) $(MAKE) --no-print-directory {}
+	@echo "Workflow linting completed."
+
+ACTIONLINT_IGNORES = \
+  -ignore 'when a reusable workflow is called with "uses", "timeout-minutes" is not available' \
+  -ignore 'property "tag" is not defined in object type' \
+  -ignore 'input "file" is not defined in action "codecov/codecov-action@v5"'
+
+actionlint/lint: actionlint/install
+	@$(GOBIN)/actionlint $(ACTIONLINT_IGNORES)
+
+ghalint/lint:\
+	ghalint/install
+	@$(GOBIN)/ghalint run .github/workflows
+
+zizmor/lint:\
+	zizmor/install
+	@$(BINDIR)/zizmor .github/workflows
+
+pinact/lint:\
+	pinact/install
+	@$(GOBIN)/pinact run -u
 
 .PHONY: docs/textlint
 ## run textlint for document
