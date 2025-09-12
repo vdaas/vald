@@ -22,6 +22,7 @@ on:
       - reopened
       - synchronize
       - labeled
+  workflow_dispatch:
 
 permissions:
   contents: read
