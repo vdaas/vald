@@ -331,7 +331,6 @@ type (
 		With           With              `yaml:"with"`
 		Secrets        map[string]string `yaml:"secrets,omitempty"`
 		Permissions    map[string]string `yaml:"permissions"`
-		TimeoutMinutes int               `yaml:"timeout-minutes"`
 	}
 
 	With struct {
@@ -1035,7 +1034,6 @@ jobs:
 				"contents": "read",
 				"packages": "write",
 			}
-			workflow.Jobs.Build.TimeoutMinutes = 60
 
 			workflow.Jobs.Build.Secrets = map[string]string{
 				"PACKAGE_USER":  "${{ secrets.PACKAGE_USER }}",
