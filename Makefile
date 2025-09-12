@@ -884,8 +884,12 @@ files/lint: \
 workflow/lint: \
 	actionlint/install \
 	ghalint/install \
-	zizmor/install
+	zizmor/install \
+	pinact/install 
 	@echo "Linting workflow files..."
+	@echo "Running pinact first..."
+	@$(MAKE) --no-print-directory pinact/lint
+	@echo "Running other lints in parallel..."
 	@printf '%s\0' \
 		"actionlint/lint" \
 		"ghalint/lint" \
@@ -908,6 +912,10 @@ ghalint/lint:\
 zizmor/lint:\
 	zizmor/install
 	@$(BINDIR)/zizmor .github/workflows
+
+pinact/lint:\
+	pinact/install
+	@$(GOBIN)/pinact run -u
 
 .PHONY: docs/textlint
 ## run textlint for document

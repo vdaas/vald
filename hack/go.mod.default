@@ -20,6 +20,7 @@ tool (
 	github.com/segmentio/golines
 	github.com/stern/stern
 	github.com/suzuki-shunsuke/ghalint/cmd/ghalint
+	github.com/suzuki-shunsuke/pinact/cmd/pinact
 	golang.org/x/tools/cmd/goimports
 	honnef.co/go/tools/cmd/staticcheck
 	mvdan.cc/gofumpt

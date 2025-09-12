@@ -33,7 +33,7 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
       - uses: ./.github/actions/dump-context
@@ -104,7 +104,7 @@ jobs:
         password: ${{ secrets.PACKAGE_TOKEN }}
       options: "--add-host host.docker.internal:host-gateway"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
       - name: Set Git config
@@ -195,7 +195,7 @@ jobs:
           wait_for_selector: app=vald-lb-gateway
 
       - name: Deploy Chaos Mesh
-        if: ${{ contains('failure kill partition bandwidth', matrix.environment) }}
+        if: ${{ contains(fromJson('["failure","kill","partition","bandwidth"]'), matrix.environment) }}
         uses: ./.github/actions/deploy-chaos-mesh
         with:
           helm_extra_options: "--set networkChaos.${{ matrix.environment }}.enabled=true"
@@ -242,7 +242,7 @@ jobs:
       - e2e
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
       - uses: ./.github/actions/notify-slack
