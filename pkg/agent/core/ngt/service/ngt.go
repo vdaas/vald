@@ -2052,6 +2052,7 @@ func (n *ngt) IndexProperty() (*payload.Info_Index_Property, error) {
 		MaxMagnitude:                  p.MaxMagnitude,
 		NOfNeighborsForInsertionOrder: p.NOfNeighborsForInsertionOrder,
 		EpsilonForInsertionOrder:      p.EpsilonForInsertionOrder,
+		EpsilonForCreation:            p.EpsilonForCreation,
 		RefinementObjectType:          p.RefinementObjectType.String(),
 		TruncationThreshold:           p.TruncationThreshold,
 		EdgeSizeForCreation:           p.EdgeSizeForCreation,
