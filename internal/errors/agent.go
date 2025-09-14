@@ -88,9 +88,9 @@ var (
 		return Wrap(err, "failed to set search edge size")
 	}
 
-	// ErrFailedToSetDefaultEpsilon represents a function to generate an error that the set of default epsilon failed.
-	ErrFailedToSetDefaultEpsilon = func(err error) error {
-		return Wrap(err, "failed to set default epsilon")
+	// ErrFailedToSetEpsilonForCreation represents a function to generate an error that the set of epsilon for creation failed.
+	ErrFailedToSetEpsilonForCreation = func(err error) error {
+		return Wrap(err, "failed to set epsilon for creation")
 	}
 
 	// ErrUncommittedIndexExists represents a function to generate an error that the uncommitted indexes exist.

@@ -237,6 +237,7 @@ func newNGT(cfg *config.NGT, opts ...Option) (n *ngt, err error) {
 		core.WithDefaultPoolSize(n.poolSize),
 		core.WithDefaultRadius(n.radius),
 		core.WithDefaultEpsilon(n.epsilon),
+		core.WithEpsilonForCreation(cfg.EpsilonForCreation),
 		core.WithDimension(cfg.Dimension),
 		core.WithDistanceTypeByString(cfg.DistanceType),
 		core.WithObjectTypeByString(cfg.ObjectType),

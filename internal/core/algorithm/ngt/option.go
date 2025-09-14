@@ -323,10 +323,20 @@ func WithDefaultEpsilon(epsilon float32) Option {
 			return errors.NewErrInvalidOption("defaultEpsilon", epsilon)
 		}
 		n.epsilon = epsilon
+		return nil
+	}
+}
+
+// WithEpsilonForCreation represents the option to set the epsilon for creation for NGT.
+func WithEpsilonForCreation(epsilon float32) Option {
+	return func(n *ngt) error {
+		if epsilon == 0 {
+			return errors.NewErrInvalidOption("epsilonForCreation", epsilon)
+		}
 		ne := n.GetErrorBuffer()
 		if C.ngt_set_property_epsilon_for_creation(n.prop, C.float(epsilon), ne.err) == ErrorCode {
-			err := errors.ErrFailedToSetDefaultEpsilon(n.newGoError(ne))
-			return errors.NewErrCriticalOption("defaultEpsilon", epsilon, err)
+			err := errors.ErrFailedToSetEpsilonForCreation(n.newGoError(ne))
+			return errors.NewErrCriticalOption("epsilonForCreation", epsilon, err)
 		}
 		return nil
 	}
