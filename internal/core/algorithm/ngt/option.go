@@ -338,6 +338,7 @@ func WithEpsilonForCreation(epsilon float32) Option {
 			err := errors.ErrFailedToSetEpsilonForCreation(n.newGoError(ne))
 			return errors.NewErrCriticalOption("epsilonForCreation", epsilon, err)
 		}
+		n.PutErrorBuffer(ne)
 		return nil
 	}
 }
