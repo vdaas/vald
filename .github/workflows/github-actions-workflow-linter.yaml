@@ -1,14 +1,10 @@
----
 name: GitHub Actions Workflow Linter
 
 on:
   push:
     paths:
       - ".github/workflows/*"
-  # pull_request:
-  #   paths:
-  #     - ".github/workflows/*"
-  # workflow_dispatch:
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -25,7 +21,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Check for .yml files (warn only)
         shell: bash
         run: |
@@ -47,12 +42,10 @@ jobs:
     needs: check-filenames
     steps:
       - uses: actions/checkout@v4
-
       - name: Install shellcheck (optional)
         run: |
           sudo apt-get update
           sudo apt-get install -y shellcheck
-
       - name: Collect workflow YAMLs (exclude yamllint.yaml)
         id: list
         shell: bash
@@ -74,8 +67,7 @@ jobs:
               echo "EOF"
             } >> "$GITHUB_OUTPUT"
           fi
-
-      - name: Run actionlint via reviewdog
+      - name: Run actionlint via reviewdog (diff-focused)
         uses: reviewdog/action-actionlint@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -85,16 +77,22 @@ jobs:
           actionlint_flags: --shellcheck
           paths: ${{ steps.list.outputs.paths }}
 
-  # yamllint:
-  #   name: yamllint (workflows)
-  #   runs-on: ubuntu-latest
-  #   needs: check-filenames
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Run yamllint (use .github/workflows/yamllint.yaml)
-  #       uses: ibiqlik/action-yamllint@v3
-  #       with:
-  #         config_file: ".github/workflows/yamllint.yaml"
-  #         file_or_dir: ".github/workflows"
-  #         format: github
-  #         strict: true
+  actionlint-fullscan:
+    name: actionlint (full scan on demand)
+    runs-on: ubuntu-latest
+    needs: check-filenames
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+      - name: Run actionlint via reviewdog (full scan, no filter)
+        uses: reviewdog/action-actionlint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-check
+          level: error
+          filter_mode: nofilter
+          actionlint_flags: --shellcheck
