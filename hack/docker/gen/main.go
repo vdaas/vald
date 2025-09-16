@@ -327,9 +327,11 @@ type (
 	}
 
 	Build struct {
-		Uses    string `yaml:"uses"`
-		With    With   `yaml:"with"`
-		Secrets string `yaml:"secrets"`
+		Uses           string            `yaml:"uses"`
+		With           With              `yaml:"with"`
+		Secrets        string            `yaml:"secrets,omitempty"`
+		Permissions    map[string]string `yaml:"permissions"`
+		TimeoutMinutes int               `yaml:"timeout-minutes"`
 	}
 
 	With struct {
@@ -1029,6 +1031,14 @@ jobs:
 
 			workflow.On.PullRequestTarget.Paths = workflow.On.PullRequest.Paths
 			workflow.Jobs.Build.With.Platforms = data.BuildPlatforms
+
+			workflow.Jobs.Build.Permissions = map[string]string{
+				"contents": "read",
+				"packages": "write",
+			}
+			workflow.Jobs.Build.TimeoutMinutes = 60
+
+			workflow.Jobs.Build.Secrets = ""
 
 			workflowYamlTmp, err := yaml.Marshal(workflow)
 			if err != nil {
