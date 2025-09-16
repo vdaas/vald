@@ -301,12 +301,3 @@ $(BINDIR)/docker: $(BINDIR)
 		&& tar -xzvf $(TEMP_DIR)/docker.tgz -C $(TEMP_DIR) \
 		&& mv $(TEMP_DIR)/docker/docker $(BINDIR) \
 		&& rm -rf $(TEMP_DIR)/docker{.tgz,}
-
-.PHONY: zizmor/install
-zizmor/install: $(BINDIR)/zizmor
-
-$(BINDIR)/zizmor: rust/install
-	mkdir -p $(TEMP_DIR)/zizmor $(BINDIR)
-	cargo install --locked zizmor --root $(TEMP_DIR)/zizmor
-	mv $(TEMP_DIR)/zizmor/bin/zizmor $(BINDIR)/zizmor
-	rm -rf $(TEMP_DIR)/zizmor

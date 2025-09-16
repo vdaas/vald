@@ -51,17 +51,7 @@ jobs:
           go-version-file: versions/GO_VERSION
           cache: true
 
-      - name: Cargo cache
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: cargo-${{ runner.os }}-${{ hashFiles('versions/RUST_VERSION') }}
-
       - name: Lint workflows
         run: make -k workflow/lint
         env:
           BINDIR: ${{ runner.temp }}/bin
-          CARGO_HOME: $HOME/.cargo
-          RUSTUP_HOME: $HOME/.rustup

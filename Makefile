@@ -879,12 +879,11 @@ files/lint: \
 	files/cspell \
 	files/textlint
 
-.PHONY: workflow/lint actionlint/lint ghalint/lint zizmor/lint
+.PHONY: workflow/lint actionlint/lint ghalint/lint
 ## run lint for workflow files
 workflow/lint: \
 	actionlint/install \
 	ghalint/install \
-	zizmor/install \
 	pinact/install 
 	@echo "Linting workflow files..."
 	@echo "Running pinact first..."
@@ -893,7 +892,6 @@ workflow/lint: \
 	@printf '%s\0' \
 		"actionlint/lint" \
 		"ghalint/lint" \
-		"zizmor/lint" \
 	| xargs -0 -I{} -P$(CORES) $(MAKE) --no-print-directory {}
 	@echo "Workflow linting completed."
 
@@ -908,10 +906,6 @@ actionlint/lint: actionlint/install
 ghalint/lint:\
 	ghalint/install
 	@$(GOBIN)/ghalint run .github/workflows
-
-zizmor/lint:\
-	zizmor/install
-	@$(BINDIR)/zizmor .github/workflows
 
 pinact/lint:\
 	pinact/install
