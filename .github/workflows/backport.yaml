@@ -26,9 +26,6 @@ env:
   FETCHED_GITHUB_INFO_PATH: /tmp/github_info.json
 jobs:
   dump-contexts-to-log:
-    env:
-      GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-      GITHUB_USER: ${{ secrets.DISPATCH_USER }}
     permissions:
       contents: read
     timeout-minutes: 60
@@ -39,9 +36,6 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/dump-context
   create:
-    env:
-      GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-      GITHUB_USER: ${{ secrets.DISPATCH_USER }}
     permissions:
       contents: read
     timeout-minutes: 60
@@ -62,6 +56,8 @@ jobs:
           git_user_signingkey: true
           git_commit_gpgsign: true
       - name: Fetch PR info
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         run: |
           gh pr list --limit 100 --json number,title,body,labels,headRefName,headRefOid,mergeCommit --state merged | \
             jq --arg oid "${GITHUB_SHA}" '.[] | select(.mergeCommit.oid == $oid)' > ${FETCHED_GITHUB_INFO_PATH}
@@ -76,6 +72,8 @@ jobs:
       - name: Create PR
         if: ${{ steps.set_context.outputs.LABEL_NAMES != '' }}
         env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           LABEL_NAMES: ${{ steps.set_context.outputs.LABEL_NAMES }}
         run: |
           PR_TITLE=`cat $FETCHED_GITHUB_INFO_PATH | jq -r ".title"`
