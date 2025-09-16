@@ -336,6 +336,7 @@ func WithEpsilonForCreation(epsilon float32) Option {
 		ne := n.GetErrorBuffer()
 		if C.ngt_set_property_epsilon_for_creation(n.prop, C.float(epsilon), ne.err) == ErrorCode {
 			err := errors.ErrFailedToSetEpsilonForCreation(n.newGoError(ne))
+			n.PutErrorBuffer(ne)
 			return errors.NewErrCriticalOption("epsilonForCreation", epsilon, err)
 		}
 		n.PutErrorBuffer(ne)
