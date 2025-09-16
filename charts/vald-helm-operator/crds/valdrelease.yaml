@@ -4997,9 +4997,8 @@ spec:
                               type: string
                             tls:
                               items:
-                                items:
-                                  type: object
-                                type: array
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
                               type: array
                           type: object
                         initContainers:
@@ -6592,9 +6591,8 @@ spec:
                               type: string
                             tls:
                               items:
-                                items:
-                                  type: object
-                                type: array
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
                               type: array
                           type: object
                         initContainers:
@@ -7834,9 +7832,8 @@ spec:
                               type: string
                             tls:
                               items:
-                                items:
-                                  type: object
-                                type: array
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
                               type: array
                           type: object
                         initContainers:
