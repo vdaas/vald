@@ -179,7 +179,7 @@ func TestNew(t *testing.T) {
 								reader.WithBucket("bucket"),
 								reader.WithMaxChunkSize(107374182400),
 							)
-							return
+							return r
 						}(),
 						writer: writer,
 					},
@@ -253,7 +253,7 @@ func TestNew(t *testing.T) {
 								reader.WithBucket("bucket"),
 								reader.WithMaxChunkSize(107374182400),
 							)
-							return
+							return r
 						}(),
 						writer: writer.New(
 							writer.WithErrGroup(eg),

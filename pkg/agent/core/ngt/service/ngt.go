@@ -1579,7 +1579,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 
 	nocie := atomic.LoadUint64(&n.nocie)
 	if atomic.LoadUint64(&n.lastNocie) == nocie {
-		return
+		return err
 	}
 	atomic.SwapUint64(&n.lastNocie, nocie)
 	err = func() error {

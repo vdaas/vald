@@ -240,7 +240,7 @@ func (c *client) connect(ctx context.Context, addr string) (err error) {
 			err = c.onConnect(ctx, c, addr)
 		}
 	}
-	return
+	return err
 }
 
 func (c *client) disconnect(ctx context.Context, addr string) (err error) {
@@ -250,7 +250,7 @@ func (c *client) disconnect(ctx context.Context, addr string) (err error) {
 			err = c.onDisconnect(ctx, c, addr)
 		}
 	}
-	return
+	return err
 }
 
 func (c *client) dnsDiscovery(ctx context.Context) (addrs []string, err error) {

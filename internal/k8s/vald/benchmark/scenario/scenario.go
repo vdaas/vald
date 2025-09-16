@@ -86,7 +86,7 @@ func (r *reconciler) Reconcile(
 				RequeueAfter: time.Second,
 			}, nil
 		}
-		return
+		return res, err
 	}
 	scenarios := make(map[string]v1.ValdBenchmarkScenario, 0)
 	for _, item := range bs.Items {
@@ -98,7 +98,7 @@ func (r *reconciler) Reconcile(
 		r.onReconcile(ctx, scenarios)
 	}
 
-	return
+	return res, err
 }
 
 func (r *reconciler) GetName() string {

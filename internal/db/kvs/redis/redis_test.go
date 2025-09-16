@@ -208,7 +208,7 @@ func Test_redisClient_ping(t *testing.T) {
 							PingFunc: func() (cmd *StatusCmd) {
 								cmd = new(StatusCmd)
 								cmd.SetErr(err)
-								return
+								return cmd
 							},
 						}
 					}(),
