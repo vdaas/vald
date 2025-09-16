@@ -29,6 +29,7 @@ on:
       - "internal/**"
       - "pkg/**"
       - "cmd/**"
+  workflow_dispatch: {}
 jobs:
   dump-contexts-to-log:
     permissions:
