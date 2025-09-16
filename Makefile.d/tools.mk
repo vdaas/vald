@@ -64,6 +64,12 @@ ghalint/install: $(GOBIN)/ghalint
 $(GOBIN)/ghalint:
 	$(call go-tool-install)
 
+.PHONY: pinact/install
+pinact/install: $(GOBIN)/pinact
+
+$(GOBIN)/pinact:
+	$(call go-tool-install)
+
 .PHONY: prettier/install
 prettier/install: $(NPM_GLOBAL_PREFIX)/bin/prettier
 $(NPM_GLOBAL_PREFIX)/bin/prettier:

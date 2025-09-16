@@ -1,21 +1,4 @@
 rules:
-  unpinned-uses:
-    ignore:
-      - _docker-image.yaml
-      - _release-pr.yaml
-      - backport.yaml
-      - build-binaries.yaml
-      - chatops.yaml
-      - coverage.yaml
-      - format.yaml
-      - helm.yaml
-      - issue-metrics.yaml
-      - release.yaml
-      - reviewdog-hadolint.yaml
-      - reviewdog-markdown.yaml
-      - update-deps.yaml
-      - update-pull-request-and-issue-template.yaml
-
   dangerous-triggers:
     ignore:
       - dockers-agent-faiss-image.yaml
@@ -61,7 +44,3 @@ rules:
   cache-poisoning:
     ignore:
       - e2e-profiling.yaml
-
-  unsound-contains:
-    ignore:
-      - e2e.v2.yaml
