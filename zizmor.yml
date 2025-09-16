@@ -1,0 +1,67 @@
+rules:
+  unpinned-uses:
+    ignore:
+      - _docker-image.yaml
+      - _release-pr.yaml
+      - backport.yaml
+      - build-binaries.yaml
+      - chatops.yaml
+      - coverage.yaml
+      - format.yaml
+      - helm.yaml
+      - issue-metrics.yaml
+      - release.yaml
+      - reviewdog-hadolint.yaml
+      - reviewdog-markdown.yaml
+      - update-deps.yaml
+      - update-pull-request-and-issue-template.yaml
+
+  dangerous-triggers:
+    ignore:
+      - dockers-agent-faiss-image.yaml
+      - dockers-agent-image.yaml
+      - dockers-agent-ngt-image.yaml
+      - dockers-agent-sidecar-image.yaml
+      - dockers-benchmark-job-image.yaml
+      - dockers-benchmark-operator-image.yaml
+      - dockers-binfmt-image.yaml
+      - dockers-buildbase-image.yaml
+      - dockers-buildkit-image.yaml
+      - dockers-buildkit-syft-scanner-image.yaml
+      - dockers-ci-container-image.yaml
+      - dockers-dev-container-image.yaml
+      - dockers-discoverer-k8s-image.yaml
+      - dockers-e2e-image.yaml
+      - dockers-example-client-image.yaml
+      - dockers-gateway-filter-image.yaml
+      - dockers-gateway-lb-image.yaml
+      - dockers-gateway-mirror-image.yaml
+      - dockers-helm-operator-image.yaml
+      - dockers-index-correction-image.yaml
+      - dockers-index-creation-image.yaml
+      - dockers-index-deletion-image.yaml
+      - dockers-index-exportation-image.yaml
+      - dockers-index-operator-image.yaml
+      - dockers-index-save-image.yaml
+      - dockers-manager-index-image.yaml
+      - dockers-readreplica-rotate-image.yaml
+      - helm-lint.yaml
+      - reviewdog-k8s.yaml
+
+  template-injection:
+    ignore:
+      - chatops.yaml
+      - e2e-profiling.yaml
+      - e2e.v2.yaml
+      - e2e.yaml
+      - release.yaml
+      - reviewdog-markdown.yaml
+      - semver-patch.yaml
+
+  cache-poisoning:
+    ignore:
+      - e2e-profiling.yaml
+
+  unsound-contains:
+    ignore:
+      - e2e.v2.yaml

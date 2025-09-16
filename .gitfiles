@@ -120,6 +120,7 @@
 .github/workflows/e2e.yaml
 .github/workflows/format.yaml
 .github/workflows/fossa.yaml
+.github/workflows/github-actions-workflow-linter.yaml
 .github/workflows/helm-lint.yaml
 .github/workflows/helm.yaml
 .github/workflows/issue-metrics.yaml
