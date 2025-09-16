@@ -1,15 +1,13 @@
 name: GitHub Actions Workflow Linter
 
 on:
-  push:
+  pull_request:
     paths:
       - ".github/workflows/*"
-  workflow_dispatch: {}
 
 permissions:
   contents: read
   checks: write
-  pull-requests: write
 
 concurrency:
   group: workflows-quality-${{ github.ref }}
@@ -38,43 +36,27 @@ jobs:
           fi
 
   actionlint:
-    name: actionlint
+    name: actionlint (PR review, added lines only)
     runs-on: ubuntu-latest
     needs: check-filenames
     timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install shellcheck (optional)
-        run: |
-          sudo apt-get -qq update
-          sudo apt-get -y -qq install shellcheck
-      - name: Run actionlint via reviewdog (diff-focused)
-        uses: reviewdog/action-actionlint@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-check
-          level: error
-          filter_mode: file
-
-  actionlint-fullscan:
-    name: actionlint (full scan on demand)
-    runs-on: ubuntu-latest
-    needs: check-filenames
-    if: ${{ github.event_name == 'workflow_dispatch' }}
-    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - name: Install shellcheck
         run: |
           sudo apt-get -qq update
           sudo apt-get -y -qq install shellcheck
-      - name: Run actionlint via reviewdog (full scan, no filter)
+
+      - name: Run actionlint via reviewdog
         uses: reviewdog/action-actionlint@v1
+        env:
+          SHELLCHECK_OPTS: -S error
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-check
           level: error
-          filter_mode: nofilter
+          filter_mode: added
+          fail_level: error
 
   # yamllint:
   #   name: yamllint (workflows)
