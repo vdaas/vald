@@ -47,9 +47,9 @@ jobs:
       - name: Set context
         id: set_context
         run: |
-          RELEASE_BRANCH_NAME_SUFFIX=`echo '${{ github.ref }}' | sed -e 's:^refs/heads/release/::'`
-          BRANCH_LATEST_TAG=`git tag --sort=v:refname | grep ${RELEASE_BRANCH_NAME_SUFFIX} | tail -n 1`
-          RELEASE_KIND=`git log --pretty=format:%s -1 | sed -n -E 's:^\[(patch)\].*:\1:p'`
+          RELEASE_BRANCH_NAME_SUFFIX=$(echo "$GITHUB_REF" | sed -e 's:^refs/heads/release/::')
+          BRANCH_LATEST_TAG=$(git tag --sort=v:refname | grep "${RELEASE_BRANCH_NAME_SUFFIX}" | tail -n 1)
+          RELEASE_KIND=$(git log --pretty=format:%s -1 | sed -n -E 's:^\\\[(patch)\\\][^:]*:\\1:p')
 
           echo "RELEASE_BRANCH_NAME_SUFFIX=${RELEASE_BRANCH_NAME_SUFFIX}" >> $GITHUB_OUTPUT # e.g) vx.x
           echo "BRANCH_LATEST_TAG=${BRANCH_LATEST_TAG}"                   >> $GITHUB_OUTPUT # e.g) vx.x.x or empty
@@ -58,6 +58,8 @@ jobs:
           echo "RELEASE_BRANCH_NAME_SUFFIX=${RELEASE_BRANCH_NAME_SUFFIX}"
           echo "BRANCH_LATEST_TAG=${BRANCH_LATEST_TAG}"
           echo "RELEASE_KIND=${RELEASE_KIND}"
+        env:
+          GITHUB_REF: ${{ github.ref }}
       - name: Upgrade semver
         id: upgrade_semver
         if: ${{ steps.set_context.outputs.RELEASE_KIND != '' }}

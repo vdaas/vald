@@ -68,7 +68,15 @@ jobs:
         if: startsWith(env.COMMENT_BODY, '/label')
         run: |
           echo "BOOL_TRIGGERED=true" >> "$GITHUB_OUTPUT"
-          echo "TRAILING_LINE=$(echo "$COMMENT_BODY" | sed -e "s|/label||" -e 's/^[[:space:]]*//')" >> "$GITHUB_OUTPUT"
+          trailing_line="${COMMENT_BODY#*/label}"
+          trailing_line="${trailing_line#"${trailing_line%%[![:space:]]*}"}"
+          {
+            echo 'TRAILING_LINE<<EOF'
+            echo "$trailing_line"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+        env:
+          COMMENT_BODY: ${{ env.COMMENT_BODY }}
       - name: Check permissions
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -88,6 +96,7 @@ jobs:
           done
         env:
           REQUIRED_POLICY: label
+          USERNAME: ${{ env.USERNAME }}
       - name: Add label
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -139,6 +148,7 @@ jobs:
           done
         env:
           REQUIRED_POLICY: rebase
+          USERNAME: ${{ env.USERNAME }}
       - name: Comment back to PR
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -152,6 +162,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           BRANCH: ${{ steps.check_comments_rebase.outputs.BRANCH_NAME }}
+          USERNAME: ${{ env.USERNAME }}
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
@@ -215,6 +226,7 @@ jobs:
           done
         env:
           REQUIRED_POLICY: gen-test
+          USERNAME: ${{ env.USERNAME }}
       - name: check executable
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -228,6 +240,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
+          USERNAME: ${{ env.USERNAME }}
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
@@ -325,6 +338,7 @@ jobs:
           done
         env:
           REQUIRED_POLICY: format
+          USERNAME: ${{ env.USERNAME }}
       - name: check executable
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -337,6 +351,7 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          USERNAME: ${{ env.USERNAME }}
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
@@ -453,6 +468,7 @@ jobs:
           done
         env:
           REQUIRED_POLICY: approve
+          USERNAME: ${{ env.USERNAME }}
       - name: approve
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -465,3 +481,4 @@ jobs:
           "${PR_INFO_URL}/reviews"
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          USERNAME: ${{ env.USERNAME }}

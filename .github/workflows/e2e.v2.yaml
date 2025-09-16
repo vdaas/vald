@@ -175,7 +175,7 @@ jobs:
         if: ${{ matrix.deployment == 'helm-operator' }}
         shell: bash
         run: |
-          IMAGE_TAGS=(${{ steps.setup_e2e.outputs.IMAGE_TAGS }})
+          IMAGE_TAGS=($IMAGE_TAGS_STR)
 
           for IMAGE_TAG in "${IMAGE_TAGS[@]}"
           do
@@ -183,9 +183,11 @@ jobs:
 
             ARR=(${IMAGE_TAG//=/ })
             FIELD=${ARR[0]}
-            TAG="\"${ARR[1]}\""
+            TAG=""${ARR[1]}""
             yq e ".spec.$FIELD=$TAG" -i ./.github/valdrelease/valdrelease.yaml
           done
+        env:
+          IMAGE_TAGS_STR: ${{ steps.setup_e2e.outputs.IMAGE_TAGS }}
       - name: Deploy Vald using Vald Helm Operator
         if: ${{ matrix.deployment == 'helm-operator' }}
         uses: ./.github/actions/e2e-deploy-vald-helm-operator
