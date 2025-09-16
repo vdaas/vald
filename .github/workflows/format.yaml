@@ -24,28 +24,19 @@ jobs:
     permissions:
       contents: read
     timeout-minutes: 60
-    permissions:
-      contents: read
-    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-        with:
-          persist-credentials: false
       - uses: ./.github/actions/dump-context
+
   detect-ci-container:
     permissions:
       contents: read
-    permissions:
-      contents: read
     uses: ./.github/workflows/_detect-ci-container.yaml
+
   format:
-    permissions:
-      contents: read
-    timeout-minutes: 60
     permissions:
       contents: read
     timeout-minutes: 60
@@ -116,6 +107,7 @@ jobs:
           title: "Update license headers / Format codes"
           body: "Update license headers / Format Go codes and YAML files."
           labels: ${{ steps.pr-label.outputs.LABELS }}
+
   check-format-diff:
     permissions:
       contents: read
