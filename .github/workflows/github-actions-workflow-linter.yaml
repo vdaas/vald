@@ -1,14 +1,13 @@
-name: "GitHub Actions Workflow Lint"
+name: GitHub Actions Workflow Linter
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
-      - ".github/workflows/*"
+      - ".github/workflows/**"
 
 permissions:
   contents: read
-  checks: write
 
 concurrency:
   group: workflows-quality-${{ github.ref }}
@@ -16,72 +15,33 @@ concurrency:
 
 jobs:
   workflow-lint:
-    name: Lint GitHub Workflows
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    steps:
-      - name: Harden runner egress
-        uses: step-security/harden-runner@v2
-        with:
-          egress-policy: audit
 
-      - name: Checkout code
+    steps:
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Install tools
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y shellcheck
-          curl -sSfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b $HOME/bin
-          echo 0 > error_count.txt
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: versions/GO_VERSION
+          cache: true
 
-      - name: Run actionlint
-        run: |
-          if ! actionlint .github/workflows \
-            | $HOME/bin/reviewdog -efm="%f:%l:%c: %m" \
-              -name="actionlint" \
-              -reporter=github-pr-check \
-              -level=error; then
-            echo $(( $(cat error_count.txt) + 1 )) > error_count.txt
-          fi
+      - name: Cargo cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: cargo-${{ runner.os }}-${{ hashFiles('versions/RUST_VERSION') }}
+
+      - name: Lint workflows
+        run: make -k workflow/lint
         env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Run ghalint
-        run: |
-          if ! ghalint run .github/workflows \
-            | $HOME/bin/reviewdog -efm="%f:%l:%c: %m" \
-              -name="ghalint" \
-              -reporter=github-pr-check \
-              -level=error; then
-            echo $(( $(cat error_count.txt) + 1 )) > error_count.txt
-          fi
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
-
-      - name: Run zizmor
-        run: |
-          if ! zizmor .github/workflows \
-            | $HOME/bin/reviewdog -efm="%f:%l:%c: %m" \
-              -name="zizmor" \
-              -reporter=github-pr-check \
-              -level=warning; then
-            echo $(( $(cat error_count.txt) + 1 )) > error_count.txt
-          fi
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
-
-      - name: Fail if any errors
-        run: |
-          count=$(cat error_count.txt)
-          if [ "$count" -gt 0 ]; then
-            echo "Lint errors found: $count"
-            exit 1
-          else
-            echo "No lint errors found"
-          fi
+          BINDIR: ${{ runner.temp }}/bin
+          CARGO_HOME: $HOME/.cargo
+          RUSTUP_HOME: $HOME/.rustup

@@ -52,6 +52,18 @@ crlfmt/install: $(GOBIN)/crlfmt
 $(GOBIN)/crlfmt:
 	$(call go-tool-install)
 
+.PHONY: actionlint/install
+actionlint/install: $(GOBIN)/actionlint
+
+$(GOBIN)/actionlint:
+	$(call go-tool-install)
+
+.PHONY: ghalint/install
+ghalint/install: $(GOBIN)/ghalint
+
+$(GOBIN)/ghalint:
+	$(call go-tool-install)
+
 .PHONY: prettier/install
 prettier/install: $(NPM_GLOBAL_PREFIX)/bin/prettier
 $(NPM_GLOBAL_PREFIX)/bin/prettier:
@@ -283,3 +295,12 @@ $(BINDIR)/docker: $(BINDIR)
 		&& tar -xzvf $(TEMP_DIR)/docker.tgz -C $(TEMP_DIR) \
 		&& mv $(TEMP_DIR)/docker/docker $(BINDIR) \
 		&& rm -rf $(TEMP_DIR)/docker{.tgz,}
+
+.PHONY: zizmor/install
+zizmor/install: $(BINDIR)/zizmor
+
+$(BINDIR)/zizmor: rust/install
+	mkdir -p $(TEMP_DIR)/zizmor $(BINDIR)
+	cargo install --locked zizmor --root $(TEMP_DIR)/zizmor
+	mv $(TEMP_DIR)/zizmor/bin/zizmor $(BINDIR)/zizmor
+	rm -rf $(TEMP_DIR)/zizmor

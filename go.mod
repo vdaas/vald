@@ -16,23 +16,25 @@ tool (
 	github.com/mfridman/tparse
 	github.com/momotaro98/strictgoimports/cmd/strictgoimports
 	github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
+	github.com/rhysd/actionlint/cmd/actionlint
 	github.com/segmentio/golines
 	github.com/stern/stern
+	github.com/suzuki-shunsuke/ghalint/cmd/ghalint
 	golang.org/x/tools/cmd/goimports
 	honnef.co/go/tools/cmd/staticcheck
 	mvdan.cc/gofumpt
 )
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.121.6
+	cloud.google.com/go => cloud.google.com/go v0.122.0
 	cloud.google.com/go/bigquery => cloud.google.com/go/bigquery v1.70.0
-	cloud.google.com/go/compute => cloud.google.com/go/compute v1.44.0
+	cloud.google.com/go/compute => cloud.google.com/go/compute v1.45.0
 	cloud.google.com/go/datastore => cloud.google.com/go/datastore v1.20.0
 	cloud.google.com/go/firestore => cloud.google.com/go/firestore v1.18.0
 	cloud.google.com/go/iam => cloud.google.com/go/iam v1.5.2
 	cloud.google.com/go/kms => cloud.google.com/go/kms v1.22.0
 	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.24.2
-	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub v1.50.0
+	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub v1.50.1
 	cloud.google.com/go/secretmanager => cloud.google.com/go/secretmanager v1.15.0
 	cloud.google.com/go/storage => cloud.google.com/go/storage v1.56.1
 	cloud.google.com/go/trace => cloud.google.com/go/trace v1.11.6
@@ -46,7 +48,7 @@ replace (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore => github.com/Azure/azure-sdk-for-go/sdk/azcore v1.19.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity => github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.11.0
 	github.com/Azure/azure-sdk-for-go/sdk/internal => github.com/Azure/azure-sdk-for-go/sdk/internal v1.11.2
-	github.com/Azure/go-amqp => github.com/Azure/go-amqp v1.4.0
+	github.com/Azure/go-amqp => github.com/Azure/go-amqp v1.5.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20250128162915-33e12ab7683c+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.30
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.24
@@ -175,7 +177,7 @@ replace (
 	github.com/google/gofuzz => github.com/google/gofuzz v1.2.0
 	github.com/google/martian => github.com/google/martian v2.1.0+incompatible
 	github.com/google/martian/v3 => github.com/google/martian/v3 v3.3.3
-	github.com/google/pprof => github.com/google/pprof v0.0.0-20250902232947-5eec23c92c42
+	github.com/google/pprof => github.com/google/pprof v0.0.0-20250903194437-c28834ac2320
 	github.com/google/shlex => github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/subcommands => github.com/google/subcommands v1.2.0
 	github.com/google/uuid => github.com/google/uuid v1.6.0
@@ -247,7 +249,7 @@ replace (
 	github.com/niemeyer/pretty => github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e
 	github.com/nxadm/tail => github.com/nxadm/tail v1.4.11
 	github.com/onsi/ginkgo => github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/ginkgo/v2 => github.com/onsi/ginkgo/v2 v2.25.2
+	github.com/onsi/ginkgo/v2 => github.com/onsi/ginkgo/v2 v2.25.3
 	github.com/onsi/gomega => github.com/onsi/gomega v1.38.2
 	github.com/peterbourgon/diskv => github.com/peterbourgon/diskv v2.0.1+incompatible
 	github.com/phpdave11/gofpdf => github.com/phpdave11/gofpdf v1.4.3
@@ -259,7 +261,7 @@ replace (
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.9
 	github.com/pmezard/go-difflib => github.com/pmezard/go-difflib v1.0.0
 	github.com/prashantv/gostub => github.com/prashantv/gostub v1.1.0
-	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.23.0
+	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.23.1
 	github.com/prometheus/client_model => github.com/prometheus/client_model v0.6.2
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.17.0
 	github.com/prometheus/prometheus => github.com/prometheus/prometheus v1.99.0
@@ -403,7 +405,7 @@ require (
 	github.com/quic-go/quic-go v0.54.0
 	github.com/scylladb/gocqlx v0.0.0-00010101000000-000000000000
 	github.com/stretchr/testify v1.11.1
-	github.com/unum-cloud/usearch/golang v0.0.0-20250831111817-ff50d79c5239
+	github.com/unum-cloud/usearch/golang v0.0.0-20250904130807-fd6279af6bc2
 	github.com/zeebo/xxh3 v1.0.2
 	go.etcd.io/bbolt v1.3.11
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.62.0
@@ -446,6 +448,7 @@ require (
 )
 
 require (
+	al.essio.dev/pkg/shellescape v1.5.1 // indirect
 	buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go v1.36.8-20250718181942-e35f9b667443.1 // indirect
 	buf.build/gen/go/bufbuild/registry/connectrpc/go v1.18.1-20250819211657-a3dd0d3ea69b.1 // indirect
 	buf.build/gen/go/bufbuild/registry/protocolbuffers/go v1.36.8-20250819211657-a3dd0d3ea69b.1 // indirect
@@ -572,6 +575,7 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/cweill/gotests v1.6.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.4.1 // indirect
+	github.com/danieljoos/wincred v1.2.2 // indirect
 	github.com/dave/dst v0.27.3 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/deitch/magic v0.0.0-20230404182410-1ff89d7342da // indirect
@@ -643,6 +647,7 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.3.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/goccy/go-yaml v1.18.0 // indirect
+	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/gofrs/flock v0.12.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/gohugoio/hashstructure v0.5.0 // indirect
@@ -656,6 +661,8 @@ require (
 	github.com/google/gnostic-models v0.6.9 // indirect
 	github.com/google/go-containerregistry v0.20.6 // indirect
 	github.com/google/go-dap v0.12.0 // indirect
+	github.com/google/go-github/v73 v73.0.0 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/licensecheck v0.3.1 // indirect
 	github.com/google/pprof v0.0.0-20250830080959-101d87ff5bc3 // indirect
@@ -669,6 +676,7 @@ require (
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674 // indirect
 	github.com/gosuri/uitable v0.0.4 // indirect
 	github.com/gotesttools/gotestfmt/v2 v2.5.0 // indirect
+	github.com/grafana/regexp v0.0.0-20240518133315-a468a5bfb3bc // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.2 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
@@ -715,6 +723,7 @@ require (
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
+	github.com/mattn/go-shellwords v1.0.12 // indirect
 	github.com/mfridman/tparse v0.18.0 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/mholt/archives v0.1.3 // indirect
@@ -772,7 +781,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_golang v1.22.0 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
-	github.com/prometheus/common v0.65.0 // indirect
+	github.com/prometheus/common v0.66.0 // indirect
 	github.com/prometheus/procfs v0.16.1 // indirect
 	github.com/pseudomuto/protoc-gen-doc v1.5.1 // indirect
 	github.com/pseudomuto/protokit v0.2.0 // indirect
@@ -781,7 +790,9 @@ require (
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/rakyll/hey v0.1.4 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
+	github.com/rhysd/actionlint v1.7.7 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rs/cors v1.11.1 // indirect
 	github.com/rubenv/sql-migrate v1.8.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
@@ -815,11 +826,15 @@ require (
 	github.com/stoewer/go-strcase v1.3.1 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
+	github.com/suzuki-shunsuke/ghalint v1.5.3 // indirect
+	github.com/suzuki-shunsuke/logrus-error v0.1.4 // indirect
+	github.com/suzuki-shunsuke/urfave-cli-v3-util v0.0.7 // indirect
 	github.com/sylabs/sif/v2 v2.21.1 // indirect
 	github.com/sylabs/squashfs v1.0.6 // indirect
 	github.com/tetratelabs/wazero v1.9.0 // indirect
 	github.com/therootcompany/xz v1.0.1 // indirect
 	github.com/ulikunitz/xz v0.5.12 // indirect
+	github.com/urfave/cli/v3 v3.3.8 // indirect
 	github.com/vbatts/go-mtree v0.5.4 // indirect
 	github.com/vbatts/tar-split v0.12.1 // indirect
 	github.com/vifraa/gopom v1.0.0 // indirect
@@ -836,6 +851,7 @@ require (
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
+	github.com/zalando/go-keyring v0.2.6 // indirect
 	github.com/zclconf/go-cty v1.14.0 // indirect
 	github.com/zeebo/errs v1.4.0 // indirect
 	go.lsp.dev/jsonrpc2 v0.10.0 // indirect
