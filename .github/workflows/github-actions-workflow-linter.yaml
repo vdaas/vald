@@ -55,7 +55,6 @@ jobs:
           reporter: github-pr-check
           level: error
           filter_mode: file
-          actionlint_flags: --shellcheck
 
   actionlint-fullscan:
     name: actionlint (full scan on demand)
@@ -76,7 +75,6 @@ jobs:
           reporter: github-pr-check
           level: error
           filter_mode: nofilter
-          actionlint_flags: --shellcheck
 
   # yamllint:
   #   name: yamllint (workflows)
