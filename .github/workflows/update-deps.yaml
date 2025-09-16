@@ -32,7 +32,6 @@ jobs:
   detect-ci-container:
     permissions:
       contents: read
-    timeout-minutes: 60
     uses: ./.github/workflows/_detect-ci-container.yaml
   update-version:
     permissions:
