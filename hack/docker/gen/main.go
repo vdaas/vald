@@ -327,10 +327,10 @@ type (
 	}
 
 	Build struct {
-		Uses           string            `yaml:"uses"`
-		With           With              `yaml:"with"`
-		Secrets        map[string]string `yaml:"secrets,omitempty"`
-		Permissions    map[string]string `yaml:"permissions"`
+		Uses        string            `yaml:"uses"`
+		With        With              `yaml:"with"`
+		Secrets     map[string]string `yaml:"secrets,omitempty"`
+		Permissions map[string]string `yaml:"permissions"`
 	}
 
 	With struct {
@@ -1036,8 +1036,8 @@ jobs:
 			}
 
 			workflow.Jobs.Build.Secrets = map[string]string{
-				"PACKAGE_USER":  "${{ secrets.PACKAGE_USER }}",
-				"PACKAGE_TOKEN": "${{ secrets.PACKAGE_TOKEN }}",
+				"PACKAGE_USER":   "${{ secrets.PACKAGE_USER }}",
+				"PACKAGE_TOKEN":  "${{ secrets.PACKAGE_TOKEN }}",
 				"DOCKERHUB_USER": "${{ secrets.DOCKERHUB_USER }}",
 				"DOCKERHUB_PASS": "${{ secrets.DOCKERHUB_PASS }}",
 			}
