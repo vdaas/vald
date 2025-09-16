@@ -250,7 +250,7 @@ defaults:
               - "RecoverInterceptor"
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.shared_write_buffer", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.shared_write_buffer -- gRPC server write buffer sharing option
-            shared_write_buffer: false
+            shared_write_buffer: true
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.wait_for_handlers", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.wait_for_handlers -- gRPC server wait for handlers when stop
             wait_for_handlers: true
@@ -259,10 +259,10 @@ defaults:
             enable_reflection: true
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_admin", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.enable_admin -- gRPC server admin option
-            enable_admin: true
+            enable_admin: false
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_channelz", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.enable_channelz -- gRPC server channelz option
-            enable_channelz: true
+            enable_channelz: false
           # @schema {"name": "defaults.server_config.servers.grpc.server.socket_option", "alias": "socket_option"}
           socket_option:
             # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -811,13 +811,13 @@ defaults:
         insecure: true
         # @schema {"name": "defaults.grpc.client.dial_option.shared_write_buffer", "type": "boolean"}
         # defaults.grpc.client.dial_option.shared_write_buffer -- gRPC client dial option sharing write buffer
-        shared_write_buffer: false
+        shared_write_buffer: true
         # @schema {"name": "defaults.grpc.client.dial_option.authority", "type": "string"}
         # defaults.grpc.client.dial_option.authority -- gRPC client dial option authority
         authority: ""
         # @schema {"name": "defaults.grpc.client.dial_option.idle_timeout", "type": "string"}
         # defaults.grpc.client.dial_option.idle_timeout -- gRPC client dial option idle_timeout
-        idle_timeout: "1h"
+        idle_timeout: ""
         # @schema {"name": "defaults.grpc.client.dial_option.user_agent", "type": "string"}
         # defaults.grpc.client.dial_option.user_agent -- gRPC client dial option user_agent
         user_agent: "Vald-gRPC"
@@ -1248,6 +1248,14 @@ gateway:
       # @schema {"name": "gateway.lb.ingress.servicePort", "type": "string"}
       # gateway.lb.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
+<<<<<<< HEAD
+=======
+      # @schema {"name": "gateway.lb.ingress.tls", "type": "array", "items": {"type": "object"}}
+      # gateway.lb.ingress.tls -- ingress tls config
+      tls:
+        - hosts: []
+          secretName: ""
+>>>>>>> ffcca50f0 (Update default parameters for gRPC (#3239))
       # @schema {"name": "gateway.lb.ingress.defaultBackend", "type": "object"}
       # gateway.lb.ingress.defaultBackend -- defaultBackend config
       defaultBackend:
@@ -1529,6 +1537,14 @@ gateway:
       # @schema {"name": "gateway.filter.ingress.servicePort", "type": "string"}
       # gateway.filter.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
+<<<<<<< HEAD
+=======
+      # @schema {"name": "gateway.filter.ingress.tls", "type": "array", "items": {"type": "object"}}
+      # gateway.filter.ingress.tls -- ingress tls config
+      tls:
+        - hosts: []
+          secretName: ""
+>>>>>>> ffcca50f0 (Update default parameters for gRPC (#3239))
       # @schema {"name": "gateway.filter.ingress.defaultBackend", "type": "object"}
       # gateway.filter.ingress.defaultBackend -- defaultBackend config
       defaultBackend:
@@ -1820,6 +1836,14 @@ gateway:
       # @schema {"name": "gateway.mirror.ingress.servicePort", "type": "string"}
       # gateway.mirror.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
+<<<<<<< HEAD
+=======
+      # @schema {"name": "gateway.mirror.ingress.tls", "type": "array", "items": {"type": "object"}}
+      # "gateway.mirror.ingress.tls -- ingress tls config
+      tls:
+        - hosts: []
+          secretName: ""
+>>>>>>> ffcca50f0 (Update default parameters for gRPC (#3239))
       # @schema {"name": "gateway.mirror.ingress.defaultBackend", "type": "object"}
       # gateway.mirror.ingress.defaultBackend -- defaultBackend config
       defaultBackend:

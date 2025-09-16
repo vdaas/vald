@@ -4995,6 +4995,14 @@ spec:
                               type: string
                             servicePort:
                               type: string
+<<<<<<< HEAD
+=======
+                            tls:
+                              items:
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
+                              type: array
+>>>>>>> ffcca50f0 (Update default parameters for gRPC (#3239))
                           type: object
                         initContainers:
                           items:
@@ -6584,6 +6592,14 @@ spec:
                               type: string
                             servicePort:
                               type: string
+<<<<<<< HEAD
+=======
+                            tls:
+                              items:
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
+                              type: array
+>>>>>>> ffcca50f0 (Update default parameters for gRPC (#3239))
                           type: object
                         initContainers:
                           items:
@@ -7820,6 +7836,14 @@ spec:
                               type: string
                             servicePort:
                               type: string
+<<<<<<< HEAD
+=======
+                            tls:
+                              items:
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
+                              type: array
+>>>>>>> ffcca50f0 (Update default parameters for gRPC (#3239))
                           type: object
                         initContainers:
                           items:
