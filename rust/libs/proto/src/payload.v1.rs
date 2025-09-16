@@ -1354,6 +1354,23 @@ impl ::prost::Name for Index {
 const NAME: &'static str = "Index";
 const PACKAGE: &'static str = "payload.v1";
 fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Index".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.Index".into() }}
+    /// Represent the resource stats
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct ResourceStats {
+        #[prost(string, tag="1")]
+        pub name: ::prost::alloc::string::String,
+        #[prost(string, tag="2")]
+        pub ip: ::prost::alloc::string::String,
+        #[prost(double, tag="3")]
+        pub cpu_usage: f64,
+        #[prost(double, tag="4")]
+        pub memory_usage: f64,
+    }
+impl ::prost::Name for ResourceStats {
+const NAME: &'static str = "ResourceStats";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.ResourceStats".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.ResourceStats".into() }}
     /// Represent the pod information message.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]

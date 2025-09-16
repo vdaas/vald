@@ -648,6 +648,14 @@ message Info {
     }
   }
 
+  // Represent the resource stats
+  message ResourceStats {
+    string name = 1;
+    string ip = 2 [(buf.validate.field).string.ipv4 = true];
+    double cpuUsage = 3;
+    double memoryUsage = 4;
+  }
+
   // Represent the pod information message.
   message Pod {
     // The app name of the pod on the label.

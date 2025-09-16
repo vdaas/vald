@@ -18,9 +18,9 @@
 // versions:
 // 	protoc-gen-go v1.36.9
 // 	protoc        (unknown)
-// source: v1/mirror/mirror.proto
+// source: v1/rpc/stats/stats.proto
 
-package mirror
+package stats
 
 import (
 	reflect "reflect"
@@ -39,23 +39,24 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-var File_v1_mirror_mirror_proto protoreflect.FileDescriptor
+var File_v1_rpc_stats_stats_proto protoreflect.FileDescriptor
 
-const file_v1_mirror_mirror_proto_rawDesc = "" +
+const file_v1_rpc_stats_stats_proto_rawDesc = "" +
 	"\n" +
-	"\x16v1/mirror/mirror.proto\x12\tmirror.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x18v1/payload/payload.proto2i\n" +
-	"\x06Mirror\x12_\n" +
-	"\bRegister\x12\x1a.payload.v1.Mirror.Targets\x1a\x1a.payload.v1.Mirror.Targets\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/mirror/registerBW\n" +
-	"\x1corg.vdaas.vald.api.v1.mirrorB\n" +
-	"ValdMirrorP\x01Z)github.com/vdaas/vald/apis/grpc/v1/mirrorb\x06proto3"
+	"\x18v1/rpc/stats/stats.proto\x12\x06rpc.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x18v1/payload/payload.proto2d\n" +
+	"\x05Stats\x12[\n" +
+	"\rResourceStats\x12\x11.payload.v1.Empty\x1a\x1e.payload.v1.Info.ResourceStats\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/resource/statsB]\n" +
+	"\x19org.vdaas.vald.api.v1.rpcB\n" +
+	"StatsProtoP\x01Z,github.com/vdaas/vald/apis/grpc/v1/rpc/stats\xa2\x02\x03RPCb\x06proto3"
 
-var file_v1_mirror_mirror_proto_goTypes = []any{
-	(*payload.Mirror_Targets)(nil), // 0: payload.v1.Mirror.Targets
+var file_v1_rpc_stats_stats_proto_goTypes = []any{
+	(*payload.Empty)(nil),              // 0: payload.v1.Empty
+	(*payload.Info_ResourceStats)(nil), // 1: payload.v1.Info.ResourceStats
 }
 
-var file_v1_mirror_mirror_proto_depIdxs = []int32{
-	0, // 0: mirror.v1.Mirror.Register:input_type -> payload.v1.Mirror.Targets
-	0, // 1: mirror.v1.Mirror.Register:output_type -> payload.v1.Mirror.Targets
+var file_v1_rpc_stats_stats_proto_depIdxs = []int32{
+	0, // 0: rpc.v1.Stats.ResourceStats:input_type -> payload.v1.Empty
+	1, // 1: rpc.v1.Stats.ResourceStats:output_type -> payload.v1.Info.ResourceStats
 	1, // [1:2] is the sub-list for method output_type
 	0, // [0:1] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -63,25 +64,25 @@ var file_v1_mirror_mirror_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_v1_mirror_mirror_proto_init() }
-func file_v1_mirror_mirror_proto_init() {
-	if File_v1_mirror_mirror_proto != nil {
+func init() { file_v1_rpc_stats_stats_proto_init() }
+func file_v1_rpc_stats_stats_proto_init() {
+	if File_v1_rpc_stats_stats_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_v1_mirror_mirror_proto_rawDesc), len(file_v1_mirror_mirror_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_v1_rpc_stats_stats_proto_rawDesc), len(file_v1_rpc_stats_stats_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_v1_mirror_mirror_proto_goTypes,
-		DependencyIndexes: file_v1_mirror_mirror_proto_depIdxs,
+		GoTypes:           file_v1_rpc_stats_stats_proto_goTypes,
+		DependencyIndexes: file_v1_rpc_stats_stats_proto_depIdxs,
 	}.Build()
-	File_v1_mirror_mirror_proto = out.File
-	file_v1_mirror_mirror_proto_goTypes = nil
-	file_v1_mirror_mirror_proto_depIdxs = nil
+	File_v1_rpc_stats_stats_proto = out.File
+	file_v1_rpc_stats_stats_proto_goTypes = nil
+	file_v1_rpc_stats_stats_proto_depIdxs = nil
 }

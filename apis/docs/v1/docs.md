@@ -5,6 +5,7 @@
 ## Table of Contents
 
 - [v1/payload/payload.proto](#v1_payload_payload-proto)
+
   - [Control](#payload-v1-Control)
   - [Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest)
   - [Discoverer](#payload-v1-Discoverer)
@@ -40,6 +41,7 @@
   - [Info.Nodes](#payload-v1-Info-Nodes)
   - [Info.Pod](#payload-v1-Info-Pod)
   - [Info.Pods](#payload-v1-Info-Pods)
+  - [Info.ResourceStats](#payload-v1-Info-ResourceStats)
   - [Info.Service](#payload-v1-Info-Service)
   - [Info.ServicePort](#payload-v1-Info-ServicePort)
   - [Info.Services](#payload-v1-Info-Services)
@@ -139,6 +141,8 @@
   - [RequestInfo](#rpc-v1-RequestInfo)
   - [ResourceInfo](#rpc-v1-ResourceInfo)
   - [RetryInfo](#rpc-v1-RetryInfo)
+- [v1/rpc/stats/stats.proto](#v1_rpc_stats_stats-proto)
+  - [Stats](#rpc-v1-Stats)
 - [v1/vald/filter.proto](#v1_vald_filter-proto)
   - [Filter](#vald-v1-Filter)
 - [v1/vald/flush.proto](#v1_vald_flush-proto)
@@ -559,6 +563,19 @@ Represent the multiple pod information message.
 | Field | Type                             | Label    | Description                   |
 | ----- | -------------------------------- | -------- | ----------------------------- |
 | pods  | [Info.Pod](#payload-v1-Info-Pod) | repeated | The multiple pod information. |
+
+<a name="payload-v1-Info-ResourceStats"></a>
+
+### Info.ResourceStats
+
+Represent the resource stats
+
+| Field       | Type              | Label | Description |
+| ----------- | ----------------- | ----- | ----------- |
+| name        | [string](#string) |       |             |
+| ip          | [string](#string) |       |             |
+| cpuUsage    | [double](#double) |       |             |
+| memoryUsage | [double](#double) |       |             |
 
 <a name="payload-v1-Info-Service"></a>
 
@@ -1621,6 +1638,23 @@ reached.
 | Field       | Type                                                  | Label | Description                                                               |
 | ----------- | ----------------------------------------------------- | ----- | ------------------------------------------------------------------------- |
 | retry_delay | [google.protobuf.Duration](#google-protobuf-Duration) |       | Clients should wait at least this long between retrying the same request. |
+
+<a name="v1_rpc_stats_stats-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## v1/rpc/stats/stats.proto
+
+<a name="rpc-v1-Stats"></a>
+
+### Stats
+
+Overview
+Represent the resource stats service.
+
+| Method Name   | Request Type                           | Response Type                                                    | Description                                           |
+| ------------- | -------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------- |
+| ResourceStats | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.ResourceStats](#payload-v1-Info-ResourceStats) | Overview Represent the RPC to get the resource stats. |
 
 <a name="v1_vald_filter-proto"></a>
 

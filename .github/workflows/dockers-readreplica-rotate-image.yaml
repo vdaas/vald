@@ -37,7 +37,9 @@ on:
       - .github/workflows/dockers-readreplica-rotate-image.yaml
       - Makefile
       - Makefile.d/**
+      - apis/grpc/v1/payload/*.go
       - apis/grpc/v1/rpc/errdetails/*.go
+      - apis/grpc/v1/rpc/stats/*.go
       - apis/proto/**
       - cmd/index/job/readreplica/rotate/*.go
       - dockers/index/job/readreplica/rotate/Dockerfile
@@ -90,6 +92,7 @@ on:
       - internal/net/grpc/pool/*.go
       - internal/net/grpc/proto/*.go
       - internal/net/grpc/reflection/*.go
+      - internal/net/grpc/stats/*.go
       - internal/net/grpc/status/*.go
       - internal/net/grpc/types/*.go
       - internal/net/http/dump/*.go
@@ -144,7 +147,9 @@ on:
       - .github/workflows/dockers-readreplica-rotate-image.yaml
       - Makefile
       - Makefile.d/**
+      - apis/grpc/v1/payload/*.go
       - apis/grpc/v1/rpc/errdetails/*.go
+      - apis/grpc/v1/rpc/stats/*.go
       - apis/proto/**
       - cmd/index/job/readreplica/rotate/*.go
       - dockers/index/job/readreplica/rotate/Dockerfile
@@ -197,6 +202,7 @@ on:
       - internal/net/grpc/pool/*.go
       - internal/net/grpc/proto/*.go
       - internal/net/grpc/reflection/*.go
+      - internal/net/grpc/stats/*.go
       - internal/net/grpc/status/*.go
       - internal/net/grpc/types/*.go
       - internal/net/http/dump/*.go

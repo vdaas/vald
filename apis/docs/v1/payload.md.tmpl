@@ -264,6 +264,12 @@
 {{ template "_field:payload.v1.Info.Memory" }}
 {{ template "_field:payload.v1.Info.Node" }}
 {{- end -}}
+{{- define "scheme:payload.v1.Info.ResourceStats" -}}
+{{ template "_scheme:payload.v1.Info.ResourceStats" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.ResourceStats" -}}
+{{ template "_field:payload.v1.Info.ResourceStats" }}
+{{- end -}}
 {{- define "scheme:payload.v1.Info.Service" -}}
 {{ template "_scheme:payload.v1.Info.Service" }}
 {{ template "_scheme:payload.v1.Info.ServicePort" }}
@@ -1572,6 +1578,26 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | pods | Info.Pod | repeated | The multiple pod information. |
+{{- end -}}
+
+{{- define "_scheme:payload.v1.Info.ResourceStats" }}
+  message Info.ResourceStats {
+    string name = 1;
+    string ip = 2;
+    double cpuUsage = 3;
+    double memoryUsage = 4;
+  }
+{{- end -}}
+
+{{- define "_field:payload.v1.Info.ResourceStats" }}
+  - Info.ResourceStats
+
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  |  |
+    | ip | string |  |  |
+    | cpuUsage | double |  |  |
+    | memoryUsage | double |  |  |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Service" }}
