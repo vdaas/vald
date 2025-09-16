@@ -100,38 +100,36 @@ jobs:
       - name: Run lint for files && Report to GitHub
         env:
           REVIEWDOG_GITHUB_API_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
           make CSPELL_EXTRA_OPTIONS="--no-summary --no-progress" files/cspell | \
           reviewdog \
             -efm='%f:%l:%c - %m' \
             -name="file name cspell" \
-            -diff="git diff $BASE_REF" \
+            -diff="git diff ${{ github.event.pull_request.base.ref }}" \
             -reporter=github-pr-review \
             -level=error
           make TEXTLINT_EXTRA_OPTIONS="-f checkstyle" files/textlint | \
           reviewdog \
             -f=checkstyle \
             -name="file name textlint" \
-            -diff="git diff $BASE_REF" \
+            -diff="git diff ${{ github.event.pull_request.base.ref }}" \
             -reporter=github-pr-review \
             -level=error
       - name: Run lint for documents && Report to GitHub
         env:
           REVIEWDOG_GITHUB_API_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
           make CSPELL_EXTRA_OPTIONS="--no-summary --no-progress" docs/cspell | \
           reviewdog \
             -efm='%f:%l:%c - %m' \
             -name="documents cspell" \
-            -diff="git diff $BASE_REF" \
+            -diff="git diff ${{ github.event.pull_request.base.ref }}" \
             -reporter=github-pr-review \
             -level=error
           make TEXTLINT_EXTRA_OPTIONS="-f checkstyle" docs/textlint | \
           reviewdog \
             -f=checkstyle \
             -name="documents testlint" \
-            -diff="git diff $BASE_REF" \
+            -diff="git diff ${{ github.event.pull_request.base.ref }}" \
             -reporter=github-pr-review \
             -level=error
