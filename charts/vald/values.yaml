@@ -259,7 +259,7 @@ defaults:
             enable_reflection: true
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_admin", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.enable_admin -- gRPC server admin option
-            enable_admin: true
+            enable_admin: false
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_channelz", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.enable_channelz -- gRPC server channelz option
             enable_channelz: false
