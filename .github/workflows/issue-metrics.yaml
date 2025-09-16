@@ -28,6 +28,9 @@ permissions:
   pull-requests: read
 jobs:
   build:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     name: review time metrics
     runs-on: ubuntu-latest
     steps:

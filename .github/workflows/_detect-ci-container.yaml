@@ -24,6 +24,9 @@ env:
   TARGET_IMAGE: vdaas/vald-ci-container
 jobs:
   detect:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     if: >-
       ${{
@@ -45,6 +48,8 @@ jobs:
       TAG: ${{ steps.get_tag_name.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Determine Docker image tag
         id: determine_tag_name
         uses: ./.github/actions/determine-docker-image-tag

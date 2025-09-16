@@ -25,16 +25,25 @@ on:
       - "versions/RUST_VERSION"
 jobs:
   dump-contexts-to-log:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/dump-context
   update-pr-issue-template:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     name: Update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           fetch-depth: 0
       - name: Set Git config
         run: |

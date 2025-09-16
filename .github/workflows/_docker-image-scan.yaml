@@ -23,9 +23,14 @@ on:
         required: true
 jobs:
   scan:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}

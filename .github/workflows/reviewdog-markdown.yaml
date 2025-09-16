@@ -21,15 +21,25 @@ on:
       - "CHANGELOG.md"
 jobs:
   dump-contexts-to-log:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/dump-context
   languagetool-apis-charts:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     name: runner / LanguageTool / apis & charts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
@@ -44,10 +54,15 @@ jobs:
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
           disabled_categories: "TYPOS,TYPOGRAPHY,STYLE,CASING"
   languagetool-docs:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     name: runner / LanguageTool / Docs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
@@ -62,12 +77,17 @@ jobs:
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
           disabled_categories: "TYPOS,TYPOGRAPHY,STYLE"
   textlint:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     name: runner / textlint
     runs-on: ubuntu-latest
     env:
       REVIEWDOG_GITHUB_API_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}

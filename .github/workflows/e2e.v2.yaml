@@ -28,14 +28,25 @@ env:
   DATASET: fashion-mnist-784-euclidean.hdf5
 jobs:
   dump-contexts-to-log:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/dump-context
   detect-ci-container:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     if: startsWith(github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-v2'
     uses: ./.github/workflows/_detect-ci-container.yaml
   e2e:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     needs: [detect-ci-container]
     strategy:
       fail-fast: false
@@ -87,7 +98,6 @@ jobs:
             #   cluster: kind
             #   environment: "null"
     runs-on: ubuntu-latest
-    timeout-minutes: 60
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
       credentials:
@@ -96,6 +106,8 @@ jobs:
       options: "--add-host host.docker.internal:host-gateway"
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
@@ -222,6 +234,9 @@ jobs:
           kubectl describe pvc
 
   slack-notification:
+    permissions:
+      contents: read
+    timeout-minutes: 60
     name: "Slack notification"
     if: startsWith( github.ref, 'refs/tags/')
     needs:
@@ -229,6 +244,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/notify-slack
         with:
           author_name: "E2E deploy test"
