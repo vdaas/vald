@@ -1248,7 +1248,7 @@ gateway:
       # @schema {"name": "gateway.lb.ingress.servicePort", "type": "string"}
       # gateway.lb.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
-      # @schema {"name": "gateway.lb.ingress.tls", "type": "array", "items": {"type": "array", "items": {"type": "object"}}}
+      # @schema {"name": "gateway.lb.ingress.tls", "type": "array", "items": {"type": "object"}}
       # gateway.lb.ingress.tls -- ingress tls config
       tls:
         - hosts: []
@@ -1534,7 +1534,7 @@ gateway:
       # @schema {"name": "gateway.filter.ingress.servicePort", "type": "string"}
       # gateway.filter.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
-      # @schema {"name": "gateway.filter.ingress.tls", "type": "array", "items": {"type": "array", "items": {"type": "object"}}}
+      # @schema {"name": "gateway.filter.ingress.tls", "type": "array", "items": {"type": "object"}}
       # gateway.filter.ingress.tls -- ingress tls config
       tls:
         - hosts: []
@@ -1830,7 +1830,7 @@ gateway:
       # @schema {"name": "gateway.mirror.ingress.servicePort", "type": "string"}
       # gateway.mirror.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
-      # @schema {"name": "gateway.mirror.ingress.tls", "type": "array", "items": {"type": "array", "items": {"type": "object"}}}
+      # @schema {"name": "gateway.mirror.ingress.tls", "type": "array", "items": {"type": "object"}}
       # "gateway.mirror.ingress.tls -- ingress tls config
       tls:
         - hosts: []
