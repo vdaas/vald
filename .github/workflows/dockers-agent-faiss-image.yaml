@@ -276,4 +276,3 @@ jobs:
     permissions:
       contents: read
       packages: write
-    timeout-minutes: 60
