@@ -1,0 +1,109 @@
+---
+name: GitHub Actions Workflow Linter
+
+on:
+  push:
+    paths:
+      - ".github/workflows/*"
+  # pull_request:
+  #   paths:
+  #     - ".github/workflows/*"
+  # workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+concurrency:
+  group: workflows-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-filenames:
+    name: Enforce .yaml (no .yml allowed)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fail if any .yml files exist under .github/workflows
+        shell: bash
+        run: |
+          set -eo pipefail
+          mapfile -t ymls < <(find .github/workflows -type f -name "*.yml" | sort || true)
+          if (( ${#ymls[@]} > 0 )); then
+            echo "::group::Found .yml files that must be renamed to .yaml"
+            for file in "${ymls[@]}"; do
+              printf '::error file=%s,title=Invalid Extension::The file "%s" must be renamed to ".yaml".\n' "$file" "$file"
+            done
+            echo "::endgroup::"
+            exit 1
+          fi
+          echo "All good: only .yaml files are present."
+
+  actionlint:
+    name: actionlint
+    runs-on: ubuntu-latest
+    needs: check-filenames
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck (optional)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: Run actionlint via reviewdog
+        uses: reviewdog/action-actionlint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-check
+          level: error
+          filter_mode: file
+          paths: ${{ steps.list.outputs.paths }}
+          flags: --shellcheck
+
+      - name: Collect workflow YAMLs (exclude yamllint.yaml)
+        id: list
+        shell: bash
+        run: |
+          set -eo pipefail
+          shopt -s nullglob
+          files=(.github/workflows/*.yaml)
+          filtered=()
+          for f in "${files[@]}"; do
+            [[ "$(basename "$f")" == "yamllint.yaml" ]] && continue
+            filtered+=("$f")
+          done
+          if (( ${#filtered[@]} == 0 )); then
+            echo "paths=" >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "paths<<EOF"
+              printf "%s\n" "${filtered[@]}"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run actionlint via reviewdog
+        uses: reviewdog/action-actionlint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-check
+          level: error
+          filter_mode: file
+          paths: ${{ steps.list.outputs.paths }}
+
+  # yamllint:
+  #   name: yamllint (workflows)
+  #   runs-on: ubuntu-latest
+  #   needs: check-filenames
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Run yamllint (use .github/workflows/yamllint.yaml)
+  #       uses: ibiqlik/action-yamllint@v3
+  #       with:
+  #         config_file: ".github/workflows/yamllint.yaml"
+  #         file_or_dir: ".github/workflows"
+  #         format: github
+  #         strict: true
