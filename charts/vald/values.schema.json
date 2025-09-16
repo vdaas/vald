@@ -8283,6 +8283,11 @@
                 "servicePort": {
                   "type": "string",
                   "description": "service port to be exposed by ingress"
+                },
+                "tls": {
+                  "type": "array",
+                  "description": "ingress tls config",
+                  "items": { "type": "object" }
                 }
               }
             },
@@ -10965,6 +10970,11 @@
                 "servicePort": {
                   "type": "string",
                   "description": "service port to be exposed by ingress"
+                },
+                "tls": {
+                  "type": "array",
+                  "description": "ingress tls config",
+                  "items": { "type": "object" }
                 }
               }
             },
@@ -13041,7 +13051,8 @@
                 "servicePort": {
                   "type": "string",
                   "description": "service port to be exposed by ingress"
-                }
+                },
+                "tls": { "type": "array", "items": { "type": "object" } }
               }
             },
             "initContainers": {
