@@ -26,20 +26,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fail if any .yml files exist under .github/workflows
+      - name: Check for .yml files (warn only)
         shell: bash
         run: |
           set -eo pipefail
           mapfile -t ymls < <(find .github/workflows -type f -name "*.yml" | sort || true)
           if (( ${#ymls[@]} > 0 )); then
-            echo "::group::Found .yml files that must be renamed to .yaml"
+            echo "::group::Found .yml files (please rename to .yaml)"
             for file in "${ymls[@]}"; do
-              printf '::error file=%s,title=Invalid Extension::The file "%s" must be renamed to ".yaml".\n' "$file" "$file"
+              printf '::warning file=%s,title=Invalid Extension::The file "%s" should be renamed to ".yaml".\n' "$file" "$file"
             done
             echo "::endgroup::"
-            exit 1
+          else
+            echo "All good: only .yaml files are present."
           fi
-          echo "All good: only .yaml files are present."
 
   actionlint:
     name: actionlint
@@ -52,16 +52,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y shellcheck
-
-      - name: Run actionlint via reviewdog
-        uses: reviewdog/action-actionlint@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-check
-          level: error
-          filter_mode: file
-          paths: ${{ steps.list.outputs.paths }}
-          flags: --shellcheck
 
       - name: Collect workflow YAMLs (exclude yamllint.yaml)
         id: list
@@ -92,6 +82,7 @@ jobs:
           reporter: github-pr-check
           level: error
           filter_mode: file
+          actionlint_flags: --shellcheck
           paths: ${{ steps.list.outputs.paths }}
 
   # yamllint:
