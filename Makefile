@@ -893,13 +893,16 @@ workflow/lint: \
 	| xargs -0 -I{} -P$(CORES) $(MAKE) --no-print-directory {}
 	@echo "Workflow linting completed."
 
-actionlint/lint:
+actionlint/lint:\
+	actionlint/install
 	@$(GOBIN)/actionlint
 
-ghalint/lint:
+ghalint/lint:\
+	ghalint/install
 	@$(GOBIN)/ghalint run .github/workflows
 
-zizmor/lint:
+zizmor/lint:\
+	zizmor/install
 	@$(BINDIR)/zizmor .github/workflows
 
 .PHONY: docs/textlint
