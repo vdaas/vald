@@ -1,0 +1,11 @@
+extends: default
+
+rules:
+  document-start: disable
+  truthy:
+    check-keys: false
+    allowed-values: ['true', 'false']
+  line-length:
+    max: 200
+    allow-non-breakable-words: true
+  new-line-at-end-of-file: enable
