@@ -21,18 +21,18 @@ on:
       - "release/v*.*"
       - "!release/v*.*.*"
     paths:
-      - go.mod
-      - go.sum
-      - .github/workflows/test-hack.yaml
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/test-hack.yaml"
       - "hack/gorules/**"
       - "hack/helm/**"
       - "hack/license/**"
       - "hack/tools/**"
   pull_request:
     paths:
-      - go.mod
-      - go.sum
-      - .github/workflows/test-hack.yaml
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/test-hack.yaml"
       - "hack/gorules/**"
       - "hack/helm/**"
       - "hack/license/**"
