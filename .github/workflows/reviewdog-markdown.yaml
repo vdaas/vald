@@ -33,6 +33,7 @@ jobs:
   languagetool-apis-charts:
     permissions:
       contents: read
+      pull-requests: write
     timeout-minutes: 60
     name: runner / LanguageTool / apis & charts
     runs-on: ubuntu-latest
@@ -56,6 +57,7 @@ jobs:
   languagetool-docs:
     permissions:
       contents: read
+      pull-requests: write
     timeout-minutes: 60
     name: runner / LanguageTool / Docs
     runs-on: ubuntu-latest
@@ -79,6 +81,7 @@ jobs:
   textlint:
     permissions:
       contents: read
+      pull-requests: write
     timeout-minutes: 60
     name: runner / textlint
     runs-on: ubuntu-latest

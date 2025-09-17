@@ -46,6 +46,7 @@ jobs:
   kubeval-conflint:
     permissions:
       contents: read
+      pull-requests: write
     timeout-minutes: 60
     name: runner / kubeval-conflint
     runs-on: ubuntu-latest

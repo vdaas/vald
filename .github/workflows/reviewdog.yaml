@@ -36,6 +36,7 @@ jobs:
   golangci-lint:
     permissions:
       contents: read
+      pull-requests: write
     timeout-minutes: 60
     name: runner / golangci-lint
     runs-on: ubuntu-latest

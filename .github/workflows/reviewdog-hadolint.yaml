@@ -32,6 +32,7 @@ jobs:
   hadolint:
     permissions:
       contents: read
+      pull-requests: write
     timeout-minutes: 60
     name: runner / hadolint
     runs-on: ubuntu-latest
