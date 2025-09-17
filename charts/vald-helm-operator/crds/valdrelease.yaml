@@ -4995,6 +4995,11 @@ spec:
                               type: string
                             servicePort:
                               type: string
+                            tls:
+                              items:
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
+                              type: array
                           type: object
                         initContainers:
                           items:
@@ -6591,6 +6596,11 @@ spec:
                               type: string
                             servicePort:
                               type: string
+                            tls:
+                              items:
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
+                              type: array
                           type: object
                         initContainers:
                           items:
@@ -7834,6 +7844,11 @@ spec:
                               type: string
                             servicePort:
                               type: string
+                            tls:
+                              items:
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
+                              type: array
                           type: object
                         initContainers:
                           items:
