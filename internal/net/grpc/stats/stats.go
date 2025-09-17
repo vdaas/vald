@@ -20,7 +20,7 @@ import (
 	"context"
 	"strconv"
 	"strings"
-	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -33,13 +33,6 @@ import (
 	"github.com/vdaas/vald/internal/os"
 )
 
-var (
-	cpuStatsMu   sync.RWMutex
-	lastCPUTotal uint64
-	lastCPUIdle  uint64
-	lastCPUTime  time.Time
-)
-
 func Register(srv *grpc.Server) {
 	ssrv := &server{}
 	statspb.RegisterStatsServer(srv, ssrv)
@@ -47,6 +40,10 @@ func Register(srv *grpc.Server) {
 
 type server struct {
 	statspb.UnimplementedStatsServer
+	lastCPUTotal   atomic.Uint64
+	lastCPUIdle    atomic.Uint64
+	lastCPUTime    atomic.Int64
+	statsLoadedCnt atomic.Uint64
 }
 
 func (s *server) ResourceStats(
@@ -64,7 +61,7 @@ func (s *server) ResourceStats(
 	}
 	log.Debugf("ip: %s", ip)
 
-	cpuUsage, err := getCPUStats()
+	cpuUsage, err := s.getCPUStats()
 	if err != nil {
 		cpuUsage = 0.0
 	}
@@ -84,8 +81,9 @@ func (s *server) ResourceStats(
 	}, nil
 }
 
-func getCPUStats() (float64, error) {
-	data, err := file.ReadFile("/proc/stat")
+func (s *server) getCPUStats() (usage float64, err error) {
+	var data []byte
+	data, err = file.ReadFile("/proc/stat")
 	if err != nil {
 		return 0, err
 	}
@@ -100,19 +98,19 @@ func getCPUStats() (float64, error) {
 	}
 
 	if cpuLine == "" {
-		return 0, errors.New("cpu line not found in /proc/stat")
+		return 0, errors.ErrCPULineNotFound()
 	}
 
 	fields := strings.Fields(cpuLine)
 	if len(fields) < 8 {
-		return 0, errors.New("invalid cpu line format in /proc/stat")
+		return 0, errors.ErrInvalidCPULineFormat()
 	}
 
 	var total, idle uint64
 	for i := 1; i < len(fields) && i < 8; i++ {
 		val, err := strconv.ParseUint(fields[i], 10, 64)
 		if err != nil {
-			return 0, errors.Wrapf(err, "failed to parse CPU field %d", i)
+			return 0, errors.ErrCPUFieldParseFailed(i, err)
 		}
 		total += val
 		if i == 4 {
@@ -120,32 +118,21 @@ func getCPUStats() (float64, error) {
 		}
 	}
 
-	cpuStatsMu.Lock()
-	defer cpuStatsMu.Unlock()
-
-	var usage float64
 	now := time.Now()
 
-	if lastCPUTime.IsZero() || now.Sub(lastCPUTime) > 5*time.Minute {
-		lastCPUTotal = total
-		lastCPUIdle = idle
-		lastCPUTime = now
+	s.lastCPUTotal.Store(total)
+	s.lastCPUIdle.Store(idle)
+	s.lastCPUTime.Store(now.UnixNano())
 
-		time.Sleep(100 * time.Millisecond)
-		return getCPUStats()
+	if s.statsLoadedCnt.Add(1) <= 1 {
+		return s.getCPUStats()
 	}
 
-	deltaTotal := total - lastCPUTotal
-	deltaIdle := idle - lastCPUIdle
+	deltaTotal := total - s.lastCPUTotal.Load()
 
 	if deltaTotal > 0 {
+		deltaIdle := idle - s.lastCPUIdle.Load()
 		usage = float64(deltaTotal-deltaIdle) / float64(deltaTotal) * 100.0
-	}
-
-	if now.Sub(lastCPUTime) >= time.Second {
-		lastCPUTotal = total
-		lastCPUIdle = idle
-		lastCPUTime = now
 	}
 
 	return usage, nil
@@ -154,12 +141,12 @@ func getCPUStats() (float64, error) {
 func getMemoryStats() (float64, error) {
 	totalMem, err := getTotalMemory()
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to get total memory")
+		return 0, err
 	}
 
 	processMemory, err := getProcessMemory()
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to get process memory")
+		return 0, err
 	}
 
 	usage := float64(processMemory) / float64(totalMem) * 100.0
@@ -167,8 +154,9 @@ func getMemoryStats() (float64, error) {
 	return usage, nil
 }
 
-func getTotalMemory() (uint64, error) {
-	data, err := file.ReadFile("/proc/meminfo")
+func getTotalMemory() (usage uint64, err error) {
+	var data []byte
+	data, err = file.ReadFile("/proc/meminfo")
 	if err != nil {
 		return 0, err
 	}
@@ -180,18 +168,20 @@ func getTotalMemory() (uint64, error) {
 			if len(fields) >= 2 {
 				memTotal, err := strconv.ParseUint(fields[1], 10, 64)
 				if err != nil {
-					return 0, errors.Wrap(err, "failed to parse MemTotal")
+					return 0, errors.ErrMemTotalParseFailed(err)
 				}
-				return memTotal * 1024, nil
+				usage = memTotal * 1024
+				return usage, nil
 			}
 		}
 	}
 
-	return 0, errors.New("MemTotal not found in /proc/meminfo")
+	return 0, errors.ErrTotalMemoryNotFound()
 }
 
-func getProcessMemory() (uint64, error) {
-	data, err := file.ReadFile("/proc/self/status")
+func getProcessMemory() (usage uint64, err error) {
+	var data []byte
+	data, err = file.ReadFile("/proc/self/status")
 	if err != nil {
 		return 0, err
 	}
@@ -203,12 +193,13 @@ func getProcessMemory() (uint64, error) {
 			if len(fields) >= 2 {
 				vmRSS, err := strconv.ParseUint(fields[1], 10, 64)
 				if err != nil {
-					return 0, errors.Wrap(err, "failed to parse VmRSS")
+					return 0, errors.ErrVmRSSParseFailed(err)
 				}
-				return vmRSS * 1024, nil
+				usage = vmRSS * 1024
+				return usage, nil
 			}
 		}
 	}
 
-	return 0, errors.New("VmRSS not found in /proc/self/status")
+	return 0, errors.ErrProcessMemoryNotFound()
 }
