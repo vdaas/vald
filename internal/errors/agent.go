@@ -88,6 +88,11 @@ var (
 		return Wrap(err, "failed to set search edge size")
 	}
 
+	// ErrFailedToSetEpsilonForCreation represents a function to generate an error that the set of epsilon for creation failed.
+	ErrFailedToSetEpsilonForCreation = func(err error) error {
+		return Wrap(err, "failed to set epsilon for creation")
+	}
+
 	// ErrUncommittedIndexExists represents a function to generate an error that the uncommitted indexes exist.
 	ErrUncommittedIndexExists = func(num uint64) error {
 		return Errorf("%d indexes are not committed", num)
