@@ -18,7 +18,6 @@ package stats
 
 import (
 	"context"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -27,9 +26,11 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	statspb "github.com/vdaas/vald/apis/grpc/v1/rpc/stats"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
-	internalOS "github.com/vdaas/vald/internal/os"
+	"github.com/vdaas/vald/internal/os"
 )
 
 var (
@@ -51,25 +52,29 @@ type server struct {
 func (s *server) ResourceStats(
 	ctx context.Context, _ *payload.Empty,
 ) (*payload.Info_ResourceStats, error) {
-	hostname, err := internalOS.Hostname()
+	hostname, err := os.Hostname()
 	if err != nil {
 		hostname = "unknown"
 	}
+	log.Debugf("hostname: %s", hostname)
 
 	ip := net.LoadLocalIP()
 	if ip == "" {
 		ip = "unknown"
 	}
+	log.Debugf("ip: %s", ip)
 
 	cpuUsage, err := getCPUStats()
 	if err != nil {
 		cpuUsage = 0.0
 	}
+	log.Debugf("cpuUsage: %f", cpuUsage)
 
 	memoryUsage, err := getMemoryStats()
 	if err != nil {
 		memoryUsage = 0.0
 	}
+	log.Debugf("memoryUsage: %f", memoryUsage)
 
 	return &payload.Info_ResourceStats{
 		Name:        hostname,
@@ -80,7 +85,7 @@ func (s *server) ResourceStats(
 }
 
 func getCPUStats() (float64, error) {
-	data, err := os.ReadFile("/proc/stat")
+	data, err := file.ReadFile("/proc/stat")
 	if err != nil {
 		return 0, err
 	}
@@ -163,7 +168,7 @@ func getMemoryStats() (float64, error) {
 }
 
 func getTotalMemory() (uint64, error) {
-	data, err := os.ReadFile("/proc/meminfo")
+	data, err := file.ReadFile("/proc/meminfo")
 	if err != nil {
 		return 0, err
 	}
@@ -186,7 +191,7 @@ func getTotalMemory() (uint64, error) {
 }
 
 func getProcessMemory() (uint64, error) {
-	data, err := os.ReadFile("/proc/self/status")
+	data, err := file.ReadFile("/proc/self/status")
 	if err != nil {
 		return 0, err
 	}
