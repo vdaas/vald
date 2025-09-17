@@ -22,7 +22,8 @@ on:
       - reopened
       - synchronize
       - labeled
-  workflow_dispatch:
+    paths:
+      - ".github/workflows/**"
 
 permissions:
   contents: read
