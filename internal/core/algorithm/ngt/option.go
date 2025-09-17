@@ -51,6 +51,7 @@ var (
 		WithObjectType(Float),
 		WithDistanceType(L2),
 		WithBulkInsertChunkSize(100),
+		WithEpsilonForCreation(DefaultEpsilon),
 		WithErrorBufferLimit(DefaultErrorBufferLimit),
 	}
 )
