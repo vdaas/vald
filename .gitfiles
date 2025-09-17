@@ -769,6 +769,7 @@ hack/benchmark/src/singleflight/singleflight_bench_test.go
 hack/cspell/main.go
 hack/cspell/main_test.go
 hack/docker/gen/main.go
+hack/docker/gen/main_test.go
 hack/git/hooks/pre-commit
 hack/go.mod.default
 hack/gorules/rules.go
