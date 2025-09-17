@@ -40,7 +40,7 @@ outputs:
     value: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
   PLATFORMS:
     description: "Target platforms"
-    value: ${{ steps.determine_platforms.outputs.PLATFORMS }}
+    value: ${{ steps.determine_determine_platforms.outputs.PLATFORMS }}
   EXTRA_TAGS:
     description: "Extra tags"
     value: ${{ steps.add_extra_tags.outputs.EXTRA_TAGS }}
@@ -127,6 +127,7 @@ runs:
           cache-mount-v2-
     - name: Restore Docker cache mounts
       uses: reproducible-containers/buildkit-cache-dance@v3
+      id: cache-dance
       with:
         builder: ${{ inputs.builder }}
         cache-dir: cache-mount
@@ -138,11 +139,11 @@ runs:
       id: build_and_push
       run: |
         REF_SLUG="${{ github.head_ref || github.ref_name }}"
-        REF_SLUG="${REF_SLUG//\//-}"
+        REF_SLUG="${REF_SLUG//\/\-}"
         make \
           REMOTE="true" \
           DOCKER="docker" \
-          DOCKER_OPTS="--builder ${BUILDER} ${LABEL_OPTS} \
+          DOCKER_OPTS="--builder ${BUILDER} ${LABEL_OPTS} ${{ steps.cache-dance.outputs.get-cache-info }} \
           --label org.opencontainers.image.version=${PRIMARY_TAG} \
           --label org.opencontainers.image.title=${TARGET} \
           --label org.opencontainers.image.created=\"$(date --rfc-3339=ns)\" \
