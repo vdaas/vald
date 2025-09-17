@@ -77,6 +77,7 @@ RUN --mount=type=bind,target=.,rw \
     && dpkg-reconfigure -f noninteractive tzdata \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
+    && make sccache/install \
     && make GOARCH="${TARGETARCH}" GOOS="${TARGETOS}" REPO="${ORG}/${REPO}" NAME="${REPO}" cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 # skipcq: DOK-DL3026,DOK-DL3007

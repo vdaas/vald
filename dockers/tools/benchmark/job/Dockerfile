@@ -74,7 +74,6 @@ RUN --mount=type=bind,target=.,rw \
     gcc \
     libssl-dev \
     unzip \
-    sccache \
     ninja-build \
     libaec-dev \
     && ldconfig \
@@ -85,6 +84,7 @@ RUN --mount=type=bind,target=.,rw \
     && dpkg-reconfigure -f noninteractive tzdata \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
+    && make sccache/install \
     && make hdf5/install \
     && sccache --show-stats \
     && make GOARCH="${TARGETARCH}" GOOS="${TARGETOS}" REPO="${ORG}/${REPO}" NAME="${REPO}" cmd/${PKG}/${APP_NAME} \

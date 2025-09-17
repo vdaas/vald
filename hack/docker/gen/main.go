@@ -429,9 +429,11 @@ var (
 	goInstallCommands = []string{
 		"make GOPATH=\"${GOPATH}\" GOROOT=\"${GOROOT}\" GO_VERSION=\"${GO_VERSION}\" go/install",
 		"make GOPATH=\"${GOPATH}\" GOROOT=\"${GOROOT}\" GO_VERSION=\"${GO_VERSION}\" go/download",
+		"make sccache/install",
 	}
 	rustInstallCommands = []string{
 		"make RUST_VERSION=\"${RUST_VERSION}\" rust/install",
+		"make sccache/install",
 	}
 	goBuildCommands = []string{
 		"make GOARCH=\"${TARGETARCH}\" GOOS=\"${TARGETOS}\" REPO=\"${ORG}/${REPO}\" NAME=\"${REPO}\" cmd/${PKG}/${APP_NAME}",
@@ -473,7 +475,6 @@ var (
 		"gcc",
 		"libssl-dev",
 		"unzip",
-		"sccache",
 		"ninja-build",
 	}
 	ngtBuildDeps = []string{

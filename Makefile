@@ -118,6 +118,7 @@ YQ_VERSION                := $(eval YQ_VERSION := $(shell cat versions/YQ_VERSIO
 ZLIB_VERSION              := $(eval ZLIB_VERSION := $(shell cat versions/ZLIB_VERSION))$(ZLIB_VERSION)
 SNAPSHOTTER_VERSION       := $(eval SNAPSHOTTER_VERSION := $(shell cat versions/SNAPSHOTTER_VERSION))$(SNAPSHOTTER_VERSION)
 CSI_DRIVER_HOST_PATH_VERSION := $(eval CSI_DRIVER_HOST_PATH_VERSION := $(shell cat versions/CSI_DRIVER_HOST_PATH_VERSION))$(CSI_DRIVER_HOST_PATH_VERSION)
+SCCACHE_VERSION           := $(eval SCCACHE_VERSION := $(shell cat versions/SCCACHE_VERSION))$(SCCACHE_VERSION)
 
 OTEL_OPERATOR_RELEASE_NAME ?= opentelemetry-operator
 PROMETHEUS_RELEASE_NAME    ?= prometheus
@@ -753,6 +754,10 @@ version/yq:
 .PHONY: version/telepresence
 version/telepresence:
 	@echo $(TELEPRESENCE_VERSION)
+
+.PHONY: version/sccache
+version/sccache:
+	@echo $(SCCACHE_VERSION)
 
 .PHONY: ngt/install
 ## install NGT
