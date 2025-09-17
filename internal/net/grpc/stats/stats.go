@@ -46,6 +46,10 @@ type server struct {
 	statsLoadedCnt atomic.Uint64
 }
 
+const (
+	cpuStatsPath = "/proc/stat"
+)
+
 func (s *server) ResourceStats(
 	ctx context.Context, _ *payload.Empty,
 ) (*payload.Info_ResourceStats, error) {
@@ -61,7 +65,7 @@ func (s *server) ResourceStats(
 	}
 	log.Debugf("ip: %s", ip)
 
-	cpuUsage, err := s.getCPUStats()
+	cpuUsage, err := s.getCPUStats(cpuStatsPath)
 	if err != nil {
 		cpuUsage = 0.0
 	}
@@ -81,9 +85,9 @@ func (s *server) ResourceStats(
 	}, nil
 }
 
-func (s *server) getCPUStats() (usage float64, err error) {
+func (s *server) getCPUStats(path string) (usage float64, err error) {
 	var data []byte
-	data, err = file.ReadFile("/proc/stat")
+	data, err = file.ReadFile(path)
 	if err != nil {
 		return 0, err
 	}
@@ -125,7 +129,7 @@ func (s *server) getCPUStats() (usage float64, err error) {
 	s.lastCPUTime.Store(now.UnixNano())
 
 	if s.statsLoadedCnt.Add(1) <= 1 {
-		return s.getCPUStats()
+		return s.getCPUStats(path)
 	}
 
 	deltaTotal := total - s.lastCPUTotal.Load()
