@@ -21,30 +21,30 @@ name: 'Build docker image: helm-operator'
 on:
   push:
     branches:
-    - main
-    - release/v*.*
-    - '!release/v*.*.*'
+      - main
+      - "release/v*.*"
+      - "!release/v*.*.*"
     tags:
-    - '*.*.*'
-    - '*.*.*-*'
-    - v*.*.*
-    - v*.*.*-*
+      - "*.*.*"
+      - "*.*.*-*"
+      - v*.*.*
+      - v*.*.*-*
   pull_request:
     paths:
-    - .github/actions/docker-build/action.yaml
-    - .github/workflows/_docker-image.yaml
-    - .github/workflows/dockers-helm-operator-image.yaml
-    - Makefile
-    - Makefile.d/**
-    - charts/vald-helm-operator/Chart.yaml
-    - charts/vald-helm-operator/templates/**
-    - charts/vald-helm-operator/values.yaml
-    - charts/vald/Chart.yaml
-    - charts/vald/templates/**
-    - charts/vald/values.yaml
-    - dockers/operator/helm/Dockerfile
-    - hack/docker/gen/main.go
-    - versions/OPERATOR_SDK_VERSION
+      - .github/actions/docker-build/action.yaml
+      - .github/workflows/_docker-image.yaml
+      - .github/workflows/dockers-helm-operator-image.yaml
+      - Makefile
+      - "Makefile.d/**"
+      - charts/vald-helm-operator/Chart.yaml
+      - "charts/vald-helm-operator/templates/**"
+      - charts/vald-helm-operator/values.yaml
+      - charts/vald/Chart.yaml
+      - "charts/vald/templates/**"
+      - charts/vald/values.yaml
+      - dockers/operator/helm/Dockerfile
+      - hack/docker/gen/main.go
+      - versions/OPERATOR_SDK_VERSION
   pull_request_target:
     types:
     - opened
@@ -52,20 +52,20 @@ on:
     - synchronize
     - labeled
     paths:
-    - .github/actions/docker-build/action.yaml
-    - .github/workflows/_docker-image.yaml
-    - .github/workflows/dockers-helm-operator-image.yaml
-    - Makefile
-    - Makefile.d/**
-    - charts/vald-helm-operator/Chart.yaml
-    - charts/vald-helm-operator/templates/**
-    - charts/vald-helm-operator/values.yaml
-    - charts/vald/Chart.yaml
-    - charts/vald/templates/**
-    - charts/vald/values.yaml
-    - dockers/operator/helm/Dockerfile
-    - hack/docker/gen/main.go
-    - versions/OPERATOR_SDK_VERSION
+      - .github/actions/docker-build/action.yaml
+      - .github/workflows/_docker-image.yaml
+      - .github/workflows/dockers-helm-operator-image.yaml
+      - Makefile
+      - "Makefile.d/**"
+      - charts/vald-helm-operator/Chart.yaml
+      - "charts/vald-helm-operator/templates/**"
+      - charts/vald-helm-operator/values.yaml
+      - charts/vald/Chart.yaml
+      - "charts/vald/templates/**"
+      - charts/vald/values.yaml
+      - dockers/operator/helm/Dockerfile
+      - hack/docker/gen/main.go
+      - versions/OPERATOR_SDK_VERSION
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml

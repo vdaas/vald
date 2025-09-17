@@ -18,9 +18,9 @@ on:
   push:
     tags:
       - "*.*.*"
-      - "v*.*.*"
+      - v*.*.*
       - "*.*.*-*"
-      - "v*.*.*-*"
+      - v*.*.*-*
   pull_request:
     types:
       - "labeled"

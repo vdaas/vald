@@ -19,7 +19,7 @@ on:
     branches:
       - main
     paths:
-      - ".github/workflows/e2e-bench-agent.yaml"
+      - .github/workflows/e2e-bench-agent.yaml
       - "internal/core/**"
       - "internal/client/**"
       - "internal/net/**"
@@ -27,11 +27,11 @@ on:
       - "pkg/agent/core/ngt/**"
       - "cmd/agent/core/ngt/**"
       - "hack/benchmark/**"
-      - "versions/GO_VERSION"
-      - "versions/NGT_VERSION"
+      - versions/GO_VERSION
+      - versions/NGT_VERSION
   pull_request:
     paths:
-      - ".github/workflows/e2e-bench-agent.yaml"
+      - .github/workflows/e2e-bench-agent.yaml
       - "internal/core/**"
       - "internal/client/**"
       - "internal/net/**"
@@ -39,8 +39,8 @@ on:
       - "pkg/agent/core/ngt/**"
       - "cmd/agent/core/ngt/**"
       - "hack/benchmark/**"
-      - "versions/GO_VERSION"
-      - "versions/NGT_VERSION"
+      - versions/GO_VERSION
+      - versions/NGT_VERSION
 env:
   DATASET: fashion-mnist-784-euclidean.hdf5
   DATASET_ARGS: fashion-mnist

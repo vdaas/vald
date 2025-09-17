@@ -21,22 +21,22 @@ on:
       - "release/v*.*"
       - "!release/v*.*.*"
     paths:
-      - "go.mod"
-      - "go.sum"
-      - ".github/workflows/unit-test.yaml"
+      - go.mod
+      - go.sum
+      - .github/workflows/unit-test.yaml
       - "internal/**"
       - "pkg/**"
       - "cmd/**"
-      - "Makefile.d/test.mk"
+      - Makefile.d/test.mk
   pull_request:
     paths:
-      - "go.mod"
-      - "go.sum"
-      - ".github/workflows/unit-test.yaml"
+      - go.mod
+      - go.sum
+      - .github/workflows/unit-test.yaml
       - "internal/**"
       - "pkg/**"
       - "cmd/**"
-      - "Makefile.d/test.mk"
+      - Makefile.d/test.mk
 jobs:
   dump-contexts-to-log:
     permissions:

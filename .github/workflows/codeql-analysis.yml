@@ -22,16 +22,16 @@ on:
       - "!release/v*.*.*"
     tags:
       - "*.*.*"
-      - "v*.*.*"
+      - v*.*.*
       - "*.*.*-*"
-      - "v*.*.*-*"
+      - v*.*.*-*
   pull_request:
     branches:
       - main
       - "release/v*.*"
       - "!release/v*.*.*"
     paths:
-      - ".github/workflows/codeql-analysis.yaml"
+      - .github/workflows/codeql-analysis.yaml
       - "**.go"
   schedule:
     - cron: "0 1 * * *"

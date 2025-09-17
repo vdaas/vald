@@ -22,11 +22,11 @@ on:
       - "!release/v*.*.*"
     paths:
       - "apis/proto/**"
-      - "versions/GO_VERSION"
+      - versions/GO_VERSION
   pull_request:
     paths:
       - "apis/proto/**"
-      - "versions/GO_VERSION"
+      - versions/GO_VERSION
 jobs:
   dump-contexts-to-log:
     permissions:

@@ -19,13 +19,13 @@ on:
     branches:
       - main
     paths:
-      - ".github/workflows/coverage.yaml"
+      - .github/workflows/coverage.yaml
       - "internal/**"
       - "pkg/**"
       - "cmd/**"
   pull_request:
     paths:
-      - ".github/workflows/coverage.yaml"
+      - .github/workflows/coverage.yaml
       - "internal/**"
       - "pkg/**"
       - "cmd/**"

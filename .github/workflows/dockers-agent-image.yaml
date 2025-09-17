@@ -21,33 +21,33 @@ name: 'Build docker image: agent'
 on:
   push:
     branches:
-    - main
-    - release/v*.*
-    - '!release/v*.*.*'
+      - main
+      - "release/v*.*"
+      - "!release/v*.*.*"
     tags:
-    - '*.*.*'
-    - '*.*.*-*'
-    - v*.*.*
-    - v*.*.*-*
+      - "*.*.*"
+      - "*.*.*-*"
+      - v*.*.*
+      - v*.*.*-*
   pull_request:
     paths:
-    - .github/actions/docker-build/action.yaml
-    - .github/workflows/_docker-image.yaml
-    - .github/workflows/dockers-agent-image.yaml
-    - Makefile
-    - Makefile.d/**
-    - apis/proto/**
-    - dockers/agent/core/agent/Dockerfile
-    - hack/docker/gen/main.go
-    - rust/Cargo.lock
-    - rust/Cargo.toml
-    - rust/bin/agent
-    - rust/libs/ngt-rs/**
-    - rust/libs/ngt/**
-    - rust/libs/proto/**
-    - versions/FAISS_VERSION
-    - versions/NGT_VERSION
-    - versions/RUST_VERSION
+      - .github/actions/docker-build/action.yaml
+      - .github/workflows/_docker-image.yaml
+      - .github/workflows/dockers-agent-image.yaml
+      - Makefile
+      - "Makefile.d/**"
+      - "apis/proto/**"
+      - dockers/agent/core/agent/Dockerfile
+      - hack/docker/gen/main.go
+      - rust/Cargo.lock
+      - rust/Cargo.toml
+      - rust/bin/agent
+      - "rust/libs/ngt-rs/**"
+      - "rust/libs/ngt/**"
+      - "rust/libs/proto/**"
+      - versions/FAISS_VERSION
+      - versions/NGT_VERSION
+      - versions/RUST_VERSION
   pull_request_target:
     types:
     - opened
@@ -55,23 +55,23 @@ on:
     - synchronize
     - labeled
     paths:
-    - .github/actions/docker-build/action.yaml
-    - .github/workflows/_docker-image.yaml
-    - .github/workflows/dockers-agent-image.yaml
-    - Makefile
-    - Makefile.d/**
-    - apis/proto/**
-    - dockers/agent/core/agent/Dockerfile
-    - hack/docker/gen/main.go
-    - rust/Cargo.lock
-    - rust/Cargo.toml
-    - rust/bin/agent
-    - rust/libs/ngt-rs/**
-    - rust/libs/ngt/**
-    - rust/libs/proto/**
-    - versions/FAISS_VERSION
-    - versions/NGT_VERSION
-    - versions/RUST_VERSION
+      - .github/actions/docker-build/action.yaml
+      - .github/workflows/_docker-image.yaml
+      - .github/workflows/dockers-agent-image.yaml
+      - Makefile
+      - "Makefile.d/**"
+      - "apis/proto/**"
+      - dockers/agent/core/agent/Dockerfile
+      - hack/docker/gen/main.go
+      - rust/Cargo.lock
+      - rust/Cargo.toml
+      - rust/bin/agent
+      - "rust/libs/ngt-rs/**"
+      - "rust/libs/ngt/**"
+      - "rust/libs/proto/**"
+      - versions/FAISS_VERSION
+      - versions/NGT_VERSION
+      - versions/RUST_VERSION
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml

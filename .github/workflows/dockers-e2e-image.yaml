@@ -21,29 +21,29 @@ name: 'Build docker image: e2e'
 on:
   push:
     branches:
-    - main
-    - release/v*.*
-    - '!release/v*.*.*'
+      - main
+      - "release/v*.*"
+      - "!release/v*.*.*"
     tags:
-    - '*.*.*'
-    - '*.*.*-*'
-    - v*.*.*
-    - v*.*.*-*
+      - "*.*.*"
+      - "*.*.*-*"
+      - v*.*.*
+      - v*.*.*-*
   pull_request:
     paths:
-    - '!**/*_mock.go'
-    - '!**/*_test.go'
-    - .github/actions/docker-build/action.yaml
-    - .github/workflows/_docker-image.yaml
-    - .github/workflows/dockers-e2e-image.yaml
-    - Makefile
-    - Makefile.d/**
-    - apis/proto/**
-    - dockers/tests/v2/e2e/Dockerfile
-    - go.mod
-    - go.sum
-    - hack/docker/gen/main.go
-    - versions/GO_VERSION
+      - "!**/*_mock.go"
+      - "!**/*_test.go"
+      - .github/actions/docker-build/action.yaml
+      - .github/workflows/_docker-image.yaml
+      - .github/workflows/dockers-e2e-image.yaml
+      - Makefile
+      - "Makefile.d/**"
+      - "apis/proto/**"
+      - dockers/tests/v2/e2e/Dockerfile
+      - go.mod
+      - go.sum
+      - hack/docker/gen/main.go
+      - versions/GO_VERSION
   pull_request_target:
     types:
     - opened
@@ -51,19 +51,19 @@ on:
     - synchronize
     - labeled
     paths:
-    - '!**/*_mock.go'
-    - '!**/*_test.go'
-    - .github/actions/docker-build/action.yaml
-    - .github/workflows/_docker-image.yaml
-    - .github/workflows/dockers-e2e-image.yaml
-    - Makefile
-    - Makefile.d/**
-    - apis/proto/**
-    - dockers/tests/v2/e2e/Dockerfile
-    - go.mod
-    - go.sum
-    - hack/docker/gen/main.go
-    - versions/GO_VERSION
+      - "!**/*_mock.go"
+      - "!**/*_test.go"
+      - .github/actions/docker-build/action.yaml
+      - .github/workflows/_docker-image.yaml
+      - .github/workflows/dockers-e2e-image.yaml
+      - Makefile
+      - "Makefile.d/**"
+      - "apis/proto/**"
+      - dockers/tests/v2/e2e/Dockerfile
+      - go.mod
+      - go.sum
+      - hack/docker/gen/main.go
+      - versions/GO_VERSION
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml
