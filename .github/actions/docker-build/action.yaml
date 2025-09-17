@@ -40,7 +40,7 @@ outputs:
     value: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
   PLATFORMS:
     description: "Target platforms"
-    value: ${{ steps.determine_determine_platforms.outputs.PLATFORMS }}
+    value: ${{ steps.determine_platforms.outputs.PLATFORMS }}
   EXTRA_TAGS:
     description: "Extra tags"
     value: ${{ steps.add_extra_tags.outputs.EXTRA_TAGS }}
