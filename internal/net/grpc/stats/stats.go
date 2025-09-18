@@ -18,19 +18,19 @@ package stats
 
 import (
 	"context"
-	"strconv"
-	"strings"
-	"sync/atomic"
-	"time"
+	"errors"
 
+	"github.com/shirou/gopsutil/v4/docker"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	statspb "github.com/vdaas/vald/apis/grpc/v1/rpc/stats"
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/os"
+)
+
+const (
+	dockerCgroupBasePath = "/sys/fs/cgroup"
 )
 
 func Register(srv *grpc.Server) {
@@ -40,17 +40,7 @@ func Register(srv *grpc.Server) {
 
 type server struct {
 	statspb.UnimplementedStatsServer
-	lastCPUTotal   atomic.Uint64
-	lastCPUIdle    atomic.Uint64
-	lastCPUTime    atomic.Int64
-	statsLoadedCnt atomic.Uint64
 }
-
-var (
-	cpuStatsPath           = "/proc/stat"
-	memoryStatsPath        = "/proc/meminfo"
-	processMemoryStatsPath = "/proc/self/status"
-)
 
 func (s *server) ResourceStats(
 	ctx context.Context, _ *payload.Empty,
@@ -67,14 +57,22 @@ func (s *server) ResourceStats(
 	}
 	log.Debugf("ip: %s", ip)
 
-	cpuUsage, err := s.getCPUStats(cpuStatsPath)
+	id, err := getContainerID()
 	if err != nil {
+		id = "unknown"
+	}
+	log.Debugf("container ID: %s", id)
+
+	cpuUsage, err := getCPUUsage(id)
+	if err != nil {
+		log.Debugf("failed to get cpu usage: %v", err)
 		cpuUsage = 0.0
 	}
 	log.Debugf("cpuUsage: %f", cpuUsage)
 
-	memoryUsage, err := getMemoryStats()
+	memoryUsage, err := getMemoryUsage(id)
 	if err != nil {
+		log.Debugf("failed to get memory usage: %v", err)
 		memoryUsage = 0.0
 	}
 	log.Debugf("memoryUsage: %f", memoryUsage)
@@ -87,125 +85,40 @@ func (s *server) ResourceStats(
 	}, nil
 }
 
-func (s *server) getCPUStats(path string) (usage float64, err error) {
-	var data []byte
-	data, err = file.ReadFile(path)
+func getCPUUsage(id string) (usage float64, err error) {
+	stats, err := docker.CgroupCPU(id, dockerCgroupBasePath)
 	if err != nil {
-		return 0, err
+		log.Debugf("failed to get cgroup CPU stats: %v", err)
+		return 0, nil
 	}
 
-	lines := strings.Split(string(data), "\n")
-	var cpuLine string
-	for _, line := range lines {
-		if strings.HasPrefix(line, "cpu ") {
-			cpuLine = line
-			break
-		}
+	totalCPUTime := stats.User + stats.System
+	return float64(totalCPUTime), nil
+}
+
+func getMemoryUsage(id string) (usage float64, err error) {
+	memStat, err := docker.CgroupMem(id, dockerCgroupBasePath)
+	if err != nil {
+		return 0, nil
 	}
 
-	if cpuLine == "" {
-		return 0, errors.ErrCPULineNotFound()
+	if memStat.MemLimitInBytes == 0 {
+		return 0, nil
 	}
 
-	fields := strings.Fields(cpuLine)
-	if len(fields) < 8 {
-		return 0, errors.ErrInvalidCPULineFormat()
-	}
-
-	var total, idle uint64
-	for i := 1; i < len(fields) && i < 8; i++ {
-		val, err := strconv.ParseUint(fields[i], 10, 64)
-		if err != nil {
-			return 0, errors.ErrCPUFieldParseFailed(i, err)
-		}
-		total += val
-		if i == 4 {
-			idle = val
-		}
-	}
-
-	now := time.Now()
-
-	s.lastCPUTotal.Store(total)
-	s.lastCPUIdle.Store(idle)
-	s.lastCPUTime.Store(now.UnixNano())
-
-	if s.statsLoadedCnt.Add(1) <= 1 {
-		return s.getCPUStats(path)
-	}
-
-	deltaTotal := total - s.lastCPUTotal.Load()
-
-	if deltaTotal > 0 {
-		deltaIdle := idle - s.lastCPUIdle.Load()
-		usage = float64(deltaTotal-deltaIdle) / float64(deltaTotal) * 100.0
-	}
-
+	usage = (float64(memStat.MemUsageInBytes) / float64(memStat.MemLimitInBytes)) * 100.0
 	return usage, nil
 }
 
-func getMemoryStats() (usage float64, err error) {
-	totalMem, err := getTotalMemory(memoryStatsPath)
+func getContainerID() (string, error) {
+	containerIDs, err := docker.GetDockerIDList()
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 
-	processMemory, err := getProcessMemory(processMemoryStatsPath)
-	if err != nil {
-		return 0, err
+	if len(containerIDs) == 0 {
+		return "", errors.New("no container IDs found")
 	}
 
-	usage = float64(processMemory) / float64(totalMem) * 100.0
-
-	return usage, nil
-}
-
-func getTotalMemory(path string) (usage uint64, err error) {
-	var data []byte
-	data, err = file.ReadFile(path)
-	if err != nil {
-		return 0, err
-	}
-
-	lines := strings.Split(string(data), "\n")
-	for _, line := range lines {
-		if strings.HasPrefix(line, "MemTotal:") {
-			fields := strings.Fields(line)
-			if len(fields) >= 2 {
-				memTotal, err := strconv.ParseUint(fields[1], 10, 64)
-				if err != nil {
-					return 0, errors.ErrMemTotalParseFailed(err)
-				}
-				usage = memTotal * 1024
-				return usage, nil
-			}
-		}
-	}
-
-	return 0, errors.ErrTotalMemoryNotFound()
-}
-
-func getProcessMemory(path string) (usage uint64, err error) {
-	var data []byte
-	data, err = file.ReadFile(path)
-	if err != nil {
-		return 0, err
-	}
-
-	lines := strings.Split(string(data), "\n")
-	for _, line := range lines {
-		if strings.HasPrefix(line, "VmRSS:") {
-			fields := strings.Fields(line)
-			if len(fields) >= 2 {
-				vmRSS, err := strconv.ParseUint(fields[1], 10, 64)
-				if err != nil {
-					return 0, errors.ErrVmRSSParseFailed(err)
-				}
-				usage = vmRSS * 1024
-				return usage, nil
-			}
-		}
-	}
-
-	return 0, errors.ErrProcessMemoryNotFound()
+	return containerIDs[0], nil
 }
