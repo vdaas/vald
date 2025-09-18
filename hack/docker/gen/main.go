@@ -420,7 +420,7 @@ var (
 		"RUSTUP_HOME":   "${RUST_HOME}/rustup",
 		"CARGO_HOME":    "${RUST_HOME}/cargo",
 		"PATH":          "${PATH}:${RUSTUP_HOME}/bin:${CARGO_HOME}/bin:" + usrLocalBinaryDir,
-		"RUSTC_WRAPPER": "/usr/local/bin/sccache",
+		"RUSTC_WRAPPER": "/usr/bin/sccache",
 	}
 	clangDefaultEnvironments = map[string]string{
 		"CC":  "gcc",
