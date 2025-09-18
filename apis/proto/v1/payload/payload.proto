@@ -652,8 +652,8 @@ message Info {
   message ResourceStats {
     string name = 1;
     string ip = 2 [(buf.validate.field).string.ipv4 = true];
-    double cpuUsage = 3;
-    double memoryUsage = 4;
+    double cpu_usage = 3;
+    double memory_usage = 4;
   }
 
   // Represent the pod information message.

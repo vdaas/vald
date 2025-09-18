@@ -3896,10 +3896,10 @@ func (*Info_Index) Descriptor() ([]byte, []int) {
 // Represent the resource stats
 type Info_ResourceStats struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `                   protobuf:"bytes,1,opt,name=name,proto3"          json:"name,omitempty"`
-	Ip            string                 `                   protobuf:"bytes,2,opt,name=ip,proto3"            json:"ip,omitempty"`
-	CpuUsage      float64                `                   protobuf:"fixed64,3,opt,name=cpuUsage,proto3"    json:"cpuUsage,omitempty"`
-	MemoryUsage   float64                `                   protobuf:"fixed64,4,opt,name=memoryUsage,proto3" json:"memoryUsage,omitempty"`
+	Name          string                 `                   protobuf:"bytes,1,opt,name=name,proto3"                            json:"name,omitempty"`
+	Ip            string                 `                   protobuf:"bytes,2,opt,name=ip,proto3"                              json:"ip,omitempty"`
+	CpuUsage      float64                `                   protobuf:"fixed64,3,opt,name=cpu_usage,json=cpuUsage,proto3"       json:"cpu_usage,omitempty"`
+	MemoryUsage   float64                `                   protobuf:"fixed64,4,opt,name=memory_usage,json=memoryUsage,proto3" json:"memory_usage,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -6117,7 +6117,7 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"\aRequest\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12\x1c\n" +
 	"\tnamespace\x18\x02 \x01(\tR\tnamespace\x12\x12\n" +
-	"\x04node\x18\x03 \x01(\tR\x04node\"\xbe,\n" +
+	"\x04node\x18\x03 \x01(\tR\x04node\"\xc0,\n" +
 	"\x04Info\x1a\x80 \n" +
 	"\x05Index\x1au\n" +
 	"\x05Count\x12\x16\n" +
@@ -6225,12 +6225,12 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"\adetails\x18\x01 \x03(\v22.payload.v1.Info.Index.PropertyDetail.DetailsEntryR\adetails\x1a[\n" +
 	"\fDetailsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x125\n" +
-	"\x05value\x18\x02 \x01(\v2\x1f.payload.v1.Info.Index.PropertyR\x05value:\x028\x01\x1az\n" +
+	"\x05value\x18\x02 \x01(\v2\x1f.payload.v1.Info.Index.PropertyR\x05value:\x028\x01\x1a|\n" +
 	"\rResourceStats\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x17\n" +
-	"\x02ip\x18\x02 \x01(\tB\a\xbaH\x04r\x02x\x01R\x02ip\x12\x1a\n" +
-	"\bcpuUsage\x18\x03 \x01(\x01R\bcpuUsage\x12 \n" +
-	"\vmemoryUsage\x18\x04 \x01(\x01R\vmemoryUsage\x1a\xef\x01\n" +
+	"\x02ip\x18\x02 \x01(\tB\a\xbaH\x04r\x02x\x01R\x02ip\x12\x1b\n" +
+	"\tcpu_usage\x18\x03 \x01(\x01R\bcpuUsage\x12!\n" +
+	"\fmemory_usage\x18\x04 \x01(\x01R\vmemoryUsage\x1a\xef\x01\n" +
 	"\x03Pod\x12\x19\n" +
 	"\bapp_name\x18\x01 \x01(\tR\aappName\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1c\n" +

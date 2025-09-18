@@ -570,12 +570,12 @@ Represent the multiple pod information message.
 
 Represent the resource stats
 
-| Field       | Type              | Label | Description |
-| ----------- | ----------------- | ----- | ----------- |
-| name        | [string](#string) |       |             |
-| ip          | [string](#string) |       |             |
-| cpuUsage    | [double](#double) |       |             |
-| memoryUsage | [double](#double) |       |             |
+| Field        | Type              | Label | Description |
+| ------------ | ----------------- | ----- | ----------- |
+| name         | [string](#string) |       |             |
+| ip           | [string](#string) |       |             |
+| cpu_usage    | [double](#double) |       |             |
+| memory_usage | [double](#double) |       |             |
 
 <a name="payload-v1-Info-Service"></a>
 

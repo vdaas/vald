@@ -1153,6 +1153,7 @@ internal/errors/runner.go
 internal/errors/runner_test.go
 internal/errors/runtime.go
 internal/errors/runtime_test.go
+internal/errors/stats.go
 internal/errors/storage.go
 internal/errors/tls.go
 internal/errors/unit.go

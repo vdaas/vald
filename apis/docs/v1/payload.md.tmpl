@@ -1584,8 +1584,8 @@
   message Info.ResourceStats {
     string name = 1;
     string ip = 2;
-    double cpuUsage = 3;
-    double memoryUsage = 4;
+    double cpu_usage = 3;
+    double memory_usage = 4;
   }
 {{- end -}}
 
@@ -1596,8 +1596,8 @@
     | :---: | :--- | :---- | :---------- |
     | name | string |  |  |
     | ip | string |  |  |
-    | cpuUsage | double |  |  |
-    | memoryUsage | double |  |  |
+    | cpu_usage | double |  |  |
+    | memory_usage | double |  |  |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Service" }}
