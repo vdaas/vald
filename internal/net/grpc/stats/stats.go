@@ -46,8 +46,10 @@ type server struct {
 	statsLoadedCnt atomic.Uint64
 }
 
-const (
-	cpuStatsPath = "/proc/stat"
+var (
+	cpuStatsPath           = "/proc/stat"
+	memoryStatsPath        = "/proc/meminfo"
+	processMemoryStatsPath = "/proc/self/status"
 )
 
 func (s *server) ResourceStats(
@@ -142,25 +144,25 @@ func (s *server) getCPUStats(path string) (usage float64, err error) {
 	return usage, nil
 }
 
-func getMemoryStats() (float64, error) {
-	totalMem, err := getTotalMemory()
+func getMemoryStats() (usage float64, err error) {
+	totalMem, err := getTotalMemory(memoryStatsPath)
 	if err != nil {
 		return 0, err
 	}
 
-	processMemory, err := getProcessMemory()
+	processMemory, err := getProcessMemory(processMemoryStatsPath)
 	if err != nil {
 		return 0, err
 	}
 
-	usage := float64(processMemory) / float64(totalMem) * 100.0
+	usage = float64(processMemory) / float64(totalMem) * 100.0
 
 	return usage, nil
 }
 
-func getTotalMemory() (usage uint64, err error) {
+func getTotalMemory(path string) (usage uint64, err error) {
 	var data []byte
-	data, err = file.ReadFile("/proc/meminfo")
+	data, err = file.ReadFile(path)
 	if err != nil {
 		return 0, err
 	}
@@ -183,9 +185,9 @@ func getTotalMemory() (usage uint64, err error) {
 	return 0, errors.ErrTotalMemoryNotFound()
 }
 
-func getProcessMemory() (usage uint64, err error) {
+func getProcessMemory(path string) (usage uint64, err error) {
 	var data []byte
-	data, err = file.ReadFile("/proc/self/status")
+	data, err = file.ReadFile(path)
 	if err != nil {
 		return 0, err
 	}
