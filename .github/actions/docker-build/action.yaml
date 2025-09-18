@@ -142,7 +142,7 @@ runs:
         make \
           REMOTE="true" \
           DOCKER="docker" \
-          DOCKER_OPTS="--builder ${BUILDER} ${LABEL_OPTS} \
+          DOCKER_OPTS="--builder ${BUILDER} ${LABEL_OPTS} --cache-from type=gha --cache-to type=gha,mode=max \
           --label org.opencontainers.image.version=${PRIMARY_TAG} \
           --label org.opencontainers.image.title=${TARGET} \
           --label org.opencontainers.image.created=\"$(date --rfc-3339=ns)\" \
