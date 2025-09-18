@@ -67,6 +67,10 @@ type credentials struct {
 	sn         string
 	insecure   bool
 	clientAuth tls.ClientAuthType
+	// hotReload toggles per-handshake reload using GetCertificate.
+	hotReload bool
+	// store keeps the latest loaded certificate.
+	store *certStore
 }
 
 // newCredential builds credentials from defaults and provided options.
@@ -79,6 +83,9 @@ func newCredential(opts ...Option) (*credentials, error) {
 	}
 	if c.cfg == nil {
 		c.cfg = new(Config)
+	}
+	if c.store == nil {
+		c.store = newCertStore()
 	}
 	if c.sn != "" {
 		c.cfg.ServerName = c.sn
@@ -139,12 +146,26 @@ func NewServerConfig(opts ...Option) (*Config, error) {
 		c.sn = "vald-server"
 		c.cfg.ServerName = c.sn
 	}
-	// load cert pair
-	kp, err := loadKeyPair(c.sn, c.cert, c.key)
-	if err != nil {
-		return nil, err
+	// Configure certificate strategy.
+	if c.hotReload {
+		// Do not preload Certificates; use GetCertificate instead.
+		c.cfg.GetCertificate = func(chi *tls.ClientHelloInfo) (*tls.Certificate, error) {
+			kp, err := loadKeyPair(c.sn, c.cert, c.key)
+			if err != nil {
+				return nil, err
+			}
+			c.store.Set(&kp)
+			return c.store.Get(), nil
+		}
+	} else {
+		// load once statically
+		kp, err := loadKeyPair(c.sn, c.cert, c.key)
+		if err != nil {
+			return nil, err
+		}
+		c.cfg.Certificates = []tls.Certificate{kp}
+		c.store.Set(&kp)
 	}
-	c.cfg.Certificates = []tls.Certificate{kp}
 	// if CA provided, configure mTLS
 	if c.ca != "" {
 		pool, err := NewX509CertPool(c.ca)
