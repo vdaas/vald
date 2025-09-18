@@ -45,8 +45,7 @@ update/libs: \
 	update/yq \
 	update/zlib \
 	update/snapshotter \
-	update/csi-driver-host-path \
-	update/sccache
+	update/csi-driver-host-path
 
 .PHONY: go/download
 ## download Go package dependencies
@@ -257,11 +256,6 @@ update/snapshotter:
 ## update csi-driver-host-path version
 update/csi-driver-host-path:
 	curl -fsSL https://api.github.com/repos/kubernetes-csi/csi-driver-host-path/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/CSI_DRIVER_HOST_PATH_VERSION
-
-.PHONY: update/sccache
-## update sccache version
-update/sccache:
-	curl -fsSL https://api.github.com/repos/mozilla/sccache/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/SCCACHE_VERSION
 
 .PHONY: update/template
 ## update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE

@@ -287,12 +287,3 @@ $(BINDIR)/docker: $(BINDIR)
 		&& tar -xzvf $(TEMP_DIR)/docker.tgz -C $(TEMP_DIR) \
 		&& mv $(TEMP_DIR)/docker/docker $(BINDIR) \
 		&& rm -rf $(TEMP_DIR)/docker{.tgz,}
-
-.PHONY: sccache/install
-sccache/install: $(BINDIR)/sccache
-
-$(BINDIR)/sccache: $(BINDIR)
-	curl -fsSL https://github.com/mozilla/sccache/releases/download/$(SCCACHE_VERSION)/sccache-$(SCCACHE_VERSION)-$(ARCH)-unknown-linux-musl.tar.gz -o $(TEMP_DIR)/sccache-$(SCCACHE_VERSION)-$(ARCH)-unknown-linux-musl.tar.gz \
-		&& tar -xzvf $(TEMP_DIR)/sccache-$(SCCACHE_VERSION)-$(ARCH)-unknown-linux-musl.tar.gz -C $(TEMP_DIR) \
-		&& mv $(TEMP_DIR)/sccache-$(SCCACHE_VERSION)-$(ARCH)-unknown-linux-musl/sccache $(BINDIR) \
-		&& rm -rf $(TEMP_DIR)/sccache-$(SCCACHE_VERSION)-$(ARCH)-unknown-linux-musl{.tar.gz,}

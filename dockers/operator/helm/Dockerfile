@@ -82,7 +82,6 @@ RUN --mount=type=bind,target=.,rw \
     && dpkg-reconfigure -f noninteractive tzdata \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
-    && make sccache/install \
     && mkdir -p /opt/helm/charts \
     && { \
         echo "---"; \
