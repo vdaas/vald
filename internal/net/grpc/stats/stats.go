@@ -19,10 +19,12 @@ package stats
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/shirou/gopsutil/v4/docker"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	statspb "github.com/vdaas/vald/apis/grpc/v1/rpc/stats"
+	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -31,6 +33,7 @@ import (
 
 const (
 	dockerCgroupBasePath = "/sys/fs/cgroup"
+	procCgroupPath       = "/proc/1/cgroup"
 )
 
 func Register(srv *grpc.Server) {
@@ -111,14 +114,37 @@ func getMemoryUsage(id string) (usage float64, err error) {
 }
 
 func getContainerID() (string, error) {
-	containerIDs, err := docker.GetDockerIDList()
+	file, err := file.ReadFile(procCgroupPath)
 	if err != nil {
 		return "", err
 	}
 
-	if len(containerIDs) == 0 {
-		return "", errors.New("no container IDs found")
-	}
+	content := string(file)
+	lines := strings.Split(content, "\n")
 
-	return containerIDs[0], nil
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+
+		parts := strings.Split(line, "/")
+
+		if len(parts) >= 3 {
+			containerID := parts[2]
+			if len(containerID) == 64 {
+				isHex := true
+				for _, c := range containerID {
+					if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
+						isHex = false
+						break
+					}
+				}
+				if isHex {
+					return containerID, nil
+				}
+			}
+		}
+	}
+	return "", errors.New("no container ID found")
 }
