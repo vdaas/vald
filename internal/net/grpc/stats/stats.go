@@ -19,6 +19,7 @@ package stats
 import (
 	"context"
 	"errors"
+	"os"
 	"strings"
 
 	"github.com/shirou/gopsutil/v4/docker"
@@ -28,7 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/os"
+	ios "github.com/vdaas/vald/internal/os"
 )
 
 const (
@@ -48,7 +49,7 @@ type server struct {
 func (s *server) ResourceStats(
 	ctx context.Context, _ *payload.Empty,
 ) (*payload.Info_ResourceStats, error) {
-	hostname, err := os.Hostname()
+	hostname, err := ios.Hostname()
 	if err != nil {
 		hostname = "unknown"
 	}
@@ -60,7 +61,7 @@ func (s *server) ResourceStats(
 	}
 	log.Debugf("ip: %s", ip)
 
-	id, err := getContainerID()
+	id := os.Getenv("MY_CONTAINER_ID")
 	if err != nil {
 		id = "unknown"
 	}
@@ -111,40 +112,4 @@ func getMemoryUsage(id string) (usage float64, err error) {
 
 	usage = (float64(memStat.MemUsageInBytes) / float64(memStat.MemLimitInBytes)) * 100.0
 	return usage, nil
-}
-
-func getContainerID() (string, error) {
-	file, err := file.ReadFile(procCgroupPath)
-	if err != nil {
-		return "", err
-	}
-
-	content := string(file)
-	lines := strings.Split(content, "\n")
-
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-
-		parts := strings.Split(line, "/")
-
-		if len(parts) >= 3 {
-			containerID := parts[2]
-			if len(containerID) == 64 {
-				isHex := true
-				for _, c := range containerID {
-					if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
-						isHex = false
-						break
-					}
-				}
-				if isHex {
-					return containerID, nil
-				}
-			}
-		}
-	}
-	return "", errors.New("no container ID found")
 }
