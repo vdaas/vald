@@ -390,6 +390,7 @@ require (
 	github.com/quasilyte/go-ruleguard/dsl v0.3.22
 	github.com/quic-go/quic-go v0.54.0
 	github.com/scylladb/gocqlx v0.0.0-00010101000000-000000000000
+	github.com/shirou/gopsutil/v4 v4.25.8
 	github.com/stretchr/testify v1.11.1
 	github.com/unum-cloud/usearch/golang v0.0.0-20250711183149-bda207cca92e
 	github.com/zeebo/xxh3 v1.0.2
@@ -579,6 +580,7 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dsnet/compress v0.0.2-0.20230904184137-39efe44ab707 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/ebitengine/purego v0.8.4 // indirect
 	github.com/elliotchance/phpserialize v1.4.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.12.1 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
@@ -611,6 +613,7 @@ require (
 	github.com/go-jose/go-jose/v4 v4.1.1 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-openapi/jsonpointer v0.22.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
@@ -697,6 +700,7 @@ require (
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
 	github.com/lmittmann/tint v1.0.7 // indirect
+	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect
 	github.com/masahiro331/go-mvn-version v0.0.0-20210429150710-d3157d602a08 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
@@ -757,6 +761,7 @@ require (
 	github.com/pkg/profile v1.7.0 // indirect
 	github.com/pkg/xattr v0.4.9 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
+	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	github.com/prometheus/client_golang v1.22.0 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.66.1 // indirect
@@ -806,6 +811,8 @@ require (
 	github.com/sylabs/squashfs v1.0.6 // indirect
 	github.com/tetratelabs/wazero v1.9.0 // indirect
 	github.com/therootcompany/xz v1.0.1 // indirect
+	github.com/tklauser/go-sysconf v0.3.15 // indirect
+	github.com/tklauser/numcpus v0.10.0 // indirect
 	github.com/ulikunitz/xz v0.5.12 // indirect
 	github.com/vbatts/go-mtree v0.5.4 // indirect
 	github.com/vbatts/tar-split v0.12.1 // indirect
@@ -823,6 +830,7 @@ require (
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
+	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	github.com/zclconf/go-cty v1.14.0 // indirect
 	github.com/zeebo/errs v1.4.0 // indirect
 	go.lsp.dev/jsonrpc2 v0.10.0 // indirect

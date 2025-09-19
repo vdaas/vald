@@ -427,14 +427,17 @@ feat: automatically resolve go.mod & go.sum conflicts in backport workflow [#298
 ## Summary by CodeRabbit
 
 - **New Features**
+
   - Added several new contributors to the project, enhancing community involvement.
   - Introduced a new configuration file for spell checking, improving documentation quality.
   - Expanded the project with new configuration files, documentation, and source code for enhanced functionality.
 
 - **Bug Fixes**
+
   - Updated version information in issue templates for accuracy.
 
 - **Documentation**
+
   - Improved clarity in the pull request template and updated version information.
 
 - **Chores**
@@ -508,6 +511,7 @@ feat: automatically resolve go.mod & go.sum conflicts in backport workflow [#298
 ### [Bugfix]
 
 - **General Fixes**
+
   1. Fix index correction process [#2565](https://github.com/vdaas/vald/pull/2565) ([#2566](https://github.com/vdaas/vald/pull/2566))
   2. libquadmath is not available on ARM [#2559](https://github.com/vdaas/vald/pull/2559)
   3. fix: add checkout option [#2545](https://github.com/vdaas/vald/pull/2545) ([#2546](https://github.com/vdaas/vald/pull/2546))
@@ -519,10 +523,12 @@ feat: automatically resolve go.mod & go.sum conflicts in backport workflow [#298
   9. Fix the logic to determine docker image [#2410](https://github.com/vdaas/vald/pull/2410) ([#2420](https://github.com/vdaas/vald/pull/2420))
 
 - **Backport and Release-Related**
+
   1. Fix workflow trigger for backport pr creation [#2471](https://github.com/vdaas/vald/pull/2471) ([#2472](https://github.com/vdaas/vald/pull/2472))
   2. Fix output settings to determine-docker-image-tag action and release branch build tag name [#2423](https://github.com/vdaas/vald/pull/2423) ([#2425](https://github.com/vdaas/vald/pull/2425))
 
 - **E2E and Index**
+
   1. Fix e2e for read replica and add e2e for index operator [#2455](https://github.com/vdaas/vald/pull/2455) ([#2459](https://github.com/vdaas/vald/pull/2459))
   2. Fix index job logic to pass DNS A record [#2438](https://github.com/vdaas/vald/pull/2438) ([#2448](https://github.com/vdaas/vald/pull/2448))
 
@@ -533,17 +539,20 @@ feat: automatically resolve go.mod & go.sum conflicts in backport workflow [#298
 ### [Enhancement]
 
 - **General Improvements**
+
   1. Update dependencies, C++ standard, and improve Dockerfiles for better build systems and localization [#2549](https://github.com/vdaas/vald/pull/2549) ([#2557](https://github.com/vdaas/vald/pull/2557))
   2. Implement ngt Statistics API [#2539](https://github.com/vdaas/vald/pull/2539) ([#2547](https://github.com/vdaas/vald/pull/2547))
   3. refactor index manager service add index service API to expose index informations [#2525](https://github.com/vdaas/vald/pull/2525) ([#2532](https://github.com/vdaas/vald/pull/2532))
 
 - **API and Logic Changes**
+
   1. Change default image tag from latest to nightly [#2516](https://github.com/vdaas/vald/pull/2516) ([#2518](https://github.com/vdaas/vald/pull/2518))
   2. update large top-K ratio handling logic [#2509](https://github.com/vdaas/vald/pull/2509) ([#2511](https://github.com/vdaas/vald/pull/2511))
   3. add inner product distance type for ngt [#2454](https://github.com/vdaas/vald/pull/2454) ([#2458](https://github.com/vdaas/vald/pull/2458))
   4. Implement index operator logic for read replica rotation [#2444](https://github.com/vdaas/vald/pull/2444) ([#2456](https://github.com/vdaas/vald/pull/2456))
 
 - **Performance and Optimization**
+
   1. update deps & add validation for Flush API when agent is Read Only [#2433](https://github.com/vdaas/vald/pull/2433) ([#2436](https://github.com/vdaas/vald/pull/2436))
   2. Add `index-operator` template implementation [#2375](https://github.com/vdaas/vald/pull/2375) ([#2424](https://github.com/vdaas/vald/pull/2424))
 
