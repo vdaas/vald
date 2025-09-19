@@ -18,14 +18,11 @@ package stats
 
 import (
 	"context"
-	"errors"
 	"os"
-	"strings"
 
 	"github.com/shirou/gopsutil/v4/docker"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	statspb "github.com/vdaas/vald/apis/grpc/v1/rpc/stats"
-	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
