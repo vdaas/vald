@@ -1362,15 +1362,34 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Index".into(
         pub name: ::prost::alloc::string::String,
         #[prost(string, tag="2")]
         pub ip: ::prost::alloc::string::String,
-        #[prost(double, tag="3")]
-        pub cpu_usage: f64,
-        #[prost(double, tag="4")]
-        pub memory_usage: f64,
+        /// Container resource usage statistics
+        #[prost(message, optional, tag="3")]
+        pub cgroup_stats: ::core::option::Option<CgroupStats>,
     }
 impl ::prost::Name for ResourceStats {
 const NAME: &'static str = "ResourceStats";
 const PACKAGE: &'static str = "payload.v1";
 fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.ResourceStats".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.ResourceStats".into() }}
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+    pub struct CgroupStats {
+        /// CPU cores available
+        #[prost(double, tag="1")]
+        pub cpu_limit: f64,
+        /// CPU usage in cores (not percentage)
+        #[prost(double, tag="2")]
+        pub cpu_usage: f64,
+        /// Memory limit in bytes
+        #[prost(uint64, tag="3")]
+        pub memory_limit_bytes: u64,
+        /// Memory usage in bytes
+        #[prost(uint64, tag="4")]
+        pub memory_usage_bytes: u64,
+    }
+impl ::prost::Name for CgroupStats {
+const NAME: &'static str = "CgroupStats";
+const PACKAGE: &'static str = "payload.v1";
+fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.CgroupStats".into() }fn type_url() -> ::prost::alloc::string::String { "/payload.v1.Info.CgroupStats".into() }}
     /// Represent the pod information message.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]

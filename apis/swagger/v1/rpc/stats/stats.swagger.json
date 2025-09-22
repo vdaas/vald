@@ -35,6 +35,31 @@
     }
   },
   "definitions": {
+    "InfoCgroupStats": {
+      "type": "object",
+      "properties": {
+        "cpuLimit": {
+          "type": "number",
+          "format": "double",
+          "title": "CPU cores available"
+        },
+        "cpuUsage": {
+          "type": "number",
+          "format": "double",
+          "title": "CPU usage in cores (not percentage)"
+        },
+        "memoryLimitBytes": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Memory limit in bytes"
+        },
+        "memoryUsageBytes": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Memory usage in bytes"
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -78,13 +103,9 @@
         "ip": {
           "type": "string"
         },
-        "cpuUsage": {
-          "type": "number",
-          "format": "double"
-        },
-        "memoryUsage": {
-          "type": "number",
-          "format": "double"
+        "cgroupStats": {
+          "$ref": "#/definitions/InfoCgroupStats",
+          "title": "Container resource usage statistics"
         }
       },
       "title": "Represent the resource stats"

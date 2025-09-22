@@ -149,10 +149,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            - name: MY_CONTAINER_ID
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.containerStatuses[0].containerID
           volumeMounts:
             - name: vald-agent-config
               mountPath: /etc/server/

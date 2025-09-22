@@ -20,6 +20,7 @@
   - [Info.Annotations](#payload-v1-Info-Annotations)
   - [Info.Annotations.AnnotationsEntry](#payload-v1-Info-Annotations-AnnotationsEntry)
   - [Info.CPU](#payload-v1-Info-CPU)
+  - [Info.CgroupStats](#payload-v1-Info-CgroupStats)
   - [Info.IPs](#payload-v1-Info-IPs)
   - [Info.Index](#payload-v1-Info-Index)
   - [Info.Index.Count](#payload-v1-Info-Index-Count)
@@ -282,6 +283,17 @@ Represent the CPU information message.
 | limit   | [double](#double) |       | The CPU resource limit.     |
 | request | [double](#double) |       | The CPU resource requested. |
 | usage   | [double](#double) |       | The CPU usage.              |
+
+<a name="payload-v1-Info-CgroupStats"></a>
+
+### Info.CgroupStats
+
+| Field              | Type              | Label | Description                         |
+| ------------------ | ----------------- | ----- | ----------------------------------- |
+| cpu_limit          | [double](#double) |       | CPU cores available                 |
+| cpu_usage          | [double](#double) |       | CPU usage in cores (not percentage) |
+| memory_limit_bytes | [uint64](#uint64) |       | Memory limit in bytes               |
+| memory_usage_bytes | [uint64](#uint64) |       | Memory usage in bytes               |
 
 <a name="payload-v1-Info-IPs"></a>
 
@@ -570,12 +582,11 @@ Represent the multiple pod information message.
 
 Represent the resource stats
 
-| Field        | Type              | Label | Description |
-| ------------ | ----------------- | ----- | ----------- |
-| name         | [string](#string) |       |             |
-| ip           | [string](#string) |       |             |
-| cpu_usage    | [double](#double) |       |             |
-| memory_usage | [double](#double) |       |             |
+| Field        | Type                                             | Label | Description                         |
+| ------------ | ------------------------------------------------ | ----- | ----------------------------------- |
+| name         | [string](#string)                                |       |                                     |
+| ip           | [string](#string)                                |       |                                     |
+| cgroup_stats | [Info.CgroupStats](#payload-v1-Info-CgroupStats) |       | Container resource usage statistics |
 
 <a name="payload-v1-Info-Service"></a>
 
