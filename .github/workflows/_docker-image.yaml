@@ -64,6 +64,9 @@ jobs:
           else
             echo ref=${{ github.sha }} >> $GITHUB_OUTPUT
           fi
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.ref.outputs.ref }}
       - name: prepare
         id: prepare
         uses: ./.github/actions/prepare-docker-build
@@ -133,6 +136,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: prepare
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.ref }}
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
