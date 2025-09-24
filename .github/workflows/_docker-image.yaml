@@ -110,6 +110,9 @@ jobs:
         uses: ./.github/actions/scan-docker-image
         with:
           image_ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}"
+    outputs:
+      primary_tag: ${{ steps.build_and_publish.outputs.PRIMARY_TAG }}
+      secondary_tags: ${{ steps.build_and_publish.outputs.SECONDARY_TAGS }}
   merge:
     runs-on: ubuntu-latest
     needs: build
@@ -141,7 +144,8 @@ jobs:
           target: ${{ inputs.target }}
           builder: ${{ steps.buildx.outputs.name }}
           archs: "arm64 amd64"
-          primary_tag: 
+          primary_tag: ${{ needs.build.outputs.PRIMARY_TAG }}
+          secondary_tags: ${{ needs.build.outputs.SECONDARY_TAGS }}
   slack:
     runs-on: ubuntu-latest
     needs: [build]
