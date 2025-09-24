@@ -71,9 +71,9 @@ runs:
         echo "EXTRA_TAGS=${extra_tags}" >> $GITHUB_OUTPUT
       env:
         ARCH: $${ steps.determine_build_platform.outputs.ARCH }
-        IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
-        ALTER_IMAGE_NAME: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
-        SECONDARY_TAGS: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
+        IMAGE_NAME: ${{ inputs.image_name }}
+        ALTER_IMAGE_NAME: ${{ inputs.alter_image_name }}
+        SECONDARY_TAGS: ${{ inputs.secondary_tags }}
     - name: Build and Push
       shell: bash
       id: build_and_push
@@ -97,5 +97,5 @@ runs:
         ARCH: ${{ steps.determine_build_platform.outputs.ARCH }}
         BUILDER: ${{ inputs.builder }}
         LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.sha }}"
-        PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+        PRIMARY_TAG: ${{ inputs.primary_tag }}
         EXTRA_TAGS: ${{ steps.add_extra_tags.outputs.EXTRA_TAGS }}

@@ -126,7 +126,7 @@ jobs:
           image_name: ${{ needs.prepare.outputs.image_name }}
           alter_image_name: ${{ needs.prepare.outputs.alter_image_name }}
           primary_tag: ${{ needs.prepare.outputs.primary_tag }}
-          secondary_tag: ${{ needs.prepare.outputs.secondary_tags }}
+          secondary_tags: ${{ needs.prepare.outputs.secondary_tags }}
       - name: Scan the Docker image
         if: startsWith(github.ref, 'refs/tags/')
         uses: ./.github/actions/scan-docker-image
