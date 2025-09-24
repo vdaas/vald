@@ -73,8 +73,10 @@ FaissStruct* faiss_create_index_ivfpq(
     switch (metric_type) {
       case faiss::METRIC_INNER_PRODUCT:
         quantizer = new faiss::IndexFlat(d, faiss::METRIC_INNER_PRODUCT);
+        break;
       case faiss::METRIC_L2:
         quantizer = new faiss::IndexFlat(d, faiss::METRIC_L2);
+        break;
       default:
         std::stringstream ss;
         ss << "Capi : " << __FUNCTION__ << "() : Error: no metric type.";
