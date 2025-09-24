@@ -73,7 +73,9 @@ runs:
       run: |
         arch=$(make docker/darch)
         platform=$(make docker/platform)
+        echo "ARCH is determined: ${arch}"
         echo "ARCH=${arch}" >> $GITHUB_OUTPUT
+        echo "PLATFORM is determined: ${platform}"
         echo "PLATFORM=${platform}" >> $GITHUB_OUTPUT
     - name: Add extra tags
       shell: bash
