@@ -39,28 +39,6 @@ jobs:
       - uses: ./.github/actions/dump-context
   prepare:
     runs-on: ubuntu-latest
-    steps:
-      - name: prepare
-        id: prepare
-        uses: ./.github/actions/prepare-docker-build
-        with:
-          target: ${{ inputs.target }}
-    outputs:
-      image_name: ${{ steps.prepare.outputs.IMAGE_NAME }}
-      alter_image_name: ${{ steps.prepare.outputs.ALTER_IMAGE_NAME }}
-      primary_tag: ${{ steps.prepare.outputs.PRIMARY_TAG }}
-      secondary_tags: ${{ steps.prepare.outputs.SECONDARY_TAGS }}
-  build:
-    needs: prepare
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: amd64
-            runs-on: ubuntu-latest
-          - arch: arm64
-            runs-on: ubuntu-24.04-arm
-    runs-on: ${{ matrix.runs-on }}
     if: >-
       ${{
         (github.event_name == 'pull_request' &&
@@ -86,9 +64,32 @@ jobs:
           else
             echo ref=${{ github.sha }} >> $GITHUB_OUTPUT
           fi
+      - name: prepare
+        id: prepare
+        uses: ./.github/actions/prepare-docker-build
+        with:
+          target: ${{ inputs.target }}
+    outputs:
+      ref: ${{ steps.ref.outputs.ref }}
+      image_name: ${{ steps.prepare.outputs.IMAGE_NAME }}
+      alter_image_name: ${{ steps.prepare.outputs.ALTER_IMAGE_NAME }}
+      primary_tag: ${{ steps.prepare.outputs.PRIMARY_TAG }}
+      secondary_tags: ${{ steps.prepare.outputs.SECONDARY_TAGS }}
+  build:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runs-on: ubuntu-latest
+          - arch: arm64
+            runs-on: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runs-on }}
+    steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ steps.ref.outputs.ref }}
+          ref: ${{ needs.prepare.outputs.ref }}
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
@@ -127,7 +128,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: ./.github/actions/scan-docker-image
         with:
-          image_ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}"
+          image_ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ matrix.arch }}"
   merge:
     runs-on: ubuntu-latest
     needs: prepare

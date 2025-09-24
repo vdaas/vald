@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: "Build Docker images"
-description: "An action to build Docker images and publish them"
+name: "Prepare build Docker images"
+description: "An action to prepare build Docker images"
 inputs:
   target:
     description: "Build target"
