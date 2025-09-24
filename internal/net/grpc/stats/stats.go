@@ -81,13 +81,11 @@ func (s *server) ResourceStats(
 	if err != nil {
 		hostname = "unknown"
 	}
-	log.Debugf("hostname: %s", hostname)
 
 	ip := net.LoadLocalIP()
 	if ip == "" {
 		ip = "unknown"
 	}
-	log.Debugf("ip: %s", ip)
 
 	cgroupStats, err := measureCgroupStats()
 	if err != nil {
@@ -103,9 +101,8 @@ func (s *server) ResourceStats(
 			},
 		}
 		err = nil
-		return
+		return stats, err
 	}
-	log.Debugf("cgroupStats: %+v", cgroupStats)
 
 	stats = &payload.Info_ResourceStats{
 		Name: hostname,
