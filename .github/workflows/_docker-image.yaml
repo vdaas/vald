@@ -134,7 +134,7 @@ jobs:
           image_ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ matrix.arch }}"
   merge:
     runs-on: ubuntu-latest
-    needs: prepare
+    needs: [build, prepare]
     steps:
       - uses: actions/checkout@v4
         with:
