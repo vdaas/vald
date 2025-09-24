@@ -24,10 +24,6 @@ inputs:
     description: "Buildx builder name"
     required: true
     default: ""
-  platforms:
-    description: "If it is specified, specified platforms will be used."
-    required: false
-    default: ""
 outputs:
   IMAGE_NAME:
     description: "Image name"
@@ -38,6 +34,9 @@ outputs:
   PRIMARY_TAG:
     description: "Primary tag"
     value: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+  SECONDARY_TAGS:
+    description: "Secondary tags"
+    value: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
   PLATFORMS:
     description: "Target platforms"
     value: ${{ steps.determine_platforms.outputs.PLATFORMS }}
@@ -63,45 +62,32 @@ runs:
     - name: Determine tag name
       id: determine_tag_name
       uses: ./.github/actions/determine-docker-image-tag
-    - name: Determine platforms
-      shell: bash
-      id: determine_platforms
-      run: |
-        if [ "${TARGET_PLATFORMS}" = "" ]; then
-          if [[ "$GITHUB_REF" =~ ^refs/heads/main$ ]] || [[ "$GITHUB_REF" =~ ^refs/heads/master$ ]] || [[ "$GITHUB_REF" =~ ^refs/heads/release.* ]] || [[ "${PRIMARY_TAG}" == "nightly" ]]; then
-            platforms=`make docker/platforms`
-          elif [ "${{ github.event_name }}" = "pull_request" ]; then
-            platforms="linux/amd64"
-          elif [ "${{ github.event_name }}" = "pull_request_target" ]; then
-            platforms="linux/amd64"
-          else
-            platforms=`make docker/platforms`
-          fi
-        else
-          platforms="${TARGET_PLATFORMS}"
-        fi
-        echo "PLATFORMS is determined: ${platforms}"
-        echo "PLATFORMS=${platforms}" >> $GITHUB_OUTPUT
-      env:
-        TARGET_PLATFORMS: ${{ inputs.platforms }}
-        PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
     - name: Update Vald version
       shell: bash
       run: echo "${PRIMARY_TAG}" > versions/VALD_VERSION
       env:
         PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+    - name: Determine build platform
+      shell: bash
+      id: determine_build_platform
+      run: |
+        arch=$(make docker/darch)
+        platform=$(make docker/platform)
+        echo "ARCH=${arch}" >> $GITHUB_OUTPUT
+        echo "PLATFORM=${platform}" >> $GITHUB_OUTPUT
     - name: Add extra tags
       shell: bash
       id: add_extra_tags
       run: |
         if [[ "${{ github.event_name }}" != "pull_request" && "${{ github.event_name }}" != "pull_request_target" ]]; then
           for tag in ${SECONDARY_TAGS}; do
-            extra_tags="${extra_tags} -t ${IMAGE_NAME}:${tag} -t ${ALTER_IMAGE_NAME}:${tag}"
+            extra_tags="${extra_tags} -t ${IMAGE_NAME}:${tag}-${ARCH} -t ${ALTER_IMAGE_NAME}:${tag}-${ARCH}"
           done
         fi
         echo "EXTRA_TAGS is determined: ${extra_tags}"
         echo "EXTRA_TAGS=${extra_tags}" >> $GITHUB_OUTPUT
       env:
+        ARCH: $${ steps.determine_build_platform.outputs.ARCH }
         IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
         ALTER_IMAGE_NAME: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
         SECONDARY_TAGS: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
@@ -113,18 +99,18 @@ runs:
           REMOTE="true" \
           DOCKER="docker" \
           BUILDKIT_INLINE_CACHE=0 \
-          DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${LABEL_OPTS} \
-          --label org.opencontainers.image.version=${PRIMARY_TAG} \
+          DOCKER_OPTS="--platform ${PLATFORM} --builder ${BUILDER} ${LABEL_OPTS} \
+          --label org.opencontainers.image.version=${PRIMARY_TAG}-${ARCH} \
           --label org.opencontainers.image.title=${TARGET} \
           --label org.opencontainers.image.created=\"$(date --rfc-3339=ns)\" \
-          --label org.opencontainers.image.licenses=\"Apache 2.0\"" \
+          --label org.opencontainers.image.licenses=\"Apache 2.0\" \
           EXTRA_ARGS="${EXTRA_TAGS}" \
-          TAG="${PRIMARY_TAG}" \
+          TAG="${PRIMARY_TAG}-${ARCH}" \
           docker/build/${TARGET}
       env:
-        TARGET: ${{ inputs.target }}
-        DOCKER_BUILDKIT: "1"
-        PLATFORMS: ${{ steps.determine_platforms.outputs.PLATFORMS }}
+        TARGET: ${{ input.target }}
+        ARCH: ${{ steps.determine_build_platform.outputs.ARCH }}
+        PLATFORM: ${{ steps.determine_build_platform.outputs.PLATFORM }}
         BUILDER: ${{ inputs.builder }}
         LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.sha }}"
         PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}

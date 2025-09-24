@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+DOCKER_MANIFEST_DIR := $(TEMP_DIR)/manifest
+
 .PHONY: docker/build
 ## build all docker images
 docker/build: \
@@ -86,6 +89,14 @@ docker/name/org/alter:
 docker/platforms:
 	@echo "linux/amd64,linux/arm64"
 
+.PHONY: docker/darch
+docker/darch:
+	@echo $(subst x86_64,amd64,$(subst aarch64,arm64,$(ARCH)))
+
+.PHONY: docker/platform
+docker/platform:
+	@echo linux/$(shell $(MAKE) -s docker/darch)
+
 .PHONY: docker/build/image
 ## Generalized docker build function
 docker/build/image:
@@ -121,6 +132,28 @@ else
 		-t $(GHCRORG)/$(IMAGE):$(TAG) \
 		-f $(DOCKERFILE) $(ROOTDIR)
 endif
+
+.PHONY: docker/create/manifest
+docker/create/manifest:
+	$(eval org ?= $(CRORG))
+	$(eval images := $(foreach arch,$(ARCHS),$(org)/$(IMAGE):$(TAG)-$(arch)))
+	@echo docker buildx imagetools create \
+		-t $(org)/$(IMAGE):$(TAG) \
+		$(images) \
+		$(EXTRA_IMAGES)
+
+.PHONY: docker/create/manifest/alter
+docker/create/manifest/alter:
+	@make ORG=$(GHCRORG) docker/create/manifest
+
+.PHONY: docker/inspect/image
+docker/inspect/image:
+	$(eval org ?= $(CRORG))
+	@echo docker buildx imagetools inspect $(org)/$(IMAGE):$(TAG)
+
+.PHONY: docker/inspect/image/alter
+docker/inspect/image/alter:
+	@make ORG=$(GHCRORG) docker/inspect/image
 
 .PHONY: docker/name/agent-ngt
 docker/name/agent-ngt:
