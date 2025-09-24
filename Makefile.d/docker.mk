@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 
-DOCKER_MANIFEST_DIR := $(TEMP_DIR)/manifest
-
 .PHONY: docker/build
 ## build all docker images
 docker/build: \
