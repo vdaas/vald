@@ -108,7 +108,7 @@ runs:
           TAG="${PRIMARY_TAG}-${ARCH}" \
           docker/build/${TARGET}
       env:
-        TARGET: ${{ input.target }}
+        TARGET: ${{ inputs.target }}
         ARCH: ${{ steps.determine_build_platform.outputs.ARCH }}
         PLATFORM: ${{ steps.determine_build_platform.outputs.PLATFORM }}
         BUILDER: ${{ inputs.builder }}
