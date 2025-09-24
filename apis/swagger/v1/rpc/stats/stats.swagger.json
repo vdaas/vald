@@ -38,12 +38,12 @@
     "InfoCgroupStats": {
       "type": "object",
       "properties": {
-        "cpuLimit": {
+        "cpuLimitCores": {
           "type": "number",
           "format": "double",
           "title": "CPU cores available"
         },
-        "cpuUsage": {
+        "cpuUsageCores": {
           "type": "number",
           "format": "double",
           "title": "CPU usage in cores (not percentage)"

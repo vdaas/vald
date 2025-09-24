@@ -290,8 +290,8 @@ Represent the CPU information message.
 
 | Field              | Type              | Label | Description                         |
 | ------------------ | ----------------- | ----- | ----------------------------------- |
-| cpu_limit          | [double](#double) |       | CPU cores available                 |
-| cpu_usage          | [double](#double) |       | CPU usage in cores (not percentage) |
+| cpu_limit_cores    | [double](#double) |       | CPU cores available                 |
+| cpu_usage_cores    | [double](#double) |       | CPU usage in cores (not percentage) |
 | memory_limit_bytes | [uint64](#uint64) |       | Memory limit in bytes               |
 | memory_usage_bytes | [uint64](#uint64) |       | Memory usage in bytes               |
 

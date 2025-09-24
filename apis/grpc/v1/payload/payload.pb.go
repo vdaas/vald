@@ -3958,9 +3958,9 @@ func (x *Info_ResourceStats) GetCgroupStats() *Info_CgroupStats {
 type Info_CgroupStats struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// CPU cores available
-	CpuLimit float64 `                   protobuf:"fixed64,1,opt,name=cpu_limit,json=cpuLimit,proto3"                 json:"cpu_limit,omitempty"`
+	CpuLimitCores float64 `                   protobuf:"fixed64,1,opt,name=cpu_limit_cores,json=cpuLimitCores,proto3"      json:"cpu_limit_cores,omitempty"`
 	// CPU usage in cores (not percentage)
-	CpuUsage float64 `                   protobuf:"fixed64,2,opt,name=cpu_usage,json=cpuUsage,proto3"                 json:"cpu_usage,omitempty"`
+	CpuUsageCores float64 `                   protobuf:"fixed64,2,opt,name=cpu_usage_cores,json=cpuUsageCores,proto3"      json:"cpu_usage_cores,omitempty"`
 	// Memory limit in bytes
 	MemoryLimitBytes uint64 `                   protobuf:"varint,3,opt,name=memory_limit_bytes,json=memoryLimitBytes,proto3" json:"memory_limit_bytes,omitempty"`
 	// Memory usage in bytes
@@ -3999,16 +3999,16 @@ func (*Info_CgroupStats) Descriptor() ([]byte, []int) {
 	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 2}
 }
 
-func (x *Info_CgroupStats) GetCpuLimit() float64 {
+func (x *Info_CgroupStats) GetCpuLimitCores() float64 {
 	if x != nil {
-		return x.CpuLimit
+		return x.CpuLimitCores
 	}
 	return 0
 }
 
-func (x *Info_CgroupStats) GetCpuUsage() float64 {
+func (x *Info_CgroupStats) GetCpuUsageCores() float64 {
 	if x != nil {
-		return x.CpuUsage
+		return x.CpuUsageCores
 	}
 	return 0
 }
@@ -6182,7 +6182,7 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"\aRequest\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12\x1c\n" +
 	"\tnamespace\x18\x02 \x01(\tR\tnamespace\x12\x12\n" +
-	"\x04node\x18\x03 \x01(\tR\x04node\"\xe7-\n" +
+	"\x04node\x18\x03 \x01(\tR\x04node\"\xfd-\n" +
 	"\x04Info\x1a\x80 \n" +
 	"\x05Index\x1au\n" +
 	"\x05Count\x12\x16\n" +
@@ -6294,10 +6294,10 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"\rResourceStats\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x17\n" +
 	"\x02ip\x18\x02 \x01(\tB\a\xbaH\x04r\x02x\x01R\x02ip\x12?\n" +
-	"\fcgroup_stats\x18\x03 \x01(\v2\x1c.payload.v1.Info.CgroupStatsR\vcgroupStats\x1a\xa3\x01\n" +
-	"\vCgroupStats\x12\x1b\n" +
-	"\tcpu_limit\x18\x01 \x01(\x01R\bcpuLimit\x12\x1b\n" +
-	"\tcpu_usage\x18\x02 \x01(\x01R\bcpuUsage\x12,\n" +
+	"\fcgroup_stats\x18\x03 \x01(\v2\x1c.payload.v1.Info.CgroupStatsR\vcgroupStats\x1a\xb9\x01\n" +
+	"\vCgroupStats\x12&\n" +
+	"\x0fcpu_limit_cores\x18\x01 \x01(\x01R\rcpuLimitCores\x12&\n" +
+	"\x0fcpu_usage_cores\x18\x02 \x01(\x01R\rcpuUsageCores\x12,\n" +
 	"\x12memory_limit_bytes\x18\x03 \x01(\x04R\x10memoryLimitBytes\x12,\n" +
 	"\x12memory_usage_bytes\x18\x04 \x01(\x04R\x10memoryUsageBytes\x1a\xef\x01\n" +
 	"\x03Pod\x12\x19\n" +
@@ -6496,6 +6496,7 @@ var (
 		(*anypb.Any)(nil),                   // 107: google.protobuf.Any
 	}
 )
+
 var file_v1_payload_payload_proto_depIdxs = []int32{
 	22,  // 0: payload.v1.Search.Request.config:type_name -> payload.v1.Search.Config
 	16,  // 1: payload.v1.Search.MultiRequest.requests:type_name -> payload.v1.Search.Request

@@ -658,9 +658,9 @@ message Info {
 
   message CgroupStats {
     // CPU cores available
-    double cpu_limit = 1;
+    double cpu_limit_cores = 1;
     // CPU usage in cores (not percentage)
-    double cpu_usage = 2;
+    double cpu_usage_cores = 2;
     // Memory limit in bytes
     uint64 memory_limit_bytes = 3;
     // Memory usage in bytes

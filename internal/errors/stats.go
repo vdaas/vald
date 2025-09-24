@@ -51,4 +51,79 @@ var (
 	ErrVmRSSParseFailed = func(err error) error {
 		return Wrap(err, "failed to parse VmRSS")
 	}
+
+	// ErrCgroupModeDetectionFailed represents a function to generate an error that cgroup mode detection failed.
+	ErrCgroupModeDetectionFailed = func() error {
+		return New("unable to detect cgroups mode")
+	}
+
+	// ErrCgroupFirstSampleFailed represents a function to generate an error that the first cgroup sample failed.
+	ErrCgroupFirstSampleFailed = func(err error) error {
+		return Wrap(err, "failed to get first sample")
+	}
+
+	// ErrCgroupSecondSampleFailed represents a function to generate an error that the second cgroup sample failed.
+	ErrCgroupSecondSampleFailed = func(err error) error {
+		return Wrap(err, "failed to get second sample")
+	}
+
+	// ErrCgroupV2MemoryCurrentRead represents a function to generate an error that reading memory.current failed.
+	ErrCgroupV2MemoryCurrentRead = func(err error) error {
+		return Wrap(err, "v2 read memory.current")
+	}
+
+	// ErrCgroupV2MemoryCurrentParse represents a function to generate an error that parsing memory.current failed.
+	ErrCgroupV2MemoryCurrentParse = func(err error) error {
+		return Wrap(err, "v2 parse memory.current")
+	}
+
+	// ErrCgroupV2MemoryMaxRead represents a function to generate an error that reading memory.max failed.
+	ErrCgroupV2MemoryMaxRead = func(err error) error {
+		return Wrap(err, "v2 read memory.max")
+	}
+
+	// ErrCgroupV2MemoryMaxParse represents a function to generate an error that parsing memory.max failed.
+	ErrCgroupV2MemoryMaxParse = func(err error) error {
+		return Wrap(err, "v2 parse memory.max")
+	}
+
+	// ErrCgroupV2CPUStatRead represents a function to generate an error that reading cpu.stat failed.
+	ErrCgroupV2CPUStatRead = func(err error) error {
+		return Wrap(err, "v2 read cpu.stat")
+	}
+
+	// ErrCgroupV2CPUStatMissingUsage represents a function to generate an error that cpu.stat is missing usage_usec.
+	ErrCgroupV2CPUStatMissingUsage = func() error {
+		return New("v2 cpu.stat missing usage_usec")
+	}
+
+	// ErrCgroupV2CPUMaxRead represents a function to generate an error that reading cpu.max failed.
+	ErrCgroupV2CPUMaxRead = func(err error) error {
+		return Wrap(err, "v2 read cpu.max")
+	}
+
+	// ErrCgroupV2CPUMaxMalformed represents a function to generate an error that cpu.max is malformed.
+	ErrCgroupV2CPUMaxMalformed = func(val string) error {
+		return Errorf("v2 cpu.max malformed: %q", val)
+	}
+
+	// ErrCgroupV2CPUMaxParseQuota represents a function to generate an error that parsing cpu.max quota failed.
+	ErrCgroupV2CPUMaxParseQuota = func(err error) error {
+		return Wrap(err, "v2 cpu.max parse quota")
+	}
+
+	// ErrCgroupV2CPUMaxParsePeriod represents a function to generate an error that parsing cpu.max period failed.
+	ErrCgroupV2CPUMaxParsePeriod = func(err error) error {
+		return Wrap(err, "v2 cpu.max parse period")
+	}
+
+	// ErrCgroupV1MemoryUsageReadFailed represents a function to generate an error that reading memory usage failed.
+	ErrCgroupV1MemoryUsageReadFailed = func(err error) error {
+		return Wrap(err, "v1 memory usage read failed")
+	}
+
+	// ErrCgroupV1CPUUsageReadFailed represents a function to generate an error that reading CPU usage failed.
+	ErrCgroupV1CPUUsageReadFailed = func(err error) error {
+		return Wrap(err, "v1 cpuacct.usage read failed")
+	}
 )

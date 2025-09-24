@@ -1768,8 +1768,8 @@ func (m *Info_CgroupStats) CloneVT() *Info_CgroupStats {
 		return (*Info_CgroupStats)(nil)
 	}
 	r := new(Info_CgroupStats)
-	r.CpuLimit = m.CpuLimit
-	r.CpuUsage = m.CpuUsage
+	r.CpuLimitCores = m.CpuLimitCores
+	r.CpuUsageCores = m.CpuUsageCores
 	r.MemoryLimitBytes = m.MemoryLimitBytes
 	r.MemoryUsageBytes = m.MemoryUsageBytes
 	if len(m.unknownFields) > 0 {
@@ -4760,10 +4760,10 @@ func (this *Info_CgroupStats) EqualVT(that *Info_CgroupStats) bool {
 	} else if this == nil || that == nil {
 		return false
 	}
-	if this.CpuLimit != that.CpuLimit {
+	if this.CpuLimitCores != that.CpuLimitCores {
 		return false
 	}
-	if this.CpuUsage != that.CpuUsage {
+	if this.CpuUsageCores != that.CpuUsageCores {
 		return false
 	}
 	if this.MemoryLimitBytes != that.MemoryLimitBytes {
@@ -9757,15 +9757,15 @@ func (m *Info_CgroupStats) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x18
 	}
-	if m.CpuUsage != 0 {
+	if m.CpuUsageCores != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.CpuUsage))))
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.CpuUsageCores))))
 		i--
 		dAtA[i] = 0x11
 	}
-	if m.CpuLimit != 0 {
+	if m.CpuLimitCores != 0 {
 		i -= 8
-		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.CpuLimit))))
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.CpuLimitCores))))
 		i--
 		dAtA[i] = 0x9
 	}
@@ -12488,10 +12488,10 @@ func (m *Info_CgroupStats) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if m.CpuLimit != 0 {
+	if m.CpuLimitCores != 0 {
 		n += 9
 	}
-	if m.CpuUsage != 0 {
+	if m.CpuUsageCores != 0 {
 		n += 9
 	}
 	if m.MemoryLimitBytes != 0 {
@@ -22520,7 +22520,7 @@ func (m *Info_CgroupStats) UnmarshalVT(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 1 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CpuLimit", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field CpuLimitCores", wireType)
 			}
 			var v uint64
 			if (iNdEx + 8) > l {
@@ -22528,10 +22528,10 @@ func (m *Info_CgroupStats) UnmarshalVT(dAtA []byte) error {
 			}
 			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
 			iNdEx += 8
-			m.CpuLimit = float64(math.Float64frombits(v))
+			m.CpuLimitCores = float64(math.Float64frombits(v))
 		case 2:
 			if wireType != 1 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CpuUsage", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field CpuUsageCores", wireType)
 			}
 			var v uint64
 			if (iNdEx + 8) > l {
@@ -22539,7 +22539,7 @@ func (m *Info_CgroupStats) UnmarshalVT(dAtA []byte) error {
 			}
 			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
 			iNdEx += 8
-			m.CpuUsage = float64(math.Float64frombits(v))
+			m.CpuUsageCores = float64(math.Float64frombits(v))
 		case 3:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field MemoryLimitBytes", wireType)

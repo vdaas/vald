@@ -1126,8 +1126,8 @@
 
 {{- define "_scheme:payload.v1.Info.CgroupStats" }}
   message Info.CgroupStats {
-    double cpu_limit = 1;
-    double cpu_usage = 2;
+    double cpu_limit_cores = 1;
+    double cpu_usage_cores = 2;
     uint64 memory_limit_bytes = 3;
     uint64 memory_usage_bytes = 4;
   }
@@ -1138,8 +1138,8 @@
 
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
-    | cpu_limit | double |  | CPU cores available |
-    | cpu_usage | double |  | CPU usage in cores (not percentage) |
+    | cpu_limit_cores | double |  | CPU cores available |
+    | cpu_usage_cores | double |  | CPU usage in cores (not percentage) |
     | memory_limit_bytes | uint64 |  | Memory limit in bytes |
     | memory_usage_bytes | uint64 |  | Memory usage in bytes |
 {{- end -}}

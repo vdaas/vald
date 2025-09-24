@@ -18,20 +18,17 @@ package stats
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"path/filepath"
-	"runtime"
 	"strconv"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	statspb "github.com/vdaas/vald/apis/grpc/v1/rpc/stats"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
-	ios "github.com/vdaas/vald/internal/os"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 )
 
@@ -44,25 +41,28 @@ const (
 	CGV2
 )
 
+const (
+	cgroupBasePath = "/sys/fs/cgroup"
+)
+
 // CgroupMetrics holds raw values directly read from cgroup files
 type CgroupMetrics struct {
 	Mode CgroupMode
 
 	// Raw values from cgroup files
 	MemUsageBytes uint64
-	MemLimitBytes uint64
+	MemLimitBytes uint64 // 0 means unlimited
 	CPUUsageNano  uint64
-	CPUQuotaUs    int64 // -1 means "max" / unlimited
-	CPUPeriodUs   int64 // 0 if unknown
+	CPUQuotaUs    uint64 // 0 means unlimited
+	CPUPeriodUs   uint64 // 0 if unknown
 }
 
 // CgroupStats holds calculated resource usage statistics ready for use
 type CgroupStats struct {
-	// Calculated values for protobuf (ready to use)
-	CpuLimit         float64 // CPU cores available
-	CpuUsage         float64 // CPU usage in cores (not percentage)
-	MemoryLimitBytes uint64  // Memory limit in bytes
-	MemoryUsageBytes uint64  // Memory usage in bytes
+	CpuLimitCores    float64
+	CpuUsageCores    float64
+	MemoryLimitBytes uint64
+	MemoryUsageBytes uint64
 }
 
 func Register(srv *grpc.Server) {
@@ -77,7 +77,7 @@ type server struct {
 func (s *server) ResourceStats(
 	ctx context.Context, _ *payload.Empty,
 ) (stats *payload.Info_ResourceStats, err error) {
-	hostname, err := ios.Hostname()
+	hostname, err := os.Hostname()
 	if err != nil {
 		hostname = "unknown"
 	}
@@ -96,8 +96,8 @@ func (s *server) ResourceStats(
 			Name: hostname,
 			Ip:   ip,
 			CgroupStats: &payload.Info_CgroupStats{
-				CpuLimit:         0,
-				CpuUsage:         0,
+				CpuLimitCores:    0,
+				CpuUsageCores:    0,
 				MemoryLimitBytes: 0,
 				MemoryUsageBytes: 0,
 			},
@@ -105,43 +105,45 @@ func (s *server) ResourceStats(
 		err = nil
 		return
 	}
+	log.Debugf("cgroupStats: %+v", cgroupStats)
 
 	stats = &payload.Info_ResourceStats{
 		Name: hostname,
 		Ip:   ip,
 		CgroupStats: &payload.Info_CgroupStats{
-			CpuLimit:         cgroupStats.CpuLimit,
-			CpuUsage:         cgroupStats.CpuUsage,
+			CpuLimitCores:    cgroupStats.CpuLimitCores,
+			CpuUsageCores:    cgroupStats.CpuUsageCores,
 			MemoryLimitBytes: cgroupStats.MemoryLimitBytes,
 			MemoryUsageBytes: cgroupStats.MemoryUsageBytes,
 		},
 	}
-	return
+
+	return stats, nil
 }
 
 // measureCgroupStats orchestrates the process of sampling and calculating cgroup statistics.
 func measureCgroupStats() (stats *CgroupStats, err error) {
-	// First sample
+	// First sample: Read initial metrics from cgroup files (includes cumulative CPU usage)
 	m1, err := readCgroupMetrics()
 	if err != nil {
-		err = fmt.Errorf("failed to get first sample: %w", err)
-		return
+		return nil, errors.ErrCgroupFirstSampleFailed(err)
 	}
 	t1 := time.Now()
 
+	// Wait 100ms to allow meaningful CPU usage accumulation
 	time.Sleep(100 * time.Millisecond)
 
-	// Second sample
+	// Second sample: Read metrics again to calculate CPU usage rate
 	m2, err := readCgroupMetrics()
 	if err != nil {
-		err = fmt.Errorf("failed to get second sample: %w", err)
-		return
+		return nil, errors.ErrCgroupSecondSampleFailed(err)
 	}
 	t2 := time.Now()
 
-	// Calculate final values from the two samples.
-	stats = calculateCgroupStats(m1, m2, t2.Sub(t1))
-	return
+	// Calculate CPU usage rate from cumulative values: (usage2 - usage1) / time_delta
+	stats = calculateCpuUsageCores(m1, m2, t2.Sub(t1))
+
+	return stats, nil
 }
 
 // readCgroupMetrics reads raw memory & CPU metrics depending on cgroup mode
@@ -153,18 +155,19 @@ func readCgroupMetrics() (metrics *CgroupMetrics, err error) {
 	case CGV1:
 		metrics, err = readCgroupV1Metrics()
 	default:
-		err = errors.New("unable to detect cgroups mode")
+		err = errors.ErrCgroupModeDetectionFailed()
 	}
-	return
+
+	return metrics, err
 }
 
 // detectCgroupMode inspects /sys/fs/cgroup to detect cgroups mode
 func detectCgroupMode() CgroupMode {
 	// cgroups v2 unified mount has cgroup.controllers
-	if file.Exists("/sys/fs/cgroup/cgroup.controllers") {
+	if file.Exists(file.Join(cgroupBasePath, "cgroup.controllers")) {
 		return CGV2
 	}
-	// Fallback: parse /proc/self/cgroup
+
 	data, err := file.ReadFile("/proc/self/cgroup")
 	if err != nil {
 		return Unknown
@@ -177,29 +180,25 @@ func detectCgroupMode() CgroupMode {
 			return CGV2
 		}
 	}
+
 	// If not v2, assume v1 on most distros
 	return CGV1
 }
 
 // readCgroupV2Metrics reads cgroups v2 raw metrics
 func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
-	base := "/sys/fs/cgroup"
-
-	data, err := file.ReadFile(filepath.Join(base, "memory.current"))
+	data, err := file.ReadFile(file.Join(cgroupBasePath, "memory.current"))
 	if err != nil {
-		err = fmt.Errorf("v2 read memory.current: %w", err)
-		return
+		return nil, errors.ErrCgroupV2MemoryCurrentRead(err)
 	}
 	memCur, err := strconv.ParseUint(strings.TrimSpace(string(data)), 10, 64)
 	if err != nil {
-		err = fmt.Errorf("v2 parse memory.current: %w", err)
-		return
+		return nil, errors.ErrCgroupV2MemoryCurrentParse(err)
 	}
 
-	data, err = file.ReadFile(filepath.Join(base, "memory.max"))
+	data, err = file.ReadFile(file.Join(cgroupBasePath, "memory.max"))
 	if err != nil {
-		err = fmt.Errorf("v2 read memory.max: %w", err)
-		return
+		return nil, errors.ErrCgroupV2MemoryMaxRead(err)
 	}
 	memMaxStr := strings.TrimSpace(string(data))
 	var memMax uint64
@@ -208,15 +207,13 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 	} else {
 		memMax, err = strconv.ParseUint(memMaxStr, 10, 64)
 		if err != nil {
-			err = fmt.Errorf("v2 parse memory.max: %w", err)
-			return
+			return nil, errors.ErrCgroupV2MemoryMaxParse(err)
 		}
 	}
 
-	data, err = file.ReadFile(filepath.Join(base, "cpu.stat"))
+	data, err = file.ReadFile(file.Join(cgroupBasePath, "cpu.stat"))
 	if err != nil {
-		err = fmt.Errorf("v2 read cpu.stat: %w", err)
-		return
+		return nil, errors.ErrCgroupV2CPUStatRead(err)
 	}
 	var usageUS uint64
 	lines := strings.Split(string(data), "\n")
@@ -235,36 +232,32 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 		}
 	}
 	if usageUS == 0 {
-		err = fmt.Errorf("v2 cpu.stat missing usage_usec")
-		return
+		return nil, errors.ErrCgroupV2CPUStatMissingUsage()
 	}
 	usageNS := usageUS * 1000
 
-	data, err = file.ReadFile(filepath.Join(base, "cpu.max"))
+	data, err = file.ReadFile(file.Join(cgroupBasePath, "cpu.max"))
 	if err != nil {
-		err = fmt.Errorf("v2 read cpu.max: %w", err)
-		return
+		return nil, errors.ErrCgroupV2CPUMaxRead(err)
 	}
 	val := strings.TrimSpace(string(data))
 	parts := strings.Fields(val)
 	if len(parts) != 2 {
-		err = fmt.Errorf("v2 cpu.max malformed: %q", val)
-		return
+		return nil, errors.ErrCgroupV2CPUMaxMalformed(val)
 	}
-	var quotaUs int64
+	var quotaUs uint64
 	if parts[0] == "max" {
-		quotaUs = -1
+		quotaUs = 0
 	} else {
-		quotaUs, err = strconv.ParseInt(parts[0], 10, 64)
+		quotaUsInt, err := strconv.ParseUint(parts[0], 10, 64)
 		if err != nil {
-			err = fmt.Errorf("v2 cpu.max parse quota: %w", err)
-			return
+			return nil, errors.ErrCgroupV2CPUMaxParseQuota(err)
 		}
+		quotaUs = quotaUsInt
 	}
-	periodUs, err := strconv.ParseInt(parts[1], 10, 64)
+	periodUs, err := strconv.ParseUint(parts[1], 10, 64)
 	if err != nil {
-		err = fmt.Errorf("v2 cpu.max parse period: %w", err)
-		return
+		return nil, errors.ErrCgroupV2CPUMaxParsePeriod(err)
 	}
 
 	metrics = &CgroupMetrics{
@@ -275,19 +268,17 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 		CPUQuotaUs:    quotaUs,
 		CPUPeriodUs:   periodUs,
 	}
-	return
+
+	return metrics, nil
 }
 
 // readCgroupV1Metrics reads cgroups v1 raw metrics
 func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
-	base := "/sys/fs/cgroup"
-
-	// Memory usage - try different paths
-	memoryPaths := []string{
-		filepath.Join(base, "memory", "memory.usage_in_bytes"),
-	}
 	var memUsage uint64
 	var memErr error
+	memoryPaths := []string{
+		file.Join(cgroupBasePath, "memory", "memory.usage_in_bytes"),
+	}
 	for _, path := range memoryPaths {
 		data, err := file.ReadFile(path)
 		if err == nil {
@@ -299,14 +290,12 @@ func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 		memErr = err
 	}
 	if memErr != nil {
-		err = fmt.Errorf("v1 memory usage read failed: %w", memErr)
-		return
+		return nil, errors.ErrCgroupV1MemoryUsageReadFailed(memErr)
 	}
 
-	// Memory limit
 	var memLimit uint64
 	limitPaths := []string{
-		filepath.Join(base, "memory", "memory.limit_in_bytes"),
+		file.Join(cgroupBasePath, "memory", "memory.limit_in_bytes"),
 	}
 	for _, path := range limitPaths {
 		data, err := file.ReadFile(path)
@@ -316,13 +305,12 @@ func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 		}
 	}
 
-	// CPU usage - try different paths
-	cpuPaths := []string{
-		filepath.Join(base, "cpuacct", "cpuacct.usage"),
-		filepath.Join(base, "cpu,cpuacct", "cpuacct.usage"),
-	}
 	var cpuUsage uint64
 	var cpuErr error
+	cpuPaths := []string{
+		file.Join(cgroupBasePath, "cpuacct", "cpuacct.usage"),
+		file.Join(cgroupBasePath, "cpu,cpuacct", "cpuacct.usage"),
+	}
 	for _, path := range cpuPaths {
 		data, err := file.ReadFile(path)
 		if err == nil {
@@ -334,25 +322,29 @@ func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 		cpuErr = err
 	}
 	if cpuErr != nil {
-		err = fmt.Errorf("v1 cpuacct.usage read failed: %w", cpuErr)
-		return
+		return nil, errors.ErrCgroupV1CPUUsageReadFailed(cpuErr)
 	}
 
-	// CPU quota/period
-	var quota, period int64 = -1, 0
+	var quota, period int64 = 0, 0
 	quotaPaths := []string{
-		filepath.Join(base, "cpu", "cpu.cfs_quota_us"),
-		filepath.Join(base, "cpu,cpuacct", "cpu.cfs_quota_us"),
+		file.Join(cgroupBasePath, "cpu", "cpu.cfs_quota_us"),
+		file.Join(cgroupBasePath, "cpu,cpuacct", "cpu.cfs_quota_us"),
 	}
 	periodPaths := []string{
-		filepath.Join(base, "cpu", "cpu.cfs_period_us"),
-		filepath.Join(base, "cpu,cpuacct", "cpu.cfs_period_us"),
+		file.Join(cgroupBasePath, "cpu", "cpu.cfs_period_us"),
+		file.Join(cgroupBasePath, "cpu,cpuacct", "cpu.cfs_period_us"),
 	}
-
 	for _, path := range quotaPaths {
 		data, err := file.ReadFile(path)
 		if err == nil {
-			quota, _ = strconv.ParseInt(strings.TrimSpace(string(data)), 10, 64)
+			quotaInt, parseErr := strconv.ParseInt(strings.TrimSpace(string(data)), 10, 64)
+			if parseErr == nil {
+				if quotaInt == -1 {
+					quota = 0
+				} else {
+					quota = quotaInt
+				}
+			}
 			break
 		}
 	}
@@ -369,45 +361,37 @@ func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 		MemUsageBytes: memUsage,
 		MemLimitBytes: memLimit,
 		CPUUsageNano:  cpuUsage,
-		CPUQuotaUs:    quota,
-		CPUPeriodUs:   period,
+		CPUQuotaUs:    uint64(quota),
+		CPUPeriodUs:   uint64(period),
 	}
-	return
+
+	return metrics, nil
 }
 
-// calculateCgroupStats computes the final, user-facing statistics from two raw metric samples.
-func calculateCgroupStats(
+// calculateCpuUsageCores computes CPU usage cores and other statistics from two raw metric samples.
+func calculateCpuUsageCores(
 	m1, m2 *CgroupMetrics, deltaTime time.Duration,
-) (finalStats *CgroupStats) {
-	finalStats = &CgroupStats{}
+) (calculatedStats *CgroupStats) {
+	calculatedStats = &CgroupStats{}
 
-	// 1. Calculate Memory stats (using the latest sample, m2)
-	finalStats.MemoryLimitBytes = m2.MemLimitBytes
-	finalStats.MemoryUsageBytes = m2.MemUsageBytes
+	calculatedStats.MemoryLimitBytes = m2.MemLimitBytes
+	calculatedStats.MemoryUsageBytes = m2.MemUsageBytes
 
-	// 2. Calculate CPU limit (using the latest sample, m2)
 	if m2.CPUQuotaUs > 0 && m2.CPUPeriodUs > 0 {
-		finalStats.CpuLimit = float64(m2.CPUQuotaUs) / float64(m2.CPUPeriodUs)
+		calculatedStats.CpuLimitCores = float64(m2.CPUQuotaUs) / float64(m2.CPUPeriodUs)
 	} else {
-		finalStats.CpuLimit = float64(runtime.NumCPU())
-	}
-	// Avoid division by zero
-	if finalStats.CpuLimit <= 0 {
-		finalStats.CpuLimit = 1.0
+		calculatedStats.CpuLimitCores = 0
 	}
 
-	// 3. Calculate CPU usage in cores (using the delta between m1 and m2)
 	dtNano := deltaTime.Nanoseconds()
 	if dtNano > 0 {
-		deltaUsage := int64(m2.CPUUsageNano) - int64(m1.CPUUsageNano)
-		// Handle counter reset
-		if deltaUsage < 0 {
-			deltaUsage = 0
+		dtUsage := int64(m2.CPUUsageNano) - int64(m1.CPUUsageNano)
+		if dtUsage < 0 {
+			dtUsage = 0
 		}
 
-		// CPU usage in cores: (CPU time used per nanosecond)
-		finalStats.CpuUsage = float64(deltaUsage) / float64(dtNano)
+		calculatedStats.CpuUsageCores = float64(dtUsage) / float64(dtNano)
 	}
 
-	return
+	return calculatedStats
 }

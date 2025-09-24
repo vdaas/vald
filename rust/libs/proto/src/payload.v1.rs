@@ -1375,10 +1375,10 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.ResourceStat
     pub struct CgroupStats {
         /// CPU cores available
         #[prost(double, tag="1")]
-        pub cpu_limit: f64,
+        pub cpu_limit_cores: f64,
         /// CPU usage in cores (not percentage)
         #[prost(double, tag="2")]
-        pub cpu_usage: f64,
+        pub cpu_usage_cores: f64,
         /// Memory limit in bytes
         #[prost(uint64, tag="3")]
         pub memory_limit_bytes: u64,
