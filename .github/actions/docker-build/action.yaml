@@ -105,14 +105,15 @@ runs:
           --label org.opencontainers.image.version=${PRIMARY_TAG}-${ARCH} \
           --label org.opencontainers.image.title=${TARGET} \
           --label org.opencontainers.image.created=\"$(date --rfc-3339=ns)\" \
-          --label org.opencontainers.image.licenses=\"Apache 2.0\" \
+          --label org.opencontainers.image.licenses=\"Apache 2.0\"" \
           EXTRA_ARGS="${EXTRA_TAGS}" \
           TAG="${PRIMARY_TAG}-${ARCH}" \
           docker/build/${TARGET}
       env:
         TARGET: ${{ inputs.target }}
-        ARCH: ${{ steps.determine_build_platform.outputs.ARCH }}
+        DOCKER_BUILDKIT: "1"
         PLATFORM: ${{ steps.determine_build_platform.outputs.PLATFORM }}
+        ARCH: ${{ steps.determine_build_platform.outputs.ARCH }}
         BUILDER: ${{ inputs.builder }}
         LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.sha }}"
         PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
