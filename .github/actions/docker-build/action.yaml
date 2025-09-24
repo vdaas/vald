@@ -24,19 +24,21 @@ inputs:
     description: "Buildx builder name"
     required: true
     default: ""
-outputs:
-  IMAGE_NAME:
+  image_name:
     description: "Image name"
-    value: ${{ steps.image_name.outputs.IMAGE_NAME }}
-  ALTER_IMAGE_NAME:
+    required: true
+  alter_image_name:
     description: "Alter image name"
-    value: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
-  PRIMARY_TAG:
+    required: false
+    default: ""
+  primary_tag:
     description: "Primary tag"
-    value: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
-  SECONDARY_TAGS:
+    required: true
+  secondary_tags:
     description: "Secondary tags"
-    value: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
+    required: false
+    default: ""
+outputs:
   PLATFORMS:
     description: "Target platforms"
     value: ${{ steps.determine_platforms.outputs.PLATFORMS }}
@@ -46,27 +48,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Image name
-      shell: bash
-      id: image_name
-      run: |
-        image_name=`make docker/name/${TARGET}`
-        alter_org=`make docker/name/org/alter`
-        alter_image_name=`make ORG="${alter_org}" docker/name/${TARGET}`
-        echo "IMAGE_NAME is: ${image_name}"
-        echo "ALTER_IMAGE_NAME is: ${alter_image_name}"
-        echo "IMAGE_NAME=${image_name}" >> $GITHUB_OUTPUT
-        echo "ALTER_IMAGE_NAME=${alter_image_name}" >> $GITHUB_OUTPUT
-      env:
-        TARGET: ${{ inputs.target }}
-    - name: Determine tag name
-      id: determine_tag_name
-      uses: ./.github/actions/determine-docker-image-tag
-    - name: Update Vald version
-      shell: bash
-      run: echo "${PRIMARY_TAG}" > versions/VALD_VERSION
-      env:
-        PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
     - name: Determine build platform
       shell: bash
       id: determine_build_platform
