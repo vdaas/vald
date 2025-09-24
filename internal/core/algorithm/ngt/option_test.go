@@ -1600,3 +1600,97 @@ func TestWithDefaultEpsilon(t *testing.T) {
 		})
 	}
 }
+
+func TestWithEpsilonForCreation(t *testing.T) {
+	type T = ngt
+	type args struct {
+		epsilon float32
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if diff := comparator.Diff(obj, w.obj, ngtComparator...); diff != "" {
+			return errors.Errorf("diff: %s", diff)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "set success when epsilon is 1",
+			args: args{
+				epsilon: 1,
+			},
+			want: want{
+				obj: new(T),
+			},
+		},
+		{
+			name: "set success when epsilon is MaxFloat32",
+			args: args{
+				epsilon: math.MaxFloat32,
+			},
+			want: want{
+				obj: new(T),
+			},
+		},
+		{
+			name: "set success when epsilon is MinFloat32",
+			args: args{
+				epsilon: -math.MaxFloat32, // https://github.com/golang/go/issues/797#issuecomment-66051314
+			},
+			want: want{
+				obj: new(T),
+			},
+		},
+		{
+			name: "return error when epsilon is 0",
+			args: args{
+				epsilon: 0,
+			},
+			want: want{
+				obj: new(T),
+				err: errors.New("invalid option, name: epsilonForCreation, val: 0"),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				tt.Cleanup(func() { test.afterFunc(test.args) })
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			got := WithEpsilonForCreation(test.args.epsilon)
+			obj := new(T)
+			if err := obj.setup(); err != nil {
+				t.Fatal(err)
+			}
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
