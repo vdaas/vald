@@ -30,5 +30,5 @@ roleRef:
   name: discoverer
 subjects:
   - kind: ServiceAccount
-    name: vald
+    name: vald-discoverer
     namespace: default
