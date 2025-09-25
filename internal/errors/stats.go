@@ -122,6 +122,11 @@ var (
 		return Wrap(err, "v1 memory usage read failed")
 	}
 
+	// ErrCgroupV1MemoryUsageParseFailed represents a function to generate an error that parsing memory usage failed.
+	ErrCgroupV1MemoryUsageParseFailed = func(err error) error {
+		return Wrap(err, "v1 memory usage parse failed")
+	}
+
 	// ErrCgroupV1CPUUsageReadFailed represents a function to generate an error that reading CPU usage failed.
 	ErrCgroupV1CPUUsageReadFailed = func(err error) error {
 		return Wrap(err, "v1 cpuacct.usage read failed")

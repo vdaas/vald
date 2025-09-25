@@ -23,10 +23,9 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	statspb "github.com/vdaas/vald/apis/grpc/v1/rpc/stats"
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
-	"github.com/vdaas/vald/internal/conv"
-	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/os"
@@ -86,7 +85,6 @@ func (s *server) ResourceStats(
 	if ip == "" {
 		ip = "unknown"
 	}
-
 
 	stats = &payload.Info_ResourceStats{
 		Name: hostname,
@@ -257,34 +255,19 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 // readCgroupV1Metrics reads cgroups v1 raw metrics
 func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 	var memUsage uint64
-	var memErr error
-	memoryPaths := []string{
-		file.Join(cgroupBasePath, "memory", "memory.usage_in_bytes"),
+	data, err := file.ReadFile(file.Join(cgroupBasePath, "memory", "memory.usage_in_bytes"))
+	if err != nil {
+		return nil, errors.ErrCgroupV1MemoryUsageReadFailed(err)
 	}
-	for _, path := range memoryPaths {
-		data, err := file.ReadFile(path)
-		if err == nil {
-			memUsage, memErr = strconv.ParseUint(strings.TrimSpace(conv.Btoa(data)), 10, 64)
-			if memErr == nil {
-				break
-			}
-		}
-		memErr = err
-	}
-	if memErr != nil {
-		return nil, errors.ErrCgroupV1MemoryUsageReadFailed(memErr)
+	memUsage, err = strconv.ParseUint(strings.TrimSpace(conv.Btoa(data)), 10, 64)
+	if err != nil {
+		return nil, errors.ErrCgroupV1MemoryUsageParseFailed(err)
 	}
 
 	var memLimit uint64
-	limitPaths := []string{
-		file.Join(cgroupBasePath, "memory", "memory.limit_in_bytes"),
-	}
-	for _, path := range limitPaths {
-		data, err := file.ReadFile(path)
-		if err == nil {
-			memLimit, _ = strconv.ParseUint(strings.TrimSpace(conv.Btoa(data)), 10, 64)
-			break
-		}
+	data, err = file.ReadFile(file.Join(cgroupBasePath, "memory", "memory.limit_in_bytes"))
+	if err == nil {
+		memLimit, _ = strconv.ParseUint(strings.TrimSpace(conv.Btoa(data)), 10, 64)
 	}
 
 	var cpuUsage uint64
