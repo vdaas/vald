@@ -917,11 +917,11 @@ func replaceEnvInValues(v any) any {
 		if i, err := strconv.ParseInt(str, 10, 64); err == nil {
 			return i
 		}
-		if f, err := strconv.ParseFloat(str, 64); err == nil {
-			return f
-		}
 		if u, err := strconv.ParseUint(str, 10, 64); err == nil {
 			return u
+		}
+		if f, err := strconv.ParseFloat(str, 64); err == nil {
+			return f
 		}
 		switch strings.ToLower(str) {
 		case "true":
