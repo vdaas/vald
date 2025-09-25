@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/os"
@@ -91,7 +92,10 @@ func (s *server) ResourceStats(
 		Ip:   ip,
 	}
 	cgroupStats, err := measureCgroupStats(ctx)
-	if err == nil && cgroupStats != nil {
+	if err != nil {
+		log.Warn("failed to measure cgroup stats", err)
+	}
+	if cgroupStats != nil {
 		stats.CgroupStats = &payload.Info_CgroupStats{
 			CpuLimitCores:    cgroupStats.CpuLimitCores,
 			CpuUsageCores:    cgroupStats.CpuUsageCores,
@@ -99,7 +103,7 @@ func (s *server) ResourceStats(
 			MemoryUsageBytes: cgroupStats.MemoryUsageBytes,
 		}
 	}
-	return stats, err
+	return stats, nil
 }
 
 // measureCgroupStats orchestrates the process of sampling and calculating cgroup statistics.
