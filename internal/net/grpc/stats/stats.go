@@ -105,7 +105,7 @@ func (s *server) ResourceStats(
 }
 
 // measureCgroupStats orchestrates the process of sampling and calculating cgroup statistics.
-func measureCgroupStats() (stats *CgroupStats, err error) {
+func measureCgroupStats(ctx context.Context) (stats *CgroupStats, err error) {
 	// First sample: Read initial metrics from cgroup files (includes cumulative CPU usage)
 	m1, err := readCgroupMetrics()
 	if err != nil {
@@ -114,7 +114,11 @@ func measureCgroupStats() (stats *CgroupStats, err error) {
 	t1 := time.Now()
 
 	// Wait 100ms to allow meaningful CPU usage accumulation
-	time.Sleep(100 * time.Millisecond)
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case <-time.After(100 * time.Millisecond):
+	}
 
 	// Second sample: Read metrics again to calculate CPU usage rate
 	m2, err := readCgroupMetrics()
