@@ -292,8 +292,8 @@ func Test_calculateCpuUsageCores(t *testing.T) {
 					if stats.MemoryLimitBytes != 2000000 {
 						return errors.Errorf("memory limit: got %d, want %d", stats.MemoryLimitBytes, 2000000)
 					}
-					if stats.CpuLimitCores != 1.0 {
-						return errors.Errorf("cpu limit cores: got %f, want %f", stats.CpuLimitCores, 1.0)
+					if stats.CPULimitCores != 1.0 {
+						return errors.Errorf("cpu limit cores: got %f, want %f", stats.CPULimitCores, 1.0)
 					}
 					return nil
 				},
@@ -328,8 +328,8 @@ func Test_calculateCpuUsageCores(t *testing.T) {
 					if stats == nil {
 						return errors.New("stats should not be nil")
 					}
-					if stats.CpuLimitCores != 0 {
-						return errors.Errorf("cpu limit cores should be 0 for unlimited quota, got %f", stats.CpuLimitCores)
+					if stats.CPULimitCores != 0 {
+						return errors.Errorf("cpu limit cores should be 0 for unlimited quota, got %f", stats.CPULimitCores)
 					}
 					return nil
 				},
@@ -364,11 +364,11 @@ func Test_calculateCpuUsageCores(t *testing.T) {
 					if stats == nil {
 						return errors.New("stats should not be nil")
 					}
-					if stats.CpuLimitCores != 0 {
-						return errors.Errorf("cpu limit cores should be 0 for zero quota, got %f", stats.CpuLimitCores)
+					if stats.CPULimitCores != 0 {
+						return errors.Errorf("cpu limit cores should be 0 for zero quota, got %f", stats.CPULimitCores)
 					}
-					if stats.CpuUsageCores != 0 {
-						return errors.Errorf("cpu usage cores should be 0 for negative delta, got %f", stats.CpuUsageCores)
+					if stats.CPUUsageCores != 0 {
+						return errors.Errorf("cpu usage cores should be 0 for negative delta, got %f", stats.CPUUsageCores)
 					}
 					return nil
 				},
@@ -390,8 +390,8 @@ func Test_calculateCpuUsageCores(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			stats := calculateCpuUsageCores(test.args.m1, test.args.m2, test.args.deltaTime)
-			if err := test.checkFunc(test.want, stats); err != nil {
+			stats := calculateCPUUsageCores(test.args.m1, test.args.m2, test.args.deltaTime)
+			if err := test.checkFunc(test.want, &stats); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -517,8 +517,8 @@ func Test_measureCgroupStats(t *testing.T) {
 					if stats.MemoryUsageBytes == 0 {
 						return errors.New("memory usage should be greater than 0")
 					}
-					if stats.CpuUsageCores < 0 {
-						return errors.Errorf("CPU usage should be non-negative, got %f", stats.CpuUsageCores)
+					if stats.CPUUsageCores < 0 {
+						return errors.Errorf("CPU usage should be non-negative, got %f", stats.CPUUsageCores)
 					}
 					return nil
 				},

@@ -60,8 +60,8 @@ type CgroupMetrics struct {
 
 // CgroupStats holds calculated resource usage statistics ready for use
 type CgroupStats struct {
-	CpuLimitCores    float64
-	CpuUsageCores    float64
+	CPULimitCores    float64
+	CPUUsageCores    float64
 	MemoryLimitBytes uint64
 	MemoryUsageBytes uint64
 }
@@ -97,8 +97,8 @@ func (s *server) ResourceStats(
 	}
 	if cgroupStats != nil {
 		stats.CgroupStats = &payload.Info_CgroupStats{
-			CpuLimitCores:    cgroupStats.CpuLimitCores,
-			CpuUsageCores:    cgroupStats.CpuUsageCores,
+			CpuLimitCores:    cgroupStats.CPULimitCores,
+			CpuUsageCores:    cgroupStats.CPUUsageCores,
 			MemoryLimitBytes: cgroupStats.MemoryLimitBytes,
 			MemoryUsageBytes: cgroupStats.MemoryUsageBytes,
 		}
@@ -107,7 +107,7 @@ func (s *server) ResourceStats(
 }
 
 // measureCgroupStats orchestrates the process of sampling and calculating cgroup statistics.
-func measureCgroupStats(ctx context.Context) (stats *CgroupStats, err error) {
+func measureCgroupStats(ctx context.Context) (*CgroupStats, error) {
 	// First sample: Read initial metrics from cgroup files (includes cumulative CPU usage)
 	m1, err := readCgroupMetrics()
 	if err != nil {
@@ -130,9 +130,9 @@ func measureCgroupStats(ctx context.Context) (stats *CgroupStats, err error) {
 	t2 := time.Now()
 
 	// Calculate CPU usage rate from cumulative values: (usage2 - usage1) / time_delta
-	stats = calculateCpuUsageCores(m1, m2, t2.Sub(t1))
+	cgroupStats := calculateCPUUsageCores(m1, m2, t2.Sub(t1))
 
-	return stats, nil
+	return &cgroupStats, nil
 }
 
 // readCgroupMetrics reads raw memory & CPU metrics depending on cgroup mode
@@ -185,12 +185,12 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 	if err != nil {
 		return nil, errors.ErrCgroupV2MemoryMaxReadFailed(err)
 	}
-	memMaxStr := strings.TrimSpace(conv.Btoa(data))
 	var memMax uint64
-	if memMaxStr == "max" {
+	memMaxData := strings.TrimSpace(conv.Btoa(data))
+	if memMaxData == "max" {
 		memMax = 0
 	} else {
-		memMax, err = strconv.ParseUint(memMaxStr, 10, 64)
+		memMax, err = strconv.ParseUint(memMaxData, 10, 64)
 		if err != nil {
 			return nil, errors.ErrCgroupV2MemoryMaxParseFailed(err)
 		}
@@ -221,20 +221,18 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 	if err != nil {
 		return nil, errors.ErrCgroupV2CPUMaxReadFailed(err)
 	}
-	val := strings.TrimSpace(conv.Btoa(data))
-	parts := strings.Fields(val)
+	parts := strings.Fields(strings.TrimSpace(conv.Btoa(data)))
 	if len(parts) != 2 {
-		return nil, errors.ErrCgroupV2CPUMaxMalformed(val)
+		return nil, errors.ErrCgroupV2CPUMaxMalformed(strings.TrimSpace(conv.Btoa(data)))
 	}
 	var quotaUs uint64
 	if parts[0] == "max" {
 		quotaUs = 0
 	} else {
-		quotaUsInt, err := strconv.ParseUint(parts[0], 10, 64)
+		quotaUs, err = strconv.ParseUint(parts[0], 10, 64)
 		if err != nil {
 			return nil, errors.ErrCgroupV2CPUMaxParseQuotaFailed(err)
 		}
-		quotaUs = quotaUsInt
 	}
 	periodUs, err := strconv.ParseUint(parts[1], 10, 64)
 	if err != nil {
@@ -299,12 +297,10 @@ func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 	for _, path := range quotaPaths {
 		data, err := file.ReadFile(path)
 		if err == nil {
-			quotaInt, parseErr := strconv.ParseInt(strings.TrimSpace(conv.Btoa(data)), 10, 64)
-			if parseErr == nil {
-				if quotaInt == -1 {
+			quota, err = strconv.ParseInt(strings.TrimSpace(conv.Btoa(data)), 10, 64)
+			if err == nil {
+				if quota == -1 {
 					quota = 0
-				} else {
-					quota = quotaInt
 				}
 			}
 			break
@@ -334,19 +330,19 @@ func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 	return metrics, nil
 }
 
-// calculateCpuUsageCores computes CPU usage cores and other statistics from two raw metric samples.
-func calculateCpuUsageCores(
+// calculateCPUUsageCores computes CPU usage cores and other statistics from two raw metric samples.
+func calculateCPUUsageCores(
 	m1, m2 *CgroupMetrics, deltaTime time.Duration,
-) (calculatedStats *CgroupStats) {
-	calculatedStats = &CgroupStats{}
+) (calculatedStats CgroupStats) {
+	calculatedStats = CgroupStats{}
 
 	calculatedStats.MemoryLimitBytes = m2.MemLimitBytes
 	calculatedStats.MemoryUsageBytes = m2.MemUsageBytes
 
 	if m2.CPUQuotaUs > 0 && m2.CPUPeriodUs > 0 {
-		calculatedStats.CpuLimitCores = float64(m2.CPUQuotaUs) / float64(m2.CPUPeriodUs)
+		calculatedStats.CPULimitCores = float64(m2.CPUQuotaUs) / float64(m2.CPUPeriodUs)
 	} else {
-		calculatedStats.CpuLimitCores = 0
+		calculatedStats.CPULimitCores = 0
 	}
 
 	dtNano := deltaTime.Nanoseconds()
@@ -356,7 +352,7 @@ func calculateCpuUsageCores(
 			dtUsage = 0
 		}
 
-		calculatedStats.CpuUsageCores = float64(dtUsage) / float64(dtNano)
+		calculatedStats.CPUUsageCores = float64(dtUsage) / float64(dtNano)
 	}
 
 	return calculatedStats
