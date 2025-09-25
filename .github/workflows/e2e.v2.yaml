@@ -206,7 +206,14 @@ jobs:
             export E2E_TARGET_NAMESPACE=vald-01
           fi
           kubectl get pods
-          make e2e/v2 E2E_CONFIG=$(pwd)/.github/e2e/${{ matrix.scenario }}.yaml
+          make e2e/v2 E2E_CONFIG=$(pwd)/tests/v2/e2e/assets/${{ matrix.scenario }}.yaml \
+            E2E_PARALLELISM="4" \
+            E2E_INSERT_COUNT="10000" \
+            E2E_EXPECTED_INDEX="30000" \
+            E2E_QPS="30" \
+            E2E_SEARCH_COUNT="10" \
+            E2E_UPDATE_COUNT="100" \
+            E2E_BULK_SIZE="10"
       - uses: ./.github/actions/e2e-profile
         if: ${{ matrix.environment == 'profile' }}
         with:
