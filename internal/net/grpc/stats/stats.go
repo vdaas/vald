@@ -25,6 +25,7 @@ import (
 	statspb "github.com/vdaas/vald/apis/grpc/v1/rpc/stats"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -151,7 +152,7 @@ func detectCgroupMode() CgroupMode {
 	if err != nil {
 		return Unknown
 	}
-	for _, line := range strings.Split(string(data), "\n") {
+	for _, line := range strings.Split(conv.Btoa(data), "\n") {
 		// v2 line looks like: "0::/kubepods.slice/..."
 		parts := strings.Split(line, ":")
 		if len(parts) >= 3 && parts[1] == "" {
@@ -169,7 +170,7 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 	if err != nil {
 		return nil, errors.ErrCgroupV2MemoryCurrentRead(err)
 	}
-	memCur, err := strconv.ParseUint(strings.TrimSpace(string(data)), 10, 64)
+	memCur, err := strconv.ParseUint(strings.TrimSpace(conv.Btoa(data)), 10, 64)
 	if err != nil {
 		return nil, errors.ErrCgroupV2MemoryCurrentParse(err)
 	}
@@ -178,7 +179,7 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 	if err != nil {
 		return nil, errors.ErrCgroupV2MemoryMaxRead(err)
 	}
-	memMaxStr := strings.TrimSpace(string(data))
+	memMaxStr := strings.TrimSpace(conv.Btoa(data))
 	var memMax uint64
 	if memMaxStr == "max" {
 		memMax = 0
@@ -194,7 +195,7 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 		return nil, errors.ErrCgroupV2CPUStatRead(err)
 	}
 	var usageUS uint64
-	for _, line := range strings.Split(string(data), "\n") {
+	for _, line := range strings.Split(conv.Btoa(data), "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
@@ -217,7 +218,7 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 	if err != nil {
 		return nil, errors.ErrCgroupV2CPUMaxRead(err)
 	}
-	val := strings.TrimSpace(string(data))
+	val := strings.TrimSpace(conv.Btoa(data))
 	parts := strings.Fields(val)
 	if len(parts) != 2 {
 		return nil, errors.ErrCgroupV2CPUMaxMalformed(val)
@@ -259,7 +260,7 @@ func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 	for _, path := range memoryPaths {
 		data, err := file.ReadFile(path)
 		if err == nil {
-			memUsage, memErr = strconv.ParseUint(strings.TrimSpace(string(data)), 10, 64)
+			memUsage, memErr = strconv.ParseUint(strings.TrimSpace(conv.Btoa(data)), 10, 64)
 			if memErr == nil {
 				break
 			}
@@ -277,7 +278,7 @@ func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 	for _, path := range limitPaths {
 		data, err := file.ReadFile(path)
 		if err == nil {
-			memLimit, _ = strconv.ParseUint(strings.TrimSpace(string(data)), 10, 64)
+			memLimit, _ = strconv.ParseUint(strings.TrimSpace(conv.Btoa(data)), 10, 64)
 			break
 		}
 	}
@@ -291,7 +292,7 @@ func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 	for _, path := range cpuPaths {
 		data, err := file.ReadFile(path)
 		if err == nil {
-			cpuUsage, cpuErr = strconv.ParseUint(strings.TrimSpace(string(data)), 10, 64)
+			cpuUsage, cpuErr = strconv.ParseUint(strings.TrimSpace(conv.Btoa(data)), 10, 64)
 			if cpuErr == nil {
 				break
 			}
@@ -314,7 +315,7 @@ func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 	for _, path := range quotaPaths {
 		data, err := file.ReadFile(path)
 		if err == nil {
-			quotaInt, parseErr := strconv.ParseInt(strings.TrimSpace(string(data)), 10, 64)
+			quotaInt, parseErr := strconv.ParseInt(strings.TrimSpace(conv.Btoa(data)), 10, 64)
 			if parseErr == nil {
 				if quotaInt == -1 {
 					quota = 0
@@ -328,7 +329,7 @@ func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 	for _, path := range periodPaths {
 		data, err := file.ReadFile(path)
 		if err == nil {
-			period, _ = strconv.ParseInt(strings.TrimSpace(string(data)), 10, 64)
+			period, _ = strconv.ParseInt(strings.TrimSpace(conv.Btoa(data)), 10, 64)
 			break
 		}
 	}
