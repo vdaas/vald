@@ -41,7 +41,7 @@ inputs:
 outputs:
   PLATFORMS:
     description: "Target platforms"
-    value: ${{ steps.determine_platforms.outputs.PLATFORMS }}
+    value: ${{ steps.determine_build_platforms.outputs.PLATFORMS }}
   EXTRA_TAGS:
     description: "Extra tags"
     value: ${{ steps.add_extra_tags.outputs.EXTRA_TAGS }}
@@ -58,26 +58,25 @@ runs:
         echo "ARCH=${arch}" >> $GITHUB_OUTPUT
         echo "PLATFORM is determined: ${platform}"
         echo "PLATFORM=${platform}" >> $GITHUB_OUTPUT
-    - name: Add extra tags
+    - name: Determine extra tags
       shell: bash
-      id: add_extra_tags
+      id: determine_extra_tags
       run: |
         if [[ "${{ github.event_name }}" != "pull_request" && "${{ github.event_name }}" != "pull_request_target" ]]; then
-          for tag in ${SECONDARY_TAGS}; do
-            extra_tags="${extra_tags} -t ${IMAGE_NAME}:${tag}-${ARCH} -t ${ALTER_IMAGE_NAME}:${tag}-${ARCH}"
-          done
+          extra_tags=${SECONDARY_TAGS}
         fi
         echo "EXTRA_TAGS is determined: ${extra_tags}"
         echo "EXTRA_TAGS=${extra_tags}" >> $GITHUB_OUTPUT
       env:
-        ARCH: $${ steps.determine_build_platform.outputs.ARCH }
-        IMAGE_NAME: ${{ inputs.image_name }}
-        ALTER_IMAGE_NAME: ${{ inputs.alter_image_name }}
         SECONDARY_TAGS: ${{ inputs.secondary_tags }}
     - name: Build and Push
       shell: bash
       id: build_and_push
       run: |
+        for tag in ${EXTRA_TAGS}; do
+          extra_args="${extra_args} -t ${IMAGE_NAME}:${tag}-${ARCH} -t ${ALTER_IMAGE_NAME}:${tag}-${ARCH}"
+        done
+
         make \
           REMOTE="true" \
           DOCKER="docker" \
@@ -87,7 +86,7 @@ runs:
           --label org.opencontainers.image.title=${TARGET} \
           --label org.opencontainers.image.created=\"$(date --rfc-3339=ns)\" \
           --label org.opencontainers.image.licenses=\"Apache 2.0\"" \
-          EXTRA_ARGS="${EXTRA_TAGS}" \
+          EXTRA_ARGS="${extra_args}" \
           TAG="${PRIMARY_TAG}-${ARCH}" \
           docker/build/${TARGET}
       env:
@@ -97,5 +96,7 @@ runs:
         ARCH: ${{ steps.determine_build_platform.outputs.ARCH }}
         BUILDER: ${{ inputs.builder }}
         LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.sha }}"
+        IMAGE_NAME: ${{ inputs.image_name }}
+        ALTER_IMAGE_NAME: ${{ inputs.alter_image_name }}
         PRIMARY_TAG: ${{ inputs.primary_tag }}
-        EXTRA_TAGS: ${{ steps.add_extra_tags.outputs.EXTRA_TAGS }}
+        EXTRA_TAGS: ${{ steps.determine_extra_tags.outputs.EXTRA_TAGS }}

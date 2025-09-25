@@ -31,10 +31,9 @@ inputs:
   primary_tag:
     description: "Primary Tag"
     required: true
-  secondary_tags:
-    description: "Secondary Tags"
+  extra_tags:
+    description: "Extra tags"
     required: false
-    default: ""
 outputs:
   PLATFORMS:
     description: "Target platforms"
@@ -46,7 +45,7 @@ runs:
       shell: bash
       id: create_manifest
       run: |
-        for tag in ${PRIMARY_TAG} ${SECONDARY_TAGS}; do
+        for tag in ${PRIMARY_TAG} ${EXTRA_TAGS}; do
           make \
             TARGET="${TARGET}" \
             TAG="${PRIMARY_TAG}" \
@@ -57,7 +56,7 @@ runs:
         TARGET: ${{ inputs.target }}
         ARCHS: ${{ inputs.archs }}
         PRIMARY_TAG: ${{ inputs.primary_tag }}
-        SECONDARY_TAGS: ${{ inputs.secondary_tags }}
+        EXTRA_TAGS: ${{ inputs.extra_tags }}
     - name: Inspect image
       shell: bash
       id: inspect_image
@@ -65,9 +64,10 @@ runs:
         for tag in ${PRIMARY_TAG} ${SECONDARY_TAGS}; do
           make \
             TARGET="${TARGET}" \
-            TAG="${PRIMARY_TAG}" \
+            TAG="${tag}" \
             docker/inspect/image
         done
       env:
+        TARGET: ${{ inputs.target }}
         PRIMARY_TAG: ${{ inputs.primary_tag }}
-        SECONDARY_TAGS: ${{ inputs.secondary_tags }}
+        EXTRA_TAGS: ${{ inputs.extra_tags }}
