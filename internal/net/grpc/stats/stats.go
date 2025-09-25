@@ -295,10 +295,6 @@ func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 		file.Join(cgroupBasePath, "cpu", "cpu.cfs_quota_us"),
 		file.Join(cgroupBasePath, "cpu,cpuacct", "cpu.cfs_quota_us"),
 	}
-	periodPaths := []string{
-		file.Join(cgroupBasePath, "cpu", "cpu.cfs_period_us"),
-		file.Join(cgroupBasePath, "cpu,cpuacct", "cpu.cfs_period_us"),
-	}
 	for _, path := range quotaPaths {
 		data, err := file.ReadFile(path)
 		if err == nil {
@@ -312,6 +308,10 @@ func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 			}
 			break
 		}
+	}
+	periodPaths := []string{
+		file.Join(cgroupBasePath, "cpu", "cpu.cfs_period_us"),
+		file.Join(cgroupBasePath, "cpu,cpuacct", "cpu.cfs_period_us"),
 	}
 	for _, path := range periodPaths {
 		data, err := file.ReadFile(path)
