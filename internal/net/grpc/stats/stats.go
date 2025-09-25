@@ -172,6 +172,10 @@ func detectCgroupMode() CgroupMode {
 
 // readCgroupV2Metrics reads cgroups v2 raw metrics
 func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
+	// TODO: The current implementation directly uses /sys/fs/cgroup, but in some environments,
+	// the cgroup namespace may not be separated per pod, resulting in reading values for the
+	// entire node rather than per-pod values. Add functionality to specify appropriate paths
+	// to ensure better isolation.
 	data, err := file.ReadFile(file.Join(cgroupBasePath, "memory.current"))
 	if err != nil {
 		return nil, errors.ErrCgroupV2MemoryCurrentReadFailed(err)
