@@ -48,9 +48,9 @@ runs:
       run: |
         for tag in ${PRIMARY_TAG} ${SECONDARY_TAGS}; do
           make \
-            IMAGE=${TARGET} \
-            TAG=${PRIMARY_TAG} \
-            ARCHS=${ARCHS} \
+            IMAGE="${TARGET}" \
+            TAG="${PRIMARY_TAG}" \
+            ARCHS="${ARCHS}" \
             docker/create/manifest
         done
       env:
