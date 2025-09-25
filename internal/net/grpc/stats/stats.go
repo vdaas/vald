@@ -130,17 +130,14 @@ func measureCgroupStats() (stats *CgroupStats, err error) {
 
 // readCgroupMetrics reads raw memory & CPU metrics depending on cgroup mode
 func readCgroupMetrics() (metrics *CgroupMetrics, err error) {
-	mode := detectCgroupMode()
-	switch mode {
+	switch detectCgroupMode() {
 	case CGV2:
-		metrics, err = readCgroupV2Metrics()
+		return readCgroupV2Metrics()
 	case CGV1:
-		metrics, err = readCgroupV1Metrics()
+		return readCgroupV1Metrics()
 	default:
-		err = errors.ErrCgroupModeDetectionFailed()
+		return nil, errors.ErrCgroupModeDetectionFailed()
 	}
-
-	return metrics, err
 }
 
 // detectCgroupMode inspects /sys/fs/cgroup to detect cgroups mode
