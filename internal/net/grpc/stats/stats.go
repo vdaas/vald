@@ -66,8 +66,7 @@ type CgroupStats struct {
 }
 
 func Register(srv *grpc.Server) {
-	ssrv := &server{}
-	statspb.RegisterStatsServer(srv, ssrv)
+	statspb.RegisterStatsServer(srv, new(server))
 }
 
 type server struct {
