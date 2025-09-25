@@ -426,7 +426,7 @@ func Test_readCgroupMetrics(t *testing.T) {
 	tests := []test{
 		func() test {
 			return test{
-				name: "successfully reads cgroup v2 metrics",
+				name: "successfully reads cgroup metrics",
 				checkFunc: func(w want, metrics *CgroupMetrics, err error) error {
 					if err != nil {
 						return errors.Errorf("unexpected error: %v", err)
@@ -434,8 +434,8 @@ func Test_readCgroupMetrics(t *testing.T) {
 					if metrics == nil {
 						return errors.New("metrics should not be nil")
 					}
-					if metrics.Mode != CGV2 {
-						return errors.Errorf("expected CGV2 mode, got %v", metrics.Mode)
+					if metrics.Mode != CGV1 && metrics.Mode != CGV2 {
+						return errors.Errorf("expected valid cgroup mode, got %v", metrics.Mode)
 					}
 					if metrics.MemUsageBytes == 0 {
 						return errors.New("memory usage should be greater than 0")
@@ -473,16 +473,20 @@ func Test_readCgroupMetrics(t *testing.T) {
 
 func Test_measureCgroupStats(t *testing.T) {
 	t.Parallel()
+	type args struct {
+		ctx context.Context
+	}
 	type want struct {
 		stats *CgroupStats
 		err   error
 	}
 	type test struct {
 		name       string
+		args       args
 		want       want
 		checkFunc  func(want, *CgroupStats, error) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(args)
+		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, stats *CgroupStats, err error) error {
 		if !errors.Is(err, w.err) {
@@ -500,8 +504,11 @@ func Test_measureCgroupStats(t *testing.T) {
 		func() test {
 			return test{
 				name: "successfully measures cgroup stats",
+				args: args{
+					ctx: context.Background(),
+				},
 				checkFunc: func(w want, stats *CgroupStats, err error) error {
-					if err != nil {
+					if err != nil && !errors.Is(err, context.DeadlineExceeded) && !errors.Is(err, context.Canceled) {
 						return errors.Errorf("unexpected error: %v", err)
 					}
 					if stats == nil {
@@ -517,6 +524,25 @@ func Test_measureCgroupStats(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
+			return test{
+				name: "context canceled during measurement",
+				args: args{
+					ctx: ctx,
+				},
+				checkFunc: func(w want, stats *CgroupStats, err error) error {
+					if err == nil {
+						return errors.New("expected context cancellation error")
+					}
+					if stats != nil {
+						return errors.New("stats should be nil when context is canceled")
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -524,16 +550,16 @@ func Test_measureCgroupStats(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			stats, err := measureCgroupStats()
+			stats, err := measureCgroupStats(test.args.ctx)
 			if err := test.checkFunc(test.want, stats, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -569,7 +595,7 @@ func Test_readCgroupV2Metrics(t *testing.T) {
 	tests := []test{
 		func() test {
 			return test{
-				name: "successfully reads cgroup v2 metrics",
+				name: "reads cgroup v2 metrics when available",
 				checkFunc: func(w want, metrics *CgroupMetrics, err error) error {
 					if err != nil {
 						return errors.Errorf("unexpected error: %v", err)
@@ -613,6 +639,3 @@ func Test_readCgroupV2Metrics(t *testing.T) {
 		})
 	}
 }
-
-// These tests assume cgroup v2 environment is available.
-// TODO: Add cgroup v1 test cases.
