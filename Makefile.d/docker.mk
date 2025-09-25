@@ -135,7 +135,7 @@ endif
 docker/create/manifest:
 	$(eval org ?= $(CRORG))
 	$(eval images := $(foreach arch,$(ARCHS),$(org)/$(IMAGE):$(TAG)-$(arch)))
-	@echo docker buildx imagetools create \
+	docker buildx imagetools create \
 		-t $(org)/$(IMAGE):$(TAG) \
 		$(images) \
 		$(EXTRA_IMAGES)
@@ -147,7 +147,7 @@ docker/create/manifest/alter:
 .PHONY: docker/inspect/image
 docker/inspect/image:
 	$(eval org ?= $(CRORG))
-	@echo docker buildx imagetools inspect $(org)/$(IMAGE):$(TAG)
+	docker buildx imagetools inspect $(org)/$(IMAGE):$(TAG)
 
 .PHONY: docker/inspect/image/alter
 docker/inspect/image/alter:
