@@ -86,35 +86,21 @@ func (s *server) ResourceStats(
 		ip = "unknown"
 	}
 
-	cgroupStats, err := measureCgroupStats()
-	if err != nil {
-		log.Debugf("failed to get cgroup stats: %v", err)
-		stats = &payload.Info_ResourceStats{
-			Name: hostname,
-			Ip:   ip,
-			CgroupStats: &payload.Info_CgroupStats{
-				CpuLimitCores:    0,
-				CpuUsageCores:    0,
-				MemoryLimitBytes: 0,
-				MemoryUsageBytes: 0,
-			},
-		}
-		err = nil
-		return stats, err
-	}
 
 	stats = &payload.Info_ResourceStats{
 		Name: hostname,
 		Ip:   ip,
-		CgroupStats: &payload.Info_CgroupStats{
+	}
+	cgroupStats, err := measureCgroupStats(ctx)
+	if err == nil && cgroupStats != nil {
+		stats.CgroupStats = &payload.Info_CgroupStats{
 			CpuLimitCores:    cgroupStats.CpuLimitCores,
 			CpuUsageCores:    cgroupStats.CpuUsageCores,
 			MemoryLimitBytes: cgroupStats.MemoryLimitBytes,
 			MemoryUsageBytes: cgroupStats.MemoryUsageBytes,
-		},
+		}
 	}
-
-	return stats, nil
+	return stats, err
 }
 
 // measureCgroupStats orchestrates the process of sampling and calculating cgroup statistics.
