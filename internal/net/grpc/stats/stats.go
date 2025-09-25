@@ -215,9 +215,6 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 			break
 		}
 	}
-	if usageUS == 0 {
-		return nil, errors.ErrCgroupV2CPUStatMissingUsage
-	}
 	usageNS := usageUS * 1000
 
 	data, err = file.ReadFile(file.Join(cgroupBasePath, "cpu.max"))

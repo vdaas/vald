@@ -55,9 +55,6 @@ var (
 		return Wrap(err, "v2 read cpu.stat")
 	}
 
-	// ErrCgroupV2CPUStatMissingUsage represents a function to generate an error that cpu.stat is missing usage_usec.
-	ErrCgroupV2CPUStatMissingUsage = New("v2 cpu.stat missing usage_usec")
-
 	// ErrCgroupV2CPUMaxReadFailed represents a function to generate an error that reading cpu.max failed.
 	ErrCgroupV2CPUMaxReadFailed = func(err error) error {
 		return Wrap(err, "v2 read cpu.max")
