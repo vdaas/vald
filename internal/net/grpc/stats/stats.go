@@ -151,8 +151,7 @@ func detectCgroupMode() CgroupMode {
 	if err != nil {
 		return Unknown
 	}
-	lines := strings.Split(string(data), "\n")
-	for _, line := range lines {
+	for _, line := range strings.Split(string(data), "\n") {
 		// v2 line looks like: "0::/kubepods.slice/..."
 		parts := strings.Split(line, ":")
 		if len(parts) >= 3 && parts[1] == "" {
@@ -195,8 +194,7 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 		return nil, errors.ErrCgroupV2CPUStatRead(err)
 	}
 	var usageUS uint64
-	lines := strings.Split(string(data), "\n")
-	for _, line := range lines {
+	for _, line := range strings.Split(string(data), "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
