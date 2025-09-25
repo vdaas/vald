@@ -139,7 +139,7 @@ func readCgroupMetrics() (metrics *CgroupMetrics, err error) {
 	case CGV1:
 		return readCgroupV1Metrics()
 	default:
-		return nil, errors.ErrCgroupModeDetectionFailed()
+		return nil, errors.ErrCgroupModeDetectionFailed
 	}
 }
 
@@ -170,16 +170,16 @@ func detectCgroupMode() CgroupMode {
 func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 	data, err := file.ReadFile(file.Join(cgroupBasePath, "memory.current"))
 	if err != nil {
-		return nil, errors.ErrCgroupV2MemoryCurrentRead(err)
+		return nil, errors.ErrCgroupV2MemoryCurrentReadFailed(err)
 	}
 	memCur, err := strconv.ParseUint(strings.TrimSpace(conv.Btoa(data)), 10, 64)
 	if err != nil {
-		return nil, errors.ErrCgroupV2MemoryCurrentParse(err)
+		return nil, errors.ErrCgroupV2MemoryCurrentParseFailed(err)
 	}
 
 	data, err = file.ReadFile(file.Join(cgroupBasePath, "memory.max"))
 	if err != nil {
-		return nil, errors.ErrCgroupV2MemoryMaxRead(err)
+		return nil, errors.ErrCgroupV2MemoryMaxReadFailed(err)
 	}
 	memMaxStr := strings.TrimSpace(conv.Btoa(data))
 	var memMax uint64
@@ -188,13 +188,13 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 	} else {
 		memMax, err = strconv.ParseUint(memMaxStr, 10, 64)
 		if err != nil {
-			return nil, errors.ErrCgroupV2MemoryMaxParse(err)
+			return nil, errors.ErrCgroupV2MemoryMaxParseFailed(err)
 		}
 	}
 
 	data, err = file.ReadFile(file.Join(cgroupBasePath, "cpu.stat"))
 	if err != nil {
-		return nil, errors.ErrCgroupV2CPUStatRead(err)
+		return nil, errors.ErrCgroupV2CPUStatReadFailed(err)
 	}
 	var usageUS uint64
 	for _, line := range strings.Split(conv.Btoa(data), "\n") {
@@ -212,13 +212,13 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 		}
 	}
 	if usageUS == 0 {
-		return nil, errors.ErrCgroupV2CPUStatMissingUsage()
+		return nil, errors.ErrCgroupV2CPUStatMissingUsage
 	}
 	usageNS := usageUS * 1000
 
 	data, err = file.ReadFile(file.Join(cgroupBasePath, "cpu.max"))
 	if err != nil {
-		return nil, errors.ErrCgroupV2CPUMaxRead(err)
+		return nil, errors.ErrCgroupV2CPUMaxReadFailed(err)
 	}
 	val := strings.TrimSpace(conv.Btoa(data))
 	parts := strings.Fields(val)
@@ -231,13 +231,13 @@ func readCgroupV2Metrics() (metrics *CgroupMetrics, err error) {
 	} else {
 		quotaUsInt, err := strconv.ParseUint(parts[0], 10, 64)
 		if err != nil {
-			return nil, errors.ErrCgroupV2CPUMaxParseQuota(err)
+			return nil, errors.ErrCgroupV2CPUMaxParseQuotaFailed(err)
 		}
 		quotaUs = quotaUsInt
 	}
 	periodUs, err := strconv.ParseUint(parts[1], 10, 64)
 	if err != nil {
-		return nil, errors.ErrCgroupV2CPUMaxParsePeriod(err)
+		return nil, errors.ErrCgroupV2CPUMaxParsePeriodFailed(err)
 	}
 
 	metrics = &CgroupMetrics{
