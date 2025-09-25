@@ -135,7 +135,7 @@ endif
 docker/create/manifest:
 	$(eval image := $(shell $(MAKE) -s docker/name/$(TARGET)))
 	$(eval images := $(foreach arch,$(ARCHS),$(image):$(TAG)-$(arch)))
-	@echo docker buildx imagetools create \
+	docker buildx imagetools create \
 		-t $(image):$(TAG) \
 		$(images) \
 		$(EXTRA_IMAGES)
