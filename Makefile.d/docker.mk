@@ -133,10 +133,10 @@ endif
 
 .PHONY: docker/create/manifest
 docker/create/manifest:
-	$(eval org ?= $(CRORG))
-	$(eval images := $(foreach arch,$(ARCHS),$(org)/$(IMAGE):$(TAG)-$(arch)))
-	docker buildx imagetools create \
-		-t $(org)/$(IMAGE):$(TAG) \
+	$(eval image := $(shell $(MAKE) -s docker/name/$(TARGET)))
+	$(eval images := $(foreach arch,$(ARCHS),$(image):$(TAG)-$(arch)))
+	@echo docker buildx imagetools create \
+		-t $(image):$(TAG) \
 		$(images) \
 		$(EXTRA_IMAGES)
 
@@ -146,8 +146,8 @@ docker/create/manifest/alter:
 
 .PHONY: docker/inspect/image
 docker/inspect/image:
-	$(eval org ?= $(CRORG))
-	docker buildx imagetools inspect $(org)/$(IMAGE):$(TAG)
+	$(eval image := $(shell $(MAKE) -s docker/name/$(TARGET)))
+	docker buildx imagetools inspect $(image):$(TAG)
 
 .PHONY: docker/inspect/image/alter
 docker/inspect/image/alter:

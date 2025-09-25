@@ -48,7 +48,7 @@ runs:
       run: |
         for tag in ${PRIMARY_TAG} ${SECONDARY_TAGS}; do
           make \
-            IMAGE="${TARGET}" \
+            TARGET="${TARGET}" \
             TAG="${PRIMARY_TAG}" \
             ARCHS="${ARCHS}" \
             docker/create/manifest
@@ -64,9 +64,9 @@ runs:
       run: |
         for tag in ${PRIMARY_TAG} ${SECONDARY_TAGS}; do
           make \
-            IMAGE=${TARGET} \
-            TAG=${PRIMARY_TAG} \
-            docker/inspect/images
+            TARGET="${TARGET}" \
+            TAG="${PRIMARY_TAG}" \
+            docker/inspect/image
         done
       env:
         PRIMARY_TAG: ${{ inputs.primary_tag }}
