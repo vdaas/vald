@@ -131,7 +131,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: ./.github/actions/scan-docker-image
         with:
-          image_ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}-${{ matrix.arch }}"
+          image_ref: "${{ needs.prepare.outputs.image_name }}:${{ needs.prepare.outputs.primary_tag }}-${{ matrix.arch }}"
     outputs:
       extra_tags: ${{ steps.build_and_publish.outputs.EXTRA_TAGS }}
   merge:
