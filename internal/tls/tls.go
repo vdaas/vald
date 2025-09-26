@@ -23,6 +23,7 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"reflect"
+	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -67,6 +68,10 @@ type credentials struct {
 	sn         string
 	insecure   bool
 	clientAuth tls.ClientAuthType
+	// hotReload toggles per-handshake reload using GetCertificate.
+	hotReload bool
+	// certPtr keeps the latest loaded certificate.
+	certPtr atomic.Pointer[tls.Certificate]
 }
 
 // newCredential builds credentials from defaults and provided options.
@@ -139,12 +144,48 @@ func NewServerConfig(opts ...Option) (*Config, error) {
 		c.sn = "vald-server"
 		c.cfg.ServerName = c.sn
 	}
-	// load cert pair
-	kp, err := loadKeyPair(c.sn, c.cert, c.key)
-	if err != nil {
-		return nil, err
+	// Configure certificate strategy.
+	if c.hotReload {
+		// Preload once for NameToCertificate mapping and fallback.
+		kp, err := loadKeyPair(c.sn, c.cert, c.key)
+		if err != nil {
+			return nil, err
+		}
+		c.cfg.Certificates = []tls.Certificate{kp}
+		c.certPtr.Store(&kp)
+
+		// Reload per-handshake.
+		c.cfg.GetCertificate = func(chi *tls.ClientHelloInfo) (*tls.Certificate, error) {
+			kp2, err := loadKeyPair(c.sn, c.cert, c.key)
+			if err != nil {
+				// fall back to last good certificate
+				if cur := c.certPtr.Load(); cur != nil {
+					return cur, nil
+				}
+				return nil, err
+			}
+			c.certPtr.Store(&kp2)
+			return c.certPtr.Load(), nil
+		}
+
+		// Ensure NameToCertificate stays sensible by cloning config with latest cert.
+		c.cfg.GetConfigForClient = func(chi *tls.ClientHelloInfo) (*tls.Config, error) {
+			cfg := c.cfg.Clone()
+			cfg.GetConfigForClient = nil
+			if cur := c.certPtr.Load(); cur != nil {
+				cfg.Certificates = []tls.Certificate{*cur}
+			}
+			return cfg, nil
+		}
+	} else {
+		// load once statically
+		kp, err := loadKeyPair(c.sn, c.cert, c.key)
+		if err != nil {
+			return nil, err
+		}
+		c.cfg.Certificates = []tls.Certificate{kp}
+		c.certPtr.Store(&kp)
 	}
-	c.cfg.Certificates = []tls.Certificate{kp}
 	// if CA provided, configure mTLS
 	if c.ca != "" {
 		pool, err := NewX509CertPool(c.ca)
@@ -192,11 +233,33 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 			c.sn = "vald-client"
 			c.cfg.ServerName = c.sn
 		}
-		kp, err := loadKeyPair(c.sn, c.cert, c.key)
-		if err != nil {
-			return nil, err
+		if c.hotReload {
+			// Preload once for initial handshake and SNI mapping if needed.
+			kp, err := loadKeyPair(c.sn, c.cert, c.key)
+			if err != nil {
+				return nil, err
+			}
+			c.cfg.Certificates = []tls.Certificate{kp}
+			c.certPtr.Store(&kp)
+			c.cfg.GetClientCertificate = func(cri *tls.CertificateRequestInfo) (*tls.Certificate, error) {
+				kp2, err := loadKeyPair(c.sn, c.cert, c.key)
+				if err != nil {
+					if cur := c.certPtr.Load(); cur != nil {
+						return cur, nil
+					}
+					return nil, err
+				}
+				c.certPtr.Store(&kp2)
+				return c.certPtr.Load(), nil
+			}
+		} else {
+			kp, err := loadKeyPair(c.sn, c.cert, c.key)
+			if err != nil {
+				return nil, err
+			}
+			c.cfg.Certificates = []tls.Certificate{kp}
+			c.certPtr.Store(&kp)
 		}
-		c.cfg.Certificates = []tls.Certificate{kp}
 	}
 	return c.cfg, nil
 }
