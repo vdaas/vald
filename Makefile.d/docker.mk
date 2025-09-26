@@ -133,7 +133,7 @@ endif
 
 .PHONY: docker/create/manifest
 docker/create/manifest:
-	$(eval image := $(shell $(MAKE) -s docker/name/$(TARGET)))
+	$(eval image := $(shell $(MAKE) ORG=$(ORG) -s docker/name/$(TARGET)))
 	$(eval images := $(foreach arch,$(ARCHS),$(image):$(TAG)-$(arch)))
 	docker buildx imagetools create \
 		-t $(image):$(TAG) \
@@ -146,8 +146,8 @@ docker/create/manifest/alter:
 
 .PHONY: docker/inspect/image
 docker/inspect/image:
-	$(eval image := $(shell $(MAKE) -s docker/name/$(TARGET)))
-	docker buildx imagetools inspect $(image):$(TAG)
+	$(eval image := $(shell $(MAKE) ORG=$(ORG) -s docker/name/$(TARGET)))
+	@echo docker buildx imagetools inspect $(image):$(TAG)
 
 .PHONY: docker/inspect/image/alter
 docker/inspect/image/alter:
