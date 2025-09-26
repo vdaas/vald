@@ -61,7 +61,7 @@ runs:
       shell: bash
       id: inspect_image
       run: |
-        for tag in ${PRIMARY_TAG} ${SECONDARY_TAGS}; do
+        for tag in ${PRIMARY_TAG} ${EXTRA_TAGS}; do
           make \
             TARGET="${TARGET}" \
             TAG="${tag}" \
