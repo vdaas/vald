@@ -50,7 +50,8 @@ runs:
             TARGET="${TARGET}" \
             TAG="${PRIMARY_TAG}" \
             ARCHS="${ARCHS}" \
-            docker/create/manifest
+            docker/create/manifest \
+            docker/create/manifest/alter
         done
       env:
         TARGET: ${{ inputs.target }}
@@ -65,7 +66,8 @@ runs:
           make \
             TARGET="${TARGET}" \
             TAG="${tag}" \
-            docker/inspect/image
+            docker/inspect/image \
+            docker/inspect/image/alter
         done
       env:
         TARGET: ${{ inputs.target }}
