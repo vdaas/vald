@@ -61,33 +61,33 @@ var (
 // credentials holds TLS settings for server and client
 // including certificate paths, CA bundle, and hot reload policies.
 type credentials struct {
-    cfg        *Config
-    cert       string
-    key        string
-    ca         string
-    sn         string
-    insecure   bool
-    clientAuth tls.ClientAuthType
-    // hotReload toggles per-handshake reload using GetCertificate.
-    hotReload bool
-    // certPtr keeps the latest loaded certificate.
-    certPtr atomic.Pointer[tls.Certificate]
+	cfg        *Config
+	cert       string
+	key        string
+	ca         string
+	sn         string
+	insecure   bool
+	clientAuth tls.ClientAuthType
+	// hotReload toggles per-handshake reload using GetCertificate.
+	hotReload bool
+	// certPtr keeps the latest loaded certificate.
+	certPtr atomic.Pointer[tls.Certificate]
 }
 
 // newCredential builds credentials from defaults and provided options.
 func newCredential(opts ...Option) (*credentials, error) {
-    c := new(credentials)
-    for _, opt := range append(defaultOptions(), opts...) {
-        if err := opt(c); err != nil {
-            return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
-        }
-    }
-    if c.cfg == nil {
-        c.cfg = new(Config)
-    }
-    if c.sn != "" {
-        c.cfg.ServerName = c.sn
-    }
+	c := new(credentials)
+	for _, opt := range append(defaultOptions(), opts...) {
+		if err := opt(c); err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
+	}
+	if c.cfg == nil {
+		c.cfg = new(Config)
+	}
+	if c.sn != "" {
+		c.cfg.ServerName = c.sn
+	}
 	c.cfg.InsecureSkipVerify = c.insecure
 	if c.cfg.MinVersion == 0 {
 		c.cfg.MinVersion = tls.VersionTLS12
@@ -144,48 +144,48 @@ func NewServerConfig(opts ...Option) (*Config, error) {
 		c.sn = "vald-server"
 		c.cfg.ServerName = c.sn
 	}
-    // Configure certificate strategy.
-    if c.hotReload {
-        // Preload once for NameToCertificate mapping and fallback.
-        kp, err := loadKeyPair(c.sn, c.cert, c.key)
-        if err != nil {
-            return nil, err
-        }
-        c.cfg.Certificates = []tls.Certificate{kp}
-        c.certPtr.Store(&kp)
+	// Configure certificate strategy.
+	if c.hotReload {
+		// Preload once for NameToCertificate mapping and fallback.
+		kp, err := loadKeyPair(c.sn, c.cert, c.key)
+		if err != nil {
+			return nil, err
+		}
+		c.cfg.Certificates = []tls.Certificate{kp}
+		c.certPtr.Store(&kp)
 
-        // Reload per-handshake.
-        c.cfg.GetCertificate = func(chi *tls.ClientHelloInfo) (*tls.Certificate, error) {
-            kp2, err := loadKeyPair(c.sn, c.cert, c.key)
-            if err != nil {
-                // fall back to last good certificate
-                if cur := c.certPtr.Load(); cur != nil {
-                    return cur, nil
-                }
-                return nil, err
-            }
-            c.certPtr.Store(&kp2)
-            return c.certPtr.Load(), nil
-        }
+		// Reload per-handshake.
+		c.cfg.GetCertificate = func(chi *tls.ClientHelloInfo) (*tls.Certificate, error) {
+			kp2, err := loadKeyPair(c.sn, c.cert, c.key)
+			if err != nil {
+				// fall back to last good certificate
+				if cur := c.certPtr.Load(); cur != nil {
+					return cur, nil
+				}
+				return nil, err
+			}
+			c.certPtr.Store(&kp2)
+			return c.certPtr.Load(), nil
+		}
 
-        // Ensure NameToCertificate stays sensible by cloning config with latest cert.
-        c.cfg.GetConfigForClient = func(chi *tls.ClientHelloInfo) (*tls.Config, error) {
-            cfg := c.cfg.Clone()
-            cfg.GetConfigForClient = nil
-            if cur := c.certPtr.Load(); cur != nil {
-                cfg.Certificates = []tls.Certificate{*cur}
-            }
-            return cfg, nil
-        }
-    } else {
-        // load once statically
-        kp, err := loadKeyPair(c.sn, c.cert, c.key)
-        if err != nil {
-            return nil, err
-        }
-        c.cfg.Certificates = []tls.Certificate{kp}
-        c.certPtr.Store(&kp)
-    }
+		// Ensure NameToCertificate stays sensible by cloning config with latest cert.
+		c.cfg.GetConfigForClient = func(chi *tls.ClientHelloInfo) (*tls.Config, error) {
+			cfg := c.cfg.Clone()
+			cfg.GetConfigForClient = nil
+			if cur := c.certPtr.Load(); cur != nil {
+				cfg.Certificates = []tls.Certificate{*cur}
+			}
+			return cfg, nil
+		}
+	} else {
+		// load once statically
+		kp, err := loadKeyPair(c.sn, c.cert, c.key)
+		if err != nil {
+			return nil, err
+		}
+		c.cfg.Certificates = []tls.Certificate{kp}
+		c.certPtr.Store(&kp)
+	}
 	// if CA provided, configure mTLS
 	if c.ca != "" {
 		pool, err := NewX509CertPool(c.ca)
@@ -227,41 +227,41 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 			c.cfg.RootCAs = pool
 		}
 	}
-    // load client cert if provided
-    if c.cert != "" && c.key != "" {
-        if c.sn == "" {
-            c.sn = "vald-client"
-            c.cfg.ServerName = c.sn
-        }
-        if c.hotReload {
-            // Preload once for initial handshake and SNI mapping if needed.
-            kp, err := loadKeyPair(c.sn, c.cert, c.key)
-            if err != nil {
-                return nil, err
-            }
-            c.cfg.Certificates = []tls.Certificate{kp}
-            c.certPtr.Store(&kp)
-            c.cfg.GetClientCertificate = func(cri *tls.CertificateRequestInfo) (*tls.Certificate, error) {
-                kp2, err := loadKeyPair(c.sn, c.cert, c.key)
-                if err != nil {
-                    if cur := c.certPtr.Load(); cur != nil {
-                        return cur, nil
-                    }
-                    return nil, err
-                }
-                c.certPtr.Store(&kp2)
-                return c.certPtr.Load(), nil
-            }
-        } else {
-            kp, err := loadKeyPair(c.sn, c.cert, c.key)
-            if err != nil {
-                return nil, err
-            }
-            c.cfg.Certificates = []tls.Certificate{kp}
-            c.certPtr.Store(&kp)
-        }
-    }
-    return c.cfg, nil
+	// load client cert if provided
+	if c.cert != "" && c.key != "" {
+		if c.sn == "" {
+			c.sn = "vald-client"
+			c.cfg.ServerName = c.sn
+		}
+		if c.hotReload {
+			// Preload once for initial handshake and SNI mapping if needed.
+			kp, err := loadKeyPair(c.sn, c.cert, c.key)
+			if err != nil {
+				return nil, err
+			}
+			c.cfg.Certificates = []tls.Certificate{kp}
+			c.certPtr.Store(&kp)
+			c.cfg.GetClientCertificate = func(cri *tls.CertificateRequestInfo) (*tls.Certificate, error) {
+				kp2, err := loadKeyPair(c.sn, c.cert, c.key)
+				if err != nil {
+					if cur := c.certPtr.Load(); cur != nil {
+						return cur, nil
+					}
+					return nil, err
+				}
+				c.certPtr.Store(&kp2)
+				return c.certPtr.Load(), nil
+			}
+		} else {
+			kp, err := loadKeyPair(c.sn, c.cert, c.key)
+			if err != nil {
+				return nil, err
+			}
+			c.cfg.Certificates = []tls.Certificate{kp}
+			c.certPtr.Store(&kp)
+		}
+	}
+	return c.cfg, nil
 }
 
 // NewX509CertPool loads one or more PEM files into a CertPool
