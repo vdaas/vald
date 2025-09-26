@@ -61,6 +61,7 @@ helm/package/vald-benchmark-operator: \
 	helm package $(ROOTDIR)/charts/vald-benchmark-operator
 
 .PHONY: helm/package/vald-readreplica
+## packaging Helm chart for vald-readreplica
 helm/package/vald-readreplica:
 	helm package $(ROOTDIR)/charts/vald-readreplica
 

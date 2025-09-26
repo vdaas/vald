@@ -40,6 +40,7 @@ gotests/install: \
 $(GOPATH)bin/gotests:
 	$(call go-tool-install)
 
+.PHONY: test
 ## run tests for cmd, internal, pkg
 test: certs/gen
 	GOPRIVATE=$(GOPRIVATE) \
