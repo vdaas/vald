@@ -52,14 +52,17 @@ bench/datasets/clean:
 	rm -rf $(BENCH_DATASETS)
 
 .PHONY: bench/datasets/basedir/print
+## print benchmark dataset base directory path
 bench/datasets/basedir/print:
 	@echo $(BENCH_DATASET_BASE_DIR)
 
 .PHONY: bench/datasets/md5dir/print
+## print benchmark dataset md5 directory path
 bench/datasets/md5dir/print:
 	@echo $(BENCH_DATASET_MD5_DIR)
 
 .PHONY: bench/datasets/hdf5dir/print
+## print benchmark dataset hdf5 directory path
 bench/datasets/hdf5dir/print:
 	@echo $(BENCH_DATASET_HDF5_DIR)
 
