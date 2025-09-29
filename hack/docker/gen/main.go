@@ -846,7 +846,7 @@ func main() {
 			AliasImage:   true,
 			PackageDir:   "buildbase",
 			BuilderImage: "ubuntu",
-			BuilderTag:   "devel",
+			BuilderTag:   "latest",
 		},
 		"vald-buildkit": {
 			AppName:      "buildkit",
