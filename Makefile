@@ -184,7 +184,7 @@ CGO_CFLAGS ?= $(CFLAGS)
 CGO_LDFLAGS = -L $(shell brew --prefix hdf5)/lib -L $(shell brew --prefix zlib)/lib $(HDF5_LDFLAGS)
 endif
 CXXFLAGS ?= $(CFLAGS)
-EXTLDFLAGS ?= 
+EXTLDFLAGS ?= -march=armv8-a
 else
 CFLAGS ?=
 CXXFLAGS ?= $(CFLAGS)
