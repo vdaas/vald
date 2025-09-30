@@ -78,6 +78,7 @@ jobs:
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
             echo "Push to main branch. Building for all architectures."
             MATRIX="[$(IFS=,; echo ${ARCHS[@]})]"
+            
           elif [ "${{ github.event_name }}" = "pull_request" ]; then
             labels=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH" | grep "actions/build")
             archs=()
@@ -91,8 +92,10 @@ jobs:
             done
             MATRIX=$(IFS=,; echo "[${archs[*]}]")
           fi
-          echo "Matrix is determined: ${MATRIX}"
+
+          echo "MATRIX is determined: ${MATRIX}"
           echo "MATRIX=${MATRIX}" >> $GITHUB_OUTPUT
+          echo "ARCHS=$(echo ${MATRIX} | jq -r '.[].arch')" >> $GITHUB_OUTPUT
       - name: Prepare
         id: prepare
         uses: ./.github/actions/prepare-docker-build
@@ -101,6 +104,7 @@ jobs:
     outputs:
       ref: ${{ steps.ref.outputs.ref }}
       matrix: ${{ steps.determine_build_target_arch.outputs.MATRIX }}
+      archs: ${{ steps.determine_build_target_arch.outputs.ARCHS }}
       image_name: ${{ steps.prepare.outputs.IMAGE_NAME }}
       alter_image_name: ${{ steps.prepare.outputs.ALTER_IMAGE_NAME }}
       primary_tag: ${{ steps.prepare.outputs.PRIMARY_TAG }}
@@ -136,7 +140,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
         with:
           version: latest
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/${{ matrix.arch }}
           driver-opts: |
             image=ghcr.io/vdaas/vald/vald-buildkit:nightly
             network=host
@@ -191,7 +195,7 @@ jobs:
         with:
           target: ${{ inputs.target }}
           builder: ${{ steps.buildx.outputs.name }}
-          archs: "arm64 amd64"
+          archs: ${{ needs.prepare.outputs.archs }}
           primary_tag: ${{ needs.prepare.outputs.primary_tag }}
           extra_tags: ${{ needs.build.outputs.extra_tags }}
   slack:
