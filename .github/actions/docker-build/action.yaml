@@ -68,7 +68,8 @@ runs:
       id: determine_platforms
       run: |
         if [ "${TARGET_PLATFORMS}" = "" ]; then
-          if [ "${{ github.event.repository.fork }}" = "true" ]; then
+          # Check if PR is from a forked repository (for both pull_request and pull_request_target events)
+          if ([ "${{ github.event_name }}" = "pull_request" ] || [ "${{ github.event_name }}" = "pull_request_target" ]) && [ "${{ github.event.pull_request.head.repo.fork }}" = "true" ]; then
             platforms="linux/amd64"
           elif [[ "$GITHUB_REF" =~ ^refs/heads/main$ ]] || [[ "$GITHUB_REF" =~ ^refs/heads/master$ ]] || [[ "$GITHUB_REF" =~ ^refs/heads/release.* ]] || [[ "${PRIMARY_TAG}" == "nightly" ]]; then
             platforms=`make docker/platforms`
