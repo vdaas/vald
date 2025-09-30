@@ -95,7 +95,7 @@ jobs:
 
           echo "MATRIX is determined: ${MATRIX}"
           echo "MATRIX=${MATRIX}" >> $GITHUB_OUTPUT
-          echo "ARCHS=$(echo ${MATRIX} | jq -r '.[].arch')" >> $GITHUB_OUTPUT
+          echo "ARCHS=$(echo ${MATRIX} | jq -r '.[].arch' | tr '\n' ' ' | sed 's/ $//')" >> $GITHUB_OUTPUT
       - name: Prepare
         id: prepare
         uses: ./.github/actions/prepare-docker-build
