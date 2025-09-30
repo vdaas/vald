@@ -67,27 +67,51 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ steps.ref.outputs.ref }}
-      - name: prepare
+      - name: Determine build target architecture
+        id: determine_build_target_arch
+        run: |
+          declare -A ARCHS=(
+            ['amd64']='{"arch":"amd64","runs-on":"ubuntu-latest"}'
+            ['arm64']='{"arch":"arm64","runs-on":"ubuntu-24.04-arm"}'
+          )
+
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "Push to main branch. Building for all architectures."
+            MATRIX="[$(IFS=,; echo ${archs[@]})]"
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            labels=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH" | grep "actions/build")
+            archs=()
+            for label in ${labels}; do
+              arch="${label##*/}"
+              if [[ -v "${ARCHS[${arch}]}" ]]; then
+                archs+=(ARCHS[${arch}])
+              else
+                echo "${label} is not declared."
+              fi
+            done
+            MATRIX=$(IFS=,; echo "[${archs[*]}]")
+          fi
+          echo "Matrix is determined: ${MATRIX}"
+          echo "MATRIX=${MATRIX}" >> $GITHUB_OUTPUT
+      - name: Prepare
         id: prepare
         uses: ./.github/actions/prepare-docker-build
         with:
           target: ${{ inputs.target }}
     outputs:
       ref: ${{ steps.ref.outputs.ref }}
+      matrix: ${{ steps.determine_build_target_arch.outputs.MATRIX }}
       image_name: ${{ steps.prepare.outputs.IMAGE_NAME }}
       alter_image_name: ${{ steps.prepare.outputs.ALTER_IMAGE_NAME }}
       primary_tag: ${{ steps.prepare.outputs.PRIMARY_TAG }}
       secondary_tags: ${{ steps.prepare.outputs.SECONDARY_TAGS }}
   build:
     needs: prepare
+    if: ${{ needs.prepare.outputs.matrix != '' }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - arch: amd64
-            runs-on: ubuntu-latest
-          - arch: arm64
-            runs-on: ubuntu-24.04-arm
+        include: ${{ fromJson(needs.prepare.outputs.matrix) }}
     runs-on: ${{ matrix.runs-on }}
     steps:
       - uses: actions/checkout@v4
