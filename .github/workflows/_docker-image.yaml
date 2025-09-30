@@ -83,8 +83,8 @@ jobs:
             archs=()
             for label in ${labels}; do
               arch="${label##*/}"
-              if [[ -v "${ARCHS[${arch}]}" ]]; then
-                archs+=(ARCHS[${arch}])
+              if [[ -v "ARCHS[${arch}]" ]]; then
+                archs+=(${ARCHS[${arch}]})
               else
                 echo "${label} is not declared."
               fi
