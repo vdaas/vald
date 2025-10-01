@@ -21,9 +21,9 @@ on:
       - "CHANGELOG.md"
 jobs:
   dump-contexts-to-log:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -31,10 +31,10 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/dump-context
   languagetool-apis-charts:
+    timeout-minutes: 30
     permissions:
       contents: read
       pull-requests: write
-    timeout-minutes: 60
     name: runner / LanguageTool / apis & charts
     runs-on: ubuntu-latest
     steps:
@@ -55,10 +55,10 @@ jobs:
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
           disabled_categories: "TYPOS,TYPOGRAPHY,STYLE,CASING"
   languagetool-docs:
+    timeout-minutes: 30
     permissions:
       contents: read
       pull-requests: write
-    timeout-minutes: 60
     name: runner / LanguageTool / Docs
     runs-on: ubuntu-latest
     steps:
@@ -79,10 +79,10 @@ jobs:
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
           disabled_categories: "TYPOS,TYPOGRAPHY,STYLE"
   textlint:
+    timeout-minutes: 30
     permissions:
       contents: read
       pull-requests: write
-    timeout-minutes: 60
     name: runner / textlint
     runs-on: ubuntu-latest
     steps:

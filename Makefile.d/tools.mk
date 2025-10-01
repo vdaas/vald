@@ -70,6 +70,12 @@ pinact/install: $(GOBIN)/pinact
 $(GOBIN)/pinact:
 	$(call go-tool-install)
 
+.PHONY: ghatm/install
+ghatm/install: $(GOBIN)/ghatm
+
+$(GOBIN)/ghatm:
+	$(call go-tool-install)
+
 .PHONY: prettier/install
 prettier/install: $(NPM_GLOBAL_PREFIX)/bin/prettier
 $(NPM_GLOBAL_PREFIX)/bin/prettier:

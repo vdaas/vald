@@ -39,9 +39,9 @@ on:
       - "Makefile.d/test.mk"
 jobs:
   dump-contexts-to-log:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -53,9 +53,9 @@ jobs:
       contents: read
     uses: ./.github/workflows/_detect-ci-container.yaml
   test-cmd:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
     name: Run tests for cmd packages
     runs-on: ubuntu-latest
     needs: [detect-ci-container]
@@ -78,9 +78,9 @@ jobs:
         run: |
           tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-cmd-gotestfmt-result.json"
   test-internal:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
     name: Run tests for internal packages
     runs-on: ubuntu-latest
     needs: [detect-ci-container]
@@ -103,9 +103,9 @@ jobs:
         run: |
           tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-internal-gotestfmt-result.json"
   test-pkg:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
     name: Run tests for pkg packages
     runs-on: ubuntu-latest
     needs: [detect-ci-container]

@@ -21,9 +21,10 @@ on:
   pull_request:
 jobs:
   dump-contexts-to-log:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -37,9 +38,10 @@ jobs:
     uses: ./.github/workflows/_detect-ci-container.yaml
 
   format:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
+
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     container:
@@ -109,9 +111,10 @@ jobs:
           labels: ${{ steps.pr-label.outputs.LABELS }}
 
   check-format-diff:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
+
     if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
     runs-on: ubuntu-latest
     container:

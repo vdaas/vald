@@ -881,13 +881,11 @@ files/lint: \
 
 .PHONY: workflow/lint actionlint/lint ghalint/lint
 ## run lint for workflow files
-workflow/lint: \
-	actionlint/install \
-	ghalint/install \
-	pinact/install
+workflow/lint:
 	@echo "Linting workflow files..."
-	@echo "Running pinact first..."
+	@echo "Running pinact & ghatm first..."
 	@$(MAKE) --no-print-directory pinact/lint
+	@$(MAKE) --no-print-directory ghatm/lint
 	@echo "Running other lints in parallel..."
 	@printf '%s\0' \
 		"actionlint/lint" \
@@ -910,6 +908,10 @@ ghalint/lint:\
 pinact/lint:\
 	pinact/install
 	@$(GOBIN)/pinact run -u
+
+ghatm/lint:\
+	ghatm/install
+	@$(GOBIN)/ghatm set
 
 .PHONY: docs/textlint
 ## run textlint for document

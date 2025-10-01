@@ -24,9 +24,9 @@ env:
   TARGET_IMAGE: vdaas/vald-ci-container
 jobs:
   detect:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
     runs-on: ubuntu-latest
     if: >-
       ${{

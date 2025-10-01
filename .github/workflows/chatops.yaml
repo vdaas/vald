@@ -39,9 +39,9 @@ env:
   LABELS_URL: https://api.github.com/repos/vdaas/vald/issues/${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.inputs.pr_number }}/labels
 jobs:
   dump-contexts-to-log:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
     if: ${{ !contains(fromJSON('["cloudflare-workers-and-pages", "coderabbitai", "vdaas-ci", "all-contributors"]'), github.event.comment.user.login) }}
     runs-on: ubuntu-latest
     steps:
@@ -50,9 +50,9 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/dump-context
   label:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
     needs:
       - dump-contexts-to-log
     name: Add labels
@@ -103,9 +103,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           TRAILING_LINE: ${{ steps.check_comments_label.outputs.TRAILING_LINE }}
   rebase:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
     needs:
       - dump-contexts-to-log
     name: Rebase
@@ -179,9 +179,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
   gentest:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
     needs:
       - dump-contexts-to-log
     name: Add tests
@@ -289,9 +289,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
   format:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
     needs:
       - dump-contexts-to-log
     name: Add license and run golines + gofumpt + goimports
@@ -417,9 +417,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
   approve:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
     needs:
       - dump-contexts-to-log
     name: Approve

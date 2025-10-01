@@ -28,9 +28,9 @@ on:
         required: true
 jobs:
   dispatch:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - name: Dispatch

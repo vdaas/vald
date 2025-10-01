@@ -37,9 +37,9 @@ on:
     - cron: "0 1 * * *"
 jobs:
   dump-contexts-to-log:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -51,7 +51,7 @@ jobs:
       contents: read
     uses: ./.github/workflows/_detect-ci-container.yaml
   analyze:
-    timeout-minutes: 60
+    timeout-minutes: 30
     name: CodeQL Analyze (${{ matrix.language }})
     runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
     env:

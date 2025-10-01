@@ -38,9 +38,9 @@ on:
         required: true
 jobs:
   dump-contexts-to-log:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -52,9 +52,10 @@ jobs:
       contents: read
     uses: ./.github/workflows/_detect-ci-container.yaml
   create:
+    timeout-minutes: 30
     permissions:
       contents: read
-    timeout-minutes: 60
+
     needs:
       - dump-contexts-to-log
       - detect-ci-container
