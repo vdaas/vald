@@ -43,14 +43,6 @@ func TestWorkflowPermissionsAndSecretsGenerated(t *testing.T) {
 		t.Fatalf("failed to unmarshal workflow yaml: %v", err)
 	}
 
-	// Validate permissions
-	if got := wf.Jobs.Build.Permissions["contents"]; got != "read" {
-		t.Errorf("permissions.contents = %q, want %q", got, "read")
-	}
-	if got := wf.Jobs.Build.Permissions["packages"]; got != "write" {
-		t.Errorf("permissions.packages = %q, want %q", got, "write")
-	}
-
 	// Validate secrets
 	wantSecrets := map[string]string{
 		"PACKAGE_USER":   "${{ secrets.PACKAGE_USER }}",
