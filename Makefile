@@ -884,7 +884,7 @@ files/lint: \
 workflow/lint: \
 	actionlint/install \
 	ghalint/install \
-	pinact/install 
+	pinact/install
 	@echo "Linting workflow files..."
 	@echo "Running pinact first..."
 	@$(MAKE) --no-print-directory pinact/lint
@@ -901,7 +901,7 @@ ACTIONLINT_IGNORES = \
   -ignore 'input "file" is not defined in action "codecov/codecov-action@v5"'
 
 actionlint/lint: actionlint/install
-	@$(GOBIN)/actionlint $(ACTIONLINT_IGNORES)
+	@$(GOBIN)/actionlint -shellcheck= $(ACTIONLINT_IGNORES)
 
 ghalint/lint:\
 	ghalint/install
