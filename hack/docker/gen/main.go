@@ -1030,10 +1030,7 @@ jobs:
 			workflow.On.PullRequestTarget.Paths = workflow.On.PullRequest.Paths
 			workflow.Jobs.Build.With.Platforms = data.BuildPlatforms
 
-			workflow.Jobs.Build.Permissions = map[string]string{
-				"contents": "read",
-				"packages": "write",
-			}
+			workflow.Jobs.Build.Permissions = map[string]string{}
 
 			workflow.Jobs.Build.Secrets = map[string]string{
 				"PACKAGE_USER":   "${{ secrets.PACKAGE_USER }}",
