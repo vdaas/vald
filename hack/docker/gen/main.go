@@ -1033,10 +1033,11 @@ jobs:
 			workflow.Jobs.Build.Permissions = map[string]string{}
 
 			workflow.Jobs.Build.Secrets = map[string]string{
-				"PACKAGE_USER":   "${{ secrets.PACKAGE_USER }}",
-				"PACKAGE_TOKEN":  "${{ secrets.PACKAGE_TOKEN }}",
-				"DOCKERHUB_USER": "${{ secrets.DOCKERHUB_USER }}",
-				"DOCKERHUB_PASS": "${{ secrets.DOCKERHUB_PASS }}",
+				"PACKAGE_USER":             "${{ secrets.PACKAGE_USER }}",
+				"PACKAGE_TOKEN":            "${{ secrets.PACKAGE_TOKEN }}",
+				"DOCKERHUB_USER":           "${{ secrets.DOCKERHUB_USER }}",
+				"DOCKERHUB_PASS":           "${{ secrets.DOCKERHUB_PASS }}",
+				"SLACK_NOTIFY_WEBHOOK_URL": "${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}",
 			}
 
 			workflowYamlTmp, err := yaml.Marshal(workflow)

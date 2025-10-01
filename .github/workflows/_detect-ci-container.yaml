@@ -22,9 +22,10 @@ on:
         value: ${{ jobs.detect.outputs.TAG }}
 env:
   TARGET_IMAGE: vdaas/vald-ci-container
-permissions: {}
 jobs:
   detect:
+    permissions:
+      contents: read
     timeout-minutes: 60
     runs-on: ubuntu-latest
     if: >-
