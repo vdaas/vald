@@ -87,6 +87,7 @@ jobs:
         id: update_for_new_release
         run: |
           git checkout ${RELEASE_BRANCH_NAME}
+          git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git checkout -b ${PREPARE_RELEASE_BRANCH_NAME} && git push origin ${PREPARE_RELEASE_BRANCH_NAME}
 
           LAST_COMMIT_MESSAGE=`git log --pretty=format:%s -1`
