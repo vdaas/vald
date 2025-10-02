@@ -879,19 +879,21 @@ files/lint: \
 	files/cspell \
 	files/textlint
 
-.PHONY: workflow/lint actionlint/lint ghalint/lint
+.PHONY: workflow/lint workflow/fix actionlint/lint ghalint/lint
 ## run lint for workflow files
 workflow/lint:
+	@echo "Please run make workflow/fix beforehand"
 	@echo "Linting workflow files..."
-	@echo "Running pinact & ghatm first..."
-	@$(MAKE) --no-print-directory pinact/lint
-	@$(MAKE) --no-print-directory ghatm/lint
-	@echo "Running other lints in parallel..."
 	@printf '%s\0' \
 		"actionlint/lint" \
 		"ghalint/lint" \
 	| xargs -0 -I{} -P$(CORES) $(MAKE) --no-print-directory {}
 	@echo "Workflow linting completed."
+
+## run lint for workflow files
+workflow/fix:
+	@$(MAKE) --no-print-directory pinact/lint
+	@$(MAKE) --no-print-directory ghatm/lint
 
 ACTIONLINT_IGNORES = \
   -ignore 'when a reusable workflow is called with "uses", "timeout-minutes" is not available' \
