@@ -32,6 +32,7 @@ jobs:
     permissions:
       contents: read
       issues: write
+      pull-requests: write
     name: Triage
     runs-on: ubuntu-latest
     if: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false) }}
@@ -111,6 +112,7 @@ jobs:
     permissions:
       contents: read
       issues: write
+      pull-requests: write
     name: Remove duplication
     needs:
       - triage
