@@ -13,33 +13,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: "Update protobuf"
+name: GitHub Actions Workflow Linter
+
 on:
-  workflow_call:
-    inputs:
-      repo:
-        type: string
-        description: "Dispatch target repository"
-        required: true
-    secrets:
-      DISPATCH_USER:
-        required: true
-      DISPATCH_TOKEN:
-        required: true
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workflows-quality-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  dispatch:
+  workflow-lint:
     timeout-minutes: 30
     permissions:
       contents: read
     runs-on: ubuntu-latest
+
     steps:
-      - name: Dispatch
-        run: |
-          curl --fail -u "${USER}:${TOKEN}" \
-                      -X POST https://api.github.com/repos/vdaas/${REPO}/dispatches \
-                      -H 'Accept: application/vnd.github.everest-preview+json' \
-                      --data '{"event_type": "update-protobuf"}'
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version-file: versions/GO_VERSION
+          cache: true
+
+      - name: Lint workflows
+        run: make -k workflow/lint
         env:
-          REPO: ${{ inputs.repo }}
-          USER: ${{ secrets.DISPATCH_USER }}
-          TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          BINDIR: ${{ runner.temp }}/bin

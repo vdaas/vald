@@ -52,6 +52,30 @@ crlfmt/install: $(GOBIN)/crlfmt
 $(GOBIN)/crlfmt:
 	$(call go-tool-install)
 
+.PHONY: actionlint/install
+actionlint/install: $(GOBIN)/actionlint
+
+$(GOBIN)/actionlint:
+	$(call go-tool-install)
+
+.PHONY: ghalint/install
+ghalint/install: $(GOBIN)/ghalint
+
+$(GOBIN)/ghalint:
+	$(call go-tool-install)
+
+.PHONY: pinact/install
+pinact/install: $(GOBIN)/pinact
+
+$(GOBIN)/pinact:
+	$(call go-tool-install)
+
+.PHONY: ghatm/install
+ghatm/install: $(GOBIN)/ghatm
+
+$(GOBIN)/ghatm:
+	$(call go-tool-install)
+
 .PHONY: prettier/install
 prettier/install: $(NPM_GLOBAL_PREFIX)/bin/prettier
 $(NPM_GLOBAL_PREFIX)/bin/prettier:
