@@ -16,14 +16,6 @@
 name: GitHub Actions Workflow Linter
 
 on:
-  pull_request_target:
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - labeled
-    paths:
-      - ".github/workflows/**"
   pull_request:
     paths:
       - ".github/workflows/**"
