@@ -21,7 +21,7 @@ logging:
 dataset:
   name: _E2E_DATASET_PATH_
 kubernetes:
-  kube_config: $HOME/.kube/config
+  kube_config: _KUBECONFIG_
   port_forward:
     enabled: true
     local_port: 8082
@@ -186,6 +186,11 @@ strategies:
             name: IndexProperty
             type: index_property
             wait: 3s
+            expect:
+              - status_code: ok
+                path: $.details.length()
+                op: ge
+                value: 3
   - concurrency: 1
     name: Initial Insert and Wait
     operations:
@@ -203,18 +208,18 @@ strategies:
           - name: Insert
             type: insert
             mode: unary
-            parallelism: 10
-            num: 60000
-            qps: 3000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_INSERT_COUNT_
+            qps: _E2E_QPS_
             wait: 2m
           - mode: unary
             name: IndexInfo
             type: index_info
+            retry_until_success_timeout: 5m
             expect:
               - status_code: ok
                 path: $.stored
-                op: gt
-                value: 30000
+                value: _E2E_EXPECTED_INDEX_
   - concurrency: 4
     name: Parallel Search Opeation (Search, SearchByID, LinearSearch, LinearSearchByID) x (ConcurrentQueue, SortSlice, SortPoolSlice, PairingHeap) = 16
     operations:
@@ -223,32 +228,32 @@ strategies:
           - name: Search with ConcurrentQueue
             type: search
             mode: stream
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: cq
           - name: Search with SortSlice
             type: search
             mode: stream
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ss
           - name: Search with SortPoolSlice
             type: search
             mode: stream
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ps
           - name: Search with PairingHeap
             type: search
             mode: stream
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ph
@@ -257,32 +262,32 @@ strategies:
           - name: SearchByID with ConcurrentQueue
             type: search_by_id
             mode: stream
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: cq
           - name: SearchByID with SortSlice
             type: search_by_id
             mode: stream
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ss
           - name: SearchByID with SortPoolSlice
             type: search_by_id
             mode: stream
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ps
           - name: SearchByID with PairingHeap
             type: search_by_id
             mode: stream
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ph
@@ -291,32 +296,32 @@ strategies:
           - name: LinearSearch with ConcurrentQueue
             type: linear_search
             mode: stream
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: cq
           - name: LinearSearch with SortSlice
             type: linear_search
             mode: stream
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ss
           - name: LinearSearch with SortPoolSlice
             type: linear_search
             mode: stream
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ps
           - name: LinearSearch with PairingHeap
             type: linear_search
             mode: stream
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ph
@@ -325,32 +330,32 @@ strategies:
           - name: LinearSearchByID with ConcurrentQueue
             type: linear_search_by_id
             mode: stream
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: cq
           - name: LinearSearchByID with SortSlice
             type: linear_search_by_id
             mode: stream
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ss
           - name: LinearSearchByID with SortPoolSlice
             type: linear_search_by_id
             mode: stream
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ps
           - name: LinearSearchByID with PairingHeap
             type: linear_search_by_id
             mode: stream
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
             search:
               timeout: 3s
               algorithm: ph
@@ -362,22 +367,22 @@ strategies:
           - name: GetObject
             type: object
             mode: stream
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
       - name: Exists Operation
         executions:
           - name: Exists
             type: exists
             mode: unary
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
       - name: GetTimestamp Operation
         executions:
           - name: GetTimestamp
             type: timestamp
             mode: unary
-            parallelism: 10
-            num: 1000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_SEARCH_COUNT_
   - concurrency: 1
     name: Update -> Index Detail
     operations:
@@ -386,9 +391,9 @@ strategies:
           - name: Update
             type: update
             mode: stream
-            parallelism: 10
-            num: 10000
-            offset: 10000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_UPDATE_COUNT_
+            offset: 0
             wait: 2m
           - name: IndexDetail
             type: index_detail
@@ -401,8 +406,8 @@ strategies:
           - name: Remove
             type: remove
             mode: stream
-            parallelism: 10
-            num: 10000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_UPDATE_COUNT_
           - name: IndexStatistics
             type: index_statistics
             mode: unary
@@ -411,8 +416,8 @@ strategies:
           - name: Upsert
             type: upsert
             mode: stream
-            parallelism: 10
-            num: 10000
+            parallelism: _E2E_PARALLELISM_
+            num: _E2E_UPDATE_COUNT_
           - name: IndexDetail
             type: index_detail
             mode: unary
@@ -431,10 +436,10 @@ strategies:
             mode: unary
             type: index_detail
           - name: Upsert
-            parallelism: 10
+            parallelism: _E2E_PARALLELISM_
             mode: stream
-            num: 10000
-            offset: 20000
+            num: _E2E_UPDATE_COUNT_
+            offset: 0
             type: upsert
             wait: 2m
           - name: IndexDetail
@@ -454,3 +459,5 @@ strategies:
           - name: IndexInfo
             mode: unary
             type: index_info
+            expect:
+              - value: {}
