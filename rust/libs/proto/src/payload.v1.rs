@@ -1333,6 +1333,8 @@ fn full_name() -> ::prost::alloc::string::String { "payload.v1.Info.Index.Statis
             pub outgoing_edge: i32,
             #[prost(int32, tag="34")]
             pub incoming_edge: i32,
+            #[prost(float, tag="35")]
+            pub epsilon_for_creation: f32,
         }
 impl ::prost::Name for Property {
 const NAME: &'static str = "Property";
