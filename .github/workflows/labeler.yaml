@@ -43,7 +43,7 @@ jobs:
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
           branch_name=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.head.ref"`
           type_labels=($(gh api "repos/${REPOSITORY}/labels?per_page=5000" | jq -r ".[].name" | grep -e "^type/"))
-          send_labels=()
+          send_labels=(\"actions/build/amd64\")
 
           git fetch origin main
 

@@ -1,0 +1,75 @@
+#
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Create Docker manifest"
+description: "An action to create Docker manifest and publish them"
+inputs:
+  builder:
+    description: "Buildx builder name"
+    required: true
+    default: ""
+  target:
+    description: "Build target"
+    required: true
+    default: "base"
+  archs:
+    description: "Architectures"
+    required: true
+    default: "amd64"
+  primary_tag:
+    description: "Primary Tag"
+    required: true
+  extra_tags:
+    description: "Extra tags"
+    required: false
+outputs:
+  PLATFORMS:
+    description: "Target platforms"
+    value: ${{ steps.determine_platforms.outputs.PLATFORMS }}
+runs:
+  using: "composite"
+  steps:
+    - name: Create manifest and push
+      shell: bash
+      id: create_manifest
+      run: |
+        for tag in ${PRIMARY_TAG} ${EXTRA_TAGS}; do
+          make \
+            TARGET="${TARGET}" \
+            TAG="${PRIMARY_TAG}" \
+            ARCHS="${ARCHS}" \
+            docker/create/manifest \
+            docker/create/manifest/alter
+        done
+      env:
+        TARGET: ${{ inputs.target }}
+        ARCHS: ${{ inputs.archs }}
+        PRIMARY_TAG: ${{ inputs.primary_tag }}
+        EXTRA_TAGS: ${{ inputs.extra_tags }}
+    - name: Inspect image
+      shell: bash
+      id: inspect_image
+      run: |
+        for tag in ${PRIMARY_TAG} ${EXTRA_TAGS}; do
+          make \
+            TARGET="${TARGET}" \
+            TAG="${tag}" \
+            docker/inspect/image \
+            docker/inspect/image/alter
+        done
+      env:
+        TARGET: ${{ inputs.target }}
+        PRIMARY_TAG: ${{ inputs.primary_tag }}
+        EXTRA_TAGS: ${{ inputs.extra_tags }}
