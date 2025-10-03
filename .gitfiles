@@ -27,6 +27,7 @@
 .github/ISSUE_TEMPLATE/feature_request.md
 .github/ISSUE_TEMPLATE/security_issue_report.md
 .github/PULL_REQUEST_TEMPLATE.md
+.github/actions/create-docker-manifest/action.yaml
 .github/actions/deploy-chaos-mesh/action.yaml
 .github/actions/detect-docker-image-tags/action.yaml
 .github/actions/determine-docker-image-tag/action.yaml
@@ -37,6 +38,7 @@
 .github/actions/e2e-deploy-vald/action.yaml
 .github/actions/e2e-profile/action.yaml
 .github/actions/notify-slack/action.yaml
+.github/actions/prepare-docker-build/action.yaml
 .github/actions/scan-docker-image/action.yaml
 .github/actions/setup-e2e/action.yaml
 .github/actions/setup-go/action.yaml
