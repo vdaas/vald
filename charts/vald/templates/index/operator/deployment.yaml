@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 {{- $operator := .Values.manager.index.operator -}}
-{{- $valdServiceAccount := .Values.discoverer.serviceAccount -}}
 {{- if and $operator.enabled (eq $operator.kind "Deployment") }}
 apiVersion: apps/v1
 kind: Deployment
@@ -104,7 +103,9 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      serviceAccountName: {{ $valdServiceAccount.name }}
+      {{- if $operator.serviceAccountName }}
+      serviceAccountName: {{ $operator.serviceAccountName }}
+      {{- end }}
       {{- if $operator.podSecurityContext }}
       securityContext:
         {{- toYaml $operator.podSecurityContext | nindent 8 }}

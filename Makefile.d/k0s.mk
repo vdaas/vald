@@ -44,6 +44,8 @@ k0s/start:
 		sleep 5; \
 	done
 
+.PHONY: k0s/vs/start
+## start k0s cluster with volume snapshot
 k0s/vs/start: k0s/start
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml

@@ -13,20 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- $rotator := .Values.manager.index.readreplica.rotator -}}
-{{- if and $rotator.enabled $rotator.clusterRoleBinding.enabled }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ $rotator.clusterRoleBinding.name }}
+  name: vald-index-operator
   labels:
-    {{- include "vald.labels" (dict "Values" $rotator "default" .) | nindent 4 }}
+    app: vald-index-operator
+    app.kubernetes.io/name: vald
+    helm.sh/chart: vald-v1.7.17
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/component: vald-index-operator
+    app.kubernetes.io/version: v1.7.17
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ $rotator.clusterRole.name }}
+  name: vald-index-operator
 subjects:
   - kind: ServiceAccount
-    name: {{ default $rotator.serviceAccountName $rotator.name }}
-    namespace: {{ .Release.Namespace }}
-{{- end }}
+    name: vald-index-operator
+    namespace: default

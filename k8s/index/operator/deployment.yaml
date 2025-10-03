@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: operator
       annotations:
-        checksum/configmap: 574e4c7e253178655e042776ece2b4f10bbf4302a8346056e78af2c55671c52e
+        checksum/configmap: 95a26c1d6caedec95c7fe3c3dcb592076516831da0c054edf00ef7c29ae76b81
         pyroscope.io/scrape: "true"
         pyroscope.io/application-name: vald-index-operator
         pyroscope.io/profile-cpu-enabled: "true"
@@ -156,7 +156,7 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      serviceAccountName: vald
+      serviceAccountName: vald-index-operator
       securityContext:
         fsGroup: 65532
         fsGroupChangePolicy: OnRootMismatch
