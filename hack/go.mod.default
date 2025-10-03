@@ -16,8 +16,12 @@ tool (
 	github.com/mfridman/tparse
 	github.com/momotaro98/strictgoimports/cmd/strictgoimports
 	github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
+	github.com/rhysd/actionlint/cmd/actionlint
 	github.com/segmentio/golines
 	github.com/stern/stern
+	github.com/suzuki-shunsuke/ghalint/cmd/ghalint
+	github.com/suzuki-shunsuke/pinact/cmd/pinact
+	github.com/suzuki-shunsuke/ghatm/cmd/ghatm
 	golang.org/x/tools/cmd/goimports
 	honnef.co/go/tools/cmd/staticcheck
 	mvdan.cc/gofumpt
