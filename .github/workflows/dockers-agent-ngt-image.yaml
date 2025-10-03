@@ -280,4 +280,5 @@ jobs:
       PACKAGE_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
       PACKAGE_USER: ${{ secrets.PACKAGE_USER }}
       SLACK_NOTIFY_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
-    permissions: {}
+    permissions:
+      contents: read
