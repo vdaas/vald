@@ -39,12 +39,20 @@ env:
   LABELS_URL: https://api.github.com/repos/vdaas/vald/issues/${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.inputs.pr_number }}/labels
 jobs:
   dump-contexts-to-log:
+    timeout-minutes: 30
+    permissions:
+      contents: read
     if: ${{ !contains(fromJSON('["cloudflare-workers-and-pages", "coderabbitai", "vdaas-ci", "all-contributors"]'), github.event.comment.user.login) }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/dump-context
   label:
+    timeout-minutes: 30
+    permissions:
+      contents: read
     needs:
       - dump-contexts-to-log
     name: Add labels
@@ -95,6 +103,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           TRAILING_LINE: ${{ steps.check_comments_label.outputs.TRAILING_LINE }}
   rebase:
+    timeout-minutes: 30
+    permissions:
+      contents: read
     needs:
       - dump-contexts-to-log
     name: Rebase
@@ -141,9 +152,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           BRANCH: ${{ steps.check_comments_rebase.outputs.BRANCH_NAME }}
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
+          persist-credentials: false
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
       - name: Set Git config
@@ -151,7 +163,7 @@ jobs:
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Automatic Rebase
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        uses: cirrus-actions/rebase@1.8
+        uses: cirrus-actions/rebase@b87d48154a87a85666003575337e27b8cd65f691 # 1.8
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
       - name: Failure comment
@@ -167,6 +179,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
   gentest:
+    timeout-minutes: 30
+    permissions:
+      contents: read
     needs:
       - dump-contexts-to-log
     name: Add tests
@@ -213,14 +228,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
+          persist-credentials: false
           fetch-depth: 0
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - uses: crazy-max/ghaction-import-gpg@v6
+      - uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec # v6.3.0
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
@@ -273,6 +289,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
   format:
+    timeout-minutes: 30
+    permissions:
+      contents: read
     needs:
       - dump-contexts-to-log
     name: Add license and run golines + gofumpt + goimports
@@ -318,15 +337,16 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
+          persist-credentials: false
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - uses: crazy-max/ghaction-import-gpg@v6
+      - uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec # v6.3.0
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
@@ -397,6 +417,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
   approve:
+    timeout-minutes: 30
+    permissions:
+      contents: read
     needs:
       - dump-contexts-to-log
     name: Approve

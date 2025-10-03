@@ -30,6 +30,9 @@ on:
       - "assets/docs/**"
 jobs:
   dispatch:
+    timeout-minutes: 30
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Dispatch

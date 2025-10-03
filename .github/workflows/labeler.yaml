@@ -18,23 +18,33 @@ on:
   - pull_request
 jobs:
   dump-contexts-to-log:
+    timeout-minutes: 30
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/dump-context
   triage:
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: write
     name: Triage
     runs-on: ubuntu-latest
     if: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
+          persist-credentials: false
           ref: ${{ github.head_ref }}
           fetch-depth: 0
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - uses: actions/labeler@v5
+      - uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b # v6.0.1
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           configuration-path: ".github/labeler.yaml"
@@ -43,7 +53,7 @@ jobs:
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
           branch_name=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.head.ref"`
           type_labels=($(gh api "repos/${REPOSITORY}/labels?per_page=5000" | jq -r ".[].name" | grep -e "^type/"))
-          send_labels=()
+          send_labels=(\"actions/build/amd64\")
 
           git fetch origin main
 
@@ -97,6 +107,10 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   remove-duplication:
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: write
     name: Remove duplication
     needs:
       - triage
