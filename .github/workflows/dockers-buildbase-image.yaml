@@ -67,4 +67,15 @@ jobs:
     with:
       target: buildbase
       platforms: linux/amd64,linux/arm64
+<<<<<<< HEAD
     secrets: inherit
+=======
+    secrets:
+      DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+      PACKAGE_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
+      PACKAGE_USER: ${{ secrets.PACKAGE_USER }}
+      SLACK_NOTIFY_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
+    permissions:
+      contents: read
+>>>>>>> 5b253893a (hotfix: docker build failure on GitHub Actions (#3258))

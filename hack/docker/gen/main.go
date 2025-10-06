@@ -1030,6 +1030,21 @@ jobs:
 			workflow.On.PullRequestTarget.Paths = workflow.On.PullRequest.Paths
 			workflow.Jobs.Build.With.Platforms = data.BuildPlatforms
 
+<<<<<<< HEAD
+=======
+			workflow.Jobs.Build.Permissions = map[string]string{
+				"contents": "read",
+			}
+
+			workflow.Jobs.Build.Secrets = map[string]string{
+				"PACKAGE_USER":             "${{ secrets.PACKAGE_USER }}",
+				"PACKAGE_TOKEN":            "${{ secrets.PACKAGE_TOKEN }}",
+				"DOCKERHUB_USER":           "${{ secrets.DOCKERHUB_USER }}",
+				"DOCKERHUB_PASS":           "${{ secrets.DOCKERHUB_PASS }}",
+				"SLACK_NOTIFY_WEBHOOK_URL": "${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}",
+			}
+
+>>>>>>> 5b253893a (hotfix: docker build failure on GitHub Actions (#3258))
 			workflowYamlTmp, err := yaml.Marshal(workflow)
 			if err != nil {
 				return fmt.Errorf("error marshaling workflowStruct to YAML: %w", err)

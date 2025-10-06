@@ -17,6 +17,12 @@
 .PHONY: binary/build
 ## build all binaries
 binary/build: \
+	binary/build/go \
+	binary/build/rust
+
+.PHONY: binary/build/go
+## build go binaries
+binary/build/go: \
 	cmd/agent/sidecar/sidecar \
 	cmd/discoverer/k8s/discoverer \
 	cmd/gateway/filter/filter \
@@ -34,7 +40,11 @@ binary/build: \
 	cmd/tools/benchmark/operator/operator \
 	example/client/client \
 	cmd/agent/core/ngt/ngt \
-	cmd/agent/core/faiss/faiss \
+	cmd/agent/core/faiss/faiss
+
+.PHONY: binary/build/rust
+## build rust binaries
+binary/build/rust: \
 	rust/target/debug/agent \
 	rust/target/release/agent
 
