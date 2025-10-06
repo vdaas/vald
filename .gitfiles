@@ -16,6 +16,7 @@
 .all-contributorsrc
 .commit_template
 .cspell.json
+.curlrc
 .deepsource.toml
 .devcontainer/devcontainer.json
 .devcontainer/postAttachCommand.sh

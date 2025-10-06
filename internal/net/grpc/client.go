@@ -1050,6 +1050,7 @@ func (g *gRPCClient) Connect(
 		pool.WithAddr(addr),
 		pool.WithSize(g.poolSize),
 		pool.WithDialOptions(append(g.dopts, dopts...)...),
+		pool.WithOldConnCloseDelay(g.roccd),
 		pool.WithResolveDNS(func() bool {
 			disabled, ok := g.disableResolveDNSAddrs.Load(addr)
 			if ok && disabled {

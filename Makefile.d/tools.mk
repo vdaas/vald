@@ -142,8 +142,10 @@ $(NPM_GLOBAL_PREFIX)/bin/cspell:
 	cspell link add @cspell/dict-rust
 	cspell link add @cspell/dict-shell
 
+# buf/install: $(BINDIR)/buf
 .PHONY: buf/install
-buf/install: $(BINDIR)/buf
+buf/install: \
+	$(GOBIN)/buf
 
 $(BINDIR)/buf:
 	curl -fsSL \

@@ -431,6 +431,9 @@ func WithGRPCMaxReceiveMessageSize(size int) Option {
 	return func(s *server) error {
 		if size > 0 || size == -1 {
 			s.grpc.opts = append(s.grpc.opts, grpc.MaxRecvMsgSize(size))
+			if size > s.grpc.maxMsgSize {
+				s.grpc.maxMsgSize = size
+			}
 		}
 		return nil
 	}
@@ -440,6 +443,9 @@ func WithGRPCMaxSendMessageSize(size int) Option {
 	return func(s *server) error {
 		if size > 0 || size == -1 {
 			s.grpc.opts = append(s.grpc.opts, grpc.MaxSendMsgSize(size))
+			if size > s.grpc.maxMsgSize {
+				s.grpc.maxMsgSize = size
+			}
 		}
 		return nil
 	}

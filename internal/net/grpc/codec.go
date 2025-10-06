@@ -17,50 +17,139 @@
 package grpc
 
 import (
-	"github.com/vdaas/vald/internal/errors"
+	"slices"
+
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/proto"
+	"github.com/vdaas/vald/internal/sync"
+	"google.golang.org/grpc/encoding"
+	"google.golang.org/grpc/mem"
 )
 
 // Codec represents a gRPC codec.
-type Codec struct{}
+type Codec struct {
+	buffer   mem.BufferPool
+	fallback encoding.CodecV2
+}
 
 // Name represents the codec name.
 const Name = "proto"
 
 type vtprotoMessage interface {
-	MarshalVT() ([]byte, error)
+	SizeVT() int
+	MarshalToSizedBufferVT([]byte) (int, error)
 	UnmarshalVT([]byte) error
 }
 
 // Marshal returns byte slice representing the proto message marshalling result.
-func (Codec) Marshal(obj any) (data []byte, err error) {
-	switch v := obj.(type) {
+func (c Codec) Marshal(obj any) (data mem.BufferSlice, err error) {
+	switch m := obj.(type) {
 	case vtprotoMessage:
-		data, err = v.MarshalVT()
+		size := m.SizeVT()
+		if mem.IsBelowBufferPoolingThreshold(size) { // less than 1KB
+			buf := make([]byte, size)
+			n, err := m.MarshalToSizedBufferVT(buf[:size])
+			if err != nil {
+				return nil, err
+			}
+			return mem.BufferSlice{mem.SliceBuffer(buf[:n])}, nil
+		}
+		buf := c.buffer.Get(size)
+		n, err := m.MarshalToSizedBufferVT((*buf)[:size])
+		if err != nil {
+			c.buffer.Put(buf)
+			return nil, err
+		}
+		*buf = (*buf)[:n]
+		return mem.BufferSlice{mem.NewBuffer(buf, c.buffer)}, nil
 	case proto.Message:
-		data, err = proto.Marshal(v)
+		buf, err := proto.Marshal(m)
+		if err != nil {
+			return nil, err
+		}
+		return mem.BufferSlice{mem.SliceBuffer(buf)}, nil
 	default:
-		err = errors.ErrInvalidProtoMessageType(v)
+		return c.fallback.Marshal(obj)
 	}
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
 }
 
 // Unmarshal parses the byte stream data into v.
-func (Codec) Unmarshal(data []byte, obj any) (err error) {
-	switch v := obj.(type) {
+func (c Codec) Unmarshal(data mem.BufferSlice, obj any) (err error) {
+	switch m := obj.(type) {
 	case vtprotoMessage:
-		err = v.UnmarshalVT(data)
+		buf := data.MaterializeToBuffer(c.buffer)
+		defer buf.Free()
+		return m.UnmarshalVT(buf.ReadOnlyData())
 	case proto.Message:
-		err = proto.Unmarshal(data, v)
+		buf := data.MaterializeToBuffer(c.buffer)
+		defer buf.Free()
+		return proto.Unmarshal(buf.ReadOnlyData(), m)
 	default:
-		err = errors.ErrInvalidProtoMessageType(v)
+		return c.fallback.Unmarshal(data, m)
 	}
-	return err
 }
 
 func (Codec) Name() string {
 	return Name
+}
+
+var codecOnce sync.Once
+
+const maxTieredBufferPoolSize = 256 << 20 // 256MB
+
+func InitCodec(size int) {
+	codecOnce.Do(func() {
+		if size > maxTieredBufferPoolSize {
+			size = maxTieredBufferPoolSize
+		}
+		pool := mem.NewTieredBufferPool(func(defaultTiers []int) []int {
+			if size <= 0 {
+				return defaultTiers
+			}
+
+			// ---- trim: keep tiers <= size
+			if idx := slices.IndexFunc(defaultTiers, func(tsize int) bool {
+				return tsize >= size
+			}); 0 <= idx {
+				return defaultTiers[:idx]
+			}
+
+			// ---- if all defaultTiers are <= size, extend: reuse last, double with shift until reaching size
+			last := defaultTiers[len(defaultTiers)-1]
+			for last < size {
+				last <<= 1
+				if last >= size {
+					last = size
+				}
+				defaultTiers = append(defaultTiers, last)
+			}
+			// ---- ensure sorted order (safety, though should always be sorted)
+			if !slices.IsSorted(defaultTiers) {
+				slices.Sort(defaultTiers)
+			}
+			return defaultTiers
+		}([]int{
+			256,       // 256B
+			512,       // 512B
+			1 << 10,   // 1KB
+			2 << 10,   // 2KB
+			4 << 10,   // 4KB (go page size)
+			8 << 10,   // 8KB
+			12 << 10,  // 12KB
+			16 << 10,  // 16KB (max HTTP/2 frame size used by gRPC)
+			24 << 10,  // 24KB
+			32 << 10,  // 32KB (default buffer size for io.Copy)
+			64 << 10,  // 64KB
+			128 << 10, // 128KB
+			256 << 10, // 256KB
+			512 << 10, // 512KB
+			1 << 20,   // 1MB
+		})...)
+
+		encoding.RegisterCodecV2(&Codec{
+			buffer:   pool,
+			fallback: encoding.GetCodecV2(Name),
+		})
+		log.Debugf("Vald Customized gRPC CodecV2 Registered for Size %d", size)
+	})
 }

@@ -158,7 +158,7 @@ var metrics sync.Map[string, uint64]
 
 // New creates a new connection pool with the provided options.
 // It parses the target address, initializes the connection slots, and performs an initial dial check.
-func New(ctx context.Context, opts ...Option) (Conn, error) {
+func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 	p := &pool{
 		dialTimeout:       time.Second,
 		oldConnCloseDelay: 2 * time.Minute,
@@ -178,7 +178,6 @@ func New(ctx context.Context, opts ...Option) (Conn, error) {
 	p.closing.Store(false)
 
 	// Parse the address to extract host and port.
-	var err error
 	var isIPv4, isIPv6 bool
 	p.host, p.port, _, isIPv4, isIPv6, err = net.Parse(ctx, p.addr)
 	p.isIPAddr = isIPv4 || isIPv6
@@ -321,12 +320,12 @@ func (p *pool) store(idx uint64, pc *poolConn) {
 // loop iterates over each connection slot and applies the provided function.
 func (p *pool) loop(
 	ctx context.Context, fn func(ctx context.Context, idx uint64, pc *poolConn) bool,
-) error {
+) (err error) {
 	var count uint64
 	for idx := range p.poolSize.Load() {
 		select {
 		case <-ctx.Done():
-			err := ctx.Err()
+			err = ctx.Err()
 			if errors.IsNot(err, context.DeadlineExceeded, context.Canceled) {
 				return err
 			}

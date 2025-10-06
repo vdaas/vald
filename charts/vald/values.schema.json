@@ -9623,6 +9623,19 @@
                 "labels": { "type": "object", "description": "service labels" }
               }
             },
+            "serviceAccount": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "creates service account"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "name of service account"
+                }
+              }
+            },
             "serviceType": {
               "type": "string",
               "description": "service type: ClusterIP, LoadBalancer or NodePort",
@@ -12308,6 +12321,19 @@
                   "description": "service annotations"
                 },
                 "labels": { "type": "object", "description": "service labels" }
+              }
+            },
+            "serviceAccount": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "creates service account"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "name of service account"
+                }
               }
             },
             "serviceType": {

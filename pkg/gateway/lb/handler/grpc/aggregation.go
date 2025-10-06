@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
 
@@ -387,6 +388,7 @@ type valdStdAggr struct {
 	visited sync.Map[string, any]
 	result  []*payload.Object_Distance
 	cancel  context.CancelFunc
+	eg      errgroup.Group
 }
 
 func newStd(num, fnum, replica int) Aggregator {
@@ -399,6 +401,7 @@ func newStd(num, fnum, replica int) Aggregator {
 			return av
 		}(),
 		result: make([]*payload.Object_Distance, 0, num*replica),
+		eg:     errgroup.Get(),
 	}
 	vsa.closed.Store(false)
 	return vsa
@@ -455,7 +458,7 @@ func (v *valdStdAggr) Start(ctx context.Context) {
 		}
 	}
 	v.wg.Add(1)
-	go func() {
+	v.eg.Go(func() error {
 		defer v.wg.Done()
 		for {
 			select {
@@ -465,12 +468,12 @@ func (v *valdStdAggr) Start(ctx context.Context) {
 				for dist := range v.dch {
 					add(dist.distance, dist.raw)
 				}
-				return
+				return nil
 			case dist := <-v.dch:
 				add(dist.distance, dist.raw)
 			}
 		}
-	}()
+	})
 }
 
 func (v *valdStdAggr) Send(ctx context.Context, data *payload.Search_Response) {

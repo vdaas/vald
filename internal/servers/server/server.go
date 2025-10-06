@@ -96,10 +96,11 @@ type server struct {
 		starter  func(net.Listener) error
 	}
 	grpc struct { // gRPC API
-		srv       *grpc.Server
-		keepAlive *grpcKeepalive
-		opts      []grpc.ServerOption
-		regs      []func(*grpc.Server)
+		srv        *grpc.Server
+		keepAlive  *grpcKeepalive
+		maxMsgSize int
+		opts       []grpc.ServerOption
+		regs       []func(*grpc.Server)
 	}
 	lc            *net.ListenConfig
 	tcfg          *tls.Config
@@ -235,11 +236,15 @@ func New(opts ...Option) (Server, error) {
 			)
 		}
 
-		if srv.grpc.srv == nil {
-			srv.grpc.srv = grpc.NewServer(
-				srv.grpc.opts...,
-			)
+		if srv.grpc.srv != nil {
+			srv.grpc.srv.GracefulStop()
 		}
+		if srv.grpc.maxMsgSize > 0 {
+			grpc.InitCodec(srv.grpc.maxMsgSize)
+		}
+		srv.grpc.srv = grpc.NewServer(
+			srv.grpc.opts...,
+		)
 		for _, reg := range srv.grpc.regs {
 			reg(srv.grpc.srv)
 		}
