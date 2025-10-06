@@ -98,8 +98,8 @@ jobs:
             ['arm64']='{"arch":"arm64","runs-on":"ubuntu-24.04-arm"}'
           )
 
-          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            echo "Push to main branch. Building for all architectures."
+          if [[ "${{ github.ref }}" = "refs/heads/main" || "${{ github.ref }}" =~ "^refs/tags/.*" ]]; then
+            echo "Push to main branch or tag a version. Building for all architectures."
             MATRIX="[$(IFS=,; echo ${ARCHS[*]})]"
           elif [[ "${{ github.event_name }}" = "pull_request" || "${{ github.event_name }}" = "pull_request_target" ]]; then
             echo "Building for labeled architectures on Pull Request."
