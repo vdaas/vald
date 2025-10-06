@@ -101,7 +101,7 @@ jobs:
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
             echo "Push to main branch. Building for all architectures."
             MATRIX="[$(IFS=,; echo ${ARCHS[*]})]"
-          elif [ "${{ github.event_name }}" = "pull_request" || "${{ github.event_name }}" = "pull_request_target" ]; then
+          elif [[ "${{ github.event_name }}" = "pull_request" || "${{ github.event_name }}" = "pull_request_target" ]]; then
             labels=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH" | grep "actions/build")
             archs=()
             for label in ${labels}; do
