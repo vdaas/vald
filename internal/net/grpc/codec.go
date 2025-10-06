@@ -95,7 +95,9 @@ func (Codec) Name() string {
 
 var codecOnce sync.Once
 
-const maxTieredBufferPoolSize = 256 << 20 // 256MB
+const maxTieredBufferPoolSize = 256 << 20 // InitCodec initializes and registers a customized gRPC CodecV2 that uses a tiered buffer pool sized according to `size`.
+//
+// If called multiple times, initialization runs only once. `size` is capped at 256MB; when `size` is less than or equal to zero the pool uses the default tier sizes. The pool's tier list is trimmed to tiers strictly less than `size`, or extended by doubling the largest default tier until reaching `size`. The initialized CodecV2 uses this pool for buffer allocations and falls back to the existing codec for types not handled by the custom implementation.
 
 func InitCodec(size int) {
 	codecOnce.Do(func() {

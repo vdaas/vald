@@ -157,7 +157,8 @@ const defaultPoolSize = uint64(4)
 var metrics sync.Map[string, uint64]
 
 // New creates a new connection pool with the provided options.
-// It parses the target address, initializes the connection slots, and performs an initial dial check.
+// New creates and initializes a connection pool for the configured target address and options.
+// It applies default and provided options, parses and normalizes the target address (including host/port extraction with fallbacks and optional port scanning), allocates and initializes connection slots, and performs an initial dial check to validate reachability. On success it returns the ready pool; on failure it returns an error.
 func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 	p := &pool{
 		dialTimeout:       time.Second,

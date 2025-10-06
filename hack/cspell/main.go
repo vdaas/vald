@@ -153,6 +153,14 @@ func extractLine(line string) (filePath, word string, ok bool) {
 	return "", "", false
 }
 
+// parseCspellResult reads a cspell log file and collects unknown words per file and global words.
+//
+// parseCspellResult scans the specified log file, extracts unknown words and the file paths where they
+// occur, and returns two maps: a mapping from file path to the list of unknown words found in that file,
+// and a set of words considered global. A word is marked global when it appears in at least th distinct
+// files (case-insensitive); when a word has both mixed-case and lowercase occurrences, they are counted
+// together toward the threshold. Words that match the package-level sufReg pattern are ignored.
+// An error is returned if the file cannot be opened or if an I/O error occurs while scanning.
 func parseCspellResult(filePath string, th int) (map[string][]string, map[string]bool, error) {
 	file, err := os.Open(filePath)
 	if err != nil {

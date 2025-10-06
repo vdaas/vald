@@ -103,7 +103,8 @@ type Result[V any] struct {
 	Shared bool
 }
 
-// New returns Group implementation.
+// New constructs a Group that suppresses duplicate in-flight calls for the same key and shares results among callers.
+// The returned Group has an initialized call map and an errgroup executor for coordinating asynchronous work.
 func New[V any]() Group[V] {
 	return &group[V]{
 		m:  make(map[string]*call[V]),

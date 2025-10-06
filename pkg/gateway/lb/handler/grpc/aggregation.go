@@ -391,6 +391,9 @@ type valdStdAggr struct {
 	eg      errgroup.Group
 }
 
+// newStd returns a valdStdAggr configured for the standard aggregation algorithm.
+// It sets the top-k size (`num`), the forwarding top-k size (`fnum`), and allocates internal buffers sized proportionally to `replica`.
+// The returned Aggregator is initialized (including its error group) and ready to Start and receive results.
 func newStd(num, fnum, replica int) Aggregator {
 	vsa := &valdStdAggr{
 		num:  num,

@@ -36,7 +36,8 @@ import (
 	"gonum.org/v1/hdf5"
 )
 
-// This program is intended to get long-running results that are difficult to measure with Go standard benchmarks.
+// main exercises long-running NGt index operations and captures memory and GC metrics.
+// It starts a pprof HTTP server, loads vectors from DATA_PATH, and performs timed phases that build, insert, index, and remove vectors while periodically logging /proc/<pid>/status fields and Go runtime memory statistics; it also triggers GCs, waits between phases, and performs a graceful shutdown.
 func main() {
 	const columnSize = 42
 	var (

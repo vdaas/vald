@@ -321,6 +321,11 @@ func Serialize(objs ...any) string {
 	return conv.Btoa(b)
 }
 
+// AnyToErrorDetail converts a google.protobuf.Any into a concrete error-detail proto.Message.
+// If a is nil, it returns nil. For recognized error-detail type names it attempts to unmarshal
+// the Any's raw value into the corresponding concrete message type and returns that message
+// on success. For unrecognized types it tries a.UnmarshalNew() and returns the result on success.
+// If all unmarshal attempts fail, it returns a.ProtoReflect().Interface().
 func AnyToErrorDetail(a *types.Any) proto.Message {
 	if a == nil {
 		return nil
