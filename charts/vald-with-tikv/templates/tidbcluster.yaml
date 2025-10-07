@@ -37,9 +37,9 @@ spec:
     replicas: {{ .Values.tidbCluster.tidb.replicas }}
   tikv:
     baseImage: {{ .Values.tidbCluster.tikv.baseImage }}
-    {{- if .Values.tidbCluster.pd.config }}
+    {{- if .Values.tidbCluster.tikv.config }}
     config:
-      {{ toYaml .Values.tidbCluster.pd.config | nindent 6 }}
+      {{ toYaml .Values.tidbCluster.tikv.config | nindent 6 }}
     {{- else }}
     config: {}
     {{- end }}
