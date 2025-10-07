@@ -184,6 +184,7 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
+      serviceAccountName: gateway-lb
       securityContext:
         fsGroup: 65532
         fsGroupChangePolicy: OnRootMismatch

@@ -154,7 +154,8 @@ $(NPM_GLOBAL_PREFIX)/bin/cspell:
 
 .PHONY: buf/install
 ## install buf
-buf/install: $(BINDIR)/buf
+buf/install: \
+	$(GOBIN)/buf
 
 $(BINDIR)/buf:
 	curl -fsSL \
