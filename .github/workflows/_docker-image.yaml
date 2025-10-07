@@ -133,7 +133,7 @@ jobs:
       primary_tag: ${{ steps.prepare.outputs.PRIMARY_TAG }}
       secondary_tags: ${{ steps.prepare.outputs.SECONDARY_TAGS }}
   build:
-    timeout-minutes: 60
+    timeout-minutes: 90
     permissions:
       contents: read
     needs: prepare
