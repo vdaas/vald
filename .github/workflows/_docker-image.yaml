@@ -98,8 +98,6 @@ jobs:
             ['arm64']='{"arch":"arm64","runs-on":"ubuntu-24.04-arm"}'
           )
 
-          MATRIX="[$(IFS=,; echo "${ARCHS[*]}")]"
-          echo ${MATRIX}
           if [[ "${{ github.ref }}" = "refs/heads/main" || "${{ github.ref }}" =~ "^refs/tags/.*" ]]; then
             echo "Push to main branch or tag a version. Building for all architectures."
             MATRIX="[$(IFS=,; echo "${ARCHS[*]}")]"
