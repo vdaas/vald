@@ -16,7 +16,7 @@
 apiVersion: pingcap.com/v1alpha1
 kind: TidbCluster
 metadata:
-  name: {{ .Values.tidbCluster.name }}
+  name: {{ default (include "vald-with-tikv.fullname" .) .Values.tidbCluster.name }}
   namespace: {{ .Release.Namespace }}
 spec:
   version: {{ .Values.tidbCluster.version }}
