@@ -32,6 +32,6 @@ roleRef:
   name: {{ $agent.clusterRole.name }}
 subjects:
   - kind: ServiceAccount
-    name: {{ $agent.serviceAccount.name }}
+    name: {{ default $agent.serviceAccountName $agent.name }}
     namespace: {{ .Release.Namespace }}
 {{- end }}
