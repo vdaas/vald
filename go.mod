@@ -396,7 +396,7 @@ require (
 	github.com/quic-go/quic-go v0.54.0
 	github.com/scylladb/gocqlx v0.0.0-00010101000000-000000000000
 	github.com/stretchr/testify v1.11.1
-	github.com/unum-cloud/usearch/golang v0.0.0-20250711183149-bda207cca92e
+	github.com/unum-cloud/usearch/golang v0.0.0-20250904130807-fd6279af6bc2
 	github.com/zeebo/xxh3 v1.0.2
 	go.etcd.io/bbolt v1.4.2
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.62.0
