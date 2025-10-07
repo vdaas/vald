@@ -32,7 +32,7 @@ replace (
 	cloud.google.com/go/bigquery => cloud.google.com/go/bigquery v1.71.0
 	cloud.google.com/go/compute => cloud.google.com/go/compute v1.48.0
 	cloud.google.com/go/datastore => cloud.google.com/go/datastore v1.20.0
-	cloud.google.com/go/firestore => cloud.google.com/go/firestore v1.18.0
+	cloud.google.com/go/firestore => cloud.google.com/go/firestore v1.19.0
 	cloud.google.com/go/iam => cloud.google.com/go/iam v1.5.2
 	cloud.google.com/go/kms => cloud.google.com/go/kms v1.23.0
 	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.24.2
@@ -40,7 +40,7 @@ replace (
 	cloud.google.com/go/secretmanager => cloud.google.com/go/secretmanager v1.15.0
 	cloud.google.com/go/storage => cloud.google.com/go/storage v1.57.0
 	cloud.google.com/go/trace => cloud.google.com/go/trace v1.11.6
-	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt v0.53.0
+	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt v0.54.0
 	contrib.go.opencensus.io/exporter/aws => contrib.go.opencensus.io/exporter/aws v0.0.0-20230502192102-15967c811cec
 	contrib.go.opencensus.io/exporter/prometheus => contrib.go.opencensus.io/exporter/prometheus v0.4.2
 	contrib.go.opencensus.io/integrations/ocsql => contrib.go.opencensus.io/integrations/ocsql v0.1.7
@@ -75,7 +75,7 @@ replace (
 	github.com/aws/aws-sdk-go-v2/config => github.com/aws/aws-sdk-go-v2/config v1.31.12
 	github.com/aws/aws-sdk-go-v2/credentials => github.com/aws/aws-sdk-go-v2/credentials v1.18.16
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds => github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.9
-	github.com/aws/aws-sdk-go-v2/feature/s3/manager => github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.19.10
+	github.com/aws/aws-sdk-go-v2/feature/s3/manager => github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.19.11
 	github.com/aws/aws-sdk-go-v2/internal/configsources => github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.9
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 => github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.9
 	github.com/aws/aws-sdk-go-v2/internal/ini => github.com/aws/aws-sdk-go-v2/internal/ini v1.8.3
@@ -135,7 +135,7 @@ replace (
 	github.com/go-gl/glfw/v3.3/glfw => github.com/go-gl/glfw/v3.3/glfw v0.0.0-20250301202403-da16c1255728
 	github.com/go-kit/log => github.com/go-kit/log v0.2.1
 	github.com/go-latex/latex => github.com/go-latex/latex v0.0.0-20250304174226-2790903426af
-	github.com/go-logfmt/logfmt => github.com/go-logfmt/logfmt v0.6.0
+	github.com/go-logfmt/logfmt => github.com/go-logfmt/logfmt v0.6.1
 	github.com/go-logr/logr => github.com/go-logr/logr v1.4.3
 	github.com/go-logr/stdr => github.com/go-logr/stdr v1.2.2
 	github.com/go-logr/zapr => github.com/go-logr/zapr v1.3.0
@@ -146,7 +146,7 @@ replace (
 	github.com/go-playground/assert/v2 => github.com/go-playground/assert/v2 v2.2.0
 	github.com/go-playground/locales => github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator => github.com/go-playground/universal-translator v0.18.1
-	github.com/go-playground/validator/v10 => github.com/go-playground/validator/v10 v10.27.0
+	github.com/go-playground/validator/v10 => github.com/go-playground/validator/v10 v10.28.0
 	github.com/go-redis/redis/v8 => github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.9.3
 	github.com/go-task/slim-sprig => github.com/go-task/slim-sprig v2.20.0+incompatible
@@ -179,7 +179,7 @@ replace (
 	github.com/google/gofuzz => github.com/google/gofuzz v1.2.0
 	github.com/google/martian => github.com/google/martian v2.1.0+incompatible
 	github.com/google/martian/v3 => github.com/google/martian/v3 v3.3.3
-	github.com/google/pprof => github.com/google/pprof v0.0.0-20250923004556-9e5a51aed1e8
+	github.com/google/pprof => github.com/google/pprof v0.0.0-20251002213607-436353cc1ee6
 	github.com/google/shlex => github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/subcommands => github.com/google/subcommands v1.2.0
 	github.com/google/uuid => github.com/google/uuid v1.6.0
@@ -190,7 +190,7 @@ replace (
 	github.com/grafana/grafana-foundation-sdk/go => github.com/grafana/grafana-foundation-sdk/go v0.0.0-20250916165541-37dba040e63e
 	github.com/grafana/pyroscope-go/godeltaprof => github.com/grafana/pyroscope-go/godeltaprof v0.1.9
 	github.com/gregjones/httpcache => github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79
-	github.com/grpc-ecosystem/grpc-gateway/v2 => github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.2
+	github.com/grpc-ecosystem/grpc-gateway/v2 => github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.3
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
 	github.com/hanwen/go-fuse/v2 => github.com/hanwen/go-fuse/v2 v2.8.0
 	github.com/hashicorp/go-uuid => github.com/hashicorp/go-uuid v1.0.3
@@ -218,7 +218,7 @@ replace (
 	github.com/jstemmer/go-junit-report => github.com/jstemmer/go-junit-report v1.0.0
 	github.com/kisielk/errcheck => github.com/kisielk/errcheck v1.9.0
 	github.com/kisielk/gotool => github.com/kisielk/gotool v1.0.0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.18.1-0.20250921124417-3c0d30844ced
+	github.com/klauspost/compress => github.com/klauspost/compress v1.18.1-0.20251002120022-d10b5259eef9
 	github.com/klauspost/cpuid/v2 => github.com/klauspost/cpuid/v2 v2.3.0
 	github.com/kpango/fastime => github.com/kpango/fastime v1.1.10
 	github.com/kpango/fuid => github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
@@ -251,7 +251,7 @@ replace (
 	github.com/niemeyer/pretty => github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e
 	github.com/nxadm/tail => github.com/nxadm/tail v1.4.11
 	github.com/onsi/ginkgo => github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/ginkgo/v2 => github.com/onsi/ginkgo/v2 v2.25.3
+	github.com/onsi/ginkgo/v2 => github.com/onsi/ginkgo/v2 v2.26.0
 	github.com/onsi/gomega => github.com/onsi/gomega v1.38.2
 	github.com/peterbourgon/diskv => github.com/peterbourgon/diskv v2.0.1+incompatible
 	github.com/phpdave11/gofpdf => github.com/phpdave11/gofpdf v1.4.3
@@ -321,8 +321,8 @@ replace (
 	go.uber.org/zap => go.uber.org/zap v1.27.0
 	gocloud.dev => gocloud.dev v0.43.0
 	golang.org/x/crypto => golang.org/x/crypto v0.42.0
-	golang.org/x/exp => golang.org/x/exp v0.0.0-20250911091902-df9299821621
-	golang.org/x/exp/typeparams => golang.org/x/exp/typeparams v0.0.0-20250911091902-df9299821621
+	golang.org/x/exp => golang.org/x/exp v0.0.0-20251002181428-27f1f14c8bb9
+	golang.org/x/exp/typeparams => golang.org/x/exp/typeparams v0.0.0-20251002181428-27f1f14c8bb9
 	golang.org/x/image => golang.org/x/image v0.31.0
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20241112194109-818c5a804067
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20250911085028-6912353760cf
@@ -342,12 +342,12 @@ replace (
 	gonum.org/v1/plot => gonum.org/v1/plot v0.16.0
 	google.golang.org/api => google.golang.org/api v0.251.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.8
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20250929231259-57b25ae835d4
-	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20250929231259-57b25ae835d4
-	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20250929231259-57b25ae835d4
-	google.golang.org/grpc => google.golang.org/grpc v1.75.1
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20251006185510-65f7160b3a87
+	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20251006185510-65f7160b3a87
+	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20251006185510-65f7160b3a87
+	google.golang.org/grpc => google.golang.org/grpc v1.76.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc => google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.5.1
-	google.golang.org/protobuf => google.golang.org/protobuf v1.36.9
+	google.golang.org/protobuf => google.golang.org/protobuf v1.36.10
 	gopkg.in/check.v1 => gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 	gopkg.in/inconshreveable/log15.v2 => gopkg.in/inconshreveable/log15.v2 v2.16.0
 	gopkg.in/inf.v0 => gopkg.in/inf.v0 v0.9.1
@@ -422,10 +422,10 @@ require (
 	golang.org/x/tools v0.37.0
 	gonum.org/v1/hdf5 v0.0.0-00010101000000-000000000000
 	gonum.org/v1/plot v0.15.2
-	google.golang.org/genproto/googleapis/api v0.0.0-20250922171735-9219d122eba9
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250929231259-57b25ae835d4
+	google.golang.org/genproto/googleapis/api v0.0.0-20251002232023-7c0ddcbb5797
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251002232023-7c0ddcbb5797
 	google.golang.org/grpc v1.75.1
-	google.golang.org/protobuf v1.36.9
+	google.golang.org/protobuf v1.36.10
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.34.1
@@ -564,6 +564,7 @@ require (
 	github.com/charmbracelet/x/cellbuf v0.0.13 // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/cilium/ebpf v0.11.0 // indirect
+	github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
 	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/cncf/xds/go v0.0.0-20250501225837-2ac532fd4443 // indirect
 	github.com/cockroachdb/crlfmt v0.3.0 // indirect
@@ -588,7 +589,7 @@ require (
 	github.com/dave/dst v0.27.3 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/deitch/magic v0.0.0-20230404182410-1ff89d7342da // indirect
-	github.com/derailed/k9s v0.50.13 // indirect
+	github.com/derailed/k9s v0.50.14 // indirect
 	github.com/derailed/tcell/v2 v2.3.1-rc.4 // indirect
 	github.com/derailed/tview v0.8.5 // indirect
 	github.com/derekparker/trie v0.0.0-20230829180723-39f4de51ef7d // indirect
@@ -620,7 +621,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fvbommel/sortorder v1.1.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.9 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.10 // indirect
 	github.com/gdamore/encoding v1.0.1 // indirect
 	github.com/github/go-spdx/v2 v2.3.3 // indirect
 	github.com/glebarez/go-sqlite v1.22.0 // indirect
@@ -633,7 +634,7 @@ require (
 	github.com/go-git/go-billy/v5 v5.6.2 // indirect
 	github.com/go-git/go-git/v5 v5.16.2 // indirect
 	github.com/go-gorp/gorp/v3 v3.1.0 // indirect
-	github.com/go-jose/go-jose/v4 v4.1.1 // indirect
+	github.com/go-jose/go-jose/v4 v4.1.2 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.22.1 // indirect
@@ -674,7 +675,7 @@ require (
 	github.com/google/go-github/v73 v73.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/licensecheck v0.3.1 // indirect
-	github.com/google/pprof v0.0.0-20250923004556-9e5a51aed1e8 // indirect
+	github.com/google/pprof v0.0.0-20251002213607-436353cc1ee6 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/wire v0.6.0 // indirect
 	github.com/google/yamlfmt v0.17.2 // indirect
@@ -728,7 +729,7 @@ require (
 	github.com/masahiro331/go-mvn-version v0.0.0-20210429150710-d3157d602a08 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-runewidth v0.0.16 // indirect
+	github.com/mattn/go-runewidth v0.0.19 // indirect
 	github.com/mattn/go-shellwords v1.0.12 // indirect
 	github.com/mfridman/tparse v0.18.0 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
