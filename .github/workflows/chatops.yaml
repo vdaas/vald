@@ -19,12 +19,29 @@ on:
     types: [created]
 jobs:
   dump-contexts-to-log:
+<<<<<<< HEAD
+=======
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    if: ${{ !contains(fromJSON('["cloudflare-workers-and-pages", "coderabbitai", "vdaas-ci", "all-contributors"]'), github.event.comment.user.login) }}
+>>>>>>> 5b7e0e198 (Add GitHub actions workflow linter (#3213))
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/dump-context
   label:
+<<<<<<< HEAD
     if: github.event.comment.user.login != 'vdaas-ci'
+=======
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    needs:
+      - dump-contexts-to-log
+>>>>>>> 5b7e0e198 (Add GitHub actions workflow linter (#3213))
     name: Add labels
     runs-on: ubuntu-latest
     container:
@@ -77,7 +94,15 @@ jobs:
           USERNAME: ${{ steps.check_comments_label.outputs.COMMENTER_USERNAME }}
           TRAILING_LINE: ${{ steps.check_comments_label.outputs.TRAILING_LINE }}
   rebase:
+<<<<<<< HEAD
     if: github.event.comment.user.login != 'vdaas-ci'
+=======
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    needs:
+      - dump-contexts-to-log
+>>>>>>> 5b7e0e198 (Add GitHub actions workflow linter (#3213))
     name: Rebase
     runs-on: ubuntu-latest
     container:
@@ -127,10 +152,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
           BRANCH: ${{ steps.check_comments_rebase.outputs.BRANCH_NAME }}
+<<<<<<< HEAD
           USERNAME: ${{ steps.check_comments_rebase.outputs.COMMENTER_USERNAME }}
       - uses: actions/checkout@v4
+=======
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+>>>>>>> 5b7e0e198 (Add GitHub actions workflow linter (#3213))
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
+          persist-credentials: false
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
       - name: Set Git config
@@ -138,7 +168,7 @@ jobs:
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Automatic Rebase
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        uses: cirrus-actions/rebase@1.8
+        uses: cirrus-actions/rebase@b87d48154a87a85666003575337e27b8cd65f691 # 1.8
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
       - name: Failure comment
@@ -155,7 +185,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
   gentest:
+<<<<<<< HEAD
     if: github.event.comment.user.login != 'vdaas-ci'
+=======
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    needs:
+      - dump-contexts-to-log
+>>>>>>> 5b7e0e198 (Add GitHub actions workflow linter (#3213))
     name: Add tests
     needs:
       - rebase
@@ -207,15 +245,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           USERNAME: ${{ steps.check_comments_gen_test.outputs.COMMENTER_USERNAME }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
+<<<<<<< HEAD
           API_URL: ${{ github.event.issue.comments_url }}
       - uses: actions/checkout@v4
+=======
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+>>>>>>> 5b7e0e198 (Add GitHub actions workflow linter (#3213))
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
+          persist-credentials: false
           fetch-depth: 0
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - uses: crazy-max/ghaction-import-gpg@v6
+      - uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec # v6.3.0
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
@@ -270,7 +313,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
   format:
+<<<<<<< HEAD
     if: github.event.comment.user.login != 'vdaas-ci'
+=======
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    needs:
+      - dump-contexts-to-log
+>>>>>>> 5b7e0e198 (Add GitHub actions workflow linter (#3213))
     name: Add license and run golines + gofumpt + goimports
     needs:
       - rebase
@@ -321,17 +372,22 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+<<<<<<< HEAD
           USERNAME: ${{ steps.check_comments_format.outputs.COMMENTER_USERNAME }}
           API_URL: ${{ github.event.issue.comments_url }}
       - uses: actions/checkout@v4
+=======
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+>>>>>>> 5b7e0e198 (Add GitHub actions workflow linter (#3213))
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
+          persist-credentials: false
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - uses: crazy-max/ghaction-import-gpg@v6
+      - uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec # v6.3.0
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
@@ -405,7 +461,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
   approve:
+<<<<<<< HEAD
     if: github.event.comment.user.login != 'vdaas-ci'
+=======
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    needs:
+      - dump-contexts-to-log
+>>>>>>> 5b7e0e198 (Add GitHub actions workflow linter (#3213))
     name: Approve
     needs:
       - rebase
