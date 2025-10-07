@@ -4206,8 +4206,25 @@ manager:
       # manager.index.operator.rotation_job_concurrency -- maximum concurrent rotator job run.
       rotation_job_concurrency: 2
 
----
 tidb-operator:
   clusterScoped: false
   scheduler:
     create: false
+
+tidbCluster:
+  name: tikv
+  version: "v8.5.2"
+  timezone: UTC
+  pd:
+    baseImage: pingcap/pd
+    replicas: 3
+    requests:
+      storage: "10Gi"
+  tidb:
+    baseImage: pingcap/tidb
+    replicas: 0
+  tikv:
+    baseImage: pingcap/tikv
+    replicas: 3
+    requests:
+      storage: "100Gi"

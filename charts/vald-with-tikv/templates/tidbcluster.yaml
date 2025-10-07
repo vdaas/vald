@@ -16,23 +16,33 @@
 apiVersion: pingcap.com/v1alpha1
 kind: TidbCluster
 metadata:
-  name: tikv
+  name: {{ .Values.tidbCluster.name }}
   namespace: {{ .Release.Namespace }}
 spec:
-  version: "v8.5.2"
-  timezone: UTC
+  version: {{ .Values.tidbCluster.version }}
+  timezone: {{ .Values.tidbCluster.timezone }}
   pd:
-    baseImage: pingcap/pd
+    baseImage: {{ .Values.tidbCluster.pd.baseImage }}
+    {{- if .Values.tidbCluster.pd.config }}
+    config:
+      {{ toYaml .Values.tidbCluster.pd.config | nindent 6 }}
+    {{- else }}
     config: {}
-    replicas: 3
+    {{- end }}
+    replicas: {{ .Values.tidbCluster.pd.replicas }}
     requests:
-      storage: "10Gi"
+      storage: {{ .Values.tidbCluster.pd.requests.storage }}
   tidb:
-    baseImage: pingcap/tidb
-    replicas: 0
+    baseImage: {{ .Values.tidbCluster.tidb.baseImage }}
+    replicas: {{ .Values.tidbCluster.tidb.replicas }}
   tikv:
-    baseImage: pingcap/tikv
+    baseImage: {{ .Values.tidbCluster.tikv.baseImage }}
+    {{- if .Values.tidbCluster.pd.config }}
+    config:
+      {{ toYaml .Values.tidbCluster.pd.config | nindent 6 }}
+    {{- else }}
     config: {}
-    replicas: 3
+    {{- end }}
+    replicas: {{ .Values.tidbCluster.tikv.replicas }}
     requests:
-      storage: "100Gi"
+      storage: {{ .Values.tidbCluster.tikv.requests.storage }}
