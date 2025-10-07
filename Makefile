@@ -861,7 +861,8 @@ lint: \
 	docs/lint \
 	files/lint \
 	vet \
-	go/lint
+	go/lint \
+	workflow/lint
 
 .PHONY: go/lint
 go/lint:
@@ -883,6 +884,42 @@ docs/lint:\
 files/lint: \
 	files/cspell \
 	files/textlint
+
+.PHONY: workflow/lint workflow/fix actionlint/lint ghalint/lint
+## run lint for workflow files
+workflow/lint:
+	@echo "Please run make workflow/fix beforehand"
+	@echo "Linting workflow files..."
+	@printf '%s\0' \
+		"actionlint/lint" \
+		"ghalint/lint" \
+	| xargs -0 -I{} -P$(CORES) $(MAKE) --no-print-directory {}
+	@echo "Workflow linting completed."
+
+## run lint for workflow files
+workflow/fix:
+	@$(MAKE) --no-print-directory pinact/lint
+	@$(MAKE) --no-print-directory ghatm/lint
+
+ACTIONLINT_IGNORES = \
+  -ignore 'when a reusable workflow is called with "uses", "timeout-minutes" is not available' \
+  -ignore 'property "tag" is not defined in object type' \
+  -ignore 'input "file" is not defined in action "codecov/codecov-action@v5"'
+
+actionlint/lint: actionlint/install
+	@$(GOBIN)/actionlint -shellcheck= $(ACTIONLINT_IGNORES)
+
+ghalint/lint:\
+	ghalint/install
+	@$(GOBIN)/ghalint run .github/workflows
+
+pinact/lint:\
+	pinact/install
+	@$(GOBIN)/pinact run -u
+
+ghatm/lint:\
+	ghatm/install
+	@$(GOBIN)/ghatm set
 
 .PHONY: docs/textlint
 ## run textlint for document

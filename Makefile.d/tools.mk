@@ -23,36 +23,66 @@ $(BINDIR)/golangci-lint:
 		| sh -s -- -b $(BINDIR) $(GOLANGCILINT_VERSION)
 
 .PHONY: goimports/install
+## install goimports
 goimports/install: $(GOBIN)/goimports
 
 $(GOBIN)/goimports:
 	$(call go-tool-install)
 
 .PHONY: strictgoimports/install
+## install strictgoimports
 strictgoimports/install: $(GOBIN)/strictgoimports
 
 $(GOBIN)/strictgoimports:
 	$(call go-tool-install)
 
 .PHONY: gofumpt/install
+## install gofumpt
 gofumpt/install: $(GOBIN)/gofumpt
 
 $(GOBIN)/gofumpt:
 	$(call go-tool-install)
 
 .PHONY: golines/install
+## install golines
 golines/install: $(GOBIN)/golines
 
 $(GOBIN)/golines:
 	$(call go-tool-install)
 
 .PHONY: crlfmt/install
+## install crlfmt
 crlfmt/install: $(GOBIN)/crlfmt
 
 $(GOBIN)/crlfmt:
 	$(call go-tool-install)
 
+.PHONY: actionlint/install
+actionlint/install: $(GOBIN)/actionlint
+
+$(GOBIN)/actionlint:
+	$(call go-tool-install)
+
+.PHONY: ghalint/install
+ghalint/install: $(GOBIN)/ghalint
+
+$(GOBIN)/ghalint:
+	$(call go-tool-install)
+
+.PHONY: pinact/install
+pinact/install: $(GOBIN)/pinact
+
+$(GOBIN)/pinact:
+	$(call go-tool-install)
+
+.PHONY: ghatm/install
+ghatm/install: $(GOBIN)/ghatm
+
+$(GOBIN)/ghatm:
+	$(call go-tool-install)
+
 .PHONY: prettier/install
+## install prettier
 prettier/install: $(NPM_GLOBAL_PREFIX)/bin/prettier
 $(NPM_GLOBAL_PREFIX)/bin/prettier:
 	npm config -g set registry http://registry.npmjs.org/
@@ -68,6 +98,7 @@ $(BINDIR)/reviewdog:
 		| sh -s -- -b $(BINDIR) $(REVIEWDOG_VERSION)
 
 .PHONY: kubectl/install
+## install kubectl
 kubectl/install: $(BINDIR)/kubectl
 
 $(BINDIR)/kubectl:
@@ -76,17 +107,20 @@ $(BINDIR)/kubectl:
 	chmod a+x $(BINDIR)/kubectl
 
 .PHONY: textlint/install
+## install textlint
 textlint/install: $(NPM_GLOBAL_PREFIX)/bin/textlint
 
 $(NPM_GLOBAL_PREFIX)/bin/textlint:
 	npm install -g textlint textlint-rule-en-spell textlint-rule-prh textlint-rule-write-good
 
 .PHONY: textlint/ci/install
+## install textlint for ci
 textlint/ci/install:
 	npm init -y
 	npm install --save-dev textlint textlint-rule-en-spell textlint-rule-prh textlint-rule-write-good
 
 .PHONY: cspell/install
+## install cspell
 cspell/install: $(NPM_GLOBAL_PREFIX)/bin/cspell
 
 $(NPM_GLOBAL_PREFIX)/bin/cspell:
@@ -119,6 +153,7 @@ $(NPM_GLOBAL_PREFIX)/bin/cspell:
 	cspell link add @cspell/dict-shell
 
 .PHONY: buf/install
+## install buf
 buf/install: $(BINDIR)/buf
 
 $(BINDIR)/buf:
@@ -128,60 +163,70 @@ $(BINDIR)/buf:
 	chmod +x "${BINDIR}/buf"
 
 .PHONY: k9s/install
+## install k9s
 k9s/install: $(GOPATH)/bin/k9s
 
 $(GOPATH)/bin/k9s:
 	$(call go-install, github.com/derailed/k9s)
 
 .PHONY: stern/install
+## install stern
 stern/install: $(GOPATH)/bin/stern
 
 $(GOPATH)/bin/stern:
 	$(call go-install, github.com/stern/stern)
 
 .PHONY: yamlfmt/install
+## install yamlfmt
 yamlfmt/install: $(GOPATH)/bin/yamlfmt
 
 $(GOPATH)/bin/yamlfmt:
 	$(call go-install, github.com/google/yamlfmt/cmd/yamlfmt)
 
 .PHONY: gopls/install
+## install gopls
 gopls/install: $(GOPATH)/bin/gopls
 
 $(GOPATH)/bin/gopls:
 	$(call go-install, golang.org/x/tools/gopls)
 
 .PHONY: gomodifytags/install
+## install gomodifytags
 gomodifytags/install: $(GOPATH)/bin/gomodifytags
 
 $(GOPATH)/bin/gomodifytags:
 	$(call go-install, github.com/fatih/gomodifytags)
 
 .PHONY: impl/install
+## install impl
 impl/install: $(GOPATH)/bin/impl
 
 $(GOPATH)/bin/impl:
 	$(call go-install, github.com/josharian/impl)
 
 .PHONY: goplay/install
+## install goplay
 goplay/install: $(GOPATH)/bin/goplay
 
 $(GOPATH)/bin/goplay:
 	$(call go-install, github.com/haya14busa/goplay/cmd/goplay)
 
 .PHONY: delve/install
+## install delve
 delve/install: $(GOPATH)/bin/dlv
 
 $(GOPATH)/bin/dlv:
 	$(call go-install, github.com/go-delve/delve/cmd/dlv)
 
 .PHONY: staticcheck/install
+## install staticcheck
 staticcheck/install: $(GOPATH)/bin/staticcheck
 
 $(GOPATH)/bin/staticcheck:
 	$(call go-install, honnef.co/go/tools/cmd/staticcheck)
 
 .PHONY: go/install
+## install go
 go/install: $(GOROOT)/bin/go
 
 $(GOROOT)/bin/go:
@@ -194,6 +239,7 @@ $(GOROOT)/bin/go:
 	&& $(GOROOT)/bin/go version
 
 .PHONY: rust/install
+## install rust
 rust/install: $(CARGO_HOME)/bin/cargo
 
 $(CARGO_HOME)/bin/cargo:
@@ -203,6 +249,7 @@ $(CARGO_HOME)/bin/cargo:
 	source "${CARGO_HOME}/env"
 
 .PHONY: zlib/install
+## install zlib
 zlib/install: $(LIB_PATH)/libz.a
 
 $(LIB_PATH)/libz.a: $(LIB_PATH)
@@ -232,6 +279,7 @@ $(LIB_PATH)/libz.a: $(LIB_PATH)
 	&& rm -rf $(TEMP_DIR)/zlib-$(ZLIB_VERSION).tar.gz $(TEMP_DIR)/zlib $(LIB_PATH)/libz.s*
 
 .PHONY: hdf5/install
+## install hdf5
 hdf5/install: $(LIB_PATH)/libhdf5.a
 
 $(LIB_PATH)/libhdf5.a: $(LIB_PATH) \
@@ -276,6 +324,7 @@ $(BINDIR)/yq:
 	    && chmod a+x $(BINDIR)/yq
 
 .PHONY: docker-cli/install
+## install docker-cli
 docker-cli/install: $(BINDIR)/docker
 
 $(BINDIR)/docker: $(BINDIR)

@@ -126,7 +126,6 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 				}()
 				res, err := handle(ctx, data)
 				if err != nil {
-					runtime.Gosched()
 					st, msg, err := status.ParseError(err, codes.Internal, fmt.Sprintf("failed to parse BidirectionalStream id= %020d gRPC error response", id))
 					if sspan != nil {
 						sspan.RecordError(err)
@@ -141,6 +140,7 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 						code != codes.NotFound &&
 						code != codes.OK &&
 						code != codes.Unimplemented {
+						runtime.Gosched()
 						log.Error(err)
 					}
 				}
