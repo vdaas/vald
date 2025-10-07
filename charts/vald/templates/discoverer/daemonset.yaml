@@ -101,7 +101,9 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      serviceAccountName: {{ $discoverer.serviceAccount.name }}
+      {{- if $discoverer.serviceAccountName }}
+      serviceAccountName: {{ $discoverer.serviceAccountName }}
+      {{- end }}
       {{- if $discoverer.podSecurityContext }}
       securityContext:
         {{- toYaml $discoverer.podSecurityContext | nindent 8 }}

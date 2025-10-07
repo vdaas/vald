@@ -22,6 +22,6 @@ list/actions:
 	@echo $(ACTIONS_LIST)
 
 .PHONY: update/actions
-# update github actions version
+## update github actions version
 update/actions:
 	$(call update-github-actions, $(ACTIONS_LIST))
