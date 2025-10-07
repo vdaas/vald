@@ -150,7 +150,6 @@
 CHANGELOG.md
 CODE_OF_CONDUCT.md
 CONTRIBUTING.md
-GEMINI.md
 LICENSE
 Makefile
 Makefile.d/actions.mk
