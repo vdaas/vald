@@ -103,9 +103,7 @@ jobs:
             MATRIX="[$(IFS=,; echo "${ARCHS[*]}")]"
           elif [[ "${{ github.event_name }}" = "pull_request" || "${{ github.event_name }}" = "pull_request_target" ]]; then
             echo "Building for labeled architectures on Pull Request."
-            echo $GITHUB_EVENT_PATH
             labels=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH" | grep "actions/build")
-            echo $labels
             archs=()
             for label in ${labels}; do
               arch="${label##*/}"
