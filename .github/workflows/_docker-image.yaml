@@ -100,7 +100,7 @@ jobs:
 
           if [[ "${{ github.ref }}" = "refs/heads/main" || "${{ github.ref }}" =~ "^refs/tags/.*" ]]; then
             echo "Push to main branch or tag a version. Building for all architectures."
-            MATRIX="[$(IFS=,; echo ${ARCHS[*]})]"
+            MATRIX="[$(IFS=,; echo "${ARCHS[*]}")]"
           elif [[ "${{ github.event_name }}" = "pull_request" || "${{ github.event_name }}" = "pull_request_target" ]]; then
             echo "Building for labeled architectures on Pull Request."
             labels=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH" | grep "actions/build")
