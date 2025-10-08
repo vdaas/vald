@@ -62,7 +62,7 @@ runs:
         echo "EXTRA_TAGS is determined: ${extra_tags}"
         echo "EXTRA_TAGS=${extra_tags}" >> $GITHUB_OUTPUT
       env:
-        SECONDARY_TAGS: ${{ inputs.secondary_tags }}
+        SECONDARY_TAGS: ${{ steps.determine_tag_name.outputs.secondary_tags }}
     - name: Update Vald version
       shell: bash
       run: echo "${PRIMARY_TAG}" > versions/VALD_VERSION
