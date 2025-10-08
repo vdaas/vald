@@ -48,6 +48,7 @@ k3d/start:
 	@make k3d/config
 
 .PHONY: k3d/vs/start
+## start k3d cluster with volume snapshot
 k3d/vs/start:
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
