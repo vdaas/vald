@@ -338,7 +338,6 @@ func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 func calculateCPUUsageCores(
 	m1, m2 *CgroupMetrics, deltaTime time.Duration,
 ) (calculatedStats CgroupStats) {
-
 	calculatedStats.MemoryLimitBytes = m2.MemLimitBytes
 	calculatedStats.MemoryUsageBytes = m2.MemUsageBytes
 
