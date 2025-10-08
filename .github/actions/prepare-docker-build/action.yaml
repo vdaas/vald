@@ -30,9 +30,9 @@ outputs:
   PRIMARY_TAG:
     description: "Primary tag"
     value: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
-  SECONDARY_TAGS:
-    description: "Secondary tags"
-    value: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
+  EXTRA_TAGS:
+    description: "Extra tags"
+    value: ${{ steps.determine_extra_tags.outputs.EXTRA_TAGS }}
 runs:
   using: "composite"
   steps:
@@ -52,6 +52,17 @@ runs:
     - name: Determine tag name
       id: determine_tag_name
       uses: ./.github/actions/determine-docker-image-tag
+    - name: Determine extra tags
+      shell: bash
+      id: determine_extra_tags
+      run: |
+        if [[ "${{ github.event_name }}" != "pull_request" && "${{ github.event_name }}" != "pull_request_target" ]]; then
+          extra_tags=${SECONDARY_TAGS}
+        fi
+        echo "EXTRA_TAGS is determined: ${extra_tags}"
+        echo "EXTRA_TAGS=${extra_tags}" >> $GITHUB_OUTPUT
+      env:
+        SECONDARY_TAGS: ${{ inputs.secondary_tags }}
     - name: Update Vald version
       shell: bash
       run: echo "${PRIMARY_TAG}" > versions/VALD_VERSION
