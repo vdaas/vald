@@ -48,7 +48,7 @@ runs:
         for tag in ${PRIMARY_TAG} ${EXTRA_TAGS}; do
           make \
             TARGET="${TARGET}" \
-            TAG="${PRIMARY_TAG}" \
+            TAG="${tag}" \
             ARCHS="${ARCHS}" \
             docker/create/manifest \
             docker/create/manifest/alter
