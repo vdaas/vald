@@ -565,10 +565,11 @@ func Test_queue_Push(t *testing.T) {
 					inCh <- func(context.Context) error {
 						return nil
 					}
-					go func() {
+					errgroup.Go(func() error {
 						time.Sleep(time.Millisecond * 50)
 						cancel()
-					}()
+						return nil
+					})
 				},
 			}
 		}(),

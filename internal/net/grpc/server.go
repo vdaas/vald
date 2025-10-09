@@ -21,14 +21,8 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/encoding"
-	_ "google.golang.org/grpc/encoding/proto"
 	"google.golang.org/grpc/keepalive"
 )
-
-func init() {
-	encoding.RegisterCodec(Codec{})
-}
 
 type (
 	// Server represents a gRPC server to serve RPC requests.

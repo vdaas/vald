@@ -41,6 +41,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 // errGoexit indicates the runtime.Goexit was called in
@@ -91,6 +92,7 @@ type Group[V any] interface {
 type group[V any] struct {
 	mu sync.Mutex          // protects m
 	m  map[string]*call[V] // lazily initialized
+	eg errgroup.Group
 }
 
 // Result holds the results of Do, so they can be passed
@@ -101,10 +103,12 @@ type Result[V any] struct {
 	Shared bool
 }
 
-// New returns Group implementation.
+// New constructs a Group that suppresses duplicate in-flight calls for the same key and shares results among callers.
+// The returned Group has an initialized call map and an errgroup executor for coordinating asynchronous work.
 func New[V any]() Group[V] {
 	return &group[V]{
-		m: make(map[string]*call[V]),
+		m:  make(map[string]*call[V]),
+		eg: errgroup.Get(),
 	}
 }
 
@@ -157,7 +161,10 @@ func (g *group[V]) DoChan(
 	g.m[key] = c
 	g.mu.Unlock()
 
-	go g.doCall(ctx, c, key, fn)
+	g.eg.Go(func() error {
+		g.doCall(ctx, c, key, fn)
+		return nil
+	})
 
 	return ch
 }
@@ -188,7 +195,9 @@ func (g *group[V]) doCall(
 			// In order to prevent the waiting channels from being blocked forever,
 			// needs to ensure that this panic cannot be recovered.
 			if len(c.chans) > 0 {
-				go panic(e)
+				g.eg.Go(func() error {
+					panic(e)
+				})
 				select {} // Keep this goroutine around so that it will appear in the crash dump.
 			} else {
 				panic(e)
