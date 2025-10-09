@@ -24,11 +24,13 @@ MIRROR_APP_NAME	= vald-mirror-gateway
 ## clean k8s manifests
 k8s/manifest/clean:
 	rm -rf \
-		k8s/agent \
-		k8s/discoverer \
-		k8s/gateway \
-		k8s/manager \
-		k8s/index
+		$(ROOTDIR)/k8s/agent \
+		$(ROOTDIR)/k8s/discoverer \
+		$(ROOTDIR)/k8s/gateway \
+		$(ROOTDIR)/k8s/index \
+		$(ROOTDIR)/k8s/manager \
+		$(ROOTDIR)/k8s/tests
+
 
 .PHONY: k8s/manifest/update
 ## update k8s manifests using helm templates

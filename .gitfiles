@@ -27,6 +27,7 @@
 .github/ISSUE_TEMPLATE/feature_request.md
 .github/ISSUE_TEMPLATE/security_issue_report.md
 .github/PULL_REQUEST_TEMPLATE.md
+.github/actions/create-docker-manifest/action.yaml
 .github/actions/deploy-chaos-mesh/action.yaml
 .github/actions/detect-docker-image-tags/action.yaml
 .github/actions/determine-docker-image-tag/action.yaml
@@ -37,6 +38,7 @@
 .github/actions/e2e-deploy-vald/action.yaml
 .github/actions/e2e-profile/action.yaml
 .github/actions/notify-slack/action.yaml
+.github/actions/prepare-docker-build/action.yaml
 .github/actions/scan-docker-image/action.yaml
 .github/actions/setup-e2e/action.yaml
 .github/actions/setup-go/action.yaml
@@ -120,6 +122,7 @@
 .github/workflows/e2e.yaml
 .github/workflows/format.yaml
 .github/workflows/fossa.yaml
+.github/workflows/github-actions-workflow-linter.yaml
 .github/workflows/helm-lint.yaml
 .github/workflows/helm.yaml
 .github/workflows/issue-metrics.yaml
@@ -430,6 +433,7 @@ charts/vald/templates/gateway/filter/hpa.yaml
 charts/vald/templates/gateway/filter/networkpolicy.yaml
 charts/vald/templates/gateway/filter/pdb.yaml
 charts/vald/templates/gateway/filter/priorityclass.yaml
+charts/vald/templates/gateway/filter/serviceaccount.yaml
 charts/vald/templates/gateway/filter/svc.yaml
 charts/vald/templates/gateway/ing.yaml
 charts/vald/templates/gateway/lb/configmap.yaml
@@ -439,6 +443,7 @@ charts/vald/templates/gateway/lb/hpa.yaml
 charts/vald/templates/gateway/lb/networkpolicy.yaml
 charts/vald/templates/gateway/lb/pdb.yaml
 charts/vald/templates/gateway/lb/priorityclass.yaml
+charts/vald/templates/gateway/lb/serviceaccount.yaml
 charts/vald/templates/gateway/lb/svc.yaml
 charts/vald/templates/gateway/mirror/clusterrole.yaml
 charts/vald/templates/gateway/mirror/clusterrolebinding.yaml
@@ -454,12 +459,15 @@ charts/vald/templates/gateway/mirror/svc.yaml
 charts/vald/templates/index/job/correction/configmap.yaml
 charts/vald/templates/index/job/correction/cronjob.yaml
 charts/vald/templates/index/job/correction/networkpolicy.yaml
+charts/vald/templates/index/job/correction/serviceaccount.yaml
 charts/vald/templates/index/job/creation/configmap.yaml
 charts/vald/templates/index/job/creation/cronjob.yaml
 charts/vald/templates/index/job/creation/networkpolicy.yaml
+charts/vald/templates/index/job/creation/serviceaccount.yaml
 charts/vald/templates/index/job/deletion/configmap.yaml
 charts/vald/templates/index/job/deletion/cronjob.yaml
 charts/vald/templates/index/job/deletion/networkpolicy.yaml
+charts/vald/templates/index/job/deletion/serviceaccount.yaml
 charts/vald/templates/index/job/readreplica/rotate/clusterrole.yaml
 charts/vald/templates/index/job/readreplica/rotate/clusterrolebinding.yaml
 charts/vald/templates/index/job/readreplica/rotate/configmap.yaml
@@ -468,15 +476,20 @@ charts/vald/templates/index/job/readreplica/rotate/serviceaccount.yaml
 charts/vald/templates/index/job/save/configmap.yaml
 charts/vald/templates/index/job/save/cronjob.yaml
 charts/vald/templates/index/job/save/networkpolicy.yaml
+charts/vald/templates/index/job/save/serviceaccount.yaml
+charts/vald/templates/index/operator/clusterrole.yaml
+charts/vald/templates/index/operator/clusterrolebinding.yaml
 charts/vald/templates/index/operator/configmap.yaml
 charts/vald/templates/index/operator/deployment.yaml
 charts/vald/templates/index/operator/priorityclass.yaml
+charts/vald/templates/index/operator/serviceaccount.yaml
 charts/vald/templates/manager/index/configmap.yaml
 charts/vald/templates/manager/index/daemonset.yaml
 charts/vald/templates/manager/index/deployment.yaml
 charts/vald/templates/manager/index/networkpolicy.yaml
 charts/vald/templates/manager/index/pdb.yaml
 charts/vald/templates/manager/index/priorityclass.yaml
+charts/vald/templates/manager/index/serviceaccount.yaml
 charts/vald/templates/manager/index/svc.yaml
 charts/vald/values.go
 charts/vald/values.schema.json
@@ -772,6 +785,7 @@ hack/benchmark/src/singleflight/singleflight_bench_test.go
 hack/cspell/main.go
 hack/cspell/main_test.go
 hack/docker/gen/main.go
+hack/docker/gen/main_test.go
 hack/git/hooks/pre-commit
 hack/go.mod.default
 hack/gorules/rules.go
@@ -1695,9 +1709,12 @@ k8s/index/job/deletion/configmap.yaml
 k8s/index/job/deletion/cronjob.yaml
 k8s/index/job/save/configmap.yaml
 k8s/index/job/save/cronjob.yaml
+k8s/index/operator/clusterrole.yaml
+k8s/index/operator/clusterrolebinding.yaml
 k8s/index/operator/configmap.yaml
 k8s/index/operator/deployment.yaml
 k8s/index/operator/priorityclass.yaml
+k8s/index/operator/serviceaccount.yaml
 k8s/manager/index/configmap.yaml
 k8s/manager/index/deployment.yaml
 k8s/manager/index/pdb.yaml

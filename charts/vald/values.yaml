@@ -1298,14 +1298,10 @@ gateway:
         # @schema {"name": "gateway.lb.gateway_config.discoverer.read_client", "alias": "grpc.client"}
         # gateway.lb.gateway_config.discoverer.read_client -- gRPC client for discoverer (overrides defaults.grpc.client)
         read_client: {}
-    # @schema {"name": "gateway.lb.serviceAccount", "type": "object"}
-    serviceAccount:
-      # @schema {"name": "gateway.lb.serviceAccount.enabled", "type": "boolean"}
-      # gateway.lb.serviceAccount.enabled -- creates service account
-      enabled: true
-      # @schema {"name": "gateway.lb.serviceAccount.name", "type": "string"}
-      # gateway.lb.serviceAccount.name -- name of service account
-      name: gateway-lb
+    # @schema {"name": "gateway.lb.serviceAccountName", "type": "string"}
+    # gateway.lb.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+    # If not set, a service account is created.
+    serviceAccountName: ""
   # @schema {"name": "gateway.filter", "type": "object"}
   filter:
     # @schema {"name": "gateway.filter.enabled", "type": "boolean"}
@@ -1602,14 +1598,10 @@ gateway:
         # @schema {"name": "gateway.filter.gateway_config.egress_filter.distance_filters", "type": "array", "items": {"type": "string"}}
         # gateway.filter.gateway_config.egress_filter.distance_filters -- distance egress vector filter targets
         distance_filters: []
-    # @schema {"name": "gateway.filter.serviceAccount", "type": "object"}
-    serviceAccount:
-      # @schema {"name": "gateway.filter.serviceAccount.enabled", "type": "boolean"}
-      # gateway.filter.serviceAccount.enabled -- creates service account
-      enabled: true
-      # @schema {"name": "gateway.filter.serviceAccount.name", "type": "string"}
-      # gateway.filter.serviceAccount.name -- name of service account
-      name: gateway-filter
+    # @schema {"name": "gateway.filter.serviceAccountName", "type": "string"}
+    # gateway.filter.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+    # If not set, a service account is created.
+    serviceAccountName: ""
   # @schema {"name": "gateway.mirror", "type": "object"}
   mirror:
     # @schema {"name": "gateway.mirror.enabled", "type": "boolean"}
@@ -1966,14 +1958,10 @@ gateway:
       # @schema {"name": "gateway.mirror.clusterRoleBinding.name", "type": "string"}
       # gateway.mirror.clusterRoleBinding.name -- name of clusterRoleBinding
       name: gateway-mirror
-    # @schema {"name": "gateway.mirror.serviceAccount", "type": "object"}
-    serviceAccount:
-      # @schema {"name": "gateway.mirror.serviceAccount.enabled", "type": "boolean"}
-      # gateway.mirror.serviceAccount.enabled -- creates service account
-      enabled: true
-      # @schema {"name": "gateway.mirror.serviceAccount.name", "type": "string"}
-      # gateway.mirror.serviceAccount.name -- name of service account
-      name: gateway-mirror
+    # @schema {"name": "gateway.mirror.serviceAccountName", "type": "string"}
+    # gateway.mirror.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+    # If not set, a service account is created.
+    serviceAccountName: gateway-mirror
 # @schema {"name": "agent", "type": "object"}
 agent:
   # @schema {"name": "agent.enabled", "type": "boolean"}
@@ -2130,14 +2118,10 @@ agent:
     # @schema {"name": "agent.clusterRoleBinding.name", "type": "string"}
     # agent.clusterRoleBinding.name -- name of clusterRoleBinding
     name: agent
-  # @schema {"name": "agent.serviceAccount", "type": "object"}
-  serviceAccount:
-    # @schema {"name": "agent.serviceAccount.enabled", "type": "boolean"}
-    # agent.serviceAccount.enabled -- creates service account
-    enabled: true
-    # @schema {"name": "agent.serviceAccount.name", "type": "string"}
-    # agent.serviceAccount.name -- name of service account
-    name: agent-ngt
+  # @schema {"name": "agent.serviceAccountName", "type": "string"}
+  # agent.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+  # If not set, a service account is created.
+  serviceAccountName: agent-ngt
   # @schema {"name": "agent.env", "alias": "env"}
   # agent.env -- environment variables
   env:
@@ -3147,14 +3131,10 @@ discoverer:
     # @schema {"name": "discoverer.clusterRoleBinding.name", "type": "string"}
     # discoverer.clusterRoleBinding.name -- name of clusterRoleBinding
     name: discoverer
-  # @schema {"name": "discoverer.serviceAccount", "type": "object"}
-  serviceAccount:
-    # @schema {"name": "discoverer.serviceAccount.enabled", "type": "boolean"}
-    # discoverer.serviceAccount.enabled -- creates service account
-    enabled: true
-    # @schema {"name": "discoverer.serviceAccount.name", "type": "string"}
-    # discoverer.serviceAccount.name -- name of service account
-    name: vald
+  # @schema {"name": "discoverer.serviceAccountName", "type": "string"}
+  # discoverer.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+  # If not set, a service account is created.
+  serviceAccountName: vald
 # @schema {"name": "manager", "type": "object"}
 manager:
   # @schema {"name": "manager.index", "type": "object"}
@@ -3346,6 +3326,9 @@ manager:
       limits:
         cpu: 1000m
         memory: 500Mi
+    # @schema {"name": "manager.index.serviceAccountName", "type": "string"}
+    # manager.index.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+    serviceAccountName: ""
     # @schema {"name": "manager.index.indexer", "type": "object"}
     indexer:
       # @schema {"name": "manager.index.indexer.agent_namespace", "type": "string"}
@@ -3508,6 +3491,9 @@ manager:
           preferredDuringSchedulingIgnoredDuringExecution: []
           # manager.index.corrector.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
           requiredDuringSchedulingIgnoredDuringExecution: []
+      # @schema {"name": "manager.index.corrector.serviceAccountName", "type": "string"}
+      # manager.index.corrector.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+      serviceAccountName: ""
       # @schema {"name": "manager.index.corrector.gateway", "alias": "grpc.client"}
       # manager.index.corrector.gateway -- gRPC client for gateway (overrides defaults.grpc.client)
       gateway: {}
@@ -3644,6 +3630,9 @@ manager:
           preferredDuringSchedulingIgnoredDuringExecution: []
           # manager.index.creator.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
           requiredDuringSchedulingIgnoredDuringExecution: []
+      # @schema {"name": "manager.index.creator.serviceAccountName", "type": "string"}
+      # manager.index.creator.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+      serviceAccountName: ""
       # @schema {"name": "manager.index.creator.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "manager.index.creator.discoverer.duration", "type": "string"}
@@ -3777,6 +3766,9 @@ manager:
           preferredDuringSchedulingIgnoredDuringExecution: []
           # manager.index.deleter.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
           requiredDuringSchedulingIgnoredDuringExecution: []
+      # @schema {"name": "manager.index.deleter.serviceAccountName", "type": "string"}
+      # manager.index.deleter.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+      serviceAccountName: ""
       # @schema {"name": "manager.index.deleter.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "manager.index.deleter.discoverer.duration", "type": "string"}
@@ -3907,6 +3899,9 @@ manager:
           preferredDuringSchedulingIgnoredDuringExecution: []
           # manager.index.saver.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
           requiredDuringSchedulingIgnoredDuringExecution: []
+      # @schema {"name": "manager.index.saver.serviceAccountName", "type": "string"}
+      # manager.index.saver.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+      serviceAccountName: ""
       # @schema {"name": "manager.index.saver.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "manager.index.saver.discoverer.duration", "type": "string"}
@@ -4006,14 +4001,9 @@ manager:
         # @schema {"name": "manager.index.readreplica.rotator.agent_namespace", "type": "string"}
         # manager.index.readreplica.rotator.agent_namespace -- namespace of agent pods to manage
         agent_namespace: _MY_POD_NAMESPACE_
-        # @schema {"name": "manager.index.readreplica.rotator.serviceAccount", "type": "object"}
-        serviceAccount:
-          # @schema {"name": "manager.index.readreplica.rotator.serviceAccount.enabled", "type": "boolean"}
-          # manager.index.readreplica.rotator.serviceAccount.enabled -- creates service account
-          enabled: true
-          # @schema {"name": "manager.index.readreplica.rotator.serviceAccount.name", "type": "string"}
-          # manager.index.readreplica.rotator.serviceAccount.name -- name of service account
-          name: vald-readreplica-rotate
+        # @schema {"name": "manager.index.readreplica.rotator.serviceAccountName", "type": "string"}
+        # manager.index.readreplica.rotator.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+        serviceAccountName: vald-readreplica-rotate
         # @schema {"name": "manager.index.readreplica.rotator.clusterRole", "type": "object"}
         clusterRole:
           # @schema {"name": "manager.index.readreplica.rotator.clusterRole.enabled", "type": "boolean"}
@@ -4202,6 +4192,25 @@ manager:
         limits:
           cpu: 600m
           memory: 200Mi
+      # @schema {"name": "manager.index.operator.serviceAccountName", "type": "string"}
+      # manager.index.operator.serviceAccountName -- serviceAccountName -- Name of the service account to use.
+      serviceAccountName: "vald-index-operator"
+      # @schema {"name": "manager.index.operator.clusterRole", "type": "object"}
+      clusterRole:
+        # @schema {"name": "manager.index.operator.clusterRole.enabled", "type": "boolean"}
+        # manager.index.operator.clusterRole.enabled -- creates clusterRole resource
+        enabled: true
+        # @schema {"name": "manager.index.operator.clusterRole.name", "type": "string"}
+        # manager.index.operator.clusterRole.name -- name of clusterRole
+        name: vald-index-operator
+      # @schema {"name": "manager.index.operator.clusterRoleBinding", "type": "object"}
+      clusterRoleBinding:
+        # @schema {"name": "manager.index.operator.clusterRoleBinding.enabled", "type": "boolean"}
+        # manager.index.operator.clusterRoleBinding.enabled -- creates clusterRoleBinding resource
+        enabled: true
+        # @schema {"name": "manager.index.operator.clusterRoleBinding.name", "type": "string"}
+        # manager.index.operator.clusterRoleBinding.name -- name of clusterRoleBinding
+        name: vald-index-operator
       # @schema {"name": "manager.index.operator.rotation_job_concurrency", "type": "integer", "minimum": 1}
       # manager.index.operator.rotation_job_concurrency -- maximum concurrent rotator job run.
       rotation_job_concurrency: 2
