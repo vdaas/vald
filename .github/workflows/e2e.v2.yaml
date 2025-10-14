@@ -24,6 +24,7 @@ on:
   pull_request:
     types:
       - "labeled"
+  workflow_dispatch:
 env:
   DATASET: fashion-mnist-784-euclidean.hdf5
 jobs:
