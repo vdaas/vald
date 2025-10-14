@@ -392,6 +392,7 @@ charts/vald-with-tikv/.helmignore
 charts/vald-with-tikv/Chart.lock
 charts/vald-with-tikv/Chart.yaml
 charts/vald-with-tikv/crds/crd.yaml
+charts/vald-with-tikv/templates/_helpers.tpl
 charts/vald-with-tikv/templates/tidbcluster.yaml
 charts/vald-with-tikv/values.yaml
 charts/vald/.helmignore
