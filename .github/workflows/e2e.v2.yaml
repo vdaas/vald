@@ -104,12 +104,11 @@ jobs:
         password: ${{ secrets.PACKAGE_TOKEN }}
       options: "--add-host host.docker.internal:host-gateway"
     steps:
-      - uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
-        with:
-          android: true
-          dotnet: true
-          haskell: true
-          tool-cache: true
+      - name: Free disk space
+        run: |
+          docker system df
+          docker system prune -a --volumes -f
+          docker system df
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
