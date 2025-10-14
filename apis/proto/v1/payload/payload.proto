@@ -37,6 +37,8 @@ message Search {
     repeated float vector = 1 [(buf.validate.field).repeated.min_items = 2];
     // The configuration of the search request.
     Config config = 2;
+    // The key is related to the vector.
+    optional Meta.Key key = 3;
   }
 
   // Represent the multiple search request.
@@ -51,6 +53,8 @@ message Search {
     string id = 1;
     // The configuration of the search request.
     Config config = 2;
+    // The key is related to the vector.
+    optional Meta.Key key = 3;
   }
 
   // Represent the multiple search by ID request.
@@ -67,6 +71,8 @@ message Search {
     Config config = 2;
     // Filter configuration.
     Filter.Target vectorizer = 3;
+    // The key is related to the vector.
+    optional Meta.Key key = 4;
   }
 
   // Represent the multiple search by binary object request.
@@ -116,6 +122,8 @@ message Search {
     string request_id = 1;
     // Search results.
     repeated Object.Distance results = 2;
+    // The value is related to the request key.
+    optional Meta.Value value = 3;
   }
 
   // Represent multiple search responses.
@@ -160,6 +168,8 @@ message Insert {
     Object.Vector vector = 1 [(buf.validate.field).repeated.min_items = 2];
     // The configuration of the insert request.
     Config config = 2;
+    // The kv is the key and value related to the request vector .
+    optional Meta.KeyValue kv = 3;
   }
 
   // Represent the multiple insert request.
@@ -176,6 +186,8 @@ message Insert {
     Config config = 2;
     // Filter configurations.
     Filter.Target vectorizer = 3;
+    // The kv is the key and value related to the request vector .
+    optional Meta.KeyValue kv = 4;
   }
 
   // Represent the multiple insert by binary object request.
@@ -203,6 +215,8 @@ message Update {
     Object.Vector vector = 1 [(buf.validate.field).repeated.min_items = 2];
     // The configuration of the update request.
     Config config = 2;
+    // The kv is the key and value related to the request vector .
+    optional Meta.KeyValue kv = 3;
   }
 
   // Represent the multiple update request.
@@ -219,6 +233,8 @@ message Update {
     Config config = 2;
     // Filter target.
     Filter.Target vectorizer = 3;
+    // The kv is the key and value related to the request vector .
+    optional Meta.KeyValue kv = 4;
   }
 
   // Represent the multiple update binary object request.
@@ -235,6 +251,8 @@ message Update {
     int64 timestamp = 2;
     // force represents forcefully update the timestamp.
     bool force = 3;
+    // The kv is the key and value related to the request vector .
+    optional Meta.KeyValue kv = 4;
   }
 
   // Represent the update configuration.
@@ -259,6 +277,8 @@ message Upsert {
     Object.Vector vector = 1 [(buf.validate.field).repeated.min_items = 2];
     // The configuration of the upsert request.
     Config config = 2;
+    // The kv is the key and value related to the request vector .
+    optional Meta.KeyValue kv = 3;
   }
 
   // Represent mthe ultiple upsert request.
@@ -275,6 +295,8 @@ message Upsert {
     Config config = 2;
     // Filter target.
     Filter.Target vectorizer = 3;
+    // The kv is the key and value related to the request vector .
+    optional Meta.KeyValue kv = 4;
   }
 
   // Represent the multiple upsert binary object request.
@@ -305,6 +327,8 @@ message Remove {
     Object.ID id = 1;
     // The configuration of the remove request.
     Config config = 2;
+    // The key is related to the request vector.
+    optional Meta.Key key = 3;
   }
 
   // Represent the multiple remove request.
@@ -318,6 +342,8 @@ message Remove {
     // The timestamp comparison list. If more than one is specified, the `AND`
     // search is applied.
     repeated Timestamp timestamps = 1;
+    // The key is related to the request vector.
+    optional Meta.Key key = 2;
   }
 
   // Represent the timestamp comparison.
