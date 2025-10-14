@@ -915,7 +915,7 @@ ghalint/lint:\
 
 pinact/lint:\
 	pinact/install
-	@$(GOBIN)/pinact run -u
+	@GITHUB_TOKEN=$(shell gh auth token 2>/dev/null || :) $(GOBIN)/pinact run
 
 ghatm/lint:\
 	ghatm/install
