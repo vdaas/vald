@@ -100,7 +100,7 @@ jobs:
 
           if [[ "${{ github.ref }}" = "refs/heads/main" || "${{ github.ref }}" =~ "^refs/tags/.*" ]]; then
             echo "Push to main branch or tag a version. Building for all architectures."
-            MATRIX="[$(IFS=,; echo ${ARCHS[*]})]"
+            MATRIX="[$(IFS=,; echo "${ARCHS[*]}")]"
           elif [[ "${{ github.event_name }}" = "pull_request" || "${{ github.event_name }}" = "pull_request_target" ]]; then
             echo "Building for labeled architectures on Pull Request."
             labels=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH" | grep "actions/build")
@@ -131,7 +131,7 @@ jobs:
       image_name: ${{ steps.prepare.outputs.IMAGE_NAME }}
       alter_image_name: ${{ steps.prepare.outputs.ALTER_IMAGE_NAME }}
       primary_tag: ${{ steps.prepare.outputs.PRIMARY_TAG }}
-      secondary_tags: ${{ steps.prepare.outputs.SECONDARY_TAGS }}
+      extra_tags: ${{ steps.prepare.outputs.EXTRA_TAGS }}
   build:
     timeout-minutes: 90
     permissions:
@@ -181,14 +181,12 @@ jobs:
           image_name: ${{ needs.prepare.outputs.image_name }}
           alter_image_name: ${{ needs.prepare.outputs.alter_image_name }}
           primary_tag: ${{ needs.prepare.outputs.primary_tag }}
-          secondary_tags: ${{ needs.prepare.outputs.secondary_tags }}
+          extra_tags: ${{ needs.prepare.outputs.extra_tags }}
       - name: Scan the Docker image
         if: startsWith(github.ref, 'refs/tags/')
         uses: ./.github/actions/scan-docker-image
         with:
           image_ref: "${{ needs.prepare.outputs.image_name }}:${{ needs.prepare.outputs.primary_tag }}-${{ matrix.arch }}"
-    outputs:
-      extra_tags: ${{ steps.build_and_publish.outputs.EXTRA_TAGS }}
   merge:
     timeout-minutes: 60
     permissions:
@@ -228,7 +226,7 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           archs: ${{ needs.prepare.outputs.archs }}
           primary_tag: ${{ needs.prepare.outputs.primary_tag }}
-          extra_tags: ${{ needs.build.outputs.extra_tags }}
+          extra_tags: ${{ needs.prepare.outputs.extra_tags }}
   slack:
     timeout-minutes: 30
     permissions:

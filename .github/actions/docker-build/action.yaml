@@ -34,17 +34,14 @@ inputs:
   primary_tag:
     description: "Primary tag"
     required: true
-  secondary_tags:
-    description: "Secondary tags"
+  extra_tags:
+    description: "Extra tags"
     required: false
     default: ""
 outputs:
   PLATFORMS:
     description: "Target platforms"
     value: ${{ steps.determine_build_platforms.outputs.PLATFORMS }}
-  EXTRA_TAGS:
-    description: "Extra tags"
-    value: ${{ steps.add_extra_tags.outputs.EXTRA_TAGS }}
 runs:
   using: "composite"
   steps:
@@ -58,17 +55,6 @@ runs:
         echo "ARCH=${arch}" >> $GITHUB_OUTPUT
         echo "PLATFORM is determined: ${platform}"
         echo "PLATFORM=${platform}" >> $GITHUB_OUTPUT
-    - name: Determine extra tags
-      shell: bash
-      id: determine_extra_tags
-      run: |
-        if [[ "${{ github.event_name }}" != "pull_request" && "${{ github.event_name }}" != "pull_request_target" ]]; then
-          extra_tags=${SECONDARY_TAGS}
-        fi
-        echo "EXTRA_TAGS is determined: ${extra_tags}"
-        echo "EXTRA_TAGS=${extra_tags}" >> $GITHUB_OUTPUT
-      env:
-        SECONDARY_TAGS: ${{ inputs.secondary_tags }}
     - name: Build and Push
       shell: bash
       id: build_and_push
@@ -99,4 +85,4 @@ runs:
         IMAGE_NAME: ${{ inputs.image_name }}
         ALTER_IMAGE_NAME: ${{ inputs.alter_image_name }}
         PRIMARY_TAG: ${{ inputs.primary_tag }}
-        EXTRA_TAGS: ${{ steps.determine_extra_tags.outputs.EXTRA_TAGS }}
+        EXTRA_TAGS: ${{ inputs.extra_tags }}
