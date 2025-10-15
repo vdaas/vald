@@ -1,0 +1,48 @@
+#
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: pingcap.com/v1alpha1
+kind: TidbCluster
+metadata:
+  name: {{ default (include "vald-with-tikv.fullname" .) .Values.tidbCluster.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  version: {{ .Values.tidbCluster.version }}
+  timezone: {{ .Values.tidbCluster.timezone }}
+  pd:
+    baseImage: {{ .Values.tidbCluster.pd.baseImage }}
+    {{- if .Values.tidbCluster.pd.config }}
+    config:
+      {{ toYaml .Values.tidbCluster.pd.config | nindent 6 }}
+    {{- else }}
+    config: {}
+    {{- end }}
+    replicas: {{ .Values.tidbCluster.pd.replicas }}
+    requests:
+      storage: {{ .Values.tidbCluster.pd.requests.storage }}
+  tidb:
+    baseImage: {{ .Values.tidbCluster.tidb.baseImage }}
+    replicas: {{ .Values.tidbCluster.tidb.replicas }}
+  tikv:
+    baseImage: {{ .Values.tidbCluster.tikv.baseImage }}
+    {{- if .Values.tidbCluster.tikv.config }}
+    config:
+      {{ toYaml .Values.tidbCluster.tikv.config | nindent 6 }}
+    {{- else }}
+    config: {}
+    {{- end }}
+    replicas: {{ .Values.tidbCluster.tikv.replicas }}
+    requests:
+      storage: {{ .Values.tidbCluster.tikv.requests.storage }}
