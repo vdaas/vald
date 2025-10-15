@@ -382,6 +382,13 @@ charts/vald-readreplica/templates/snapshot.yaml
 charts/vald-readreplica/templates/svc.yaml
 charts/vald-readreplica/values.schema.json
 charts/vald-readreplica/values.yaml
+charts/vald-with-tikv/.helmignore
+charts/vald-with-tikv/Chart.lock
+charts/vald-with-tikv/Chart.yaml
+charts/vald-with-tikv/crds/crd.yaml
+charts/vald-with-tikv/templates/_helpers.tpl
+charts/vald-with-tikv/templates/tidbcluster.yaml
+charts/vald-with-tikv/values.yaml
 charts/vald/.helmignore
 charts/vald/Chart.yaml
 charts/vald/README.md
