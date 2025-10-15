@@ -26,15 +26,15 @@ import (
 
 type(
 	Client interface {
-		Set(key, val []byte) error
-		Get(key []byte) ([]byte, error)
-		Delete(key []byte) error
+		Set(ctx context.Context, key, val []byte) error
+		Get(ctx context.Context, key []byte) ([]byte, error)
+		Delete(ctx context.Context, key []byte) error
 		Close() error
 	}
 	
 	client struct {
 		addrs []string
-		rcli rawkv.Cilnet
+		rcli *rawkv.Cilnet
 	}
 )
 
@@ -56,15 +56,18 @@ func New(ctx context.Context, opts ...Option) (Clinet, error) {
 		}
 	}
 
-	c.rcli = rawkv.NewClient(ctx, c.addrs, config.DefaultConfig().Security)
+	c.rcli, err = rawkv.NewClient(ctx, c.addrs, config.DefaultConfig().Security)
+	if err != nil {
+		return nil, errors.NewTiKVError("failed to create TiKV raw client: %v", err)
+	}
 
 	return c, nil
 }
 
 func (c *client) Set(ctx context.Context, key, val []byte) error {
-	err := c.rcli.Set(ctx, key, val)
+	err := c.rcli.Put(ctx, key, val)
 	if err != nil {
-		return errors.NewTiKVError("failed to set key-value. key: %s, value: %s", key, val)
+		return errors.NewTiKVError("failed to put key-value: %v", err)
 	}
 
 	return nil
@@ -73,7 +76,7 @@ func (c *client) Set(ctx context.Context, key, val []byte) error {
 func (c *client) Get(ctx context.Context, key []byte) ([]byte, error) {
 	val, err := c.rcli.Get(ctx, key)
 	if err != nil {
-		return errors.NewTiKVError("failed to get value for key. key: %s", key)
+		return nil, errors.NewTiKVError("failed to get value: %v", err)
 	}
 
 	return val, nil
@@ -82,19 +85,18 @@ func (c *client) Get(ctx context.Context, key []byte) ([]byte, error) {
 func (c *client) Delete(ctx context.Context, key []byte) error {
 	err := c.rcli.Delete(ctx, key)
 	if err != nil {
-		return errors.NewTiKVError("failed to delete key. key: %s", key)
+		return errors.NewTiKVError("failed to delete key: %v", err)
 	}
 
 	return nil
 }
 
 func (c *client) Close() error {
-	if c.rcli != nil {
-		err := c.rcli.Close()
+	if c.rcli == nil {
+		return nil
 	}
-	if err != nil {
-		return errors.NewTiKVError("failed to close TiKV raw client")
+	if err := c.rcli.Close(); err != nil {
+		return errors.NewTiKVError("failed to close TiKV raw client: %v", err)
 	}
-
 	return nil
 }

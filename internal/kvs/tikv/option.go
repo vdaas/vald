@@ -17,14 +17,14 @@
 package tikv
 
 // Option represents the functional option for TiKV.
-type Option func(*tikv) error
+type Option func(*client) error
 
 var defaultOptions = []Option{
 	WtihAddrs([]string{"127.0.0.1:2379"}),
 }
 
-func WithAddrs(addrs []string) {
-	return func(c *clinet) error {
+func WithAddrs(addrs []string) Option {
+	return func(c *client) error {
 		c.addrs = addrs
 		return nil
 	}

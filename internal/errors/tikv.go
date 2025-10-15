@@ -20,7 +20,7 @@ type TiKVError struct {
 	Msg string
 }
 
-func NewTikvError(msg string) error {
+func NewTiKVError(msg string) error {
 	return TiKVError{
 		Msg: msg,
 	}
