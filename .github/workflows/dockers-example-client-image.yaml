@@ -29,10 +29,14 @@ on:
       - v*.*.*
       - v*.*.*-*
   pull_request:
+    types:
+      - synchronize
+      - labeled
     paths:
       - "!**/*_mock.go"
       - "!**/*_test.go"
       - .github/actions/docker-build/action.yaml
+      - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-example-client-image.yaml
       - Makefile
@@ -46,14 +50,13 @@ on:
       - versions/GO_VERSION
   pull_request_target:
     types:
-      - opened
-      - reopened
       - synchronize
       - labeled
     paths:
       - "!**/*_mock.go"
       - "!**/*_test.go"
       - .github/actions/docker-build/action.yaml
+      - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-example-client-image.yaml
       - Makefile

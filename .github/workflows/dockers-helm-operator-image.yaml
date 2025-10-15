@@ -29,8 +29,12 @@ on:
       - v*.*.*
       - v*.*.*-*
   pull_request:
+    types:
+      - synchronize
+      - labeled
     paths:
       - .github/actions/docker-build/action.yaml
+      - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-helm-operator-image.yaml
       - Makefile
@@ -46,12 +50,11 @@ on:
       - versions/OPERATOR_SDK_VERSION
   pull_request_target:
     types:
-      - opened
-      - reopened
       - synchronize
       - labeled
     paths:
       - .github/actions/docker-build/action.yaml
+      - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-helm-operator-image.yaml
       - Makefile
