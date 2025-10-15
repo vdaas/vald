@@ -913,12 +913,14 @@ func replaceEnvInValues(v any) any {
 	case string:
 		str := config.GetActualValue(val)
 		// Convert env-injected scalars to native types so yaml.Unmarshal can bind to typed fields.
-		// Preference order: signed ints, floats, then big uints; handle true/false explicitly (not 0/1).
+		// Preference order: big uints (for positive numbers), signed ints (for negatives), then floats; handle true/false explicitly (not 0/1).
+		if len(str) > 0 && str[0] != '-' {
+			if u, err := strconv.ParseUint(str, 10, 64); err == nil {
+				return u
+			}
+		}
 		if i, err := strconv.ParseInt(str, 10, 64); err == nil {
 			return i
-		}
-		if u, err := strconv.ParseUint(str, 10, 64); err == nil {
-			return u
 		}
 		if f, err := strconv.ParseFloat(str, 64); err == nil {
 			return f
