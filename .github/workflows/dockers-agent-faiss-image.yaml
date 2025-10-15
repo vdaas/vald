@@ -29,6 +29,11 @@ on:
       - v*.*.*
       - v*.*.*-*
   pull_request:
+    types:
+      - reopened
+      - synchronize
+      - labeled
+      - ready_for_review
     paths:
       - "!**/*_mock.go"
       - "!**/*_test.go"
@@ -145,7 +150,6 @@ on:
       - versions/GO_VERSION
   pull_request_target:
     types:
-      - opened
       - reopened
       - synchronize
       - labeled

@@ -998,6 +998,7 @@ on:
       - "v*.*.*"
       - "v*.*.*-*"
   pull_request:
+    types: [reopened, synchronize, labeled, ready_for_review]
     paths:
       - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
@@ -1005,7 +1006,7 @@ on:
       - "dockers/`+data.PackageDir+`/Dockerfile"
       - "hack/docker/gen/main.go"
   pull_request_target:
-    types: [opened, reopened, synchronize, labeled]
+    types: [reopened, synchronize, labeled]
     paths: []
 
 jobs:
