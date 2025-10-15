@@ -994,6 +994,7 @@ on:
       - "v*.*.*"
       - "v*.*.*-*"
   pull_request:
+    types: [opened, reopened, synchronize, labeled]
     paths:
       - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"

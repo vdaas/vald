@@ -29,6 +29,11 @@ on:
       - v*.*.*
       - v*.*.*-*
   pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - labeled
     paths:
       - "!**/*_mock.go"
       - "!**/*_test.go"
