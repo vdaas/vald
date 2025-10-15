@@ -98,7 +98,11 @@ func toFloat64(v any) (float64, bool) {
 	case uint:
 		return float64(val), true
 	case uint64:
-		return float64(val), true
+		// float64 can only precisely represent integers up to 2^53.
+		if val <= 1<<53 {
+			return float64(val), true
+		}
+		return 0, false
 	default:
 		return 0, false
 	}
