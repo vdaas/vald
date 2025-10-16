@@ -31,6 +31,7 @@ on:
   pull_request:
     paths:
       - .github/actions/docker-build/action.yaml
+      - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-dev-container-image.yaml
       - Makefile
@@ -50,6 +51,7 @@ on:
       - labeled
     paths:
       - .github/actions/docker-build/action.yaml
+      - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-dev-container-image.yaml
       - Makefile
