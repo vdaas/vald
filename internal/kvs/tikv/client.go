@@ -52,7 +52,7 @@ func New(ctx context.Context, opts ...Option) (Clinet, error) {
 
 	for _, opt := range append(defaultOptions, opts...) {
 		if err = opt(c); err != nil {
-			return nil, errors.NewTiKVError("TiKV option error")
+			return nil, errors.NewTiKVError("TiKV option error: %v", err)
 		}
 	}
 
