@@ -307,7 +307,6 @@ type (
 		Push              Push        `yaml:"push"`
 		PullRequest       PullRequest `yaml:"pull_request"`
 		PullRequestTarget PullRequest `yaml:"pull_request_target"`
-		WorkflowRun       WorkflowRun `yaml:"workflow_run,omitempty"`
 	}
 
 	Schedule []struct {
@@ -322,11 +321,6 @@ type (
 	PullRequest struct {
 		Types Types `yaml:"types,omitempty"`
 		Paths Paths `yaml:"paths"`
-	}
-
-	WorkflowRun struct {
-		Workflows []string `yaml:"workflows"`
-		Types     []string `yaml:"types,omitempty"`
 	}
 
 	Jobs struct {
@@ -1014,9 +1008,6 @@ on:
   pull_request_target:
     types: [opened, reopened, synchronize, labeled]
     paths: []
-  workflow_run:
-    workflows: ["Pull Request Labeler"]
-    types: [completed]
 
 jobs:
   build:

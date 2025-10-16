@@ -73,11 +73,6 @@ on:
       - versions/FAISS_VERSION
       - versions/NGT_VERSION
       - versions/RUST_VERSION
-  workflow_run:
-    workflows:
-      - Pull Request Labeler
-    types:
-      - completed
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml

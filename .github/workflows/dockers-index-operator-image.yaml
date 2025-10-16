@@ -241,11 +241,6 @@ on:
       - pkg/index/operator/service/*.go
       - pkg/index/operator/usecase/*.go
       - versions/GO_VERSION
-  workflow_run:
-    workflows:
-      - Pull Request Labeler
-    types:
-      - completed
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml
