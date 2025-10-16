@@ -67,7 +67,7 @@ func New(ctx context.Context, opts ...Option) (Clinet, error) {
 func (c *client) Set(ctx context.Context, key, val []byte) error {
 	err := c.rcli.Put(ctx, key, val)
 	if err != nil {
-		return errors.ErrTiKVSetOperationFailed(key, err)
+		return errors.ErrTiKVSetOperationFailed(key, val, err)
 	}
 
 	return nil
