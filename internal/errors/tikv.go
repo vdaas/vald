@@ -16,16 +16,28 @@
 
 package errors
 
-type TiKVError struct {
-	Msg string
-}
-
-func NewTiKVError(msg string) error {
-	return TiKVError{
-		Msg: msg,
+var (
+	ErrTiKVOptionFailed = func(err error) error {
+		return Wrap(err, "TiKV option error")
 	}
-}
 
-func (t TiKVError) Error() string {
-	return t.Msg
-}
+	ErrNewTiKVRawClientFailed = func(err error) error {
+		return Wrap(err, "failed to create TiKV raw client")
+	}
+
+	ErrTiKVSetOperationFailed = func(key, val []byte, err error) error {
+		return Wrapf(err, "failed to set key (%s) - value (%s)", key, val)
+	}
+
+	ErrTiKVGetOperationFailed = func(key []byte, err error) error {
+		return Wrapf(err, "failed to get key (%s)", key)
+	}
+
+	ErrTiKVDeleteOperationFailed = func(key []byte, err error) error {
+		return Wrapf(err, "failed to delete key (%s)", key)
+	}
+
+	ErrTiKVRawClientCloseOperationFailed = func(err error) error {
+		return Wrap(err, "failed to close TiKV raw client")
+	}
+)

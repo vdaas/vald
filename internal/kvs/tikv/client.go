@@ -52,13 +52,13 @@ func New(ctx context.Context, opts ...Option) (Clinet, error) {
 
 	for _, opt := range append(defaultOptions, opts...) {
 		if err = opt(c); err != nil {
-			return nil, errors.NewTiKVError("TiKV option error: %v", err)
+			return nil, errors.ErrTiKVOptionFailed(err)
 		}
 	}
 
 	c.rcli, err = rawkv.NewClient(ctx, c.addrs, config.DefaultConfig().Security)
 	if err != nil {
-		return nil, errors.NewTiKVError("failed to create TiKV raw client: %v", err)
+		return nil, errors.ErrNewTiKVRawClientFailed(err)
 	}
 
 	return c, nil
@@ -67,7 +67,7 @@ func New(ctx context.Context, opts ...Option) (Clinet, error) {
 func (c *client) Set(ctx context.Context, key, val []byte) error {
 	err := c.rcli.Put(ctx, key, val)
 	if err != nil {
-		return errors.NewTiKVError("failed to put key-value: %v", err)
+		return errors.ErrTiKVSetOperationFailed(key, err)
 	}
 
 	return nil
@@ -76,7 +76,7 @@ func (c *client) Set(ctx context.Context, key, val []byte) error {
 func (c *client) Get(ctx context.Context, key []byte) ([]byte, error) {
 	val, err := c.rcli.Get(ctx, key)
 	if err != nil {
-		return nil, errors.NewTiKVError("failed to get value: %v", err)
+		return nil, errors.ErrTiKVGetOperationFailed(key, err)
 	}
 
 	return val, nil
@@ -85,7 +85,7 @@ func (c *client) Get(ctx context.Context, key []byte) ([]byte, error) {
 func (c *client) Delete(ctx context.Context, key []byte) error {
 	err := c.rcli.Delete(ctx, key)
 	if err != nil {
-		return errors.NewTiKVError("failed to delete key: %v", err)
+		return errors.ErrTiKVDeleteOperationFailed(key, err)
 	}
 
 	return nil
@@ -96,7 +96,7 @@ func (c *client) Close() error {
 		return nil
 	}
 	if err := c.rcli.Close(); err != nil {
-		return errors.NewTiKVError("failed to close TiKV raw client: %v", err)
+		return errors.ErrTiKVRawClientCloseOperationFailed(err)
 	}
 	return nil
 }
