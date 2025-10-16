@@ -33,6 +33,7 @@ on:
       - "!**/*_mock.go"
       - "!**/*_test.go"
       - .github/actions/docker-build/action.yaml
+      - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-agent-ngt-image.yaml
       - Makefile
@@ -156,6 +157,7 @@ on:
       - "!**/*_mock.go"
       - "!**/*_test.go"
       - .github/actions/docker-build/action.yaml
+      - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-agent-ngt-image.yaml
       - Makefile
