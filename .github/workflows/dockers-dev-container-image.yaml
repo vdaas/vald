@@ -29,9 +29,6 @@ on:
       - v*.*.*
       - v*.*.*-*
   pull_request:
-    types:
-      - synchronize
-      - labeled
     paths:
       - .github/actions/docker-build/action.yaml
       - .github/actions/prepare-docker-build/action.yaml
@@ -48,6 +45,8 @@ on:
       - versions/GO_VERSION
   pull_request_target:
     types:
+      - opened
+      - reopened
       - synchronize
       - labeled
     paths:
@@ -64,6 +63,11 @@ on:
       - hack/**
       - hack/docker/gen/main.go
       - versions/GO_VERSION
+  workflow_run:
+    workflows:
+      - Pull Request Labeler
+    types:
+      - completed
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml

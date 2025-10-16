@@ -29,9 +29,6 @@ on:
       - v*.*.*
       - v*.*.*-*
   pull_request:
-    types:
-      - synchronize
-      - labeled
     paths:
       - "!**/*_mock.go"
       - "!**/*_test.go"
@@ -152,6 +149,8 @@ on:
       - versions/NGT_VERSION
   pull_request_target:
     types:
+      - opened
+      - reopened
       - synchronize
       - labeled
     paths:
@@ -272,6 +271,11 @@ on:
       - pkg/agent/internal/vqueue/*.go
       - versions/GO_VERSION
       - versions/NGT_VERSION
+  workflow_run:
+    workflows:
+      - Pull Request Labeler
+    types:
+      - completed
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml
