@@ -83,9 +83,34 @@ func printCallback[M proto.Message](unwrap func(t *testing.T, msg M) any) callba
 	}
 }
 
+func toFloat64(v any) (float64, bool) {
+	switch val := v.(type) {
+	case float64:
+		return val, true
+	case float32:
+		return float64(val), true
+	case int:
+		return float64(val), true
+	case int64:
+		return float64(val), true
+	case int32:
+		return float64(val), true
+	case uint:
+		return float64(val), true
+	case uint64:
+		// float64 can only precisely represent integers up to 2^53.
+		if val <= 1<<53 {
+			return float64(val), true
+		}
+		return 0, false
+	default:
+		return 0, false
+	}
+}
+
 func compare(a, b any) (float64, float64, bool) {
-	aT, ok1 := a.(float64)
-	bT, ok2 := b.(float64)
+	aT, ok1 := toFloat64(a)
+	bT, ok2 := toFloat64(b)
 	return aT, bT, ok1 && ok2
 }
 
