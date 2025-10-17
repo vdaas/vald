@@ -40,6 +40,8 @@ var defaultNextProtos = []string{
 var defaultOptions = func() []Option {
 	return []Option{
 		WithInsecureSkipVerify(false),
+		// Hot reload is opt-in to avoid unexpected overhead by default.
+		WithServerCertHotReload(false),
 		WithTLSConfig(&tls.Config{
 			MinVersion:             tls.VersionTLS12,
 			NextProtos:             defaultNextProtos,
@@ -141,6 +143,13 @@ func WithServerName(name string) Option {
 func WithInsecureSkipVerify(insecure bool) Option {
 	return func(c *credentials) error {
 		c.insecure = insecure
+		return nil
+	}
+}
+
+func WithServerCertHotReload(enabled bool) Option {
+	return func(c *credentials) error {
+		c.hotReload = enabled
 		return nil
 	}
 }
