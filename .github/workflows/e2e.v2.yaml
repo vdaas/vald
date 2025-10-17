@@ -41,7 +41,7 @@ jobs:
   detect-ci-container:
     permissions:
       contents: read
-    if: startsWith(github.ref, 'refs/tags/') || (github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-v2') || github.event_name == 'workflow_dispatch'
+    if: startsWith(github.ref, 'refs/tags/') || (github.event.action == 'labeled' && startsWith(github.event.label.name,'actions/e2e-v2')) || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/_detect-ci-container.yaml
   e2e:
     timeout-minutes: 60
@@ -104,6 +104,16 @@ jobs:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
       options: "--add-host host.docker.internal:host-gateway"
+    # Skip if matrix variables does not contain label suffix
+    if: >
+      ${{
+        github.event.action != 'labeled' ||
+        github.event.label.name == 'actions/e2e-v2' ||
+        contains(
+          format('{0}-{1}-{2}-{3}', matrix.scenario, matrix.deployment, matrix.cluster, matrix.environment),
+          github.event.label.name.slice(15)
+        )
+      }}
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
