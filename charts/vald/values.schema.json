@@ -385,6 +385,10 @@
               "type": "boolean",
               "description": "enable index statistics loading"
             },
+            "epsilon_for_creation": {
+              "type": "number",
+              "description": "the epsilon used for creation"
+            },
             "error_buffer_limit": {
               "type": "integer",
               "description": "maximum number of core ngt error buffer pool size limit",
