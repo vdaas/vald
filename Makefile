@@ -62,8 +62,6 @@ VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 
 NGT_REPO = github.com/yahoojapan/NGT
 
-NPM_GLOBAL_PREFIX := $(eval NPM_GLOBAL_PREFIX := $(shell npm prefix --location=global))$(NPM_GLOBAL_PREFIX)
-
 TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
 
 TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
@@ -72,6 +70,9 @@ BINDIR = $(USR_LOCAL)/bin
 LIB_PATH = $(USR_LOCAL)/lib
 $(LIB_PATH):
 	mkdir -p $(LIB_PATH)
+
+BUN_INSTALL ?= $(USR_LOCAL)
+BUN_GLOBAL_BIN := $(eval BUN_GLOBAL_BIN := $(shell bun pm bin -g))$(BUN_GLOBAL_BIN)
 
 GOPRIVATE = $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
 GOPROXY = "https://proxy.golang.org,direct"

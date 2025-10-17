@@ -82,12 +82,10 @@ $(GOBIN)/ghatm:
 	$(call go-tool-install)
 
 .PHONY: prettier/install
-## install prettier
-prettier/install: $(NPM_GLOBAL_PREFIX)/bin/prettier
-$(NPM_GLOBAL_PREFIX)/bin/prettier:
-	npm config -g set registry http://registry.npmjs.org/
-	npm cache clean --force
-	type prettier || npm install -g prettier
+## Install prettier via Bun (global)
+prettier/install: $(BUN_GLOBAL_BIN)/prettier
+$(BUN_GLOBAL_BIN)/prettier: bun/install
+	command -v prettier >/dev/null 2>&1 || bun add --global prettier
 
 .PHONY: reviewdog/install
 ## install reviewdog
@@ -107,24 +105,31 @@ $(BINDIR)/kubectl:
 	chmod a+x $(BINDIR)/kubectl
 
 .PHONY: textlint/install
-## install textlint
-textlint/install: $(NPM_GLOBAL_PREFIX)/bin/textlint
-
-$(NPM_GLOBAL_PREFIX)/bin/textlint:
-	npm install -g textlint textlint-rule-en-spell textlint-rule-prh textlint-rule-write-good
+## Install textlint & rules via Bun (global)
+textlint/install: $(BUN_GLOBAL_BIN)/textlint
+$(BUN_GLOBAL_BIN)/textlint: bun/install
+	bun add --global \
+		textlint \
+		textlint-rule-en-spell \
+		textlint-rule-prh \
+		textlint-rule-write-good
 
 .PHONY: textlint/ci/install
-## install textlint for ci
-textlint/ci/install:
-	npm init -y
-	npm install --save-dev textlint textlint-rule-en-spell textlint-rule-prh textlint-rule-write-good
+## Install textlint & rules for CI via Bun (local devDependencies)
+textlint/ci/install: bun/install
+	[ -f package.json ] || (bun init -y >/dev/null 2>&1 || echo '{}' > package.json)
+	bun add --dev \
+		textlint \
+		textlint-rule-en-spell \
+		textlint-rule-prh \
+		textlint-rule-write-good
 
 .PHONY: cspell/install
-## install cspell
-cspell/install: $(NPM_GLOBAL_PREFIX)/bin/cspell
-
-$(NPM_GLOBAL_PREFIX)/bin/cspell:
-	npm install -g cspell@latest \
+## Install cspell & dictionaries via Bun (global)
+cspell/install: $(BUN_GLOBAL_BIN)/cspell
+$(BUN_GLOBAL_BIN)/cspell: bun/install
+	bun add --global \
+		cspell@latest \
 		@cspell/dict-cpp \
 		@cspell/dict-docker \
 		@cspell/dict-en_us \
@@ -152,9 +157,17 @@ $(NPM_GLOBAL_PREFIX)/bin/cspell:
 	cspell link add @cspell/dict-rust
 	cspell link add @cspell/dict-shell
 
+.PHONY: bun/install
+## Install Bun runtime into $(BUN_INSTALL) if not already installed
+bun/install: $(BINDIR)/bun
+
+$(BINDIR)/bun:
+	curl -fsSL https://bun.sh/install | BUN_INSTALL=$(BUN_INSTALL) bash
+
 .PHONY: buf/install
 ## install buf
-buf/install: $(BINDIR)/buf
+buf/install: \
+	$(GOBIN)/buf
 
 $(BINDIR)/buf:
 	curl -fsSL \

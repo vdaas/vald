@@ -512,10 +512,11 @@ func Test_server_ListenAndServe(t *testing.T) {
 					starter: test.field.httpSrvStarter,
 				},
 				grpc: struct {
-					srv       *grpc.Server
-					keepAlive *grpcKeepalive
-					opts      []grpc.ServerOption
-					regs      []func(*grpc.Server)
+					srv        *grpc.Server
+					keepAlive  *grpcKeepalive
+					maxMsgSize int
+					opts       []grpc.ServerOption
+					regs       []func(*grpc.Server)
 				}{
 					srv: test.field.grpcSrv,
 				},
@@ -673,10 +674,11 @@ func Test_server_Shutdown(t *testing.T) {
 					srv: test.field.httpSrv,
 				},
 				grpc: struct {
-					srv       *grpc.Server
-					keepAlive *grpcKeepalive
-					opts      []grpc.ServerOption
-					regs      []func(*grpc.Server)
+					srv        *grpc.Server
+					keepAlive  *grpcKeepalive
+					maxMsgSize int
+					opts       []grpc.ServerOption
+					regs       []func(*grpc.Server)
 				}{
 					srv: test.field.grpcSrv,
 				},

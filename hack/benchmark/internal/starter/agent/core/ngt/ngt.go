@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/usecase"
 )
@@ -61,13 +62,14 @@ func (s *server) Run(ctx context.Context, tb testing.TB) func() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	go func() {
+	errgroup.Go(func() error {
 		defer wg.Done()
 		err := runner.Run(ctx, daemon, name)
 		if err != nil {
 			tb.Fatalf("agent runner returned error %s", err.Error())
 		}
-	}()
+		return nil
+	})
 
 	time.Sleep(5 * time.Second)
 
@@ -77,18 +79,19 @@ func (s *server) Run(ctx context.Context, tb testing.TB) func() {
 	}
 
 	wg.Add(1)
-	go func() {
+	errgroup.Go(func() error {
 		defer wg.Done()
 
 		for {
 			select {
 			case <-ctx.Done():
-				return
+				return nil
 			case err := <-ech:
 				tb.Error(err)
 			}
 		}
-	}()
+		return nil
+	})
 
 	return func() {
 		cancel()

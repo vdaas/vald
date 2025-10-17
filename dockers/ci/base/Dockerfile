@@ -71,7 +71,6 @@ RUN --mount=type=bind,target=.,rw \
     tzdata \
     locales \
     git \
-    npm \
     sudo \
     cmake \
     g++ \
@@ -104,6 +103,7 @@ RUN --mount=type=bind,target=.,rw \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \
+    && make bun/install \
     && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps GO_CLEAN_DEPS=false \
     && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} golangci-lint/install \
     && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} gotestfmt/install \

@@ -25,6 +25,7 @@ import (
 
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type CSpellConfig struct {
@@ -59,7 +60,7 @@ var (
 		"@cspell/dict-k8s/cspell-ext.json",
 		"@cspell/dict-makefile/cspell-ext.json",
 		"@cspell/dict-markdown/cspell-ext.json",
-		"@cspell/dict-npm/cspell-ext.json",
+
 		"@cspell/dict-public-licenses/cspell-ext.json",
 		"@cspell/dict-rust/cspell-ext.json",
 		"@cspell/dict-shell/cspell-ext.json",
@@ -152,6 +153,14 @@ func extractLine(line string) (filePath, word string, ok bool) {
 	return "", "", false
 }
 
+// parseCspellResult reads a cspell log file and collects unknown words per file and global words.
+//
+// parseCspellResult scans the specified log file, extracts unknown words and the file paths where they
+// occur, and returns two maps: a mapping from file path to the list of unknown words found in that file,
+// and a set of words considered global. A word is marked global when it appears in at least th distinct
+// files (case-insensitive); when a word has both mixed-case and lowercase occurrences, they are counted
+// together toward the threshold. Words that match the package-level sufReg pattern are ignored.
+// An error is returned if the file cannot be opened or if an I/O error occurs while scanning.
 func parseCspellResult(filePath string, th int) (map[string][]string, map[string]bool, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -169,12 +178,12 @@ func parseCspellResult(filePath string, th int) (map[string][]string, map[string
 	for scanner.Scan() {
 		line := scanner.Text()
 		wg.Add(1)
-		go func() {
+		errgroup.Go(func() error {
 			defer wg.Done()
 			// Extract the unknown word
 			if path, word, ok := extractLine(line); ok {
 				if sufReg.MatchString(word) {
-					return
+					return nil
 				}
 				lword := strings.ToLower(word)
 				mu.Lock()
@@ -199,7 +208,8 @@ func parseCspellResult(filePath string, th int) (map[string][]string, map[string
 				}
 				mu.Unlock()
 			}
-		}()
+			return nil
+		})
 	}
 
 	wg.Wait()
