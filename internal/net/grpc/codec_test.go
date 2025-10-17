@@ -22,6 +22,8 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
+	"google.golang.org/grpc/encoding"
+	"google.golang.org/grpc/mem"
 )
 
 func TestCodec_Marshal(t *testing.T) {
@@ -38,16 +40,20 @@ func TestCodec_Marshal(t *testing.T) {
 		args       args
 		c          Codec
 		want       want
-		checkFunc  func(want, []byte, error) error
+		checkFunc  func(want, mem.BufferSlice, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got []byte, err error) error {
+	defaultCheckFunc := func(w want, got mem.BufferSlice, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		gotBytes := got.Materialize()
+		if len(gotBytes) == 0 && len(w.want) == 0 {
+			return nil
+		}
+		if !reflect.DeepEqual(gotBytes, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\t\twant: \"%#v\"", gotBytes, w.want)
 		}
 		return nil
 	}
@@ -60,11 +66,11 @@ func TestCodec_Marshal(t *testing.T) {
 					Vector: []float32{1.0, 2.1},
 				},
 			},
-			checkFunc: func(w want, b []byte, e error) error {
+			checkFunc: func(w want, b mem.BufferSlice, e error) error {
 				if e != nil {
 					return e
 				}
-				if len(b) == 0 {
+				if b.Len() == 0 {
 					return errors.New("return byte is empty")
 				}
 				return nil
@@ -87,7 +93,7 @@ func TestCodec_Marshal(t *testing.T) {
 			},
 			want: want{
 				want: nil,
-				err:  errors.ErrInvalidProtoMessageType([]int{1}),
+				err:  errors.New("proto: failed to marshal, message is []int, want proto.Message"),
 			},
 		},
 	}
@@ -95,7 +101,6 @@ func TestCodec_Marshal(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -106,11 +111,13 @@ func TestCodec_Marshal(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			c := Codec{}
+			c := Codec{
+				fallback: encoding.GetCodecV2(Name),
+			}
 
 			got, err := c.Marshal(test.args.v)
 			if err := checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
+				t.Errorf("error = %v", err)
 			}
 		})
 	}
@@ -136,7 +143,7 @@ func TestCodec_Unmarshal(t *testing.T) {
 	}
 	defaultCheckFunc := func(t test, err error) error {
 		if !errors.Is(err, t.want.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, t.want.err)
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\t\twant: \"%#v\"", err, t.want.err)
 		}
 		return nil
 	}
@@ -149,7 +156,7 @@ func TestCodec_Unmarshal(t *testing.T) {
 						Id:     "1",
 						Vector: []float32{1.0, 2.1},
 					})
-					return b
+					return b.Materialize()
 				}(),
 				v: &payload.Object_Vector{},
 			},
@@ -180,7 +187,7 @@ func TestCodec_Unmarshal(t *testing.T) {
 				v:    Codec{},
 			},
 			want: want{
-				err: errors.New("failed to marshal/unmarshal proto message, message type is grpc.Codec (missing vtprotobuf/protobuf helpers)"),
+				err: errors.New("failed to unmarshal, message is grpc.Codec, want proto.Message"),
 			},
 		},
 	}
@@ -188,7 +195,6 @@ func TestCodec_Unmarshal(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -199,11 +205,13 @@ func TestCodec_Unmarshal(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			c := Codec{}
+			c := Codec{
+				fallback: encoding.GetCodecV2(Name),
+			}
 
-			err := c.Unmarshal(test.args.data, test.args.v)
+			err := c.Unmarshal(mem.BufferSlice{mem.SliceBuffer(test.args.data)}, test.args.v)
 			if err := checkFunc(test, err); err != nil {
-				tt.Errorf("error = %v", err)
+				t.Errorf("error = %v", err)
 			}
 		})
 	}
@@ -224,7 +232,7 @@ func TestCodec_Name(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\t\twant: \"%#v\"", got, w.want)
 		}
 		return nil
 	}
@@ -240,7 +248,6 @@ func TestCodec_Name(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -255,7 +262,7 @@ func TestCodec_Name(t *testing.T) {
 
 			got := c.Name()
 			if err := checkFunc(test.want, got); err != nil {
-				tt.Errorf("error = %v", err)
+				t.Errorf("error = %v", err)
 			}
 		})
 	}

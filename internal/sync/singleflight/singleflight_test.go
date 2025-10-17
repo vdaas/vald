@@ -32,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -57,7 +58,8 @@ func TestNew(t *testing.T) {
 			name: "returns Group implementation",
 			want: want{
 				want: &group[any]{
-					m: make(map[string]*call[any]),
+					m:  make(map[string]*call[any]),
+					eg: errgroup.Get(),
 				},
 			},
 		},

@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
@@ -169,7 +170,7 @@ func Test_ngt_parallel_insert_and_delete(t *testing.T) {
 		t.Fatalf("failed to create ngt service: %v", err)
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 
 	n.Start(ctx)
@@ -183,7 +184,7 @@ func Test_ngt_parallel_insert_and_delete(t *testing.T) {
 		for i := int64(0); i < maxIDNum; i++ {
 			i := i
 			wg.Add(1)
-			go func() {
+			errgroup.Go(func() error {
 				mu.Lock()
 				defer mu.Unlock()
 				defer wg.Done()
@@ -200,12 +201,13 @@ func Test_ngt_parallel_insert_and_delete(t *testing.T) {
 				if err != nil && !errors.Is(err, errors.ErrObjectIDNotFound(uuid)) {
 					t.Error(err)
 				}
-			}()
+				return nil
+			})
 		}
 	}
 
 	wg.Add(1)
-	go func() {
+	errgroup.Go(func() error {
 		mu.Lock()
 		defer mu.Unlock()
 		defer wg.Done()
@@ -223,7 +225,8 @@ func Test_ngt_parallel_insert_and_delete(t *testing.T) {
 				}
 			}
 		}
-	}()
+		return nil
+	})
 
 	time.Sleep(1 * time.Second)
 	c.Broadcast()

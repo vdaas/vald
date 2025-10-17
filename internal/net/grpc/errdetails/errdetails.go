@@ -321,6 +321,11 @@ func Serialize(objs ...any) string {
 	return conv.Btoa(b)
 }
 
+// AnyToErrorDetail converts a google.protobuf.Any into a concrete error-detail proto.Message.
+// If a is nil, it returns nil. For recognized error-detail type names it attempts to unmarshal
+// the Any's raw value into the corresponding concrete message type and returns that message
+// on success. For unrecognized types it tries a.UnmarshalNew() and returns the result on success.
+// If all unmarshal attempts fail, it returns a.ProtoReflect().Interface().
 func AnyToErrorDetail(a *types.Any) proto.Message {
 	if a == nil {
 		return nil
@@ -330,85 +335,85 @@ func AnyToErrorDetail(a *types.Any) proto.Message {
 	switch typeName {
 	case DebugInfoMessageName:
 		var m DebugInfo
-		err = types.UnmarshalAny(a, &m)
+		err = m.UnmarshalVT(a.GetValue())
 		if err == nil {
 			return &m
 		}
 	case ErrorInfoMessageName:
 		var m ErrorInfo
-		err = types.UnmarshalAny(a, &m)
+		err = m.UnmarshalVT(a.GetValue())
 		if err == nil {
 			return &m
 		}
 	case BadRequestFieldViolationMessageName:
 		var m BadRequestFieldViolation
-		err = types.UnmarshalAny(a, &m)
+		err = m.UnmarshalVT(a.GetValue())
 		if err == nil {
 			return &m
 		}
 	case BadRequestMessageName:
 		var m BadRequest
-		err = types.UnmarshalAny(a, &m)
+		err = m.UnmarshalVT(a.GetValue())
 		if err == nil {
 			return &m
 		}
 	case LocalizedMessageMessageName:
 		var m LocalizedMessage
-		err = types.UnmarshalAny(a, &m)
+		err = m.UnmarshalVT(a.GetValue())
 		if err == nil {
 			return &m
 		}
 	case PreconditionFailureViolationMessageName:
 		var m PreconditionFailureViolation
-		err = types.UnmarshalAny(a, &m)
+		err = m.UnmarshalVT(a.GetValue())
 		if err == nil {
 			return &m
 		}
 	case PreconditionFailureMessageName:
 		var m PreconditionFailure
-		err = types.UnmarshalAny(a, &m)
+		err = m.UnmarshalVT(a.GetValue())
 		if err == nil {
 			return &m
 		}
 	case HelpLinkMessageName:
 		var m HelpLink
-		err = types.UnmarshalAny(a, &m)
+		err = m.UnmarshalVT(a.GetValue())
 		if err == nil {
 			return &m
 		}
 	case HelpMessageName:
 		var m Help
-		err = types.UnmarshalAny(a, &m)
+		err = m.UnmarshalVT(a.GetValue())
 		if err == nil {
 			return &m
 		}
 	case QuotaFailureViolationMessageName:
 		var m QuotaFailureViolation
-		err = types.UnmarshalAny(a, &m)
+		err = m.UnmarshalVT(a.GetValue())
 		if err == nil {
 			return &m
 		}
 	case QuotaFailureMessageName:
 		var m QuotaFailure
-		err = types.UnmarshalAny(a, &m)
+		err = m.UnmarshalVT(a.GetValue())
 		if err == nil {
 			return &m
 		}
 	case RequestInfoMessageName:
 		var m RequestInfo
-		err = types.UnmarshalAny(a, &m)
+		err = m.UnmarshalVT(a.GetValue())
 		if err == nil {
 			return &m
 		}
 	case ResourceInfoMessageName:
 		var m ResourceInfo
-		err = types.UnmarshalAny(a, &m)
+		err = m.UnmarshalVT(a.GetValue())
 		if err == nil {
 			return &m
 		}
 	case RetryInfoMessageName:
 		var m RetryInfo
-		err = types.UnmarshalAny(a, &m)
+		err = m.UnmarshalVT(a.GetValue())
 		if err == nil {
 			return &m
 		}
