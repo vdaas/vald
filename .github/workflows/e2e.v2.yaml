@@ -63,11 +63,11 @@ jobs:
           script: |
             // Build a stable include-only matrix for strategy.matrix
             const baseInclude = [
-              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: null },
-              { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: null },
-              { scenario: "multi_crud",  deployment: "helm-chart", cluster: "k3d", environment: null },
-              { scenario: "rollout",     deployment: "helm-chart", cluster: "k3d", environment: null },
-              { scenario: "stream_crud", deployment: "helm-operator", cluster: "k3d", environment: null },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "multi_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "rollout",     deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "stream_crud", deployment: "helm-operator", cluster: "k3d", environment: "null" },
               { scenario: "index_correction", deployment: "helm-chart", cluster: "k3d", environment: "management" },
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "management" },
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "mirror" },
