@@ -96,7 +96,7 @@ jobs:
               return o.scenario + '-' + o.deployment + '-' + o.cluster + '-' + (o.environment === null ? 'null' : String(o.environment));
             }
 
-            var filtered = baseInclude;
+            let filtered = baseInclude;
             if (suffix) {
               filtered = baseInclude.filter(function(o) { return combo(o).indexOf(suffix) !== -1; });
             }
