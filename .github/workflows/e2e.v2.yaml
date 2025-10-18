@@ -84,7 +84,7 @@ jobs:
             const label = (context && context.payload && context.payload.label && context.payload.label.name) ? context.payload.label.name : '';
 
             let suffix = '';
-            if (action === 'labeled' && label.indexOf(prefix) === 0) {
+            if (action === 'labeled' && label.startsWith(prefix)) {
               suffix = label.slice(prefix.length);
             }
 
