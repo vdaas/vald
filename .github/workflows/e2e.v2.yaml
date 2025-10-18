@@ -46,72 +46,73 @@ jobs:
   build-matrix:
     permissions:
       contents: read
-    uses: actions/github-script@v3
-    with:
-      result-encoding: string
-      script: |
-        // Define the base include matrix
-        const baseInclude = [
-          // default: helm-chart / k3d / env=null for each scenario
-          { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: null },
-          { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: null },
-          { scenario: "multi_crud",  deployment: "helm-chart", cluster: "k3d", environment: null },
-          { scenario: "rollout",     deployment: "helm-chart", cluster: "k3d", environment: null },
+    steps:
+      - uses: actions/github-script@v3
+        with:
+          result-encoding: string
+          script: |
+            // Define the base include matrix
+            const baseInclude = [
+              // default: helm-chart / k3d / env=null for each scenario
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: null },
+              { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: null },
+              { scenario: "multi_crud",  deployment: "helm-chart", cluster: "k3d", environment: null },
+              { scenario: "rollout",     deployment: "helm-chart", cluster: "k3d", environment: null },
 
-          // additional includes
-          { scenario: "stream_crud", deployment: "helm-operator", cluster: "k3d", environment: null },
-          { scenario: "index_correction", deployment: "helm-chart", cluster: "k3d", environment: "management" },
-          { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "management" },
-          { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "mirror" },
-          { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "profile" },
-          { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "failure" },
-          { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "kill" },
-          { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "partition" },
-          { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "bandwidth" },
-        ];
+              // additional includes
+              { scenario: "stream_crud", deployment: "helm-operator", cluster: "k3d", environment: null },
+              { scenario: "index_correction", deployment: "helm-chart", cluster: "k3d", environment: "management" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "management" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "mirror" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "profile" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "failure" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "kill" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "partition" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "bandwidth" },
+            ];
 
-        // Extract suffix from label
-        const action = process.env.GITHUB_EVENT_ACTION || '';
-        const label = process.env.GITHUB_EVENT_LABEL_NAME || '';
-        const prefix = 'actions/e2e-v2/';
+            // Extract suffix from label
+            const action = process.env.GITHUB_EVENT_ACTION || '';
+            const label = process.env.GITHUB_EVENT_LABEL_NAME || '';
+            const prefix = 'actions/e2e-v2/';
 
-        let suffix = '';
-        if (action === 'labeled' && label.startsWith(prefix)) {
-          suffix = label.substring(prefix.length);
-        }
+            let suffix = '';
+            if (action === 'labeled' && label.startsWith(prefix)) {
+              suffix = label.substring(prefix.length);
+            }
 
-        core.info(`Label: ${label}`);
-        core.info(`Suffix: ${suffix || '<none>'}`);
+            core.info(`Label: ${label}`);
+            core.info(`Suffix: ${suffix || '<none>'}`);
 
-        // Build combo strings and filter
-        const combo = (o) =>
-          `${o.scenario}-${o.deployment}-${o.cluster}-${o.environment === null ? 'null' : String(o.environment)}`;
+            // Build combo strings and filter
+            const combo = (o) =>
+              `${o.scenario}-${o.deployment}-${o.cluster}-${o.environment === null ? 'null' : String(o.environment)}`;
 
-        let filtered = baseInclude;
-        if (suffix) {
-          filtered = baseInclude.filter((o) => combo(o).includes(suffix));
-        }
+            let filtered = baseInclude;
+            if (suffix) {
+              filtered = baseInclude.filter((o) => combo(o).includes(suffix));
+            }
 
-        // Fallback if no match
-        if (filtered.length === 0) {
-          core.warning(`No include matched '${suffix}'. Falling back to base include (${baseInclude.length} jobs).`);
-          filtered = baseInclude;
-        } else {
-          core.info(`Matched ${filtered.length} job(s).`);
-        }
+            // Fallback if no match
+            if (filtered.length === 0) {
+              core.warning(`No include matched '${suffix}'. Falling back to base include (${baseInclude.length} jobs).`);
+              filtered = baseInclude;
+            } else {
+              core.info(`Matched ${filtered.length} job(s).`);
+            }
 
-        // Final matrix object
-        const matrix = { include: filtered };
-        core.info(`Generated matrix:\n${JSON.stringify(matrix, null, 2)}`);
+            // Final matrix object
+            const matrix = { include: filtered };
+            core.info(`Generated matrix:\n${JSON.stringify(matrix, null, 2)}`);
 
-        // Return the matrix JSON string to workflow outputs
-        return JSON.stringify(matrix);
+            // Return the matrix JSON string to workflow outputs
+            return JSON.stringify(matrix);
 
-        # TODO: Fix the issue the readreplica returns 0 indices and add this case
-        # - scenario: readreplica
-        #   deployment: helm-chart
-        #   cluster: kind
-        #   environment: "null"
+            # TODO: Fix the issue the readreplica returns 0 indices and add this case
+            # - scenario: readreplica
+            #   deployment: helm-chart
+            #   cluster: kind
+            #   environment: "null"
   e2e:
     timeout-minutes: 60
     permissions:
