@@ -48,19 +48,18 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/github-script@v3
+      - uses: actions/github-script@v7
         with:
           result-encoding: string
           script: |
-            // Define the base include matrix
+            // Build a stable include-only matrix for strategy.matrix
+            // - No jq, no env parsing quirks
+            // - "helm-operator" appears only once
             const baseInclude = [
-              // default: helm-chart / k3d / env=null for each scenario
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: null },
               { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: null },
               { scenario: "multi_crud",  deployment: "helm-chart", cluster: "k3d", environment: null },
               { scenario: "rollout",     deployment: "helm-chart", cluster: "k3d", environment: null },
-
-              // additional includes
               { scenario: "stream_crud", deployment: "helm-operator", cluster: "k3d", environment: null },
               { scenario: "index_correction", deployment: "helm-chart", cluster: "k3d", environment: "management" },
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "management" },
@@ -69,46 +68,44 @@ jobs:
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "failure" },
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "kill" },
               { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "partition" },
-              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "bandwidth" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "bandwidth" }
             ];
 
-            // Extract suffix from label
-            const action = process.env.GITHUB_EVENT_ACTION || '';
-            const label = process.env.GITHUB_EVENT_LABEL_NAME || '';
+            // Extract suffix from label using the fixed prefix
             const prefix = 'actions/e2e-v2/';
+            const action = (context && context.payload && context.payload.action) ? context.payload.action : '';
+            const label = (context && context.payload && context.payload.label && context.payload.label.name) ? context.payload.label.name : '';
 
             let suffix = '';
-            if (action === 'labeled' && label.startsWith(prefix)) {
-              suffix = label.substring(prefix.length);
+            if (action === 'labeled' && label.indexOf(prefix) === 0) {
+              suffix = label.slice(prefix.length);
             }
 
-            core.info(`Label: ${label}`);
-            core.info(`Suffix: ${suffix || '<none>'}`);
+            core.info('Label: ' + label);
+            core.info('Suffix: ' + (suffix || '<none>'));
 
-            // Build combo strings and filter
-            const combo = (o) =>
-              `${o.scenario}-${o.deployment}-${o.cluster}-${o.environment === null ? 'null' : String(o.environment)}`;
+            // Filter by combo string (substring match)
+            function combo(o) {
+              return o.scenario + '-' + o.deployment + '-' + o.cluster + '-' + (o.environment === null ? 'null' : String(o.environment));
+            }
 
-            let filtered = baseInclude;
+            var filtered = baseInclude;
             if (suffix) {
-              filtered = baseInclude.filter((o) => combo(o).includes(suffix));
+              filtered = baseInclude.filter(function(o) { return combo(o).indexOf(suffix) !== -1; });
             }
 
-            // Fallback if no match
+            // Fallback if nothing matches
             if (filtered.length === 0) {
-              core.warning(`No include matched '${suffix}'. Falling back to base include (${baseInclude.length} jobs).`);
+              core.warning("No include matched '" + suffix + "'. Falling back to base include (" + baseInclude.length + " jobs).");
               filtered = baseInclude;
             } else {
-              core.info(`Matched ${filtered.length} job(s).`);
+              core.info('Matched ' + filtered.length + ' job(s).');
             }
 
-            // Final matrix object
+            // Set output "result" as a JSON string
             const matrix = { include: filtered };
-            core.info(`Generated matrix:\n${JSON.stringify(matrix, null, 2)}`);
-
-            // Return the matrix JSON string to workflow outputs
-            return JSON.stringify(matrix);
-
+            core.info('Generated matrix:\n' + JSON.stringify(matrix, null, 2));
+            core.setOutput('result', JSON.stringify(matrix));
             # TODO: Fix the issue the readreplica returns 0 indices and add this case
             # - scenario: readreplica
             #   deployment: helm-chart
