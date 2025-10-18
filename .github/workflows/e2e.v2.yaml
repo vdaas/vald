@@ -43,79 +43,83 @@ jobs:
       contents: read
     if: startsWith(github.ref, 'refs/tags/') || (github.event.action == 'labeled' && startsWith(github.event.label.name,'actions/e2e-v2')) || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/_detect-ci-container.yaml
-  generate-matrix:
-    runs-on: ubuntu-latest
+  build-matrix:
     permissions:
       contents: read
-    outputs:
-      matrix: ${{ steps.set_matrix.outputs.matrix }}
-    steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-        with:
-          persist-credentials: false
-      - name: Set Matrix
-        id: set_matrix
-        shell: bash
-        run: |
-          SCENARIOS='["stream_crud","unary_crud","multi_crud","rollout"]'
-          DEFAULT_INCLUDE="$(jq -c -n --argjson S "$SCENARIOS" '
-            [ $S[] | {scenario:., deployment:"helm-chart", cluster:"k3d", environment:null} ]
-          ')"
+    uses: actions/github-script@v3
+    with:
+      result-encoding: string
+      script: |
+        // Define the base include matrix
+        const baseInclude = [
+          // default: helm-chart / k3d / env=null for each scenario
+          { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: null },
+          { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: null },
+          { scenario: "multi_crud",  deployment: "helm-chart", cluster: "k3d", environment: null },
+          { scenario: "rollout",     deployment: "helm-chart", cluster: "k3d", environment: null },
 
-          EXTRA_INCLUDE='[
-            {"scenario":"stream_crud","deployment":"helm-operator","cluster":"k3d","environment":null},
-            {"scenario":"index_correction","deployment":"helm-chart","cluster":"k3d","environment":"management"},
-            {"scenario":"stream_crud","deployment":"helm-chart","cluster":"k3d","environment":"management"},
-            {"scenario":"stream_crud","deployment":"helm-chart","cluster":"k3d","environment":"mirror"},
-            {"scenario":"stream_crud","deployment":"helm-chart","cluster":"k3d","environment":"profile"},
-            {"scenario":"stream_crud","deployment":"helm-chart","cluster":"k3d","environment":"failure"},
-            {"scenario":"stream_crud","deployment":"helm-chart","cluster":"k3d","environment":"kill"},
-            {"scenario":"stream_crud","deployment":"helm-chart","cluster":"k3d","environment":"partition"},
-            {"scenario":"stream_crud","deployment":"helm-chart","cluster":"k3d","environment":"bandwidth"}
-          ]'
+          // additional includes
+          { scenario: "stream_crud", deployment: "helm-operator", cluster: "k3d", environment: null },
+          { scenario: "index_correction", deployment: "helm-chart", cluster: "k3d", environment: "management" },
+          { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "management" },
+          { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "mirror" },
+          { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "profile" },
+          { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "failure" },
+          { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "kill" },
+          { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "partition" },
+          { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "bandwidth" },
+        ];
 
-          BASE_INCLUDE="$(jq -c --argjson a "$DEFAULT_INCLUDE" --argjson b "$EXTRA_INCLUDE" '$a + $b')"
+        // Extract suffix from label
+        const action = process.env.GITHUB_EVENT_ACTION || '';
+        const label = process.env.GITHUB_EVENT_LABEL_NAME || '';
+        const prefix = 'actions/e2e-v2/';
 
-          LABEL_NAME="${{ github.event.label.name || '' }}"
-          ACTION="${{ github.event.action || '' }}"
-          SUFFIX=""
-          if [[ "$ACTION" == "labeled" && "$LABEL_NAME" == actions/e2e-v2/* ]]; then
-            SUFFIX="${LABEL_NAME#actions/e2e-v2/}"
-          fi
-          echo "SUFFIX: ${SUFFIX:-<none>}"
+        let suffix = '';
+        if (action === 'labeled' && label.startsWith(prefix)) {
+          suffix = label.substring(prefix.length);
+        }
 
-          FILTERED_INCLUDE="$(jq -c --arg suf "$SUFFIX" '
-            def combo(o):
-              (o.scenario + "-" + o.deployment + "-" + o.cluster + "-" +
-                (if o.environment == null then "null" else (o.environment|tostring) end));
-            . as $all
-            | if ($suf|length) == 0 then $all else [ $all[] | select( combo(.) | contains($suf) ) ] end
-          ' <<<"$BASE_INCLUDE")"
+        core.info(`Label: ${label}`);
+        core.info(`Suffix: ${suffix || '<none>'}`);
 
-          USE_INCLUDE="$FILTERED_INCLUDE"
-          if [[ "$(jq 'length' <<<"$FILTERED_INCLUDE")" -eq 0 ]]; then
-            echo "No include matched. Falling back to base include."
-            USE_INCLUDE="$BASE_INCLUDE"
-          fi
+        // Build combo strings and filter
+        const combo = (o) =>
+          `${o.scenario}-${o.deployment}-${o.cluster}-${o.environment === null ? 'null' : String(o.environment)}`;
 
-          FINAL_MATRIX="$(jq -c --argjson inc "$USE_INCLUDE" '{include: $inc}')"
+        let filtered = baseInclude;
+        if (suffix) {
+          filtered = baseInclude.filter((o) => combo(o).includes(suffix));
+        }
 
-          echo "Generated matrix: $FINAL_MATRIX"
-          echo "matrix=$FINAL_MATRIX" >> "$GITHUB_OUTPUT"
+        // Fallback if no match
+        if (filtered.length === 0) {
+          core.warning(`No include matched '${suffix}'. Falling back to base include (${baseInclude.length} jobs).`);
+          filtered = baseInclude;
+        } else {
+          core.info(`Matched ${filtered.length} job(s).`);
+        }
 
+        // Final matrix object
+        const matrix = { include: filtered };
+        core.info(`Generated matrix:\n${JSON.stringify(matrix, null, 2)}`);
+
+        // Return the matrix JSON string to workflow outputs
+        return JSON.stringify(matrix);
+
+        # TODO: Fix the issue the readreplica returns 0 indices and add this case
+        # - scenario: readreplica
+        #   deployment: helm-chart
+        #   cluster: kind
+        #   environment: "null"
   e2e:
     timeout-minutes: 60
     permissions:
       contents: read
-    needs: [detect-ci-container, generate-matrix]
+    needs: [detect-ci-container, build-matrix]
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
-            # TODO: Fix the issue the readreplica returns 0 indices
-            # - scenario: readreplica
-            #   deployment: helm-chart
-            #   cluster: kind
-            #   environment: "null"
+      matrix: ${{ fromJson(needs.build-matrix.outputs.result) }}
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
