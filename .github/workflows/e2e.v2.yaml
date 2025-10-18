@@ -111,7 +111,7 @@ jobs:
             // Set output "result" as a JSON string
             const matrix = { include: filtered };
             core.info('Generated matrix:\n' + JSON.stringify(matrix, null, 2));
-            core.setOutput('result', JSON.stringify(matrix));
+            return JSON.stringify(matrix);
   e2e:
     timeout-minutes: 60
     permissions:
