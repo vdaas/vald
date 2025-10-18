@@ -43,55 +43,132 @@ jobs:
       contents: read
     if: startsWith(github.ref, 'refs/tags/') || (github.event.action == 'labeled' && startsWith(github.event.label.name,'actions/e2e-v2')) || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/_detect-ci-container.yaml
+  generate-matrix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      matrix: ${{ steps.set_matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Set Matrix
+        id: set_matrix
+        shell: bash
+        run: |
+          # Define base matrix combinations
+          BASE_MATRIX='{
+            "scenario": ["stream_crud", "unary_crud", "multi_crud", "rollout"],
+            "deployment": ["helm-chart"],
+            "cluster": ["k3d"],
+            "environment": ["null"],
+            "include": [
+              {"scenario": "stream_crud", "deployment": "helm-operator", "cluster": "k3d", "environment": "null"},
+              {"scenario": "index_correction", "deployment": "helm-chart", "cluster": "k3d", "environment": "management"},
+              {"scenario": "stream_crud", "deployment": "helm-chart", "cluster": "k3d", "environment": "management"},
+              {"scenario": "stream_crud", "deployment": "helm-chart", "cluster": "k3d", "environment": "mirror"},
+              {"scenario": "stream_crud", "deployment": "helm-chart", "cluster": "k3d", "environment": "profile"},
+              {"scenario": "stream_crud", "deployment": "helm-chart", "cluster": "k3d", "environment": "failure"},
+              {"scenario": "stream_crud", "deployment": "helm-chart", "cluster": "k3d", "environment": "kill"},
+              {"scenario": "stream_crud", "deployment": "helm-chart", "cluster": "k3d", "environment": "partition"},
+              {"scenario": "stream_crud", "deployment": "helm-chart", "cluster": "k3d", "environment": "bandwidth"}
+            ]
+          }'
+
+          # Check if this is a labeled event with a suffix
+          if [[ "${{ github.event.action }}" == "labeled" && \
+                "${{ github.event.label.name }}" != "actions/e2e-v2" && \
+                "${{ github.event.label.name }}" == *"actions/e2e-v2-"* ]]; then
+
+            # Extract suffix from label
+            SUFFIX="${GITHUB_EVENT_LABEL_NAME#actions/e2e-v2-}"
+            SUFFIX="$(echo "${{ github.event.label.name }}" | sed 's|actions/e2e-v2-||')"
+            echo "Filtering matrix by suffix: $SUFFIX"
+
+            # Generate a filtered matrix
+            FILTERED_MATRIX="$(echo "$BASE_MATRIX" | jq -c ".")"
+
+            # Create arrays for each dimension of the matrix
+            SCENARIOS=($(echo "$BASE_MATRIX" | jq -r '.scenario[]'))
+            DEPLOYMENTS=($(echo "$BASE_MATRIX" | jq -r '.deployment[]'))
+            CLUSTERS=($(echo "$BASE_MATRIX" | jq -r '.cluster[]'))
+            ENVIRONMENTS=($(echo "$BASE_MATRIX" | jq -r '.environment[]'))
+
+            # Process base matrix dimensions
+            FILTERED_SCENARIOS=()
+            for SCENARIO in "${SCENARIOS[@]}"; do
+              for DEPLOYMENT in "${DEPLOYMENTS[@]}"; do
+                for CLUSTER in "${CLUSTERS[@]}"; do
+                  for ENVIRONMENT in "${ENVIRONMENTS[@]}"; do
+                    COMBO="${SCENARIO}-${DEPLOYMENT}-${CLUSTER}-${ENVIRONMENT}"
+                    if [[ "$COMBO" == *"$SUFFIX"* ]]; then
+                      if [[ ! " ${FILTERED_SCENARIOS[@]} " =~ " ${SCENARIO} " ]]; then
+                        FILTERED_SCENARIOS+=("$SCENARIO")
+                      fi
+                    fi
+                  done
+                done
+              done
+            done
+
+            # Process includes
+            INCLUDES=$(echo "$BASE_MATRIX" | jq -c '.include[]')
+            FILTERED_INCLUDES=[]
+            while read -r INCLUDE; do
+              SCENARIO=$(echo "$INCLUDE" | jq -r '.scenario')
+              DEPLOYMENT=$(echo "$INCLUDE" | jq -r '.deployment')
+              CLUSTER=$(echo "$INCLUDE" | jq -r '.cluster')
+              ENVIRONMENT=$(echo "$INCLUDE" | jq -r '.environment')
+
+              COMBO="${SCENARIO}-${DEPLOYMENT}-${CLUSTER}-${ENVIRONMENT}"
+              if [[ "$COMBO" == *"$SUFFIX"* ]]; then
+                if [[ "$FILTERED_INCLUDES" == "[]" ]]; then
+                  FILTERED_INCLUDES="[$INCLUDE]"
+                else
+                  FILTERED_INCLUDES="$(echo "$FILTERED_INCLUDES" | jq -c ". + [$INCLUDE]")"
+                fi
+              fi
+            done <<< "$INCLUDES"
+
+            # If we have filtered scenarios, create a filtered matrix
+            if [[ ${#FILTERED_SCENARIOS[@]} -gt 0 || "$FILTERED_INCLUDES" != "[]" ]]; then
+              FILTERED_MATRIX="{"
+
+              if [[ ${#FILTERED_SCENARIOS[@]} -gt 0 ]]; then
+                FILTERED_MATRIX="$FILTERED_MATRIX\"scenario\":[$(printf '"%s",' "${FILTERED_SCENARIOS[@]}" | sed 's/,$//')],"
+                FILTERED_MATRIX="$FILTERED_MATRIX\"deployment\":[$(printf '"%s",' "${DEPLOYMENTS[@]}" | sed 's/,$//')],"
+                FILTERED_MATRIX="$FILTERED_MATRIX\"cluster\":[$(printf '"%s",' "${CLUSTERS[@]}" | sed 's/,$//')],"
+                FILTERED_MATRIX="$FILTERED_MATRIX\"environment\":[$(printf '"%s",' "${ENVIRONMENTS[@]}" | sed 's/,$//')],"
+              fi
+
+              if [[ "$FILTERED_INCLUDES" != "[]" ]]; then
+                FILTERED_MATRIX="$FILTERED_MATRIX\"include\":$FILTERED_INCLUDES"
+              else
+                # Remove trailing comma if no includes
+                FILTERED_MATRIX="$(echo "$FILTERED_MATRIX" | sed 's/,$//')"
+              fi
+
+              FILTERED_MATRIX="$FILTERED_MATRIX}"
+              echo "Generated filtered matrix: $FILTERED_MATRIX"
+              echo "matrix=$FILTERED_MATRIX" >> "$GITHUB_OUTPUT"
+            else
+              echo "No matrix elements match the suffix '$SUFFIX'. Using base matrix."
+              echo "matrix=$BASE_MATRIX" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            # No filtering needed, use base matrix
+            echo "Using base matrix (no suffix filtering)"
+            echo "matrix=$BASE_MATRIX" >> "$GITHUB_OUTPUT"
+          fi
   e2e:
     timeout-minutes: 60
     permissions:
       contents: read
-    needs: [detect-ci-container]
+    needs: [detect-ci-container, generate-matrix]
     strategy:
       fail-fast: false
-      matrix:
-        scenario: [stream_crud, unary_crud, multi_crud, rollout]
-        deployment: [helm-chart]
-        cluster: [k3d]
-        environment: ["null"]
-        include:
-          - scenario: stream_crud
-            deployment: helm-operator
-            cluster: k3d
-            environment: "null"
-          - scenario: index_correction
-            deployment: helm-chart
-            cluster: k3d
-            environment: management
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: management
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: mirror
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: profile
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: failure
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: kill
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: partition
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: bandwidth
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
             # TODO: Fix the issue the readreplica returns 0 indices
             # - scenario: readreplica
             #   deployment: helm-chart
@@ -104,16 +181,6 @@ jobs:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
       options: "--add-host host.docker.internal:host-gateway"
-    # Skip if matrix variables does not contain label suffix
-    if: >
-      ${{
-        github.event.action != 'labeled' ||
-        github.event.label.name == 'actions/e2e-v2' ||
-        contains(
-          format('{0}-{1}-{2}-{3}', matrix.scenario, matrix.deployment, matrix.cluster, matrix.environment),
-          github.event.label.name.slice(15)
-        )
-      }}
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
