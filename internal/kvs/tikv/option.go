@@ -20,7 +20,7 @@ package tikv
 type Option func(*client) error
 
 var defaultOptions = []Option{
-	WtihAddrs([]string{"127.0.0.1:2379"}),
+	WithAddrs([]string{"127.0.0.1:2379"}),
 }
 
 func WithAddrs(addrs []string) Option {

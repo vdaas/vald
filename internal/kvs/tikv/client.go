@@ -19,8 +19,8 @@ package tikv
 import (
 	"context"
 
-	"github.com/tikv/client-go/config"
-	"github.com/tikv/client-go/rawkv"
+	"github.com/tikv/client-go/v2/config"
+	"github.com/tikv/client-go/v2/rawkv"
 	"github.com/vdaas/vald/internal/errors"
 )
 
@@ -34,11 +34,11 @@ type(
 	
 	client struct {
 		addrs []string
-		rcli *rawkv.Cilnet
+		rcli *rawkv.Client
 	}
 )
 
-func New(ctx context.Context, opts ...Option) (Clinet, error) {
+func New(ctx context.Context, opts ...Option) (Client, error) {
 	var (
 		c = new(client)
 		err error
