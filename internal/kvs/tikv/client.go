@@ -24,23 +24,23 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-type(
+type (
 	Client interface {
 		Set(ctx context.Context, key, val []byte) error
 		Get(ctx context.Context, key []byte) ([]byte, error)
 		Delete(ctx context.Context, key []byte) error
 		Close() error
 	}
-	
+
 	client struct {
 		addrs []string
-		rcli *rawkv.Client
+		rcli  *rawkv.Client
 	}
 )
 
 func New(ctx context.Context, opts ...Option) (Client, error) {
 	var (
-		c = new(client)
+		c   = new(client)
 		err error
 	)
 
