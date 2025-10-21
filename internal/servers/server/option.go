@@ -427,19 +427,32 @@ func WithDisableRestart() Option {
 	}
 }
 
+// WithGRPCMaxReceiveMessageSize returns an Option that configures the gRPC maximum receive message size for the server.
+// If size is greater than zero or equal to -1, it applies the corresponding grpc.MaxRecvMsgSize setting and updates the server's recorded max message size when
+// the provided size is larger; otherwise the option has no effect.
 func WithGRPCMaxReceiveMessageSize(size int) Option {
 	return func(s *server) error {
 		if size > 0 || size == -1 {
 			s.grpc.opts = append(s.grpc.opts, grpc.MaxRecvMsgSize(size))
+			if size > s.grpc.maxMsgSize {
+				s.grpc.maxMsgSize = size
+			}
 		}
 		return nil
 	}
 }
 
+// WithGRPCMaxSendMessageSize returns an Option that sets the maximum gRPC send message size.
+// If size is greater than zero or -1 (unlimited), the corresponding grpc.MaxSendMsgSize option
+// is appended to the server's gRPC options and s.grpc.maxMsgSize is updated when the provided
+// size is larger than the current recorded maximum.
 func WithGRPCMaxSendMessageSize(size int) Option {
 	return func(s *server) error {
 		if size > 0 || size == -1 {
 			s.grpc.opts = append(s.grpc.opts, grpc.MaxSendMsgSize(size))
+			if size > s.grpc.maxMsgSize {
+				s.grpc.maxMsgSize = size
+			}
 		}
 		return nil
 	}

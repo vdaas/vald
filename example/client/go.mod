@@ -1,6 +1,6 @@
 module github.com/vdaas/vald/example/client
 
-go 1.24.5
+go 1.25.3
 
 replace (
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v1.2.1

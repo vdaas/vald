@@ -25,6 +25,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/sync/singleflight"
 	stdsingleflight "golang.org/x/sync/singleflight"
 )
@@ -76,11 +77,12 @@ func (h *helper) Do(parallel int, b *testing.B) {
 	doFn := h.initDoFn()
 
 	ch := make(chan struct{})
-	go func() {
+	errgroup.Go(func() error {
 		ch <- struct{}{}
 		atomic.AddInt64(&h.calledCnt, -1)
 		doFn(context.Background(), "key", fn)
-	}()
+		return nil
+	})
 	<-ch
 	close(ch)
 
@@ -95,10 +97,11 @@ func (h *helper) Do(parallel int, b *testing.B) {
 		for pb.Next() {
 			wg.Add(1)
 			atomic.AddInt64(&h.totalCnt, 1)
-			go func() {
+			errgroup.Go(func() error {
 				defer wg.Done()
 				doFn(context.Background(), "key", fn)
-			}()
+				return nil
+			})
 		}
 		wg.Wait()
 	})

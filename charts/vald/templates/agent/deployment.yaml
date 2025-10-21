@@ -20,13 +20,7 @@ kind: Deployment
 metadata:
   name: {{ $agent.name }}
   labels:
-    app: {{ $agent.name }}
-    app.kubernetes.io/name: {{ include "vald.name" . }}
-    helm.sh/chart: {{ include "vald.chart" . }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/version: {{ .Chart.Version }}
-    app.kubernetes.io/component: agent
+    {{- include "vald.labels" (dict "Values" .Values.agent "default" .) | nindent 4 }}
   {{- if $agent.annotations }}
   annotations:
     {{- toYaml $agent.annotations | nindent 4 }}
@@ -49,10 +43,7 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        app: {{ $agent.name }}
-        app.kubernetes.io/name: {{ include "vald.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/component: agent
+        {{- include "vald.labels" (dict "Values" .Values.agent "default" .) | nindent 8 }}
       {{- $pprof := default .Values.defaults.server_config.metrics.pprof $agent.server_config.metrics.pprof }}
       {{- if or $agent.podAnnotations $agent.sidecar.enabled $pprof.enabled }}
       annotations:
