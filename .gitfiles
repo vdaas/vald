@@ -16,6 +16,7 @@
 .all-contributorsrc
 .commit_template
 .cspell.json
+.curlrc
 .deepsource.toml
 .devcontainer/devcontainer.json
 .devcontainer/postAttachCommand.sh
@@ -385,6 +386,7 @@ charts/vald-readreplica/values.yaml
 charts/vald-with-tikv/.helmignore
 charts/vald-with-tikv/Chart.lock
 charts/vald-with-tikv/Chart.yaml
+charts/vald-with-tikv/README.md
 charts/vald-with-tikv/crds/crd.yaml
 charts/vald-with-tikv/templates/_helpers.tpl
 charts/vald-with-tikv/templates/tidbcluster.yaml
@@ -2307,6 +2309,7 @@ rust/libs/proto/src/sidecar.v1.tonic.rs
 rust/libs/proto/src/vald.v1.tonic.rs
 rust/libs/vqueue/Cargo.toml
 rust/libs/vqueue/src/lib.rs
+rust/rust-toolchain
 rust/rust-toolchain.toml
 tests/chaos/chart/.helmignore
 tests/chaos/chart/Chart.yaml

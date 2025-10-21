@@ -208,7 +208,7 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 		}
 	}
 
-	if g.Addrs != nil && len(g.Addrs) != 0 {
+	if len(g.Addrs) != 0 {
 		opts = append(opts,
 			grpc.WithAddrs(g.Addrs...),
 		)
