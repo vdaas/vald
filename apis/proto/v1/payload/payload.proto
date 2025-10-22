@@ -810,16 +810,5 @@ message Meta {
   }
 }
 
-// Metadata related message
-message Metadata {
-  message Key {
-    bytes key = 1;
-  }
-
-  message Value {
-    bytes value = 1;
-  }
-}
-
 // Represent an empty message.
 message Empty {}
