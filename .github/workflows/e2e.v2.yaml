@@ -41,62 +41,86 @@ jobs:
   detect-ci-container:
     permissions:
       contents: read
-    if: startsWith(github.ref, 'refs/tags/') || (github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-v2') || github.event_name == 'workflow_dispatch'
+    if: startsWith(github.ref, 'refs/tags/') || (github.event.action == 'labeled' && startsWith(github.event.label.name,'actions/e2e-v2')) || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/_detect-ci-container.yaml
+  build-matrix:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      result: ${{ steps.build-matrix.outputs.result }}
+    steps:
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        id: build-matrix
+        with:
+          result-encoding: string
+          # TODO: Fix the issue the readreplica returns 0 indices and add this case
+          # - scenario: readreplica
+          #   deployment: helm-chart
+          #   cluster: kind
+          #   environment: "null"
+          script: |
+            // Build a stable include-only matrix for strategy.matrix
+            const baseInclude = [
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "multi_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "rollout",     deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "stream_crud", deployment: "helm-operator", cluster: "k3d", environment: "null" },
+              { scenario: "index_correction", deployment: "helm-chart", cluster: "k3d", environment: "management" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "management" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "mirror" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "profile" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "failure" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "kill" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "partition" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "bandwidth" }
+            ];
+
+            // Extract suffix from label using the fixed prefix
+            const prefix = 'actions/e2e-v2/';
+            const action = (context && context.payload && context.payload.action) ? context.payload.action : '';
+            const label = (context && context.payload && context.payload.label && context.payload.label.name) ? context.payload.label.name : '';
+
+            let suffix = '';
+            if (action === 'labeled' && label.startsWith(prefix)) {
+              suffix = label.slice(prefix.length);
+            }
+
+            core.info('Label: ' + label);
+            core.info('Suffix: ' + (suffix || '<none>'));
+
+            // Filter by combo string (substring match)
+            function combo(o) {
+              return o.scenario + '-' + o.deployment + '-' + o.cluster + '-' + (o.environment === null ? 'null' : String(o.environment));
+            }
+
+            let filtered = baseInclude;
+            if (suffix) {
+              filtered = baseInclude.filter(function(o) { return combo(o).indexOf(suffix) !== -1; });
+            }
+
+            // Fallback if nothing matches
+            if (filtered.length === 0) {
+              core.warning("No include matched '" + suffix + "'. Falling back to base include (" + baseInclude.length + " jobs).");
+              filtered = baseInclude;
+            } else {
+              core.info('Matched ' + filtered.length + ' job(s).');
+            }
+
+            // Set output "result" as a JSON string
+            const matrix = { include: filtered };
+            core.info('Generated matrix:\n' + JSON.stringify(matrix, null, 2));
+            return JSON.stringify(matrix);
   e2e:
     timeout-minutes: 60
     permissions:
       contents: read
-    needs: [detect-ci-container]
+    needs: [detect-ci-container, build-matrix]
     strategy:
       fail-fast: false
-      matrix:
-        scenario: [stream_crud, unary_crud, multi_crud, rollout]
-        deployment: [helm-chart]
-        cluster: [k3d]
-        environment: ["null"]
-        include:
-          - scenario: stream_crud
-            deployment: helm-operator
-            cluster: k3d
-            environment: "null"
-          - scenario: index_correction
-            deployment: helm-chart
-            cluster: k3d
-            environment: management
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: management
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: mirror
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: profile
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: failure
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: kill
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: partition
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: bandwidth
-            # TODO: Fix the issue the readreplica returns 0 indices
-            # - scenario: readreplica
-            #   deployment: helm-chart
-            #   cluster: kind
-            #   environment: "null"
+      matrix: ${{ fromJson(needs.build-matrix.outputs.result) }}
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
@@ -235,6 +259,7 @@ jobs:
       - name: Debug
         if: ${{ always() }}
         run: |
+          kubectl logs -l app.kubernetes.io/component=helm-operator
           kubectl get nodes
           kubectl get pods
           kubectl describe pods
