@@ -116,8 +116,6 @@ message Search {
     string request_id = 1;
     // Search results.
     repeated Object.Distance results = 2;
-    // The value is related to the request key.
-    optional Meta.Value value = 3;
   }
 
   // Represent multiple search responses.
@@ -391,6 +389,8 @@ message Object {
     string id = 1;
     // The distance.
     float distance = 2;
+    // The metadata is related to the request vector.
+    optional bytes metadata = 3;
   }
 
   // Represent stream response of distances.
