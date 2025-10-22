@@ -259,7 +259,7 @@ jobs:
       - name: Debug
         if: ${{ always() }}
         run: |
-          kubectl logs -l app.kubernetes.io/component=helm-operator
+          kubectl logs -l app.kubernetes.io/component=helm-operator --tail=-1
           kubectl get nodes
           kubectl get pods
           kubectl describe pods
