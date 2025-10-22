@@ -544,7 +544,7 @@ service ObjectWithMetadata {
   }
 
   // Overview
-  // StreamGetObject RPC is the method to get the metadata of multiple existing vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+  // StreamGetObjectWithMetadata RPC is the method to get the metadata of multiple existing vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
   // Using the bidirectional streaming RPC, the GetObject request can be communicated in any order between client and server.
   // Each Upsert request and response are independent.
   // ---
@@ -654,7 +654,7 @@ service RemoveWithMetadata {
   // Overview
   // A method to remove multiple with metadata indexed vectors and metadata by bidirectional streaming.
   //
-  // StreamRemove RPC is the method to remove multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
+  // StreamRemoveWithMetadata RPC is the method to remove multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
   // Using the bidirectional streaming RPC, the remove request can be communicated in any order between client and server.
   // Each Remove request and response are independent.
   // It's the recommended method to remove a large number of vectors.
