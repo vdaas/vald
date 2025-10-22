@@ -338,7 +338,7 @@ service SearchWithMetadata {
   // | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                  | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
   // | NOT_FOUND         | The Requested ID is not inserted on the target Vald cluster, or the search result is insufficient to the required result length. | Send a request with another vector or set min_num to a smaller value.                    |
   // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                    | Check target Vald cluster first and check network route including ingress as second.     |
-  rpc StreamLinearSearchByIDWithMetadataWithMetadata(stream payload.v1.Search.IDRequest) returns (stream payload.v1.Search.StreamResponse) {}
+  rpc StreamLinearSearchByIDWithMetadata(stream payload.v1.Search.IDRequest) returns (stream payload.v1.Search.StreamResponse) {}
 
   // Overview
   // MultiLinearSearchWithMetadata RPC is the method to linear search vectors and to get metadata with multiple vectors in **1** request.
@@ -937,7 +937,7 @@ service UpsertWithMetadata {
   // | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
   rpc MultiUpsertWithMetadata(payload.v1.Upsert.MultiRequest) returns (payload.v1.Object.Locations) {
     option (google.api.http) = {
-      post: "/upsert/multiple/medadata"
+      post: "/upsert/multiple/metadata"
       body: "*"
     };
   }
