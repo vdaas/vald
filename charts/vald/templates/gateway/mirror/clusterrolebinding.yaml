@@ -32,6 +32,6 @@ roleRef:
   name: {{ $gateway.clusterRole.name }}
 subjects:
   - kind: ServiceAccount
-    name: {{ default $gateway.serviceAccountName $gateway.name }}
+    name: {{ default $gateway.name $gateway.serviceAccountName }}
     namespace: {{ .Release.Namespace }}
 {{- end }}

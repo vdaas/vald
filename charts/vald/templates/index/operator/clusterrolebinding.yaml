@@ -27,6 +27,6 @@ roleRef:
   name: {{ $operator.clusterRole.name }}
 subjects:
   - kind: ServiceAccount
-    name: {{ default $operator.serviceAccountName $operator.name }}
+    name: {{ default $operator.name $operator.serviceAccountName }}
     namespace: {{ .Release.Namespace }}
 {{- end }}

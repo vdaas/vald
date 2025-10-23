@@ -27,6 +27,6 @@ roleRef:
   name: {{ $rotator.clusterRole.name }}
 subjects:
   - kind: ServiceAccount
-    name: {{ default $rotator.serviceAccountName $rotator.name }}
+    name: {{ default $rotator.name $rotator.serviceAccountName }}
     namespace: {{ .Release.Namespace }}
 {{- end }}
