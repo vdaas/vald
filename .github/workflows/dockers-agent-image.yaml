@@ -37,6 +37,7 @@ on:
       - Makefile
       - Makefile.d/**
       - apis/proto/**
+
       - dockers/agent/core/agent/Dockerfile
       - hack/docker/gen/main.go
       - rust/Cargo.lock

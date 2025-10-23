@@ -29,6 +29,7 @@ on:
       - v*.*.*
       - v*.*.*-*
   pull_request:
+
     paths:
       - "!**/*_mock.go"
       - "!**/*_test.go"
