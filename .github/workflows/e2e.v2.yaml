@@ -260,11 +260,13 @@ jobs:
         if: ${{ always() }}
         run: |
           kubectl get nodes
-          kubectl get pods
+          kubectl get all
           kubectl describe pods
           kubectl describe pvc
-          kubectl logs -l app.kubernetes.io/component=helm-operator
-          kubectl describe statefulsets/vald-agent
+          kubectl logs -l app.kubernetes.io/component=helm-operator --tail=-1
+          kubectl describe statefulsets
+          kubectl describe deployments
+          kubectl describe daemonsets
 
   slack-notification:
     timeout-minutes: 30
