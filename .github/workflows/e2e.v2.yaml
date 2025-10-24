@@ -264,6 +264,7 @@ jobs:
           kubectl describe pods
           kubectl describe pvc
           kubectl logs -l app.kubernetes.io/component=helm-operator
+          kubectl describe statefulsets/vald-agent
 
   slack-notification:
     timeout-minutes: 30
