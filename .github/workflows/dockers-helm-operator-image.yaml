@@ -29,6 +29,7 @@ on:
       - v*.*.*
       - v*.*.*-*
   pull_request:
+
     paths:
       - .github/actions/docker-build/action.yaml
       - .github/actions/prepare-docker-build/action.yaml
