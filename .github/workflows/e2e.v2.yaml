@@ -239,6 +239,7 @@ jobs:
           kubectl get pods
           kubectl describe pods
           kubectl describe pvc
+          kubectl describe statefulsets/vald-agent
 
   slack-notification:
     timeout-minutes: 30
