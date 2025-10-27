@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
 
@@ -70,7 +71,7 @@ func (s *server) aggregationSearch(
 	}
 
 	num := aggr.GetNum()
-	min := int(bcfg.GetMinNum())
+	minNum := int(bcfg.GetMinNum())
 
 	var timeout time.Duration
 	if to := bcfg.GetTimeout(); to != 0 {
@@ -275,9 +276,9 @@ func (s *server) aggregationSearch(
 			}
 			return nil, attrs, err
 		}
-		if 0 < min && len(res.GetResults()) < min {
+		if 0 < minNum && len(res.GetResults()) < minNum {
 			err = status.WrapWithDeadlineExceeded(
-				fmt.Sprintf("error search result length is not enough due to the timeoutage limit, required: %d, found: %d", min, len(res.GetResults())),
+				fmt.Sprintf("error search result length is not enough due to the timeoutage limit, required: %d, found: %d", minNum, len(res.GetResults())),
 				errors.ErrInsuffcientSearchResult,
 				&errdetails.RequestInfo{
 					RequestId:   bcfg.GetRequestId(),
@@ -342,7 +343,7 @@ func (s *server) aggregationSearch(
 		return nil, attrs, err
 	}
 
-	if 0 < min && len(res.GetResults()) < min {
+	if 0 < minNum && len(res.GetResults()) < minNum {
 		if err == nil {
 			err = errors.ErrInsuffcientSearchResult
 		}
@@ -353,7 +354,7 @@ func (s *server) aggregationSearch(
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		err = status.WrapWithNotFound(
-			fmt.Sprintf("error search result length is not enough required: %d, found: %d", min, len(res.GetResults())),
+			fmt.Sprintf("error search result length is not enough required: %d, found: %d", minNum, len(res.GetResults())),
 			errors.ErrInsuffcientSearchResult,
 			&errdetails.RequestInfo{
 				RequestId:   bcfg.GetRequestId(),
@@ -387,8 +388,12 @@ type valdStdAggr struct {
 	visited sync.Map[string, any]
 	result  []*payload.Object_Distance
 	cancel  context.CancelFunc
+	eg      errgroup.Group
 }
 
+// newStd returns a valdStdAggr configured for the standard aggregation algorithm.
+// It sets the top-k size (`num`), the forwarding top-k size (`fnum`), and allocates internal buffers sized proportionally to `replica`.
+// The returned Aggregator is initialized (including its error group) and ready to Start and receive results.
 func newStd(num, fnum, replica int) Aggregator {
 	vsa := &valdStdAggr{
 		num:  num,
@@ -399,6 +404,7 @@ func newStd(num, fnum, replica int) Aggregator {
 			return av
 		}(),
 		result: make([]*payload.Object_Distance, 0, num*replica),
+		eg:     errgroup.Get(),
 	}
 	vsa.closed.Store(false)
 	return vsa
@@ -455,7 +461,7 @@ func (v *valdStdAggr) Start(ctx context.Context) {
 		}
 	}
 	v.wg.Add(1)
-	go func() {
+	v.eg.Go(func() error {
 		defer v.wg.Done()
 		for {
 			select {
@@ -465,12 +471,12 @@ func (v *valdStdAggr) Start(ctx context.Context) {
 				for dist := range v.dch {
 					add(dist.distance, dist.raw)
 				}
-				return
+				return nil
 			case dist := <-v.dch:
 				add(dist.distance, dist.raw)
 			}
 		}
-	}()
+	})
 }
 
 func (v *valdStdAggr) Send(ctx context.Context, data *payload.Search_Response) {
@@ -534,7 +540,7 @@ type valdPairingHeapAggr struct {
 	result  []*payload.Object_Distance
 }
 
-func newPairingHeap(num, fnum, replica int) Aggregator {
+func newPairingHeap(num, fnum, _ int) Aggregator {
 	return &valdPairingHeapAggr{
 		num:    num,
 		fnum:   fnum,
@@ -543,7 +549,7 @@ func newPairingHeap(num, fnum, replica int) Aggregator {
 	}
 }
 
-func (v *valdPairingHeapAggr) Start(_ context.Context) {}
+func (*valdPairingHeapAggr) Start(_ context.Context) {}
 
 func (v *valdPairingHeapAggr) Send(ctx context.Context, data *payload.Search_Response) {
 	result := data.GetResults()
@@ -569,10 +575,10 @@ func (v *valdPairingHeapAggr) Send(ctx context.Context, data *payload.Search_Res
 
 func (v *valdPairingHeapAggr) Result() *payload.Search_Response {
 	for !v.ph.IsEmpty() && len(v.result) <= v.num {
-		var min *DistPayload
-		min, v.ph = v.ph.ExtractMin()
-		if min != nil {
-			v.result = append(v.result, min.raw)
+		var minDist *DistPayload
+		minDist, v.ph = v.ph.ExtractMin()
+		if minDist != nil {
+			v.result = append(v.result, minDist.raw)
 		} else if v.ph == nil {
 			break
 		}
@@ -697,7 +703,7 @@ func newPoolSlice(num, fnum, replica int) Aggregator {
 	}
 }
 
-func (_ *valdPoolSliceAggr) Start(_ context.Context) {}
+func (*valdPoolSliceAggr) Start(_ context.Context) {}
 
 func (v *valdPoolSliceAggr) Send(ctx context.Context, data *payload.Search_Response) {
 	result := data.GetResults()
@@ -733,6 +739,7 @@ func (v *valdPoolSliceAggr) Result() (res *payload.Search_Response) {
 	for _, r := range v.result {
 		res.Results = append(res.GetResults(), r.raw)
 	}
+	// skipcq: SCC-SA6002
 	poolDist.Put(v.result[:0])
 	return res
 }

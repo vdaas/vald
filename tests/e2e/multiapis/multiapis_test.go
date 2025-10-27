@@ -23,11 +23,11 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/tests/e2e/hdf5"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/client"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/portforward"

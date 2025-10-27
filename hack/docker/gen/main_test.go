@@ -14,10 +14,10 @@
 package main
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/vdaas/vald/internal/os"
 	yaml "gopkg.in/yaml.v2"
 )
 

@@ -20,26 +20,50 @@ package strategy
 // NOT IMPLEMENTED BELOW
 //
 // func TestWithPreProp32(t *testing.T) {
+// 	// Change interface type to the type of object you are testing
+// 	type T = any
 // 	type args struct {
 // 		fn func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset) ([]uint, error)
 // 	}
 // 	type want struct {
-// 		want StrategyOption
+// 		obj *T
+// 		// Uncomment this line if the option returns an error, otherwise delete it
+// 		// err error
 // 	}
 // 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, StrategyOption) error
+// 		name string
+// 		args args
+// 		want want
+// 		// Use the first line if the option returns an error. otherwise use the second line
+// 		// checkFunc  func(want, *T, error) error
+// 		// checkFunc  func(want, *T) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got StrategyOption) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
+//
+// 	// Uncomment this block if the option returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
+// 	       if !errors.Is(err, w.err) {
+// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	       }
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
+// 	// Uncomment this block if the option do not returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T) error {
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
 // 	tests := []test{
 // 		// TODO test cases
 // 		/*
@@ -48,8 +72,9 @@ package strategy
 // 		       args: args {
 // 		           fn:nil,
 // 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
+// 		       want: want {
+// 		           obj: new(T),
+// 		       },
 // 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
@@ -67,8 +92,9 @@ package strategy
 // 		           args: args {
 // 		           fn:nil,
 // 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
+// 		           want: want {
+// 		               obj: new(T),
+// 		           },
 // 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
@@ -91,40 +117,83 @@ package strategy
 // 			if test.afterFunc != nil {
 // 				defer test.afterFunc(tt, test.args)
 // 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
 //
-// 			got := WithPreProp32(test.args.fn)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
+// 			// Uncomment this block if the option returns an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+//
+// 			   got := WithPreProp32(test.args.fn)
+// 			   obj := new(T)
+// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
+//
+// 			// Uncomment this block if the option do not return an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+// 			   got := WithPreProp32(test.args.fn)
+// 			   obj := new(T)
+// 			   got(obj)
+// 			   if err := checkFunc(test.want, obj); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
 // 		})
 // 	}
 // }
 //
 // func TestWithProp32(t *testing.T) {
+// 	// Change interface type to the type of object you are testing
+// 	type T = any
 // 	type args struct {
 // 		fn func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (any, error)
 // 	}
 // 	type want struct {
-// 		want StrategyOption
+// 		obj *T
+// 		// Uncomment this line if the option returns an error, otherwise delete it
+// 		// err error
 // 	}
 // 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, StrategyOption) error
+// 		name string
+// 		args args
+// 		want want
+// 		// Use the first line if the option returns an error. otherwise use the second line
+// 		// checkFunc  func(want, *T, error) error
+// 		// checkFunc  func(want, *T) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got StrategyOption) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
+//
+// 	// Uncomment this block if the option returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
+// 	       if !errors.Is(err, w.err) {
+// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	       }
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
+// 	// Uncomment this block if the option do not returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T) error {
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
 // 	tests := []test{
 // 		// TODO test cases
 // 		/*
@@ -133,8 +202,9 @@ package strategy
 // 		       args: args {
 // 		           fn:nil,
 // 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
+// 		       want: want {
+// 		           obj: new(T),
+// 		       },
 // 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
@@ -152,8 +222,9 @@ package strategy
 // 		           args: args {
 // 		           fn:nil,
 // 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
+// 		           want: want {
+// 		               obj: new(T),
+// 		           },
 // 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
@@ -176,40 +247,83 @@ package strategy
 // 			if test.afterFunc != nil {
 // 				defer test.afterFunc(tt, test.args)
 // 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
 //
-// 			got := WithProp32(test.args.fn)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
+// 			// Uncomment this block if the option returns an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+//
+// 			   got := WithProp32(test.args.fn)
+// 			   obj := new(T)
+// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
+//
+// 			// Uncomment this block if the option do not return an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+// 			   got := WithProp32(test.args.fn)
+// 			   obj := new(T)
+// 			   got(obj)
+// 			   if err := checkFunc(test.want, obj); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
 // 		})
 // 	}
 // }
 //
 // func TestWithPreProp64(t *testing.T) {
+// 	// Change interface type to the type of object you are testing
+// 	type T = any
 // 	type args struct {
 // 		fn func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset) ([]uint, error)
 // 	}
 // 	type want struct {
-// 		want StrategyOption
+// 		obj *T
+// 		// Uncomment this line if the option returns an error, otherwise delete it
+// 		// err error
 // 	}
 // 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, StrategyOption) error
+// 		name string
+// 		args args
+// 		want want
+// 		// Use the first line if the option returns an error. otherwise use the second line
+// 		// checkFunc  func(want, *T, error) error
+// 		// checkFunc  func(want, *T) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got StrategyOption) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
+//
+// 	// Uncomment this block if the option returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
+// 	       if !errors.Is(err, w.err) {
+// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	       }
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
+// 	// Uncomment this block if the option do not returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T) error {
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
 // 	tests := []test{
 // 		// TODO test cases
 // 		/*
@@ -218,8 +332,9 @@ package strategy
 // 		       args: args {
 // 		           fn:nil,
 // 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
+// 		       want: want {
+// 		           obj: new(T),
+// 		       },
 // 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
@@ -237,8 +352,9 @@ package strategy
 // 		           args: args {
 // 		           fn:nil,
 // 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
+// 		           want: want {
+// 		               obj: new(T),
+// 		           },
 // 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
@@ -261,40 +377,83 @@ package strategy
 // 			if test.afterFunc != nil {
 // 				defer test.afterFunc(tt, test.args)
 // 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
 //
-// 			got := WithPreProp64(test.args.fn)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
+// 			// Uncomment this block if the option returns an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+//
+// 			   got := WithPreProp64(test.args.fn)
+// 			   obj := new(T)
+// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
+//
+// 			// Uncomment this block if the option do not return an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+// 			   got := WithPreProp64(test.args.fn)
+// 			   obj := new(T)
+// 			   got(obj)
+// 			   if err := checkFunc(test.want, obj); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
 // 		})
 // 	}
 // }
 //
 // func TestWithProp64(t *testing.T) {
+// 	// Change interface type to the type of object you are testing
+// 	type T = any
 // 	type args struct {
 // 		fn func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (any, error)
 // 	}
 // 	type want struct {
-// 		want StrategyOption
+// 		obj *T
+// 		// Uncomment this line if the option returns an error, otherwise delete it
+// 		// err error
 // 	}
 // 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, StrategyOption) error
+// 		name string
+// 		args args
+// 		want want
+// 		// Use the first line if the option returns an error. otherwise use the second line
+// 		// checkFunc  func(want, *T, error) error
+// 		// checkFunc  func(want, *T) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got StrategyOption) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
+//
+// 	// Uncomment this block if the option returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
+// 	       if !errors.Is(err, w.err) {
+// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	       }
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
+// 	// Uncomment this block if the option do not returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T) error {
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
 // 	tests := []test{
 // 		// TODO test cases
 // 		/*
@@ -303,8 +462,9 @@ package strategy
 // 		       args: args {
 // 		           fn:nil,
 // 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
+// 		       want: want {
+// 		           obj: new(T),
+// 		       },
 // 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
@@ -322,8 +482,9 @@ package strategy
 // 		           args: args {
 // 		           fn:nil,
 // 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
+// 		           want: want {
+// 		               obj: new(T),
+// 		           },
 // 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
@@ -346,40 +507,83 @@ package strategy
 // 			if test.afterFunc != nil {
 // 				defer test.afterFunc(tt, test.args)
 // 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
 //
-// 			got := WithProp64(test.args.fn)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
+// 			// Uncomment this block if the option returns an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+//
+// 			   got := WithProp64(test.args.fn)
+// 			   obj := new(T)
+// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
+//
+// 			// Uncomment this block if the option do not return an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+// 			   got := WithProp64(test.args.fn)
+// 			   obj := new(T)
+// 			   got(obj)
+// 			   if err := checkFunc(test.want, obj); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
 // 		})
 // 	}
 // }
 //
 // func TestWithPropName(t *testing.T) {
+// 	// Change interface type to the type of object you are testing
+// 	type T = any
 // 	type args struct {
 // 		str string
 // 	}
 // 	type want struct {
-// 		want StrategyOption
+// 		obj *T
+// 		// Uncomment this line if the option returns an error, otherwise delete it
+// 		// err error
 // 	}
 // 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, StrategyOption) error
+// 		name string
+// 		args args
+// 		want want
+// 		// Use the first line if the option returns an error. otherwise use the second line
+// 		// checkFunc  func(want, *T, error) error
+// 		// checkFunc  func(want, *T) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got StrategyOption) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
+//
+// 	// Uncomment this block if the option returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
+// 	       if !errors.Is(err, w.err) {
+// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	       }
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
+// 	// Uncomment this block if the option do not returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T) error {
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
 // 	tests := []test{
 // 		// TODO test cases
 // 		/*
@@ -388,8 +592,9 @@ package strategy
 // 		       args: args {
 // 		           str:"",
 // 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
+// 		       want: want {
+// 		           obj: new(T),
+// 		       },
 // 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
@@ -407,8 +612,9 @@ package strategy
 // 		           args: args {
 // 		           str:"",
 // 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
+// 		           want: want {
+// 		               obj: new(T),
+// 		           },
 // 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
@@ -431,40 +637,83 @@ package strategy
 // 			if test.afterFunc != nil {
 // 				defer test.afterFunc(tt, test.args)
 // 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
 //
-// 			got := WithPropName(test.args.str)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
+// 			// Uncomment this block if the option returns an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+//
+// 			   got := WithPropName(test.args.str)
+// 			   obj := new(T)
+// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
+//
+// 			// Uncomment this block if the option do not return an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+// 			   got := WithPropName(test.args.str)
+// 			   obj := new(T)
+// 			   got(obj)
+// 			   if err := checkFunc(test.want, obj); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
 // 		})
 // 	}
 // }
 //
 // func TestWithBit32(t *testing.T) {
+// 	// Change interface type to the type of object you are testing
+// 	type T = any
 // 	type args struct {
 // 		fn func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit32, algorithm.Closer, error)
 // 	}
 // 	type want struct {
-// 		want StrategyOption
+// 		obj *T
+// 		// Uncomment this line if the option returns an error, otherwise delete it
+// 		// err error
 // 	}
 // 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, StrategyOption) error
+// 		name string
+// 		args args
+// 		want want
+// 		// Use the first line if the option returns an error. otherwise use the second line
+// 		// checkFunc  func(want, *T, error) error
+// 		// checkFunc  func(want, *T) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got StrategyOption) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
+//
+// 	// Uncomment this block if the option returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
+// 	       if !errors.Is(err, w.err) {
+// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	       }
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
+// 	// Uncomment this block if the option do not returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T) error {
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
 // 	tests := []test{
 // 		// TODO test cases
 // 		/*
@@ -473,8 +722,9 @@ package strategy
 // 		       args: args {
 // 		           fn:nil,
 // 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
+// 		       want: want {
+// 		           obj: new(T),
+// 		       },
 // 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
@@ -492,8 +742,9 @@ package strategy
 // 		           args: args {
 // 		           fn:nil,
 // 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
+// 		           want: want {
+// 		               obj: new(T),
+// 		           },
 // 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
@@ -516,40 +767,83 @@ package strategy
 // 			if test.afterFunc != nil {
 // 				defer test.afterFunc(tt, test.args)
 // 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
 //
-// 			got := WithBit32(test.args.fn)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
+// 			// Uncomment this block if the option returns an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+//
+// 			   got := WithBit32(test.args.fn)
+// 			   obj := new(T)
+// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
+//
+// 			// Uncomment this block if the option do not return an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+// 			   got := WithBit32(test.args.fn)
+// 			   obj := new(T)
+// 			   got(obj)
+// 			   if err := checkFunc(test.want, obj); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
 // 		})
 // 	}
 // }
 //
 // func TestWithBit64(t *testing.T) {
+// 	// Change interface type to the type of object you are testing
+// 	type T = any
 // 	type args struct {
 // 		fn func(context.Context, *testing.B, assets.Dataset) (algorithm.Bit64, algorithm.Closer, error)
 // 	}
 // 	type want struct {
-// 		want StrategyOption
+// 		obj *T
+// 		// Uncomment this line if the option returns an error, otherwise delete it
+// 		// err error
 // 	}
 // 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, StrategyOption) error
+// 		name string
+// 		args args
+// 		want want
+// 		// Use the first line if the option returns an error. otherwise use the second line
+// 		// checkFunc  func(want, *T, error) error
+// 		// checkFunc  func(want, *T) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got StrategyOption) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
+//
+// 	// Uncomment this block if the option returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
+// 	       if !errors.Is(err, w.err) {
+// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	       }
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
+// 	// Uncomment this block if the option do not returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T) error {
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
 // 	tests := []test{
 // 		// TODO test cases
 // 		/*
@@ -558,8 +852,9 @@ package strategy
 // 		       args: args {
 // 		           fn:nil,
 // 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
+// 		       want: want {
+// 		           obj: new(T),
+// 		       },
 // 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
@@ -577,8 +872,9 @@ package strategy
 // 		           args: args {
 // 		           fn:nil,
 // 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
+// 		           want: want {
+// 		               obj: new(T),
+// 		           },
 // 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
@@ -601,43 +897,87 @@ package strategy
 // 			if test.afterFunc != nil {
 // 				defer test.afterFunc(tt, test.args)
 // 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
 //
-// 			got := WithBit64(test.args.fn)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
+// 			// Uncomment this block if the option returns an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+//
+// 			   got := WithBit64(test.args.fn)
+// 			   obj := new(T)
+// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
+//
+// 			// Uncomment this block if the option do not return an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+// 			   got := WithBit64(test.args.fn)
+// 			   obj := new(T)
+// 			   got(obj)
+// 			   if err := checkFunc(test.want, obj); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
 // 		})
 // 	}
 // }
 //
 // func TestWithParallel(t *testing.T) {
+// 	// Change interface type to the type of object you are testing
+// 	type T = any
 // 	type want struct {
-// 		want StrategyOption
+// 		obj *T
+// 		// Uncomment this line if the option returns an error, otherwise delete it
+// 		// err error
 // 	}
 // 	type test struct {
-// 		name       string
-// 		want       want
-// 		checkFunc  func(want, StrategyOption) error
+// 		name string
+// 		want want
+// 		// Use the first line if the option returns an error. otherwise use the second line
+// 		// checkFunc  func(want, *T, error) error
+// 		// checkFunc  func(want, *T) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
 // 	}
-// 	defaultCheckFunc := func(w want, got StrategyOption) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
+//
+// 	// Uncomment this block if the option returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
+// 	       if !errors.Is(err, w.err) {
+// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	       }
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
+// 	// Uncomment this block if the option do not returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T) error {
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
 // 	tests := []test{
 // 		// TODO test cases
 // 		/*
 // 		   {
 // 		       name: "test_case_1",
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
+// 		       want: want {
+// 		           obj: new(T),
+// 		       },
 // 		       beforeFunc: func(t *testing.T,) {
 // 		           t.Helper()
 // 		       },
@@ -652,8 +992,9 @@ package strategy
 // 		   func() test {
 // 		       return test {
 // 		           name: "test_case_2",
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
+// 		           want: want {
+// 		               obj: new(T),
+// 		           },
 // 		           beforeFunc: func(t *testing.T,) {
 // 		               t.Helper()
 // 		           },
@@ -676,15 +1017,34 @@ package strategy
 // 			if test.afterFunc != nil {
 // 				defer test.afterFunc(tt)
 // 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
 //
-// 			got := WithParallel()
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
+// 			// Uncomment this block if the option returns an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+//
+// 			   got := WithParallel()
+// 			   obj := new(T)
+// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
+//
+// 			// Uncomment this block if the option do not return an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+// 			   got := WithParallel()
+// 			   obj := new(T)
+// 			   got(obj)
+// 			   if err := checkFunc(test.want, obj); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
 // 		})
 // 	}
 // }

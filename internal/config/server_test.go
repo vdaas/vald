@@ -1465,3 +1465,123 @@ func TestServer_Opts(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
+//
+// func TestHTTP2_Bind(t *testing.T) {
+// 	type fields struct {
+// 		HandlerLimit                 int
+// 		Enabled                      bool
+// 		PermitProhibitedCipherSuites bool
+// 		MaxUploadBufferPerConnection int32
+// 		MaxUploadBufferPerStream     int32
+// 		MaxConcurrentStreams         uint32
+// 		MaxDecoderHeaderTableSize    uint32
+// 		MaxEncoderHeaderTableSize    uint32
+// 		MaxReadFrameSize             uint32
+// 	}
+// 	type want struct {
+// 		want *HTTP2
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *HTTP2) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *HTTP2) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           HandlerLimit:0,
+// 		           Enabled:false,
+// 		           PermitProhibitedCipherSuites:false,
+// 		           MaxUploadBufferPerConnection:0,
+// 		           MaxUploadBufferPerStream:0,
+// 		           MaxConcurrentStreams:0,
+// 		           MaxDecoderHeaderTableSize:0,
+// 		           MaxEncoderHeaderTableSize:0,
+// 		           MaxReadFrameSize:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           HandlerLimit:0,
+// 		           Enabled:false,
+// 		           PermitProhibitedCipherSuites:false,
+// 		           MaxUploadBufferPerConnection:0,
+// 		           MaxUploadBufferPerStream:0,
+// 		           MaxConcurrentStreams:0,
+// 		           MaxDecoderHeaderTableSize:0,
+// 		           MaxEncoderHeaderTableSize:0,
+// 		           MaxReadFrameSize:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			h := &HTTP2{
+// 				HandlerLimit:                 test.fields.HandlerLimit,
+// 				Enabled:                      test.fields.Enabled,
+// 				PermitProhibitedCipherSuites: test.fields.PermitProhibitedCipherSuites,
+// 				MaxUploadBufferPerConnection: test.fields.MaxUploadBufferPerConnection,
+// 				MaxUploadBufferPerStream:     test.fields.MaxUploadBufferPerStream,
+// 				MaxConcurrentStreams:         test.fields.MaxConcurrentStreams,
+// 				MaxDecoderHeaderTableSize:    test.fields.MaxDecoderHeaderTableSize,
+// 				MaxEncoderHeaderTableSize:    test.fields.MaxEncoderHeaderTableSize,
+// 				MaxReadFrameSize:             test.fields.MaxReadFrameSize,
+// 			}
+//
+// 			got := h.Bind()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

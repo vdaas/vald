@@ -23,7 +23,6 @@ package config
 
 import (
 	"io/fs"
-	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -36,6 +35,7 @@ import (
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/timeutil"
 	"github.com/vdaas/vald/internal/timeutil/rate"

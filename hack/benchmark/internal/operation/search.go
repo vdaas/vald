@@ -23,6 +23,7 @@ import (
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 func (o *operation) Search(ctx context.Context, b *testing.B, ds assets.Dataset) {
@@ -70,13 +71,12 @@ func (o *operation) StreamSearch(ctx context.Context, b *testing.B, ds assets.Da
 		}
 		b.ResetTimer()
 
-		go func() {
+		errgroup.Go(func() error {
 			defer wg.Done()
-
 			for {
 				res, err := sc.Recv()
 				if err == io.EOF {
-					return
+					return nil
 				}
 				if err != nil {
 					grpcError(b, err)
@@ -86,7 +86,8 @@ func (o *operation) StreamSearch(ctx context.Context, b *testing.B, ds assets.Da
 					b.Error("returned response is nil")
 				}
 			}
-		}()
+			return nil
+		})
 
 		for i := 0; i < b.N; i++ {
 			idx := i % ds.TrainSize()
@@ -156,14 +157,13 @@ func (o *operation) StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum
 		var finished atomic.Bool
 		finished.Store(false)
 
-		go func() {
+		errgroup.Go(func() error {
 			defer wg.Done()
-
 			for sc != nil {
 				res, err := sc.Recv()
 				if err == io.EOF {
 					finished.Store(true)
-					return
+					return nil
 				}
 				if err != nil {
 					grpcError(b, err)
@@ -173,7 +173,8 @@ func (o *operation) StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum
 					b.Error("returned response is nil")
 				}
 			}
-		}()
+			return nil
+		})
 
 		for i := 0; i < b.N && !finished.Load() && sc != nil; i++ {
 			err = sc.Send(&payload.Search_IDRequest{

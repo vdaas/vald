@@ -19,10 +19,10 @@ package service
 import (
 	"math"
 	"math/big"
-	"os"
 	"time"
 
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"

@@ -60,7 +60,7 @@ defaults:
         # @schema {"name": "defaults.server_config.servers.rest.server", "type": "object", "anchor": "rest_server"}
         server:
           # @schema {"name": "defaults.server_config.servers.rest.server.mode", "type": "string"}
-          # defaults.server_config.servers.rest.server.mode -- REST server server mode
+          # defaults.server_config.servers.rest.server.mode -- REST server mode
           mode: REST
           # @schema {"name": "defaults.server_config.servers.rest.server.probe_wait_time", "type": "string"}
           # defaults.server_config.servers.rest.server.probe_wait_time -- REST server probe wait time
@@ -109,10 +109,10 @@ defaults:
               # defaults.server_config.servers.rest.server.http.http2.max_upload_buffer_per_connection -- The size of the initial flow control window for each connections.
               max_upload_buffer_per_connection: 0
               # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.max_upload_buffer_per_stream", "type": "integer"}
-              # defaults.server_config.servers.rest.server.http.http2.max_upload_buffer_per_stream -- The size of the initial flow control window for each streams.
+              # defaults.server_config.servers.rest.server.http.http2.max_upload_buffer_per_stream -- The size of the initial flow control window for each stream.
               max_upload_buffer_per_stream: 0
               # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.max_concurrent_streams", "type": "integer"}
-              # defaults.server_config.servers.rest.server.http.http2.max_concurrent_streams -- The number of concurrent streams that each client may have open at a time.
+              # defaults.server_config.servers.rest.server.http.http2.max_concurrent_streams -- The number of concurrent streams that each client may have opened at a time.
               max_concurrent_streams: 0
               # @schema {"name": "defaults.server_config.servers.rest.server.http.http2.max_decoder_header_table_size", "type": "integer"}
               # defaults.server_config.servers.rest.server.http.http2.max_decoder_header_table_size -- Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used.
@@ -169,7 +169,7 @@ defaults:
         # @schema {"name": "defaults.server_config.servers.grpc.server", "type": "object", "anchor": "grpc_server"}
         server:
           # @schema {"name": "defaults.server_config.servers.grpc.server.mode", "type": "string"}
-          # defaults.server_config.servers.grpc.server.mode -- gRPC server server mode
+          # defaults.server_config.servers.grpc.server.mode -- gRPC server mode
           mode: GRPC
           # @schema {"name": "defaults.server_config.servers.grpc.server.probe_wait_time", "type": "string"}
           # defaults.server_config.servers.grpc.server.probe_wait_time -- gRPC server probe wait time
@@ -410,9 +410,9 @@ defaults:
               permit_prohibited_cipher_suites: true
               # defaults.server_config.healths.liveness.server.http.http2.max_upload_buffer_per_connection -- The size of the initial flow control window for each connections.
               max_upload_buffer_per_connection: 0
-              # defaults.server_config.healths.liveness.server.http.http2.max_upload_buffer_per_stream -- The size of the initial flow control window for each streams.
+              # defaults.server_config.healths.liveness.server.http.http2.max_upload_buffer_per_stream -- The size of the initial flow control window for each stream.
               max_upload_buffer_per_stream: 0
-              # defaults.server_config.healths.liveness.server.http.http2.max_concurrent_streams -- The number of concurrent streams that each client may have open at a time.
+              # defaults.server_config.healths.liveness.server.http.http2.max_concurrent_streams -- The number of concurrent streams that each client may have opened at a time.
               max_concurrent_streams: 0
               # defaults.server_config.healths.liveness.server.http.http2.max_decoder_header_table_size -- Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used.
               max_decoder_header_table_size: 4096
@@ -529,9 +529,9 @@ defaults:
               permit_prohibited_cipher_suites: true
               # defaults.server_config.healths.readiness.server.http.http2.max_upload_buffer_per_connection -- The size of the initial flow control window for each connections.
               max_upload_buffer_per_connection: 0
-              # defaults.server_config.healths.readiness.server.http.http2.max_upload_buffer_per_stream -- The size of the initial flow control window for each streams.
+              # defaults.server_config.healths.readiness.server.http.http2.max_upload_buffer_per_stream -- The size of the initial flow control window for each stream.
               max_upload_buffer_per_stream: 0
-              # defaults.server_config.healths.readiness.server.http.http2.max_concurrent_streams -- The number of concurrent streams that each client may have open at a time.
+              # defaults.server_config.healths.readiness.server.http.http2.max_concurrent_streams -- The number of concurrent streams that each client may have opened at a time.
               max_concurrent_streams: 0
               # defaults.server_config.healths.readiness.server.http.http2.max_decoder_header_table_size -- Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used.
               max_decoder_header_table_size: 4096
@@ -622,9 +622,9 @@ defaults:
               permit_prohibited_cipher_suites: true
               # defaults.server_config.metrics.pprof.server.http.http2.max_upload_buffer_per_connection -- The size of the initial flow control window for each connections.
               max_upload_buffer_per_connection: 0
-              # defaults.server_config.metrics.pprof.server.http.http2.max_upload_buffer_per_stream -- The size of the initial flow control window for each streams.
+              # defaults.server_config.metrics.pprof.server.http.http2.max_upload_buffer_per_stream -- The size of the initial flow control window for each stream.
               max_upload_buffer_per_stream: 0
-              # defaults.server_config.metrics.pprof.server.http.http2.max_concurrent_streams -- The number of concurrent streams that each client may have open at a time.
+              # defaults.server_config.metrics.pprof.server.http.http2.max_concurrent_streams -- The number of concurrent streams that each client may have opened at a time.
               max_concurrent_streams: 0
               # defaults.server_config.metrics.pprof.server.http.http2.max_decoder_header_table_size -- Informs the remote endpoint of the maximum size of the header compression table used to decode header blocks, in octets. If zero, the default value of 4096 is used.
               max_decoder_header_table_size: 4096
@@ -1133,13 +1133,13 @@ gateway:
       - type: wait-for
         name: wait-for-discoverer
         target: discoverer
-        image: busybox:stable
+        image: busybox:1.37.0
         imagePullPolicy: Always
         sleepDuration: 2
       - type: wait-for
         name: wait-for-agent
         target: agent
-        image: busybox:stable
+        image: busybox:1.37.0
         imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "gateway.lb.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
@@ -1433,7 +1433,7 @@ gateway:
       - type: wait-for
         name: wait-for-gateway-lb
         target: gateway-lb
-        image: busybox:stable
+        image: busybox:1.37.0
         imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "gateway.filter.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
@@ -1737,7 +1737,7 @@ gateway:
       - type: wait-for
         name: wait-for-gateway-lb
         target: gateway-lb
-        image: busybox:stable
+        image: busybox:1.37.0
         imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "gateway.mirror.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
@@ -3259,13 +3259,13 @@ manager:
       - type: wait-for
         name: wait-for-agent
         target: agent
-        image: busybox:stable
+        image: busybox:1.37.0
         imagePullPolicy: Always
         sleepDuration: 2
       - type: wait-for
         name: wait-for-discoverer
         target: discoverer
-        image: busybox:stable
+        image: busybox:1.37.0
         imagePullPolicy: Always
         sleepDuration: 2
     # @schema {"name": "manager.index.env", "alias": "env"}
@@ -3421,13 +3421,13 @@ manager:
         - type: wait-for
           name: wait-for-agent
           target: agent
-          image: busybox:stable
+          image: busybox:1.37.0
           imagePullPolicy: Always
           sleepDuration: 2
         - type: wait-for
           name: wait-for-discoverer
           target: discoverer
-          image: busybox:stable
+          image: busybox:1.37.0
           imagePullPolicy: Always
           sleepDuration: 2
       # @schema {"name": "manager.index.corrector.env", "alias": "env"}
@@ -3557,13 +3557,13 @@ manager:
         - type: wait-for
           name: wait-for-agent
           target: agent
-          image: busybox:stable
+          image: busybox:1.37.0
           imagePullPolicy: Always
           sleepDuration: 2
         - type: wait-for
           name: wait-for-discoverer
           target: discoverer
-          image: busybox:stable
+          image: busybox:1.37.0
           imagePullPolicy: Always
           sleepDuration: 2
       # @schema {"name": "manager.index.creator.env", "alias": "env"}
@@ -3690,13 +3690,13 @@ manager:
         - type: wait-for
           name: wait-for-agent
           target: agent
-          image: busybox:stable
+          image: busybox:1.37.0
           imagePullPolicy: Always
           sleepDuration: 2
         - type: wait-for
           name: wait-for-discoverer
           target: discoverer
-          image: busybox:stable
+          image: busybox:1.37.0
           imagePullPolicy: Always
           sleepDuration: 2
       # @schema {"name": "manager.index.deleter.env", "alias": "env"}
@@ -3823,13 +3823,13 @@ manager:
         - type: wait-for
           name: wait-for-agent
           target: agent
-          image: busybox:stable
+          image: busybox:1.37.0
           imagePullPolicy: Always
           sleepDuration: 2
         - type: wait-for
           name: wait-for-discoverer
           target: discoverer
-          image: busybox:stable
+          image: busybox:1.37.0
           imagePullPolicy: Always
           sleepDuration: 2
       # @schema {"name": "manager.index.saver.env", "alias": "env"}
