@@ -1031,6 +1031,7 @@ var (
 		(*durationpb.Duration)(nil),           // 15: google.protobuf.Duration
 	}
 )
+
 var file_v1_rpc_errdetails_error_details_proto_depIdxs = []int32{
 	10, // 0: rpc.v1.ErrorInfo.metadata:type_name -> rpc.v1.ErrorInfo.MetadataEntry
 	15, // 1: rpc.v1.RetryInfo.retry_delay:type_name -> google.protobuf.Duration
