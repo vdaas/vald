@@ -207,6 +207,8 @@ apis/grpc/v1/payload/payload_vtproto.pb.go
 apis/grpc/v1/rpc/errdetails/error_details.pb.go
 apis/grpc/v1/rpc/errdetails/error_details.pb.json.go
 apis/grpc/v1/rpc/errdetails/error_details_vtproto.pb.go
+apis/grpc/v1/rpc/stats/stats.pb.go
+apis/grpc/v1/rpc/stats/stats_vtproto.pb.go
 apis/grpc/v1/vald/filter.pb.go
 apis/grpc/v1/vald/filter_vtproto.pb.go
 apis/grpc/v1/vald/flush.pb.go
@@ -235,6 +237,7 @@ apis/proto/v1/meta/meta.proto
 apis/proto/v1/mirror/mirror.proto
 apis/proto/v1/payload/payload.proto
 apis/proto/v1/rpc/errdetails/error_details.proto
+apis/proto/v1/rpc/stats/stats.proto
 apis/proto/v1/vald/filter.proto
 apis/proto/v1/vald/flush.proto
 apis/proto/v1/vald/index.proto
@@ -253,6 +256,7 @@ apis/swagger/v1/meta/meta.swagger.json
 apis/swagger/v1/mirror/mirror.swagger.json
 apis/swagger/v1/payload/payload.swagger.json
 apis/swagger/v1/rpc/errdetails/error_details.swagger.json
+apis/swagger/v1/rpc/stats/stats.swagger.json
 apis/swagger/v1/vald/filter.swagger.json
 apis/swagger/v1/vald/flush.swagger.json
 apis/swagger/v1/vald/index.swagger.json
@@ -1166,6 +1170,7 @@ internal/errors/runner.go
 internal/errors/runner_test.go
 internal/errors/runtime.go
 internal/errors/runtime_test.go
+internal/errors/stats.go
 internal/errors/storage.go
 internal/errors/tikv.go
 internal/errors/tls.go
@@ -1393,6 +1398,9 @@ internal/net/grpc/reflection/doc.go
 internal/net/grpc/reflection/reflection.go
 internal/net/grpc/server.go
 internal/net/grpc/server_test.go
+internal/net/grpc/stats/doc.go
+internal/net/grpc/stats/stats.go
+internal/net/grpc/stats/stats_test.go
 internal/net/grpc/status/doc.go
 internal/net/grpc/status/status.go
 internal/net/grpc/status/status_test.go
@@ -2304,6 +2312,7 @@ rust/libs/proto/src/meta.v1.tonic.rs
 rust/libs/proto/src/mirror.v1.tonic.rs
 rust/libs/proto/src/payload.v1.rs
 rust/libs/proto/src/rpc.v1.rs
+rust/libs/proto/src/rpc.v1.tonic.rs
 rust/libs/proto/src/sidecar.v1.tonic.rs
 rust/libs/proto/src/vald.v1.tonic.rs
 rust/libs/vqueue/Cargo.toml
