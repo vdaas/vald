@@ -16,6 +16,7 @@
 .all-contributorsrc
 .commit_template
 .cspell.json
+.curlrc
 .deepsource.toml
 .devcontainer/devcontainer.json
 .devcontainer/postAttachCommand.sh
@@ -50,12 +51,6 @@
 .github/chatops_permissions.yaml
 .github/codeql/codeql-config.yaml
 .github/conflint.yaml
-.github/e2e/index_correction.yaml
-.github/e2e/multi_crud.yaml
-.github/e2e/readreplica.yaml
-.github/e2e/rollout.yaml
-.github/e2e/stream_crud.yaml
-.github/e2e/unary_crud.yaml
 .github/helm/values/vald-mirror-target.yaml
 .github/helm/values/values-agent-sidecar.yaml
 .github/helm/values/values-chaos.yaml
@@ -212,6 +207,8 @@ apis/grpc/v1/payload/payload_vtproto.pb.go
 apis/grpc/v1/rpc/errdetails/error_details.pb.go
 apis/grpc/v1/rpc/errdetails/error_details.pb.json.go
 apis/grpc/v1/rpc/errdetails/error_details_vtproto.pb.go
+apis/grpc/v1/rpc/stats/stats.pb.go
+apis/grpc/v1/rpc/stats/stats_vtproto.pb.go
 apis/grpc/v1/vald/filter.pb.go
 apis/grpc/v1/vald/filter_vtproto.pb.go
 apis/grpc/v1/vald/flush.pb.go
@@ -240,6 +237,7 @@ apis/proto/v1/meta/meta.proto
 apis/proto/v1/mirror/mirror.proto
 apis/proto/v1/payload/payload.proto
 apis/proto/v1/rpc/errdetails/error_details.proto
+apis/proto/v1/rpc/stats/stats.proto
 apis/proto/v1/vald/filter.proto
 apis/proto/v1/vald/flush.proto
 apis/proto/v1/vald/index.proto
@@ -258,6 +256,7 @@ apis/swagger/v1/meta/meta.swagger.json
 apis/swagger/v1/mirror/mirror.swagger.json
 apis/swagger/v1/payload/payload.swagger.json
 apis/swagger/v1/rpc/errdetails/error_details.swagger.json
+apis/swagger/v1/rpc/stats/stats.swagger.json
 apis/swagger/v1/vald/filter.swagger.json
 apis/swagger/v1/vald/flush.swagger.json
 apis/swagger/v1/vald/index.swagger.json
@@ -388,6 +387,14 @@ charts/vald-readreplica/templates/snapshot.yaml
 charts/vald-readreplica/templates/svc.yaml
 charts/vald-readreplica/values.schema.json
 charts/vald-readreplica/values.yaml
+charts/vald-with-tikv/.helmignore
+charts/vald-with-tikv/Chart.lock
+charts/vald-with-tikv/Chart.yaml
+charts/vald-with-tikv/README.md
+charts/vald-with-tikv/crds/crd.yaml
+charts/vald-with-tikv/templates/_helpers.tpl
+charts/vald-with-tikv/templates/tidbcluster.yaml
+charts/vald-with-tikv/values.yaml
 charts/vald/.helmignore
 charts/vald/Chart.yaml
 charts/vald/README.md
@@ -1163,7 +1170,9 @@ internal/errors/runner.go
 internal/errors/runner_test.go
 internal/errors/runtime.go
 internal/errors/runtime_test.go
+internal/errors/stats.go
 internal/errors/storage.go
+internal/errors/tikv.go
 internal/errors/tls.go
 internal/errors/unit.go
 internal/errors/unit_test.go
@@ -1276,6 +1285,10 @@ internal/k8s/vald/mirror/target/option.go
 internal/k8s/vald/mirror/target/target.go
 internal/k8s/vald/mirror/target/target_template.go
 internal/k8s/vald/mirror/target/target_template_option.go
+internal/kvs/tikv/client.go
+internal/kvs/tikv/client_test.go
+internal/kvs/tikv/option.go
+internal/kvs/tikv/option_test.go
 internal/log/doc.go
 internal/log/format/doc.go
 internal/log/format/format.go
@@ -1363,7 +1376,6 @@ internal/net/grpc/interceptor/server/recover/recover.go
 internal/net/grpc/interceptor/server/recover/recover_test.go
 internal/net/grpc/interceptor/server/trace/doc.go
 internal/net/grpc/interceptor/server/trace/trace.go
-internal/net/grpc/interceptor/server/trace/trace_test.go
 internal/net/grpc/keepalive/doc.go
 internal/net/grpc/keepalive/keepalive.go
 internal/net/grpc/logger/doc.go
@@ -1386,6 +1398,9 @@ internal/net/grpc/reflection/doc.go
 internal/net/grpc/reflection/reflection.go
 internal/net/grpc/server.go
 internal/net/grpc/server_test.go
+internal/net/grpc/stats/doc.go
+internal/net/grpc/stats/stats.go
+internal/net/grpc/stats/stats_test.go
 internal/net/grpc/status/doc.go
 internal/net/grpc/status/status.go
 internal/net/grpc/status/status_test.go
@@ -2297,6 +2312,7 @@ rust/libs/proto/src/meta.v1.tonic.rs
 rust/libs/proto/src/mirror.v1.tonic.rs
 rust/libs/proto/src/payload.v1.rs
 rust/libs/proto/src/rpc.v1.rs
+rust/libs/proto/src/rpc.v1.tonic.rs
 rust/libs/proto/src/sidecar.v1.tonic.rs
 rust/libs/proto/src/vald.v1.tonic.rs
 rust/libs/vqueue/Cargo.toml
@@ -2330,6 +2346,7 @@ tests/performance/max_vector_dim_test.go
 tests/v2/e2e/assets/agent_crud.yaml
 tests/v2/e2e/assets/index_correction.yaml
 tests/v2/e2e/assets/multi_crud.yaml
+tests/v2/e2e/assets/readreplica.yaml
 tests/v2/e2e/assets/rollout.yaml
 tests/v2/e2e/assets/stream_crud.yaml
 tests/v2/e2e/assets/unary_crud.yaml
@@ -2354,6 +2371,7 @@ tests/v2/e2e/kubernetes/resources.go
 tests/v2/e2e/kubernetes/rollout.go
 tests/v2/e2e/kubernetes/status.go
 versions/BUF_VERSION
+versions/BUSYBOX_VERSION
 versions/CHAOS_MESH_VERSION
 versions/CMAKE_VERSION
 versions/CSI_DRIVER_HOST_PATH_VERSION

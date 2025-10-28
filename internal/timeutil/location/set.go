@@ -14,10 +14,10 @@
 package location
 
 import (
-	"os"
 	"time"
 
 	"github.com/kpango/fastime"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 )
 

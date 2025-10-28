@@ -14,10 +14,10 @@
 package test
 
 import (
-	"os"
 	"path/filepath"
 
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 )
 

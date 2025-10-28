@@ -20,12 +20,6 @@ blue   = printf "\x1b[34m\#\# %s\x1b[0m\n" $1
 pink   = printf "\x1b[35m\#\# %s\x1b[0m\n" $1
 cyan   = printf "\x1b[36m\#\# %s\x1b[0m\n" $1
 
-define go-install
-	GO111MODULE=on go install \
-	    -mod=readonly \
-	    $1@latest
-endef
-
 define go-tool-install
 	go install tool
 endef
@@ -181,6 +175,13 @@ define run-v2-e2e-crud-test
 	E2E_TARGET_NAMESPACE="$(E2E_TARGET_NAMESPACE)" \
 	E2E_TARGET_NAME="$(E2E_TARGET_NAME)" \
 	E2E_DATASET_PATH="$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME)" \
+	E2E_PARALLELISM="$(E2E_PARALLELISM)" \
+	E2E_INSERT_COUNT="$(E2E_INSERT_COUNT)" \
+	E2E_QPS="$(E2E_QPS)" \
+	E2E_SEARCH_COUNT="$(E2E_SEARCH_COUNT)" \
+	E2E_UPDATE_COUNT="$(E2E_UPDATE_COUNT)" \
+	E2E_BULK_SIZE="$(E2E_BULK_SIZE)" \
+	E2E_EXPECTED_INDEX="$(E2E_EXPECTED_INDEX)" \
 	go test \
 	    -race \
 	    -v \
@@ -339,47 +340,53 @@ endef
 # - Generate only 'New()' test on './pkg/*/usecase'
 # - Generate only exported function tests on `./pkg` package
 define gen-go-test-sources
-	@for f in $(GO_SOURCES); do \
-		GOTESTS_OPTION=" -all "; \
+	@$(call green, "Generating go test files in parallel (cores: $(CORES))...")
+	@for f in $(GO_SOURCES); do echo "$$f"; done | \
+	xargs -I {} -P$(CORES) bash -c '\
+		f="{}"; \
+		GOTESTS_OPTION="-all"; \
 		if [[ $$f =~ \.\/pkg\/.*\/router\/.* || $$f =~ \.\/pkg\/.*\/handler\/rest\/.* ]]; then \
 			echo "Skip generating go test file: $$f"; \
-			continue; \
+			exit 0; \
 		elif [[ $$f =~ \.\/pkg\/.*\/usecase\/.* ]]; then \
 			GOTESTS_OPTION=" -only New "; \
 		elif [[ $$f =~ \.\/pkg\/.* ]]; then \
 			GOTESTS_OPTION=" -exported "; \
 		fi; \
-		echo "Generating go test file: $$f" with option  $$GOTESTS_OPTION; \
+		echo "Generating go test file: $$f with option $$GOTESTS_OPTION"; \
 		gotests -w -template_dir $(ROOTDIR)/assets/test/templates/common $$GOTESTS_OPTION $(patsubst %_test.go,%.go,$$f); \
 		RESULT=$$?; \
 		if [ ! $$RESULT -eq 0 ]; then \
-			echo $$RESULT; \
+			echo "Error generating test for $$f: $$RESULT"; \
 			exit 1; \
 		fi; \
-	done
+	'
 endef
 
 # This function generate only option tests, with the following conditions:
 # - Generate all go tests on `./cmd`, `./hack` and `./internal` packages with exclusion (see $GO_SOURCES)
 # - Skip generating go tests under './pkg/*/router' and './pkg/*/handler/test' and './pkg/*/usecase' package
-# - Generate only exported function tests on './pkg` package
+# - Generate only exported function tests on `./pkg` package
 define gen-go-option-test-sources
-	@for f in $(GO_OPTION_SOURCES); do \
-		GOTESTS_OPTION=" -all "; \
+	@$(call green, "Generating go option test files in parallel (cores: $(CORES))...")
+	@for f in $(GO_OPTION_SOURCES); do echo "$$f"; done | \
+	xargs -I {} -P$(CORES) bash -c '\
+		f="{}"; \
+		GOTESTS_OPTION="-all"; \
 		if [[ $$f =~ \.\/pkg\/.*\/router\/.* || $$f =~ \.\/pkg\/.*\/handler\/rest\/.* || $$f =~ \.\/pkg\/.*\/usecase\/.* ]]; then \
 			echo "Skip generating go option test file: $$f"; \
-			continue; \
+			exit 0; \
 		elif [[ $$f =~ \.\/pkg\/.* ]]; then \
 			GOTESTS_OPTION=" -exported "; \
 		fi; \
-		echo "Generating go option test file: $$f"; \
-		gotests -w -template_dir $(ROOTDIR)/assets/test/templates/common -all $(patsubst %_test.go,%.go,$$f); \
+		echo "Generating go option test file: $$f with option $$GOTESTS_OPTION"; \
+		gotests -w -template_dir $(ROOTDIR)/assets/test/templates/option $$GOTESTS_OPTION $(patsubst %_test.go,%.go,$$f); \
 		RESULT=$$?; \
 		if [ ! $$RESULT -eq 0 ]; then \
-			echo $$RESULT; \
+			echo "Error generating option test for $$f: $$RESULT"; \
 			exit 1; \
 		fi; \
-	done
+	'
 endef
 
 define gen-license

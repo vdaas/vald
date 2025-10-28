@@ -33,6 +33,7 @@ on:
       - "!**/*_mock.go"
       - "!**/*_test.go"
       - .github/actions/docker-build/action.yaml
+      - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-gateway-lb-image.yaml
       - Makefile
@@ -40,6 +41,7 @@ on:
       - apis/grpc/v1/discoverer/*.go
       - apis/grpc/v1/payload/*.go
       - apis/grpc/v1/rpc/errdetails/*.go
+      - apis/grpc/v1/rpc/stats/*.go
       - apis/grpc/v1/vald/*.go
       - apis/proto/**
       - cmd/gateway/lb/*.go
@@ -94,6 +96,7 @@ on:
       - internal/net/grpc/pool/*.go
       - internal/net/grpc/proto/*.go
       - internal/net/grpc/reflection/*.go
+      - internal/net/grpc/stats/*.go
       - internal/net/grpc/status/*.go
       - internal/net/grpc/types/*.go
       - internal/net/http/dump/*.go
@@ -149,6 +152,7 @@ on:
       - "!**/*_mock.go"
       - "!**/*_test.go"
       - .github/actions/docker-build/action.yaml
+      - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-gateway-lb-image.yaml
       - Makefile
@@ -156,6 +160,7 @@ on:
       - apis/grpc/v1/discoverer/*.go
       - apis/grpc/v1/payload/*.go
       - apis/grpc/v1/rpc/errdetails/*.go
+      - apis/grpc/v1/rpc/stats/*.go
       - apis/grpc/v1/vald/*.go
       - apis/proto/**
       - cmd/gateway/lb/*.go
@@ -210,6 +215,7 @@ on:
       - internal/net/grpc/pool/*.go
       - internal/net/grpc/proto/*.go
       - internal/net/grpc/reflection/*.go
+      - internal/net/grpc/stats/*.go
       - internal/net/grpc/status/*.go
       - internal/net/grpc/types/*.go
       - internal/net/http/dump/*.go

@@ -319,3 +319,311 @@ func TestOTLPAttribute_Bind(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
+//
+// func TestOTLP_Bind(t *testing.T) {
+// 	type fields struct {
+// 		CollectorEndpoint       string
+// 		Attribute               *OTLPAttribute
+// 		TraceBatchTimeout       string
+// 		TraceExportTimeout      string
+// 		TraceMaxExportBatchSize int
+// 		TraceMaxQueueSize       int
+// 		MetricsExportInterval   string
+// 		MetricsExportTimeout    string
+// 	}
+// 	type want struct {
+// 		want *OTLP
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *OTLP) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *OTLP) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           CollectorEndpoint:"",
+// 		           Attribute:OTLPAttribute{},
+// 		           TraceBatchTimeout:"",
+// 		           TraceExportTimeout:"",
+// 		           TraceMaxExportBatchSize:0,
+// 		           TraceMaxQueueSize:0,
+// 		           MetricsExportInterval:"",
+// 		           MetricsExportTimeout:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           CollectorEndpoint:"",
+// 		           Attribute:OTLPAttribute{},
+// 		           TraceBatchTimeout:"",
+// 		           TraceExportTimeout:"",
+// 		           TraceMaxExportBatchSize:0,
+// 		           TraceMaxQueueSize:0,
+// 		           MetricsExportInterval:"",
+// 		           MetricsExportTimeout:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &OTLP{
+// 				CollectorEndpoint:       test.fields.CollectorEndpoint,
+// 				Attribute:               test.fields.Attribute,
+// 				TraceBatchTimeout:       test.fields.TraceBatchTimeout,
+// 				TraceExportTimeout:      test.fields.TraceExportTimeout,
+// 				TraceMaxExportBatchSize: test.fields.TraceMaxExportBatchSize,
+// 				TraceMaxQueueSize:       test.fields.TraceMaxQueueSize,
+// 				MetricsExportInterval:   test.fields.MetricsExportInterval,
+// 				MetricsExportTimeout:    test.fields.MetricsExportTimeout,
+// 			}
+//
+// 			got := o.Bind()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestTrace_Bind(t *testing.T) {
+// 	type fields struct {
+// 		Enabled bool
+// 	}
+// 	type want struct {
+// 		want *Trace
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *Trace) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *Trace) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           Enabled:false,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           Enabled:false,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			tr := &Trace{
+// 				Enabled: test.fields.Enabled,
+// 			}
+//
+// 			got := tr.Bind()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestMetrics_Bind(t *testing.T) {
+// 	type fields struct {
+// 		EnableVersionInfo bool
+// 		VersionInfoLabels []string
+// 		EnableMemory      bool
+// 		EnableGoroutine   bool
+// 		EnableCGO         bool
+// 	}
+// 	type want struct {
+// 		want *Metrics
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *Metrics) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got *Metrics) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           EnableVersionInfo:false,
+// 		           VersionInfoLabels:nil,
+// 		           EnableMemory:false,
+// 		           EnableGoroutine:false,
+// 		           EnableCGO:false,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           EnableVersionInfo:false,
+// 		           VersionInfoLabels:nil,
+// 		           EnableMemory:false,
+// 		           EnableGoroutine:false,
+// 		           EnableCGO:false,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			m := &Metrics{
+// 				EnableVersionInfo: test.fields.EnableVersionInfo,
+// 				VersionInfoLabels: test.fields.VersionInfoLabels,
+// 				EnableMemory:      test.fields.EnableMemory,
+// 				EnableGoroutine:   test.fields.EnableGoroutine,
+// 				EnableCGO:         test.fields.EnableCGO,
+// 			}
+//
+// 			got := m.Bind()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

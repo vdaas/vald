@@ -14,12 +14,12 @@
 package x1b
 
 import (
-	"os"
 	"path/filepath"
 	"syscall"
 	"unsafe"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/os"
 )
 
 const (

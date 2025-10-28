@@ -5,6 +5,7 @@
 *.so
 *.dylib
 *.bin
+*.tgz
 
 # Test binary, built with `go test -c`
 *.test

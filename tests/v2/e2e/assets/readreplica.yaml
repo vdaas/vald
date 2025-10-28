@@ -21,6 +21,7 @@ logging:
 dataset:
   name: _E2E_DATASET_PATH_
 kubernetes:
+  kube_config: _KUBECONFIG_
   port_forward:
     enabled: true
     local_port: 8082

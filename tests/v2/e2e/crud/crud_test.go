@@ -20,11 +20,11 @@
 package crud
 
 import (
-	"os"
 	"testing"
 
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/params"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/tests/v2/e2e/config"

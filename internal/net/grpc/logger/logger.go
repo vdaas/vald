@@ -14,10 +14,10 @@
 package logger
 
 import (
-	"os"
 	"strconv"
 
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/sync"
 	glog "google.golang.org/grpc/grpclog"
 )

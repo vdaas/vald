@@ -18,12 +18,12 @@
 package hdf5
 
 import (
-	"os"
 	"reflect"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/net/http/client"
+	"github.com/vdaas/vald/internal/os"
 	"gonum.org/v1/hdf5"
 )
 

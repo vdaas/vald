@@ -15,7 +15,6 @@ package main
 
 import (
 	"bytes"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -23,6 +22,7 @@ import (
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
 	"github.com/grafana/grafana-foundation-sdk/go/prometheus"
 	"github.com/vdaas/vald/internal/encoding/json"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 	"gopkg.in/yaml.v3"
 )
