@@ -19,7 +19,6 @@ package server
 import (
 	"context"
 	"net/http"
-	"os"
 	"reflect"
 	"strconv"
 	"syscall"
@@ -35,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/health"
 	"github.com/vdaas/vald/internal/net/grpc/keepalive"
 	glog "github.com/vdaas/vald/internal/net/grpc/logger"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
@@ -96,10 +96,11 @@ type server struct {
 		starter  func(net.Listener) error
 	}
 	grpc struct { // gRPC API
-		srv       *grpc.Server
-		keepAlive *grpcKeepalive
-		opts      []grpc.ServerOption
-		regs      []func(*grpc.Server)
+		srv        *grpc.Server
+		keepAlive  *grpcKeepalive
+		maxMsgSize int
+		opts       []grpc.ServerOption
+		regs       []func(*grpc.Server)
 	}
 	lc            *net.ListenConfig
 	tcfg          *tls.Config
@@ -133,7 +134,10 @@ type grpcKeepalive struct {
 }
 
 // New returns Server implementation.
-// skipcq: GO-R1005
+// New creates and returns a configured Server using the supplied Option functions.
+// It applies options (defaults first), initializes missing internal components (for example the error group),
+// and configures mode-specific internals for REST/GraphQL or gRPC.
+// It validates required configuration and returns an error if an option fails or required handlers/registrations are missing.
 func New(opts ...Option) (Server, error) {
 	srv := new(server)
 
@@ -235,11 +239,13 @@ func New(opts ...Option) (Server, error) {
 			)
 		}
 
-		if srv.grpc.srv == nil {
-			srv.grpc.srv = grpc.NewServer(
-				srv.grpc.opts...,
-			)
+		if srv.grpc.srv != nil {
+			srv.grpc.srv.GracefulStop()
 		}
+		grpc.InitCodec(srv.grpc.maxMsgSize)
+		srv.grpc.srv = grpc.NewServer(
+			srv.grpc.opts...,
+		)
 		for _, reg := range srv.grpc.regs {
 			reg(srv.grpc.srv)
 		}

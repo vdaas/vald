@@ -19,13 +19,13 @@ package cassandra
 import (
 	"context"
 	"encoding/json"
-	"os"
 	"strconv"
 	"testing"
 
 	"github.com/vdaas/vald/internal/db/nosql/cassandra"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/os"
 )
 
 var (

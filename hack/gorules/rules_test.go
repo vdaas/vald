@@ -14,10 +14,10 @@
 package gorules
 
 import (
-	"os"
 	"testing"
 
 	"github.com/quasilyte/go-ruleguard/analyzer"
+	"github.com/vdaas/vald/internal/os"
 	"golang.org/x/tools/go/analysis/analysistest"
 )
 

@@ -138,7 +138,7 @@ func (c *client) FilterDistance(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Distance, error) {
@@ -185,7 +185,7 @@ func (m *multipleAddrsClient) FilterDistance(
 			span.End()
 		}
 	}()
-	err = m.c.OrderedRange(ctx, m.addrs, func(ctx context.Context, addr string,
+	err = m.c.OrderedRange(ctx, m.addrs, func(ctx context.Context, _ string,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) error {
@@ -211,7 +211,7 @@ func (c *client) FilterVector(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Vector, error) {
@@ -258,7 +258,7 @@ func (m *multipleAddrsClient) FilterVector(
 			span.End()
 		}
 	}()
-	err = m.c.OrderedRange(ctx, m.addrs, func(ctx context.Context, addr string,
+	err = m.c.OrderedRange(ctx, m.addrs, func(ctx context.Context, _ string,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) error {

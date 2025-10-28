@@ -20,7 +20,6 @@ package config
 import (
 	"encoding/json"
 	"io/fs"
-	"os"
 	"reflect"
 	"syscall"
 	"testing"
@@ -28,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 

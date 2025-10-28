@@ -1912,9 +1912,8 @@ func TestJoin(t *testing.T) {
 //
 // func Test_is(t *testing.T) {
 // 	type args struct {
-// 		err              error
-// 		target           error
-// 		targetComparable bool
+// 		err    error
+// 		target error
 // 	}
 // 	type want struct {
 // 		wantSame bool
@@ -1941,7 +1940,6 @@ func TestJoin(t *testing.T) {
 // 		       args: args {
 // 		           err:nil,
 // 		           target:nil,
-// 		           targetComparable:false,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1962,7 +1960,6 @@ func TestJoin(t *testing.T) {
 // 		           args: args {
 // 		           err:nil,
 // 		           target:nil,
-// 		           targetComparable:false,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1993,7 +1990,7 @@ func TestJoin(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			gotSame := is(test.args.err, test.args.target, test.args.targetComparable)
+// 			gotSame := is(test.args.err, test.args.target)
 // 			if err := checkFunc(test.want, gotSame); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -2167,6 +2164,94 @@ func TestJoin(t *testing.T) {
 // 			}
 //
 // 			gotStr := e.Error()
+// 			if err := checkFunc(test.want, gotStr); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_joinError_String(t *testing.T) {
+// 	type fields struct {
+// 		errs []error
+// 	}
+// 	type want struct {
+// 		wantStr string
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, string) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, gotStr string) error {
+// 		if !reflect.DeepEqual(gotStr, w.wantStr) {
+// 			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotStr, w.wantStr)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           errs:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           errs:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			e := &joinError{
+// 				errs: test.fields.errs,
+// 			}
+//
+// 			gotStr := e.String()
 // 			if err := checkFunc(test.want, gotStr); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
