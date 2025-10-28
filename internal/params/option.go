@@ -17,8 +17,9 @@
 package params
 
 import (
-	"os"
 	"path/filepath"
+
+	"github.com/vdaas/vald/internal/os"
 )
 
 type Option func(*parser)

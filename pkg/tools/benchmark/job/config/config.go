@@ -20,12 +20,12 @@ package config
 import (
 	"context"
 	"encoding/json"
-	"os"
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/k8s/client"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/os"
 )
 
 // GlobalConfig is type alias for config.GlobalConfig.

@@ -20,12 +20,12 @@ import (
 	"fmt"
 	"image/color"
 	"io/fs"
-	"os"
 	"slices"
 
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/vdaas/vald/hack/benchmark/metrics"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/os"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"

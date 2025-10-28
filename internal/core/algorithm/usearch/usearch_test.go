@@ -18,7 +18,6 @@ package usearch
 
 import (
 	"math"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -26,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )

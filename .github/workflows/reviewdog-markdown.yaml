@@ -92,10 +92,9 @@ jobs:
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Setup node/npm
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      - uses: oven-sh/setup-bun@635640504f6d7197d3bb29876a652f671028dc97 # main
         with:
-          node-version: "latest"
+          bun-version: latest
       - name: Install textlint
         run: |
           make reviewdog/install
