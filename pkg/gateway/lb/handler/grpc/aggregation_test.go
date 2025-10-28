@@ -266,6 +266,7 @@ package grpc
 // 		visited sync.Map[string, any]
 // 		result  []*payload.Object_Distance
 // 		cancel  context.CancelFunc
+// 		eg      errgroup.Group
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -297,6 +298,7 @@ package grpc
 // 		           visited:nil,
 // 		           result:nil,
 // 		           cancel:nil,
+// 		           eg:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -326,6 +328,7 @@ package grpc
 // 		           visited:nil,
 // 		           result:nil,
 // 		           cancel:nil,
+// 		           eg:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -364,6 +367,7 @@ package grpc
 // 				visited: test.fields.visited,
 // 				result:  test.fields.result,
 // 				cancel:  test.fields.cancel,
+// 				eg:      test.fields.eg,
 // 			}
 //
 // 			v.Start(test.args.ctx)
@@ -388,6 +392,7 @@ package grpc
 // 		visited sync.Map[string, any]
 // 		result  []*payload.Object_Distance
 // 		cancel  context.CancelFunc
+// 		eg      errgroup.Group
 // 	}
 // 	type want struct{}
 // 	type test struct {
@@ -420,6 +425,7 @@ package grpc
 // 		           visited:nil,
 // 		           result:nil,
 // 		           cancel:nil,
+// 		           eg:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -450,6 +456,7 @@ package grpc
 // 		           visited:nil,
 // 		           result:nil,
 // 		           cancel:nil,
+// 		           eg:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -488,6 +495,7 @@ package grpc
 // 				visited: test.fields.visited,
 // 				result:  test.fields.result,
 // 				cancel:  test.fields.cancel,
+// 				eg:      test.fields.eg,
 // 			}
 //
 // 			v.Send(test.args.ctx, test.args.data)
@@ -508,6 +516,7 @@ package grpc
 // 		visited sync.Map[string, any]
 // 		result  []*payload.Object_Distance
 // 		cancel  context.CancelFunc
+// 		eg      errgroup.Group
 // 	}
 // 	type want struct {
 // 		want *payload.Search_Response
@@ -540,6 +549,7 @@ package grpc
 // 		           visited:nil,
 // 		           result:nil,
 // 		           cancel:nil,
+// 		           eg:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -566,6 +576,7 @@ package grpc
 // 		           visited:nil,
 // 		           result:nil,
 // 		           cancel:nil,
+// 		           eg:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -604,6 +615,7 @@ package grpc
 // 				visited: test.fields.visited,
 // 				result:  test.fields.result,
 // 				cancel:  test.fields.cancel,
+// 				eg:      test.fields.eg,
 // 			}
 //
 // 			got := v.Result()
@@ -624,6 +636,7 @@ package grpc
 // 		visited sync.Map[string, any]
 // 		result  []*payload.Object_Distance
 // 		cancel  context.CancelFunc
+// 		eg      errgroup.Group
 // 	}
 // 	type want struct {
 // 		want int
@@ -656,6 +669,7 @@ package grpc
 // 		           visited:nil,
 // 		           result:nil,
 // 		           cancel:nil,
+// 		           eg:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -682,6 +696,7 @@ package grpc
 // 		           visited:nil,
 // 		           result:nil,
 // 		           cancel:nil,
+// 		           eg:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -720,6 +735,7 @@ package grpc
 // 				visited: test.fields.visited,
 // 				result:  test.fields.result,
 // 				cancel:  test.fields.cancel,
+// 				eg:      test.fields.eg,
 // 			}
 //
 // 			got := v.GetNum()
@@ -740,6 +756,7 @@ package grpc
 // 		visited sync.Map[string, any]
 // 		result  []*payload.Object_Distance
 // 		cancel  context.CancelFunc
+// 		eg      errgroup.Group
 // 	}
 // 	type want struct {
 // 		want int
@@ -772,6 +789,7 @@ package grpc
 // 		           visited:nil,
 // 		           result:nil,
 // 		           cancel:nil,
+// 		           eg:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -798,6 +816,7 @@ package grpc
 // 		           visited:nil,
 // 		           result:nil,
 // 		           cancel:nil,
+// 		           eg:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -836,6 +855,7 @@ package grpc
 // 				visited: test.fields.visited,
 // 				result:  test.fields.result,
 // 				cancel:  test.fields.cancel,
+// 				eg:      test.fields.eg,
 // 			}
 //
 // 			got := v.GetFnum()
@@ -848,9 +868,9 @@ package grpc
 //
 // func Test_newPairingHeap(t *testing.T) {
 // 	type args struct {
-// 		num     int
-// 		fnum    int
-// 		replica int
+// 		num  int
+// 		fnum int
+// 		in2  int
 // 	}
 // 	type want struct {
 // 		want Aggregator
@@ -877,7 +897,7 @@ package grpc
 // 		       args: args {
 // 		           num:0,
 // 		           fnum:0,
-// 		           replica:0,
+// 		           in2:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -898,7 +918,7 @@ package grpc
 // 		           args: args {
 // 		           num:0,
 // 		           fnum:0,
-// 		           replica:0,
+// 		           in2:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -929,7 +949,7 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := newPairingHeap(test.args.num, test.args.fnum, test.args.replica)
+// 			got := newPairingHeap(test.args.num, test.args.fnum, test.args.in2)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

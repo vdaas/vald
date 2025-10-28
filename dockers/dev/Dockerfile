@@ -103,44 +103,28 @@ RUN --mount=type=bind,target=.,rw \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/install \
     && make GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}" go/download \
     && make RUST_VERSION="${RUST_VERSION}" rust/install \
-    && curl -fsSL https://deb.nodesource.com/setup_current.x | bash - \
-    && apt-get clean \
-    && apt-get update -y \
-    && apt-get upgrade -y \
-    && apt-get install -y --no-install-recommends --fix-missing nodejs \
-    && npm install -g npm@latest \
-    && apt-get clean \
-    && apt-get autoclean -y \
-    && apt-get autoremove -y \
-    && make delve/install \
-    && make gomodifytags/install \
     && make gopls/install \
-    && make gotests/install \
-    && make impl/install \
-    && make staticcheck/install \
     && update-ca-certificates \
+    && make bun/install \
     && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps GO_CLEAN_DEPS=false \
     && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} golangci-lint/install \
-    && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} gotestfmt/install \
+    && make go/tools/install \
     && make cmake/install \
-    && make buf/install \
     && make hdf5/install \
     && make helm-docs/install \
     && make helm/install \
     && make k3d/install \
-    && make k9s/install \
     && make kind/install \
     && make kubectl/install \
     && make kubelinter/install \
     && make minikube/install \
     && make reviewdog/install \
-    && make stern/install \
     && make telepresence/install \
-    && make tparse/install \
     && make yq/install \
     && make docker-cli/install \
     && make ngt/install \
     && make faiss/install \
+    && make usearch/install \
     && rm -rf ${GOPATH}/src/github.com/${ORG}/${REPO}/*
 # skipcq: DOK-DL3002
 USER root:root

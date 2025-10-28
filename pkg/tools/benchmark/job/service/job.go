@@ -19,7 +19,6 @@ package service
 
 import (
 	"context"
-	"os"
 	"reflect"
 	"strconv"
 	"syscall"
@@ -33,6 +32,7 @@ import (
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"

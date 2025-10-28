@@ -109,8 +109,8 @@ package quic
 //
 // func TestConn_Close(t *testing.T) {
 // 	type fields struct {
-// 		Connection *quic.Conn
-// 		Stream     quic.Stream
+// 		Conn   *quic.Conn
+// 		Stream *quic.Stream
 // 	}
 // 	type want struct {
 // 		err error
@@ -135,7 +135,7 @@ package quic
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           Connection:nil,
+// 		           Conn:nil,
 // 		           Stream:nil,
 // 		       },
 // 		       want: want{},
@@ -155,7 +155,7 @@ package quic
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           Connection:nil,
+// 		           Conn:nil,
 // 		           Stream:nil,
 // 		           },
 // 		           want: want{},
@@ -187,8 +187,8 @@ package quic
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &Conn{
-// 				Connection: test.fields.Connection,
-// 				Stream:     test.fields.Stream,
+// 				Conn:   test.fields.Conn,
+// 				Stream: test.fields.Stream,
 // 			}
 //
 // 			err := c.Close()

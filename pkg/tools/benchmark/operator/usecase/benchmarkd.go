@@ -18,7 +18,6 @@ package usecase
 
 import (
 	"context"
-	"os"
 
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
@@ -29,6 +28,7 @@ import (
 	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
 	infometrics "github.com/vdaas/vald/internal/observability/metrics/info"
 	benchmarkmetrics "github.com/vdaas/vald/internal/observability/metrics/tools/benchmark"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"

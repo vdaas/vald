@@ -53,13 +53,13 @@ jobs:
         env:
           TIME_WINDOW: ${{ github.event.inputs.time_window }}
       - name: Run issue-metrics tool
-        uses: github/issue-metrics@6fa9041b3ea7b6a9dafbdc388d25d86d06b2b6af # v3.23.1
+        uses: github/issue-metrics@45a6cb314ddaa4c12eed570eb2739435d712d480 # v3.24.0
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SEARCH_QUERY: "repo:vdaas/vald is:pr created:${{ env.last_month }}"
           HIDE_TIME_TO_ANSWER: true
       - name: Create issue
-        uses: peter-evans/create-issue-from-file@e8ef132d6df98ed982188e460ebb3b5d4ef3a9cd # v5.0.1
+        uses: peter-evans/create-issue-from-file@fca9117c27cdc29c6c4db3b86c48e4115a786710 # v6.0.0
         with:
           title: "Monthly review time metrics report: ${{ env.last_month }}"
           token: ${{ secrets.GITHUB_TOKEN }}

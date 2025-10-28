@@ -18,7 +18,8 @@ package errors
 
 import (
 	"fmt"
-	"os"
+
+	"github.com/vdaas/vald/internal/os"
 )
 
 var (

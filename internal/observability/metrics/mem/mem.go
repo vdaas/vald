@@ -16,13 +16,13 @@ package mem
 import (
 	"context"
 	"fmt"
-	"os"
 	"runtime"
 	"strconv"
 	"time"
 
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 	api "go.opentelemetry.io/otel/metric"
 	view "go.opentelemetry.io/otel/sdk/metric"
