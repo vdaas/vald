@@ -741,8 +741,8 @@ func (g *gRPCClient) OrderedRangeConcurrent(
 
 // RoundRobin is a generic function that executes a gRPC call in a round-robin fashion.
 func RoundRobin[R any](
-	c Client,
 	ctx context.Context,
+	c Client,
 	f func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption) (R, error),
 ) (data R, err error) {
@@ -800,7 +800,7 @@ func (g *gRPCClient) RoundRobin(
 				tctx = backoff.WithBackoffName(tctx, boName)
 			}
 
-			if g.cb != nil && len(boName) > 0 {
+			if g.cb != nil && boName != "" {
 				data, err = g.cb.Do(tctx, boName, func(cbctx context.Context) (any, error) {
 					data, ret, err = g.executeRPC(cbctx, p, addr, f)
 					if err != nil && !ret {
@@ -952,7 +952,7 @@ func (g *gRPCClient) do(
 		}
 
 		data, err = g.bo.Do(sctx, func(ictx context.Context) (r any, ret bool, err error) {
-			if g.cb != nil && len(boName) > 0 {
+			if g.cb != nil && boName != "" {
 				r, err = g.cb.Do(ictx, boName, func(ictx context.Context) (any, error) {
 					r, ret, err = g.executeRPC(ictx, p, addr, f)
 					if err != nil && !ret {
@@ -1050,6 +1050,7 @@ func (g *gRPCClient) Connect(
 		pool.WithAddr(addr),
 		pool.WithSize(g.poolSize),
 		pool.WithDialOptions(append(g.dopts, dopts...)...),
+		pool.WithOldConnCloseDelay(g.roccd),
 		pool.WithResolveDNS(func() bool {
 			disabled, ok := g.disableResolveDNSAddrs.Load(addr)
 			if ok && disabled {
@@ -1144,7 +1145,7 @@ func (g *gRPCClient) Disconnect(ctx context.Context, addr string) error {
 }
 
 // ConnectedAddrs returns a slice of all currently connected addresses.
-func (g *gRPCClient) ConnectedAddrs(ctx context.Context) (addrs []string) {
+func (g *gRPCClient) ConnectedAddrs(_ context.Context) (addrs []string) {
 	addrs = make([]string, 0, g.conns.Len())
 	if err := g.rangeConns("ConnectedAddrs", func(addr string, _ pool.Conn) bool {
 		addrs = append(addrs, addr)

@@ -15,13 +15,13 @@ package pogreb
 
 import (
 	"context"
-	"os"
 	"reflect"
 
 	"github.com/akrylysov/pogreb"
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/os"
 )
 
 // DB represents an interface for operating the pogreb database.

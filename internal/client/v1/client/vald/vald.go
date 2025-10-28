@@ -89,7 +89,7 @@ func (c *client) Exists(
 			span.End()
 		}
 	}()
-	oid, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	oid, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_ID, error) {
@@ -110,7 +110,7 @@ func (c *client) Search(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Search_Response, error) {
@@ -131,7 +131,7 @@ func (c *client) SearchByID(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Search_Response, error) {
@@ -152,7 +152,7 @@ func (c *client) StreamSearch(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Search_StreamSearchClient, error) {
@@ -173,7 +173,7 @@ func (c *client) StreamSearchByID(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Search_StreamSearchByIDClient, error) {
@@ -194,7 +194,7 @@ func (c *client) MultiSearch(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Search_Responses, error) {
@@ -215,7 +215,7 @@ func (c *client) MultiSearchByID(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Search_Responses, error) {
@@ -236,7 +236,7 @@ func (c *client) LinearSearch(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Search_Response, error) {
@@ -257,7 +257,7 @@ func (c *client) LinearSearchByID(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Search_Response, error) {
@@ -278,7 +278,7 @@ func (c *client) StreamLinearSearch(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Search_StreamLinearSearchClient, error) {
@@ -299,7 +299,7 @@ func (c *client) StreamLinearSearchByID(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Search_StreamSearchByIDClient, error) {
@@ -320,7 +320,7 @@ func (c *client) MultiLinearSearch(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Search_Responses, error) {
@@ -341,7 +341,7 @@ func (c *client) MultiLinearSearchByID(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Search_Responses, error) {
@@ -362,7 +362,7 @@ func (c *client) Insert(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Location, error) {
@@ -383,7 +383,7 @@ func (c *client) StreamInsert(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Insert_StreamInsertClient, error) {
@@ -404,7 +404,7 @@ func (c *client) MultiInsert(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Locations, error) {
@@ -425,7 +425,7 @@ func (c *client) Update(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Location, error) {
@@ -446,7 +446,7 @@ func (c *client) StreamUpdate(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Update_StreamUpdateClient, error) {
@@ -467,7 +467,7 @@ func (c *client) MultiUpdate(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Locations, error) {
@@ -488,7 +488,7 @@ func (c *client) UpdateTimestamp(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Location, error) {
@@ -509,7 +509,7 @@ func (c *client) Upsert(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Location, error) {
@@ -530,7 +530,7 @@ func (c *client) StreamUpsert(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Upsert_StreamUpsertClient, error) {
@@ -551,7 +551,7 @@ func (c *client) MultiUpsert(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Locations, error) {
@@ -572,7 +572,7 @@ func (c *client) Remove(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Location, error) {
@@ -593,7 +593,7 @@ func (c *client) StreamRemove(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Remove_StreamRemoveClient, error) {
@@ -614,7 +614,7 @@ func (c *client) MultiRemove(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Locations, error) {
@@ -635,7 +635,7 @@ func (c *client) Flush(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Info_Index_Count, error) {
@@ -656,7 +656,7 @@ func (c *client) RemoveByTimestamp(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Locations, error) {
@@ -677,7 +677,7 @@ func (c *client) GetObject(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Vector, error) {
@@ -698,7 +698,7 @@ func (c *client) StreamGetObject(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Object_StreamGetObjectClient, error) {
@@ -719,7 +719,7 @@ func (c *client) StreamListObject(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Object_StreamListObjectClient, error) {
@@ -740,7 +740,7 @@ func (c *client) IndexInfo(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Info_Index_Count, error) {
@@ -761,7 +761,7 @@ func (c *client) IndexDetail(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Info_Index_Detail, error) {
@@ -782,7 +782,7 @@ func (c *client) IndexStatistics(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Info_Index_Statistics, error) {
@@ -803,7 +803,7 @@ func (c *client) IndexStatisticsDetail(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Info_Index_StatisticsDetail, error) {
@@ -824,7 +824,7 @@ func (c *client) IndexProperty(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Info_Index_PropertyDetail, error) {
@@ -845,7 +845,7 @@ func (c *client) GetTimestamp(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Timestamp, error) {

@@ -148,7 +148,6 @@ package grpc
 // 			if err := checkFunc(test.want, gotLoc, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -279,7 +278,6 @@ package grpc
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -417,7 +415,6 @@ package grpc
 // 			if err := checkFunc(test.want, gotLocs, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

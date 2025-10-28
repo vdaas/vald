@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 	"runtime"
 	"strconv"
 	"time"
@@ -30,12 +29,16 @@ import (
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/http/metrics"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"gonum.org/v1/hdf5"
 )
 
-// This program is intended to get long-running results that are difficult to measure with Go standard benchmarks.
+// main exercises long-running NGt index operations and captures memory and GC metrics.
+// It starts a pprof HTTP server, loads vectors from DATA_PATH, and performs timed phases that build, insert, index, and remove vectors while periodically
+// logging /proc/<pid>/status fields and Go runtime memory statistics; it also triggers GCs, waits between phases, and performs a graceful shutdown.
 func main() {
 	const columnSize = 42
 	var (
@@ -219,7 +222,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go func() {
+	errgroup.Go(func() error {
 		const timeout = time.Second * 5
 		defer wg.Done()
 		srv := &http.Server{
@@ -227,10 +230,17 @@ func main() {
 			Handler:           metrics.NewPProfHandler(),
 			ReadHeaderTimeout: timeout,
 		}
-		go srv.ListenAndServe()
+		errgroup.Go(func() error {
+			err := srv.ListenAndServe()
+			if err != nil {
+				log.Error(err)
+			}
+			return nil
+		})
 		<-ctx.Done()
 		srv.Shutdown(context.Background())
-	}()
+		return nil
+	})
 
 	vectors, _, _ := load(os.Getenv("DATA_PATH"))
 	log.Infof("# of vectors: %v", len(vectors))

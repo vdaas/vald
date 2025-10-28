@@ -21,12 +21,12 @@ import (
 	"encoding/gob"
 	"flag"
 	"io/fs"
-	"os"
 	"strconv"
 	"unsafe"
 
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/os"
 )
 
 var (

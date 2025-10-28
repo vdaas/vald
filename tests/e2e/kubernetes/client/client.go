@@ -21,10 +21,10 @@ package client
 
 import (
 	"context"
-	"os"
 	"time"
 
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/portforward"
 	v1 "k8s.io/api/batch/v1"

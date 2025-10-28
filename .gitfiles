@@ -16,6 +16,7 @@
 .all-contributorsrc
 .commit_template
 .cspell.json
+.curlrc
 .deepsource.toml
 .devcontainer/devcontainer.json
 .devcontainer/postAttachCommand.sh
@@ -385,6 +386,7 @@ charts/vald-readreplica/values.yaml
 charts/vald-with-tikv/.helmignore
 charts/vald-with-tikv/Chart.lock
 charts/vald-with-tikv/Chart.yaml
+charts/vald-with-tikv/README.md
 charts/vald-with-tikv/crds/crd.yaml
 charts/vald-with-tikv/templates/_helpers.tpl
 charts/vald-with-tikv/templates/tidbcluster.yaml
@@ -1369,7 +1371,6 @@ internal/net/grpc/interceptor/server/recover/recover.go
 internal/net/grpc/interceptor/server/recover/recover_test.go
 internal/net/grpc/interceptor/server/trace/doc.go
 internal/net/grpc/interceptor/server/trace/trace.go
-internal/net/grpc/interceptor/server/trace/trace_test.go
 internal/net/grpc/keepalive/doc.go
 internal/net/grpc/keepalive/keepalive.go
 internal/net/grpc/logger/doc.go
@@ -2361,6 +2362,7 @@ tests/v2/e2e/kubernetes/resources.go
 tests/v2/e2e/kubernetes/rollout.go
 tests/v2/e2e/kubernetes/status.go
 versions/BUF_VERSION
+versions/BUSYBOX_VERSION
 versions/CHAOS_MESH_VERSION
 versions/CMAKE_VERSION
 versions/CSI_DRIVER_HOST_PATH_VERSION

@@ -126,8 +126,8 @@ package pool
 // 		opts []Option
 // 	}
 // 	type want struct {
-// 		want Conn
-// 		err  error
+// 		wantC Conn
+// 		err   error
 // 	}
 // 	type test struct {
 // 		name       string
@@ -137,12 +137,12 @@ package pool
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got Conn, err error) error {
+// 	defaultCheckFunc := func(w want, gotC Conn, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		if !reflect.DeepEqual(gotC, w.wantC) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotC, w.wantC)
 // 		}
 // 		return nil
 // 	}
@@ -204,8 +204,8 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got, err := New(test.args.ctx, test.args.opts...)
-// 			if err := checkFunc(test.want, got, err); err != nil {
+// 			gotC, err := New(test.args.ctx, test.args.opts...)
+// 			if err := checkFunc(test.want, gotC, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})
@@ -380,17 +380,17 @@ package pool
 // 		closing           atomic.Bool
 // 	}
 // 	type want struct {
-// 		want *[]atomic.Pointer[poolConn]
+// 		want []atomic.Pointer[poolConn]
 // 	}
 // 	type test struct {
 // 		name       string
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, *[]atomic.Pointer[poolConn]) error
+// 		checkFunc  func(want, []atomic.Pointer[poolConn]) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
 // 	}
-// 	defaultCheckFunc := func(w want, got *[]atomic.Pointer[poolConn]) error {
+// 	defaultCheckFunc := func(w want, got []atomic.Pointer[poolConn]) error {
 // 		if !reflect.DeepEqual(got, w.want) {
 // 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
@@ -692,20 +692,24 @@ package pool
 // 		closing           atomic.Bool
 // 	}
 // 	type want struct {
-// 		want *poolConn
+// 		wantRidx uint64
+// 		wantPc   *poolConn
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, *poolConn) error
+// 		checkFunc  func(want, uint64, *poolConn) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got *poolConn) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 	defaultCheckFunc := func(w want, gotRidx uint64, gotPc *poolConn) error {
+// 		if !reflect.DeepEqual(gotRidx, w.wantRidx) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRidx, w.wantRidx)
+// 		}
+// 		if !reflect.DeepEqual(gotPc, w.wantPc) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotPc, w.wantPc)
 // 		}
 // 		return nil
 // 	}
@@ -822,8 +826,8 @@ package pool
 // 				closing:           test.fields.closing,
 // 			}
 //
-// 			got := p.load(test.args.idx)
-// 			if err := checkFunc(test.want, got); err != nil {
+// 			gotRidx, gotPc := p.load(test.args.idx)
+// 			if err := checkFunc(test.want, gotRidx, gotPc); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})
@@ -2656,23 +2660,19 @@ package pool
 // 		closing           atomic.Bool
 // 	}
 // 	type want struct {
-// 		wantIdx uint64
-// 		wantPc  *poolConn
-// 		wantOk  bool
+// 		wantPc *poolConn
+// 		wantOk bool
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, uint64, *poolConn, bool) error
+// 		checkFunc  func(want, *poolConn, bool) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotIdx uint64, gotPc *poolConn, gotOk bool) error {
-// 		if !reflect.DeepEqual(gotIdx, w.wantIdx) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIdx, w.wantIdx)
-// 		}
+// 	defaultCheckFunc := func(w want, gotPc *poolConn, gotOk bool) error {
 // 		if !reflect.DeepEqual(gotPc, w.wantPc) {
 // 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotPc, w.wantPc)
 // 		}
@@ -2794,8 +2794,8 @@ package pool
 // 				closing:           test.fields.closing,
 // 			}
 //
-// 			gotIdx, gotPc, gotOk := p.getHealthyConn(test.args.ctx)
-// 			if err := checkFunc(test.want, gotIdx, gotPc, gotOk); err != nil {
+// 			gotPc, gotOk := p.getHealthyConn(test.args.ctx)
+// 			if err := checkFunc(test.want, gotPc, gotOk); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})
@@ -4237,20 +4237,20 @@ package pool
 //
 // func TestMetrics(t *testing.T) {
 // 	type args struct {
-// 		ctx context.Context
+// 		in0 context.Context
 // 	}
 // 	type want struct {
-// 		want map[string]int64
+// 		want map[string]uint64
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		want       want
-// 		checkFunc  func(want, map[string]int64) error
+// 		checkFunc  func(want, map[string]uint64) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got map[string]int64) error {
+// 	defaultCheckFunc := func(w want, got map[string]uint64) error {
 // 		if !reflect.DeepEqual(got, w.want) {
 // 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
@@ -4262,7 +4262,7 @@ package pool
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
+// 		           in0:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4281,7 +4281,7 @@ package pool
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
+// 		           in0:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4312,7 +4312,7 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := Metrics(test.args.ctx)
+// 			got := Metrics(test.args.in0)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -4322,7 +4322,6 @@ package pool
 //
 // func Test_pool_isHealthy(t *testing.T) {
 // 	type args struct {
-// 		ctx  context.Context
 // 		idx  uint64
 // 		conn *ClientConn
 // 	}
@@ -4346,20 +4345,24 @@ package pool
 // 		closing           atomic.Bool
 // 	}
 // 	type want struct {
-// 		want bool
+// 		wantState   connectivity.State
+// 		wantHealthy bool
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, bool) error
+// 		checkFunc  func(want, connectivity.State, bool) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got bool) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 	defaultCheckFunc := func(w want, gotState connectivity.State, gotHealthy bool) error {
+// 		if !reflect.DeepEqual(gotState, w.wantState) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotState, w.wantState)
+// 		}
+// 		if !reflect.DeepEqual(gotHealthy, w.wantHealthy) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotHealthy, w.wantHealthy)
 // 		}
 // 		return nil
 // 	}
@@ -4369,7 +4372,6 @@ package pool
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
 // 		           idx:0,
 // 		           conn:nil,
 // 		       },
@@ -4409,7 +4411,6 @@ package pool
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
 // 		           idx:0,
 // 		           conn:nil,
 // 		           },
@@ -4480,8 +4481,8 @@ package pool
 // 				closing:           test.fields.closing,
 // 			}
 //
-// 			got := p.isHealthy(test.args.ctx, test.args.idx, test.args.conn)
-// 			if err := checkFunc(test.want, got); err != nil {
+// 			gotState, gotHealthy := p.isHealthy(test.args.idx, test.args.conn)
+// 			if err := checkFunc(test.want, gotState, gotHealthy); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})

@@ -16,7 +16,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"os"
 	"reflect"
 	"strconv"
 	"time"
@@ -33,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"

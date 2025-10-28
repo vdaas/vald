@@ -30,5 +30,5 @@ roleRef:
   name: gateway-mirror
 subjects:
   - kind: ServiceAccount
-    name: vald-mirror-gateway
+    name: gateway-mirror
     namespace: default

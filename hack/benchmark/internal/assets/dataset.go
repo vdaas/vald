@@ -14,13 +14,13 @@
 package assets
 
 import (
-	"os"
 	"path/filepath"
 	"strconv"
 
 	"github.com/vdaas/vald/hack/benchmark/assets/x1b"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 )
 
