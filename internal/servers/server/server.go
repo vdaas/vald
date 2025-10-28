@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/health"
 	"github.com/vdaas/vald/internal/net/grpc/keepalive"
 	glog "github.com/vdaas/vald/internal/net/grpc/logger"
+	"github.com/vdaas/vald/internal/net/grpc/stats"
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
@@ -249,6 +250,7 @@ func New(opts ...Option) (Server, error) {
 		for _, reg := range srv.grpc.regs {
 			reg(srv.grpc.srv)
 		}
+		stats.Register(srv.grpc.srv)
 		health.Register(srv.grpc.srv)
 	}
 	if srv.lc == nil {
