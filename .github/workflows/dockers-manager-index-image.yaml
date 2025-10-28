@@ -42,6 +42,7 @@ on:
       - apis/grpc/v1/discoverer/*.go
       - apis/grpc/v1/payload/*.go
       - apis/grpc/v1/rpc/errdetails/*.go
+      - apis/grpc/v1/rpc/stats/*.go
       - apis/grpc/v1/vald/*.go
       - apis/proto/**
       - cmd/manager/index/*.go
@@ -97,6 +98,7 @@ on:
       - internal/net/grpc/pool/*.go
       - internal/net/grpc/proto/*.go
       - internal/net/grpc/reflection/*.go
+      - internal/net/grpc/stats/*.go
       - internal/net/grpc/status/*.go
       - internal/net/grpc/types/*.go
       - internal/net/http/dump/*.go
@@ -162,6 +164,7 @@ on:
       - apis/grpc/v1/discoverer/*.go
       - apis/grpc/v1/payload/*.go
       - apis/grpc/v1/rpc/errdetails/*.go
+      - apis/grpc/v1/rpc/stats/*.go
       - apis/grpc/v1/vald/*.go
       - apis/proto/**
       - cmd/manager/index/*.go
@@ -217,6 +220,7 @@ on:
       - internal/net/grpc/pool/*.go
       - internal/net/grpc/proto/*.go
       - internal/net/grpc/reflection/*.go
+      - internal/net/grpc/stats/*.go
       - internal/net/grpc/status/*.go
       - internal/net/grpc/types/*.go
       - internal/net/http/dump/*.go
