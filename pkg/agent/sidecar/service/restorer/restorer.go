@@ -20,7 +20,6 @@ import (
 	"archive/tar"
 	"context"
 	"io/fs"
-	"os"
 	"reflect"
 	"syscall"
 
@@ -30,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"

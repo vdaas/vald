@@ -15,7 +15,6 @@ package usecase
 
 import (
 	"context"
-	"os"
 	"syscall"
 	"time"
 
@@ -28,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
 	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/observability/metrics/index/job/correction"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"

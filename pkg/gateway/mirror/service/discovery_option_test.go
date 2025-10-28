@@ -16,26 +16,50 @@ package service
 // NOT IMPLEMENTED BELOW
 //
 // func TestWithDiscoveryMirror(t *testing.T) {
+// 	// Change interface type to the type of object you are testing
+// 	type T = any
 // 	type args struct {
 // 		m Mirror
 // 	}
 // 	type want struct {
-// 		want DiscoveryOption
+// 		obj *T
+// 		// Uncomment this line if the option returns an error, otherwise delete it
+// 		// err error
 // 	}
 // 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, DiscoveryOption) error
+// 		name string
+// 		args args
+// 		want want
+// 		// Use the first line if the option returns an error. otherwise use the second line
+// 		// checkFunc  func(want, *T, error) error
+// 		// checkFunc  func(want, *T) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got DiscoveryOption) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
+//
+// 	// Uncomment this block if the option returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
+// 	       if !errors.Is(err, w.err) {
+// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	       }
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
+// 	// Uncomment this block if the option do not returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T) error {
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
 // 	tests := []test{
 // 		// TODO test cases
 // 		/*
@@ -44,8 +68,9 @@ package service
 // 		       args: args {
 // 		           m:nil,
 // 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
+// 		       want: want {
+// 		           obj: new(T),
+// 		       },
 // 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
@@ -63,8 +88,9 @@ package service
 // 		           args: args {
 // 		           m:nil,
 // 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
+// 		           want: want {
+// 		               obj: new(T),
+// 		           },
 // 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
@@ -87,40 +113,83 @@ package service
 // 			if test.afterFunc != nil {
 // 				defer test.afterFunc(tt, test.args)
 // 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
 //
-// 			got := WithDiscoveryMirror(test.args.m)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
+// 			// Uncomment this block if the option returns an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+//
+// 			   got := WithDiscoveryMirror(test.args.m)
+// 			   obj := new(T)
+// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
+//
+// 			// Uncomment this block if the option do not return an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+// 			   got := WithDiscoveryMirror(test.args.m)
+// 			   obj := new(T)
+// 			   got(obj)
+// 			   if err := checkFunc(test.want, obj); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
 // 		})
 // 	}
 // }
 //
 // func TestWithDiscoveryDialer(t *testing.T) {
+// 	// Change interface type to the type of object you are testing
+// 	type T = any
 // 	type args struct {
 // 		der net.Dialer
 // 	}
 // 	type want struct {
-// 		want DiscoveryOption
+// 		obj *T
+// 		// Uncomment this line if the option returns an error, otherwise delete it
+// 		// err error
 // 	}
 // 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, DiscoveryOption) error
+// 		name string
+// 		args args
+// 		want want
+// 		// Use the first line if the option returns an error. otherwise use the second line
+// 		// checkFunc  func(want, *T, error) error
+// 		// checkFunc  func(want, *T) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got DiscoveryOption) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
+//
+// 	// Uncomment this block if the option returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
+// 	       if !errors.Is(err, w.err) {
+// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	       }
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
+// 	// Uncomment this block if the option do not returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T) error {
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
 // 	tests := []test{
 // 		// TODO test cases
 // 		/*
@@ -129,8 +198,9 @@ package service
 // 		       args: args {
 // 		           der:nil,
 // 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
+// 		       want: want {
+// 		           obj: new(T),
+// 		       },
 // 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
@@ -148,8 +218,9 @@ package service
 // 		           args: args {
 // 		           der:nil,
 // 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
+// 		           want: want {
+// 		               obj: new(T),
+// 		           },
 // 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
@@ -172,40 +243,83 @@ package service
 // 			if test.afterFunc != nil {
 // 				defer test.afterFunc(tt, test.args)
 // 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
 //
-// 			got := WithDiscoveryDialer(test.args.der)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
+// 			// Uncomment this block if the option returns an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+//
+// 			   got := WithDiscoveryDialer(test.args.der)
+// 			   obj := new(T)
+// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
+//
+// 			// Uncomment this block if the option do not return an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+// 			   got := WithDiscoveryDialer(test.args.der)
+// 			   obj := new(T)
+// 			   got(obj)
+// 			   if err := checkFunc(test.want, obj); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
 // 		})
 // 	}
 // }
 //
 // func TestWithDiscoveryNamespace(t *testing.T) {
+// 	// Change interface type to the type of object you are testing
+// 	type T = any
 // 	type args struct {
 // 		ns string
 // 	}
 // 	type want struct {
-// 		want DiscoveryOption
+// 		obj *T
+// 		// Uncomment this line if the option returns an error, otherwise delete it
+// 		// err error
 // 	}
 // 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, DiscoveryOption) error
+// 		name string
+// 		args args
+// 		want want
+// 		// Use the first line if the option returns an error. otherwise use the second line
+// 		// checkFunc  func(want, *T, error) error
+// 		// checkFunc  func(want, *T) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got DiscoveryOption) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
+//
+// 	// Uncomment this block if the option returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
+// 	       if !errors.Is(err, w.err) {
+// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	       }
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
+// 	// Uncomment this block if the option do not returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T) error {
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
 // 	tests := []test{
 // 		// TODO test cases
 // 		/*
@@ -214,8 +328,9 @@ package service
 // 		       args: args {
 // 		           ns:"",
 // 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
+// 		       want: want {
+// 		           obj: new(T),
+// 		       },
 // 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
@@ -233,8 +348,9 @@ package service
 // 		           args: args {
 // 		           ns:"",
 // 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
+// 		           want: want {
+// 		               obj: new(T),
+// 		           },
 // 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
@@ -257,40 +373,83 @@ package service
 // 			if test.afterFunc != nil {
 // 				defer test.afterFunc(tt, test.args)
 // 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
 //
-// 			got := WithDiscoveryNamespace(test.args.ns)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
+// 			// Uncomment this block if the option returns an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+//
+// 			   got := WithDiscoveryNamespace(test.args.ns)
+// 			   obj := new(T)
+// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
+//
+// 			// Uncomment this block if the option do not return an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+// 			   got := WithDiscoveryNamespace(test.args.ns)
+// 			   obj := new(T)
+// 			   got(obj)
+// 			   if err := checkFunc(test.want, obj); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
 // 		})
 // 	}
 // }
 //
 // func TestWithDiscoveryGroup(t *testing.T) {
+// 	// Change interface type to the type of object you are testing
+// 	type T = any
 // 	type args struct {
 // 		g string
 // 	}
 // 	type want struct {
-// 		want DiscoveryOption
+// 		obj *T
+// 		// Uncomment this line if the option returns an error, otherwise delete it
+// 		// err error
 // 	}
 // 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, DiscoveryOption) error
+// 		name string
+// 		args args
+// 		want want
+// 		// Use the first line if the option returns an error. otherwise use the second line
+// 		// checkFunc  func(want, *T, error) error
+// 		// checkFunc  func(want, *T) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got DiscoveryOption) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
+//
+// 	// Uncomment this block if the option returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
+// 	       if !errors.Is(err, w.err) {
+// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	       }
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
+// 	// Uncomment this block if the option do not returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T) error {
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
 // 	tests := []test{
 // 		// TODO test cases
 // 		/*
@@ -299,8 +458,9 @@ package service
 // 		       args: args {
 // 		           g:"",
 // 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
+// 		       want: want {
+// 		           obj: new(T),
+// 		       },
 // 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
@@ -318,8 +478,9 @@ package service
 // 		           args: args {
 // 		           g:"",
 // 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
+// 		           want: want {
+// 		               obj: new(T),
+// 		           },
 // 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
@@ -342,40 +503,83 @@ package service
 // 			if test.afterFunc != nil {
 // 				defer test.afterFunc(tt, test.args)
 // 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
 //
-// 			got := WithDiscoveryGroup(test.args.g)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
+// 			// Uncomment this block if the option returns an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+//
+// 			   got := WithDiscoveryGroup(test.args.g)
+// 			   obj := new(T)
+// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
+//
+// 			// Uncomment this block if the option do not return an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+// 			   got := WithDiscoveryGroup(test.args.g)
+// 			   obj := new(T)
+// 			   got(obj)
+// 			   if err := checkFunc(test.want, obj); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
 // 		})
 // 	}
 // }
 //
 // func TestWithDiscoveryColocation(t *testing.T) {
+// 	// Change interface type to the type of object you are testing
+// 	type T = any
 // 	type args struct {
 // 		loc string
 // 	}
 // 	type want struct {
-// 		want DiscoveryOption
+// 		obj *T
+// 		// Uncomment this line if the option returns an error, otherwise delete it
+// 		// err error
 // 	}
 // 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, DiscoveryOption) error
+// 		name string
+// 		args args
+// 		want want
+// 		// Use the first line if the option returns an error. otherwise use the second line
+// 		// checkFunc  func(want, *T, error) error
+// 		// checkFunc  func(want, *T) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got DiscoveryOption) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
+//
+// 	// Uncomment this block if the option returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
+// 	       if !errors.Is(err, w.err) {
+// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	       }
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
+// 	// Uncomment this block if the option do not returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T) error {
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
 // 	tests := []test{
 // 		// TODO test cases
 // 		/*
@@ -384,8 +588,9 @@ package service
 // 		       args: args {
 // 		           loc:"",
 // 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
+// 		       want: want {
+// 		           obj: new(T),
+// 		       },
 // 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
@@ -403,8 +608,9 @@ package service
 // 		           args: args {
 // 		           loc:"",
 // 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
+// 		           want: want {
+// 		               obj: new(T),
+// 		           },
 // 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
@@ -427,40 +633,83 @@ package service
 // 			if test.afterFunc != nil {
 // 				defer test.afterFunc(tt, test.args)
 // 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
 //
-// 			got := WithDiscoveryColocation(test.args.loc)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
+// 			// Uncomment this block if the option returns an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+//
+// 			   got := WithDiscoveryColocation(test.args.loc)
+// 			   obj := new(T)
+// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
+//
+// 			// Uncomment this block if the option do not return an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+// 			   got := WithDiscoveryColocation(test.args.loc)
+// 			   obj := new(T)
+// 			   got(obj)
+// 			   if err := checkFunc(test.want, obj); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
 // 		})
 // 	}
 // }
 //
 // func TestWithDiscoveryDuration(t *testing.T) {
+// 	// Change interface type to the type of object you are testing
+// 	type T = any
 // 	type args struct {
 // 		s string
 // 	}
 // 	type want struct {
-// 		want DiscoveryOption
+// 		obj *T
+// 		// Uncomment this line if the option returns an error, otherwise delete it
+// 		// err error
 // 	}
 // 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, DiscoveryOption) error
+// 		name string
+// 		args args
+// 		want want
+// 		// Use the first line if the option returns an error. otherwise use the second line
+// 		// checkFunc  func(want, *T, error) error
+// 		// checkFunc  func(want, *T) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got DiscoveryOption) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
+//
+// 	// Uncomment this block if the option returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
+// 	       if !errors.Is(err, w.err) {
+// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	       }
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
+// 	// Uncomment this block if the option do not returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T) error {
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
 // 	tests := []test{
 // 		// TODO test cases
 // 		/*
@@ -469,8 +718,9 @@ package service
 // 		       args: args {
 // 		           s:"",
 // 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
+// 		       want: want {
+// 		           obj: new(T),
+// 		       },
 // 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
@@ -488,8 +738,9 @@ package service
 // 		           args: args {
 // 		           s:"",
 // 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
+// 		           want: want {
+// 		               obj: new(T),
+// 		           },
 // 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
@@ -512,40 +763,83 @@ package service
 // 			if test.afterFunc != nil {
 // 				defer test.afterFunc(tt, test.args)
 // 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
 //
-// 			got := WithDiscoveryDuration(test.args.s)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
+// 			// Uncomment this block if the option returns an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+//
+// 			   got := WithDiscoveryDuration(test.args.s)
+// 			   obj := new(T)
+// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
+//
+// 			// Uncomment this block if the option do not return an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+// 			   got := WithDiscoveryDuration(test.args.s)
+// 			   obj := new(T)
+// 			   got(obj)
+// 			   if err := checkFunc(test.want, obj); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
 // 		})
 // 	}
 // }
 //
 // func TestWithDiscoveryErrGroup(t *testing.T) {
+// 	// Change interface type to the type of object you are testing
+// 	type T = any
 // 	type args struct {
 // 		eg errgroup.Group
 // 	}
 // 	type want struct {
-// 		want DiscoveryOption
+// 		obj *T
+// 		// Uncomment this line if the option returns an error, otherwise delete it
+// 		// err error
 // 	}
 // 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, DiscoveryOption) error
+// 		name string
+// 		args args
+// 		want want
+// 		// Use the first line if the option returns an error. otherwise use the second line
+// 		// checkFunc  func(want, *T, error) error
+// 		// checkFunc  func(want, *T) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got DiscoveryOption) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
+//
+// 	// Uncomment this block if the option returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
+// 	       if !errors.Is(err, w.err) {
+// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	       }
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
+// 	// Uncomment this block if the option do not returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T) error {
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
 // 	tests := []test{
 // 		// TODO test cases
 // 		/*
@@ -554,8 +848,9 @@ package service
 // 		       args: args {
 // 		           eg:nil,
 // 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
+// 		       want: want {
+// 		           obj: new(T),
+// 		       },
 // 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
@@ -573,8 +868,9 @@ package service
 // 		           args: args {
 // 		           eg:nil,
 // 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
+// 		           want: want {
+// 		               obj: new(T),
+// 		           },
 // 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
@@ -597,40 +893,83 @@ package service
 // 			if test.afterFunc != nil {
 // 				defer test.afterFunc(tt, test.args)
 // 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
 //
-// 			got := WithDiscoveryErrGroup(test.args.eg)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
+// 			// Uncomment this block if the option returns an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+//
+// 			   got := WithDiscoveryErrGroup(test.args.eg)
+// 			   obj := new(T)
+// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
+//
+// 			// Uncomment this block if the option do not return an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+// 			   got := WithDiscoveryErrGroup(test.args.eg)
+// 			   obj := new(T)
+// 			   got(obj)
+// 			   if err := checkFunc(test.want, obj); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
 // 		})
 // 	}
 // }
 //
 // func TestWithDiscoverySelfMirrorAddrs(t *testing.T) {
+// 	// Change interface type to the type of object you are testing
+// 	type T = any
 // 	type args struct {
 // 		addrs []string
 // 	}
 // 	type want struct {
-// 		want DiscoveryOption
+// 		obj *T
+// 		// Uncomment this line if the option returns an error, otherwise delete it
+// 		// err error
 // 	}
 // 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, DiscoveryOption) error
+// 		name string
+// 		args args
+// 		want want
+// 		// Use the first line if the option returns an error. otherwise use the second line
+// 		// checkFunc  func(want, *T, error) error
+// 		// checkFunc  func(want, *T) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got DiscoveryOption) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
+//
+// 	// Uncomment this block if the option returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
+// 	       if !errors.Is(err, w.err) {
+// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	       }
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
+// 	// Uncomment this block if the option do not returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T) error {
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
 // 	tests := []test{
 // 		// TODO test cases
 // 		/*
@@ -639,8 +978,9 @@ package service
 // 		       args: args {
 // 		           addrs:nil,
 // 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
+// 		       want: want {
+// 		           obj: new(T),
+// 		       },
 // 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
@@ -658,8 +998,9 @@ package service
 // 		           args: args {
 // 		           addrs:nil,
 // 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
+// 		           want: want {
+// 		               obj: new(T),
+// 		           },
 // 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
@@ -682,40 +1023,83 @@ package service
 // 			if test.afterFunc != nil {
 // 				defer test.afterFunc(tt, test.args)
 // 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
 //
-// 			got := WithDiscoverySelfMirrorAddrs(test.args.addrs...)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
+// 			// Uncomment this block if the option returns an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+//
+// 			   got := WithDiscoverySelfMirrorAddrs(test.args.addrs...)
+// 			   obj := new(T)
+// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
+//
+// 			// Uncomment this block if the option do not return an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+// 			   got := WithDiscoverySelfMirrorAddrs(test.args.addrs...)
+// 			   obj := new(T)
+// 			   got(obj)
+// 			   if err := checkFunc(test.want, obj); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
 // 		})
 // 	}
 // }
 //
 // func TestWithDiscoveryController(t *testing.T) {
+// 	// Change interface type to the type of object you are testing
+// 	type T = any
 // 	type args struct {
 // 		ctrl k8s.Controller
 // 	}
 // 	type want struct {
-// 		want DiscoveryOption
+// 		obj *T
+// 		// Uncomment this line if the option returns an error, otherwise delete it
+// 		// err error
 // 	}
 // 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, DiscoveryOption) error
+// 		name string
+// 		args args
+// 		want want
+// 		// Use the first line if the option returns an error. otherwise use the second line
+// 		// checkFunc  func(want, *T, error) error
+// 		// checkFunc  func(want, *T) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got DiscoveryOption) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
+//
+// 	// Uncomment this block if the option returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T, err error) error {
+// 	       if !errors.Is(err, w.err) {
+// 	           return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 	       }
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
+// 	// Uncomment this block if the option do not returns an error, otherwise delete it
+// 	/*
+// 	   defaultCheckFunc := func(w want, obj *T) error {
+// 	       if !reflect.DeepEqual(obj, w.obj) {
+// 	           return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+// 	       }
+// 	       return nil
+// 	   }
+// 	*/
+//
 // 	tests := []test{
 // 		// TODO test cases
 // 		/*
@@ -724,8 +1108,9 @@ package service
 // 		       args: args {
 // 		           ctrl:nil,
 // 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
+// 		       want: want {
+// 		           obj: new(T),
+// 		       },
 // 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
@@ -743,8 +1128,9 @@ package service
 // 		           args: args {
 // 		           ctrl:nil,
 // 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
+// 		           want: want {
+// 		               obj: new(T),
+// 		           },
 // 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
@@ -767,15 +1153,34 @@ package service
 // 			if test.afterFunc != nil {
 // 				defer test.afterFunc(tt, test.args)
 // 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
 //
-// 			got := WithDiscoveryController(test.args.ctrl)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
+// 			// Uncomment this block if the option returns an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+//
+// 			   got := WithDiscoveryController(test.args.ctrl)
+// 			   obj := new(T)
+// 			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
+//
+// 			// Uncomment this block if the option do not return an error, otherwise delete it
+// 			/*
+// 			   checkFunc := test.checkFunc
+// 			   if test.checkFunc == nil {
+// 			       checkFunc = defaultCheckFunc
+// 			   }
+// 			   got := WithDiscoveryController(test.args.ctrl)
+// 			   obj := new(T)
+// 			   got(obj)
+// 			   if err := checkFunc(test.want, obj); err != nil {
+// 			       tt.Errorf("error = %v", err)
+// 			   }
+// 			*/
 // 		})
 // 	}
 // }

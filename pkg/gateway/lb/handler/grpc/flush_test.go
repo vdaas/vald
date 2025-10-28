@@ -148,7 +148,6 @@ package grpc
 // 			if err := checkFunc(test.want, gotCnts, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

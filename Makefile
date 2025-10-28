@@ -62,8 +62,6 @@ VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 
 NGT_REPO = github.com/yahoojapan/NGT
 
-NPM_GLOBAL_PREFIX := $(eval NPM_GLOBAL_PREFIX := $(shell npm prefix --location=global))$(NPM_GLOBAL_PREFIX)
-
 TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
 
 TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
@@ -72,6 +70,9 @@ BINDIR = $(USR_LOCAL)/bin
 LIB_PATH = $(USR_LOCAL)/lib
 $(LIB_PATH):
 	mkdir -p $(LIB_PATH)
+
+BUN_INSTALL ?= $(USR_LOCAL)
+BUN_GLOBAL_BIN := $(eval BUN_GLOBAL_BIN := $(shell bun pm bin -g))$(BUN_GLOBAL_BIN)
 
 GOPRIVATE = $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
 GOPROXY = "https://proxy.golang.org,direct"
@@ -90,6 +91,7 @@ RUSTUP_HOME ?= $(RUST_HOME)/rustup
 CARGO_HOME ?= $(RUST_HOME)/cargo
 
 BUF_VERSION               := $(eval BUF_VERSION := $(shell cat versions/BUF_VERSION))$(BUF_VERSION)
+BUSYBOX_VERSION           := $(eval BUSYBOX_VERSION := $(shell cat versions/BUSYBOX_VERSION))$(BUSYBOX_VERSION)
 CMAKE_VERSION             := $(eval CMAKE_VERSION := $(shell cat versions/CMAKE_VERSION))$(CMAKE_VERSION)
 DOCKER_VERSION            := $(eval DOCKER_VERSION := $(shell cat versions/DOCKER_VERSION))$(DOCKER_VERSION)
 FAISS_VERSION             := $(eval FAISS_VERSION := $(shell cat versions/FAISS_VERSION))$(FAISS_VERSION)
@@ -560,6 +562,7 @@ format: \
 	format/json \
 	format/md \
 	remove/empty/file \
+	replace/busybox \
 	license
 	@$(MAKE) dockerfile format/go format/go/test
 	@$(MAKE) format/yaml
@@ -589,8 +592,8 @@ format/go: \
 	@cat $(ROOTDIR)/.gitfiles | grep -e "\.go$$" | grep -v "_test\.go$$" | xargs -I {} -P$(CORES) bash -c '\
 	        echo "Formatting Go file {}" && \
 		$(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH) {} && \
-		$(GOBIN)/strictgoimports -w {} && \
 		$(GOBIN)/goimports -w {} && \
+		$(GOBIN)/strictgoimports -w {} && \
 		$(GOBIN)/crlfmt -w -diff=false {} && \
 		$(GOBIN)/gofumpt -w {}'
 	@echo "Go formatting complete."
@@ -608,8 +611,8 @@ format/go/test: \
 	@cat $(ROOTDIR)/.gitfiles | grep -e "_test\.go$$" | xargs -I {} -P$(CORES) bash -c '\
 	        echo "Formatting Go Test file {}" && \
 		$(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH) {} && \
-		$(GOBIN)/strictgoimports -w {} && \
 		$(GOBIN)/goimports -w {} && \
+		$(GOBIN)/strictgoimports -w {} && \
 		$(GOBIN)/crlfmt -w -diff=false {} && \
 		$(GOBIN)/gofumpt -w {}'
 	@echo "Go test file formatting complete."
