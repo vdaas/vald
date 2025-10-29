@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/component: pd
+    app.kubernetes.io/instance: tikv
+    #app.kubernetes.io/managed-by: tidb-operator
+    app.kubernetes.io/name: tidb-cluster
+  name: tikv-pd
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: pd
+      app.kubernetes.io/instance: tikv
+      #app.kubernetes.io/managed-by: tidb-operator
+      app.kubernetes.io/name: tidb-cluster
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/component: pd
+        app.kubernetes.io/instance: tikv
+        #app.kubernetes.io/managed-by: tidb-operator
+        app.kubernetes.io/name: tidb-cluster
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "2379"
+        prometheus.io/scrape: "true"
+    spec:
+      volumes:
+        - name: annotations
+          downwardAPI:
+            items:
+              - path: annotations
+                fieldRef:
+                  fieldPath: metadata.annotations
+        - name: config
+          configMap:
+            name: tikv-pd
+            items:
+              - key: config-file
+                path: pd.toml
+        - name: startup-script
+          configMap:
+            name: tikv-pd
+            items:
+              - key: startup-script
+                path: pd_start_script.sh
+      containers:
+        - name: pd
+          image: pingcap/pd:v8.5.2
+          command:
+            - /bin/sh
+            - /usr/local/bin/pd_start_script.sh
+          ports:
+            - name: server
+              containerPort: 2380
+              protocol: TCP
+            - name: client
+              containerPort: 2379
+              protocol: TCP
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: PEER_SERVICE_NAME
+              value: tikv-pd-peer
+            - name: SERVICE_NAME
+              value: tikv-pd
+            - name: SET_NAME
+              value: tikv-pd
+            - name: TZ
+              value: UTC
+          resources: {}
+          volumeMounts:
+            - name: annotations
+              readOnly: true
+              mountPath: /etc/podinfo
+            - name: config
+              readOnly: true
+              mountPath: /etc/pd
+            - name: startup-script
+              readOnly: true
+              mountPath: /usr/local/bin
+            - name: pd
+              mountPath: /var/lib/pd
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+  volumeClaimTemplates:
+    - metadata:
+        name: pd
+        creationTimestamp: null
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+      status: {}
+  serviceName: tikv-pd-peer
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 3

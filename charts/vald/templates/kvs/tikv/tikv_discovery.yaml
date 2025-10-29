@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: discovery
+    app.kubernetes.io/instance: tikv
+    #app.kubernetes.io/managed-by: tidb-operator
+    app.kubernetes.io/name: tidb-cluster
+  name: tikv-discovery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: discovery
+      app.kubernetes.io/instance: tikv
+      #app.kubernetes.io/managed-by: tidb-operator
+      app.kubernetes.io/name: tidb-cluster
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: discovery
+        app.kubernetes.io/instance: tikv
+        #app.kubernetes.io/managed-by: tidb-operator
+        app.kubernetes.io/name: tidb-cluster
+    spec:
+      containers:
+        - name: discovery
+          image: pingcap/tidb-operator:v1.6.3
+          command:
+            - /usr/local/bin/tidb-discovery
+          ports:
+            - name: discovery
+              containerPort: 10261
+              protocol: TCP
+            - name: proxy
+              containerPort: 10262
+              protocol: TCP
+          env:
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: TZ
+              value: UTC
+            - name: TC_NAME
+              value: tikv
+          resources: {}
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+      serviceAccountName: tikv-discovery

@@ -1,0 +1,36 @@
+apiVersion: v1
+data:
+  config-file: ""
+  startup-script: "#!/bin/sh\n\n# This script is used to start tikv containers in
+    kubernetes cluster\n\n# Use DownwardAPIVolumeFiles to store informations of the
+    cluster:\n# https://kubernetes.io/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/#the-downward-api\n#\n#
+    \  runmode=\"normal/debug\"\n#\n\nset -uo pipefail\n\nANNOTATIONS=\"/etc/podinfo/annotations\"\n\nif
+    [[ ! -f \"${ANNOTATIONS}\" ]]\nthen\n    echo \"${ANNOTATIONS} does't exist, exiting.\"\n
+    \   exit 1\nfi\nsource ${ANNOTATIONS} 2>/dev/null\n\nrunmode=${runmode:-normal}\nif
+    [[ X${runmode} == Xdebug ]]\nthen\n\techo \"entering debug mode.\"\n\ttail -f
+    /dev/null\nfi\n\n# Use HOSTNAME if POD_NAME is unset for backward compatibility.\nPOD_NAME=${POD_NAME:-$HOSTNAME}\nARGS=\"--pd=http://${CLUSTER_NAME}-pd:2379
+    \\\n--advertise-addr=${POD_NAME}.${HEADLESS_SERVICE_NAME}.${NAMESPACE}.svc:20160
+    \\\n--addr=0.0.0.0:20160 \\\n--status-addr=0.0.0.0:20180 \\\n--data-dir=/var/lib/tikv
+    \\\n--capacity=${CAPACITY} \\\n--config=/etc/tikv/tikv.toml\n\"\n\nif [ ! -z \"${STORE_LABELS:-}\"
+    ]; then\n  LABELS=\" --labels ${STORE_LABELS} \"\n  ARGS=\"${ARGS}${LABELS}\"\nfi\n\necho
+    \"starting tikv-server ...\"\necho \"/tikv-server ${ARGS}\"\nexec /tikv-server
+    ${ARGS}\n"
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2025-11-11T05:22:24Z"
+  labels:
+    app.kubernetes.io/component: tikv
+    app.kubernetes.io/instance: tikv
+    app.kubernetes.io/managed-by: tidb-operator
+    app.kubernetes.io/name: tidb-cluster
+  name: tikv-tikv
+  namespace: default
+  ownerReferences:
+  - apiVersion: pingcap.com/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: TidbCluster
+    name: tikv
+    uid: 0cb47227-3fe5-449b-8cca-5c7c1eaf05c4
+  resourceVersion: "2049"
+  uid: 022693b0-6fad-4b18-b341-cd315dcb7b5f

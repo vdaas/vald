@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: pd
+    app.kubernetes.io/instance: tikv
+    #app.kubernetes.io/managed-by: tidb-operator
+    app.kubernetes.io/name: tidb-cluster
+    app.kubernetes.io/used-by: peer
+  name: tikv-pd-peer
+spec:
+  ports:
+    - name: tcp-peer-2380
+      protocol: TCP
+      port: 2380
+      targetPort: 2380
+    - name: tcp-peer-2379
+      protocol: TCP
+      port: 2379
+      targetPort: 2379
+  selector:
+    app.kubernetes.io/component: pd
+    app.kubernetes.io/instance: tikv
+    #app.kubernetes.io/managed-by: tidb-operator
+    app.kubernetes.io/name: tidb-cluster
+  clusterIP: None
+  publishNotReadyAddresses: true
