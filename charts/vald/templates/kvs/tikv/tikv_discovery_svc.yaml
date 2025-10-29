@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: discovery
+    app.kubernetes.io/instance: tikv
+    #app.kubernetes.io/managed-by: tidb-operator
+    app.kubernetes.io/name: tidb-cluster
+  name: tikv-discovery
+spec:
+  ports:
+    - name: discovery
+      protocol: TCP
+      port: 10261
+      targetPort: 10261
+    - name: proxy
+      protocol: TCP
+      port: 10262
+      targetPort: 10262
+  selector:
+    app.kubernetes.io/component: discovery
+    app.kubernetes.io/instance: tikv
+    #app.kubernetes.io/managed-by: tidb-operator
+    app.kubernetes.io/name: tidb-cluster
+  type: ClusterIP

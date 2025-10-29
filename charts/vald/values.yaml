@@ -4235,3 +4235,31 @@ manager:
       # @schema {"name": "manager.index.operator.rotation_job_concurrency", "type": "integer", "minimum": 1}
       # manager.index.operator.rotation_job_concurrency -- maximum concurrent rotator job run.
       rotation_job_concurrency: 2
+# TODO
+tidbCluster:
+  # TODO
+  name: tikv
+  # TODO
+  version: "v8.5.2"
+  # TODO
+  timezone: UTC
+  # TODO
+  pd:
+    # TODO
+    baseImage: pingcap/pd
+    # TODO
+    replicas: 3
+    # TODO
+    requests:
+      # TODO
+      storage: "10Gi"
+  # TODO
+  tikv:
+    # TODO
+    baseImage: pingcap/tikv
+    # TODO
+    replicas: 3
+    # TODO
+    requests:
+      # TODO
+      storage: "100Gi"

@@ -1,0 +1,36 @@
+apiVersion: pingcap.com/v1alpha1
+kind: TidbCluster
+metadata:
+  name: tikv
+spec:
+  enablePVReclaim: false
+  pd:
+    baseImage: pingcap/pd
+    config: ""
+    initWaitTime: 0
+    maxFailoverCount: 3
+    replicas: 3
+    requests:
+      storage: 10Gi
+    spareVolReplaceReplicas: 1
+    startTimeout: 30
+  pvReclaimPolicy: Retain
+  tidb:
+    baseImage: pingcap/tidb
+    maxFailoverCount: 3
+    replicas: 0
+    scalePolicy:
+      scaleInParallelism: 1
+      scaleOutParallelism: 1
+  tikv:
+    baseImage: pingcap/tikv
+    config: ""
+    maxFailoverCount: 3
+    replicas: 3
+    requests:
+      storage: 100Gi
+    scalePolicy:
+      scaleInParallelism: 1
+      scaleOutParallelism: 1
+    spareVolReplaceReplicas: 1
+  version: v8.5.2
