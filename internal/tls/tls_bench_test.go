@@ -1,26 +1,26 @@
 package tls_test
 
 import (
-    "context"
-    "path/filepath"
-    "testing"
-    "time"
+	"context"
+	"path/filepath"
+	"testing"
+	"time"
 
-    "github.com/vdaas/vald/apis/grpc/v1/payload"
-    "github.com/vdaas/vald/apis/grpc/v1/vald"
-    "github.com/vdaas/vald/internal/config"
-    "github.com/vdaas/vald/internal/file"
-    "github.com/vdaas/vald/internal/log"
-    "github.com/vdaas/vald/internal/log/level"
-    "github.com/vdaas/vald/internal/net"
-    "github.com/vdaas/vald/internal/safety"
-    "github.com/vdaas/vald/internal/servers/server"
-    "github.com/vdaas/vald/internal/servers/starter"
-    "github.com/vdaas/vald/internal/sync/errgroup"
-    "github.com/vdaas/vald/internal/test"
-    "github.com/vdaas/vald/internal/tls"
-    "google.golang.org/grpc"
-    "google.golang.org/grpc/credentials"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/level"
+	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/servers/server"
+	"github.com/vdaas/vald/internal/servers/starter"
+	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/test"
+	"github.com/vdaas/vald/internal/tls"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 var (
@@ -36,12 +36,12 @@ func serverStarter(b *testing.B, hot bool) (ctx context.Context, stop context.Ca
 	b.Helper()
 	ctx, stop = context.WithCancel(b.Context())
 
-    ln, err := net.Listen(net.TCP.String(), "127.0.0.1:0")
-    if err != nil {
-        b.Fatalf("listen: %v", err)
-    }
-    _, port, _ := net.SplitHostPort(ln.Addr().String())
-    _ = ln.Close()
+	ln, err := net.Listen(net.TCP.String(), "127.0.0.1:0")
+	if err != nil {
+		b.Fatalf("listen: %v", err)
+	}
+	_, port, _ := net.SplitHostPort(ln.Addr().String())
+	_ = ln.Close()
 
 	certPath := test.GetTestdataPath("tls/server.crt")
 	keyPath := test.GetTestdataPath("tls/server.key")
@@ -72,7 +72,7 @@ func serverStarter(b *testing.B, hot bool) (ctx context.Context, stop context.Ca
 				Name: "bench-grpc",
 				Mode: server.GRPC.String(),
 				Host: "127.0.0.1",
-                    Port: port,
+				Port: port,
 				GRPC: &config.GRPC{},
 			}},
 		}).Bind()),
@@ -91,21 +91,21 @@ func serverStarter(b *testing.B, hot bool) (ctx context.Context, stop context.Ca
 
 	go func() { _ = srv.ListenAndServe(ctx) }()
 
-    addr = net.JoinHostPort("127.0.0.1", port)
-    deadline := time.Now().Add(3 * time.Second)
-    for {
-        dctx, cancel := context.WithTimeout(ctx, 200*time.Millisecond)
-        c, err := net.DialContext(dctx, net.TCP.String(), addr)
-        cancel()
-        if err == nil {
-            _ = c.Close()
-            break
-        }
-        if time.Now().After(deadline) {
-            break
-        }
-        time.Sleep(50 * time.Millisecond)
-    }
+	addr = net.JoinHostPort("127.0.0.1", port)
+	deadline := time.Now().Add(3 * time.Second)
+	for {
+		dctx, cancel := context.WithTimeout(ctx, 200*time.Millisecond)
+		c, err := net.DialContext(dctx, net.TCP.String(), addr)
+		cancel()
+		if err == nil {
+			_ = c.Close()
+			break
+		}
+		if time.Now().After(deadline) {
+			break
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
 	return ctx, stop, addr
 }
 
