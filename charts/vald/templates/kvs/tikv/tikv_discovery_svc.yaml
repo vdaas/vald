@@ -1,0 +1,44 @@
+#
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+{{- $tc := .Values.tidbCluster -}}
+{{- if and $tc.enabled $tc.discovery }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: discovery
+    app.kubernetes.io/instance: {{ $tc.name }}
+    #app.kubernetes.io/managed-by: tidb-operator
+    app.kubernetes.io/name: tidb-cluster
+  name: {{ $tc.name }}-discovery
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+    - name: discovery
+      protocol: TCP
+      port: 10261
+      targetPort: 10261
+    - name: proxy
+      protocol: TCP
+      port: 10262
+      targetPort: 10262
+  selector:
+    app.kubernetes.io/component: discovery
+    app.kubernetes.io/instance: {{ $tc.name }}
+    #app.kubernetes.io/managed-by: tidb-operator
+    app.kubernetes.io/name: tidb-cluster
+  type: ClusterIP
+{{- end }}
