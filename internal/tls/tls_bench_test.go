@@ -23,6 +23,10 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
+const (
+	localhost = "127.0.0.1"
+)
+
 var (
 	activeCertPath string
 	activeKeyPath  string
@@ -36,7 +40,8 @@ func serverStarter(b *testing.B, hot bool) (ctx context.Context, stop context.Ca
 	b.Helper()
 	ctx, stop = context.WithCancel(b.Context())
 
-	ln, err := net.Listen(net.TCP.String(), "127.0.0.1:0")
+	// Get a free port by listening on port 0 and closing the listener immediately
+	ln, err := net.Listen(net.TCP.String(), net.JoinHostPort(localhost, 0))
 	if err != nil {
 		b.Fatalf("listen: %v", err)
 	}
@@ -52,14 +57,11 @@ func serverStarter(b *testing.B, hot bool) (ctx context.Context, stop context.Ca
 		_, _ = file.CopyFile(ctx, certPath, activeCertPath)
 		_, _ = file.CopyFile(ctx, keyPath, activeKeyPath)
 		certPath, keyPath = activeCertPath, activeKeyPath
-	} else {
-		activeCertPath, activeKeyPath = "", ""
 	}
 
 	stls, err := tls.NewServerConfig(
 		tls.WithCert(certPath),
 		tls.WithKey(keyPath),
-		tls.WithClientAuth("noclientcert"),
 		tls.WithServerCertHotReload(hot),
 	)
 	if err != nil {
@@ -71,7 +73,7 @@ func serverStarter(b *testing.B, hot bool) (ctx context.Context, stop context.Ca
 			Servers: []*config.Server{{
 				Name: "bench-grpc",
 				Mode: server.GRPC.String(),
-				Host: "127.0.0.1",
+				Host: localhost,
 				Port: port,
 				GRPC: &config.GRPC{},
 			}},
@@ -89,23 +91,9 @@ func serverStarter(b *testing.B, hot bool) (ctx context.Context, stop context.Ca
 		b.Error(err)
 	}
 
-	go func() { _ = srv.ListenAndServe(ctx) }()
+	_ = srv.ListenAndServe(ctx)
 
-	addr = net.JoinHostPort("127.0.0.1", port)
-	deadline := time.Now().Add(3 * time.Second)
-	for {
-		dctx, cancel := context.WithTimeout(ctx, 200*time.Millisecond)
-		c, err := net.DialContext(dctx, net.TCP.String(), addr)
-		cancel()
-		if err == nil {
-			_ = c.Close()
-			break
-		}
-		if time.Now().After(deadline) {
-			break
-		}
-		time.Sleep(50 * time.Millisecond)
-	}
+	addr = net.JoinHostPort(localhost, port)
 	return ctx, stop, addr
 }
 
@@ -116,7 +104,7 @@ func reloadTLSCerts(b *testing.B) (stop context.CancelFunc) {
 	ctx, stop = context.WithCancel(b.Context())
 	eg, egctx := errgroup.New(ctx)
 	eg.Go(safety.RecoverFunc(func() error {
-		tick := time.NewTicker(200 * time.Millisecond)
+		tick := time.NewTicker(time.Millisecond)
 		defer tick.Stop()
 		srcA := test.GetTestdataPath("tls/server.crt")
 		srcB := test.GetTestdataPath("tls/server2.crt")
@@ -159,7 +147,6 @@ func runTLSHandshakePerOp(b *testing.B, hot bool) {
 
 	ccfg, err := tls.NewClientConfig(
 		tls.WithCa(test.GetTestdataPath("tls/ca.pem")),
-		tls.WithServerName("vald.vdaas.org"),
 	)
 	if err != nil {
 		b.Fatalf("client tls: %v", err)
@@ -195,5 +182,5 @@ func runTLSHandshakePerOp(b *testing.B, hot bool) {
 	})
 }
 
-func Benchmark_TLS_HandshakePerOp_Static(b *testing.B)    { runTLSHandshakePerOp(b, false) }
-func Benchmark_TLS_HandshakePerOp_HotReload(b *testing.B) { runTLSHandshakePerOp(b, true) }
+func BenchmarkTLSHandshakePerOpStatic(b *testing.B)    { runTLSHandshakePerOp(b, false) }
+func BenchmarkTLSHandshakePerOpHotReload(b *testing.B) { runTLSHandshakePerOp(b, true) }
