@@ -1658,6 +1658,7 @@ internal/tls/doc.go
 internal/tls/option.go
 internal/tls/option_test.go
 internal/tls/tls.go
+internal/tls/tls_bench_test.go
 internal/tls/tls_test.go
 internal/unit/doc.go
 internal/unit/unit.go
