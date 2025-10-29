@@ -148,10 +148,10 @@ func WithInsecureSkipVerify(insecure bool) Option {
 }
 
 func WithServerCertHotReload(enabled bool) Option {
-	return func(c *credentials) error {
-		c.hotReload = enabled
-		return nil
-	}
+    return func(c *credentials) error {
+        c.hotReload = enabled
+        return nil
+    }
 }
 
 // WithClientAuth sets server-side client auth policy
