@@ -329,7 +329,7 @@ func processCert(
 		cert.IPAddresses,
 		checkSignature)
 
-	if err := verifyCertChain(cert, pool, now); err != nil {
+	if err := verifyCertChain(cert, pool); err != nil {
 		log.Warnf("chain verify failed for %s: %v", cert.Subject.CommonName, err)
 	}
 
@@ -346,11 +346,11 @@ func processCert(
 }
 
 // verifyCertChain attempts to verify the cert against the provided pool.
-func verifyCertChain(cert *x509.Certificate, pool *x509.CertPool, now time.Time) error {
+func verifyCertChain(cert *x509.Certificate, pool *x509.CertPool) error {
 	opts := x509.VerifyOptions{
 		Roots:         pool,
 		Intermediates: x509.NewCertPool(),
-		CurrentTime:   now,
+		CurrentTime:   time.Now(),
 	}
 	_, err := cert.Verify(opts)
 	return err
