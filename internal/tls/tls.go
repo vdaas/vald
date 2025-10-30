@@ -155,7 +155,7 @@ func NewServerConfig(opts ...Option) (*Config, error) {
 		c.certPtr.Store(&kp)
 
 		// Reload per-handshake.
-		c.cfg.GetCertificate = func(chi *tls.ClientHelloInfo) (*tls.Certificate, error) {
+		c.cfg.GetCertificate = func(_ *tls.ClientHelloInfo) (*tls.Certificate, error) {
 			kp2, err := loadKeyPair(c.sn, c.cert, c.key)
 			if err != nil {
 				// fall back to last good certificate
@@ -169,7 +169,7 @@ func NewServerConfig(opts ...Option) (*Config, error) {
 		}
 
 		// Ensure NameToCertificate stays sensible by cloning config with latest cert.
-		c.cfg.GetConfigForClient = func(chi *tls.ClientHelloInfo) (*tls.Config, error) {
+		c.cfg.GetConfigForClient = func(_ *tls.ClientHelloInfo) (*tls.Config, error) {
 			cfg := c.cfg.Clone()
 			cfg.GetConfigForClient = nil
 			if cur := c.certPtr.Load(); cur != nil {
@@ -241,7 +241,7 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 			}
 			c.cfg.Certificates = []tls.Certificate{kp}
 			c.certPtr.Store(&kp)
-			c.cfg.GetClientCertificate = func(cri *tls.CertificateRequestInfo) (*tls.Certificate, error) {
+			c.cfg.GetClientCertificate = func(_ *tls.CertificateRequestInfo) (*tls.Certificate, error) {
 				kp2, err := loadKeyPair(c.sn, c.cert, c.key)
 				if err != nil {
 					if cur := c.certPtr.Load(); cur != nil {

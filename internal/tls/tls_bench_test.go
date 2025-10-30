@@ -11,6 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Benchmark can be run by
+// make certs/gen
+// go test ./internal/tls -run=^$ -bench=. -benchmem
+//
 package tls_test
 
 import (
@@ -93,7 +98,7 @@ func serverStarter(
 				GRPC: &config.GRPC{},
 			}},
 		}).Bind()),
-		starter.WithGRPC(func(sc *config.Server) []server.Option {
+		starter.WithGRPC(func(_ *config.Server) []server.Option {
 			return []server.Option{
 				server.WithGRPCRegistFunc(func(gs *grpc.Server) {
 					vald.RegisterIndexServer(gs, mockIndexInfoServer{})
@@ -152,7 +157,7 @@ type mockIndexInfoServer struct {
 	vald.UnimplementedIndexServer
 }
 
-func (m mockIndexInfoServer) IndexInfo(
+func (_ mockIndexInfoServer) IndexInfo(
 	context.Context, *payload.Empty,
 ) (*payload.Info_Index_Count, error) {
 	return &payload.Info_Index_Count{Stored: 100}, nil
