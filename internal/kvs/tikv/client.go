@@ -64,7 +64,6 @@ func New(ctx context.Context, opts ...Option) (Client, error) {
 		if err != nil {
 			return nil, errors.ErrNewTiKVTxnClientFailed(err)
 		}
-		c.tcli.SetEnableAsyncCommit(true)
 	}	else {
 		c.rcli, err = rawkv.NewClient(ctx, c.addrs, config.DefaultConfig().Security)
 		if err != nil {
@@ -80,6 +79,7 @@ func (c *client) Set(ctx context.Context, key, val []byte) error {
 		if err != nil {
 			return errors.ErrTiKVBeginOperationFailed(err)
 		}
+		txn.SetEnableAsyncCommit(true)
 		err = txn.Set(key, val)
 		if err != nil {
 			return errors.ErrTiKVSetOperationFailed(key, val, err)
@@ -98,14 +98,21 @@ func (c *client) Set(ctx context.Context, key, val []byte) error {
 	return nil
 }
 
-func (c *client) Get(ctx context.Context, key []byte) ([]byte, error) {
+func (c *client) Get(ctx context.Context, key []byte) (val []byte, err error) {
 	if c.txn {
-		val, err := c.tcli.Get(ctx, key)
+		txn, err := c.tcli.Begin()
+		if err != nil {
+			return nil, errors.ErrTiKVBeginOperationFailed(err)
+		}
+		val, err = txn.Get(ctx, key)
+		if err != nil {
+			return nil, errors.ErrTiKVGetOperationFailed(key, err)
+		}
 	} else {
-		val, err := c.rcli.Get(ctx, key)
-	}
-	if err != nil {
-		return nil, errors.ErrTiKVGetOperationFailed(key, err)
+		val, err = c.rcli.Get(ctx, key)
+		if err != nil {
+			return nil, errors.ErrTiKVGetOperationFailed(key, err)
+		}
 	}
 
 	return val, nil
@@ -117,6 +124,7 @@ func (c *client) Delete(ctx context.Context, key []byte) error {
 		if err != nil {
 			return errors.ErrTiKVBeginOperationFailed(err)
 		}
+		txn.SetEnableAsyncCommit(true)
 		err = txn.Delete(key)
 		if err != nil {
 			return errors.ErrTiKVDeleteOperationFailed(key, err)
