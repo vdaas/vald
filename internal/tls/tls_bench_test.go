@@ -114,9 +114,7 @@ func serverStarter(
 		b.Fatalf("starter initialization failed: %v", err)
 	}
 
-	if err := srv.ListenAndServe(ctx); err != nil {
-		b.Logf("ListenAndServe: %v", err)
-	}
+	_ = srv.ListenAndServe(ctx)
 
 	addr = net.JoinHostPort(localhost, port)
 	return ctx, stop, addr
