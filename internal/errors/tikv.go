@@ -25,8 +25,20 @@ var (
 		return Wrap(err, "failed to create TiKV raw client")
 	}
 
+	ErrNewTiKVTxnClientFailed = func(err error) error {
+		return Wrap(err, "failed to create TiKV txn client")
+	}
+
+	ErrTiKVBeginOperationFailed = func(err error) error {
+		return Wrap(err, "failed to begin")
+	}
+
 	ErrTiKVSetOperationFailed = func(key, val []byte, err error) error {
 		return Wrapf(err, "failed to set key (%s) - value (%s)", key, val)
+	}
+
+	ErrTiKVCommitOperationFailed = func(err error) error {
+		return Wrap(err, "failed to commit")
 	}
 
 	ErrTiKVGetOperationFailed = func(key []byte, err error) error {
@@ -39,5 +51,9 @@ var (
 
 	ErrTiKVRawClientCloseOperationFailed = func(err error) error {
 		return Wrap(err, "failed to close TiKV raw client")
+	}
+
+	ErrTiKVTxnClientCloseOperationFailed = func(err error) error {
+		return Wrap(err, "failed to close TiKV txn client")
 	}
 )
