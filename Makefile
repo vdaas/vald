@@ -645,7 +645,7 @@ format/yaml: \
 	- @cat $(ROOTDIR)/.gitfiles | grep -E '\.ya?ml\b' | grep -Ev '(templates|s3)' | xargs -I {} -P$(CORES) bash -c '\
 		echo "Formatting YAML file {}" && \
 		yamlfmt {} && \
-		prettier --write {}'
+		bunx prettier --write {}'
 	@echo "YAML file formatting complete."
 
 .PHONY: format/yaml/diff
@@ -657,13 +657,13 @@ format/yaml/diff: \
 	- @git diff --name-only --diff-filter=ACM HEAD | grep -E '\.ya?ml\b' | grep -Ev '(templates|s3)' | xargs -I {} -P$(CORES) bash -c '\
 		echo "Formatting YAML file {}" && \
 		yamlfmt {} && \
-		prettier --write {}'
+		bunx prettier --write {}'
 	@echo "YAML file formatting complete."
 
 .PHONY: format/md
 format/md: \
 	prettier/install
-	prettier --write \
+	bunx prettier --write \
 	    "$(ROOTDIR)/charts/**/*.md" \
 	    "$(ROOTDIR)/apis/**/*.md" \
 	    "$(ROOTDIR)/tests/**/*.md" \
@@ -672,7 +672,7 @@ format/md: \
 .PHONY: format/json
 format/json: \
 	prettier/install
-	prettier --write \
+	bunx prettier --write \
 	    "$(ROOTDIR)/.cspell.json" \
 	    "$(ROOTDIR)/apis/**/*.json" \
 	    "$(ROOTDIR)/charts/**/*.json" \

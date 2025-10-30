@@ -40,6 +40,9 @@ type TLS struct {
 
 	// InsecureSkipVerify represent enable/disable skip SSL certificate verification
 	InsecureSkipVerify bool `json:"insecure_skip_verify" yaml:"insecure_skip_verify"`
+
+	// HotReload represents whether to enable server certificate hot reload feature.
+	HotReload bool `json:"hot_reload" yaml:"hot_reload"`
 }
 
 // Bind returns TLS object whose every value except Enabled is field value of environment value.
@@ -65,5 +68,6 @@ func (t *TLS) Opts() []tls.Option {
 		tls.WithInsecureSkipVerify(t.InsecureSkipVerify),
 		tls.WithServerName(t.ServerName),
 		tls.WithClientAuth(t.ClientAuth),
+		tls.WithServerCertHotReload(t.HotReload),
 	}
 }

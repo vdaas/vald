@@ -23,6 +23,7 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"reflect"
+	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -67,6 +68,10 @@ type credentials struct {
 	sn         string
 	insecure   bool
 	clientAuth tls.ClientAuthType
+	// hotReload toggles per-handshake reload using GetCertificate.
+	hotReload bool
+	// certPtr keeps the latest loaded certificate.
+	certPtr atomic.Pointer[tls.Certificate]
 }
 
 // newCredential builds credentials from defaults and provided options.
@@ -120,6 +125,19 @@ func loadKeyPair(role, certPath, keyPath string) (tls.Certificate, error) {
 	return kp, nil
 }
 
+func (c *credentials) reloadCert() (*tls.Certificate, error) {
+	kp2, err := loadKeyPair(c.sn, c.cert, c.key)
+	if err != nil {
+		// fall back to last good certificate
+		if cur := c.certPtr.Load(); cur != nil {
+			return cur, nil
+		}
+		return nil, err
+	}
+	c.certPtr.Store(&kp2)
+	return &kp2, nil
+}
+
 // NewServerConfig returns a *tls.Config for server, with optional mTLS and hot reload.
 func NewServerConfig(opts ...Option) (*Config, error) {
 	c, err := newCredential(opts...)
@@ -139,12 +157,6 @@ func NewServerConfig(opts ...Option) (*Config, error) {
 		c.sn = "vald-server"
 		c.cfg.ServerName = c.sn
 	}
-	// load cert pair
-	kp, err := loadKeyPair(c.sn, c.cert, c.key)
-	if err != nil {
-		return nil, err
-	}
-	c.cfg.Certificates = []tls.Certificate{kp}
 	// if CA provided, configure mTLS
 	if c.ca != "" {
 		pool, err := NewX509CertPool(c.ca)
@@ -153,6 +165,39 @@ func NewServerConfig(opts ...Option) (*Config, error) {
 		}
 		c.cfg.ClientCAs = pool
 		c.cfg.ClientAuth = c.clientAuth
+	}
+	// Configure certificate strategy.
+	if !c.hotReload {
+		// load once statically
+		kp, err := loadKeyPair(c.sn, c.cert, c.key)
+		if err != nil {
+			return nil, err
+		}
+		c.cfg.Certificates = []tls.Certificate{kp}
+		return c.cfg, nil
+	}
+	// if c.hotReload
+	// Preload once for NameToCertificate mapping and fallback.
+	kp, err := loadKeyPair(c.sn, c.cert, c.key)
+	if err != nil {
+		return nil, err
+	}
+	c.cfg.Certificates = []tls.Certificate{kp}
+	c.certPtr.Store(&kp)
+
+	// Reload per-handshake.
+	c.cfg.GetCertificate = func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
+		return c.reloadCert()
+	}
+
+	// Ensure NameToCertificate stays sensible by cloning config with latest cert.
+	c.cfg.GetConfigForClient = func(_ *tls.ClientHelloInfo) (*tls.Config, error) {
+		cfg := c.cfg.Clone()
+		cfg.GetConfigForClient = nil
+		if cur := c.certPtr.Load(); cur != nil {
+			cfg.Certificates = []tls.Certificate{*cur}
+		}
+		return cfg, nil
 	}
 	return c.cfg, nil
 }
@@ -187,16 +232,26 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 		}
 	}
 	// load client cert if provided
-	if c.cert != "" && c.key != "" {
-		if c.sn == "" {
-			c.sn = "vald-client"
-			c.cfg.ServerName = c.sn
-		}
-		kp, err := loadKeyPair(c.sn, c.cert, c.key)
-		if err != nil {
-			return nil, err
-		}
-		c.cfg.Certificates = []tls.Certificate{kp}
+	if c.cert == "" || c.key == "" {
+		return c.cfg, nil
+	}
+	if c.sn == "" {
+		c.sn = "vald-client"
+		c.cfg.ServerName = c.sn
+	}
+	kp, err := loadKeyPair(c.sn, c.cert, c.key)
+	if err != nil {
+		return nil, err
+	}
+	c.cfg.Certificates = []tls.Certificate{kp}
+	if !c.hotReload {
+		return c.cfg, nil
+	}
+	// if c.hotReload
+	// Preload once for initial handshake and SNI mapping if needed.
+	c.certPtr.Store(&kp)
+	c.cfg.GetClientCertificate = func(*tls.CertificateRequestInfo) (*tls.Certificate, error) {
+		return c.reloadCert()
 	}
 	return c.cfg, nil
 }
@@ -266,7 +321,7 @@ func processCert(
 		cert.IPAddresses,
 		checkSignature)
 
-	if err := verifyCertChain(cert, pool, now); err != nil {
+	if err := verifyCertChain(cert, pool); err != nil {
 		log.Warnf("chain verify failed for %s: %v", cert.Subject.CommonName, err)
 	}
 
@@ -283,11 +338,11 @@ func processCert(
 }
 
 // verifyCertChain attempts to verify the cert against the provided pool.
-func verifyCertChain(cert *x509.Certificate, pool *x509.CertPool, now time.Time) error {
+func verifyCertChain(cert *x509.Certificate, pool *x509.CertPool) error {
 	opts := x509.VerifyOptions{
 		Roots:         pool,
 		Intermediates: x509.NewCertPool(),
-		CurrentTime:   now,
+		CurrentTime:   time.Now(),
 	}
 	_, err := cert.Verify(opts)
 	return err

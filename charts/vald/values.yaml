@@ -672,6 +672,9 @@ defaults:
       # @schema {"name": "defaults.server_config.tls.insecure_skip_verify", "type": "boolean"}
       # defaults.server_config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
       insecure_skip_verify: false
+      # @schema {"name": "defaults.server_config.tls.hot_reload", "type": "boolean"}
+      # defaults.server_config.tls.hot_reload -- enable dynamically reload certificate on each handshake
+      hot_reload: false
       # @schema {"name": "defaults.server_config.tls.server_name", "type": "string"}
       # defaults.server_config.tls.server_name -- SSL Server Name
       server_name: ""
@@ -866,6 +869,9 @@ defaults:
             ca: /path/to/ca
             # defaults.grpc.client.dial_option.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
             insecure_skip_verify: false
+            # @schema {"name": "defaults.grpc.client.dial_option.net.tls.hot_reload", "type": "boolean"}
+            # defaults.grpc.client.dial_option.net.tls.hot_reload -- enable dynamically reload certificate on each handshake
+            hot_reload: false
             # defaults.grpc.client.dial_option.net.tls.server_name -- SSL Server Name
             server_name: ""
             # defaults.grpc.client.dial_option.net.tls.client_auth -- client auth type
@@ -913,6 +919,9 @@ defaults:
         ca: /path/to/ca
         # defaults.grpc.client.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
         insecure_skip_verify: false
+        # @schema {"name": "defaults.grpc.client.tls.hot_reload", "type": "boolean"}
+        # defaults.grpc.client.tls.hot_reload -- enable dynamically reload certificate on each handshake
+        hot_reload: false
         # defaults.grpc.client.tls.server_name -- SSL Server Name
         server_name: ""
         # defaults.grpc.client.tls.client_auth -- client auth type
