@@ -155,7 +155,7 @@ type mockIndexInfoServer struct {
 	vald.UnimplementedIndexServer
 }
 
-func (_ mockIndexInfoServer) IndexInfo(
+func (mockIndexInfoServer) IndexInfo(
 	context.Context, *payload.Empty,
 ) (*payload.Info_Index_Count, error) {
 	return &payload.Info_Index_Count{Stored: 100}, nil
