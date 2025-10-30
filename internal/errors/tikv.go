@@ -30,7 +30,7 @@ var (
 	}
 
 	ErrTiKVBeginOperationFailed = func(err error) error {
-		return Wrapf(err, "failed to begin")
+		return Wrap(err, "failed to begin")
 	}
 
 	ErrTiKVSetOperationFailed = func(key, val []byte, err error) error {
@@ -38,7 +38,7 @@ var (
 	}
 
 	ErrTiKVCommitOperationFailed = func(err error) error {
-		return Wrapf(err, "failed to commit")
+		return Wrap(err, "failed to commit")
 	}
 
 	ErrTiKVGetOperationFailed = func(key []byte, err error) error {
