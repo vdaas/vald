@@ -189,9 +189,7 @@ func runTLSHandshakePerOp(b *testing.B, hot bool) {
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			_, cancel := context.WithTimeout(ctx, 3*time.Second)
 			conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(credentials.NewTLS(ccfg)))
-			cancel()
 			if err != nil {
 				b.Fatalf("dial: %v", err)
 			}
