@@ -260,7 +260,7 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 			return nil, err
 		}
 		c.certPtr.Store(&kp2)
-		return c.certPtr.Load(), nil
+		return &kp2, nil
 	}
 	return c.cfg, nil
 }
