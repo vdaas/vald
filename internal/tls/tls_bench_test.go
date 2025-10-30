@@ -65,7 +65,10 @@ func serverStarter(
 	if err != nil {
 		b.Fatalf("listen: %v", err)
 	}
-	_, port, _ := net.SplitHostPort(ln.Addr().String())
+	_, port, err := net.SplitHostPort(ln.Addr().String())
+	if err != nil {
+		b.Fatalf("split host port: %v", err)
+	}
 	_ = ln.Close()
 
 	certPath := test.GetTestdataPath("tls/server.crt")
@@ -108,10 +111,12 @@ func serverStarter(
 		}),
 	)
 	if err != nil {
-		b.Error(err)
+		b.Fatalf("starter initialization failed: %v", err)
 	}
 
-	_ = srv.ListenAndServe(ctx)
+	if err := srv.ListenAndServe(ctx); err != nil {
+		b.Logf("ListenAndServe: %v", err)
+	}
 
 	addr = net.JoinHostPort(localhost, port)
 	return ctx, stop, addr
