@@ -1,0 +1,70 @@
+#
+# Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Prepare build Docker images"
+description: "An action to prepare build Docker images"
+inputs:
+  target:
+    description: "Build target"
+    required: true
+    default: "base"
+outputs:
+  IMAGE_NAME:
+    description: "Image name"
+    value: ${{ steps.image_name.outputs.IMAGE_NAME }}
+  ALTER_IMAGE_NAME:
+    description: "Alter image name"
+    value: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
+  PRIMARY_TAG:
+    description: "Primary tag"
+    value: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+  EXTRA_TAGS:
+    description: "Extra tags"
+    value: ${{ steps.determine_extra_tags.outputs.EXTRA_TAGS }}
+runs:
+  using: "composite"
+  steps:
+    - name: Image name
+      shell: bash
+      id: image_name
+      run: |
+        image_name=`make docker/name/${TARGET}`
+        alter_org=`make docker/name/org/alter`
+        alter_image_name=`make ORG="${alter_org}" docker/name/${TARGET}`
+        echo "IMAGE_NAME is: ${image_name}"
+        echo "ALTER_IMAGE_NAME is: ${alter_image_name}"
+        echo "IMAGE_NAME=${image_name}" >> $GITHUB_OUTPUT
+        echo "ALTER_IMAGE_NAME=${alter_image_name}" >> $GITHUB_OUTPUT
+      env:
+        TARGET: ${{ inputs.target }}
+    - name: Determine tag name
+      id: determine_tag_name
+      uses: ./.github/actions/determine-docker-image-tag
+    - name: Determine extra tags
+      shell: bash
+      id: determine_extra_tags
+      run: |
+        if [[ "${{ github.event_name }}" != "pull_request" && "${{ github.event_name }}" != "pull_request_target" ]]; then
+          extra_tags=${SECONDARY_TAGS}
+        fi
+        echo "EXTRA_TAGS is determined: ${extra_tags}"
+        echo "EXTRA_TAGS=${extra_tags}" >> $GITHUB_OUTPUT
+      env:
+        SECONDARY_TAGS: ${{ steps.determine_tag_name.outputs.secondary_tags }}
+    - name: Update Vald version
+      shell: bash
+      run: echo "${PRIMARY_TAG}" > versions/VALD_VERSION
+      env:
+        PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}

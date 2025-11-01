@@ -24,70 +24,104 @@ on:
   pull_request:
     types:
       - "labeled"
+  workflow_dispatch:
 env:
   DATASET: fashion-mnist-784-euclidean.hdf5
 jobs:
   dump-contexts-to-log:
+    timeout-minutes: 30
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/dump-context
   detect-ci-container:
-    if: startsWith(github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-v2'
+    permissions:
+      contents: read
+    if: startsWith(github.ref, 'refs/tags/') || (github.event.action == 'labeled' && startsWith(github.event.label.name,'actions/e2e-v2')) || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/_detect-ci-container.yaml
+  build-matrix:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      result: ${{ steps.build-matrix.outputs.result }}
+    steps:
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        id: build-matrix
+        with:
+          result-encoding: string
+          # TODO: Fix the issue the readreplica returns 0 indices and add this case
+          # - scenario: readreplica
+          #   deployment: helm-chart
+          #   cluster: kind
+          #   environment: "null"
+          script: |
+            // Build a stable include-only matrix for strategy.matrix
+            const baseInclude = [
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "unary_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "multi_crud",  deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "rollout",     deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "stream_crud", deployment: "helm-operator", cluster: "k3d", environment: "null" },
+              { scenario: "index_correction", deployment: "helm-chart", cluster: "k3d", environment: "management" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "management" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "mirror" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "profile" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "failure" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "kill" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "partition" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "bandwidth" }
+            ];
+
+            // Extract suffix from label using the fixed prefix
+            const prefix = 'actions/e2e-v2/';
+            const action = (context && context.payload && context.payload.action) ? context.payload.action : '';
+            const label = (context && context.payload && context.payload.label && context.payload.label.name) ? context.payload.label.name : '';
+
+            let suffix = '';
+            if (action === 'labeled' && label.startsWith(prefix)) {
+              suffix = label.slice(prefix.length);
+            }
+
+            core.info('Label: ' + label);
+            core.info('Suffix: ' + (suffix || '<none>'));
+
+            // Filter by combo string (substring match)
+            function combo(o) {
+              return o.scenario + '-' + o.deployment + '-' + o.cluster + '-' + (o.environment === null ? 'null' : String(o.environment));
+            }
+
+            let filtered = baseInclude;
+            if (suffix) {
+              filtered = baseInclude.filter(function(o) { return combo(o).indexOf(suffix) !== -1; });
+            }
+
+            // Fallback if nothing matches
+            if (filtered.length === 0) {
+              core.warning("No include matched '" + suffix + "'. Falling back to base include (" + baseInclude.length + " jobs).");
+              filtered = baseInclude;
+            } else {
+              core.info('Matched ' + filtered.length + ' job(s).');
+            }
+
+            // Set output "result" as a JSON string
+            const matrix = { include: filtered };
+            core.info('Generated matrix:\n' + JSON.stringify(matrix, null, 2));
+            return JSON.stringify(matrix);
   e2e:
-    needs: [detect-ci-container]
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    needs: [detect-ci-container, build-matrix]
     strategy:
       fail-fast: false
-      matrix:
-        scenario: [stream_crud, unary_crud, multi_crud, rollout]
-        deployment: [helm-chart]
-        cluster: [k3d]
-        environment: ["null"]
-        include:
-          - scenario: stream_crud
-            deployment: helm-operator
-            cluster: k3d
-            environment: "null"
-          - scenario: index_correction
-            deployment: helm-chart
-            cluster: k3d
-            environment: management
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: management
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: mirror
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: profile
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: failure
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: kill
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: partition
-          - scenario: stream_crud
-            deployment: helm-chart
-            cluster: k3d
-            environment: bandwidth
-            # TODO: Fix the issue the readreplica returns 0 indices
-            # - scenario: readreplica
-            #   deployment: helm-chart
-            #   cluster: kind
-            #   environment: "null"
+      matrix: ${{ fromJson(needs.build-matrix.outputs.result) }}
     runs-on: ubuntu-latest
-    timeout-minutes: 60
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
       credentials:
@@ -95,7 +129,9 @@ jobs:
         password: ${{ secrets.PACKAGE_TOKEN }}
       options: "--add-host host.docker.internal:host-gateway"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
@@ -184,7 +220,7 @@ jobs:
           wait_for_selector: app=vald-lb-gateway
 
       - name: Deploy Chaos Mesh
-        if: ${{ contains('failure kill partition bandwidth', matrix.environment) }}
+        if: ${{ contains(fromJson('["failure","kill","partition","bandwidth"]'), matrix.environment) }}
         uses: ./.github/actions/deploy-chaos-mesh
         with:
           helm_extra_options: "--set networkChaos.${{ matrix.environment }}.enabled=true"
@@ -206,7 +242,14 @@ jobs:
             export E2E_TARGET_NAMESPACE=vald-01
           fi
           kubectl get pods
-          make e2e/v2 E2E_CONFIG=$(pwd)/.github/e2e/${{ matrix.scenario }}.yaml
+          make e2e/v2 E2E_CONFIG=$(pwd)/tests/v2/e2e/assets/${{ matrix.scenario }}.yaml \
+            E2E_PARALLELISM="4" \
+            E2E_INSERT_COUNT="10000" \
+            E2E_EXPECTED_INDEX="30000" \
+            E2E_QPS="30" \
+            E2E_SEARCH_COUNT="10" \
+            E2E_UPDATE_COUNT="100" \
+            E2E_BULK_SIZE="10"
       - uses: ./.github/actions/e2e-profile
         if: ${{ matrix.environment == 'profile' }}
         with:
@@ -222,13 +265,18 @@ jobs:
           kubectl describe pvc
 
   slack-notification:
+    timeout-minutes: 30
+    permissions:
+      contents: read
     name: "Slack notification"
     if: startsWith( github.ref, 'refs/tags/')
     needs:
       - e2e
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/notify-slack
         with:
           author_name: "E2E deploy test"

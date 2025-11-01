@@ -156,9 +156,11 @@ const defaultPoolSize = uint64(4)
 // Global metrics are stored in a sync.Map (key: address, value: healthy connection count).
 var metrics sync.Map[string, uint64]
 
-// New creates a new connection pool with the provided options.
-// It parses the target address, initializes the connection slots, and performs an initial dial check.
-func New(ctx context.Context, opts ...Option) (Conn, error) {
+// New creates and initializes a connection pool for the configured target address and options.
+// It applies default and provided options, parses and normalizes the target address (including host/port extraction with fallbacks and optional port scanning),
+// allocates and initializes connection slots, and performs an initial dial check to validate reachability. On success it returns the ready pool; on failure it
+// returns an error.
+func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 	p := &pool{
 		dialTimeout:       time.Second,
 		oldConnCloseDelay: 2 * time.Minute,
@@ -178,7 +180,6 @@ func New(ctx context.Context, opts ...Option) (Conn, error) {
 	p.closing.Store(false)
 
 	// Parse the address to extract host and port.
-	var err error
 	var isIPv4, isIPv6 bool
 	p.host, p.port, _, isIPv4, isIPv6, err = net.Parse(ctx, p.addr)
 	p.isIPAddr = isIPv4 || isIPv6
@@ -321,12 +322,12 @@ func (p *pool) store(idx uint64, pc *poolConn) {
 // loop iterates over each connection slot and applies the provided function.
 func (p *pool) loop(
 	ctx context.Context, fn func(ctx context.Context, idx uint64, pc *poolConn) bool,
-) error {
+) (err error) {
 	var count uint64
 	for idx := range p.poolSize.Load() {
 		select {
 		case <-ctx.Done():
-			err := ctx.Err()
+			err = ctx.Err()
 			if errors.IsNot(err, context.DeadlineExceeded, context.Canceled) {
 				return err
 			}
@@ -559,10 +560,8 @@ func (p *pool) Disconnect(ctx context.Context) (err error) {
 // dial creates a new gRPC connection to the specified address.
 // It uses a dial timeout and, if configured, a backoff strategy.
 func (p *pool) dial(ctx context.Context, idx uint64, addr string) (*ClientConn, error) {
-	dialFunc := func(ctx context.Context) (*ClientConn, error) {
-		ctx, cancel := context.WithTimeout(ctx, p.dialTimeout)
-		defer cancel()
-		log.Debugf("Dialing pool connection %d/%d to %s with timeout %s", idx+1, p.Size(), addr, p.dialTimeout.String())
+	dialFunc := func() (*ClientConn, error) {
+		log.Debugf("Dialing pool connection %d/%d to %s", idx+1, p.Size(), addr)
 		conn, err := grpc.NewClient(addr, p.dialOpts...)
 		if err != nil {
 			if conn != nil {
@@ -589,9 +588,9 @@ func (p *pool) dial(ctx context.Context, idx uint64, addr string) (*ClientConn, 
 	}
 	if p.bo != nil {
 		var conn *ClientConn
-		_, err := p.bo.Do(ctx, func(ctx context.Context) (any, bool, error) {
+		_, err := p.bo.Do(ctx, func(_ context.Context) (any, bool, error) {
 			var err error
-			conn, err = dialFunc(ctx)
+			conn, err = dialFunc()
 			return conn, err != nil, err
 		})
 		if err != nil && conn != nil {
@@ -599,7 +598,7 @@ func (p *pool) dial(ctx context.Context, idx uint64, addr string) (*ClientConn, 
 		}
 		return conn, nil
 	}
-	return dialFunc(ctx)
+	return dialFunc()
 }
 
 // getHealthyConn retrieves a healthy connection from the pool using round-robin indexing.
@@ -819,7 +818,7 @@ func (p *pool) scanGRPCPort(ctx context.Context) (port uint16, err error) {
 }
 
 // Metrics returns a map of healthy connection counts per target address.
-func Metrics(ctx context.Context) map[string]uint64 {
+func Metrics(_ context.Context) map[string]uint64 {
 	result := make(map[string]uint64, metrics.Len())
 	metrics.Range(func(addr string, count uint64) bool {
 		if addr != "" {

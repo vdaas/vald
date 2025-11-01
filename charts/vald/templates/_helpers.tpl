@@ -945,7 +945,7 @@ spec:
       tolerations:
         {{- toYaml .Job.tolerations | nindent 8 }}
       {{- end }}
-      {{- if .Job.serviceAccount }}
-      serviceAccountName: {{ .Job.serviceAccount.name }}
+      {{- if .Job.serviceAccountName }}
+      serviceAccountName: {{ .Job.serviceAccountName }}
       {{- end }}
 {{- end -}}

@@ -649,6 +649,25 @@ message Info {
     }
   }
 
+  // Represent the resource stats
+  message ResourceStats {
+    string name = 1;
+    string ip = 2 [(buf.validate.field).string.ipv4 = true];
+    // Container resource usage statistics
+    CgroupStats cgroup_stats = 3;
+  }
+
+  message CgroupStats {
+    // CPU cores available
+    double cpu_limit_cores = 1;
+    // CPU usage in cores (not percentage)
+    double cpu_usage_cores = 2;
+    // Memory limit in bytes
+    uint64 memory_limit_bytes = 3;
+    // Memory usage in bytes
+    uint64 memory_usage_bytes = 4;
+  }
+
   // Represent the pod information message.
   message Pod {
     // The app name of the pod on the label.

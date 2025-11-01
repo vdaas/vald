@@ -14,25 +14,19 @@
 # limitations under the License.
 #
 {{- $rotator := .Values.manager.index.readreplica.rotator -}}
-{{- $readreplica := .Values.agent.readreplica -}}
-{{- if and $readreplica.enabled $rotator.clusterRoleBinding.enabled }}
+{{- if and $rotator.enabled $rotator.clusterRoleBinding.enabled }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ $rotator.clusterRoleBinding.name }}
   labels:
-    app.kubernetes.io/name: {{ include "vald.name" . }}
-    helm.sh/chart: {{ include "vald.chart" . }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/version: {{ .Chart.Version }}
-    app.kubernetes.io/component: rotator
+    {{- include "vald.labels" (dict "Values" $rotator "default" .) | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: {{ $rotator.clusterRole.name }}
 subjects:
   - kind: ServiceAccount
-    name: {{ $rotator.serviceAccount.name }}
+    name: {{ default $rotator.name $rotator.serviceAccountName }}
     namespace: {{ .Release.Namespace }}
 {{- end }}

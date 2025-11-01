@@ -19,11 +19,11 @@ package ngt
 
 import (
 	"context"
-	"os"
 
 	c "github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/os"
 )
 
 type ObjectType int

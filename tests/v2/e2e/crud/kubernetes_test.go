@@ -22,10 +22,10 @@ package crud
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/tests/v2/e2e/config"
 	"github.com/vdaas/vald/tests/v2/e2e/kubernetes"
 )

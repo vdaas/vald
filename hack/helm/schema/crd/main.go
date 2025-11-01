@@ -21,12 +21,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
-	"os"
 	"strconv"
 
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 	yaml "sigs.k8s.io/yaml"
 )

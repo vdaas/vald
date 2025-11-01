@@ -427,19 +427,32 @@ func WithDisableRestart() Option {
 	}
 }
 
+// WithGRPCMaxReceiveMessageSize returns an Option that configures the gRPC maximum receive message size for the server.
+// If size is greater than zero or equal to -1, it applies the corresponding grpc.MaxRecvMsgSize setting and updates the server's recorded max message size when
+// the provided size is larger; otherwise the option has no effect.
 func WithGRPCMaxReceiveMessageSize(size int) Option {
 	return func(s *server) error {
 		if size > 0 || size == -1 {
 			s.grpc.opts = append(s.grpc.opts, grpc.MaxRecvMsgSize(size))
+			if size > s.grpc.maxMsgSize {
+				s.grpc.maxMsgSize = size
+			}
 		}
 		return nil
 	}
 }
 
+// WithGRPCMaxSendMessageSize returns an Option that sets the maximum gRPC send message size.
+// If size is greater than zero or -1 (unlimited), the corresponding grpc.MaxSendMsgSize option
+// is appended to the server's gRPC options and s.grpc.maxMsgSize is updated when the provided
+// size is larger than the current recorded maximum.
 func WithGRPCMaxSendMessageSize(size int) Option {
 	return func(s *server) error {
 		if size > 0 || size == -1 {
 			s.grpc.opts = append(s.grpc.opts, grpc.MaxSendMsgSize(size))
+			if size > s.grpc.maxMsgSize {
+				s.grpc.maxMsgSize = size
+			}
 		}
 		return nil
 	}
@@ -463,12 +476,12 @@ func WithGRPCInitialConnWindowSize(size int) Option {
 	}
 }
 
-func WithGRPCKeepaliveMaxConnIdle(max string) Option {
+func WithGRPCKeepaliveMaxConnIdle(maxConnIdle string) Option {
 	return func(s *server) error {
-		if len(max) == 0 {
+		if maxConnIdle == "" {
 			return nil
 		}
-		d, err := timeutil.Parse(max)
+		d, err := timeutil.Parse(maxConnIdle)
 		if err != nil {
 			return nil
 		}
@@ -480,12 +493,12 @@ func WithGRPCKeepaliveMaxConnIdle(max string) Option {
 	}
 }
 
-func WithGRPCKeepaliveMaxConnAge(max string) Option {
+func WithGRPCKeepaliveMaxConnAge(maxConnAge string) Option {
 	return func(s *server) error {
-		if len(max) == 0 {
+		if maxConnAge == "" {
 			return nil
 		}
-		d, err := timeutil.Parse(max)
+		d, err := timeutil.Parse(maxConnAge)
 		if err != nil {
 			return nil
 		}
@@ -497,12 +510,12 @@ func WithGRPCKeepaliveMaxConnAge(max string) Option {
 	}
 }
 
-func WithGRPCKeepaliveMaxConnAgeGrace(max string) Option {
+func WithGRPCKeepaliveMaxConnAgeGrace(maxConnAgeGrace string) Option {
 	return func(s *server) error {
-		if len(max) == 0 {
+		if maxConnAgeGrace == "" {
 			return nil
 		}
-		d, err := timeutil.Parse(max)
+		d, err := timeutil.Parse(maxConnAgeGrace)
 		if err != nil {
 			return nil
 		}
@@ -516,7 +529,7 @@ func WithGRPCKeepaliveMaxConnAgeGrace(max string) Option {
 
 func WithGRPCKeepaliveTime(dur string) Option {
 	return func(s *server) error {
-		if len(dur) == 0 {
+		if dur == "" {
 			return nil
 		}
 		d, err := timeutil.Parse(dur)
@@ -533,7 +546,7 @@ func WithGRPCKeepaliveTime(dur string) Option {
 
 func WithGRPCKeepaliveTimeout(dur string) Option {
 	return func(s *server) error {
-		if len(dur) == 0 {
+		if dur == "" {
 			return nil
 		}
 		d, err := timeutil.Parse(dur)
@@ -548,12 +561,12 @@ func WithGRPCKeepaliveTimeout(dur string) Option {
 	}
 }
 
-func WithGRPCKeepaliveMinTime(min string) Option {
+func WithGRPCKeepaliveMinTime(minTime string) Option {
 	return func(s *server) error {
-		if len(min) == 0 {
+		if minTime == "" {
 			return nil
 		}
-		d, err := timeutil.Parse(min)
+		d, err := timeutil.Parse(minTime)
 		if err != nil {
 			return nil
 		}
@@ -595,7 +608,7 @@ func WithGRPCReadBufferSize(size int) Option {
 
 func WithGRPCConnectionTimeout(to string) Option {
 	return func(s *server) error {
-		if len(to) == 0 {
+		if to == "" {
 			return nil
 		}
 		d, err := timeutil.Parse(to)

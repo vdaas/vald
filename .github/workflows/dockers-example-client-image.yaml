@@ -33,6 +33,7 @@ on:
       - "!**/*_mock.go"
       - "!**/*_test.go"
       - .github/actions/docker-build/action.yaml
+      - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-example-client-image.yaml
       - Makefile
@@ -54,6 +55,7 @@ on:
       - "!**/*_mock.go"
       - "!**/*_test.go"
       - .github/actions/docker-build/action.yaml
+      - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-example-client-image.yaml
       - Makefile
@@ -70,4 +72,11 @@ jobs:
     uses: ./.github/workflows/_docker-image.yaml
     with:
       target: example-client
-    secrets: inherit
+    secrets:
+      DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+      PACKAGE_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
+      PACKAGE_USER: ${{ secrets.PACKAGE_USER }}
+      SLACK_NOTIFY_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
+    permissions:
+      contents: read

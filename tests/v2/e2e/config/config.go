@@ -22,19 +22,25 @@
 package config
 
 import (
+	"io/fs"
+	"path/filepath"
 	"runtime"
 	"strconv"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/timeutil"
 	"github.com/vdaas/vald/internal/timeutil/rate"
 	"github.com/vdaas/vald/tests/v2/e2e/kubernetes"
+	"sigs.k8s.io/yaml"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -902,6 +908,87 @@ const (
 	defaultTimeout      = timeutil.DurationString("3s")
 )
 
+func replaceEnvInValues(v any) any {
+	switch val := v.(type) {
+	case string:
+		str := config.GetActualValue(val)
+		// Convert env-injected scalars to native types so yaml.Unmarshal can bind to typed fields.
+		// Preference order: big uints (for positive numbers), signed ints (for negatives), then floats; handle true/false explicitly (not 0/1).
+		if len(str) > 0 && str[0] != '-' {
+			if u, err := strconv.ParseUint(str, 10, 64); err == nil {
+				return u
+			}
+		}
+		if i, err := strconv.ParseInt(str, 10, 64); err == nil {
+			return i
+		}
+		if f, err := strconv.ParseFloat(str, 64); err == nil {
+			return f
+		}
+		switch strings.ToLower(str) {
+		case "true":
+			return true
+		case "false":
+			return false
+		}
+		return str
+	case []any:
+		for i, e := range val {
+			val[i] = replaceEnvInValues(e)
+		}
+		return val
+	case map[string]any:
+		for k, e := range val {
+			val[k] = replaceEnvInValues(e)
+		}
+		return val
+	default:
+		return val
+	}
+}
+
+// TODO: This function is copied from the internal/config package and modified to mitigate the risk. We need to merge this back to the internal/config package
+// when possible.
+// read returns config struct or error when decoding the configuration file to actually *Config struct.
+func read[T any](path string, cfg T) (err error) {
+	f, err := file.Open(path, os.O_RDONLY, fs.ModePerm)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if f != nil {
+			if err != nil {
+				err = errors.Join(f.Close(), err)
+				return
+			}
+			err = f.Close()
+		}
+	}()
+	data, err := io.ReadAll(f)
+	if err != nil {
+		return err
+	}
+	var raw map[string]any
+	switch ext := filepath.Ext(path); ext {
+	case ".yaml", ".yml":
+		if err := yaml.Unmarshal(data, &raw); err != nil {
+			return err
+		}
+	case ".json":
+		if err := json.Unmarshal(data, &raw); err != nil {
+			return err
+		}
+	default:
+		return errors.ErrUnsupportedConfigFileType(ext)
+	}
+	replaced := replaceEnvInValues(raw)
+	intermediate, err := yaml.Marshal(replaced)
+	if err != nil {
+		return err
+	}
+	return yaml.Unmarshal(intermediate, cfg)
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Load Function
 ////////////////////////////////////////////////////////////////////////////////
@@ -911,7 +998,7 @@ const (
 func Load(path string) (cfg *Data, err error) {
 	log.Debugf("loading test client configuration from %s", path)
 	cfg = new(Data)
-	if err = config.Read(path, &cfg); err != nil {
+	if err = read(path, cfg); err != nil {
 		return nil, errors.Wrapf(err, "failed to read configuration from %s", path)
 	}
 	if cfg == nil {

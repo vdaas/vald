@@ -18,12 +18,12 @@ package file
 
 import (
 	"io/fs"
-	"os"
 	"reflect"
 	"syscall"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 

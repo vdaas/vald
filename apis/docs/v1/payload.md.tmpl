@@ -86,6 +86,12 @@
 {{- define "field:payload.v1.Info.CPU" -}}
 {{ template "_field:payload.v1.Info.CPU" }}
 {{- end -}}
+{{- define "scheme:payload.v1.Info.CgroupStats" -}}
+{{ template "_scheme:payload.v1.Info.CgroupStats" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.CgroupStats" -}}
+{{ template "_field:payload.v1.Info.CgroupStats" }}
+{{- end -}}
 {{- define "scheme:payload.v1.Info.IPs" -}}
 {{ template "_scheme:payload.v1.Info.IPs" }}
 {{- end -}}
@@ -263,6 +269,14 @@
 {{ template "_field:payload.v1.Info.CPU" }}
 {{ template "_field:payload.v1.Info.Memory" }}
 {{ template "_field:payload.v1.Info.Node" }}
+{{- end -}}
+{{- define "scheme:payload.v1.Info.ResourceStats" -}}
+{{ template "_scheme:payload.v1.Info.ResourceStats" }}
+{{ template "_scheme:payload.v1.Info.CgroupStats" }}
+{{- end -}}
+{{- define "field:payload.v1.Info.ResourceStats" -}}
+{{ template "_field:payload.v1.Info.ResourceStats" }}
+{{ template "_field:payload.v1.Info.CgroupStats" }}
 {{- end -}}
 {{- define "scheme:payload.v1.Info.Service" -}}
 {{ template "_scheme:payload.v1.Info.Service" }}
@@ -1110,6 +1124,26 @@
     | usage | double |  | The CPU usage. |
 {{- end -}}
 
+{{- define "_scheme:payload.v1.Info.CgroupStats" }}
+  message Info.CgroupStats {
+    double cpu_limit_cores = 1;
+    double cpu_usage_cores = 2;
+    uint64 memory_limit_bytes = 3;
+    uint64 memory_usage_bytes = 4;
+  }
+{{- end -}}
+
+{{- define "_field:payload.v1.Info.CgroupStats" }}
+  - Info.CgroupStats
+
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | cpu_limit_cores | double |  | CPU cores available |
+    | cpu_usage_cores | double |  | CPU usage in cores (not percentage) |
+    | memory_limit_bytes | uint64 |  | Memory limit in bytes |
+    | memory_usage_bytes | uint64 |  | Memory usage in bytes |
+{{- end -}}
+
 {{- define "_scheme:payload.v1.Info.IPs" }}
   message Info.IPs {
     repeated string ip = 1;
@@ -1574,6 +1608,24 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
     | pods | Info.Pod | repeated | The multiple pod information. |
+{{- end -}}
+
+{{- define "_scheme:payload.v1.Info.ResourceStats" }}
+  message Info.ResourceStats {
+    string name = 1;
+    string ip = 2;
+    Info.CgroupStats cgroup_stats = 3;
+  }
+{{- end -}}
+
+{{- define "_field:payload.v1.Info.ResourceStats" }}
+  - Info.ResourceStats
+
+    | field | type | label | description |
+    | :---: | :--- | :---- | :---------- |
+    | name | string |  |  |
+    | ip | string |  |  |
+    | cgroup_stats | Info.CgroupStats |  | Container resource usage statistics |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Info.Service" }}

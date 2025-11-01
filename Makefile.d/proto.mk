@@ -44,18 +44,14 @@ proto/clean/deps:
 	rm -rf $(GOBIN)/buf
 	rm -rf $(GOBIN)/protoc-gen-doc
 
-$(GOBIN)/buf:
-	$(call go-tool-install)
-
-$(GOBIN)/protoc-gen-doc:
-	$(call go-tool-install)
-
 $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto:
 	curl -fsSL https://raw.githubusercontent.com/googleapis/googleapis/master/google/rpc/error_details.proto -o $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto
 	sed  -i -e "s/package google.rpc/package rpc.v1/" $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto
 	sed  -i -e "s%google.golang.org/genproto/googleapis/rpc/errdetails;errdetails%$(GOPKG)/apis/grpc/v1/rpc/errdetails%" $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto
 	sed  -i -e "s/com.google.rpc/org.vdaas.vald.api.v1.rpc/" $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto
 
+.PHONY: proto/gen/code
+## generate proto code
 proto/gen/code: \
 	$(PROTOS) \
 	proto/deps
@@ -64,11 +60,15 @@ proto/gen/code: \
 	buf generate
 	make proto/replace
 
+.PHONY: proto/gen/api/docs
+## generate proto api docs
 proto/gen/api/docs: \
 	proto/gen/api/docs/payload \
 	$(PROTO_VALD_API_DOCS) \
 	$(PROTO_MIRROR_API_DOCS)
 
+.PHONY: proto/gen/api/docs/payload
+## generate proto api payload docs
 proto/gen/api/docs/payload: $(ROOTDIR)/apis/docs/v1/payload.md.tmpl
 
 $(ROOTDIR)/apis/docs/v1/payload.md.tmpl: $(ROOTDIR)/apis/proto/v1/payload/payload.proto $(ROOTDIR)/apis/docs/v1/payload.tmpl
@@ -83,6 +83,8 @@ $(ROOTDIR)/apis/docs/v1/mirror.md: $(ROOTDIR)/apis/proto/v1/mirror/mirror.proto 
 	@$(call green,"generating documents for API v1...")
 	@$(call gen-api-document,$@,$(subst $(ROOTDIR)/,,$<))
 
+.PHONY: proto/replace
+## replace generated proto code
 proto/replace: \
 	files
 	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?apis/grpc/.*\.go$$' | xargs -I {} -P$(CORES) bash -c '\

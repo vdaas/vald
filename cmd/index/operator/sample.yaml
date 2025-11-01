@@ -27,7 +27,7 @@ server_config:
       grpc:
         bidirectional_stream_concurrency: 20
         connection_timeout: ""
-        enable_admin: true
+        enable_admin: false
         enable_reflection: true
         header_table_size: 0
         initial_conn_window_size: 2097152
@@ -311,7 +311,7 @@ operator:
           spec:
             initContainers:
               - name: wait-for-agent
-                image: busybox:stable
+                image: busybox:1.37.0
                 command:
                   - /bin/sh
                   - -e
@@ -322,7 +322,7 @@ operator:
                       sleep 2;
                     done
               - name: wait-for-discoverer
-                image: busybox:stable
+                image: busybox:1.37.0
                 command:
                   - /bin/sh
                   - -e
@@ -426,7 +426,7 @@ operator:
           spec:
             initContainers:
               - name: wait-for-agent
-                image: busybox:stable
+                image: busybox:1.37.0
                 command:
                   - /bin/sh
                   - -e
@@ -437,7 +437,7 @@ operator:
                       sleep 2;
                     done
               - name: wait-for-discoverer
-                image: busybox:stable
+                image: busybox:1.37.0
                 command:
                   - /bin/sh
                   - -e
@@ -541,7 +541,7 @@ operator:
           spec:
             initContainers:
               - name: wait-for-agent
-                image: busybox:stable
+                image: busybox:1.37.0
                 command:
                   - /bin/sh
                   - -e
@@ -552,7 +552,7 @@ operator:
                       sleep 2;
                     done
               - name: wait-for-discoverer
-                image: busybox:stable
+                image: busybox:1.37.0
                 command:
                   - /bin/sh
                   - -e

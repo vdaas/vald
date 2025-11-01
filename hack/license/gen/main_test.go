@@ -17,9 +17,10 @@
 package main
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/vdaas/vald/internal/os"
 )
 
 func TestIsSymlink(t *testing.T) {

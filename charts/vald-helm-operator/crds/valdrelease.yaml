@@ -4997,6 +4997,11 @@ spec:
                               type: string
                             servicePort:
                               type: string
+                            tls:
+                              items:
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
+                              type: array
                           type: object
                         initContainers:
                           items:
@@ -5770,6 +5775,13 @@ spec:
                             labels:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
+                          type: object
+                        serviceAccount:
+                          properties:
+                            enabled:
+                              type: boolean
+                            name:
+                              type: string
                           type: object
                         serviceType:
                           enum:
@@ -6586,6 +6598,11 @@ spec:
                               type: string
                             servicePort:
                               type: string
+                            tls:
+                              items:
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
+                              type: array
                           type: object
                         initContainers:
                           items:
@@ -7360,6 +7377,13 @@ spec:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
                           type: object
+                        serviceAccount:
+                          properties:
+                            enabled:
+                              type: boolean
+                            name:
+                              type: string
+                          type: object
                         serviceType:
                           enum:
                             - ClusterIP
@@ -7822,6 +7846,11 @@ spec:
                               type: string
                             servicePort:
                               type: string
+                            tls:
+                              items:
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
+                              type: array
                           type: object
                         initContainers:
                           items:

@@ -101,7 +101,7 @@ func (c *agentClient) CreateIndex(
 			span.End()
 		}
 	}()
-	_, err := grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	_, err := grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (any, error) {
 		return NewAgentClient(conn).CreateIndex(ctx, req, copts...)
@@ -135,7 +135,7 @@ func (c *agentClient) CreateAndSaveIndex(
 			span.End()
 		}
 	}()
-	_, err := grpc.RoundRobin(c.c, ctx, func(ctx context.Context,
+	_, err := grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (any, error) {
 		return NewAgentClient(conn).CreateAndSaveIndex(ctx, req, copts...)

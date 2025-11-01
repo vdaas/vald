@@ -15,7 +15,6 @@ package grpc
 
 import (
 	"context"
-	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -28,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/comparator"

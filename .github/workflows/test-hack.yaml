@@ -43,13 +43,23 @@ env:
   PROJECT_ROOT_DIR: src/github.com/vdaas/vald
 jobs:
   dump-contexts-to-log:
+    timeout-minutes: 30
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/dump-context
   detect-ci-container:
+    permissions:
+      contents: read
     uses: ./.github/workflows/_detect-ci-container.yaml
   test-hack:
+    timeout-minutes: 30
+    permissions:
+      contents: read
     name: Run tests for hack packages
     runs-on: ubuntu-latest
     needs: [detect-ci-container]
@@ -62,15 +72,13 @@ jobs:
       run:
         working-directory: ${{ env.GOPATH }}/${{ env.PROJECT_ROOT_DIR }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
+          persist-credentials: false
           path: ${{ env.PROJECT_ROOT_DIR }}
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Install Proto dependencies
-        run: |
-          make proto/deps
       - name: Run tests for hack packages / gotestfmt
         run: |
           TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/hack/gotestfmt
