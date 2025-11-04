@@ -124,6 +124,14 @@ func WithCa(ca string) Option {
 	}
 }
 
+// WithCRL sets certificate revocation list (CRL) path.
+func WithCRL(crl string) Option {
+	return func(c *credentials) error {
+		c.crl = crl
+		return nil
+	}
+}
+
 func WithTLSConfig(cfg *tls.Config) Option {
 	return func(c *credentials) error {
 		if cfg != nil {

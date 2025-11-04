@@ -669,6 +669,9 @@ defaults:
       # @schema {"name": "defaults.server_config.tls.ca", "type": "string"}
       # defaults.server_config.tls.ca -- TLS ca path
       ca: /path/to/ca
+      # @schema {"name": "defaults.server_config.tls.crl", "type": "string"}
+      # defaults.server_config.tls.crl -- TLS certificate revocation list (CRL) path
+      crl: /path/to/crl
       # @schema {"name": "defaults.server_config.tls.insecure_skip_verify", "type": "boolean"}
       # defaults.server_config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
       insecure_skip_verify: false
@@ -867,6 +870,9 @@ defaults:
             key: /path/to/key
             # defaults.grpc.client.dial_option.net.tls.ca -- TLS ca path
             ca: /path/to/ca
+            # @schema {"name": "defaults.grpc.client.dial_option.net.tls.crl", "type": "string"}
+            # defaults.grpc.client.dial_option.net.tls.crl -- TLS certificate revocation list (CRL) path
+            crl: /path/to/crl
             # defaults.grpc.client.dial_option.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
             insecure_skip_verify: false
             # @schema {"name": "defaults.grpc.client.dial_option.net.tls.hot_reload", "type": "boolean"}
@@ -917,6 +923,9 @@ defaults:
         key: /path/to/key
         # defaults.grpc.client.tls.ca -- TLS ca path
         ca: /path/to/ca
+        # @schema {"name": "defaults.grpc.client.tls.crl", "type": "string"}
+        # defaults.grpc.client.tls.crl -- TLS certificate revocation list (CRL) path
+        crl: /path/to/crl
         # defaults.grpc.client.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
         insecure_skip_verify: false
         # @schema {"name": "defaults.grpc.client.tls.hot_reload", "type": "boolean"}
