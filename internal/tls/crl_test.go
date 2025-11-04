@@ -110,8 +110,14 @@ func createCRL(
 	}
 
 	path := filepath.Join(dir, "revoked.crl")
-	f, _ := os.Create(path)
-	pem.Encode(f, &pem.Block{Type: "X509 CRL", Bytes: crlBytes})
+	f, err := os.Create(path)
+	if err != nil {
+		t.Fatalf("os.Create: %v", err)
+	}
+	if err := pem.Encode(f, &pem.Block{Type: "X509 CRL", Bytes: crlBytes}); err != nil {
+		f.Close()
+		t.Fatalf("pem encode: %v", err)
+	}
 	f.Close()
 	return path
 }
