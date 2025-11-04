@@ -43,5 +43,4 @@ var (
 
 	// ErrCertRevoked is returned when the certificate serial exists in configured CRL.
 	ErrCertRevoked = New("certificate revoked")
-
 )
