@@ -165,6 +165,7 @@ func TestTLS_Opts(t *testing.T) {
 					tls.WithKey("key"),
 					tls.WithInsecureSkipVerify(false),
 					tls.WithServerCertHotReload(false),
+					tls.WithCRL(""),
 					tls.WithServerName("test client server"),
 					tls.WithClientAuth("unknown"),
 				},
