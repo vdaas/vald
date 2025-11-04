@@ -122,6 +122,19 @@ func loadKeyPair(role, certPath, keyPath string) (tls.Certificate, error) {
 		log.Warn(errors.Join(err, errors.ErrFailedToLoadCertKey(role, certPath, keyPath)))
 		return tls.Certificate{}, err
 	}
+
+	// Parse the leaf certificate so that callers can perform verification without
+	// reparsing inside each hot-reload cycle.
+	// tls.LoadX509KeyPair does NOT populate the Leaf field by default.
+	if kp.Leaf == nil && len(kp.Certificate) > 0 {
+		if leaf, perr := x509.ParseCertificate(kp.Certificate[0]); perr == nil {
+			kp.Leaf = leaf
+		} else {
+			// Parsing failure is non-fatal for loading key pair; log for debugging.
+			log.Debugf("failed to parse leaf certificate in %s: %v", certPath, perr)
+		}
+	}
+
 	return kp, nil
 }
 
@@ -134,6 +147,25 @@ func (c *credentials) reloadCert() (*tls.Certificate, error) {
 		}
 		return nil, err
 	}
+
+	// Verify the newly loaded certificate before applying it.
+	if kp2.Leaf == nil {
+		// should not happen, but guard anyway
+		if cur := c.certPtr.Load(); cur != nil {
+			return cur, errors.ErrNoCertsFoundInPEM
+		}
+		return nil, errors.ErrNoCertsFoundInPEM
+	}
+
+	if err = verifyCertChain(kp2.Leaf, c.cfg.ClientCAs); err != nil {
+		log.Warnf("certificate verification failed during hot reload: %v", err)
+		if cur := c.certPtr.Load(); cur != nil {
+			return cur, nil
+		}
+		return nil, err
+	}
+
+	// Store and use the verified certificate.
 	c.certPtr.Store(&kp2)
 	return &kp2, nil
 }
