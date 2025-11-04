@@ -222,7 +222,7 @@ func (c *credentials) reloadCert() (*tls.Certificate, error) {
 	if c.isRevoked(kp2.Leaf.SerialNumber) {
 		log.Warnf("certificate serial %s is revoked", kp2.Leaf.SerialNumber)
 		if cur := c.certPtr.Load(); cur != nil {
-			return cur, ErrCertRevoked
+			return cur, nil
 		}
 		return nil, ErrCertRevoked
 	}
