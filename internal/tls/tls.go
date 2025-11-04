@@ -170,8 +170,8 @@ func loadKeyPair(role, certPath, keyPath string) (tls.Certificate, error) {
 		if leaf, perr := x509.ParseCertificate(kp.Certificate[0]); perr == nil {
 			kp.Leaf = leaf
 		} else {
-			// Parsing failure is non-fatal for loading key pair; log for debugging.
-			log.Debugf("failed to parse leaf certificate in %s: %v", certPath, perr)
+			// Parsing failure is non-fatal for loading key pair.
+			log.Warnf("failed to parse leaf certificate in %s: %v", certPath, perr)
 		}
 	}
 
@@ -276,7 +276,7 @@ func NewServerConfig(opts ...Option) (*Config, error) {
 		if err != nil {
 			return nil, err
 		}
-		if c.isRevoked(kp.Leaf.SerialNumber) {
+		if kp.Leaf != nil && c.isRevoked(kp.Leaf.SerialNumber) {
 			return nil, errors.ErrCertRevoked
 		}
 		c.cfg.Certificates = []tls.Certificate{kp}
