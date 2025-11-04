@@ -202,9 +202,10 @@ func (c *credentials) reloadCert() (*tls.Certificate, error) {
 		m, err := loadCRL(c.crl)
 		if err != nil {
 			log.Warnf("failed to reload CRL: %v", err)
+			// Let's avoid exiting here because the process is running
+		} else {
+			c.revokedPtr.Store(&m)
 		}
-		// Let's avoid exiting here because the process is running
-		c.revokedPtr.Store(&m)
 	}
 
 	if err = verifyCertChain(kp2.Leaf, c.cfg.ClientCAs); err != nil {
