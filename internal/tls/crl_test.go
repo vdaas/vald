@@ -28,6 +28,8 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	ierr "github.com/vdaas/vald/internal/errors"
 )
 
 // helper to create a self-signed certificate/key pair and write to temp files.
@@ -128,7 +130,7 @@ func TestCRLRevocation(t *testing.T) {
 		WithCRL(crlPath),
 	}
 
-	if _, err := NewServerConfig(opts...); err == nil || !errors.Is(err, ErrCertRevoked) {
+	if _, err := NewServerConfig(opts...); err == nil || !errors.Is(err, ierr.ErrCertRevoked) {
 		t.Fatalf("expected ErrCertRevoked, got %v", err)
 	}
 }

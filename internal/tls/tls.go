@@ -73,9 +73,9 @@ type credentials struct {
 	hotReload bool
 	// certPtr keeps the latest loaded certificate.
 	certPtr atomic.Pointer[tls.Certificate]
-	// crl path and set for revocation check
-	crl     string
-	revoked map[string]struct{}
+	// crl path and atomic revoked serial set
+	crl        string
+	revokedPtr atomic.Pointer[map[string]struct{}]
 }
 
 // loadCRL reads a single PEM encoded CRL file and returns revoked serial set.
@@ -119,11 +119,11 @@ func newCredential(opts ...Option) (*credentials, error) {
 	}
 	// Load CRL if provided
 	if c.crl != "" {
-		set, err := loadCRL(c.crl)
+		m, err := loadCRL(c.crl)
 		if err != nil {
 			return nil, err
 		}
-		c.revoked = set
+		c.revokedPtr.Store(&m)
 	}
 	if c.sn != "" {
 		c.cfg.ServerName = c.sn
@@ -199,11 +199,12 @@ func (c *credentials) reloadCert() (*tls.Certificate, error) {
 
 	// Refresh CRL set on every reload so that updates are respected.
 	if c.crl != "" {
-		if set, rerr := loadCRL(c.crl); rerr == nil {
-			c.revoked = set
-		} else {
-			log.Warnf("failed to reload CRL: %v", rerr)
+		m, err := loadCRL(c.crl)
+		if err != nil {
+			log.Warnf("failed to reload CRL: %v", err)
 		}
+		// Let's avoid exiting here because the process is running
+		c.revokedPtr.Store(&m)
 	}
 
 	if err = verifyCertChain(kp2.Leaf, c.cfg.ClientCAs); err != nil {
@@ -229,10 +230,14 @@ func (c *credentials) reloadCert() (*tls.Certificate, error) {
 }
 
 func (c *credentials) isRevoked(sn *big.Int) bool {
-	if c == nil || len(c.revoked) == 0 || sn == nil {
+	if c == nil || sn == nil {
 		return false
 	}
-	_, ok := c.revoked[sn.String()]
+	set := c.revokedPtr.Load()
+	if set == nil {
+		return false
+	}
+	_, ok := (*set)[sn.String()]
 	return ok
 }
 
