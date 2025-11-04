@@ -46,7 +46,7 @@ jobs:
     permissions:
       contents: read
     name: lint for vald chart
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     needs: [detect-ci-container]
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
@@ -72,7 +72,7 @@ jobs:
     permissions:
       contents: read
     name: lint for vald-helm-operator chart
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     needs: [detect-ci-container]
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
