@@ -98,12 +98,12 @@ func loadCRL(path string) (map[string]struct{}, error) {
 		if block.Type != "X509 CRL" {
 			continue
 		}
-		crl, err := x509.ParseCRL(block.Bytes)
+		crl, err := x509.ParseRevocationList(block.Bytes)
 		if err != nil {
 			log.Warnf("failed to parse CRL %s: %v", path, err)
 			continue
 		}
-		for _, rc := range crl.TBSCertList.RevokedCertificates {
+		for _, rc := range crl.RevokedCertificateEntries {
 			set[rc.SerialNumber.String()] = struct{}{}
 		}
 	}
