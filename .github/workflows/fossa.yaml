@@ -95,7 +95,7 @@ jobs:
           fi
         env:
           FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
           PR_INFO_URL: ${{ github.event.pull_request.url }}
           API_URL: ${{ github.event.pull_request.comments_url }}
