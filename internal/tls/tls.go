@@ -22,6 +22,7 @@ import (
 	"crypto/x509"
 	"encoding/hex"
 	"encoding/pem"
+	stderrors "errors"
 	"math/big"
 	"reflect"
 	"sync/atomic"
@@ -58,6 +59,9 @@ var (
 	NewListener    = tls.NewListener
 	Listen         = tls.Listen
 )
+
+// ErrCertRevoked is returned when the certificate serial exists in configured CRL.
+var ErrCertRevoked = stderrors.New("tls: certificate revoked")
 
 // credentials holds TLS settings for server and client
 // including certificate paths, CA bundle, and hot reload policies.
@@ -218,9 +222,9 @@ func (c *credentials) reloadCert() (*tls.Certificate, error) {
 	if c.isRevoked(kp2.Leaf.SerialNumber) {
 		log.Warnf("certificate serial %s is revoked", kp2.Leaf.SerialNumber)
 		if cur := c.certPtr.Load(); cur != nil {
-			return cur, nil
+			return cur, ErrCertRevoked
 		}
-		return nil, err
+		return nil, ErrCertRevoked
 	}
 
 	// Store and use the verified certificate.
@@ -272,7 +276,7 @@ func NewServerConfig(opts ...Option) (*Config, error) {
 			return nil, err
 		}
 		if c.isRevoked(kp.Leaf.SerialNumber) {
-			return nil, errors.Errorf("certificate serial %s revoked", kp.Leaf.SerialNumber)
+			return nil, ErrCertRevoked
 		}
 		c.cfg.Certificates = []tls.Certificate{kp}
 		return c.cfg, nil
