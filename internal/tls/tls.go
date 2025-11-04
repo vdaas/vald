@@ -107,6 +107,8 @@ func loadCRL(path string) (map[string]struct{}, error) {
 }
 
 // newCredential builds credentials from defaults and provided options.
+// Let's compromise cyclomatic complexity here for deeper abstraction.
+// skipcq: GO-R1005
 func newCredential(opts ...Option) (*credentials, error) {
 	c := new(credentials)
 	for _, opt := range append(defaultOptions(), opts...) {
@@ -310,6 +312,8 @@ func NewServerConfig(opts ...Option) (*Config, error) {
 }
 
 // NewClientConfig returns a *tls.Config for client, with optional mTLS and hot reload.
+// Let's compromise cyclomatic complexity here for deeper abstraction.
+// skipcq: GO-R1005
 func NewClientConfig(opts ...Option) (*Config, error) {
 	c, err := newCredential(opts...)
 	if err != nil {
@@ -451,6 +455,8 @@ func verifyCertChain(cert *x509.Certificate, pool *x509.CertPool) error {
 		Intermediates: x509.NewCertPool(),
 		CurrentTime:   time.Now(),
 	}
+	// We support CRL checking elsewhere, so skip it here.
+	// skipcq: GO-S1031
 	_, err := cert.Verify(opts)
 	return err
 }
