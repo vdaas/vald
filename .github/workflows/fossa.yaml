@@ -26,9 +26,8 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: read
-
     if: github.ref == 'refs/heads/main' || github.event.action == 'labeled' && github.event.label.name == 'actions/fossa'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
@@ -84,7 +83,7 @@ jobs:
 
             fossa analyze --branch ${HEAD_BRANCH} --revision ${GITHUB_SHA}
 
-            ESCAPED=`echo -n "${HEAD_BRANCH}" | python3 -c 'import urllib.parse; import sys; print(urllib.parse.quote(sys.stdin.read(), safe=""))'`
+            ESCAPED=`echo -n "${HEAD_BRANCH}" | jq -sRr @uri`
 
             curl --include --verbose --fail \
             -H "Accept: application/json" \
@@ -96,7 +95,7 @@ jobs:
           fi
         env:
           FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
           PR_INFO_URL: ${{ github.event.pull_request.url }}
           API_URL: ${{ github.event.pull_request.comments_url }}
