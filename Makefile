@@ -907,7 +907,8 @@ workflow/fix:
 ACTIONLINT_IGNORES = \
   -ignore 'when a reusable workflow is called with "uses", "timeout-minutes" is not available' \
   -ignore 'property "tag" is not defined in object type' \
-  -ignore 'input "file" is not defined in action "codecov/codecov-action@v5"'
+  -ignore 'input "file" is not defined in action "codecov/codecov-action@v5"' \
+  -ignore 'label "ubuntu-slim" is unknown.' # TODO: remove this line after https://github.com/rhysd/actionlint/issues/587 is merged
 
 actionlint/lint: actionlint/install
 	@$(GOBIN)/actionlint -shellcheck= $(ACTIONLINT_IGNORES)
