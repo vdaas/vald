@@ -186,8 +186,8 @@ func runTLSHandshakePerOp(b *testing.B, hot bool) {
 			if err != nil {
 				b.Fatalf("dial: %v", err)
 			}
+			defer conn.Close()
 			_, err = vald.NewIndexClient(conn).IndexInfo(ctx, &payload.Empty{})
-			_ = conn.Close()
 			if err != nil {
 				b.Fatalf("IndexInfo: %v", err)
 			}
