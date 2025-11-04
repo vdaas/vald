@@ -336,10 +336,10 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 			c.cfg.RootCAs = pool
 		}
 	}
-	// load client cert if provided
 	if c.cert == "" || c.key == "" {
 		return c.cfg, nil
 	}
+	// load client cert if provided
 	if c.sn == "" {
 		c.sn = "vald-client"
 		c.cfg.ServerName = c.sn
