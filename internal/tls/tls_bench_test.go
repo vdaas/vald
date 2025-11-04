@@ -80,7 +80,7 @@ func serverStarter(
 	stls, err := tls.NewServerConfig(
 		tls.WithCert(certPath),
 		tls.WithKey(keyPath),
-		tls.WithServerCertHotReload(hot),
+		tls.WithHotReload(hot),
 	)
 	if err != nil {
 		b.Fatalf("server TLS config: %v", err)

@@ -73,6 +73,6 @@ func (t *TLS) Opts() []tls.Option {
 		tls.WithInsecureSkipVerify(t.InsecureSkipVerify),
 		tls.WithServerName(t.ServerName),
 		tls.WithClientAuth(t.ClientAuth),
-		tls.WithServerCertHotReload(t.HotReload),
+		tls.WithHotReload(t.HotReload),
 	}
 }
