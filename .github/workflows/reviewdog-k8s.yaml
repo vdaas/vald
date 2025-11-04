@@ -33,7 +33,7 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
@@ -49,7 +49,7 @@ jobs:
       contents: read
       pull-requests: write
     name: runner / kubeval-conflint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: [detect-ci-container]
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
@@ -77,7 +77,7 @@ jobs:
     permissions:
       contents: read
     name: runner / kubelinter
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: [detect-ci-container]
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
@@ -104,7 +104,7 @@ jobs:
     permissions:
       contents: read
     name: runner / kubelinter for vald chart
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: [detect-ci-container]
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}

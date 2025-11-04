@@ -40,7 +40,7 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
@@ -53,7 +53,7 @@ jobs:
   analyze:
     timeout-minutes: 30
     name: CodeQL Analyze (${{ matrix.language }})
-    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-slim' }}
     env:
       CODEQL_ENABLE_EXPERIMENTAL_FEATURES: true
       CODEQL_ACTION_TEST_MODE: true
