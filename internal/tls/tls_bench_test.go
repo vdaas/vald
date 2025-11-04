@@ -13,6 +13,8 @@
 // limitations under the License.
 package tls_test
 
+// Use the benchmark below by running the following command:
+// go test ./internal/tls -run=^$ -bench=. -benchmem
 import (
 	"context"
 	"path/filepath"
@@ -186,11 +188,11 @@ func runTLSHandshakePerOp(b *testing.B, hot bool) {
 			if err != nil {
 				b.Fatalf("dial: %v", err)
 			}
-			defer conn.Close()
 			_, err = vald.NewIndexClient(conn).IndexInfo(ctx, &payload.Empty{})
 			if err != nil {
 				b.Fatalf("IndexInfo: %v", err)
 			}
+			conn.Close()
 		}
 	})
 }
