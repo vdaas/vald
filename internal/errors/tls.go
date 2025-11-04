@@ -40,4 +40,8 @@ var (
 	ErrNoCertsAddedToPool = New("no CA or self-signed certificates added to pool")
 
 	ErrNoCertsFoundInPEM = New("no certificates found from PEM")
+
+	// ErrCertRevoked is returned when the certificate serial exists in configured CRL.
+	ErrCertRevoked = New("certificate revoked")
+
 )
