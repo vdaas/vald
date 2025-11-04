@@ -83,7 +83,7 @@ jobs:
 
             fossa analyze --branch ${HEAD_BRANCH} --revision ${GITHUB_SHA}
 
-            ESCAPED=`echo -n "${HEAD_BRANCH}" | python3 -c 'import urllib.parse; import sys; print(urllib.parse.quote(sys.stdin.read(), safe=""))'`
+            ESCAPED=`echo -n "${HEAD_BRANCH}" | python -c 'import urllib.parse; import sys; print(urllib.parse.quote(sys.stdin.read(), safe=""))'`
 
             curl --include --verbose --fail \
             -H "Accept: application/json" \
