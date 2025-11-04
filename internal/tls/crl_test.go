@@ -1,19 +1,15 @@
 package tls
 
 import (
-	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"encoding/asn1"
 	"encoding/pem"
 	"errors"
-	"io"
 	"math/big"
 	"os"
 	"path/filepath"
-	"reflect"
 	"testing"
 	"time"
 )
@@ -83,28 +79,14 @@ func createCRL(
 		})
 	}
 
-	var crlBytes []byte
-	var err error
-
-	// x509.CreateRevocationList is available from Go1.20.
-	if crlCreate := getCreateRevocationList(); crlCreate != nil {
-		crlBytes, err = crlCreate(rand.Reader, &x509.RevocationList{
-			SignatureAlgorithm:  issuer.SignatureAlgorithm,
-			Issuer:              issuer.Subject,
-			RevokedCertificates: revoked,
-			Number:              big.NewInt(1),
-			ThisUpdate:          time.Now().Add(-time.Minute),
-			NextUpdate:          time.Now().Add(time.Hour),
-		}, issuer, issuerKey)
-	} else {
-		// Fallback: build minimal pkix.CertificateList and marshal.
-		cl := pkix.CertificateList{
-			TBSCertList: pkix.TBSCertificateList{
-				RevokedCertificates: revoked,
-			},
-		}
-		crlBytes, err = MarshalCertificateList(cl)
-	}
+	crlBytes, err := x509.CreateRevocationList(rand.Reader, &x509.RevocationList{
+		SignatureAlgorithm:  issuer.SignatureAlgorithm,
+		Issuer:              issuer.Subject,
+		RevokedCertificates: revoked,
+		Number:              big.NewInt(1),
+		ThisUpdate:          time.Now().Add(-time.Minute),
+		NextUpdate:          time.Now().Add(time.Hour),
+	}, issuer, issuerKey)
 	if err != nil {
 		t.Fatalf("create CRL: %v", err)
 	}
@@ -114,22 +96,6 @@ func createCRL(
 	pem.Encode(f, &pem.Block{Type: "X509 CRL", Bytes: crlBytes})
 	f.Close()
 	return path
-}
-
-// getCreateRevocationList uses reflect to get x509.CreateRevocationList if available.
-func getCreateRevocationList() func(rand io.Reader, rl *x509.RevocationList, issuer *x509.Certificate, key crypto.Signer) ([]byte, error) {
-	// reflect to avoid compile error on older Go versions
-	v := reflect.ValueOf(x509.CreateRevocationList)
-	if !v.IsValid() || v.IsZero() {
-		return nil
-	}
-	return x509.CreateRevocationList
-}
-
-// MarshalCertificateList marshals pkix.CertificateList via asn1.
-// This is used only when CreateRevocationList is unavailable.
-func MarshalCertificateList(cl pkix.CertificateList) ([]byte, error) {
-	return asn1.Marshal(cl)
 }
 
 // TestCRLRevocation ensures that a revoked certificate is rejected by NewServerConfig.
