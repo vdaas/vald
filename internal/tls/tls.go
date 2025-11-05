@@ -180,25 +180,19 @@ func loadKeyPair(role, certPath, keyPath string) (tls.Certificate, error) {
 	return kp, nil
 }
 
-func (c *credentials) reloadCert() (*tls.Certificate, error) {
-	kp2, err := loadKeyPair(c.sn, c.cert, c.key)
-	if err != nil {
-		// fall back to last good certificate
-		if cur := c.certPtr.Load(); cur != nil {
-			return cur, nil
-		}
-		return nil, err
-	}
-
-	// Verify the newly loaded certificate before applying it.
-	if kp2.Leaf == nil {
-		// should not happen, but guard anyway
-		if cur := c.certPtr.Load(); cur != nil {
-			return cur, errors.ErrNoCertsFoundInPEM
-		}
+func (c *credentials) fallbackToLastCert() (*tls.Certificate, error) {
+	cur := c.certPtr.Load()
+	if cur == nil || cur.Leaf == nil {
 		return nil, errors.ErrNoCertsFoundInPEM
 	}
+	if c.isRevoked(cur.Leaf.SerialNumber) {
+		return nil, errors.ErrCertRevoked
+	}
+	return cur, nil
+}
 
+
+func (c *credentials) reloadCert() (*tls.Certificate, error) {
 	// Refresh CRL set on every reload so that updates are respected.
 	if c.crl != "" {
 		m, err := loadCRL(c.crl)
@@ -210,25 +204,21 @@ func (c *credentials) reloadCert() (*tls.Certificate, error) {
 		}
 	}
 
+	kp2, err := loadKeyPair(c.sn, c.cert, c.key)
+	if err != nil || kp2.Leaf == nil {
+		log.Warnf("failed to load new keypair during hot reload: %v", err)
+		return c.fallbackToLastCert()
+	}
+
 	if err = verifyCertChain(kp2.Leaf, c.cfg.ClientCAs); err != nil {
 		log.Warnf("certificate chain verify failed during hot reload: %v", err)
-		if cur := c.certPtr.Load(); cur != nil {
-			return cur, nil
-		}
-		return nil, err
+		return c.fallbackToLastCert()
 	}
 
 	// CRL check
 	if c.isRevoked(kp2.Leaf.SerialNumber) {
 		log.Warnf("certificate serial %s is revoked, falling back to the previous certificate", kp2.Leaf.SerialNumber)
-		cur := c.certPtr.Load()
-		if cur == nil || cur.Leaf == nil {
-			return nil, errors.ErrNoCertsFoundInPEM
-		}
-		if c.isRevoked(cur.Leaf.SerialNumber) {
-			return nil, errors.ErrCertRevoked
-		}
-		return cur, nil
+		return c.fallbackToLastCert()
 	}
 
 	// Store and use the verified certificate.
