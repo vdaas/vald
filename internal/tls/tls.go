@@ -177,7 +177,22 @@ func loadKeyPair(role, certPath, keyPath string) (tls.Certificate, error) {
 		}
 	}
 
+	if kp.Leaf == nil {
+		return kp, errors.ErrNoCertsFoundInPEM
+	}
+
 	return kp, nil
+}
+
+func (c *credentials) verify(cert *x509.Certificate) error {
+	err := verifyCertChain(cert, c.cfg.ClientCAs)
+	if err != nil {
+		return err
+	}
+	if c.isRevoked(cert.SerialNumber) {
+		return errors.ErrCertRevoked
+	}
+	return nil
 }
 
 func (c *credentials) fallbackToLastCert() (*tls.Certificate, error) {
@@ -205,19 +220,13 @@ func (c *credentials) reloadCert() (*tls.Certificate, error) {
 	}
 
 	kp2, err := loadKeyPair(c.sn, c.cert, c.key)
-	if err != nil || kp2.Leaf == nil {
+	if err != nil {
 		log.Warnf("failed to load new keypair during hot reload: %v", err)
 		return c.fallbackToLastCert()
 	}
 
-	if err = verifyCertChain(kp2.Leaf, c.cfg.ClientCAs); err != nil {
+	if err = c.verify(kp2.Leaf); err != nil {
 		log.Warnf("certificate chain verify failed during hot reload: %v", err)
-		return c.fallbackToLastCert()
-	}
-
-	// CRL check
-	if c.isRevoked(kp2.Leaf.SerialNumber) {
-		log.Warnf("certificate serial %s is revoked, falling back to the previous certificate", kp2.Leaf.SerialNumber)
 		return c.fallbackToLastCert()
 	}
 
@@ -266,25 +275,21 @@ func NewServerConfig(opts ...Option) (*Config, error) {
 		c.cfg.ClientCAs = pool
 		c.cfg.ClientAuth = c.clientAuth
 	}
-	// Configure certificate strategy.
-	if !c.hotReload {
-		// load once statically
-		kp, err := loadKeyPair(c.sn, c.cert, c.key)
-		if err != nil {
-			return nil, err
-		}
-		if kp.Leaf != nil && c.isRevoked(kp.Leaf.SerialNumber) {
-			return nil, errors.ErrCertRevoked
-		}
-		c.cfg.Certificates = []tls.Certificate{kp}
-		return c.cfg, nil
-	}
-	// if c.hotReload
-	// Preload once for NameToCertificate mapping and fallback.
+
 	kp, err := loadKeyPair(c.sn, c.cert, c.key)
 	if err != nil {
 		return nil, err
 	}
+	if err = c.verify(kp.Leaf); err != nil {
+		return nil, err
+	}
+
+	// Configure certificate strategy.
+	if !c.hotReload {
+		c.cfg.Certificates = []tls.Certificate{kp}
+		return c.cfg, nil
+	}
+	// if c.hotReload
 	c.cfg.Certificates = []tls.Certificate{kp}
 	c.certPtr.Store(&kp)
 
@@ -344,10 +349,15 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 		c.sn = "vald-client"
 		c.cfg.ServerName = c.sn
 	}
+
 	kp, err := loadKeyPair(c.sn, c.cert, c.key)
 	if err != nil {
 		return nil, err
 	}
+	if err = c.verify(kp.Leaf); err != nil {
+		return nil, err
+	}
+
 	c.cfg.Certificates = []tls.Certificate{kp}
 	if !c.hotReload {
 		return c.cfg, nil
