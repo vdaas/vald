@@ -29,3 +29,10 @@ func WithAddrs(addrs []string) Option {
 		return nil
 	}
 }
+
+func WithTxn(txn bool) Option {
+	return func(c *client) error {
+		c.txn = txn;
+		return nil
+	}
+}

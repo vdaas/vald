@@ -21,6 +21,7 @@ import (
 
 	"github.com/tikv/client-go/v2/config"
 	"github.com/tikv/client-go/v2/rawkv"
+	"github.com/tikv/client-go/v2/txnkv"
 	"github.com/vdaas/vald/internal/errors"
 )
 
@@ -34,7 +35,9 @@ type (
 
 	client struct {
 		addrs []string
+		txn   bool
 		rcli  *rawkv.Client
+		tcli  *txnkv.Client
 	}
 )
 
@@ -56,47 +59,105 @@ func New(ctx context.Context, opts ...Option) (Client, error) {
 		}
 	}
 
-	c.rcli, err = rawkv.NewClient(ctx, c.addrs, config.DefaultConfig().Security)
-	if err != nil {
-		return nil, errors.ErrNewTiKVRawClientFailed(err)
+	if c.txn {
+		c.tcli, err = txnkv.NewClient(c.addrs)
+		if err != nil {
+			return nil, errors.ErrNewTiKVTxnClientFailed(err)
+		}
+	} else {
+		c.rcli, err = rawkv.NewClient(ctx, c.addrs, config.DefaultConfig().Security)
+		if err != nil {
+			return nil, errors.ErrNewTiKVRawClientFailed(err)
+		}
 	}
-
 	return c, nil
 }
 
 func (c *client) Set(ctx context.Context, key, val []byte) error {
-	err := c.rcli.Put(ctx, key, val)
-	if err != nil {
-		return errors.ErrTiKVSetOperationFailed(key, val, err)
+	if c.txn {
+		txn, err := c.tcli.Begin()
+		if err != nil {
+			return errors.ErrTiKVBeginOperationFailed(err)
+		}
+		defer func() { _ = txn.Rollback() }()
+		txn.SetEnableAsyncCommit(true)
+		err = txn.Set(key, val)
+		if err != nil {
+			return errors.ErrTiKVSetOperationFailed(key, val, err)
+		}
+		err = txn.Commit(ctx)
+		if err != nil {
+			return errors.ErrTiKVCommitOperationFailed(err)
+		}
+	} else {
+		err := c.rcli.Put(ctx, key, val)
+		if err != nil {
+			return errors.ErrTiKVSetOperationFailed(key, val, err)
+		}
 	}
 
 	return nil
 }
 
-func (c *client) Get(ctx context.Context, key []byte) ([]byte, error) {
-	val, err := c.rcli.Get(ctx, key)
-	if err != nil {
-		return nil, errors.ErrTiKVGetOperationFailed(key, err)
+func (c *client) Get(ctx context.Context, key []byte) (val []byte, err error) {
+	if c.txn {
+		txn, err := c.tcli.Begin()
+		if err != nil {
+			return nil, errors.ErrTiKVBeginOperationFailed(err)
+		}
+		defer func() { _ = txn.Rollback() }()
+		val, err = txn.Get(ctx, key)
+		if err != nil {
+			return nil, errors.ErrTiKVGetOperationFailed(key, err)
+		}
+	} else {
+		val, err = c.rcli.Get(ctx, key)
+		if err != nil {
+			return nil, errors.ErrTiKVGetOperationFailed(key, err)
+		}
 	}
 
 	return val, nil
 }
 
 func (c *client) Delete(ctx context.Context, key []byte) error {
-	err := c.rcli.Delete(ctx, key)
-	if err != nil {
-		return errors.ErrTiKVDeleteOperationFailed(key, err)
+	if c.txn {
+		txn, err := c.tcli.Begin()
+		if err != nil {
+			return errors.ErrTiKVBeginOperationFailed(err)
+		}
+		defer func() { _ = txn.Rollback() }()
+		txn.SetEnableAsyncCommit(true)
+		err = txn.Delete(key)
+		if err != nil {
+			return errors.ErrTiKVDeleteOperationFailed(key, err)
+		}
+		err = txn.Commit(ctx)
+		if err != nil {
+			return errors.ErrTiKVCommitOperationFailed(err)
+		}
+	} else {
+		err := c.rcli.Delete(ctx, key)
+		if err != nil {
+			return errors.ErrTiKVDeleteOperationFailed(key, err)
+		}
 	}
 
 	return nil
 }
 
-func (c *client) Close() error {
-	if c.rcli == nil {
-		return nil
+func (c *client) Close() (errs error) {
+	if c.rcli != nil {
+		if err := c.rcli.Close(); err != nil {
+			errs = errors.Join(errs, errors.ErrTiKVRawClientCloseOperationFailed(err))
+		}
 	}
-	if err := c.rcli.Close(); err != nil {
-		return errors.ErrTiKVRawClientCloseOperationFailed(err)
+
+	if c.tcli != nil {
+		if err := c.tcli.Close(); err != nil {
+			errs = errors.Join(errs, errors.ErrTiKVTxnClientCloseOperationFailed(err))
+		}
 	}
-	return nil
+
+	return errs
 }
