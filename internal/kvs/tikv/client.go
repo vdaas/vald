@@ -64,7 +64,7 @@ func New(ctx context.Context, opts ...Option) (Client, error) {
 		if err != nil {
 			return nil, errors.ErrNewTiKVTxnClientFailed(err)
 		}
-	}	else {
+	} else {
 		c.rcli, err = rawkv.NewClient(ctx, c.addrs, config.DefaultConfig().Security)
 		if err != nil {
 			return nil, errors.ErrNewTiKVRawClientFailed(err)
