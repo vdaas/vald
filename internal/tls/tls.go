@@ -220,7 +220,7 @@ func (c *credentials) reloadCert() (*tls.Certificate, error) {
 
 	// CRL check
 	if c.isRevoked(kp2.Leaf.SerialNumber) {
-		log.Warnf("certificate serial %s is revoked", kp2.Leaf.SerialNumber)
+		log.Warnf("certificate serial %s is revoked, falling back to the previous certificate", kp2.Leaf.SerialNumber)
 		cur := c.certPtr.Load()
 		if cur == nil || cur.Leaf == nil {
 			return nil, errors.ErrNoCertsFoundInPEM
