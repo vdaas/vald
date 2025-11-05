@@ -79,6 +79,7 @@ func (c *client) Set(ctx context.Context, key, val []byte) error {
 		if err != nil {
 			return errors.ErrTiKVBeginOperationFailed(err)
 		}
+		defer func() { _ = txn.Rollback() }()
 		txn.SetEnableAsyncCommit(true)
 		err = txn.Set(key, val)
 		if err != nil {
@@ -104,6 +105,7 @@ func (c *client) Get(ctx context.Context, key []byte) (val []byte, err error) {
 		if err != nil {
 			return nil, errors.ErrTiKVBeginOperationFailed(err)
 		}
+		defer func() { _ = txn.Rollback() }()
 		val, err = txn.Get(ctx, key)
 		if err != nil {
 			return nil, errors.ErrTiKVGetOperationFailed(key, err)
@@ -124,6 +126,7 @@ func (c *client) Delete(ctx context.Context, key []byte) error {
 		if err != nil {
 			return errors.ErrTiKVBeginOperationFailed(err)
 		}
+		defer func() { _ = txn.Rollback() }()
 		txn.SetEnableAsyncCommit(true)
 		err = txn.Delete(key)
 		if err != nil {
@@ -143,18 +146,18 @@ func (c *client) Delete(ctx context.Context, key []byte) error {
 	return nil
 }
 
-func (c *client) Close() error {
+func (c *client) Close() (errs error) {
 	if c.rcli != nil {
 		if err := c.rcli.Close(); err != nil {
-			return errors.ErrTiKVRawClientCloseOperationFailed(err)
+			errs = errors.Join(errs, errors.ErrTiKVRawClientCloseOperationFailed(err))
 		}
 	}
 
 	if c.tcli != nil {
 		if err := c.tcli.Close(); err != nil {
-			return errors.ErrTiKVTxnClientCloseOperationFailed(err)
+			errs = errors.Join(errs, errors.ErrTiKVTxnClientCloseOperationFailed(err))
 		}
 	}
 
-	return nil
+	return errs
 }
