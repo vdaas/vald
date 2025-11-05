@@ -28,7 +28,7 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
@@ -39,7 +39,7 @@ jobs:
     permissions:
       contents: read
     name: Update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
