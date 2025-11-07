@@ -32,7 +32,7 @@ func WithAddrs(addrs []string) Option {
 
 func WithTxn(txn bool) Option {
 	return func(c *client) error {
-		c.txn = txn;
+		c.txn = txn
 		return nil
 	}
 }
