@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package tls
+package tls_test
 
 import (
 	"crypto/rand"
@@ -22,20 +22,23 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"errors"
 	"math/big"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
-	ierr "github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/test"
+	"github.com/vdaas/vald/internal/tls"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 // helper to create a self-signed certificate/key pair and write to temp files.
-func createTempCert(
-	t *testing.T, dir string, serial int64,
-) (certPath, keyPath string, cert *x509.Certificate, key *rsa.PrivateKey) {
+func createTempCert(t *testing.T) (cert *x509.Certificate, key *rsa.PrivateKey) {
 	t.Helper()
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -44,7 +47,7 @@ func createTempCert(
 	}
 
 	tmpl := &x509.Certificate{
-		SerialNumber: big.NewInt(serial),
+		SerialNumber: big.NewInt(9999),
 		Subject:      pkix.Name{CommonName: "unit-test"},
 		NotBefore:    time.Now().Add(-time.Hour),
 		NotAfter:     time.Now().Add(time.Hour),
@@ -57,36 +60,16 @@ func createTempCert(
 		t.Fatalf("create cert: %v", err)
 	}
 
-	certFile, err := os.CreateTemp(dir, "cert*.pem")
-	if err != nil {
-		t.Fatalf("temp cert: %v", err)
-	}
-	pem.Encode(certFile, &pem.Block{Type: "CERTIFICATE", Bytes: der})
-	certFile.Close()
-
-	keyFile, err := os.CreateTemp(dir, "key*.pem")
-	if err != nil {
-		t.Fatalf("temp key: %v", err)
-	}
-	pem.Encode(keyFile, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)})
-	keyFile.Close()
-
 	parsedCert, err := x509.ParseCertificate(der)
 	if err != nil {
 		t.Fatalf("parse cert: %v", err)
 	}
 
-	return certFile.Name(), keyFile.Name(), parsedCert, key
+	return parsedCert, key
 }
 
 // createCRL writes a CRL containing revoked serials signed by issuer.
-func createCRL(
-	t *testing.T,
-	dir string,
-	issuer *x509.Certificate,
-	issuerKey *rsa.PrivateKey,
-	revokedSerials ...*big.Int,
-) string {
+func createCRL(t *testing.T, dir string, revokedSerials ...*big.Int) string {
 	t.Helper()
 
 	revoked := make([]pkix.RevokedCertificate, 0, len(revokedSerials))
@@ -96,6 +79,8 @@ func createCRL(
 			RevocationTime: time.Now().Add(-time.Minute),
 		})
 	}
+
+	issuer, issuerKey := createTempCert(t)
 
 	crlBytes, err := x509.CreateRevocationList(rand.Reader, &x509.RevocationList{
 		SignatureAlgorithm:  issuer.SignatureAlgorithm,
@@ -122,41 +107,75 @@ func createCRL(
 	return path
 }
 
-// TestCRLRevocation ensures that a revoked certificate is rejected by NewServerConfig.
 func TestCRLRevocation(t *testing.T) {
+	ctx, stop, addr := serverStarter(t, false)
+	defer stop()
+
 	dir := t.TempDir()
+	serverCertPath := test.GetTestdataPath("tls/server.crt")
+	data, err := os.ReadFile(serverCertPath)
+	if err != nil {
+		t.Fatalf("read server cert: %v", err)
+	}
+	block, _ := pem.Decode(data)
+	srvCert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		t.Fatalf("parse server cert: %v", err)
+	}
+	crlPath := createCRL(t, dir, srvCert.SerialNumber)
 
-	certPath, keyPath, cert, key := createTempCert(t, dir, 1001)
-
-	crlPath := createCRL(t, dir, cert, key, big.NewInt(1001))
-
-	opts := []Option{
-		WithCert(certPath),
-		WithKey(keyPath),
-		WithCRL(crlPath),
+	ccfg, err := tls.NewClientConfig(
+		tls.WithCa(test.GetTestdataPath("tls/ca.pem")),
+		tls.WithCRL(crlPath),
+	)
+	if err != nil {
+		t.Fatalf("client tls: %v", err)
 	}
 
-	if _, err := NewServerConfig(opts...); err == nil || !errors.Is(err, ierr.ErrCertRevoked) {
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(credentials.NewTLS(ccfg)))
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	defer conn.Close()
+	_, err = vald.NewIndexClient(conn).IndexInfo(ctx, &payload.Empty{})
+	if !strings.Contains(err.Error(), "certificate revoked") {
 		t.Fatalf("expected ErrCertRevoked, got %v", err)
 	}
 }
 
-// TestCRLSuccess ensures that non-revoked cert passes.
 func TestCRLSuccess(t *testing.T) {
+	ctx, stop, addr := serverStarter(t, false)
+	defer stop()
+
 	dir := t.TempDir()
+	serverCertPath := test.GetTestdataPath("tls/server.crt")
+	data, err := os.ReadFile(serverCertPath)
+	if err != nil {
+		t.Fatalf("read server cert: %v", err)
+	}
+	block, _ := pem.Decode(data)
+	srvCert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		t.Fatalf("parse server cert: %v", err)
+	}
+	otherSerial := new(big.Int).Add(srvCert.SerialNumber, big.NewInt(10))
+	crlPath := createCRL(t, dir, otherSerial)
 
-	certPath, keyPath, cert, key := createTempCert(t, dir, 2001)
-
-	// CRL contains different serial -> should pass
-	crlPath := createCRL(t, dir, cert, key, big.NewInt(9999))
-
-	opts := []Option{
-		WithCert(certPath),
-		WithKey(keyPath),
-		WithCRL(crlPath),
+	ccfg, err := tls.NewClientConfig(
+		tls.WithCa(test.GetTestdataPath("tls/ca.pem")),
+		tls.WithCRL(crlPath),
+	)
+	if err != nil {
+		t.Fatalf("client tls: %v", err)
 	}
 
-	if _, err := NewServerConfig(opts...); err != nil {
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(credentials.NewTLS(ccfg)))
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	defer conn.Close()
+	_, err = vald.NewIndexClient(conn).IndexInfo(ctx, &payload.Empty{})
+	if err != nil {
 		t.Fatalf("expected success, got %v", err)
 	}
 }

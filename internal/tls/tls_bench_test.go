@@ -52,26 +52,26 @@ func init() {
 }
 
 func serverStarter(
-	b *testing.B, hot bool,
+	tb testing.TB, hot bool,
 ) (ctx context.Context, stop context.CancelFunc, addr string) {
-	b.Helper()
-	ctx, stop = context.WithCancel(b.Context())
+	tb.Helper()
+	ctx, stop = context.WithCancel(tb.Context())
 
 	// Get a free port by listening on port 0 and closing the listener immediately
 	ln, err := net.Listen(net.TCP.String(), net.JoinHostPort(localhost, 0))
 	if err != nil {
-		b.Fatalf("listen: %v", err)
+		tb.Fatalf("listen: %v", err)
 	}
 	_, port, err := net.SplitHostPort(ln.Addr().String())
 	if err != nil {
-		b.Fatalf("split host port: %v", err)
+		tb.Fatalf("split host port: %v", err)
 	}
 	_ = ln.Close()
 
 	certPath := test.GetTestdataPath("tls/server.crt")
 	keyPath := test.GetTestdataPath("tls/server.key")
 	if hot {
-		dir := b.TempDir()
+		dir := tb.TempDir()
 		activeCertPath = filepath.Join(dir, "active.crt")
 		activeKeyPath = filepath.Join(dir, "active.key")
 		_, _ = file.CopyFile(ctx, certPath, activeCertPath)
@@ -85,7 +85,7 @@ func serverStarter(
 		tls.WithHotReload(hot),
 	)
 	if err != nil {
-		b.Fatalf("server TLS config: %v", err)
+		tb.Fatalf("server TLS config: %v", err)
 	}
 
 	srv, err := starter.New(
@@ -108,7 +108,7 @@ func serverStarter(
 		}),
 	)
 	if err != nil {
-		b.Fatalf("starter initialization failed: %v", err)
+		tb.Fatalf("starter initialization failed: %v", err)
 	}
 
 	_ = srv.ListenAndServe(ctx)
