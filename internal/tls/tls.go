@@ -318,7 +318,6 @@ func NewServerConfig(opts ...Option) (*Config, error) {
 		}
 		return cfg, nil
 	}
-	c.attachCRLChainChecker(c.cfg)
 	return c.cfg, nil
 }
 
