@@ -22,7 +22,6 @@ import (
 	"crypto/x509"
 	"encoding/hex"
 	"encoding/pem"
-	"math/big"
 	"reflect"
 	"sync"
 	"sync/atomic"
@@ -193,19 +192,6 @@ func (c *credentials) reloadCert() (*tls.Certificate, error) {
 	return &kp2, nil
 }
 
-func (c *credentials) isRevoked(sn *big.Int) bool {
-	if c == nil || sn == nil {
-		return false
-	}
-	c.crlMu.RLock()
-	defer c.crlMu.RUnlock()
-	if c.revoked == nil {
-		return false
-	}
-	_, ok := c.revoked[sn.String()]
-	return ok
-}
-
 // ensureCRL reloads the CRL file when NextUpdate has passed.
 // On failure, it preserves the previous cache and logs a warning.
 func (c *credentials) ensureCRL() error {
@@ -245,7 +231,7 @@ func (c *credentials) attachCRLChainChecker(cfg *tls.Config) {
 	if c == nil || cfg == nil || cfg.InsecureSkipVerify || c.crl == "" {
 		return
 	}
-	cfg.VerifyPeerCertificate = func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
+	cfg.VerifyPeerCertificate = func(_ [][]byte, verifiedChains [][]*x509.Certificate) error {
 		// Refresh CRL cache on demand
 		if err := c.ensureCRL(); err != nil {
 			return err
@@ -460,10 +446,6 @@ func processCert(
 		cert.IPAddresses,
 		checkSignature)
 
-	if _, err := verifyCertChain(cert, pool); err != nil {
-		log.Warnf("chain verify failed for %s: %v", cert.Subject.CommonName, err)
-	}
-
 	if !cert.IsCA && !selfSigned {
 		return false
 	}
@@ -474,17 +456,6 @@ func processCert(
 	pool.AddCert(cert)
 	seen[fp] = struct{}{}
 	return true
-}
-
-// verifyCertChain attempts to verify the cert against the provided pool.
-func verifyCertChain(cert *x509.Certificate, pool *x509.CertPool) ([][]*x509.Certificate, error) {
-	opts := x509.VerifyOptions{
-		Roots:         pool,
-		Intermediates: x509.NewCertPool(),
-		CurrentTime:   time.Now(),
-	}
-	// CRL/OCSP are handled elsewhere; this returns structural chains only.
-	return cert.Verify(opts)
 }
 
 // fingerprint returns the SHA-256 hex of data.
