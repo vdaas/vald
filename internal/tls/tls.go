@@ -211,7 +211,6 @@ func (c *credentials) ensureCRL() {
 	}
 	c.revoked = m
 	c.crlNextUpdate = next
-	return
 }
 
 // attachCRLChainChecker injects a VerifyPeerCertificate hook that performs
