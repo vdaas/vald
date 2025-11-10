@@ -181,8 +181,7 @@ func loadKeyPair(role, certPath, keyPath string) (tls.Certificate, error) {
 }
 
 func (c *credentials) reloadCert() (*tls.Certificate, error) {
-	// Refresh CRL only when outdated; keep previous cache on failure.
-	_ = c.ensureCRL()
+	c.ensureCRL()
 	kp2, err := loadKeyPair(c.sn, c.cert, c.key)
 	if err != nil {
 		log.Warnf("failed to load new keypair during hot reload: %v", err)
@@ -193,32 +192,26 @@ func (c *credentials) reloadCert() (*tls.Certificate, error) {
 }
 
 // ensureCRL reloads the CRL file when NextUpdate has passed.
-// On failure, it preserves the previous cache and logs a warning.
-func (c *credentials) ensureCRL() error {
-	if c == nil || c.crl == "" {
-		return nil
-	}
-	c.crlMu.RLock()
-	fresh := time.Now().Before(c.crlNextUpdate) && c.revoked != nil
-	c.crlMu.RUnlock()
-	if fresh {
-		return nil
+// On failure, it logs a warning.
+func (c *credentials) ensureCRL() {
+	if c.crl == "" {
+		return
 	}
 
 	c.crlMu.Lock()
 	defer c.crlMu.Unlock()
-	// Double-check under write lock
 	if time.Now().Before(c.crlNextUpdate) && c.revoked != nil {
-		return nil
+		return
 	}
+
 	m, next, err := loadCRL(c.crl)
 	if err != nil {
 		log.Warnf("failed to (re)load CRL: %v", err)
-		return nil // switch to 'return err' if you want strict policy
+		return
 	}
 	c.revoked = m
 	c.crlNextUpdate = next
-	return nil
+	return
 }
 
 // attachCRLChainChecker injects a VerifyPeerCertificate hook that performs
@@ -232,10 +225,7 @@ func (c *credentials) attachCRLChainChecker(cfg *tls.Config) {
 		return
 	}
 	cfg.VerifyPeerCertificate = func(_ [][]byte, verifiedChains [][]*x509.Certificate) error {
-		// Refresh CRL cache on demand
-		if err := c.ensureCRL(); err != nil {
-			return err
-		}
+		c.ensureCRL()
 		c.crlMu.RLock()
 		set := c.revoked
 		c.crlMu.RUnlock()
@@ -278,6 +268,12 @@ func NewServerConfig(opts ...Option) (*Config, error) {
 		c.sn = "vald-server"
 		c.cfg.ServerName = c.sn
 	}
+	// load cert pair
+	kp, err := loadKeyPair(c.sn, c.cert, c.key)
+	if err != nil {
+		return nil, err
+	}
+	c.cfg.Certificates = []tls.Certificate{kp}
 	// if CA provided, configure mTLS
 	if c.ca != "" {
 		pool, err := NewX509CertPool(c.ca)
@@ -288,20 +284,14 @@ func NewServerConfig(opts ...Option) (*Config, error) {
 		c.cfg.ClientAuth = c.clientAuth
 	}
 
-	kp, err := loadKeyPair(c.sn, c.cert, c.key)
-	if err != nil {
-		return nil, err
-	}
-
 	c.attachCRLChainChecker(c.cfg)
 
 	// Configure certificate strategy.
 	if !c.hotReload {
-		c.cfg.Certificates = []tls.Certificate{kp}
 		return c.cfg, nil
 	}
+
 	// if c.hotReload
-	c.cfg.Certificates = []tls.Certificate{kp}
 	c.certPtr.Store(&kp)
 
 	// Reload per-handshake.
