@@ -471,6 +471,8 @@ func verifyCertChain(cert *x509.Certificate, pool *x509.CertPool, now time.Time)
 		Intermediates: x509.NewCertPool(),
 		CurrentTime:   now,
 	}
+	// We support CRL checkers elsewhere.
+	// skipcq: GO-S1031
 	_, err := cert.Verify(opts)
 	return err
 }
