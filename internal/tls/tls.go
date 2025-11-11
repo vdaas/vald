@@ -434,6 +434,10 @@ func processCert(
 		cert.IPAddresses,
 		checkSignature)
 
+	if err := verifyCertChain(cert, pool, now); err != nil {
+		log.Warnf("chain verify failed for %s: %v", cert.Subject.CommonName, err)
+	}
+
 	if !cert.IsCA && !selfSigned {
 		return false
 	}
@@ -444,6 +448,17 @@ func processCert(
 	pool.AddCert(cert)
 	seen[fp] = struct{}{}
 	return true
+}
+
+// verifyCertChain attempts to verify the cert against the provided pool.
+func verifyCertChain(cert *x509.Certificate, pool *x509.CertPool, now time.Time) error {
+	opts := x509.VerifyOptions{
+		Roots:         pool,
+		Intermediates: x509.NewCertPool(),
+		CurrentTime:   now,
+	}
+	_, err := cert.Verify(opts)
+	return err
 }
 
 // fingerprint returns the SHA-256 hex of data.
