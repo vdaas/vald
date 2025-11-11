@@ -82,13 +82,15 @@ type credentials struct {
 
 // loadCRL reads a single PEM encoded CRL file and returns revoked serial set.
 func loadCRL(path string) (map[string]struct{}, time.Time, error) {
-	var minNext time.Time
+	// RFC 5280: UTC time is used for CRL.
+	now := time.Now().UTC()
+	// Set a default minimum next update time to avoid frequent reloads on error.
+	minNext := now.Add(10 * time.Minute)
 	data, err := file.ReadFile(path)
 	if err != nil {
 		return nil, minNext, err
 	}
 	set := make(map[string]struct{})
-	now := time.Now()
 
 	for len(data) > 0 {
 		var block *pem.Block
@@ -110,16 +112,14 @@ func loadCRL(path string) (map[string]struct{}, time.Time, error) {
 		}
 		if crl.NextUpdate.IsZero() {
 			log.Warnf("CRL has no NextUpdate (indefinite validity): this=%s path=%s", crl.ThisUpdate, path)
-		} else {
-			if now.After(crl.NextUpdate) {
-				log.Warnf("CRL expired: this=%s next=%s path=%s", crl.ThisUpdate, crl.NextUpdate, path)
-				continue
-			}
+		} else if now.After(crl.NextUpdate) {
+			log.Warnf("CRL expired: this=%s next=%s path=%s", crl.ThisUpdate, crl.NextUpdate, path)
+			continue
 		}
 		for _, rc := range crl.RevokedCertificateEntries {
 			set[rc.SerialNumber.String()] = struct{}{}
 		}
-		if !crl.NextUpdate.IsZero() && (minNext.IsZero() || crl.NextUpdate.Before(minNext)) {
+		if !crl.NextUpdate.IsZero() && crl.NextUpdate.Before(minNext) {
 			minNext = crl.NextUpdate
 		}
 	}
