@@ -104,14 +104,22 @@ func loadCRL(path string) (map[string]struct{}, time.Time, error) {
 			log.Warnf("failed to parse CRL %s: %v", path, err)
 			continue
 		}
-		if now.Before(crl.ThisUpdate) || now.After(crl.NextUpdate) {
-			log.Warnf("stale CRL ignored: this=%s next=%s path=%s", crl.ThisUpdate, crl.NextUpdate, path)
+		if now.Before(crl.ThisUpdate) {
+			log.Warnf("CRL not yet valid: this=%s next=%s path=%s", crl.ThisUpdate, crl.NextUpdate, path)
 			continue
+		}
+		if crl.NextUpdate.IsZero() {
+			log.Warnf("CRL has no NextUpdate (indefinite validity): this=%s path=%s", crl.ThisUpdate, path)
+		} else {
+			if now.After(crl.NextUpdate) {
+				log.Warnf("CRL expired: this=%s next=%s path=%s", crl.ThisUpdate, crl.NextUpdate, path)
+				continue
+			}
 		}
 		for _, rc := range crl.RevokedCertificateEntries {
 			set[rc.SerialNumber.String()] = struct{}{}
 		}
-		if minNext.IsZero() || crl.NextUpdate.Before(minNext) {
+		if !crl.NextUpdate.IsZero() && (minNext.IsZero() || crl.NextUpdate.Before(minNext)) {
 			minNext = crl.NextUpdate
 		}
 	}
