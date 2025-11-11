@@ -231,7 +231,13 @@ func (c *credentials) attachCRLChainChecker(cfg *tls.Config) {
 	if c == nil || cfg == nil || cfg.InsecureSkipVerify || c.crl == "" {
 		return
 	}
-	cfg.VerifyPeerCertificate = func(_ [][]byte, verifiedChains [][]*x509.Certificate) error {
+	prevVerify := cfg.VerifyPeerCertificate
+	cfg.VerifyPeerCertificate = func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
+		if prevVerify != nil {
+			if err := prevVerify(rawCerts, verifiedChains); err != nil {
+				return err
+			}
+		}
 		c.ensureCRL()
 		c.crlMu.RLock()
 		set := c.revoked
