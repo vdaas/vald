@@ -14841,6 +14841,14 @@ func (m *Info_Index_Property) MarshalToSizedBufferVTStrict(dAtA []byte) (int, er
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.EpsilonForCreation != 0 {
+		i -= 4
+		binary.LittleEndian.PutUint32(dAtA[i:], uint32(math.Float32bits(float32(m.EpsilonForCreation))))
+		i--
+		dAtA[i] = 0x2
+		i--
+		dAtA[i] = 0x9d
+	}
 	if m.IncomingEdge != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.IncomingEdge))
 		i--
@@ -39891,6 +39899,17 @@ func (m *Info_Index_Property) UnmarshalVTUnsafe(dAtA []byte) error {
 					break
 				}
 			}
+		case 35:
+			if wireType != 5 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EpsilonForCreation", wireType)
+			}
+			var v uint32
+			if (iNdEx + 4) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+			iNdEx += 4
+			m.EpsilonForCreation = float32(math.Float32frombits(v))
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])

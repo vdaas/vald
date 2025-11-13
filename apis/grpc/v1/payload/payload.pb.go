@@ -6190,8 +6190,8 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"\aRequest\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12\x1c\n" +
 	"\tnamespace\x18\x02 \x01(\tR\tnamespace\x12\x12\n" +
-	"\x04node\x18\x03 \x01(\tR\x04node\"\xfd-\n" +
-	"\x04Info\x1a\x80 \n" +
+	"\x04node\x18\x03 \x01(\tR\x04node\"\xaf.\n" +
+	"\x04Info\x1a\xb2 \n" +
 	"\x05Index\x1au\n" +
 	"\x05Count\x12\x16\n" +
 	"\x06stored\x18\x01 \x01(\rR\x06stored\x12 \n" +
