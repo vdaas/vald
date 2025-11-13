@@ -416,6 +416,7 @@ Represent the RPC to get the index property.
     float build_time_limit = 32;
     int32 outgoing_edge = 33;
     int32 incoming_edge = 34;
+    float epsilon_for_creation = 35;
   }
 
   ```
@@ -471,3 +472,4 @@ Represent the RPC to get the index property.
     |          build_time_limit          | float  |       |             |
     |           outgoing_edge            | int32  |       |             |
     |           incoming_edge            | int32  |       |             |
+    |        epsilon_for_creation        | float  |       |             |
