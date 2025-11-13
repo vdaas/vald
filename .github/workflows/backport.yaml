@@ -31,7 +31,7 @@ jobs:
       contents: read
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
       - uses: ./.github/actions/dump-context
@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-slim
     needs: [dump-contexts-to-log]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
           fetch-depth: 0

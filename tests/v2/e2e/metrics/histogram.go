@@ -21,7 +21,7 @@ import (
 	"hash/crc32"
 	"hash/fnv"
 	"math"
-	"sync"
+	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
 )
@@ -39,13 +39,12 @@ type Histogram struct {
 
 // shard is a single shard of the histogram.
 type shard struct {
-	mu     sync.Mutex
-	counts []uint64 // number of values in each bucket
-	total  uint64   // total number of values in this shard
-	sum    float64  // sum of values in this shard
-	sumSq  float64  // sum of squares of values in this shard
-	min    float64  // minimum value in this shard
-	max    float64  // maximum value in this shard
+	counts []atomic.Uint64 // number of values in each bucket
+	total  atomic.Uint64   // total number of values in this shard
+	sum    atomic.Uint64   // sum of values in this shard
+	sumSq  atomic.Uint64   // sum of squares of values in this shard
+	min    atomic.Uint64   // minimum value in this shard
+	max    atomic.Uint64   // maximum value in this shard
 }
 
 // NewHistogram creates a new sharded histogram with geometric bucketing.
@@ -76,9 +75,9 @@ func NewHistogram(minVal, maxVal, growth float64, numBuckets, numShards int) *Hi
 	}
 
 	for i := range h.shards {
-		h.shards[i].counts = make([]uint64, numBuckets)
-		h.shards[i].min = math.Inf(1)
-		h.shards[i].max = math.Inf(-1)
+		h.shards[i].counts = make([]atomic.Uint64, numBuckets)
+		h.shards[i].min.Store(math.Float64bits(math.Inf(1)))
+		h.shards[i].max.Store(math.Float64bits(math.Inf(-1)))
 	}
 
 	// Calculate boundsCRC32
@@ -102,18 +101,45 @@ func (h *Histogram) Record(val float64) {
 
 	bucketIdx := h.findBucket(val)
 
-	s.mu.Lock()
-	s.counts[bucketIdx]++
-	s.total++
-	s.sum += val
-	s.sumSq += val * val
-	if val < s.min {
-		s.min = val
+	s.counts[bucketIdx].Add(1)
+	s.total.Add(1)
+
+	// Atomically update sum and sumSq using CAS loops
+	valBits := math.Float64bits(val)
+	for {
+		oldSumBits := s.sum.Load()
+		newSum := math.Float64frombits(oldSumBits) + val
+		if s.sum.CompareAndSwap(oldSumBits, math.Float64bits(newSum)) {
+			break
+		}
 	}
-	if val > s.max {
-		s.max = val
+	for {
+		oldSumSqBits := s.sumSq.Load()
+		newSumSq := math.Float64frombits(oldSumSqBits) + val*val
+		if s.sumSq.CompareAndSwap(oldSumSqBits, math.Float64bits(newSumSq)) {
+			break
+		}
 	}
-	s.mu.Unlock()
+
+	// Atomically update min and max
+	for {
+		oldMinBits := s.min.Load()
+		if val >= math.Float64frombits(oldMinBits) {
+			break
+		}
+		if s.min.CompareAndSwap(oldMinBits, valBits) {
+			break
+		}
+	}
+	for {
+		oldMaxBits := s.max.Load()
+		if val <= math.Float64frombits(oldMaxBits) {
+			break
+		}
+		if s.max.CompareAndSwap(oldMaxBits, valBits) {
+			break
+		}
+	}
 }
 
 // findBucket determines the correct bucket index for a given value.
@@ -150,29 +176,57 @@ func (h *Histogram) Merge(other *Histogram) error {
 		s := &h.shards[i]
 		o := &other.shards[i]
 
-		o.mu.Lock()
-		otherCounts := append([]uint64(nil), o.counts...)
-		otherTotal := o.total
-		otherSum := o.sum
-		otherSumSq := o.sumSq
-		otherMin := o.min
-		otherMax := o.max
-		o.mu.Unlock()
+		// Load atomic values from the other shard.
+		otherTotal := o.total.Load()
+		if otherTotal == 0 {
+			continue
+		}
+		otherSumBits := o.sum.Load()
+		otherSumSqBits := o.sumSq.Load()
+		otherMinBits := o.min.Load()
+		otherMaxBits := o.max.Load()
 
-		s.mu.Lock()
-		for j := range otherCounts {
-			s.counts[j] += otherCounts[j]
+		// Add total and counts atomically.
+		s.total.Add(otherTotal)
+		for j := range s.counts {
+			s.counts[j].Add(o.counts[j].Load())
 		}
-		s.total += otherTotal
-		s.sum += otherSum
-		s.sumSq += otherSumSq
-		if otherMin < s.min {
-			s.min = otherMin
+
+		// Atomically update sum and sumSq using CAS loops.
+		for {
+			oldSumBits := s.sum.Load()
+			newSum := math.Float64frombits(oldSumBits) + math.Float64frombits(otherSumBits)
+			if s.sum.CompareAndSwap(oldSumBits, math.Float64bits(newSum)) {
+				break
+			}
 		}
-		if otherMax > s.max {
-			s.max = otherMax
+		for {
+			oldSumSqBits := s.sumSq.Load()
+			newSumSq := math.Float64frombits(oldSumSqBits) + math.Float64frombits(otherSumSqBits)
+			if s.sumSq.CompareAndSwap(oldSumSqBits, math.Float64bits(newSumSq)) {
+				break
+			}
 		}
-		s.mu.Unlock()
+
+		// Atomically update min and max.
+		for {
+			oldMinBits := s.min.Load()
+			if math.Float64frombits(otherMinBits) >= math.Float64frombits(oldMinBits) {
+				break
+			}
+			if s.min.CompareAndSwap(oldMinBits, otherMinBits) {
+				break
+			}
+		}
+		for {
+			oldMaxBits := s.max.Load()
+			if math.Float64frombits(otherMaxBits) <= math.Float64frombits(oldMaxBits) {
+				break
+			}
+			if s.max.CompareAndSwap(oldMaxBits, otherMaxBits) {
+				break
+			}
+		}
 	}
 	return nil
 }
@@ -187,20 +241,26 @@ func (h *Histogram) Snapshot() *HistogramSnapshot {
 
 	for i := range h.shards {
 		s := &h.shards[i]
-		s.mu.Lock()
-		for j, count := range s.counts {
-			snap.Counts[j] += count
+		total := s.total.Load()
+		if total == 0 {
+			continue
 		}
-		snap.Total += s.total
-		snap.Sum += s.sum
-		snap.SumSq += s.sumSq
-		if s.min < snap.Min {
-			snap.Min = s.min
+
+		for j := range s.counts {
+			snap.Counts[j] += s.counts[j].Load()
 		}
-		if s.max > snap.Max {
-			snap.Max = s.max
+		snap.Total += total
+		snap.Sum += math.Float64frombits(s.sum.Load())
+		snap.SumSq += math.Float64frombits(s.sumSq.Load())
+
+		minVal := math.Float64frombits(s.min.Load())
+		if minVal < snap.Min {
+			snap.Min = minVal
 		}
-		s.mu.Unlock()
+		maxVal := math.Float64frombits(s.max.Load())
+		if maxVal > snap.Max {
+			snap.Max = maxVal
+		}
 	}
 
 	if snap.Total > 0 {

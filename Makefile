@@ -376,12 +376,10 @@ E2E_EXPECTED_INDEX ?= 180000
 E2E_PARALLELISM ?= 10
 E2E_QPS ?= 3000
 E2E_SEARCH_COUNT ?= 1000
-E2E_UPDATE_COUNT ?= 10000
 E2E_BULK_SIZE ?= 100
 E2E_PORTFORWARD_ENABLED ?= true
 E2E_REMOVE_COUNT ?= 3
 E2E_SEARCH_BY_ID_COUNT ?= 100
-E2E_SEARCH_COUNT ?= 1000
 E2E_TARGET_NAME ?= vald-lb-gateway
 E2E_TARGET_NAMESPACE ?= default
 E2E_TARGET_POD_NAME ?= $(eval E2E_TARGET_POD_NAME := $(shell kubectl get pods --selector=app=$(E2E_TARGET_NAME) -n $(E2E_TARGET_NAMESPACE) | tail -1 | cut -f1 -d " "))$(E2E_TARGET_POD_NAME)
@@ -588,7 +586,7 @@ remove/empty/file: \
 		grep -vE '^\s*#' "$(ROOTDIR)/.gitfiles" | grep -v gitkeep \
 		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" -n1 sh -c ' \
 		if [ -f "{}" ] && [ -z "$$(tr -d '\''[:space:]'\'' < "{}")" ]; then rm "{}"; fi'; \
-	fi
+		fi
 
 .PHONY: format/go
 ## run golines, gofumpt, goimports for all go files
@@ -677,9 +675,9 @@ clean/yaml:
 	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
 		grep -E '\.ya?ml\b' "$(ROOTDIR)/.gitfiles" | grep -Ev '(templates|s3)' \
 		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
-			if ! grep -qEv "^(\\s*#|---|\\s*)$$" "{}"; then \
-				echo "Deleting {}"; rm -rf "{}"; \
-			fi'; \
+		if ! grep -qEv "^(\\s*#|---|\\s*)$$" "{}"; then \
+			echo "Deleting {}"; rm -rf "{}"; \
+		fi'; \
 	fi
 
 .PHONY: format/yaml/diff
