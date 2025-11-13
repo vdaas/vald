@@ -2333,6 +2333,9 @@ agent:
     # @schema {"name": "agent.ngt.default_epsilon", "type": "number"}
     # agent.ngt.default_epsilon -- default epsilon used for search
     default_epsilon: 0.05
+    # @schema {"name": "agent.ngt.epsilon_for_creation", "type": "number"}
+    # agent.ngt.epsilon_for_creation -- the epsilon used for creation
+    epsilon_for_creation: 0.05
     # @schema {"name": "agent.ngt.min_load_index_timeout", "type": "string"}
     # agent.ngt.min_load_index_timeout -- minimum duration of load index timeout
     min_load_index_timeout: 3m
