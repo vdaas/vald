@@ -32,6 +32,9 @@ type TLS struct {
 	// CA represent the CA certificate environment variable key used to start server.
 	CA string `json:"ca" yaml:"ca"`
 
+	// CRL represent the Certificate Revocation List file path
+	CRL string `json:"crl" yaml:"crl"`
+
 	// ServerName represents the tls Server SNI.
 	ServerName string `json:"server_name" yaml:"server_name"`
 
@@ -40,6 +43,9 @@ type TLS struct {
 
 	// InsecureSkipVerify represent enable/disable skip SSL certificate verification
 	InsecureSkipVerify bool `json:"insecure_skip_verify" yaml:"insecure_skip_verify"`
+
+	// HotReload represents whether to enable server certificate hot reload feature.
+	HotReload bool `json:"hot_reload" yaml:"hot_reload"`
 }
 
 // Bind returns TLS object whose every value except Enabled is field value of environment value.
@@ -47,6 +53,7 @@ func (t *TLS) Bind() *TLS {
 	t.Cert = GetActualValue(t.Cert)
 	t.Key = GetActualValue(t.Key)
 	t.CA = GetActualValue(t.CA)
+	t.CRL = GetActualValue(t.CRL)
 	t.ServerName = GetActualValue(t.ServerName)
 	t.ClientAuth = GetActualValue(t.ClientAuth)
 	return t
@@ -62,8 +69,10 @@ func (t *TLS) Opts() []tls.Option {
 		tls.WithCa(t.CA),
 		tls.WithCert(t.Cert),
 		tls.WithKey(t.Key),
+		tls.WithCRL(t.CRL),
 		tls.WithInsecureSkipVerify(t.InsecureSkipVerify),
 		tls.WithServerName(t.ServerName),
 		tls.WithClientAuth(t.ClientAuth),
+		tls.WithHotReload(t.HotReload),
 	}
 }

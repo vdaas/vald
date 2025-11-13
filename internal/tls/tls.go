@@ -23,11 +23,13 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"reflect"
+	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 type (
@@ -67,9 +69,66 @@ type credentials struct {
 	sn         string
 	insecure   bool
 	clientAuth tls.ClientAuthType
+	// hotReload toggles per-handshake reload using GetCertificate.
+	hotReload bool
+	// certPtr keeps the latest loaded certificate.
+	certPtr atomic.Pointer[tls.Certificate]
+	// crl path and atomic revoked serial set
+	crl           string
+	revoked       map[string]struct{}
+	crlNextUpdate time.Time
+	crlMu         sync.RWMutex
+}
+
+// loadCRL reads a single PEM encoded CRL file and returns revoked serial set.
+func loadCRL(path string) (map[string]struct{}, time.Time, error) {
+	// RFC 5280: UTC time is used for CRL.
+	now := time.Now().UTC()
+	// Set a default minimum next update time to avoid frequent reloads on error.
+	minNext := now.Add(10 * time.Minute)
+	data, err := file.ReadFile(path)
+	if err != nil {
+		return nil, minNext, err
+	}
+	set := make(map[string]struct{})
+
+	for len(data) > 0 {
+		var block *pem.Block
+		block, data = pem.Decode(data)
+		if block == nil {
+			break
+		}
+		if block.Type != "X509 CRL" {
+			continue
+		}
+		crl, err := x509.ParseRevocationList(block.Bytes)
+		if err != nil {
+			log.Warnf("failed to parse CRL %s: %v", path, err)
+			continue
+		}
+		if now.Before(crl.ThisUpdate) {
+			log.Warnf("CRL not yet valid: this=%s next=%s path=%s", crl.ThisUpdate, crl.NextUpdate, path)
+			continue
+		}
+		if crl.NextUpdate.IsZero() {
+			log.Warnf("CRL has no NextUpdate (indefinite validity): this=%s path=%s", crl.ThisUpdate, path)
+		} else if now.After(crl.NextUpdate) {
+			log.Warnf("CRL expired: this=%s next=%s path=%s", crl.ThisUpdate, crl.NextUpdate, path)
+			continue
+		}
+		for _, rc := range crl.RevokedCertificateEntries {
+			set[rc.SerialNumber.String()] = struct{}{}
+		}
+		if !crl.NextUpdate.IsZero() && crl.NextUpdate.Before(minNext) {
+			minNext = crl.NextUpdate
+		}
+	}
+	return set, minNext, nil
 }
 
 // newCredential builds credentials from defaults and provided options.
+// Let's compromise cyclomatic complexity here for deeper abstraction.
+// skipcq: GO-R1005
 func newCredential(opts ...Option) (*credentials, error) {
 	c := new(credentials)
 	for _, opt := range append(defaultOptions(), opts...) {
@@ -79,6 +138,15 @@ func newCredential(opts ...Option) (*credentials, error) {
 	}
 	if c.cfg == nil {
 		c.cfg = new(Config)
+	}
+	// Preload CRL once during initialization (no locking needed here).
+	if c.crl != "" {
+		m, next, err := loadCRL(c.crl)
+		if err != nil {
+			return nil, err
+		}
+		c.revoked = m
+		c.crlNextUpdate = next
 	}
 	if c.sn != "" {
 		c.cfg.ServerName = c.sn
@@ -120,6 +188,80 @@ func loadKeyPair(role, certPath, keyPath string) (tls.Certificate, error) {
 	return kp, nil
 }
 
+func (c *credentials) reloadCert() (*tls.Certificate, error) {
+	c.ensureCRL()
+	kp2, err := loadKeyPair(c.sn, c.cert, c.key)
+	if err != nil {
+		log.Warnf("failed to load new keypair during hot reload: %v", err)
+		return c.certPtr.Load(), nil
+	}
+	c.certPtr.Store(&kp2)
+	return &kp2, nil
+}
+
+// ensureCRL reloads the CRL file when NextUpdate has passed.
+// On failure, it logs a warning.
+func (c *credentials) ensureCRL() {
+	if c.crl == "" {
+		return
+	}
+
+	c.crlMu.Lock()
+	defer c.crlMu.Unlock()
+	if time.Now().Before(c.crlNextUpdate) && c.revoked != nil {
+		return
+	}
+
+	m, next, err := loadCRL(c.crl)
+	if err != nil {
+		log.Warnf("failed to (re)load CRL: %v", err)
+		return
+	}
+	c.revoked = m
+	c.crlNextUpdate = next
+}
+
+// attachCRLChainChecker injects a VerifyPeerCertificate hook that performs
+// a CRL-based post-verification check over verified chains.
+// - Assumes x509.Verify has already succeeded (verifiedChains provided).
+// - Does not modify/remove chains; simply rejects if all chains include a revoked cert.
+// - If at least one chain (excluding root) is free of revocations, the handshake is accepted.
+// - No-op when InsecureSkipVerify is true or CRL is not configured.
+func (c *credentials) attachCRLChainChecker(cfg *tls.Config) {
+	if c == nil || cfg == nil || cfg.InsecureSkipVerify || c.crl == "" {
+		return
+	}
+	prevVerify := cfg.VerifyPeerCertificate
+	cfg.VerifyPeerCertificate = func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
+		if prevVerify != nil {
+			if err := prevVerify(rawCerts, verifiedChains); err != nil {
+				return err
+			}
+		}
+		c.ensureCRL()
+		c.crlMu.RLock()
+		set := c.revoked
+		c.crlMu.RUnlock()
+		if set == nil {
+			// Empty CRL cache means "no revocations known".
+			return nil
+		}
+		for _, chain := range verifiedChains {
+			clean := true
+			for _, cert := range chain {
+				if _, hit := set[cert.SerialNumber.String()]; hit {
+					clean = false
+					break
+				}
+			}
+			if clean {
+				return nil
+			}
+		}
+		return errors.ErrCertRevoked
+	}
+}
+
 // NewServerConfig returns a *tls.Config for server, with optional mTLS and hot reload.
 func NewServerConfig(opts ...Option) (*Config, error) {
 	c, err := newCredential(opts...)
@@ -154,10 +296,37 @@ func NewServerConfig(opts ...Option) (*Config, error) {
 		c.cfg.ClientCAs = pool
 		c.cfg.ClientAuth = c.clientAuth
 	}
+
+	c.attachCRLChainChecker(c.cfg)
+
+	// Configure certificate strategy.
+	if !c.hotReload {
+		return c.cfg, nil
+	}
+
+	// if c.hotReload
+	c.certPtr.Store(&kp)
+
+	// Reload per-handshake.
+	c.cfg.GetCertificate = func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
+		return c.reloadCert()
+	}
+
+	// Ensure NameToCertificate stays sensible by cloning config with latest cert.
+	c.cfg.GetConfigForClient = func(_ *tls.ClientHelloInfo) (*tls.Config, error) {
+		cfg := c.cfg.Clone()
+		cfg.GetConfigForClient = nil
+		if cur := c.certPtr.Load(); cur != nil {
+			cfg.Certificates = []tls.Certificate{*cur}
+		}
+		return cfg, nil
+	}
 	return c.cfg, nil
 }
 
 // NewClientConfig returns a *tls.Config for client, with optional mTLS and hot reload.
+// Let's compromise cyclomatic complexity here for deeper abstraction.
+// skipcq: GO-R1005
 func NewClientConfig(opts ...Option) (*Config, error) {
 	c, err := newCredential(opts...)
 	if err != nil {
@@ -186,17 +355,30 @@ func NewClientConfig(opts ...Option) (*Config, error) {
 			c.cfg.RootCAs = pool
 		}
 	}
+	c.attachCRLChainChecker(c.cfg)
+	if c.cert == "" || c.key == "" {
+		return c.cfg, nil
+	}
 	// load client cert if provided
-	if c.cert != "" && c.key != "" {
-		if c.sn == "" {
-			c.sn = "vald-client"
-			c.cfg.ServerName = c.sn
-		}
-		kp, err := loadKeyPair(c.sn, c.cert, c.key)
-		if err != nil {
-			return nil, err
-		}
-		c.cfg.Certificates = []tls.Certificate{kp}
+	if c.sn == "" {
+		c.sn = "vald-client"
+		c.cfg.ServerName = c.sn
+	}
+
+	kp, err := loadKeyPair(c.sn, c.cert, c.key)
+	if err != nil {
+		return nil, err
+	}
+
+	c.cfg.Certificates = []tls.Certificate{kp}
+	if !c.hotReload {
+		return c.cfg, nil
+	}
+	// if c.hotReload
+	// Preload once for initial handshake and SNI mapping if needed.
+	c.certPtr.Store(&kp)
+	c.cfg.GetClientCertificate = func(*tls.CertificateRequestInfo) (*tls.Certificate, error) {
+		return c.reloadCert()
 	}
 	return c.cfg, nil
 }
@@ -289,6 +471,8 @@ func verifyCertChain(cert *x509.Certificate, pool *x509.CertPool, now time.Time)
 		Intermediates: x509.NewCertPool(),
 		CurrentTime:   now,
 	}
+	// We support CRL checkers elsewhere.
+	// skipcq: GO-S1031
 	_, err := cert.Verify(opts)
 	return err
 }
