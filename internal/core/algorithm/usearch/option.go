@@ -16,6 +16,8 @@
 
 package usearch
 
+// Delete this file after porting to Rust
+/*
 import (
 	"strconv"
 
@@ -152,3 +154,4 @@ func WithMulti(multi bool) Option {
 		return nil
 	}
 }
+*/
