@@ -6505,6 +6505,7 @@ var (
 		(*anypb.Any)(nil),                   // 107: google.protobuf.Any
 	}
 )
+
 var file_v1_payload_payload_proto_depIdxs = []int32{
 	22,  // 0: payload.v1.Search.Request.config:type_name -> payload.v1.Search.Config
 	16,  // 1: payload.v1.Search.MultiRequest.requests:type_name -> payload.v1.Search.Request

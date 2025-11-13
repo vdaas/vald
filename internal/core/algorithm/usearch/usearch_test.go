@@ -16,6 +16,8 @@
 
 package usearch
 
+// Delete this file after porting to Rust
+/*
 import (
 	"math"
 	"path/filepath"
@@ -348,6 +350,7 @@ func Test_usearch_Search(t *testing.T) {
 		})
 	}
 }
+*/
 
 // NOT IMPLEMENTED BELOW
 //

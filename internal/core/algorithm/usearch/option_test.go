@@ -13,6 +13,7 @@
 // limitations under the License.
 package usearch
 
+// Delete this file after porting to Rust
 // NOT IMPLEMENTED BELOW
 //
 // func TestWithIndexPath(t *testing.T) {
