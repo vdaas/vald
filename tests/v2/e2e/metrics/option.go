@@ -123,10 +123,11 @@ func WithExemplarCapacity(capacity int) ExemplarOption {
 // WithLatencyHistogram returns an option to set the latency histogram configuration.
 func WithLatencyHistogram(opts ...HistogramOption) Option {
 	return func(c *Collector) {
-		cfg := defaultHistogramConfig
+		cfg := c.hcfg
 		for _, opt := range opts {
 			opt(&cfg)
 		}
+		c.hcfg = cfg
 		c.latencies = NewHistogram(cfg.min, cfg.max, cfg.growth, cfg.numBuckets, cfg.numShards)
 	}
 }
@@ -134,10 +135,11 @@ func WithLatencyHistogram(opts ...HistogramOption) Option {
 // WithQueueWaitHistogram returns an option to set the queue wait histogram configuration.
 func WithQueueWaitHistogram(opts ...HistogramOption) Option {
 	return func(c *Collector) {
-		cfg := defaultHistogramConfig
+		cfg := c.hcfg
 		for _, opt := range opts {
 			opt(&cfg)
 		}
+		c.hcfg = cfg
 		c.queueWaits = NewHistogram(cfg.min, cfg.max, cfg.growth, cfg.numBuckets, cfg.numShards)
 	}
 }
@@ -167,15 +169,17 @@ func WithQueueWaitTDigest(opts ...TDigestOption) Option {
 // WithExemplar returns an option to set the exemplar configuration.
 func WithExemplar(opts ...ExemplarOption) Option {
 	return func(c *Collector) {
-		cfg := defaultExemplarConfig
+		cfg := c.ecfg
 		for _, opt := range opts {
 			opt(&cfg)
 		}
+		c.ecfg = cfg
 		c.exemplars = NewExemplar(cfg.capacity)
 	}
 }
 
 // WithRangeScale is an option to add a range scale.
+// It is important to register all custom counters via WithCustomCounters *before* adding any scales.
 func WithRangeScale(name string, width, capacity uint64) Option {
 	return func(c *Collector) {
 		c.rangeScales = append(c.rangeScales, NewRangeScale(name, width, capacity, len(c.counters), c.hcfg, c.ecfg))
@@ -183,6 +187,7 @@ func WithRangeScale(name string, width, capacity uint64) Option {
 }
 
 // WithTimeScale is an option to add a time scale.
+// It is important to register all custom counters via WithCustomCounters *before* adding any scales.
 func WithTimeScale(name string, widthSec, capacity uint64) Option {
 	return func(c *Collector) {
 		c.timeScales = append(c.timeScales, NewTimeScale(name, widthSec, capacity, len(c.counters), c.hcfg, c.ecfg))
@@ -190,6 +195,8 @@ func WithTimeScale(name string, widthSec, capacity uint64) Option {
 }
 
 // WithCustomCounters is an option to add custom counters.
+// This option should be used *before* any WithRangeScale or WithTimeScale options
+// to ensure that the scales are initialized with the correct number of counters.
 func WithCustomCounters(names ...string) Option {
 	return func(c *Collector) {
 		for _, name := range names {

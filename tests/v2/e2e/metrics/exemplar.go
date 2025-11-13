@@ -18,52 +18,66 @@ package metrics
 
 import (
 	"container/heap"
-	"sync"
+	"sync/atomic"
 	"time"
 )
 
-// Exemplar holds a sample of high-latency requests.
+// Exemplar holds a sample of high-latency requests. It is lock-free.
 type Exemplar struct {
-	mu sync.Mutex
-	pq priorityQueue
 	k  int
+	pq atomic.Pointer[priorityQueue]
 }
 
 // NewExemplar creates a new Exemplar with a capacity of k.
 func NewExemplar(k int) *Exemplar {
 	k = max(k, 1)
-	return &Exemplar{
-		pq: make(priorityQueue, 0, k),
-		k:  k,
+	initialPQ := make(priorityQueue, 0, k)
+	e := &Exemplar{
+		k: k,
 	}
+	e.pq.Store(&initialPQ)
+	return e
 }
 
-// Offer adds a request to the exemplar.
+// Offer adds a request to the exemplar using a lock-free CAS loop.
 func (e *Exemplar) Offer(latency time.Duration, requestID string) {
-	e.mu.Lock()
-	defer e.mu.Unlock()
+	newItem := &item{
+		latency:   latency,
+		requestID: requestID,
+	}
 
-	if len(e.pq) < e.k {
-		heap.Push(&e.pq, &item{
-			latency:   latency,
-			requestID: requestID,
-		})
-	} else if latency > e.pq[0].latency {
-		heap.Pop(&e.pq)
-		heap.Push(&e.pq, &item{
-			latency:   latency,
-			requestID: requestID,
-		})
+	for {
+		oldPQPtr := e.pq.Load()
+		oldPQ := *oldPQPtr
+
+		if len(oldPQ) < e.k {
+			newPQ := make(priorityQueue, len(oldPQ), len(oldPQ)+1)
+			copy(newPQ, oldPQ)
+			heap.Push(&newPQ, newItem)
+			if e.pq.CompareAndSwap(oldPQPtr, &newPQ) {
+				return
+			}
+		} else if latency > oldPQ[0].latency {
+			newPQ := make(priorityQueue, len(oldPQ), e.k)
+			copy(newPQ, oldPQ)
+			newPQ[0] = newItem
+			heap.Fix(&newPQ, 0)
+			if e.pq.CompareAndSwap(oldPQPtr, &newPQ) {
+				return
+			}
+		} else {
+			// The new item is not larger than the smallest in a full queue.
+			return
+		}
 	}
 }
 
-// Snapshot returns a snapshot of the exemplars.
+// Snapshot returns a snapshot of the exemplars. It is lock-free.
 func (e *Exemplar) Snapshot() []*item {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-
-	items := make([]*item, len(e.pq))
-	copy(items, e.pq)
+	pqPtr := e.pq.Load()
+	pq := *pqPtr
+	items := make([]*item, len(pq))
+	copy(items, pq)
 	return items
 }
 
