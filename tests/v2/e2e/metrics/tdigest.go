@@ -20,6 +20,7 @@ import (
 	"math"
 	"sort"
 	"sync"
+	"unsafe"
 
 	"github.com/vdaas/vald/internal/errors"
 )
@@ -121,9 +122,18 @@ func (t *TDigest) Quantile(q float64) float64 {
 // Merge merges another t-digest into this one.
 func (t *TDigest) Merge(other QuantileSketch) error {
 	if o, ok := other.(*TDigest); ok {
-		t.mu.Lock()
+		if t == o {
+			return nil
+		}
+		// To prevent deadlocks, always lock in a consistent order.
+		if uintptr(unsafe.Pointer(t)) < uintptr(unsafe.Pointer(o)) {
+			t.mu.Lock()
+			o.mu.Lock()
+		} else {
+			o.mu.Lock()
+			t.mu.Lock()
+		}
 		defer t.mu.Unlock()
-		o.mu.Lock()
 		defer o.mu.Unlock()
 
 		for _, c := range o.centroids {
@@ -139,8 +149,6 @@ func (t *TDigest) Merge(other QuantileSketch) error {
 		})
 		if float64(len(t.centroids)) > t.compression*t.compressionTriggerFactor {
 			t.compress()
-		}
-
 		}
 		return nil
 	}

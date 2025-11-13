@@ -862,7 +862,7 @@ require (
 	github.com/tikv/pd/client v0.0.0-20251113050911-303c6c3b403e // indirect
 	github.com/twmb/murmur3 v1.1.8 // indirect
 	github.com/ulikunitz/xz v0.5.15 // indirect
-	github.com/unum-cloud/usearch/golang v0.0.0-20251029192604-c1277f47d245 // indirect
+	github.com/unum-cloud/usearch/golang v0.0.0-20251113105425-13c3fd9ce866 // indirect
 	github.com/urfave/cli/v2 v2.27.7 // indirect
 	github.com/urfave/cli/v3 v3.3.8 // indirect
 	github.com/vbatts/go-mtree v0.6.0 // indirect

@@ -588,7 +588,7 @@ remove/empty/file: \
 		grep -vE '^\s*#' "$(ROOTDIR)/.gitfiles" | grep -v gitkeep \
 		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" -n1 sh -c ' \
 		if [ -f "{}" ] && [ -z "$$(tr -d '\''[:space:]'\'' < "{}")" ]; then rm "{}"; fi'; \
-	fi
+		fi
 
 .PHONY: format/go
 ## run golines, gofumpt, goimports for all go files
@@ -677,9 +677,9 @@ clean/yaml:
 	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
 		grep -E '\.ya?ml\b' "$(ROOTDIR)/.gitfiles" | grep -Ev '(templates|s3)' \
 		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
-			if ! grep -qEv "^(\\s*#|---|\\s*)$$" "{}"; then \
-				echo "Deleting {}"; rm -rf "{}"; \
-			fi'; \
+		if ! grep -qEv "^(\\s*#|---|\\s*)$$" "{}"; then \
+			echo "Deleting {}"; rm -rf "{}"; \
+		fi'; \
 	fi
 
 .PHONY: format/yaml/diff

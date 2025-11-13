@@ -24,6 +24,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unsafe"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
@@ -190,8 +191,17 @@ func (s *Scale) Merge(other *Scale) error {
 	if s.width != other.width || s.capacity != other.capacity {
 		return errors.New("incompatible scales")
 	}
-	s.mu.Lock()
-	other.mu.Lock()
+	if s == other {
+		return nil
+	}
+	// To prevent deadlocks, always lock in a consistent order.
+	if uintptr(unsafe.Pointer(s)) < uintptr(unsafe.Pointer(other)) {
+		s.mu.Lock()
+		other.mu.Lock()
+	} else {
+		other.mu.Lock()
+		s.mu.Lock()
+	}
 	defer s.mu.Unlock()
 	defer other.mu.Unlock()
 
@@ -311,6 +321,7 @@ func (ts *TimeScale) Record(rr *RequestResult) {
 
 // Collector is the main entry point for metrics aggregation. It is thread-safe.
 type Collector struct {
+	mu             sync.RWMutex
 	total          atomic.Uint64
 	errors         atomic.Uint64
 	latencies      *Histogram
@@ -364,9 +375,20 @@ func NewCollector(opts ...Option) *Collector {
 
 // Merge merges the metrics from another collector into this one.
 func (c *Collector) Merge(other *Collector) error {
-	if other == nil {
+	if c == other {
 		return nil
 	}
+
+	// To prevent deadlocks, always lock in a consistent order.
+	if uintptr(unsafe.Pointer(c)) < uintptr(unsafe.Pointer(other)) {
+		c.mu.Lock()
+		other.mu.Lock()
+	} else {
+		other.mu.Lock()
+		c.mu.Lock()
+	}
+	defer c.mu.Unlock()
+	defer other.mu.Unlock()
 
 	c.total.Add(other.total.Load())
 	c.errors.Add(other.errors.Load())
@@ -440,6 +462,8 @@ func (c *Collector) Record(ctx context.Context, rr *RequestResult) {
 
 // CounterHandle returns a handle for a pre-registered custom counter.
 func (c *Collector) CounterHandle(name string) (*CounterHandle, error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	if h, ok := c.counters[name]; ok {
 		return h, nil
 	}
@@ -449,6 +473,8 @@ func (c *Collector) CounterHandle(name string) (*CounterHandle, error) {
 // IncCounter increments a custom counter by a given value.
 // It is a convenience wrapper and may be slightly slower than using a CounterHandle.
 func (c *Collector) IncCounter(name string, val int64) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	if h, ok := c.counters[name]; ok {
 		h.Add(val)
 	}
@@ -458,6 +484,8 @@ func (c *Collector) IncCounter(name string, val int64) {
 
 // GlobalSnapshot returns a snapshot of all aggregated metrics since initialization.
 func (c *Collector) GlobalSnapshot() *GlobalSnapshot {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	return &GlobalSnapshot{
 		Total:          c.total.Load(),
 		Errors:         c.errors.Load(),
@@ -471,6 +499,8 @@ func (c *Collector) GlobalSnapshot() *GlobalSnapshot {
 
 // RangeScalesSnapshot returns snapshots for all configured range-based windows.
 func (c *Collector) RangeScalesSnapshot() map[string]*ScaleSnapshot {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	snapshots := make(map[string]*ScaleSnapshot, len(c.rangeScales))
 	for _, rs := range c.rangeScales {
 		snapshots[rs.name] = rs.Snapshot()
@@ -480,6 +510,8 @@ func (c *Collector) RangeScalesSnapshot() map[string]*ScaleSnapshot {
 
 // TimeScalesSnapshot returns snapshots for all configured time-based windows.
 func (c *Collector) TimeScalesSnapshot() map[string]*ScaleSnapshot {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	snapshots := make(map[string]*ScaleSnapshot, len(c.timeScales))
 	for _, ts := range c.timeScales {
 		snapshots[ts.name] = ts.Snapshot()
@@ -497,6 +529,13 @@ func MergeCollectors(collectors ...*Collector) (*Collector, error) {
 	}
 	if len(collectors) == 1 {
 		return collectors[0], nil
+	}
+
+	base := collectors[0]
+	for _, c := range collectors[1:] {
+		if c.hcfg != base.hcfg || c.ecfg != base.ecfg {
+			return nil, errors.New("incompatible collectors")
+		}
 	}
 
 	// Use the configuration of the first collector as the base.

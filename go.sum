@@ -1510,8 +1510,8 @@ github.com/twmb/murmur3 v1.1.8/go.mod h1:Qq/R7NUyOfr65zD+6Q5IHKsJLwP7exErjN6lyyq
 github.com/ulikunitz/xz v0.5.8/go.mod h1:nbz6k7qbPmH4IRqmfOplQw/tblSgqTqBwxkY0oWt/14=
 github.com/ulikunitz/xz v0.5.15 h1:9DNdB5s+SgV3bQ2ApL10xRc35ck0DuIX/isZvIk+ubY=
 github.com/ulikunitz/xz v0.5.15/go.mod h1:nbz6k7qbPmH4IRqmfOplQw/tblSgqTqBwxkY0oWt/14=
-github.com/unum-cloud/usearch/golang v0.0.0-20251029192604-c1277f47d245 h1:uskoTghaTXMUlwx9kn70pXoyUrOAQMTc/w3BeyMMtl8=
-github.com/unum-cloud/usearch/golang v0.0.0-20251029192604-c1277f47d245/go.mod h1:NxBpQibuBBeA/V8RGbrNzVAv4OyWWL5yNao7mVz656k=
+github.com/unum-cloud/usearch/golang v0.0.0-20251113105425-13c3fd9ce866 h1:AbphRYDFNpRxSlvhGcbNX4/Lx1uotka1osE/Go2AO4Q=
+github.com/unum-cloud/usearch/golang v0.0.0-20251113105425-13c3fd9ce866/go.mod h1:NxBpQibuBBeA/V8RGbrNzVAv4OyWWL5yNao7mVz656k=
 github.com/urfave/cli/v2 v2.4.0/go.mod h1:NX9W0zmTvedE5oDoOMs2RTC8RvdK98NTYZE5LbaEYPg=
 github.com/urfave/cli/v2 v2.27.7 h1:bH59vdhbjLv3LAvIu6gd0usJHgoTTPhCFib8qqOwXYU=
 github.com/urfave/cli/v2 v2.27.7/go.mod h1:CyNAG/xg+iAOg0N4MPGZqVmv2rCoP267496AOXUZjA4=
