@@ -167,8 +167,20 @@ func newScale(
 	for i := range slots {
 		slots[i] = newSlot(
 			numCounters,
-			NewHistogram(hcfg.min, hcfg.max, hcfg.growth, hcfg.numBuckets, hcfg.numShards),
-			NewHistogram(hcfg.min, hcfg.max, hcfg.growth, hcfg.numBuckets, hcfg.numShards),
+			NewHistogram(
+				WithHistogramMin(hcfg.min),
+				WithHistogramMax(hcfg.max),
+				WithHistogramGrowth(hcfg.growth),
+				WithHistogramNumBuckets(hcfg.numBuckets),
+				WithHistogramNumShards(hcfg.numShards),
+			),
+			NewHistogram(
+				WithHistogramMin(hcfg.min),
+				WithHistogramMax(hcfg.max),
+				WithHistogramGrowth(hcfg.growth),
+				WithHistogramNumBuckets(hcfg.numBuckets),
+				WithHistogramNumShards(hcfg.numShards),
+			),
 			NewExemplar(ecfg.capacity),
 		)
 	}
@@ -350,10 +362,22 @@ func NewCollector(opts ...Option) *Collector {
 	}
 
 	if c.latencies == nil {
-		c.latencies = NewHistogram(c.hcfg.min, c.hcfg.max, c.hcfg.growth, c.hcfg.numBuckets, c.hcfg.numShards)
+		c.latencies = NewHistogram(
+			WithHistogramMin(c.hcfg.min),
+			WithHistogramMax(c.hcfg.max),
+			WithHistogramGrowth(c.hcfg.growth),
+			WithHistogramNumBuckets(c.hcfg.numBuckets),
+			WithHistogramNumShards(c.hcfg.numShards),
+		)
 	}
 	if c.queueWaits == nil {
-		c.queueWaits = NewHistogram(c.hcfg.min, c.hcfg.max, c.hcfg.growth, c.hcfg.numBuckets, c.hcfg.numShards)
+		c.queueWaits = NewHistogram(
+			WithHistogramMin(c.hcfg.min),
+			WithHistogramMax(c.hcfg.max),
+			WithHistogramGrowth(c.hcfg.growth),
+			WithHistogramNumBuckets(c.hcfg.numBuckets),
+			WithHistogramNumShards(c.hcfg.numShards),
+		)
 	}
 	if c.exemplars == nil {
 		c.exemplars = NewExemplar(c.ecfg.capacity)
@@ -545,8 +569,20 @@ func MergeCollectors(collectors ...*Collector) (*Collector, error) {
 	merged := NewCollector()
 	merged.hcfg = baseCfg.hcfg
 	merged.ecfg = baseCfg.ecfg
-	merged.latencies = NewHistogram(baseCfg.hcfg.min, baseCfg.hcfg.max, baseCfg.hcfg.growth, baseCfg.hcfg.numBuckets, baseCfg.hcfg.numShards)
-	merged.queueWaits = NewHistogram(baseCfg.hcfg.min, baseCfg.hcfg.max, baseCfg.hcfg.growth, baseCfg.hcfg.numBuckets, baseCfg.hcfg.numShards)
+	merged.latencies = NewHistogram(
+		WithHistogramMin(baseCfg.hcfg.min),
+		WithHistogramMax(baseCfg.hcfg.max),
+		WithHistogramGrowth(baseCfg.hcfg.growth),
+		WithHistogramNumBuckets(baseCfg.hcfg.numBuckets),
+		WithHistogramNumShards(baseCfg.hcfg.numShards),
+	)
+	merged.queueWaits = NewHistogram(
+		WithHistogramMin(baseCfg.hcfg.min),
+		WithHistogramMax(baseCfg.hcfg.max),
+		WithHistogramGrowth(baseCfg.hcfg.growth),
+		WithHistogramNumBuckets(baseCfg.hcfg.numBuckets),
+		WithHistogramNumShards(baseCfg.hcfg.numShards),
+	)
 	merged.exemplars = NewExemplar(baseCfg.ecfg.capacity)
 	merged.latPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
 	merged.qwPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)

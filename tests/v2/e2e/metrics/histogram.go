@@ -48,34 +48,35 @@ type shard struct {
 }
 
 // NewHistogram creates a new sharded histogram with geometric bucketing.
-// `minVal` and `maxVal` are the expected lower and upper bounds.
-// `growth` is the geometric growth factor for bucket widths (e.g., 1.6).
-// `numBuckets` controls the number of buckets, trading off precision and memory.
-func NewHistogram(minVal, maxVal, growth float64, numBuckets, numShards int) *Histogram {
-	if numBuckets < 2 {
+func NewHistogram(opts ...HistogramOption) *Histogram {
+	cfg := defaultHistogramConfig
+	for _, opt := range opts {
+		opt(&cfg)
+	}
+	if cfg.numBuckets < 2 {
 		panic("numBuckets must be at least 2")
 	}
-	if numShards <= 0 {
+	if cfg.numShards <= 0 {
 		panic("numShards must be positive")
 	}
 
 	h := &Histogram{
-		shards:     make([]shard, numShards),
-		bounds:     make([]float64, numBuckets-1),
-		min:        minVal,
-		max:        maxVal,
-		growth:     growth,
-		numBuckets: numBuckets,
-		numShards:  numShards,
+		shards:     make([]shard, cfg.numShards),
+		bounds:     make([]float64, cfg.numBuckets-1),
+		min:        cfg.min,
+		max:        cfg.max,
+		growth:     cfg.growth,
+		numBuckets: cfg.numBuckets,
+		numShards:  cfg.numShards,
 	}
 
-	h.bounds[0] = minVal
-	for i := 1; i < numBuckets-1; i++ {
-		h.bounds[i] = minVal * math.Pow(growth, float64(i))
+	h.bounds[0] = cfg.min
+	for i := 1; i < cfg.numBuckets-1; i++ {
+		h.bounds[i] = cfg.min * math.Pow(cfg.growth, float64(i))
 	}
 
 	for i := range h.shards {
-		h.shards[i].counts = make([]atomic.Uint64, numBuckets)
+		h.shards[i].counts = make([]atomic.Uint64, cfg.numBuckets)
 		h.shards[i].min.Store(math.Float64bits(math.Inf(1)))
 		h.shards[i].max.Store(math.Float64bits(math.Inf(-1)))
 	}

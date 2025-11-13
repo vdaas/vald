@@ -22,9 +22,27 @@ import (
 )
 
 func TestHistogram_Merge(t *testing.T) {
-	h1 := NewHistogram(0, 100, 1.6, 10, 2)
-	h2 := NewHistogram(0, 100, 1.6, 10, 2)
-	h3 := NewHistogram(0, 100, 1.6, 20, 2) // Incompatible
+	h1 := NewHistogram(
+		WithHistogramMin(0),
+		WithHistogramMax(100),
+		WithHistogramGrowth(1.6),
+		WithHistogramNumBuckets(10),
+		WithHistogramNumShards(2),
+	)
+	h2 := NewHistogram(
+		WithHistogramMin(0),
+		WithHistogramMax(100),
+		WithHistogramGrowth(1.6),
+		WithHistogramNumBuckets(10),
+		WithHistogramNumShards(2),
+	)
+	h3 := NewHistogram(
+		WithHistogramMin(0),
+		WithHistogramMax(100),
+		WithHistogramGrowth(1.6),
+		WithHistogramNumBuckets(20),
+		WithHistogramNumShards(2),
+	) // Incompatible
 
 	h1.Record(10)
 	h1.Record(20)

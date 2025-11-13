@@ -123,24 +123,20 @@ func WithExemplarCapacity(capacity int) ExemplarOption {
 // WithLatencyHistogram returns an option to set the latency histogram configuration.
 func WithLatencyHistogram(opts ...HistogramOption) Option {
 	return func(c *Collector) {
-		cfg := c.hcfg
+		c.latencies = NewHistogram(opts...)
 		for _, opt := range opts {
-			opt(&cfg)
+			opt(&c.hcfg)
 		}
-		c.hcfg = cfg
-		c.latencies = NewHistogram(cfg.min, cfg.max, cfg.growth, cfg.numBuckets, cfg.numShards)
 	}
 }
 
 // WithQueueWaitHistogram returns an option to set the queue wait histogram configuration.
 func WithQueueWaitHistogram(opts ...HistogramOption) Option {
 	return func(c *Collector) {
-		cfg := c.hcfg
+		c.queueWaits = NewHistogram(opts...)
 		for _, opt := range opts {
-			opt(&cfg)
+			opt(&c.hcfg)
 		}
-		c.hcfg = cfg
-		c.queueWaits = NewHistogram(cfg.min, cfg.max, cfg.growth, cfg.numBuckets, cfg.numShards)
 	}
 }
 
