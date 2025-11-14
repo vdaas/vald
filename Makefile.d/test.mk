@@ -103,10 +103,10 @@ test/hack/tparse: \
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=vendor -json -cover \
-		$(ROOTDIR)/hack/gorules/... \
-		$(ROOTDIR)/hack/helm/... \
-		$(ROOTDIR)/hack/license/... \
-		$(ROOTDIR)/hack/tools/... \
+	$(ROOTDIR)/hack/gorules/... \
+	$(ROOTDIR)/hack/helm/... \
+	$(ROOTDIR)/hack/license/... \
+	$(ROOTDIR)/hack/tools/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
 	rm -rf $(ROOTDIR)/vendor
@@ -211,10 +211,10 @@ test/hack/gotestfmt: \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	GODEBUG=$(GODEBUG) \
 	go test -short -shuffle=on -race -mod=vendor -json -cover -ldflags="-linkmode=external" \
-		$(ROOTDIR)/hack/gorules/... \
-		$(ROOTDIR)/hack/helm/... \
-		$(ROOTDIR)/hack/license/... \
-		$(ROOTDIR)/hack/tools/... \
+	$(ROOTDIR)/hack/gorules/... \
+	$(ROOTDIR)/hack/helm/... \
+	$(ROOTDIR)/hack/license/... \
+	$(ROOTDIR)/hack/tools/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
 	rm -rf $(ROOTDIR)/vendor
@@ -249,8 +249,8 @@ test/create-empty:
 			if [ "$$(basename $$f)" = "main.go" ]; then \
 				package="main"; \
 			fi; \
-			echo "package $$package" >> "$$f"; \
-		fi; \
+	echo "package $$package" >> "$$f"; \
+	fi; \
 	done
 
 .PHONY: test/remove-empty
@@ -325,10 +325,10 @@ test/hack: certs/gen
 	GOOS=$(GOOS) \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" \
 	go test -short -shuffle=on -race -mod=vendor -cover \
-		$(ROOTDIR)/hack/gorules... \
-		$(ROOTDIR)/hack/helm/... \
-		$(ROOTDIR)/hack/license/...\
-		$(ROOTDIR)/hack/tools/...
+	$(ROOTDIR)/hack/gorules... \
+	$(ROOTDIR)/hack/helm/... \
+	$(ROOTDIR)/hack/license/... \
+	$(ROOTDIR)/hack/tools/...
 	rm -rf $(ROOTDIR)/vendor
 	$(MAKE) certs/clean
 
@@ -358,15 +358,15 @@ coverage: certs/gen
 
 .PHONY: gotests/gen
 ## generate missing go test files
-gotests/gen: \
-	test/create-empty \
-	test/patch-placeholder \
-	gotests/gen-test \
-	test/remove-empty \
-	gotests/patch \
-	format/go/test \
-	test/comment-unimplemented \
-	format/go/test
+gotests/gen:
+	$(MAKE) test/create-empty
+	$(MAKE) test/patch-placeholder
+	$(MAKE) gotests/gen-test
+	$(MAKE) test/remove-empty
+	$(MAKE) gotests/patch
+	$(MAKE) format/go/test
+	$(MAKE) test/comment-unimplemented
+	$(MAKE) format/go/test
 
 .PHONY: gotests/gen-test
 ## generate test implementation
@@ -381,28 +381,30 @@ gotests/patch: \
 	files
 	@$(call green, "apply patches to go test files...")
 	find $(ROOTDIR)/internal/k8s/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%k8s.io/apimachinery/pkg/api/errors%$(GOPKG)/internal/errors%g"
-	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?internal/k8s/.*\_test.go$$' | xargs -I {} -P$(CORES) bash -c '\
-		echo "Replacing internal/k8s Test File {}" && \
-		sed -i -E "s%cockroachdb/errors%$(REPO)/internal/errors%g" {} && \
-		sed -i -E "s%golang.org/x/sync/errgroup%$(GOPKG)/internal/sync/errgroup%g" {} && \
-		sed -i -E "s%pkg/errors%$(REPO)/internal/errors%g" {} && \
-		sed -i -E "s%go-errors/errors%$(REPO)/internal/errors%g" {} && \
-		sed -i -E "s%go.uber.org/goleak%$(GOPKG)/internal/test/goleak%g" {}'
-	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?internal/errors/.*\_test.go$$' | xargs -I {} -P$(CORES) bash -c '\
-		echo "Replacing internal/errors Test {}" && \
-		sed -i -E "s%\"$(GOPKG)/internal/errors\"%%g" {} && \
-		sed -i -E "s/errors\.//g" {}'
-	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?internal/test/goleak/.*\_test.go$$' | xargs -I {} -P$(CORES) bash -c '\
-		echo "Replacing goleak Test file {}" && \
-		sed -i -E "s%\"$(GOPKG)/internal/test/goleak\"%%g" {} && \
-		sed -i -E "s/goleak\.//g" {}'
+	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?internal/k8s/.*\_test.go$$' | xargs -I {} -P$(CORES) bash -c ' \
+	echo "Replacing internal/k8s Test File {}" && \
+	sed -i -E "s%cockroachdb/errors%$(REPO)/internal/errors%g" {} && \
+	sed -i -E "s%golang.org/x/sync/errgroup%$(GOPKG)/internal/sync/errgroup%g" {} && \
+	sed -i -E "s%pkg/errors%$(REPO)/internal/errors%g" {} && \
+	sed -i -E "s%go-errors/errors%$(REPO)/internal/errors%g" {} && \
+	sed -i -E "s%go.uber.org/goleak%$(GOPKG)/internal/test/goleak%g" {}'
+	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?internal/errors/.*\_test.go$$' | xargs -I {} -P$(CORES) bash -c ' \
+	echo "Replacing internal/errors Test {}" && \
+	sed -i -E "s%\"$(GOPKG)/internal/errors\"%%g" {} && \
+	sed -i -E "s/errors\.//g" {}'
+	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?internal/test/goleak/.*\_test.go$$' | xargs -I {} -P$(CORES) bash -c ' \
+	echo "Replacing goleak Test file {}" && \
+	sed -i -E "s%\"$(GOPKG)/internal/test/goleak\"%%g" {} && \
+	sed -i -E "s/goleak\.//g" {}'
+	@sed -i -E '/"github.com\/vdaas\/vald\/internal\/strings"/d' pkg/gateway/lb/handler/grpc/pairing_heap_test.go
+	@sed -i -E '/^\t"github.com\/vdaas\/vald\/internal\/k8s\/vald"$$/d' pkg/agent/core/ngt/service/ngt_test.go
 
 .PHONY: test/patch-placeholder
 ## delete from placeholder to EOF, then re-append placeholder
 test/patch-placeholder:
 	@$(call green, "apply placeholder patches (delete to EOF and append)...")
 	@for f in $(GO_ALL_TEST_SOURCES); do echo "$$f"; done | \
-	xargs -I {} -P$(CORES) bash -c '\
+		xargs -I {} -P$(CORES) bash -c ' \
 		[ -f "{}" ] || exit 0 ; \
 		sed -i -E "/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,\$$d" "{}"; \
 		echo "// $(TEST_NOT_IMPL_PLACEHOLDER)" >> {};'
@@ -412,10 +414,10 @@ test/patch-placeholder:
 test/comment-unimplemented:
 	@$(call green, "comment out unimplemented test (from placeholder to EOF)...")
 	@for f in $(GO_ALL_TEST_SOURCES); do echo "$$f"; done | \
-	xargs -I {} -P$(CORES) bash -c '\
+		xargs -I {} -P$(CORES) bash -c ' \
 		[ -f "{}" ] || exit 0 ; \
 		sed -i -E -e " \
-			/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,\$$ { \
-				s/^/\/\/ /; \
-				s/^\/\/ \/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/; \
-			}" "{}"'
+		/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,\$$ { \
+		s/^/\/\/ /; \
+		s/^\/\/ \/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/; \
+		}" "{}"'
