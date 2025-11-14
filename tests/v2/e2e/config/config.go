@@ -1373,7 +1373,7 @@ func Load(path string) (cfg *Data, err error) {
 	if err = read(path, cfg); err != nil {
 		return nil, errors.Wrapf(err, "failed to read configuration from %s", path)
 	}
-	if len(cfg.Strategies) == 0 || cfg.Dataset == nil {
+	if cfg == nil || len(cfg.Strategies) == 0 || cfg.Dataset == nil {
 		return nil, errors.Errorf("failed to load configuration from %s", path)
 	}
 	if cfg, err = cfg.Bind(); err != nil {
