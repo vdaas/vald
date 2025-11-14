@@ -2372,6 +2372,15 @@ tests/v2/e2e/kubernetes/portforward/portforward.go
 tests/v2/e2e/kubernetes/resources.go
 tests/v2/e2e/kubernetes/rollout.go
 tests/v2/e2e/kubernetes/status.go
+tests/v2/e2e/metrics/exemplar.go
+tests/v2/e2e/metrics/exemplar_test.go
+tests/v2/e2e/metrics/histogram.go
+tests/v2/e2e/metrics/histogram_test.go
+tests/v2/e2e/metrics/metrics.go
+tests/v2/e2e/metrics/metrics_test.go
+tests/v2/e2e/metrics/option.go
+tests/v2/e2e/metrics/tdigest.go
+tests/v2/e2e/metrics/tdigest_test.go
 versions/BUF_VERSION
 versions/BUSYBOX_VERSION
 versions/CHAOS_MESH_VERSION

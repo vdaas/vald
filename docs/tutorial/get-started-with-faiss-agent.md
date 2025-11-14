@@ -189,9 +189,7 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
 
     <details><summary>The detailed explanation of example code is here</summary><br>
     This will execute 6 steps.
-
     1.  init
-
         - Import packages
             <details><summary>example code</summary><br>
 
@@ -217,7 +215,6 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
             </details>
 
         - Set variables
-
           - The constant number of training datasets and test datasets.
               <details><summary>example code</summary><br>
 
@@ -258,7 +255,6 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
             </details>
 
     1.  load
-
         - Loading from Fashion-MNIST dataset and set id for each vector that is loaded. This step will return the training dataset, test dataset, and ids list of ids when loading is completed with success.
             <details><summary>example code</summary><br>
 
@@ -289,7 +285,6 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
         </details>
 
     1.  Insert and Index
-
         - Insert and Indexing 400 training datasets to the Vald agent.
             <details><summary>example code</summary><br>
 
@@ -327,7 +322,6 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
             </details>
 
     1.  Search
-
         - Search 10 neighbor vectors for each 20 test datasets and return a list of the neighbor vectors.
 
         - When getting approximate vectors, the Vald client sends search config and vector to the server via gRPC.
@@ -358,7 +352,6 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
             </details>
 
     1.  Remove
-
         - Remove 400 indexed training datasets from the Vald agent.
             <details><summary>example code</summary><br>
 
