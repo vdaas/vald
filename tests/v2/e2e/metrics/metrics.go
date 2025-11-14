@@ -122,6 +122,9 @@ func (h *CounterHandle) Add(val int64) {
 	if h == nil || h.value == nil {
 		return
 	}
+	if val < 0 {
+		return // Counters do not support negative increments
+	}
 	h.value.Add(uint64(val))
 }
 

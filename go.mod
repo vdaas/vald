@@ -320,11 +320,11 @@ replace (
 	go.uber.org/zap => go.uber.org/zap v1.27.0
 	gocloud.dev => gocloud.dev v0.43.0
 	golang.org/x/crypto => golang.org/x/crypto v0.44.0
-	golang.org/x/exp => golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546
-	golang.org/x/exp/typeparams => golang.org/x/exp/typeparams v0.0.0-20251023183803-a4bb9ffd2546
+	golang.org/x/exp => golang.org/x/exp v0.0.0-20251113190631-e25ba8c21ef6
+	golang.org/x/exp/typeparams => golang.org/x/exp/typeparams v0.0.0-20251113190631-e25ba8c21ef6
 	golang.org/x/image => golang.org/x/image v0.33.0
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20241112194109-818c5a804067
-	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20251021151156-188f512ec823
+	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20251113184115-a159579294ab
 	golang.org/x/mod => golang.org/x/mod v0.30.0
 	golang.org/x/net => golang.org/x/net v0.47.0
 	golang.org/x/oauth2 => golang.org/x/oauth2 v0.33.0
@@ -418,7 +418,7 @@ require (
 	golang.org/x/sys v0.38.0
 	golang.org/x/text v0.31.0
 	golang.org/x/time v0.14.0
-	golang.org/x/tools v0.38.0
+	golang.org/x/tools v0.39.0
 	gonum.org/v1/hdf5 v0.0.0-00010101000000-000000000000
 	gonum.org/v1/plot v0.15.2
 	google.golang.org/genproto/googleapis/api v0.0.0-20251103181224-f26f9409b101
@@ -859,7 +859,7 @@ require (
 	github.com/therootcompany/xz v1.0.1 // indirect
 	github.com/tiancaiamao/gp v0.0.0-20230126082955-4f9e4f1ed9b5 // indirect
 	github.com/tidwall/btree v1.8.1 // indirect
-	github.com/tikv/pd/client v0.0.0-20251113050911-303c6c3b403e // indirect
+	github.com/tikv/pd/client v0.0.0-20251113203905-697cbd3eb557 // indirect
 	github.com/twmb/murmur3 v1.1.8 // indirect
 	github.com/ulikunitz/xz v0.5.15 // indirect
 	github.com/unum-cloud/usearch/golang v0.0.0-20251113105425-13c3fd9ce866 // indirect
@@ -908,7 +908,7 @@ require (
 	golang.org/x/crypto v0.44.0 // indirect
 	golang.org/x/exp v0.0.0-20251009144603-d2f985daa21b // indirect
 	golang.org/x/exp/typeparams v0.0.0-20240213143201-ec583247a57a // indirect
-	golang.org/x/image v0.32.0 // indirect
+	golang.org/x/image v0.33.0 // indirect
 	golang.org/x/mod v0.30.0 // indirect
 	golang.org/x/telemetry v0.0.0-20251111182119-bc8e575c7b54 // indirect
 	golang.org/x/term v0.37.0 // indirect
