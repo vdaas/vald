@@ -29,8 +29,6 @@ func WithAddrs(addrs []string) Option {
 		return nil
 	}
 }
-<<<<<<< HEAD
-=======
 
 func WithTxn(txn bool) Option {
 	return func(c *client) error {
@@ -38,4 +36,3 @@ func WithTxn(txn bool) Option {
 		return nil
 	}
 }
->>>>>>> ee91e3aac (hot-reload (minimal test impl, opt-in) (#3247))
