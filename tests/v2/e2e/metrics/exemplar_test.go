@@ -19,9 +19,10 @@ package metrics
 import (
 	"fmt"
 	"math/rand"
-	"sync"
 	"testing"
 	"time"
+
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 func TestExemplar_Offer(t *testing.T) {
@@ -56,35 +57,33 @@ func TestExemplar_Offer(t *testing.T) {
 func TestExemplar_Concurrency(t *testing.T) {
 	k := 10
 	e := NewExemplar(k)
-	var wg sync.WaitGroup
 	numGoroutines := 100
 	numOffersPerG := 20
 
-	for i := 0; i < numGoroutines; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for j := 0; j < numOffersPerG; j++ {
+	eg, _ := errgroup.New(t.Context())
+	for i := range numGoroutines {
+		idx := i
+		eg.Go(func() error {
+			for j := range numOffersPerG {
 				lat := time.Duration(rand.Intn(1000)) * time.Millisecond
-				reqID := fmt.Sprintf("req-%d-%d", i, j)
+				reqID := fmt.Sprintf("req-%d-%d", idx, j)
 				e.Offer(lat, reqID)
 			}
-		}()
+			return nil
+		})
 	}
 
-	var snapWg sync.WaitGroup
 	snapshots := make([][]*item, 10)
-	for i := 0; i < 10; i++ {
-		snapWg.Add(1)
-		go func(idx int) {
-			defer snapWg.Done()
+	for i := range len(snapshots) {
+		idx := i
+		eg.Go(func() error {
 			time.Sleep(time.Duration(rand.Intn(50)) * time.Millisecond)
 			snapshots[idx] = e.Snapshot()
-		}(i)
+			return nil
+		})
 	}
 
-	wg.Wait()
-	snapWg.Wait()
+	_ = eg.Wait()
 
 	finalSnap := e.Snapshot()
 	if len(finalSnap) > k {
@@ -105,32 +104,30 @@ func TestExemplar_Race(t *testing.T) {
 
 	k := 5
 	e := NewExemplar(k)
-	var wg sync.WaitGroup
+	eg, _ := errgroup.New(t.Context())
 
 	// Writer goroutines
-	for i := 0; i < 5; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+	for range k {
+		eg.Go(func() error {
 			for j := 0; j < 100; j++ {
 				e.Offer(time.Duration(rand.Intn(100))*time.Millisecond, "req")
 			}
-		}()
+			return nil
+		})
 	}
 
 	// Reader goroutines
-	for i := 0; i < 5; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+	for range k {
+		eg.Go(func() error {
 			for j := 0; j < 100; j++ {
 				snap := e.Snapshot()
 				if len(snap) > k {
 					t.Errorf("snapshot too large: %d", len(snap))
 				}
 			}
-		}()
+			return nil
+		})
 	}
 
-	wg.Wait()
+	eg.Wait()
 }

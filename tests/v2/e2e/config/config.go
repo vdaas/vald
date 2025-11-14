@@ -954,6 +954,9 @@ func (m *Metrics) Opts() (opts []metrics.Option) {
 		return nil
 	}
 	opts = make([]metrics.Option, 0, len(m.RangeScales)+len(m.TimeScales)+6)
+	if m.CustomCounters != nil {
+		opts = append(opts, metrics.WithCustomCounters(m.CustomCounters...))
+	}
 	if m.LatencyHistogram != nil {
 		opts = append(opts, metrics.WithLatencyHistogram(
 			metrics.WithHistogramMin(m.LatencyHistogram.Min),
@@ -998,9 +1001,6 @@ func (m *Metrics) Opts() (opts []metrics.Option) {
 		for _, ts := range m.TimeScales {
 			opts = append(opts, metrics.WithTimeScale(ts.Name, ts.Width, ts.Capacity))
 		}
-	}
-	if m.CustomCounters != nil {
-		opts = append(opts, metrics.WithCustomCounters(m.CustomCounters...))
 	}
 	return opts
 }
@@ -1373,7 +1373,7 @@ func Load(path string) (cfg *Data, err error) {
 	if err = read(path, cfg); err != nil {
 		return nil, errors.Wrapf(err, "failed to read configuration from %s", path)
 	}
-	if len(cfg.Strategies) == 0 || cfg.Dataset == nil {
+	if cfg == nil || len(cfg.Strategies) == 0 || cfg.Dataset == nil {
 		return nil, errors.Errorf("failed to load configuration from %s", path)
 	}
 	if cfg, err = cfg.Bind(); err != nil {
