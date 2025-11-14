@@ -50,16 +50,22 @@ type shard struct {
 }
 
 // NewHistogram creates a new sharded histogram with geometric bucketing.
-func NewHistogram(opts ...HistogramOption) *Histogram {
+func NewHistogram(opts ...HistogramOption) (*Histogram, error) {
 	cfg := defaultHistogramConfig
 	for _, opt := range opts {
 		opt(&cfg)
 	}
 	if cfg.numBuckets < 2 {
-		panic("numBuckets must be at least 2")
+		return nil, errors.New("numBuckets must be at least 2")
 	}
 	if cfg.numShards <= 0 {
-		panic("numShards must be positive")
+		return nil, errors.New("numShards must be positive")
+	}
+	if cfg.growth <= 1 {
+		return nil, errors.New("histogram growth must be > 1 for geometric buckets")
+	}
+	if cfg.min <= 0 {
+		return nil, errors.New("histogram min must be > 0 for geometric buckets")
 	}
 
 	h := &Histogram{
@@ -90,7 +96,7 @@ func NewHistogram(opts ...HistogramOption) *Histogram {
 	}
 	h.boundsCRC32 = crc32.ChecksumIEEE(buf)
 
-	return h
+	return h, nil
 }
 
 // Record adds a value to the histogram. It is thread-safe.
@@ -301,19 +307,39 @@ func (s *HistogramSnapshot) String() string {
 }
 
 // Merge merges another snapshot into this one.
-func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) {
+func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
+	if other == nil || other.Total == 0 {
+		return nil
+	}
+
+	// Initialize or validate bucket structure.
+	if len(other.Counts) > 0 {
+		if len(s.Counts) == 0 {
+			s.Counts = make([]uint64, len(other.Counts))
+		} else if len(s.Counts) != len(other.Counts) {
+			return errors.New("cannot merge histograms with different bucket counts")
+		}
+		for i, c := range other.Counts {
+			s.Counts[i] += c
+		}
+	}
+
+	// Merge scalar stats.
+	if s.Total == 0 {
+		s.Min = other.Min
+		s.Max = other.Max
+	} else {
+		if other.Min < s.Min {
+			s.Min = other.Min
+		}
+		if other.Max > s.Max {
+			s.Max = other.Max
+		}
+	}
 	s.Total += other.Total
 	s.Sum += other.Sum
 	s.SumSq += other.SumSq
-	if other.Min < s.Min {
-		s.Min = other.Min
-	}
-	if other.Max > s.Max {
-		s.Max = other.Max
-	}
-	for i, c := range other.Counts {
-		s.Counts[i] += c
-	}
+
 	if s.Total > 0 {
 		s.Mean = s.Sum / float64(s.Total)
 		variance := (s.SumSq / float64(s.Total)) - (s.Mean * s.Mean)
@@ -324,4 +350,5 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) {
 	if len(s.Bounds) == 0 {
 		s.Bounds = other.Bounds
 	}
+	return nil
 }

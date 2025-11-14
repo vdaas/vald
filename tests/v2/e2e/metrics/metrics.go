@@ -166,25 +166,39 @@ type Scale struct {
 // newScale creates a new scale with the given configuration.
 func newScale(
 	name string, width, capacity uint64, numCounters int, hcfg histogramConfig, ecfg exemplarConfig,
-) *Scale {
+) (*Scale, error) {
+	if width == 0 {
+		return nil, errors.New("scale width must be > 0")
+	}
+	if capacity == 0 {
+		return nil, errors.New("scale capacity must be > 0")
+	}
 	slots := make([]*Slot, capacity)
 	for i := range slots {
+		h, err := NewHistogram(
+			WithHistogramMin(hcfg.min),
+			WithHistogramMax(hcfg.max),
+			WithHistogramGrowth(hcfg.growth),
+			WithHistogramNumBuckets(hcfg.numBuckets),
+			WithHistogramNumShards(hcfg.numShards),
+		)
+		if err != nil {
+			return nil, err
+		}
+		q, err := NewHistogram(
+			WithHistogramMin(hcfg.min),
+			WithHistogramMax(hcfg.max),
+			WithHistogramGrowth(hcfg.growth),
+			WithHistogramNumBuckets(hcfg.numBuckets),
+			WithHistogramNumShards(hcfg.numShards),
+		)
+		if err != nil {
+			return nil, err
+		}
 		slots[i] = newSlot(
 			numCounters,
-			NewHistogram(
-				WithHistogramMin(hcfg.min),
-				WithHistogramMax(hcfg.max),
-				WithHistogramGrowth(hcfg.growth),
-				WithHistogramNumBuckets(hcfg.numBuckets),
-				WithHistogramNumShards(hcfg.numShards),
-			),
-			NewHistogram(
-				WithHistogramMin(hcfg.min),
-				WithHistogramMax(hcfg.max),
-				WithHistogramGrowth(hcfg.growth),
-				WithHistogramNumBuckets(hcfg.numBuckets),
-				WithHistogramNumShards(hcfg.numShards),
-			),
+			h,
+			q,
 			NewExemplar(ecfg.capacity),
 		)
 	}
@@ -193,7 +207,7 @@ func newScale(
 		width:    width,
 		capacity: capacity,
 		slots:    slots,
-	}
+	}, nil
 }
 
 // getSlot returns the slot for the given index.
@@ -280,10 +294,14 @@ type RangeScale struct {
 // NewRangeScale creates a new RangeScale.
 func NewRangeScale(
 	name string, width, capacity uint64, numCounters int, hcfg histogramConfig, ecfg exemplarConfig,
-) *RangeScale {
-	return &RangeScale{
-		Scale: newScale(name, width, capacity, numCounters, hcfg, ecfg),
+) (*RangeScale, error) {
+	s, err := newScale(name, width, capacity, numCounters, hcfg, ecfg)
+	if err != nil {
+		return nil, err
 	}
+	return &RangeScale{
+		Scale: s,
+	}, nil
 }
 
 // Record updates the appropriate slot based on the request ID in the context.
@@ -313,10 +331,14 @@ func NewTimeScale(
 	numCounters int,
 	hcfg histogramConfig,
 	ecfg exemplarConfig,
-) *TimeScale {
-	return &TimeScale{
-		Scale: newScale(name, widthSec, capacity, numCounters, hcfg, ecfg),
+) (*TimeScale, error) {
+	s, err := newScale(name, widthSec, capacity, numCounters, hcfg, ecfg)
+	if err != nil {
+		return nil, err
 	}
+	return &TimeScale{
+		Scale: s,
+	}, nil
 }
 
 // Record updates the appropriate slot based on the request's end time.
@@ -355,7 +377,7 @@ type Collector struct {
 }
 
 // NewCollector creates and initializes a new Collector with the provided options.
-func NewCollector(opts ...Option) *Collector {
+func NewCollector(opts ...Option) (*Collector, error) {
 	c := &Collector{
 		counters: make(map[string]*CounterHandle),
 		hcfg:     defaultHistogramConfig,
@@ -364,26 +386,35 @@ func NewCollector(opts ...Option) *Collector {
 	}
 
 	for _, opt := range opts {
-		opt(c)
+		if err := opt(c); err != nil {
+			return nil, err
+		}
 	}
 
+	var err error
 	if c.latencies == nil {
-		c.latencies = NewHistogram(
+		c.latencies, err = NewHistogram(
 			WithHistogramMin(c.hcfg.min),
 			WithHistogramMax(c.hcfg.max),
 			WithHistogramGrowth(c.hcfg.growth),
 			WithHistogramNumBuckets(c.hcfg.numBuckets),
 			WithHistogramNumShards(c.hcfg.numShards),
 		)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if c.queueWaits == nil {
-		c.queueWaits = NewHistogram(
+		c.queueWaits, err = NewHistogram(
 			WithHistogramMin(c.hcfg.min),
 			WithHistogramMax(c.hcfg.max),
 			WithHistogramGrowth(c.hcfg.growth),
 			WithHistogramNumBuckets(c.hcfg.numBuckets),
 			WithHistogramNumShards(c.hcfg.numShards),
 		)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if c.exemplars == nil {
 		c.exemplars = NewExemplar(c.ecfg.capacity)
@@ -400,7 +431,7 @@ func NewCollector(opts ...Option) *Collector {
 			value: new(atomic.Uint64),
 		}
 	}
-	return c
+	return c, nil
 }
 
 // Merge merges the metrics from another collector into this one.
@@ -442,7 +473,10 @@ func (c *Collector) Merge(other *Collector) error {
 		if mh, ok := c.counters[name]; ok {
 			mh.value.Add(h.value.Load())
 		} else {
-			c.counters[name] = h
+			c.counters[name] = &CounterHandle{
+				value: new(atomic.Uint64),
+			}
+			c.counters[name].value.Store(h.value.Load())
 		}
 	}
 	for i, rs := range other.rangeScales {
@@ -589,23 +623,32 @@ func MergeCollectors(collectors ...*Collector) (*Collector, error) {
 
 	// Use the configuration of the first collector as the base.
 	baseCfg := collectors[0]
-	merged := NewCollector()
+	merged, err := NewCollector()
+	if err != nil {
+		return nil, err
+	}
 	merged.hcfg = baseCfg.hcfg
 	merged.ecfg = baseCfg.ecfg
-	merged.latencies = NewHistogram(
+	merged.latencies, err = NewHistogram(
 		WithHistogramMin(baseCfg.hcfg.min),
 		WithHistogramMax(baseCfg.hcfg.max),
 		WithHistogramGrowth(baseCfg.hcfg.growth),
 		WithHistogramNumBuckets(baseCfg.hcfg.numBuckets),
 		WithHistogramNumShards(baseCfg.hcfg.numShards),
 	)
-	merged.queueWaits = NewHistogram(
+	if err != nil {
+		return nil, err
+	}
+	merged.queueWaits, err = NewHistogram(
 		WithHistogramMin(baseCfg.hcfg.min),
 		WithHistogramMax(baseCfg.hcfg.max),
 		WithHistogramGrowth(baseCfg.hcfg.growth),
 		WithHistogramNumBuckets(baseCfg.hcfg.numBuckets),
 		WithHistogramNumShards(baseCfg.hcfg.numShards),
 	)
+	if err != nil {
+		return nil, err
+	}
 	merged.exemplars = NewExemplar(baseCfg.ecfg.capacity)
 	merged.latPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
 	merged.qwPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
@@ -632,7 +675,10 @@ func MergeCollectors(collectors ...*Collector) (*Collector, error) {
 			if mh, ok := merged.counters[name]; ok {
 				mh.value.Add(h.value.Load())
 			} else {
-				merged.counters[name] = h
+				merged.counters[name] = &CounterHandle{
+					value: new(atomic.Uint64),
+				}
+				merged.counters[name].value.Store(h.value.Load())
 			}
 		}
 		for code, val := range c.codes {
@@ -698,13 +744,17 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 			if merged.Latencies == nil {
 				merged.Latencies = &HistogramSnapshot{}
 			}
-			merged.Latencies.Merge(s.Latencies)
+			if err := merged.Latencies.Merge(s.Latencies); err != nil {
+				return nil, err
+			}
 		}
 		if s.QueueWaits != nil {
 			if merged.QueueWaits == nil {
 				merged.QueueWaits = &HistogramSnapshot{}
 			}
-			merged.QueueWaits.Merge(s.QueueWaits)
+			if err := merged.QueueWaits.Merge(s.QueueWaits); err != nil {
+				return nil, err
+			}
 		}
 		if s.LatPercentiles != nil {
 			if merged.LatPercentiles == nil {
@@ -827,6 +877,25 @@ func (s *GlobalSnapshot) String() string {
 			}
 			sb.WriteString(fmt.Sprintf("  [%s] %d responses\n", status, count))
 		}
+	}
+	if s == nil {
+		return ""
+	}
+	errs := s.Errors
+	sb.WriteString(fmt.Sprintf("\n--- Global Metrics ---\n"))
+	sb.WriteString(fmt.Sprintf("Total Requests: %d\n", total))
+	sb.WriteString(fmt.Sprintf("Errors: %d (%.2f%%)\n", errs, float64(errs)/float64(total)*100))
+	sb.WriteString(fmt.Sprintf("Latency:\n%s", s.Latencies))
+	sb.WriteString(fmt.Sprintf("Queue Waits:\n%s", s.QueueWaits))
+	sb.WriteString(fmt.Sprintf("Latency Percentiles:\n%s", s.LatPercentiles))
+	sb.WriteString(fmt.Sprintf("Queue Wait Percentiles:\n%s", s.QWPercentiles))
+	sb.WriteString(fmt.Sprintf("Exemplars (Top %d slowest requests):\n", len(s.Exemplars)))
+	for _, ex := range s.Exemplars {
+		sb.WriteString(fmt.Sprintf("  - RequestID: %s, Latency: %s\n", ex.requestID, ex.latency))
+	}
+	sb.WriteString("gRPC Status Codes:\n")
+	for code, count := range s.Codes {
+		sb.WriteString(fmt.Sprintf("  - %s: %d (%.2f%%)\n", code.String(), count, float64(count)/float64(total)*100))
 	}
 
 	return sb.String()

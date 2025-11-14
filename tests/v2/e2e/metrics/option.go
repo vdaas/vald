@@ -19,7 +19,7 @@ package metrics
 import "sync/atomic"
 
 // Option represents a functional option for configuring the metrics collector.
-type Option func(*Collector)
+type Option func(*Collector) error
 
 // HistogramOption represents a functional option for configuring a histogram.
 type HistogramOption func(*histogramConfig)
@@ -122,71 +122,96 @@ func WithExemplarCapacity(capacity int) ExemplarOption {
 
 // WithLatencyHistogram returns an option to set the latency histogram configuration.
 func WithLatencyHistogram(opts ...HistogramOption) Option {
-	return func(c *Collector) {
-		c.latencies = NewHistogram(opts...)
+	return func(c *Collector) error {
+		h, err := NewHistogram(opts...)
+		if err != nil {
+			return err
+		}
+		c.latencies = h
 		for _, opt := range opts {
 			opt(&c.hcfg)
 		}
+		return nil
 	}
 }
 
 // WithQueueWaitHistogram returns an option to set the queue wait histogram configuration.
 func WithQueueWaitHistogram(opts ...HistogramOption) Option {
-	return func(c *Collector) {
-		c.queueWaits = NewHistogram(opts...)
+	return func(c *Collector) error {
+		h, err := NewHistogram(opts...)
+		if err != nil {
+			return err
+		}
+		c.queueWaits = h
 		for _, opt := range opts {
 			opt(&c.hcfg)
 		}
+		return nil
 	}
 }
 
 // WithLatencyTDigest returns an option to set the latency TDigest configuration.
 func WithLatencyTDigest(opts ...TDigestOption) Option {
-	return func(c *Collector) {
+	return func(c *Collector) error {
 		cfg := defaultTDigestConfig
 		for _, opt := range opts {
 			opt(&cfg)
 		}
-		c.latPercentiles, _ = NewTDigest(cfg.compression, cfg.compressionTriggerFactor)
+		var err error
+		c.latPercentiles, err = NewTDigest(cfg.compression, cfg.compressionTriggerFactor)
+		return err
 	}
 }
 
 // WithQueueWaitTDigest returns an option to set the queue wait TDigest configuration.
 func WithQueueWaitTDigest(opts ...TDigestOption) Option {
-	return func(c *Collector) {
+	return func(c *Collector) error {
 		cfg := defaultTDigestConfig
 		for _, opt := range opts {
 			opt(&cfg)
 		}
-		c.qwPercentiles, _ = NewTDigest(cfg.compression, cfg.compressionTriggerFactor)
+		var err error
+		c.qwPercentiles, err = NewTDigest(cfg.compression, cfg.compressionTriggerFactor)
+		return err
 	}
 }
 
 // WithExemplar returns an option to set the exemplar configuration.
 func WithExemplar(opts ...ExemplarOption) Option {
-	return func(c *Collector) {
+	return func(c *Collector) error {
 		cfg := c.ecfg
 		for _, opt := range opts {
 			opt(&cfg)
 		}
 		c.ecfg = cfg
 		c.exemplars = NewExemplar(cfg.capacity)
+		return nil
 	}
 }
 
 // WithRangeScale is an option to add a range scale.
 // It is important to register all custom counters via WithCustomCounters *before* adding any scales.
 func WithRangeScale(name string, width, capacity uint64) Option {
-	return func(c *Collector) {
-		c.rangeScales = append(c.rangeScales, NewRangeScale(name, width, capacity, len(c.counters), c.hcfg, c.ecfg))
+	return func(c *Collector) error {
+		rs, err := NewRangeScale(name, width, capacity, len(c.counters), c.hcfg, c.ecfg)
+		if err != nil {
+			return err
+		}
+		c.rangeScales = append(c.rangeScales, rs)
+		return nil
 	}
 }
 
 // WithTimeScale is an option to add a time scale.
 // It is important to register all custom counters via WithCustomCounters *before* adding any scales.
 func WithTimeScale(name string, widthSec, capacity uint64) Option {
-	return func(c *Collector) {
-		c.timeScales = append(c.timeScales, NewTimeScale(name, widthSec, capacity, len(c.counters), c.hcfg, c.ecfg))
+	return func(c *Collector) error {
+		ts, err := NewTimeScale(name, widthSec, capacity, len(c.counters), c.hcfg, c.ecfg)
+		if err != nil {
+			return err
+		}
+		c.timeScales = append(c.timeScales, ts)
+		return nil
 	}
 }
 
@@ -194,11 +219,12 @@ func WithTimeScale(name string, widthSec, capacity uint64) Option {
 // This option should be used *before* any WithRangeScale or WithTimeScale options
 // to ensure that the scales are initialized with the correct number of counters.
 func WithCustomCounters(names ...string) Option {
-	return func(c *Collector) {
+	return func(c *Collector) error {
 		for _, name := range names {
 			c.counters[name] = &CounterHandle{
 				value: new(atomic.Uint64),
 			}
 		}
+		return nil
 	}
 }

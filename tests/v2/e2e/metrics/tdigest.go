@@ -17,9 +17,10 @@
 package metrics
 
 import (
+	"cmp"
 	"fmt"
 	"math"
-	"sort"
+	"slices"
 	"strings"
 	"sync"
 	"unsafe"
@@ -104,8 +105,8 @@ func (t *TDigest) Add(value float64) {
 	}
 
 	// Sort the centroids by mean
-	sort.Slice(t.centroids, func(i, j int) bool {
-		return t.centroids[i].Mean < t.centroids[j].Mean
+	slices.SortFunc(t.centroids, func(left, right Centroid) int {
+		return cmp.Compare(left.Mean, right.Mean)
 	})
 }
 
@@ -153,14 +154,12 @@ func (t *TDigest) Merge(other QuantileSketch) error {
 
 		for _, c := range o.centroids {
 			// Merge centroid preserving weight
-			for i := 0; i < int(c.Weight); i++ {
-				t.centroids = append(t.centroids, Centroid{Mean: c.Mean, Weight: 1})
-				t.count++
-			}
+			t.centroids = append(t.centroids, c)
+			t.count += c.Weight
 		}
 		// Sort and compress after merging all centroids
-		sort.Slice(t.centroids, func(i, j int) bool {
-			return t.centroids[i].Mean < t.centroids[j].Mean
+		slices.SortFunc(t.centroids, func(left, right Centroid) int {
+			return cmp.Compare(left.Mean, right.Mean)
 		})
 		if float64(len(t.centroids)) > t.compression*t.compressionTriggerFactor {
 			t.compress()
@@ -188,6 +187,10 @@ func (t *TDigest) compress() {
 		return
 	}
 
+	// Ensure adjacency reflects mean order before merging.
+	slices.SortFunc(t.centroids, func(left, right Centroid) int {
+		return cmp.Compare(left.Mean, right.Mean)
+	})
 	for float64(len(t.centroids)) > t.compression {
 		minWeight := math.Inf(1)
 		mergeIdx := -1
