@@ -17,8 +17,10 @@
 package metrics
 
 import (
+	"fmt"
 	"math"
 	"sort"
+	"strings"
 	"sync"
 	"unsafe"
 
@@ -38,6 +40,19 @@ type TDigest struct {
 	compression              float64
 	compressionTriggerFactor float64
 	count                    float64
+}
+
+// String implements the fmt.Stringer interface.
+func (t *TDigest) String() string {
+	if t == nil {
+		return ""
+	}
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("    p50: %.2f\n", t.Quantile(0.5)))
+	sb.WriteString(fmt.Sprintf("    p90: %.2f\n", t.Quantile(0.9)))
+	sb.WriteString(fmt.Sprintf("    p95: %.2f\n", t.Quantile(0.95)))
+	sb.WriteString(fmt.Sprintf("    p99: %.2f\n", t.Quantile(0.99)))
+	return sb.String()
 }
 
 // NewTDigest creates a new TDigest.

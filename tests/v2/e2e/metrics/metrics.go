@@ -21,6 +21,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -347,6 +348,7 @@ type Collector struct {
 	counters       map[string]*CounterHandle
 	rangeScales    []*RangeScale
 	timeScales     []*TimeScale
+	codes          map[codes.Code]*atomic.Uint64
 
 	hcfg histogramConfig
 	ecfg exemplarConfig
@@ -358,6 +360,7 @@ func NewCollector(opts ...Option) *Collector {
 		counters: make(map[string]*CounterHandle),
 		hcfg:     defaultHistogramConfig,
 		ecfg:     defaultExemplarConfig,
+		codes:    make(map[codes.Code]*atomic.Uint64),
 	}
 
 	for _, opt := range opts {
@@ -478,6 +481,18 @@ func (c *Collector) Record(ctx context.Context, rr *RequestResult) {
 	c.latPercentiles.Add(float64(rr.Latency.Nanoseconds()))
 	c.qwPercentiles.Add(float64(rr.QueueWait.Nanoseconds()))
 	c.exemplars.Offer(rr.Latency, rr.RequestID)
+	c.mu.RLock()
+	_, ok := c.codes[rr.Status]
+	c.mu.RUnlock()
+	if !ok {
+		c.mu.Lock()
+		// re-check if other thread already insert the key
+		if _, ok := c.codes[rr.Status]; !ok {
+			c.codes[rr.Status] = new(atomic.Uint64)
+		}
+		c.mu.Unlock()
+	}
+	c.codes[rr.Status].Add(1)
 
 	for _, rs := range c.rangeScales {
 		rs.Record(ctx, rr)
@@ -513,6 +528,10 @@ func (c *Collector) IncCounter(name string, val int64) {
 func (c *Collector) GlobalSnapshot() *GlobalSnapshot {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
+	codes := make(map[codes.Code]uint64, len(c.codes))
+	for code, val := range c.codes {
+		codes[code] = val.Load()
+	}
 	return &GlobalSnapshot{
 		Total:          c.total.Load(),
 		Errors:         c.errors.Load(),
@@ -521,6 +540,7 @@ func (c *Collector) GlobalSnapshot() *GlobalSnapshot {
 		LatPercentiles: c.latPercentiles,
 		QWPercentiles:  c.qwPercentiles,
 		Exemplars:      c.exemplars.Snapshot(),
+		Codes:          codes,
 	}
 }
 
@@ -615,6 +635,12 @@ func MergeCollectors(collectors ...*Collector) (*Collector, error) {
 				merged.counters[name] = h
 			}
 		}
+		for code, val := range c.codes {
+			if _, ok := merged.codes[code]; !ok {
+				merged.codes[code] = new(atomic.Uint64)
+			}
+			merged.codes[code].Add(val.Load())
+		}
 		for i, rs := range c.rangeScales {
 			if i < len(merged.rangeScales) {
 				if err := merged.rangeScales[i].Scale.Merge(rs.Scale); err != nil {
@@ -653,6 +679,7 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 		QueueWaits:     &HistogramSnapshot{},
 		LatPercentiles: snapshots[0].LatPercentiles,
 		QWPercentiles:  snapshots[0].QWPercentiles,
+		Codes:          make(map[codes.Code]uint64),
 	}
 	base := snapshots[0]
 
@@ -695,6 +722,9 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 				return nil, err
 			}
 		}
+		for code, val := range s.Codes {
+			merged.Codes[code] += val
+		}
 	}
 
 	return merged, nil
@@ -711,6 +741,7 @@ type GlobalSnapshot struct {
 	LatPercentiles QuantileSketch     `json:"lat_percentiles"`
 	QWPercentiles  QuantileSketch     `json:"qw_percentiles"`
 	Exemplars      []*item            `json:"exemplars"`
+	Codes          map[codes.Code]uint64 `json:"codes"`
 	SchemaVersion  string             `json:"schema_version"`
 	BoundsCRC32    uint32             `json:"bounds_crc32"`
 	SketchKind     string             `json:"sketch_kind"`
@@ -720,6 +751,35 @@ type GlobalSnapshot struct {
 // MarshalJSON implements the json.Marshaler interface.
 func (s *GlobalSnapshot) MarshalJSON() ([]byte, error) {
 	return json.Marshal(*s)
+}
+
+// String implements the fmt.Stringer interface.
+func (s *GlobalSnapshot) String() string {
+	if s == nil {
+		return ""
+	}
+	var (
+		sb    strings.Builder
+		total = s.Total
+		errs  = s.Errors
+	)
+	sb.WriteString(fmt.Sprintf("\n--- Global Metrics ---\n"))
+	sb.WriteString(fmt.Sprintf("Total Requests: %d\n", total))
+	sb.WriteString(fmt.Sprintf("Errors: %d (%.2f%%)\n", errs, float64(errs)/float64(total)*100))
+	sb.WriteString(fmt.Sprintf("Latency:\n%s", s.Latencies))
+	sb.WriteString(fmt.Sprintf("Queue Waits:\n%s", s.QueueWaits))
+	sb.WriteString(fmt.Sprintf("Latency Percentiles:\n%s", s.LatPercentiles))
+	sb.WriteString(fmt.Sprintf("Queue Wait Percentiles:\n%s", s.QWPercentiles))
+	sb.WriteString(fmt.Sprintf("Exemplars (Top %d slowest requests):\n", len(s.Exemplars)))
+	for _, ex := range s.Exemplars {
+		sb.WriteString(fmt.Sprintf("  - RequestID: %s, Latency: %s\n", ex.requestID, ex.latency))
+	}
+	sb.WriteString("gRPC Status Codes:\n")
+	for code, count := range s.Codes {
+		sb.WriteString(fmt.Sprintf("  - %s: %d (%.2f%%)\n", code.String(), count, float64(count)/float64(total)*100))
+	}
+
+	return sb.String()
 }
 
 // ScaleSnapshot contains the aggregated metrics for a set of windows (slots).
@@ -735,6 +795,24 @@ func (s *ScaleSnapshot) MarshalJSON() ([]byte, error) {
 	return json.Marshal(*s)
 }
 
+// String implements the fmt.Stringer interface.
+func (s *ScaleSnapshot) String() string {
+	if s == nil {
+		return ""
+	}
+
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("\n--- Scale Metrics: %s ---\n", s.Name))
+	sb.WriteString(fmt.Sprintf("Width: %d\n", s.Width))
+	sb.WriteString(fmt.Sprintf("Capacity: %d\n", s.Capacity))
+	for i, slot := range s.Slots {
+		if slot.Total > 0 {
+			sb.WriteString(fmt.Sprintf("  --- Slot %d ---\n%s", i, slot))
+		}
+	}
+	return sb.String()
+}
+
 // SlotSnapshot contains the aggregated metrics for a single window.
 type SlotSnapshot struct {
 	Total       uint64             `json:"total"`
@@ -746,6 +824,25 @@ type SlotSnapshot struct {
 	Exemplars   []*item            `json:"exemplars"`
 }
 
+// String implements the fmt.Stringer interface.
+func (s *SlotSnapshot) String() string {
+	if s == nil {
+		return ""
+	}
+
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("  Total Requests: %d\n", s.Total))
+	sb.WriteString(fmt.Sprintf("  Errors: %d (%.2f%%)\n", s.Errors, float64(s.Errors)/float64(s.Total)*100))
+	sb.WriteString(fmt.Sprintf("  Last Updated: %s\n", time.Unix(0, s.LastUpdated)))
+	sb.WriteString(fmt.Sprintf("  Latencies:\n%s", s.Latencies))
+	sb.WriteString(fmt.Sprintf("  Queue Waits:\n%s", s.QueueWaits))
+	sb.WriteString(fmt.Sprintf("  Exemplars (Top %d slowest requests):\n", len(s.Exemplars)))
+	for _, ex := range s.Exemplars {
+		sb.WriteString(fmt.Sprintf("    - RequestID: %s, Latency: %s\n", ex.requestID, ex.latency))
+	}
+	return sb.String()
+}
+
 // --- Interfaces and supporting types ---
 
 // QuantileSketch defines the interface for approximate percentile estimators like t-digest.
@@ -753,4 +850,5 @@ type QuantileSketch interface {
 	Add(value float64)
 	Quantile(q float64) float64
 	Merge(other QuantileSketch) error
+	fmt.Stringer
 }

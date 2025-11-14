@@ -18,9 +18,11 @@ package metrics
 
 import (
 	"encoding/binary"
+	"fmt"
 	"hash/crc32"
 	"hash/fnv"
 	"math"
+	"strings"
 	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -284,6 +286,16 @@ type HistogramSnapshot struct {
 	StdDev float64  `json:"std_dev"`
 	Min    float64  `json:"min"`
 	Max    float64  `json:"max"`
+}
+
+// String implements the fmt.Stringer interface.
+func (s *HistogramSnapshot) String() string {
+	if s == nil {
+		return ""
+	}
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("    Mean: %.2f, StdDev: %.2f, Min: %.2f, Max: %.2f, Total: %d\n", s.Mean, s.StdDev, s.Min, s.Max, s.Total))
+	return sb.String()
 }
 
 // Merge merges another snapshot into this one.
