@@ -157,42 +157,49 @@ func (t *TDigest) Merge(other QuantileSketch) error {
 
 // sumWeightBefore returns the sum of weights of centroids before the given index.
 func (t *TDigest) sumWeightBefore(idx int) (sum float64) {
-	for i := range idx {
+	for i := 0; i < idx && i < len(t.centroids); i++ {
 		sum += t.centroids[i].Weight
 	}
 	return sum
 }
 
 // compress merges the centroids to reduce their number.
+// This implementation follows the strategy of repeatedly merging the pair
+// of adjacent centroids with the smallest total weight until the number
+// of centroids is below the compression threshold. This is a simpler
+// and more robust approach than the quantile-based merging logic.
 func (t *TDigest) compress() {
 	if len(t.centroids) <= 1 {
 		return
 	}
 
-	// Sort centroids by mean
-	sort.Slice(t.centroids, func(i, j int) bool {
-		return t.centroids[i].Mean < t.centroids[j].Mean
-	})
+	for float64(len(t.centroids)) > t.compression {
+		minWeight := math.Inf(1)
+		mergeIdx := -1
 
-	newCentroids := make([]Centroid, 0, int(t.compression))
-	newCentroids = append(newCentroids, t.centroids[0])
-	cumulativeWeight := t.centroids[0].Weight
-
-	for i := 1; i < len(t.centroids); i++ {
-		last := &newCentroids[len(newCentroids)-1]
-		current := t.centroids[i]
-
-		// The merging condition is the same as in the Add method.
-		q := (cumulativeWeight - last.Weight/2) / t.count
-		k := 4 * t.count * q * (1 - q) / t.compression
-
-		if last.Weight+current.Weight <= k {
-			last.Mean = (last.Mean*last.Weight + current.Mean*current.Weight) / (last.Weight + current.Weight)
-			last.Weight += current.Weight
-		} else {
-			newCentroids = append(newCentroids, current)
-			cumulativeWeight += current.Weight
+		// Find adjacent centroids with the minimum combined weight
+		for i := 0; i < len(t.centroids)-1; i++ {
+			weight := t.centroids[i].Weight + t.centroids[i+1].Weight
+			if weight < minWeight {
+				minWeight = weight
+				mergeIdx = i
+			}
 		}
+
+		if mergeIdx == -1 {
+			break // Should not happen if len > 1
+		}
+
+		// Merge the identified pair
+		c1 := t.centroids[mergeIdx]
+		c2 := t.centroids[mergeIdx+1]
+		totalWeight := c1.Weight + c2.Weight
+
+		mergedMean := (c1.Mean*c1.Weight + c2.Mean*c2.Weight) / totalWeight
+
+		// Update the first centroid and remove the second one
+		t.centroids[mergeIdx].Mean = mergedMean
+		t.centroids[mergeIdx].Weight = totalWeight
+		t.centroids = append(t.centroids[:mergeIdx+1], t.centroids[mergeIdx+2:]...)
 	}
-	t.centroids = newCentroids
 }

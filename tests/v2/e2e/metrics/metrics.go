@@ -170,8 +170,20 @@ func newScale(
 	for i := range slots {
 		slots[i] = newSlot(
 			numCounters,
-			NewHistogram(hcfg.min, hcfg.max, hcfg.growth, hcfg.numBuckets, hcfg.numShards),
-			NewHistogram(hcfg.min, hcfg.max, hcfg.growth, hcfg.numBuckets, hcfg.numShards),
+			NewHistogram(
+				WithHistogramMin(hcfg.min),
+				WithHistogramMax(hcfg.max),
+				WithHistogramGrowth(hcfg.growth),
+				WithHistogramNumBuckets(hcfg.numBuckets),
+				WithHistogramNumShards(hcfg.numShards),
+			),
+			NewHistogram(
+				WithHistogramMin(hcfg.min),
+				WithHistogramMax(hcfg.max),
+				WithHistogramGrowth(hcfg.growth),
+				WithHistogramNumBuckets(hcfg.numBuckets),
+				WithHistogramNumShards(hcfg.numShards),
+			),
 			NewExemplar(ecfg.capacity),
 		)
 	}
@@ -353,10 +365,22 @@ func NewCollector(opts ...Option) *Collector {
 	}
 
 	if c.latencies == nil {
-		c.latencies = NewHistogram(c.hcfg.min, c.hcfg.max, c.hcfg.growth, c.hcfg.numBuckets, c.hcfg.numShards)
+		c.latencies = NewHistogram(
+			WithHistogramMin(c.hcfg.min),
+			WithHistogramMax(c.hcfg.max),
+			WithHistogramGrowth(c.hcfg.growth),
+			WithHistogramNumBuckets(c.hcfg.numBuckets),
+			WithHistogramNumShards(c.hcfg.numShards),
+		)
 	}
 	if c.queueWaits == nil {
-		c.queueWaits = NewHistogram(c.hcfg.min, c.hcfg.max, c.hcfg.growth, c.hcfg.numBuckets, c.hcfg.numShards)
+		c.queueWaits = NewHistogram(
+			WithHistogramMin(c.hcfg.min),
+			WithHistogramMax(c.hcfg.max),
+			WithHistogramGrowth(c.hcfg.growth),
+			WithHistogramNumBuckets(c.hcfg.numBuckets),
+			WithHistogramNumShards(c.hcfg.numShards),
+		)
 	}
 	if c.exemplars == nil {
 		c.exemplars = NewExemplar(c.ecfg.capacity)
@@ -378,7 +402,7 @@ func NewCollector(opts ...Option) *Collector {
 
 // Merge merges the metrics from another collector into this one.
 func (c *Collector) Merge(other *Collector) error {
-	if c == other {
+	if c == other || other == nil {
 		return nil
 	}
 
@@ -536,32 +560,35 @@ func MergeCollectors(collectors ...*Collector) (*Collector, error) {
 
 	base := collectors[0]
 	for _, c := range collectors[1:] {
-		if c.hcfg != base.hcfg || c.ecfg != base.ecfg {
+		if c.latencies.boundsCRC32 != base.latencies.boundsCRC32 ||
+			c.queueWaits.boundsCRC32 != base.queueWaits.boundsCRC32 ||
+			c.ecfg.capacity != base.ecfg.capacity {
 			return nil, errors.New("incompatible collectors")
 		}
 	}
 
 	// Use the configuration of the first collector as the base.
 	baseCfg := collectors[0]
-	merged := NewCollector(
-		WithLatencyHistogram(
-			WithHistogramMin(baseCfg.hcfg.min),
-			WithHistogramMax(baseCfg.hcfg.max),
-			WithHistogramGrowth(baseCfg.hcfg.growth),
-			WithHistogramNumBuckets(baseCfg.hcfg.numBuckets),
-			WithHistogramNumShards(baseCfg.hcfg.numShards),
-		),
-		WithQueueWaitHistogram(
-			WithHistogramMin(baseCfg.hcfg.min),
-			WithHistogramMax(baseCfg.hcfg.max),
-			WithHistogramGrowth(baseCfg.hcfg.growth),
-			WithHistogramNumBuckets(baseCfg.hcfg.numBuckets),
-			WithHistogramNumShards(baseCfg.hcfg.numShards),
-		),
-		WithExemplar(
-			WithExemplarCapacity(baseCfg.ecfg.capacity),
-		),
+	merged := NewCollector()
+	merged.hcfg = baseCfg.hcfg
+	merged.ecfg = baseCfg.ecfg
+	merged.latencies = NewHistogram(
+		WithHistogramMin(baseCfg.hcfg.min),
+		WithHistogramMax(baseCfg.hcfg.max),
+		WithHistogramGrowth(baseCfg.hcfg.growth),
+		WithHistogramNumBuckets(baseCfg.hcfg.numBuckets),
+		WithHistogramNumShards(baseCfg.hcfg.numShards),
 	)
+	merged.queueWaits = NewHistogram(
+		WithHistogramMin(baseCfg.hcfg.min),
+		WithHistogramMax(baseCfg.hcfg.max),
+		WithHistogramGrowth(baseCfg.hcfg.growth),
+		WithHistogramNumBuckets(baseCfg.hcfg.numBuckets),
+		WithHistogramNumShards(baseCfg.hcfg.numShards),
+	)
+	merged.exemplars = NewExemplar(baseCfg.ecfg.capacity)
+	merged.latPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
+	merged.qwPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
 
 	for _, c := range collectors {
 		merged.total.Add(c.total.Load())
@@ -640,13 +667,33 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 	for _, s := range snapshots {
 		merged.Total += s.Total
 		merged.Errors += s.Errors
-		merged.Latencies.Merge(s.Latencies)
-		merged.QueueWaits.Merge(s.QueueWaits)
-		if err := merged.LatPercentiles.Merge(s.LatPercentiles); err != nil {
-			return nil, err
+		if s.Latencies != nil {
+			if merged.Latencies == nil {
+				merged.Latencies = &HistogramSnapshot{}
+			}
+			merged.Latencies.Merge(s.Latencies)
 		}
-		if err := merged.QWPercentiles.Merge(s.QWPercentiles); err != nil {
-			return nil, err
+		if s.QueueWaits != nil {
+			if merged.QueueWaits == nil {
+				merged.QueueWaits = &HistogramSnapshot{}
+			}
+			merged.QueueWaits.Merge(s.QueueWaits)
+		}
+		if s.LatPercentiles != nil {
+			if merged.LatPercentiles == nil {
+				merged.LatPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
+			}
+			if err := merged.LatPercentiles.Merge(s.LatPercentiles); err != nil {
+				return nil, err
+			}
+		}
+		if s.QWPercentiles != nil {
+			if merged.QWPercentiles == nil {
+				merged.QWPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
+			}
+			if err := merged.QWPercentiles.Merge(s.QWPercentiles); err != nil {
+				return nil, err
+			}
 		}
 	}
 
