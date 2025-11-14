@@ -238,6 +238,7 @@ func (h *Histogram) Merge(other *Histogram) error {
 func (h *Histogram) Snapshot() *HistogramSnapshot {
 	snap := &HistogramSnapshot{
 		Counts: make([]uint64, h.numBuckets),
+		Bounds: h.bounds,
 		Min:    math.Inf(1),
 		Max:    math.Inf(-1),
 	}
@@ -278,14 +279,15 @@ func (h *Histogram) Snapshot() *HistogramSnapshot {
 
 // HistogramSnapshot represents a consistent point-in-time view of a Histogram.
 type HistogramSnapshot struct {
-	Counts []uint64 `json:"counts"`
-	Total  uint64   `json:"total"`
-	Sum    float64  `json:"sum"`
-	SumSq  float64  `json:"sum_sq"`
-	Mean   float64  `json:"mean"`
-	StdDev float64  `json:"std_dev"`
-	Min    float64  `json:"min"`
-	Max    float64  `json:"max"`
+	Counts []uint64  `json:"counts"`
+	Bounds []float64 `json:"bounds"`
+	Total  uint64    `json:"total"`
+	Sum    float64   `json:"sum"`
+	SumSq  float64   `json:"sum_sq"`
+	Mean   float64   `json:"mean"`
+	StdDev float64   `json:"std_dev"`
+	Min    float64   `json:"min"`
+	Max    float64   `json:"max"`
 }
 
 // String implements the fmt.Stringer interface.
@@ -318,5 +320,8 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) {
 		if variance > 0 {
 			s.StdDev = math.Sqrt(variance)
 		}
+	}
+	if len(s.Bounds) == 0 {
+		s.Bounds = other.Bounds
 	}
 }

@@ -755,28 +755,78 @@ func (s *GlobalSnapshot) MarshalJSON() ([]byte, error) {
 
 // String implements the fmt.Stringer interface.
 func (s *GlobalSnapshot) String() string {
-	if s == nil {
-		return ""
+	if s == nil || s.Total == 0 {
+		return "No data collected."
 	}
-	var (
-		sb    strings.Builder
-		total = s.Total
-		errs  = s.Errors
-	)
-	sb.WriteString(fmt.Sprintf("\n--- Global Metrics ---\n"))
-	sb.WriteString(fmt.Sprintf("Total Requests: %d\n", total))
-	sb.WriteString(fmt.Sprintf("Errors: %d (%.2f%%)\n", errs, float64(errs)/float64(total)*100))
-	sb.WriteString(fmt.Sprintf("Latency:\n%s", s.Latencies))
-	sb.WriteString(fmt.Sprintf("Queue Waits:\n%s", s.QueueWaits))
-	sb.WriteString(fmt.Sprintf("Latency Percentiles:\n%s", s.LatPercentiles))
-	sb.WriteString(fmt.Sprintf("Queue Wait Percentiles:\n%s", s.QWPercentiles))
-	sb.WriteString(fmt.Sprintf("Exemplars (Top %d slowest requests):\n", len(s.Exemplars)))
-	for _, ex := range s.Exemplars {
-		sb.WriteString(fmt.Sprintf("  - RequestID: %s, Latency: %s\n", ex.requestID, ex.latency))
+
+	var sb strings.Builder
+	total := s.Total
+	totalDuration := time.Duration(s.Latencies.Sum)
+
+	// --- Summary ---
+	sb.WriteString("Summary:\n")
+	sb.WriteString(fmt.Sprintf("  Count: %d\n", total))
+	sb.WriteString(fmt.Sprintf("  Total: %s\n", totalDuration))
+	sb.WriteString(fmt.Sprintf("  Slowest: %s\n", time.Duration(s.Latencies.Max)))
+	sb.WriteString(fmt.Sprintf("  Fastest: %s\n", time.Duration(s.Latencies.Min)))
+	sb.WriteString(fmt.Sprintf("  Average: %s\n", time.Duration(s.Latencies.Mean)))
+	if totalDuration.Seconds() > 0 {
+		sb.WriteString(fmt.Sprintf("  Requests/sec: %.2f\n", float64(total)/totalDuration.Seconds()))
 	}
-	sb.WriteString("gRPC Status Codes:\n")
-	for code, count := range s.Codes {
-		sb.WriteString(fmt.Sprintf("  - %s: %d (%.2f%%)\n", code.String(), count, float64(count)/float64(total)*100))
+	sb.WriteString("\n")
+
+	// --- Response time histogram ---
+	sb.WriteString("Response time histogram:\n")
+	if s.Latencies != nil && len(s.Latencies.Counts) > 0 {
+		maxCount := uint64(0)
+		for _, count := range s.Latencies.Counts {
+			if count > maxCount {
+				maxCount = count
+			}
+		}
+
+		for i, count := range s.Latencies.Counts {
+			var bar string
+			if maxCount > 0 {
+				bar = strings.Repeat("∎", int(float64(count)/float64(maxCount)*40))
+			}
+			var lowerBound, upperBound string
+			if i == 0 {
+				lowerBound = "0"
+			} else {
+				lowerBound = fmt.Sprintf("%.3f", float64(time.Duration(s.Latencies.Bounds[i-1]))/float64(time.Millisecond))
+			}
+			if i == len(s.Latencies.Bounds) {
+				upperBound = "inf"
+			} else {
+				upperBound = fmt.Sprintf("%.3f", float64(time.Duration(s.Latencies.Bounds[i]))/float64(time.Millisecond))
+			}
+			sb.WriteString(fmt.Sprintf("  %s - %s [%d]\t|%s\n", lowerBound, upperBound, count, bar))
+		}
+	}
+	sb.WriteString("\n")
+
+	// --- Latency distribution ---
+	sb.WriteString("Latency distribution:\n")
+	if s.LatPercentiles != nil {
+		quantiles := []float64{0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99}
+		for _, q := range quantiles {
+			val := time.Duration(s.LatPercentiles.Quantile(q))
+			sb.WriteString(fmt.Sprintf("  %d %% in %s\n", int(q*100), val))
+		}
+	}
+	sb.WriteString("\n")
+
+	// --- Status code distribution ---
+	sb.WriteString("Status code distribution:\n")
+	if s.Codes != nil {
+		for code, count := range s.Codes {
+			status := "UNKNOWN"
+			if code == codes.OK {
+				status = "OK"
+			}
+			sb.WriteString(fmt.Sprintf("  [%s] %d responses\n", status, count))
+		}
 	}
 
 	return sb.String()
