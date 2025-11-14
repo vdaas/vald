@@ -22,27 +22,36 @@ import (
 )
 
 func TestHistogram_Merge(t *testing.T) {
-	h1 := NewHistogram(
-		WithHistogramMin(0),
+	h1, err := NewHistogram(
+		WithHistogramMin(1),
 		WithHistogramMax(100),
 		WithHistogramGrowth(1.6),
 		WithHistogramNumBuckets(10),
 		WithHistogramNumShards(2),
 	)
-	h2 := NewHistogram(
-		WithHistogramMin(0),
+	if err != nil {
+		t.Fatalf("Failed to create h1: %v", err)
+	}
+	h2, err := NewHistogram(
+		WithHistogramMin(1),
 		WithHistogramMax(100),
 		WithHistogramGrowth(1.6),
 		WithHistogramNumBuckets(10),
 		WithHistogramNumShards(2),
 	)
-	h3 := NewHistogram(
-		WithHistogramMin(0),
+	if err != nil {
+		t.Fatalf("Failed to create h2: %v", err)
+	}
+	h3, err := NewHistogram(
+		WithHistogramMin(1),
 		WithHistogramMax(100),
 		WithHistogramGrowth(1.6),
 		WithHistogramNumBuckets(20),
 		WithHistogramNumShards(2),
 	) // Incompatible
+	if err != nil {
+		t.Fatalf("Failed to create h3: %v", err)
+	}
 
 	h1.Record(10)
 	h1.Record(20)

@@ -22,13 +22,17 @@ import (
 	"time"
 )
 
-// Exemplar holds a sample of high-latency requests. It is lock-free.
+// Exemplar holds a sample of high-latency requests.
+// It uses a lock-free priority queue (min-heap) to store the top k requests
+// with the highest latencies. This allows for efficient and concurrent updates
+// without blocking.
 type Exemplar struct {
-	k  int
+	k  int // The maximum number of exemplars to store.
 	pq atomic.Pointer[priorityQueue]
 }
 
 // NewExemplar creates a new Exemplar with a capacity of k.
+// It initializes a lock-free priority queue to store the exemplars.
 func NewExemplar(k int) *Exemplar {
 	k = max(k, 1)
 	initialPQ := make(priorityQueue, 0, k)
@@ -39,7 +43,11 @@ func NewExemplar(k int) *Exemplar {
 	return e
 }
 
-// Offer adds a request to the exemplar using a lock-free CAS loop.
+// Offer adds a request to the exemplar using a lock-free compare-and-swap (CAS) loop.
+// This ensures that updates to the priority queue are atomic and thread-safe.
+// If the priority queue is not full, the new item is added.
+// If the priority queue is full and the new item's latency is greater than the minimum latency in the queue,
+// the new item replaces the minimum latency item.
 func (e *Exemplar) Offer(latency time.Duration, requestID string) {
 	newItem := &item{
 		latency:   latency,
@@ -72,7 +80,7 @@ func (e *Exemplar) Offer(latency time.Duration, requestID string) {
 	}
 }
 
-// Snapshot returns a snapshot of the exemplars. It is lock-free.
+// Snapshot returns a snapshot of the exemplars. It is lock-free and returns a copy of the current exemplars.
 func (e *Exemplar) Snapshot() []*item {
 	pqPtr := e.pq.Load()
 	pq := *pqPtr
@@ -81,17 +89,21 @@ func (e *Exemplar) Snapshot() []*item {
 	return items
 }
 
-// item is an item in the priority queue.
+// item is an item in the priority queue, representing a single request exemplar.
+// It is unexported to encapsulate the implementation details of the priority queue.
 type item struct {
 	latency   time.Duration
 	requestID string
 }
 
-// priorityQueue implements heap.Interface.
+// priorityQueue implements heap.Interface and is a min-heap of items.
+// It is unexported to encapsulate the implementation details of the Exemplar.
 type priorityQueue []*item
 
+// Len returns the number of items in the priority queue.
 func (pq priorityQueue) Len() int { return len(pq) }
 
+// Less returns true if the item at index i has a smaller latency than the item at index j.
 func (pq priorityQueue) Less(i, j int) bool {
 	return pq[i].latency < pq[j].latency
 }

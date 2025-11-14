@@ -31,20 +31,24 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 )
 
-// requestIDKey is the key for storing the request ID in the context.
-type requestIDKey struct{}
+// requestIDCtxKey is the key for storing the request ID in the context.
+// It's an unexported type to prevent collisions with context keys from other packages.
+type requestIDCtxKey struct{}
 
 // WithRequestID attaches a request ID to the context for RangeScale bucketing.
+// This allows tracking metrics for specific requests across different operations.
 func WithRequestID(ctx context.Context, id uint64) context.Context {
-	return context.WithValue(ctx, requestIDKey{}, id)
+	return context.WithValue(ctx, requestIDCtxKey{}, id)
 }
 
 // requestIDFromCtx retrieves the request ID from the context.
+// It returns the ID and a boolean indicating whether the ID was found.
 func requestIDFromCtx(ctx context.Context) (uint64, bool) {
-	id, ok := ctx.Value(requestIDKey{}).(uint64)
+	id, ok := ctx.Value(requestIDCtxKey{}).(uint64)
 	return id, ok
 }
 
+// requestResultPool is a pool of RequestResult objects to reduce garbage collection overhead.
 var requestResultPool = sync.Pool{
 	New: func() any {
 		return new(RequestResult)
@@ -359,19 +363,36 @@ func (ts *TimeScale) Record(rr *RequestResult) {
 
 // Collector is the main entry point for metrics aggregation. It is thread-safe.
 type Collector struct {
-	mu             sync.RWMutex
-	total          atomic.Uint64
-	errors         atomic.Uint64
-	latencies      *Histogram
-	queueWaits     *Histogram
+	mu sync.RWMutex
+
+	// Atomic counters for total and errored requests.
+	total  atomic.Uint64
+	errors atomic.Uint64
+
+	// Histograms for latency and queue wait time distribution.
+	latencies  *Histogram
+	queueWaits *Histogram
+
+	// t-digest for approximate latency and queue wait percentiles.
 	latPercentiles QuantileSketch
 	qwPercentiles  QuantileSketch
-	exemplars      *Exemplar
-	counters       map[string]*CounterHandle
-	rangeScales    []*RangeScale
-	timeScales     []*TimeScale
-	codes          map[codes.Code]*atomic.Uint64
 
+	// Exemplars for tracking the slowest requests.
+	exemplars *Exemplar
+
+	// Custom counters, stored in a map for thread-safe access.
+	counters map[string]*CounterHandle
+
+	// Thread-safe slice of RangeScale for request ID-based metrics.
+	rangeScales []*RangeScale
+
+	// Thread-safe slice of TimeScale for time-based metrics.
+	timeScales []*TimeScale
+
+	// gRPC status code counts, stored in a map for thread-safe access.
+	codes map[codes.Code]*atomic.Uint64
+
+	// Configuration for histograms and exemplars.
 	hcfg histogramConfig
 	ecfg exemplarConfig
 }

@@ -28,16 +28,19 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-// Centroid represents a centroid in the t-digest.
-type Centroid struct {
+// centroid represents a centroid in the t-digest.
+// It is unexported to encapsulate the implementation details of the TDigest.
+type centroid struct {
 	Mean   float64
 	Weight float64
 }
 
 // TDigest is a custom implementation of the t-digest algorithm.
+// It is designed for high-performance, concurrent metric recording by using a mutex
+// to protect the internal state.
 type TDigest struct {
 	mu                       sync.Mutex
-	centroids                []Centroid
+	centroids                []centroid
 	compression              float64
 	compressionTriggerFactor float64
 	count                    float64
@@ -96,7 +99,7 @@ func (t *TDigest) Add(value float64) {
 	}
 
 	// Otherwise, create a new centroid
-	t.centroids = append(t.centroids, Centroid{Mean: value, Weight: 1})
+	t.centroids = append(t.centroids, centroid{Mean: value, Weight: 1})
 	t.count++
 
 	// If the number of centroids exceeds the compression limit, compress them
@@ -105,7 +108,7 @@ func (t *TDigest) Add(value float64) {
 	}
 
 	// Sort the centroids by mean
-	slices.SortFunc(t.centroids, func(left, right Centroid) int {
+	slices.SortFunc(t.centroids, func(left, right centroid) int {
 		return cmp.Compare(left.Mean, right.Mean)
 	})
 }
@@ -158,7 +161,7 @@ func (t *TDigest) Merge(other QuantileSketch) error {
 			t.count += c.Weight
 		}
 		// Sort and compress after merging all centroids
-		slices.SortFunc(t.centroids, func(left, right Centroid) int {
+		slices.SortFunc(t.centroids, func(left, right centroid) int {
 			return cmp.Compare(left.Mean, right.Mean)
 		})
 		if float64(len(t.centroids)) > t.compression*t.compressionTriggerFactor {
@@ -188,7 +191,7 @@ func (t *TDigest) compress() {
 	}
 
 	// Ensure adjacency reflects mean order before merging.
-	slices.SortFunc(t.centroids, func(left, right Centroid) int {
+	slices.SortFunc(t.centroids, func(left, right centroid) int {
 		return cmp.Compare(left.Mean, right.Mean)
 	})
 	for float64(len(t.centroids)) > t.compression {

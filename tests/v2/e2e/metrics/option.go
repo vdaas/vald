@@ -49,7 +49,7 @@ type (
 
 var (
 	defaultHistogramConfig = histogramConfig{
-		min:        0,
+		min:        1,
 		max:        1e9,
 		growth:     1.6,
 		numBuckets: 30,

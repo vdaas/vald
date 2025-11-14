@@ -28,19 +28,22 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-// Histogram is a thread-safe, sharded histogram using geometric buckets.
+// Histogram is a thread-safe, sharded histogram that uses geometric bucketing.
+// It is designed for high-performance, concurrent metric recording by distributing
+// updates across multiple shards, reducing lock contention.
 type Histogram struct {
-	shards      []shard   // array of shards
-	bounds      []float64 // bucket boundaries
-	min, max    float64   // expected lower and upper bounds
-	growth      float64   // geometric growth factor for bucket widths
-	numBuckets  int       // number of buckets
-	numShards   int       // number of shards
-	boundsCRC32 uint32    // for merge validation
+	shards      []histogramShard // array of shards
+	bounds      []float64        // bucket boundaries
+	min, max    float64          // expected lower and upper bounds
+	growth      float64          // geometric growth factor for bucket widths
+	numBuckets  int              // number of buckets
+	numShards   int              // number of shards
+	boundsCRC32 uint32           // for merge validation
 }
 
-// shard is a single shard of the histogram.
-type shard struct {
+// histogramShard is a single shard of the histogram.
+// It is unexported to encapsulate the internal implementation of the Histogram.
+type histogramShard struct {
 	counts []atomic.Uint64 // number of values in each bucket
 	total  atomic.Uint64   // total number of values in this shard
 	sum    atomic.Uint64   // sum of values in this shard
@@ -50,6 +53,7 @@ type shard struct {
 }
 
 // NewHistogram creates a new sharded histogram with geometric bucketing.
+// It takes a variable number of HistogramOption functions to configure the histogram.
 func NewHistogram(opts ...HistogramOption) (*Histogram, error) {
 	cfg := defaultHistogramConfig
 	for _, opt := range opts {
@@ -69,7 +73,7 @@ func NewHistogram(opts ...HistogramOption) (*Histogram, error) {
 	}
 
 	h := &Histogram{
-		shards:     make([]shard, cfg.numShards),
+		shards:     make([]histogramShard, cfg.numShards),
 		bounds:     make([]float64, cfg.numBuckets-1),
 		min:        cfg.min,
 		max:        cfg.max,
@@ -100,6 +104,8 @@ func NewHistogram(opts ...HistogramOption) (*Histogram, error) {
 }
 
 // Record adds a value to the histogram. It is thread-safe.
+// It hashes the value to select a shard, then atomically updates the shard's statistics.
+// This approach minimizes contention and allows for high-throughput recording.
 func (h *Histogram) Record(val float64) {
 	hasher := fnv.New64a()
 	buf := make([]byte, 8)
@@ -151,7 +157,8 @@ func (h *Histogram) Record(val float64) {
 	}
 }
 
-// findBucket determines the correct bucket index for a given value.
+// findBucket determines the correct bucket index for a given value using binary search.
+// This is efficient for a large number of buckets.
 func (h *Histogram) findBucket(val float64) int {
 	if val <= h.bounds[0] {
 		return 0
@@ -174,6 +181,8 @@ func (h *Histogram) findBucket(val float64) int {
 }
 
 // Merge merges another histogram into this one.
+// It requires that both histograms have the same bucket boundaries and shard count.
+// Merging is done atomically, shard by shard, to ensure thread safety.
 func (h *Histogram) Merge(other *Histogram) error {
 	if h.boundsCRC32 != other.boundsCRC32 {
 		return errors.New("incompatible histograms")
@@ -241,6 +250,8 @@ func (h *Histogram) Merge(other *Histogram) error {
 }
 
 // Snapshot returns a merged, consistent view of the histogram's data.
+// It iterates through all shards and aggregates their statistics into a single snapshot.
+// This operation is read-only and does not block new writes to the histogram.
 func (h *Histogram) Snapshot() *HistogramSnapshot {
 	snap := &HistogramSnapshot{
 		Counts: make([]uint64, h.numBuckets),

@@ -27,11 +27,14 @@ import (
 
 func TestCollector_WithCustomCountersAndScales(t *testing.T) {
 	counterNames := []string{"c1", "c2", "c3"}
-	c := NewCollector(
+	c, err := NewCollector(
 		WithCustomCounters(counterNames...),
 		WithRangeScale("test-range", 10, 10),
 		WithTimeScale("test-time", 5, 10),
 	)
+	if err != nil {
+		t.Fatalf("Failed to create collector: %v", err)
+	}
 
 	if len(c.rangeScales) != 1 {
 		t.Fatal("expected 1 range scale")
@@ -71,15 +74,24 @@ func TestCollector_WithCustomCountersAndScales(t *testing.T) {
 
 func TestMergeCollectors_Compatibility(t *testing.T) {
 	// Compatible collectors
-	c1 := NewCollector(WithExemplar(WithExemplarCapacity(10)))
-	c2 := NewCollector(WithExemplar(WithExemplarCapacity(10)))
-	_, err := MergeCollectors(c1, c2)
+	c1, err := NewCollector(WithExemplar(WithExemplarCapacity(10)))
+	if err != nil {
+		t.Fatalf("Failed to create c1: %v", err)
+	}
+	c2, err := NewCollector(WithExemplar(WithExemplarCapacity(10)))
+	if err != nil {
+		t.Fatalf("Failed to create c2: %v", err)
+	}
+	_, err = MergeCollectors(c1, c2)
 	if err != nil {
 		t.Errorf("MergeCollectors with compatible configs failed: %v", err)
 	}
 
 	// Incompatible collectors
-	c3 := NewCollector(WithExemplar(WithExemplarCapacity(20)))
+	c3, err := NewCollector(WithExemplar(WithExemplarCapacity(20)))
+	if err != nil {
+		t.Fatalf("Failed to create c3: %v", err)
+	}
 	_, err = MergeCollectors(c1, c3)
 	if err == nil {
 		t.Error("MergeCollectors with incompatible configs should have failed")
@@ -108,7 +120,10 @@ func TestMergeSnapshots_Compatibility(t *testing.T) {
 }
 
 func TestCollector_Record(t *testing.T) {
-	c := NewCollector()
+	c, err := NewCollector()
+	if err != nil {
+		t.Fatalf("Failed to create collector: %v", err)
+	}
 	rr := &RequestResult{
 		Latency:   100 * time.Millisecond,
 		QueueWait: 20 * time.Millisecond,
@@ -132,10 +147,13 @@ func TestCollector_Record(t *testing.T) {
 }
 
 func TestJSONMarshaling(t *testing.T) {
-	c := NewCollector(
+	c, err := NewCollector(
 		WithCustomCounters("c1"),
 		WithRangeScale("rs", 1, 1),
 	)
+	if err != nil {
+		t.Fatalf("Failed to create collector: %v", err)
+	}
 	c.Record(WithRequestID(context.Background(), 0), &RequestResult{
 		Latency: 1,
 		EndedAt: time.Unix(1, 0),
@@ -153,14 +171,20 @@ func TestJSONMarshaling(t *testing.T) {
 }
 
 func TestCollector_Merge(t *testing.T) {
-	c1 := NewCollector(
+	c1, err := NewCollector(
 		WithCustomCounters("c1"),
 		WithExemplar(WithExemplarCapacity(5)),
 	)
-	c2 := NewCollector(
+	if err != nil {
+		t.Fatalf("Failed to create c1: %v", err)
+	}
+	c2, err := NewCollector(
 		WithCustomCounters("c1", "c2"),
 		WithExemplar(WithExemplarCapacity(5)),
 	)
+	if err != nil {
+		t.Fatalf("Failed to create c2: %v", err)
+	}
 
 	c1.Record(context.Background(), &RequestResult{Latency: 100})
 	c1Handle, _ := c1.CounterHandle("c1")
@@ -195,10 +219,13 @@ func TestCollector_Merge(t *testing.T) {
 }
 
 func TestScale_Recording(t *testing.T) {
-	c := NewCollector(
+	c, err := NewCollector(
 		WithRangeScale("range", 10, 10),
 		WithTimeScale("time", 5, 10),
 	)
+	if err != nil {
+		t.Fatalf("Failed to create collector: %v", err)
+	}
 
 	// Test RangeScale
 	ctx := WithRequestID(context.Background(), 15)
@@ -209,9 +236,12 @@ func TestScale_Recording(t *testing.T) {
 	}
 
 	// Test TimeScale
-	c2 := NewCollector(
+	c2, err := NewCollector(
 		WithTimeScale("time", 5, 10),
 	)
+	if err != nil {
+		t.Fatalf("Failed to create collector: %v", err)
+	}
 	ts := time.Unix(23, 0)
 	c2.Record(context.Background(), &RequestResult{EndedAt: ts})
 	timeSnap := c2.TimeScalesSnapshot()["time"]

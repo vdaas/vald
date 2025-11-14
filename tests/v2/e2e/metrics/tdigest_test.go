@@ -25,7 +25,7 @@ import (
 
 func TestTDigest_sumWeightBefore(t *testing.T) {
 	td := &TDigest{
-		centroids: []Centroid{
+		centroids: []centroid{
 			{Weight: 1},
 			{Weight: 2},
 			{Weight: 3},
