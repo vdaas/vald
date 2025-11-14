@@ -16,6 +16,8 @@
 
 package usearch
 
+// Delete this file after porting to Rust
+/*
 import (
 	"strconv"
 
@@ -248,3 +250,4 @@ func (u *usearch) Close() error {
 	u.index = nil
 	return nil
 }
+*/
