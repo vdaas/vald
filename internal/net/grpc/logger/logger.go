@@ -29,6 +29,9 @@ const (
 	tag = "[gRPC Log]"
 )
 
+// init initializes the gRPC logger at package load time.
+// It reads the verbosity level from the GRPC_GO_LOG_VERBOSITY_LEVEL environment variable
+// and configures the gRPC logger with the custom logger implementation.
 func init() {
 	var v int
 	if vl, err := strconv.Atoi(os.Getenv("GRPC_GO_LOG_VERBOSITY_LEVEL")); err == nil {
