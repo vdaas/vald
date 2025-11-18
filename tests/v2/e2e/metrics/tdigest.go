@@ -22,6 +22,7 @@ import (
 	"math"
 	"slices"
 	"sort"
+	"strings"
 	"sync"
 	"unsafe"
 
@@ -44,6 +45,17 @@ type TDigest struct {
 	compression              float64
 	compressionTriggerFactor float64
 	count                    float64
+	quantiles                []float64
+}
+
+// TDigestOption configures a TDigest.
+type TDigestOption func(*TDigest)
+
+// WithQuantiles sets the quantiles to be used in the String() method.
+func WithQuantiles(quantiles ...float64) TDigestOption {
+	return func(t *TDigest) {
+		t.quantiles = quantiles
+	}
 }
 
 // String implements the fmt.Stringer interface.
@@ -51,27 +63,38 @@ func (t *TDigest) String() string {
 	if t == nil {
 		return "No data collected for percentiles.\n"
 	}
-	return fmt.Sprintf(
-		"\tp50:\t%.2f\tp90:\t%.2f\tp95:\t%.2f\tp99:\t%.2f\n",
-		t.Quantile(0.5),
-		t.Quantile(0.9),
-		t.Quantile(0.95),
-		t.Quantile(0.99),
-	)
+
+	quantiles := t.quantiles
+	if len(quantiles) == 0 {
+		quantiles = []float64{0.5, 0.9, 0.95, 0.99}
+	}
+
+	var sb strings.Builder
+	for _, q := range quantiles {
+		fmt.Fprintf(&sb, "\tp%d:\t%.2f", int(q*100), t.Quantile(q))
+	}
+	fmt.Fprint(&sb, "\n")
+	return sb.String()
 }
 
 // NewTDigest creates a new TDigest.
-func NewTDigest(compression, compressionTriggerFactor float64) (*TDigest, error) {
+func NewTDigest(
+	compression, compressionTriggerFactor float64, opts ...TDigestOption,
+) (*TDigest, error) {
 	if compression <= 0 {
 		return nil, errors.New("tdigest compression must be > 0")
 	}
 	if compressionTriggerFactor <= 0 {
 		return nil, errors.New("tdigest compressionTriggerFactor must be > 0")
 	}
-	return &TDigest{
+	t := &TDigest{
 		compression:              compression,
 		compressionTriggerFactor: compressionTriggerFactor,
-	}, nil
+	}
+	for _, opt := range opts {
+		opt(t)
+	}
+	return t, nil
 }
 
 // Add adds a value to the t-digest.
