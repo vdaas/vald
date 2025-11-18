@@ -95,18 +95,24 @@ func Init(ctx context.Context) (egctx context.Context) {
 // Get returns the global errgroup instance, initializing it if necessary.
 func Get() Group {
 	Init(context.Background())
+	mu.RLock()
+	defer mu.RUnlock()
 	return instance
 }
 
 // Go is a package-level helper that calls the Go method on the global instance.
 func Go(f func() error) {
 	Init(context.Background())
+	mu.RLock()
+	defer mu.RUnlock()
 	instance.Go(f)
 }
 
 // TryGo is a package-level helper that calls the TryGo method on the global instance.
 func TryGo(f func() error) bool {
 	Init(context.Background())
+	mu.RLock()
+	defer mu.RUnlock()
 	return instance.TryGo(f)
 }
 
