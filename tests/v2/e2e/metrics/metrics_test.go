@@ -33,6 +33,7 @@ func TestCollector(t *testing.T) {
 		records   []*RequestResult
 		merge     func() (Collector, error)
 		check     func(t *testing.T, c Collector)
+		wantErr   bool
 	}
 
 	tests := []testCase{
@@ -236,18 +237,22 @@ func TestCollector(t *testing.T) {
 				err := WithTimeScale("test", 1, 10)(c)
 				return nil, err
 			},
-			check: func(t *testing.T, c Collector) {},
+			check:   func(t *testing.T, c Collector) {},
+			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c, err := tt.collector()
-			if err != nil {
-				if tt.name != "newScale returns error when hpool is nil" {
-					t.Fatalf("failed to create collector: %v", err)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("expected an error, but got none")
 				}
 				return
+			}
+			if err != nil {
+				t.Fatalf("failed to create collector: %v", err)
 			}
 
 			for _, r := range tt.records {
