@@ -27,7 +27,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
-	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/semaphore"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -131,7 +130,7 @@ func TestInit(t *testing.T) {
 		return nil
 	}
 	defaultBeforeFunc := func(args) {
-		instance, once = nil, sync.Once{}
+		instance = nil
 	}
 	tests := []test{
 		func() test {
@@ -197,7 +196,7 @@ func TestGet(t *testing.T) {
 		return nil
 	}
 	initFunc := func() {
-		instance, once = nil, sync.Once{}
+		instance = nil
 	}
 	defaultBeforeFunc := func(t *testing.T) {
 		t.Helper()
