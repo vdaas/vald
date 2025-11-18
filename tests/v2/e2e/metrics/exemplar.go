@@ -22,21 +22,21 @@ import (
 	"time"
 )
 
-// Exemplar holds a sample of high-latency requests.
+// exemplar holds a sample of high-latency requests.
 // It uses a lock-free priority queue (min-heap) to store the top k requests
 // with the highest latencies. This allows for efficient and concurrent updates
 // without blocking.
-type Exemplar struct {
+type exemplar struct {
 	k  int // The maximum number of exemplars to store.
 	pq atomic.Pointer[priorityQueue]
 }
 
 // NewExemplar creates a new Exemplar with a capacity of k.
 // It initializes a lock-free priority queue to store the exemplars.
-func NewExemplar(k int) *Exemplar {
+func NewExemplar(k int) Exemplar {
 	k = max(k, 1)
 	initialPQ := make(priorityQueue, 0, k)
-	e := &Exemplar{
+	e := &exemplar{
 		k: k,
 	}
 	e.pq.Store(&initialPQ)
@@ -48,7 +48,7 @@ func NewExemplar(k int) *Exemplar {
 // If the priority queue is not full, the new item is added.
 // If the priority queue is full and the new item's latency is greater than the minimum latency in the queue,
 // the new item replaces the minimum latency item.
-func (e *Exemplar) Offer(latency time.Duration, requestID string) {
+func (e *exemplar) Offer(latency time.Duration, requestID string) {
 	newItem := &item{
 		latency:   latency,
 		requestID: requestID,
@@ -81,7 +81,7 @@ func (e *Exemplar) Offer(latency time.Duration, requestID string) {
 }
 
 // Snapshot returns a snapshot of the exemplars. It is lock-free and returns a copy of the current exemplars.
-func (e *Exemplar) Snapshot() []*item {
+func (e *exemplar) Snapshot() []*item {
 	pqPtr := e.pq.Load()
 	pq := *pqPtr
 	items := make([]*item, len(pq))

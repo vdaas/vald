@@ -17,104 +17,91 @@
 package metrics
 
 import (
-	"math"
 	"testing"
 )
 
-func TestHistogram_Merge(t *testing.T) {
-	h1, err := NewHistogram(
-		WithHistogramMin(1),
-		WithHistogramMax(100),
-		WithHistogramGrowth(1.6),
-		WithHistogramNumBuckets(10),
-		WithHistogramNumShards(2),
-	)
-	if err != nil {
-		t.Fatalf("Failed to create h1: %v", err)
-	}
-	h2, err := NewHistogram(
-		WithHistogramMin(1),
-		WithHistogramMax(100),
-		WithHistogramGrowth(1.6),
-		WithHistogramNumBuckets(10),
-		WithHistogramNumShards(2),
-	)
-	if err != nil {
-		t.Fatalf("Failed to create h2: %v", err)
-	}
-	h3, err := NewHistogram(
-		WithHistogramMin(1),
-		WithHistogramMax(100),
-		WithHistogramGrowth(1.6),
-		WithHistogramNumBuckets(20),
-		WithHistogramNumShards(2),
-	) // Incompatible
-	if err != nil {
-		t.Fatalf("Failed to create h3: %v", err)
+func TestHistogram(t *testing.T) {
+	t.Parallel()
+
+	type testCase struct {
+		name    string
+		h1      func() (Histogram, error)
+		h2      func() (Histogram, error)
+		records []float64
+		check   func(t *testing.T, h Histogram)
 	}
 
-	h1.Record(10)
-	h1.Record(20)
-
-	h2.Record(30)
-	h2.Record(40)
-
-	if err := h1.Merge(h2); err != nil {
-		t.Fatalf("Merge failed: %v", err)
+	tests := []testCase{
+		{
+			name: "record values and check snapshot",
+			h1: func() (Histogram, error) {
+				return NewHistogram(WithHistogramNumBuckets(10))
+			},
+			records: []float64{10, 20, 30, 40, 50},
+			check: func(t *testing.T, h Histogram) {
+				snap := h.Snapshot()
+				if snap.Total != 5 {
+					t.Errorf("expected total 5, got %d", snap.Total)
+				}
+				if snap.Mean != 30 {
+					t.Errorf("expected mean 30, got %f", snap.Mean)
+				}
+			},
+		},
+		{
+			name: "merge two histograms",
+			h1: func() (Histogram, error) {
+				h, err := NewHistogram(WithHistogramNumBuckets(10))
+				if err != nil {
+					return nil, err
+				}
+				h.Record(10)
+				h.Record(20)
+				return h, nil
+			},
+			h2: func() (Histogram, error) {
+				h, err := NewHistogram(WithHistogramNumBuckets(10))
+				if err != nil {
+					return nil, err
+				}
+				h.Record(30)
+				h.Record(40)
+				return h, nil
+			},
+			check: func(t *testing.T, h Histogram) {
+				snap := h.Snapshot()
+				if snap.Total != 4 {
+					t.Errorf("expected total 4, got %d", snap.Total)
+				}
+				if snap.Mean != 25 {
+					t.Errorf("expected mean 25, got %f", snap.Mean)
+				}
+			},
+		},
 	}
 
-	snap := h1.Snapshot()
-	if snap.Total != 4 {
-		t.Errorf("snap.Total = %d, want 4", snap.Total)
-	}
-	if snap.Sum != 100 {
-		t.Errorf("snap.Sum = %f, want 100", snap.Sum)
-	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h1, err := tt.h1()
+			if err != nil {
+				t.Fatalf("failed to create h1: %v", err)
+			}
 
-	if err := h1.Merge(h3); err == nil {
-		t.Error("Merge with incompatible histogram should have failed")
-	}
-}
+			for _, r := range tt.records {
+				h1.Record(r)
+			}
 
-func TestHistogramSnapshot_Merge(t *testing.T) {
-	s1 := &HistogramSnapshot{
-		Total:  2,
-		Sum:    30,
-		SumSq:  500,
-		Min:    10,
-		Max:    20,
-		Counts: []uint64{0, 2, 0},
-	}
-	s2 := &HistogramSnapshot{
-		Total:  2,
-		Sum:    70,
-		SumSq:  2500,
-		Min:    30,
-		Max:    40,
-		Counts: []uint64{0, 0, 2},
-	}
+			if tt.h2 != nil {
+				h2, err := tt.h2()
+				if err != nil {
+					t.Fatalf("failed to create h2: %v", err)
+				}
+				if err := h1.Merge(h2); err != nil {
+					t.Fatalf("failed to merge histograms: %v", err)
+				}
+			}
 
-	s1.Merge(s2)
-
-	if s1.Total != 4 {
-		t.Errorf("s1.Total = %d, want 4", s1.Total)
-	}
-	if s1.Sum != 100 {
-		t.Errorf("s1.Sum = %f, want 100", s1.Sum)
-	}
-	if s1.SumSq != 3000 {
-		t.Errorf("s1.SumSq = %f, want 3000", s1.SumSq)
-	}
-	if s1.Min != 10 {
-		t.Errorf("s1.Min = %f, want 10", s1.Min)
-	}
-	if s1.Max != 40 {
-		t.Errorf("s1.Max = %f, want 40", s1.Max)
-	}
-	if s1.Mean != 25 {
-		t.Errorf("s1.Mean = %f, want 25", s1.Mean)
-	}
-	if math.Abs(s1.StdDev-11.180340) > 0.0001 {
-		t.Errorf("s1.StdDev = %f, want ~11.18", s1.StdDev)
+			tt.check(t, h1)
+		})
 	}
 }

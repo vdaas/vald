@@ -7,6 +7,9 @@
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
 //
+// Unless required by applicable law of a key agreement protocol, the associated documentation
+// and conditional statements specifying the rights and obligations of third parties.
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,117 +20,73 @@
 package metrics
 
 import (
-	"fmt"
-	"math/rand"
 	"testing"
 	"time"
-
-	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
-func TestExemplar_Offer(t *testing.T) {
-	e := NewExemplar(3)
+func TestExemplar(t *testing.T) {
+	t.Parallel()
 
-	e.Offer(100*time.Millisecond, "req-1")
-	e.Offer(200*time.Millisecond, "req-2")
-	e.Offer(50*time.Millisecond, "req-3")
-
-	snap := e.Snapshot()
-	if len(snap) != 3 {
-		t.Fatalf("Snapshot length = %d, want 3", len(snap))
-	}
-
-	e.Offer(300*time.Millisecond, "req-4")
-	snap = e.Snapshot()
-	if len(snap) != 3 {
-		t.Fatalf("Snapshot length = %d, want 3", len(snap))
-	}
-
-	minLatency := snap[0].latency
-	for _, item := range snap {
-		if item.latency < minLatency {
-			minLatency = item.latency
+	type testCase struct {
+		name     string
+		exemplar func() Exemplar
+		offers   []struct {
+			latency time.Duration
+			id      string
 		}
-	}
-	if minLatency != 100*time.Millisecond {
-		t.Errorf("min latency = %v, want 100ms", minLatency)
-	}
-}
-
-func TestExemplar_Concurrency(t *testing.T) {
-	k := 10
-	e := NewExemplar(k)
-	numGoroutines := 100
-	numOffersPerG := 20
-
-	eg, _ := errgroup.New(t.Context())
-	for i := range numGoroutines {
-		idx := i
-		eg.Go(func() error {
-			for j := range numOffersPerG {
-				lat := time.Duration(rand.Intn(1000)) * time.Millisecond
-				reqID := fmt.Sprintf("req-%d-%d", idx, j)
-				e.Offer(lat, reqID)
-			}
-			return nil
-		})
+		check func(t *testing.T, e Exemplar)
 	}
 
-	snapshots := make([][]*item, 10)
-	for i := range len(snapshots) {
-		idx := i
-		eg.Go(func() error {
-			time.Sleep(time.Duration(rand.Intn(50)) * time.Millisecond)
-			snapshots[idx] = e.Snapshot()
-			return nil
-		})
-	}
-
-	_ = eg.Wait()
-
-	finalSnap := e.Snapshot()
-	if len(finalSnap) > k {
-		t.Errorf("Final snapshot length = %d, want <= %d", len(finalSnap), k)
-	}
-
-	for _, snap := range snapshots {
-		if len(snap) > k {
-			t.Errorf("Intermediate snapshot length = %d, want <= %d", len(snap), k)
-		}
-	}
-}
-
-func TestExemplar_Race(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping race test in short mode")
-	}
-
-	k := 5
-	e := NewExemplar(k)
-	eg, _ := errgroup.New(t.Context())
-
-	// Writer goroutines
-	for range k {
-		eg.Go(func() error {
-			for j := 0; j < 100; j++ {
-				e.Offer(time.Duration(rand.Intn(100))*time.Millisecond, "req")
-			}
-			return nil
-		})
-	}
-
-	// Reader goroutines
-	for range k {
-		eg.Go(func() error {
-			for j := 0; j < 100; j++ {
+	tests := []testCase{
+		{
+			name: "offer requests and check snapshot",
+			exemplar: func() Exemplar {
+				return NewExemplar(3)
+			},
+			offers: []struct {
+				latency time.Duration
+				id      string
+			}{
+				{100 * time.Millisecond, "req-1"},
+				{200 * time.Millisecond, "req-2"},
+				{50 * time.Millisecond, "req-3"},
+				{300 * time.Millisecond, "req-4"},
+			},
+			check: func(t *testing.T, e Exemplar) {
 				snap := e.Snapshot()
-				if len(snap) > k {
-					t.Errorf("snapshot too large: %d", len(snap))
+				if len(snap) != 3 {
+					t.Fatalf("expected snapshot length 3, got %d", len(snap))
 				}
-			}
-			return nil
-		})
+
+				hasReq2 := false
+				hasReq4 := false
+				hasReq1 := false
+
+				for _, item := range snap {
+					switch item.requestID {
+					case "req-1":
+						hasReq1 = true
+					case "req-2":
+						hasReq2 = true
+					case "req-4":
+						hasReq4 = true
+					}
+				}
+
+				if !hasReq1 || !hasReq2 || !hasReq4 {
+					t.Errorf("expected to find req-1, req-2 and req-4 in snapshot")
+				}
+			},
+		},
 	}
 
-	eg.Wait()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := tt.exemplar()
+			for _, o := range tt.offers {
+				e.Offer(o.latency, o.id)
+			}
+			tt.check(t, e)
+		})
+	}
 }

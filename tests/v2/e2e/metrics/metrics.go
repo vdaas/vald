@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// You may not use this file except in compliance with the License.
+// you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -52,6 +52,19 @@ func requestIDFromCtx(ctx context.Context) (uint64, bool) {
 var requestResultPool = sync.Pool{
 	New: func() any {
 		return new(RequestResult)
+	},
+}
+
+var histogramPool = sync.Pool{
+	New: func() any {
+		h, _ := NewHistogram()
+		return h
+	},
+}
+
+var exemplarPool = sync.Pool{
+	New: func() any {
+		return NewExemplar(defaultExemplarConfig.capacity)
 	},
 }
 
@@ -140,14 +153,14 @@ type Slot struct {
 	Total     atomic.Uint64   // total number of requests in this slot
 	Errors    atomic.Uint64   // number of errored requests in this slot
 	updatedNS atomic.Int64    // UnixNano timestamp of the last update
-	Latency   *Histogram      // latency histogram
-	QueueWait *Histogram      // queue wait histogram
+	Latency   Histogram       // latency histogram
+	QueueWait Histogram       // queue wait histogram
 	Counters  []atomic.Uint64 // custom counters
-	Exemplars *Exemplar       // exemplar heap
+	Exemplars Exemplar        // exemplar heap
 }
 
 // newSlot creates a new Slot.
-func newSlot(numCounters int, latencies, queueWaits *Histogram, exemplars *Exemplar) *Slot {
+func newSlot(numCounters int, latencies, queueWaits Histogram, exemplars Exemplar) *Slot {
 	return &Slot{
 		Latency:   latencies,
 		QueueWait: queueWaits,
@@ -160,16 +173,52 @@ func newSlot(numCounters int, latencies, queueWaits *Histogram, exemplars *Exemp
 
 // Scale is a ring buffer of slots for windowed metrics.
 type Scale struct {
-	mu       sync.RWMutex
-	slots    []*Slot // ring buffer of slots
-	width    uint64  // width of each slot
-	capacity uint64  // number of slots in the ring buffer
-	name     string  // name of the scale
+	mu        sync.RWMutex
+	slots     []*Slot // ring buffer of slots
+	width     uint64  // width of each slot
+	capacity  uint64  // number of slots in the ring buffer
+	name      string  // name of the scale
+	scaleType scaleType
+	recordFunc func(context.Context, *RequestResult, *Scale)
+}
+
+type scaleType uint8
+
+const (
+	rangeScale scaleType = iota
+	timeScale
+)
+
+func recordRangeScale(ctx context.Context, rr *RequestResult, s *Scale) {
+	if reqID, ok := requestIDFromCtx(ctx); ok {
+		slot := s.getSlot(reqID)
+		slot.Total.Add(1)
+		if rr.Err != nil {
+			slot.Errors.Add(1)
+		}
+		slot.updatedNS.Store(rr.EndedAt.UnixNano())
+		slot.Latency.Record(float64(rr.Latency.Nanoseconds()))
+		slot.QueueWait.Record(float64(rr.QueueWait.Nanoseconds()))
+		slot.Exemplars.Offer(rr.Latency, rr.RequestID)
+	}
+}
+
+func recordTimeScale(ctx context.Context, rr *RequestResult, s *Scale) {
+	idx := uint64(rr.EndedAt.Unix())
+	slot := s.getSlot(idx)
+	slot.Total.Add(1)
+	if rr.Err != nil {
+		slot.Errors.Add(1)
+	}
+	slot.updatedNS.Store(rr.EndedAt.UnixNano())
+	slot.Latency.Record(float64(rr.Latency.Nanoseconds()))
+	slot.QueueWait.Record(float64(rr.QueueWait.Nanoseconds()))
+	slot.Exemplars.Offer(rr.Latency, rr.RequestID)
 }
 
 // newScale creates a new scale with the given configuration.
 func newScale(
-	name string, width, capacity uint64, numCounters int, hcfg histogramConfig, ecfg exemplarConfig,
+	name string, width, capacity uint64, numCounters int, hcfg histogramConfig, ecfg exemplarConfig, st scaleType,
 ) (*Scale, error) {
 	if width == 0 {
 		return nil, errors.New("scale width must be > 0")
@@ -179,39 +228,30 @@ func newScale(
 	}
 	slots := make([]*Slot, capacity)
 	for i := range slots {
-		h, err := NewHistogram(
-			WithHistogramMin(hcfg.min),
-			WithHistogramMax(hcfg.max),
-			WithHistogramGrowth(hcfg.growth),
-			WithHistogramNumBuckets(hcfg.numBuckets),
-			WithHistogramNumShards(hcfg.numShards),
-		)
-		if err != nil {
-			return nil, err
-		}
-		q, err := NewHistogram(
-			WithHistogramMin(hcfg.min),
-			WithHistogramMax(hcfg.max),
-			WithHistogramGrowth(hcfg.growth),
-			WithHistogramNumBuckets(hcfg.numBuckets),
-			WithHistogramNumShards(hcfg.numShards),
-		)
-		if err != nil {
-			return nil, err
-		}
+		h := histogramPool.Get().(Histogram)
+		q := histogramPool.Get().(Histogram)
+		e := exemplarPool.Get().(Exemplar)
 		slots[i] = newSlot(
 			numCounters,
 			h,
 			q,
-			NewExemplar(ecfg.capacity),
+			e,
 		)
 	}
-	return &Scale{
-		name:     name,
-		width:    width,
-		capacity: capacity,
-		slots:    slots,
-	}, nil
+	s := &Scale{
+		name:      name,
+		width:     width,
+		capacity:  capacity,
+		slots:     slots,
+		scaleType: st,
+	}
+	switch st {
+	case rangeScale:
+		s.recordFunc = recordRangeScale
+	case timeScale:
+		s.recordFunc = recordTimeScale
+	}
+	return s, nil
 }
 
 // getSlot returns the slot for the given index.
@@ -290,79 +330,10 @@ func (s *Scale) Snapshot() *ScaleSnapshot {
 	}
 }
 
-// RangeScale aggregates metrics over a range of request IDs.
-type RangeScale struct {
-	*Scale
-}
-
-// NewRangeScale creates a new RangeScale.
-func NewRangeScale(
-	name string, width, capacity uint64, numCounters int, hcfg histogramConfig, ecfg exemplarConfig,
-) (*RangeScale, error) {
-	s, err := newScale(name, width, capacity, numCounters, hcfg, ecfg)
-	if err != nil {
-		return nil, err
-	}
-	return &RangeScale{
-		Scale: s,
-	}, nil
-}
-
-// Record updates the appropriate slot based on the request ID in the context.
-func (rs *RangeScale) Record(ctx context.Context, rr *RequestResult) {
-	if reqID, ok := requestIDFromCtx(ctx); ok {
-		slot := rs.getSlot(reqID)
-		slot.Total.Add(1)
-		if rr.Err != nil {
-			slot.Errors.Add(1)
-		}
-		slot.updatedNS.Store(rr.EndedAt.UnixNano())
-		slot.Latency.Record(float64(rr.Latency.Nanoseconds()))
-		slot.QueueWait.Record(float64(rr.QueueWait.Nanoseconds()))
-		slot.Exemplars.Offer(rr.Latency, rr.RequestID)
-	}
-}
-
-// TimeScale aggregates metrics over a time window.
-type TimeScale struct {
-	*Scale
-}
-
-// NewTimeScale creates a new TimeScale.
-func NewTimeScale(
-	name string,
-	widthSec, capacity uint64,
-	numCounters int,
-	hcfg histogramConfig,
-	ecfg exemplarConfig,
-) (*TimeScale, error) {
-	s, err := newScale(name, widthSec, capacity, numCounters, hcfg, ecfg)
-	if err != nil {
-		return nil, err
-	}
-	return &TimeScale{
-		Scale: s,
-	}, nil
-}
-
-// Record updates the appropriate slot based on the request's end time.
-func (ts *TimeScale) Record(rr *RequestResult) {
-	idx := uint64(rr.EndedAt.Unix())
-	slot := ts.getSlot(idx)
-	slot.Total.Add(1)
-	if rr.Err != nil {
-		slot.Errors.Add(1)
-	}
-	slot.updatedNS.Store(rr.EndedAt.UnixNano())
-	slot.Latency.Record(float64(rr.Latency.Nanoseconds()))
-	slot.QueueWait.Record(float64(rr.QueueWait.Nanoseconds()))
-	slot.Exemplars.Offer(rr.Latency, rr.RequestID)
-}
-
 // --- Collector ---
 
-// Collector is the main entry point for metrics aggregation. It is thread-safe.
-type Collector struct {
+// collector is the main entry point for metrics aggregation. It is thread-safe.
+type collector struct {
 	mu sync.RWMutex
 
 	// Atomic counters for total and errored requests.
@@ -370,24 +341,21 @@ type Collector struct {
 	errors atomic.Uint64
 
 	// Histograms for latency and queue wait time distribution.
-	latencies  *Histogram
-	queueWaits *Histogram
+	latencies  Histogram
+	queueWaits Histogram
 
 	// t-digest for approximate latency and queue wait percentiles.
 	latPercentiles QuantileSketch
 	qwPercentiles  QuantileSketch
 
 	// Exemplars for tracking the slowest requests.
-	exemplars *Exemplar
+	exemplars Exemplar
 
 	// Custom counters, stored in a map for thread-safe access.
 	counters map[string]*CounterHandle
 
-	// Thread-safe slice of RangeScale for request ID-based metrics.
-	rangeScales []*RangeScale
-
-	// Thread-safe slice of TimeScale for time-based metrics.
-	timeScales []*TimeScale
+	// Thread-safe slice of Scale for metrics.
+	scales []*Scale
 
 	// gRPC status code counts, stored in a map for thread-safe access.
 	codes map[codes.Code]*atomic.Uint64
@@ -398,8 +366,8 @@ type Collector struct {
 }
 
 // NewCollector creates and initializes a new Collector with the provided options.
-func NewCollector(opts ...Option) (*Collector, error) {
-	c := &Collector{
+func NewCollector(opts ...Option) (Collector, error) {
+	c := &collector{
 		counters: make(map[string]*CounterHandle),
 		hcfg:     defaultHistogramConfig,
 		ecfg:     defaultExemplarConfig,
@@ -456,66 +424,61 @@ func NewCollector(opts ...Option) (*Collector, error) {
 }
 
 // Merge merges the metrics from another collector into this one.
-func (c *Collector) Merge(other *Collector) error {
+func (c *collector) Merge(other Collector) error {
+	return other.merge(c)
+}
+
+func (c *collector) merge(other *collector) error {
 	if c == other || other == nil {
 		return nil
 	}
 
 	// To prevent deadlocks, always lock in a consistent order.
 	if uintptr(unsafe.Pointer(c)) < uintptr(unsafe.Pointer(other)) {
-		c.mu.Lock()
 		other.mu.Lock()
+		c.mu.Lock()
 	} else {
-		other.mu.Lock()
 		c.mu.Lock()
+		other.mu.Lock()
 	}
 	defer c.mu.Unlock()
 	defer other.mu.Unlock()
 
-	c.total.Add(other.total.Load())
-	c.errors.Add(other.errors.Load())
+	other.total.Add(c.total.Load())
+	other.errors.Add(c.errors.Load())
 
-	if err := c.latencies.Merge(other.latencies); err != nil {
+	if err := other.latencies.Merge(c.latencies); err != nil {
 		return err
 	}
-	if err := c.queueWaits.Merge(other.queueWaits); err != nil {
+	if err := other.queueWaits.Merge(c.queueWaits); err != nil {
 		return err
 	}
-	if err := c.latPercentiles.Merge(other.latPercentiles); err != nil {
+	if err := other.latPercentiles.Merge(c.latPercentiles); err != nil {
 		return err
 	}
-	if err := c.qwPercentiles.Merge(other.qwPercentiles); err != nil {
+	if err := other.qwPercentiles.Merge(c.qwPercentiles); err != nil {
 		return err
 	}
-	for _, ex := range other.exemplars.Snapshot() {
-		c.exemplars.Offer(ex.latency, ex.requestID)
+	for _, ex := range c.exemplars.Snapshot() {
+		other.exemplars.Offer(ex.latency, ex.requestID)
 	}
-	for name, h := range other.counters {
-		if mh, ok := c.counters[name]; ok {
+	for name, h := range c.counters {
+		if mh, ok := other.counters[name]; ok {
 			mh.value.Add(h.value.Load())
 		} else {
-			c.counters[name] = &CounterHandle{
+			other.counters[name] = &CounterHandle{
 				value: new(atomic.Uint64),
 			}
-			c.counters[name].value.Store(h.value.Load())
+			other.counters[name].value.Store(h.value.Load())
 		}
 	}
-	for i, rs := range other.rangeScales {
-		if i < len(c.rangeScales) {
-			if err := c.rangeScales[i].Scale.Merge(rs.Scale); err != nil {
+	for i, s := range c.scales {
+		if i < len(other.scales) {
+			if err := other.scales[i].Merge(s); err != nil {
 				return err
 			}
 		} else {
-			c.rangeScales = append(c.rangeScales, rs)
-		}
-	}
-	for i, ts := range other.timeScales {
-		if i < len(c.timeScales) {
-			if err := c.timeScales[i].Scale.Merge(ts.Scale); err != nil {
-				return err
-			}
-		} else {
-			c.timeScales = append(c.timeScales, ts)
+			other.scales = append(other.scales, s)
 		}
 	}
 
@@ -524,7 +487,7 @@ func (c *Collector) Merge(other *Collector) error {
 
 // Record processes a single RequestResult, updating all relevant metrics.
 // This method is optimized for high-throughput, low-latency execution.
-func (c *Collector) Record(ctx context.Context, rr *RequestResult) {
+func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 	rr.validate()
 	c.total.Add(1)
 	if rr.Err != nil {
@@ -551,16 +514,13 @@ func (c *Collector) Record(ctx context.Context, rr *RequestResult) {
 	}
 	counter.Add(1)
 
-	for _, rs := range c.rangeScales {
-		rs.Record(ctx, rr)
-	}
-	for _, ts := range c.timeScales {
-		ts.Record(rr)
+	for _, s := range c.scales {
+		s.recordFunc(ctx, rr, s)
 	}
 }
 
 // CounterHandle returns a handle for a pre-registered custom counter.
-func (c *Collector) CounterHandle(name string) (*CounterHandle, error) {
+func (c *collector) CounterHandle(name string) (*CounterHandle, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	if h, ok := c.counters[name]; ok {
@@ -571,7 +531,7 @@ func (c *Collector) CounterHandle(name string) (*CounterHandle, error) {
 
 // IncCounter increments a custom counter by a given value.
 // It is a convenience wrapper and may be slightly slower than using a CounterHandle.
-func (c *Collector) IncCounter(name string, val int64) {
+func (c *collector) IncCounter(name string, val int64) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	if h, ok := c.counters[name]; ok {
@@ -579,10 +539,53 @@ func (c *Collector) IncCounter(name string, val int64) {
 	}
 }
 
+func (c *collector) config() (histogramConfig, exemplarConfig) {
+	return c.hcfg, c.ecfg
+}
+
+func (c *collector) deepCopy() (Collector, error) {
+	newCollector, err := NewCollector()
+	if err != nil {
+		return nil, err
+	}
+	nc := newCollector.(*collector)
+	nc.hcfg = c.hcfg
+	nc.ecfg = c.ecfg
+	nc.latencies, err = NewHistogram(
+		WithHistogramMin(c.hcfg.min),
+		WithHistogramMax(c.hcfg.max),
+		WithHistogramGrowth(c.hcfg.growth),
+		WithHistogramNumBuckets(c.hcfg.numBuckets),
+		WithHistogramNumShards(c.hcfg.numShards),
+	)
+	if err != nil {
+		return nil, err
+	}
+	nc.queueWaits, err = NewHistogram(
+		WithHistogramMin(c.hcfg.min),
+		WithHistogramMax(c.hcfg.max),
+		WithHistogramGrowth(c.hcfg.growth),
+		WithHistogramNumBuckets(c.hcfg.numBuckets),
+		WithHistogramNumShards(c.hcfg.numShards),
+	)
+	if err != nil {
+		return nil, err
+	}
+	nc.exemplars = NewExemplar(c.ecfg.capacity)
+	nc.latPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
+	nc.qwPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
+	for name := range c.counters {
+		nc.counters[name] = &CounterHandle{
+			value: new(atomic.Uint64),
+		}
+	}
+	return nc, nil
+}
+
 // --- Snapshots ---
 
 // GlobalSnapshot returns a snapshot of all aggregated metrics since initialization.
-func (c *Collector) GlobalSnapshot() *GlobalSnapshot {
+func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	codes := make(map[codes.Code]uint64, len(c.codes))
@@ -602,23 +605,27 @@ func (c *Collector) GlobalSnapshot() *GlobalSnapshot {
 }
 
 // RangeScalesSnapshot returns snapshots for all configured range-based windows.
-func (c *Collector) RangeScalesSnapshot() map[string]*ScaleSnapshot {
+func (c *collector) RangeScalesSnapshot() map[string]*ScaleSnapshot {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	snapshots := make(map[string]*ScaleSnapshot, len(c.rangeScales))
-	for _, rs := range c.rangeScales {
-		snapshots[rs.name] = rs.Snapshot()
+	snapshots := make(map[string]*ScaleSnapshot, len(c.scales))
+	for _, s := range c.scales {
+		if s.scaleType == rangeScale {
+			snapshots[s.name] = s.Snapshot()
+		}
 	}
 	return snapshots
 }
 
 // TimeScalesSnapshot returns snapshots for all configured time-based windows.
-func (c *Collector) TimeScalesSnapshot() map[string]*ScaleSnapshot {
+func (c *collector) TimeScalesSnapshot() map[string]*ScaleSnapshot {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	snapshots := make(map[string]*ScaleSnapshot, len(c.timeScales))
-	for _, ts := range c.timeScales {
-		snapshots[ts.name] = ts.Snapshot()
+	snapshots := make(map[string]*ScaleSnapshot, len(c.scales))
+	for _, s := range c.scales {
+		if s.scaleType == timeScale {
+			snapshots[s.name] = s.Snapshot()
+		}
 	}
 	return snapshots
 }
@@ -627,7 +634,7 @@ func (c *Collector) TimeScalesSnapshot() map[string]*ScaleSnapshot {
 
 // MergeCollectors combines multiple collectors into a new one.
 // It returns an error if the collectors have incompatible configurations.
-func MergeCollectors(collectors ...*Collector) (*Collector, error) {
+func MergeCollectors(collectors ...Collector) (Collector, error) {
 	if len(collectors) == 0 {
 		return nil, nil
 	}
@@ -636,97 +643,14 @@ func MergeCollectors(collectors ...*Collector) (*Collector, error) {
 	}
 
 	base := collectors[0]
+	merged, err := base.deepCopy()
+	if err != nil {
+		return nil, err
+	}
+
 	for _, c := range collectors[1:] {
-		if c.latencies.boundsCRC32 != base.latencies.boundsCRC32 ||
-			c.queueWaits.boundsCRC32 != base.queueWaits.boundsCRC32 ||
-			c.ecfg.capacity != base.ecfg.capacity {
-			return nil, errors.New("incompatible collectors")
-		}
-	}
-
-	// Use the configuration of the first collector as the base.
-	baseCfg := collectors[0]
-	merged, err := NewCollector()
-	if err != nil {
-		return nil, err
-	}
-	merged.hcfg = baseCfg.hcfg
-	merged.ecfg = baseCfg.ecfg
-	merged.latencies, err = NewHistogram(
-		WithHistogramMin(baseCfg.hcfg.min),
-		WithHistogramMax(baseCfg.hcfg.max),
-		WithHistogramGrowth(baseCfg.hcfg.growth),
-		WithHistogramNumBuckets(baseCfg.hcfg.numBuckets),
-		WithHistogramNumShards(baseCfg.hcfg.numShards),
-	)
-	if err != nil {
-		return nil, err
-	}
-	merged.queueWaits, err = NewHistogram(
-		WithHistogramMin(baseCfg.hcfg.min),
-		WithHistogramMax(baseCfg.hcfg.max),
-		WithHistogramGrowth(baseCfg.hcfg.growth),
-		WithHistogramNumBuckets(baseCfg.hcfg.numBuckets),
-		WithHistogramNumShards(baseCfg.hcfg.numShards),
-	)
-	if err != nil {
-		return nil, err
-	}
-	merged.exemplars = NewExemplar(baseCfg.ecfg.capacity)
-	merged.latPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
-	merged.qwPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
-
-	for _, c := range collectors {
-		merged.total.Add(c.total.Load())
-		merged.errors.Add(c.errors.Load())
-		if err := merged.latencies.Merge(c.latencies); err != nil {
+		if err := merged.Merge(c); err != nil {
 			return nil, err
-		}
-		if err := merged.queueWaits.Merge(c.queueWaits); err != nil {
-			return nil, err
-		}
-		if err := merged.latPercentiles.Merge(c.latPercentiles); err != nil {
-			return nil, err
-		}
-		if err := merged.qwPercentiles.Merge(c.qwPercentiles); err != nil {
-			return nil, err
-		}
-		for _, ex := range c.exemplars.Snapshot() {
-			merged.exemplars.Offer(ex.latency, ex.requestID)
-		}
-		for name, h := range c.counters {
-			if mh, ok := merged.counters[name]; ok {
-				mh.value.Add(h.value.Load())
-			} else {
-				merged.counters[name] = &CounterHandle{
-					value: new(atomic.Uint64),
-				}
-				merged.counters[name].value.Store(h.value.Load())
-			}
-		}
-		for code, val := range c.codes {
-			if _, ok := merged.codes[code]; !ok {
-				merged.codes[code] = new(atomic.Uint64)
-			}
-			merged.codes[code].Add(val.Load())
-		}
-		for i, rs := range c.rangeScales {
-			if i < len(merged.rangeScales) {
-				if err := merged.rangeScales[i].Scale.Merge(rs.Scale); err != nil {
-					return nil, err
-				}
-			} else {
-				merged.rangeScales = append(merged.rangeScales, rs)
-			}
-		}
-		for i, ts := range c.timeScales {
-			if i < len(merged.timeScales) {
-				if err := merged.timeScales[i].Scale.Merge(ts.Scale); err != nil {
-					return nil, err
-				}
-			} else {
-				merged.timeScales = append(merged.timeScales, ts)
-			}
 		}
 	}
 
@@ -882,7 +806,7 @@ func (s *GlobalSnapshot) String() string {
 	// --- Latency distribution ---
 	sb.WriteString("Latency distribution:\n")
 	if s.LatPercentiles != nil {
-		quantiles := []float64{0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99}
+		quantiles := []float64{0.10, 0.30, 0.50, 0.75, 0.90, 0.95, 0.99}
 		for _, q := range quantiles {
 			val := time.Duration(s.LatPercentiles.Quantile(q))
 			sb.WriteString(fmt.Sprintf("  %d %% in %s\n", int(q*100), val))

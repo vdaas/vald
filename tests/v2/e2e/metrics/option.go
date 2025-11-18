@@ -19,212 +19,212 @@ package metrics
 import "sync/atomic"
 
 // Option represents a functional option for configuring the metrics collector.
-type Option func(*Collector) error
+type Option func(*collector) error
 
 // HistogramOption represents a functional option for configuring a histogram.
 type HistogramOption func(*histogramConfig)
 
-// TDigestOption represents a functional option for configuring a TDigest.
-type TDigestOption func(*tdigestConfig)
+type histogramConfig struct {
+	min        float64
+	max        float64
+	growth     float64
+	numBuckets int
+	numShards  int
+}
 
-// ExemplarOption represents a functional option for configuring an exemplar.
-type ExemplarOption func(*exemplarConfig)
+var defaultHistogramConfig = histogramConfig{
+	min:        1,
+	max:        5000,
+	growth:     1.2,
+	numBuckets: 50,
+	numShards:  16,
+}
 
-type (
-	histogramConfig struct {
-		min        float64
-		max        float64
-		growth     float64
-		numBuckets int
-		numShards  int
-	}
-	tdigestConfig struct {
-		compression              float64
-		compressionTriggerFactor float64
-	}
-	exemplarConfig struct {
-		capacity int
-	}
-)
+type exemplarConfig struct {
+	capacity int
+}
 
-var (
-	defaultHistogramConfig = histogramConfig{
-		min:        1, // >0 to satisfy NewHistogram’s geometric bucket requirement
-		max:        1e9,
-		growth:     1.6,
-		numBuckets: 30,
-		numShards:  16,
-	}
-	defaultTDigestConfig = tdigestConfig{
-		compression:              100,
-		compressionTriggerFactor: 10,
-	}
-	defaultExemplarConfig = exemplarConfig{
-		capacity: 10,
-	}
-)
+var defaultExemplarConfig = exemplarConfig{
+	capacity: 10,
+}
 
-// WithTDigestCompressionTriggerFactor sets the compression trigger factor for the TDigest.
-func WithTDigestCompressionTriggerFactor(factor float64) TDigestOption {
-	return func(t *tdigestConfig) {
-		t.compressionTriggerFactor = factor
+type tdigestConfig struct {
+	compression              float64
+	compressionTriggerFactor float64
+}
+
+var defaultTDigestConfig = tdigestConfig{
+	compression:              100,
+	compressionTriggerFactor: 1.5,
+}
+
+// WithCustomCounters registers custom counters with the collector.
+func WithCustomCounters(names ...string) Option {
+	return func(c *collector) error {
+		for _, name := range names {
+			c.counters[name] = new(CounterHandle)
+			c.counters[name].value = new(atomic.Uint64)
+		}
+		return nil
 	}
 }
 
-// WithHistogramMin sets the minimum value for the histogram.
-func WithHistogramMin(min float64) HistogramOption {
-	return func(h *histogramConfig) {
-		h.min = min
+// WithTimeScale adds a time-based scale to the collector.
+func WithTimeScale(name string, width, capacity uint64) Option {
+	return func(c *collector) error {
+		s, err := newScale(name, width, capacity, len(c.counters), c.hcfg, c.ecfg, timeScale)
+		if err != nil {
+			return err
+		}
+		c.scales = append(c.scales, s)
+		return nil
 	}
 }
 
-// WithHistogramMax sets the maximum value for the histogram.
-func WithHistogramMax(max float64) HistogramOption {
-	return func(h *histogramConfig) {
-		h.max = max
+// WithRangeScale adds a range-based scale to the collector.
+func WithRangeScale(name string, width, capacity uint64) Option {
+	return func(c *collector) error {
+		s, err := newScale(name, width, capacity, len(c.counters), c.hcfg, c.ecfg, rangeScale)
+		if err != nil {
+			return err
+		}
+		c.scales = append(c.scales, s)
+		return nil
 	}
 }
 
-// WithHistogramGrowth sets the growth factor for the histogram.
-func WithHistogramGrowth(growth float64) HistogramOption {
-	return func(h *histogramConfig) {
-		h.growth = growth
-	}
-}
-
-// WithHistogramNumBuckets sets the number of buckets for the histogram.
-func WithHistogramNumBuckets(numBuckets int) HistogramOption {
-	return func(h *histogramConfig) {
-		h.numBuckets = numBuckets
-	}
-}
-
-// WithHistogramNumShards sets the number of shards for the histogram.
-func WithHistogramNumShards(numShards int) HistogramOption {
-	return func(h *histogramConfig) {
-		h.numShards = numShards
-	}
-}
-
-// WithTDigestCompression sets the compression for the TDigest.
-func WithTDigestCompression(compression float64) TDigestOption {
-	return func(t *tdigestConfig) {
-		t.compression = compression
-	}
-}
-
-// WithExemplarCapacity sets the capacity for the exemplar.
-func WithExemplarCapacity(capacity int) ExemplarOption {
-	return func(e *exemplarConfig) {
-		e.capacity = capacity
-	}
-}
-
-// WithLatencyHistogram returns an option to set the latency histogram configuration.
+// WithLatencyHistogram sets the histogram for latency metrics.
 func WithLatencyHistogram(opts ...HistogramOption) Option {
-	return func(c *Collector) error {
+	return func(c *collector) error {
+		hcfg := defaultHistogramConfig
+		for _, opt := range opts {
+			opt(&hcfg)
+		}
+		c.hcfg = hcfg
 		h, err := NewHistogram(opts...)
 		if err != nil {
 			return err
 		}
 		c.latencies = h
-		for _, opt := range opts {
-			opt(&c.hcfg)
-		}
 		return nil
 	}
 }
 
-// WithQueueWaitHistogram returns an option to set the queue wait histogram configuration.
+// WithQueueWaitHistogram sets the histogram for queue wait metrics.
 func WithQueueWaitHistogram(opts ...HistogramOption) Option {
-	return func(c *Collector) error {
+	return func(c *collector) error {
+		hcfg := defaultHistogramConfig
+		for _, opt := range opts {
+			opt(&hcfg)
+		}
+		c.hcfg = hcfg
 		h, err := NewHistogram(opts...)
 		if err != nil {
 			return err
 		}
 		c.queueWaits = h
-		for _, opt := range opts {
-			opt(&c.hcfg)
-		}
 		return nil
 	}
 }
 
-// WithLatencyTDigest returns an option to set the latency TDigest configuration.
-func WithLatencyTDigest(opts ...TDigestOption) Option {
-	return func(c *Collector) error {
-		cfg := defaultTDigestConfig
+// WithLatencyTDigest sets the t-digest for latency metrics.
+func WithLatencyTDigest(opts ...func(*tdigestConfig)) Option {
+	return func(c *collector) error {
+		tcfg := defaultTDigestConfig
 		for _, opt := range opts {
-			opt(&cfg)
+			opt(&tcfg)
 		}
-		var err error
-		c.latPercentiles, err = NewTDigest(cfg.compression, cfg.compressionTriggerFactor)
-		return err
-	}
-}
-
-// WithQueueWaitTDigest returns an option to set the queue wait TDigest configuration.
-func WithQueueWaitTDigest(opts ...TDigestOption) Option {
-	return func(c *Collector) error {
-		cfg := defaultTDigestConfig
-		for _, opt := range opts {
-			opt(&cfg)
-		}
-		var err error
-		c.qwPercentiles, err = NewTDigest(cfg.compression, cfg.compressionTriggerFactor)
-		return err
-	}
-}
-
-// WithExemplar returns an option to set the exemplar configuration.
-func WithExemplar(opts ...ExemplarOption) Option {
-	return func(c *Collector) error {
-		cfg := c.ecfg
-		for _, opt := range opts {
-			opt(&cfg)
-		}
-		c.ecfg = cfg
-		c.exemplars = NewExemplar(cfg.capacity)
-		return nil
-	}
-}
-
-// WithRangeScale is an option to add a range scale.
-// It is important to register all custom counters via WithCustomCounters *before* adding any scales.
-func WithRangeScale(name string, width, capacity uint64) Option {
-	return func(c *Collector) error {
-		rs, err := NewRangeScale(name, width, capacity, len(c.counters), c.hcfg, c.ecfg)
+		t, err := NewTDigest(tcfg.compression, tcfg.compressionTriggerFactor)
 		if err != nil {
 			return err
 		}
-		c.rangeScales = append(c.rangeScales, rs)
+		c.latPercentiles = t
 		return nil
 	}
 }
 
-// WithTimeScale is an option to add a time scale.
-// It is important to register all custom counters via WithCustomCounters *before* adding any scales.
-func WithTimeScale(name string, widthSec, capacity uint64) Option {
-	return func(c *Collector) error {
-		ts, err := NewTimeScale(name, widthSec, capacity, len(c.counters), c.hcfg, c.ecfg)
+// WithQueueWaitTDigest sets the t-digest for queue wait metrics.
+func WithQueueWaitTDigest(opts ...func(*tdigestConfig)) Option {
+	return func(c *collector) error {
+		tcfg := defaultTDigestConfig
+		for _, opt := range opts {
+			opt(&tcfg)
+		}
+		t, err := NewTDigest(tcfg.compression, tcfg.compressionTriggerFactor)
 		if err != nil {
 			return err
 		}
-		c.timeScales = append(c.timeScales, ts)
+		c.qwPercentiles = t
 		return nil
 	}
 }
 
-// WithCustomCounters is an option to add custom counters.
-// This option should be used *before* any WithRangeScale or WithTimeScale options
-// to ensure that the scales are initialized with the correct number of counters.
-func WithCustomCounters(names ...string) Option {
-	return func(c *Collector) error {
-		for _, name := range names {
-			c.counters[name] = &CounterHandle{
-				value: new(atomic.Uint64),
-			}
+// WithExemplar sets the exemplar for the collector.
+func WithExemplar(opts ...func(*exemplarConfig)) Option {
+	return func(c *collector) error {
+		ecfg := defaultExemplarConfig
+		for _, opt := range opts {
+			opt(&ecfg)
 		}
+		c.ecfg = ecfg
+		e := NewExemplar(ecfg.capacity)
+		c.exemplars = e
 		return nil
+	}
+}
+
+// WithHistogramMin sets the minimum value for the histogram.
+func WithHistogramMin(min float64) HistogramOption {
+	return func(c *histogramConfig) {
+		c.min = min
+	}
+}
+
+// WithHistogramMax sets the maximum value for the histogram.
+func WithHistogramMax(max float64) HistogramOption {
+	return func(c *histogramConfig) {
+		c.max = max
+	}
+}
+
+// WithHistogramGrowth sets the growth factor for the histogram.
+func WithHistogramGrowth(growth float64) HistogramOption {
+	return func(c *histogramConfig) {
+		c.growth = growth
+	}
+}
+
+// WithHistogramNumBuckets sets the number of buckets for the histogram.
+func WithHistogramNumBuckets(n int) HistogramOption {
+	return func(c *histogramConfig) {
+		c.numBuckets = n
+	}
+}
+
+// WithHistogramNumShards sets the number of shards for the histogram.
+func WithHistogramNumShards(n int) HistogramOption {
+	return func(c *histogramConfig) {
+		c.numShards = n
+	}
+}
+
+// WithExemplarCapacity sets the capacity for the exemplar.
+func WithExemplarCapacity(k int) func(*exemplarConfig) {
+	return func(c *exemplarConfig) {
+		c.capacity = k
+	}
+}
+
+// WithTDigestCompression sets the compression for the t-digest.
+func WithTDigestCompression(c float64) func(*tdigestConfig) {
+	return func(cfg *tdigestConfig) {
+		cfg.compression = c
+	}
+}
+
+// WithTDigestCompressionTriggerFactor sets the compression trigger factor for the t-digest.
+func WithTDigestCompressionTriggerFactor(f float64) func(*tdigestConfig) {
+	return func(cfg *tdigestConfig) {
+		cfg.compressionTriggerFactor = f
 	}
 }

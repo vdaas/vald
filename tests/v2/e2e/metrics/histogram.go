@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// You may not use this file except in compliance with the License.
+// you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -28,10 +28,10 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-// Histogram is a thread-safe, sharded histogram that uses geometric bucketing.
+// histogram is a thread-safe, sharded histogram that uses geometric bucketing.
 // It is designed for high-performance, concurrent metric recording by distributing
 // updates across multiple shards, reducing lock contention.
-type Histogram struct {
+type histogram struct {
 	shards      []histogramShard // array of shards
 	bounds      []float64        // bucket boundaries
 	min, max    float64          // expected lower and upper bounds
@@ -54,7 +54,7 @@ type histogramShard struct {
 
 // NewHistogram creates a new sharded histogram with geometric bucketing.
 // It takes a variable number of HistogramOption functions to configure the histogram.
-func NewHistogram(opts ...HistogramOption) (*Histogram, error) {
+func NewHistogram(opts ...HistogramOption) (Histogram, error) {
 	cfg := defaultHistogramConfig
 	for _, opt := range opts {
 		opt(&cfg)
@@ -72,7 +72,7 @@ func NewHistogram(opts ...HistogramOption) (*Histogram, error) {
 		return nil, errors.New("histogram min must be > 0 for geometric buckets")
 	}
 
-	h := &Histogram{
+	h := &histogram{
 		shards:     make([]histogramShard, cfg.numShards),
 		bounds:     make([]float64, cfg.numBuckets-1),
 		min:        cfg.min,
@@ -106,7 +106,7 @@ func NewHistogram(opts ...HistogramOption) (*Histogram, error) {
 // Record adds a value to the histogram. It is thread-safe.
 // It hashes the value to select a shard, then atomically updates the shard's statistics.
 // This approach minimizes contention and allows for high-throughput recording.
-func (h *Histogram) Record(val float64) {
+func (h *histogram) Record(val float64) {
 	hasher := fnv.New64a()
 	buf := make([]byte, 8)
 	binary.LittleEndian.PutUint64(buf, math.Float64bits(val))
@@ -159,7 +159,7 @@ func (h *Histogram) Record(val float64) {
 
 // findBucket determines the correct bucket index for a given value using binary search.
 // This is efficient for a large number of buckets.
-func (h *Histogram) findBucket(val float64) int {
+func (h *histogram) findBucket(val float64) int {
 	if val <= h.bounds[0] {
 		return 0
 	}
@@ -183,7 +183,11 @@ func (h *Histogram) findBucket(val float64) int {
 // Merge merges another histogram into this one.
 // It requires that both histograms have the same bucket boundaries and shard count.
 // Merging is done atomically, shard by shard, to ensure thread safety.
-func (h *Histogram) Merge(other *Histogram) error {
+func (h *histogram) Merge(other Histogram) error {
+	return other.merge(h)
+}
+
+func (h *histogram) merge(other *histogram) error {
 	if h.boundsCRC32 != other.boundsCRC32 {
 		return errors.New("incompatible histograms")
 	}
@@ -191,23 +195,23 @@ func (h *Histogram) Merge(other *Histogram) error {
 		return errors.New("incompatible histograms: shard count mismatch")
 	}
 	for i := range h.shards {
-		s := &h.shards[i]
-		o := &other.shards[i]
+		s := &other.shards[i]
+		os := &h.shards[i]
 
 		// Load atomic values from the other shard.
-		otherTotal := o.total.Load()
+		otherTotal := os.total.Load()
 		if otherTotal == 0 {
 			continue
 		}
-		otherSumBits := o.sum.Load()
-		otherSumSqBits := o.sumSq.Load()
-		otherMinBits := o.min.Load()
-		otherMaxBits := o.max.Load()
+		otherSumBits := os.sum.Load()
+		otherSumSqBits := os.sumSq.Load()
+		otherMinBits := os.min.Load()
+		otherMaxBits := os.max.Load()
 
 		// Add total and counts atomically.
 		s.total.Add(otherTotal)
 		for j := range s.counts {
-			s.counts[j].Add(o.counts[j].Load())
+			s.counts[j].Add(os.counts[j].Load())
 		}
 
 		// Atomically update sum and sumSq using CAS loops.
@@ -252,7 +256,7 @@ func (h *Histogram) Merge(other *Histogram) error {
 // Snapshot returns a merged, consistent view of the histogram's data.
 // It iterates through all shards and aggregates their statistics into a single snapshot.
 // This operation is read-only and does not block new writes to the histogram.
-func (h *Histogram) Snapshot() *HistogramSnapshot {
+func (h *histogram) Snapshot() *HistogramSnapshot {
 	snap := &HistogramSnapshot{
 		Counts: make([]uint64, h.numBuckets),
 		Bounds: h.bounds,
@@ -292,6 +296,10 @@ func (h *Histogram) Snapshot() *HistogramSnapshot {
 		}
 	}
 	return snap
+}
+
+func (h *histogram) BoundsCRC32() uint32 {
+	return h.boundsCRC32
 }
 
 // HistogramSnapshot represents a consistent point-in-time view of a Histogram.

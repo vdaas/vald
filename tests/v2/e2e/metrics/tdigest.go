@@ -24,6 +24,7 @@ import (
 	"strings"
 	"sync"
 	"unsafe"
+	"sort"
 
 	"github.com/vdaas/vald/internal/errors"
 )
@@ -78,19 +79,13 @@ func (t *TDigest) Add(value float64) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	// Find the closest centroid
-	minDist := math.Inf(1)
-	closestIdx := -1
-	for i, c := range t.centroids {
-		dist := math.Abs(c.Mean - value)
-		if dist < minDist {
-			minDist = dist
-			closestIdx = i
-		}
-	}
+	// Find the closest centroid using binary search
+	closestIdx := sort.Search(len(t.centroids), func(i int) bool {
+		return t.centroids[i].Mean >= value
+	})
 
 	// If a close enough centroid is found, merge with it
-	if closestIdx != -1 {
+	if closestIdx < len(t.centroids) && closestIdx >= 0 {
 		c := &t.centroids[closestIdx]
 		// The threshold for merging is based on the quantile of the centroid.
 		// This is the core idea of the t-digest algorithm.
