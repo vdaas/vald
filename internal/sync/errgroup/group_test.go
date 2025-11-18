@@ -235,6 +235,7 @@ func TestGet(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
+					Init(context.Background())
 					instance = g
 				},
 			}
