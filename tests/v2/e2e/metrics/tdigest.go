@@ -22,7 +22,6 @@ import (
 	"math"
 	"slices"
 	"sort"
-	"strings"
 	"sync"
 	"unsafe"
 
@@ -50,14 +49,15 @@ type TDigest struct {
 // String implements the fmt.Stringer interface.
 func (t *TDigest) String() string {
 	if t == nil {
-		return ""
+		return "No data collected for percentiles.\n"
 	}
-	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("    p50: %.2f\n", t.Quantile(0.5)))
-	sb.WriteString(fmt.Sprintf("    p90: %.2f\n", t.Quantile(0.9)))
-	sb.WriteString(fmt.Sprintf("    p95: %.2f\n", t.Quantile(0.95)))
-	sb.WriteString(fmt.Sprintf("    p99: %.2f\n", t.Quantile(0.99)))
-	return sb.String()
+	return fmt.Sprintf(
+		"  p50: %-15s p90: %-15s p95: %-15s p99: %-15s\n",
+		fmt.Sprintf("%.2f", t.Quantile(0.5)),
+		fmt.Sprintf("%.2f", t.Quantile(0.9)),
+		fmt.Sprintf("%.2f", t.Quantile(0.95)),
+		fmt.Sprintf("%.2f", t.Quantile(0.99)),
+	)
 }
 
 // NewTDigest creates a new TDigest.

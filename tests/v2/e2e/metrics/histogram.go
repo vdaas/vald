@@ -22,7 +22,6 @@ import (
 	"hash/crc32"
 	"hash/fnv"
 	"math"
-	"strings"
 	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -317,12 +316,17 @@ type HistogramSnapshot struct {
 
 // String implements the fmt.Stringer interface.
 func (s *HistogramSnapshot) String() string {
-	if s == nil {
-		return ""
+	if s == nil || s.Total == 0 {
+		return "No data collected.\n"
 	}
-	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("    Mean: %.2f, StdDev: %.2f, Min: %.2f, Max: %.2f, Total: %d\n", s.Mean, s.StdDev, s.Min, s.Max, s.Total))
-	return sb.String()
+	return fmt.Sprintf(
+		"  Mean: %-12s  StdDev: %-12s  Min: %-12s  Max: %-12s  Total: %d\n",
+		fmt.Sprintf("%.2f", s.Mean),
+		fmt.Sprintf("%.2f", s.StdDev),
+		fmt.Sprintf("%.2f", s.Min),
+		fmt.Sprintf("%.2f", s.Max),
+		s.Total,
+	)
 }
 
 // Merge merges another snapshot into this one.
