@@ -138,9 +138,19 @@ metrics:
   latency_tdigest:
     compression: 100
     compression_trigger_factor: 1.2
+    quantiles:
+      - 0.5
+      - 0.9
+      - 0.95
+      - 0.99
   queue_wait_tdigest:
     compression: 100
     compression_trigger_factor: 1.2
+    quantiles:
+      - 0.5
+      - 0.9
+      - 0.95
+      - 0.99
   exemplar:
     capacity: 10
   range_scales:

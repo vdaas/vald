@@ -51,11 +51,13 @@ var defaultExemplarConfig = exemplarConfig{
 type tdigestConfig struct {
 	compression              float64
 	compressionTriggerFactor float64
+	quantiles                []float64
 }
 
 var defaultTDigestConfig = tdigestConfig{
 	compression:              100,
 	compressionTriggerFactor: 1.5,
+	quantiles:                []float64{0.5, 0.9, 0.95, 0.99},
 }
 
 // WithCustomCounters registers custom counters with the collector.
@@ -134,7 +136,7 @@ func WithLatencyTDigest(opts ...func(*tdigestConfig)) Option {
 		for _, opt := range opts {
 			opt(&tcfg)
 		}
-		t, err := NewTDigest(tcfg.compression, tcfg.compressionTriggerFactor)
+		t, err := NewTDigest(tcfg.compression, tcfg.compressionTriggerFactor, WithQuantiles(tcfg.quantiles...))
 		if err != nil {
 			return err
 		}
@@ -150,7 +152,7 @@ func WithQueueWaitTDigest(opts ...func(*tdigestConfig)) Option {
 		for _, opt := range opts {
 			opt(&tcfg)
 		}
-		t, err := NewTDigest(tcfg.compression, tcfg.compressionTriggerFactor)
+		t, err := NewTDigest(tcfg.compression, tcfg.compressionTriggerFactor, WithQuantiles(tcfg.quantiles...))
 		if err != nil {
 			return err
 		}
@@ -226,5 +228,12 @@ func WithTDigestCompression(c float64) func(*tdigestConfig) {
 func WithTDigestCompressionTriggerFactor(f float64) func(*tdigestConfig) {
 	return func(cfg *tdigestConfig) {
 		cfg.compressionTriggerFactor = f
+	}
+}
+
+// WithTDigestQuantiles sets the quantiles for the t-digest.
+func WithTDigestQuantiles(q ...float64) func(*tdigestConfig) {
+	return func(cfg *tdigestConfig) {
+		cfg.quantiles = q
 	}
 }

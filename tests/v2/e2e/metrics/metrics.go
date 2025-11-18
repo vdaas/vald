@@ -409,10 +409,10 @@ func NewCollector(opts ...Option) (Collector, error) {
 	}
 
 	if c.global.latPercentiles == nil {
-		c.global.latPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor, WithQuantiles(0.5, 0.9, 0.95, 0.99))
+		c.global.latPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
 	}
 	if c.global.qwPercentiles == nil {
-		c.global.qwPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor, WithQuantiles(0.5, 0.9, 0.95, 0.99))
+		c.global.qwPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
 	}
 	for name := range c.counters {
 		c.counters[name] = &CounterHandle{
@@ -571,8 +571,8 @@ func (c *collector) deepCopy() (Collector, error) {
 		return nil, err
 	}
 	nc.global.exemplars = NewExemplar(c.ecfg.capacity)
-	nc.global.latPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor, WithQuantiles(0.5, 0.9, 0.95, 0.99))
-	nc.global.qwPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor, WithQuantiles(0.5, 0.9, 0.95, 0.99))
+	nc.global.latPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
+	nc.global.qwPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
 	for name := range c.counters {
 		nc.counters[name] = &CounterHandle{
 			value: new(atomic.Uint64),
@@ -704,7 +704,7 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 		}
 		if s.LatPercentiles != nil {
 			if merged.LatPercentiles == nil {
-				merged.LatPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor, WithQuantiles(0.5, 0.9, 0.95, 0.99))
+				merged.LatPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
 			}
 			if err := merged.LatPercentiles.Merge(s.LatPercentiles); err != nil {
 				return nil, err
@@ -712,7 +712,7 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 		}
 		if s.QWPercentiles != nil {
 			if merged.QWPercentiles == nil {
-				merged.QWPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor, WithQuantiles(0.5, 0.9, 0.95, 0.99))
+				merged.QWPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
 			}
 			if err := merged.QWPercentiles.Merge(s.QWPercentiles); err != nil {
 				return nil, err

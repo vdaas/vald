@@ -56,11 +56,11 @@ type Data struct {
 	Strategies          []*Strategy        `json:"strategies,omitempty"      yaml:"strategies,omitempty"`
 	Dataset             *Dataset           `json:"dataset,omitempty"         yaml:"dataset,omitempty"`
 	Kubernetes          *Kubernetes        `json:"kubernetes,omitempty"      yaml:"kubernetes,omitempty"`
-	Metrics             *Metrics           `json:"metrics,omitempty"         yaml:"metrics,omitempty"`
-	Metadata            map[string]string  `json:"metadata,omitempty"        yaml:"metadata,omitempty"`
-	MetaString          string             `json:"metadata_string,omitempty" yaml:"metadata_string,omitempty"`
-	FilePath            string             `json:"-"                         yaml:"-"`
-	Collector           *metrics.Collector `json:"-"                         yaml:"-"`
+	Metrics             *Metrics          `json:"metrics,omitempty"         yaml:"metrics,omitempty"`
+	Metadata            map[string]string `json:"metadata,omitempty"        yaml:"metadata,omitempty"`
+	MetaString          string            `json:"metadata_string,omitempty" yaml:"metadata_string,omitempty"`
+	FilePath            string            `json:"-"                         yaml:"-"`
+	Collector           metrics.Collector `json:"-"                         yaml:"-"`
 }
 
 // Metrics represents the configuration for the metrics collector.
@@ -103,8 +103,9 @@ type Histogram struct {
 
 // TDigest represents the configuration for a TDigest.
 type TDigest struct {
-	Compression              float64 `json:"compression,omitempty"                yaml:"compression,omitempty"`
-	CompressionTriggerFactor float64 `json:"compression_trigger_factor,omitempty" yaml:"compression_trigger_factor,omitempty"`
+	Compression              float64   `json:"compression,omitempty"                yaml:"compression,omitempty"`
+	CompressionTriggerFactor float64   `json:"compression_trigger_factor,omitempty" yaml:"compression_trigger_factor,omitempty"`
+	Quantiles                []float64 `json:"quantiles,omitempty"                  yaml:"quantiles,omitempty"`
 }
 
 // Exemplar represents the configuration for an exemplar.
@@ -117,20 +118,20 @@ type Strategy struct {
 	TimeConfig  `yaml:",inline" json:",inline"`
 	Name        string             `yaml:"name"                 json:"name,omitempty"`
 	Repeats     *Repeats           `yaml:"repeats"              json:"repeats,omitempty"`
-	Concurrency uint64             `yaml:"concurrency"          json:"concurrency,omitempty"`
-	Operations  []*Operation       `yaml:"operations,omitempty" json:"operations,omitempty"`
-	Metrics     *Metrics           `yaml:"metrics,omitempty"    json:"metrics,omitempty"`
-	Collector   *metrics.Collector `yaml:"-"                    json:"-"`
+	Concurrency uint64            `yaml:"concurrency"          json:"concurrency,omitempty"`
+	Operations  []*Operation      `yaml:"operations,omitempty" json:"operations,omitempty"`
+	Metrics     *Metrics          `yaml:"metrics,omitempty"    json:"metrics,omitempty"`
+	Collector   metrics.Collector `yaml:"-"                    json:"-"`
 }
 
 // Operation represents an individual operation configuration.
 type Operation struct {
 	TimeConfig `yaml:",inline" json:",inline"`
-	Name       string             `yaml:"name,omitempty"       json:"name,omitempty"`
-	Repeats    *Repeats           `yaml:"repeats"              json:"repeats,omitempty"`
-	Executions []*Execution       `yaml:"executions,omitempty" json:"executions,omitempty"`
-	Metrics    *Metrics           `yaml:"metrics,omitempty"    json:"metrics,omitempty"`
-	Collector  *metrics.Collector `yaml:"-"                    json:"-"`
+	Name       string            `yaml:"name,omitempty"       json:"name,omitempty"`
+	Repeats    *Repeats          `yaml:"repeats"              json:"repeats,omitempty"`
+	Executions []*Execution      `yaml:"executions,omitempty" json:"executions,omitempty"`
+	Metrics    *Metrics          `yaml:"metrics,omitempty"    json:"metrics,omitempty"`
+	Collector  metrics.Collector `yaml:"-"                    json:"-"`
 }
 
 // Execution represents the execution details for a given operation.
@@ -148,7 +149,7 @@ type Execution struct {
 	Kubernetes   *KubernetesConfig   `yaml:"kubernetes,omitempty"   json:"kubernetes,omitempty"`
 	Modification *ModificationConfig `yaml:"modification,omitempty" json:"modification,omitempty"`
 	Expect       []Expect            `yaml:"expect,omitempty"       json:"expect,omitempty"`
-	Collector    *metrics.Collector  `yaml:"-"                      json:"-"`
+	Collector    metrics.Collector   `yaml:"-"                      json:"-"`
 	Metrics      *Metrics            `yaml:"metrics,omitempty"      json:"metrics,omitempty"`
 }
 
@@ -987,12 +988,14 @@ func (m *Metrics) Opts() (opts []metrics.Option) {
 		opts = append(opts, metrics.WithLatencyTDigest(
 			metrics.WithTDigestCompression(m.LatencyTDigest.Compression),
 			metrics.WithTDigestCompressionTriggerFactor(m.LatencyTDigest.CompressionTriggerFactor),
+			metrics.WithTDigestQuantiles(m.LatencyTDigest.Quantiles...),
 		))
 	}
 	if m.QueueWaitTDigest != nil {
 		opts = append(opts, metrics.WithQueueWaitTDigest(
 			metrics.WithTDigestCompression(m.QueueWaitTDigest.Compression),
 			metrics.WithTDigestCompressionTriggerFactor(m.QueueWaitTDigest.CompressionTriggerFactor),
+			metrics.WithTDigestQuantiles(m.QueueWaitTDigest.Quantiles...),
 		))
 	}
 	if m.Exemplar != nil {
