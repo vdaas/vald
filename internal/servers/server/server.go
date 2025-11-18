@@ -33,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/credentials"
 	"github.com/vdaas/vald/internal/net/grpc/health"
 	"github.com/vdaas/vald/internal/net/grpc/keepalive"
+	_ "github.com/vdaas/vald/internal/net/grpc/logger"
 	"github.com/vdaas/vald/internal/net/grpc/stats"
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/safety"
