@@ -173,13 +173,12 @@ func newSlot(numCounters int, latencies, queueWaits Histogram, exemplars Exempla
 
 // Scale is a ring buffer of slots for windowed metrics.
 type Scale struct {
-	mu         sync.RWMutex
-	slots      []*Slot // ring buffer of slots
-	width      uint64  // width of each slot
-	capacity   uint64  // number of slots in the ring buffer
-	name       string  // name of the scale
-	scaleType  scaleType
-	recordFunc func(context.Context, *RequestResult, *Scale)
+	mu        sync.RWMutex
+	slots     []*Slot // ring buffer of slots
+	width     uint64  // width of each slot
+	capacity  uint64  // number of slots in the ring buffer
+	name      string  // name of the scale
+	scaleType scaleType
 }
 
 type scaleType uint8
@@ -189,22 +188,21 @@ const (
 	timeScale
 )
 
-func recordRangeScale(ctx context.Context, rr *RequestResult, s *Scale) {
-	if reqID, ok := requestIDFromCtx(ctx); ok {
-		slot := s.getSlot(reqID)
-		slot.Total.Add(1)
-		if rr.Err != nil {
-			slot.Errors.Add(1)
-		}
-		slot.updatedNS.Store(rr.EndedAt.UnixNano())
-		slot.Latency.Record(float64(rr.Latency.Nanoseconds()))
-		slot.QueueWait.Record(float64(rr.QueueWait.Nanoseconds()))
-		slot.Exemplars.Offer(rr.Latency, rr.RequestID)
-	}
-}
+// record adds a request result to the appropriate slot in the scale.
+func (s *Scale) record(ctx context.Context, rr *RequestResult) {
+	var idx uint64
+	var ok bool
 
-func recordTimeScale(ctx context.Context, rr *RequestResult, s *Scale) {
-	idx := uint64(rr.EndedAt.Unix())
+	switch s.scaleType {
+	case rangeScale:
+		idx, ok = requestIDFromCtx(ctx)
+		if !ok {
+			return
+		}
+	case timeScale:
+		idx = uint64(rr.EndedAt.Unix())
+	}
+
 	slot := s.getSlot(idx)
 	slot.Total.Add(1)
 	if rr.Err != nil {
@@ -250,12 +248,7 @@ func newScale(
 		slots:     slots,
 		scaleType: st,
 	}
-	switch st {
-	case rangeScale:
-		s.recordFunc = recordRangeScale
-	case timeScale:
-		s.recordFunc = recordTimeScale
-	}
+
 	return s, nil
 }
 
@@ -337,6 +330,15 @@ func (s *Scale) Snapshot() *ScaleSnapshot {
 
 // --- Collector ---
 
+// globalMetrics holds the global, non-windowed metrics.
+type globalMetrics struct {
+	latencies      Histogram
+	queueWaits     Histogram
+	latPercentiles QuantileSketch
+	qwPercentiles  QuantileSketch
+	exemplars      Exemplar
+}
+
 // collector is the main entry point for metrics aggregation. It is thread-safe.
 type collector struct {
 	mu sync.RWMutex
@@ -345,16 +347,8 @@ type collector struct {
 	total  atomic.Uint64
 	errors atomic.Uint64
 
-	// Histograms for latency and queue wait time distribution.
-	latencies  Histogram
-	queueWaits Histogram
-
-	// t-digest for approximate latency and queue wait percentiles.
-	latPercentiles QuantileSketch
-	qwPercentiles  QuantileSketch
-
-	// Exemplars for tracking the slowest requests.
-	exemplars Exemplar
+	// Global metrics.
+	global globalMetrics
 
 	// Custom counters, stored in a map for thread-safe access.
 	counters map[string]*CounterHandle
@@ -386,8 +380,8 @@ func NewCollector(opts ...Option) (Collector, error) {
 	}
 
 	var err error
-	if c.latencies == nil {
-		c.latencies, err = NewHistogram(
+	if c.global.latencies == nil {
+		c.global.latencies, err = NewHistogram(
 			WithHistogramMin(c.hcfg.min),
 			WithHistogramMax(c.hcfg.max),
 			WithHistogramGrowth(c.hcfg.growth),
@@ -398,8 +392,8 @@ func NewCollector(opts ...Option) (Collector, error) {
 			return nil, err
 		}
 	}
-	if c.queueWaits == nil {
-		c.queueWaits, err = NewHistogram(
+	if c.global.queueWaits == nil {
+		c.global.queueWaits, err = NewHistogram(
 			WithHistogramMin(c.hcfg.min),
 			WithHistogramMax(c.hcfg.max),
 			WithHistogramGrowth(c.hcfg.growth),
@@ -410,15 +404,15 @@ func NewCollector(opts ...Option) (Collector, error) {
 			return nil, err
 		}
 	}
-	if c.exemplars == nil {
-		c.exemplars = NewExemplar(c.ecfg.capacity)
+	if c.global.exemplars == nil {
+		c.global.exemplars = NewExemplar(c.ecfg.capacity)
 	}
 
-	if c.latPercentiles == nil {
-		c.latPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
+	if c.global.latPercentiles == nil {
+		c.global.latPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
 	}
-	if c.qwPercentiles == nil {
-		c.qwPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
+	if c.global.qwPercentiles == nil {
+		c.global.qwPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
 	}
 	for name := range c.counters {
 		c.counters[name] = &CounterHandle{
@@ -452,20 +446,20 @@ func (c *collector) merge(other *collector) error {
 	other.total.Add(c.total.Load())
 	other.errors.Add(c.errors.Load())
 
-	if err := other.latencies.Merge(c.latencies); err != nil {
+	if err := other.global.latencies.Merge(c.global.latencies); err != nil {
 		return err
 	}
-	if err := other.queueWaits.Merge(c.queueWaits); err != nil {
+	if err := other.global.queueWaits.Merge(c.global.queueWaits); err != nil {
 		return err
 	}
-	if err := other.latPercentiles.Merge(c.latPercentiles); err != nil {
+	if err := other.global.latPercentiles.Merge(c.global.latPercentiles); err != nil {
 		return err
 	}
-	if err := other.qwPercentiles.Merge(c.qwPercentiles); err != nil {
+	if err := other.global.qwPercentiles.Merge(c.global.qwPercentiles); err != nil {
 		return err
 	}
-	for _, ex := range c.exemplars.Snapshot() {
-		other.exemplars.Offer(ex.latency, ex.requestID)
+	for _, ex := range c.global.exemplars.Snapshot() {
+		other.global.exemplars.Offer(ex.latency, ex.requestID)
 	}
 	for name, h := range c.counters {
 		if mh, ok := other.counters[name]; ok {
@@ -499,11 +493,11 @@ func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 		c.errors.Add(1)
 	}
 
-	c.latencies.Record(float64(rr.Latency.Nanoseconds()))
-	c.queueWaits.Record(float64(rr.QueueWait.Nanoseconds()))
-	c.latPercentiles.Add(float64(rr.Latency.Nanoseconds()))
-	c.qwPercentiles.Add(float64(rr.QueueWait.Nanoseconds()))
-	c.exemplars.Offer(rr.Latency, rr.RequestID)
+	c.global.latencies.Record(float64(rr.Latency.Nanoseconds()))
+	c.global.queueWaits.Record(float64(rr.QueueWait.Nanoseconds()))
+	c.global.latPercentiles.Add(float64(rr.Latency.Nanoseconds()))
+	c.global.qwPercentiles.Add(float64(rr.QueueWait.Nanoseconds()))
+	c.global.exemplars.Offer(rr.Latency, rr.RequestID)
 	c.mu.RLock()
 	counter, ok := c.codes[rr.Status]
 	c.mu.RUnlock()
@@ -520,7 +514,7 @@ func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 	counter.Add(1)
 
 	for _, s := range c.scales {
-		s.recordFunc(ctx, rr, s)
+		s.record(ctx, rr)
 	}
 }
 
@@ -556,7 +550,7 @@ func (c *collector) deepCopy() (Collector, error) {
 	nc := newCollector.(*collector)
 	nc.hcfg = c.hcfg
 	nc.ecfg = c.ecfg
-	nc.latencies, err = NewHistogram(
+	nc.global.latencies, err = NewHistogram(
 		WithHistogramMin(c.hcfg.min),
 		WithHistogramMax(c.hcfg.max),
 		WithHistogramGrowth(c.hcfg.growth),
@@ -566,7 +560,7 @@ func (c *collector) deepCopy() (Collector, error) {
 	if err != nil {
 		return nil, err
 	}
-	nc.queueWaits, err = NewHistogram(
+	nc.global.queueWaits, err = NewHistogram(
 		WithHistogramMin(c.hcfg.min),
 		WithHistogramMax(c.hcfg.max),
 		WithHistogramGrowth(c.hcfg.growth),
@@ -576,9 +570,9 @@ func (c *collector) deepCopy() (Collector, error) {
 	if err != nil {
 		return nil, err
 	}
-	nc.exemplars = NewExemplar(c.ecfg.capacity)
-	nc.latPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
-	nc.qwPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
+	nc.global.exemplars = NewExemplar(c.ecfg.capacity)
+	nc.global.latPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
+	nc.global.qwPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
 	for name := range c.counters {
 		nc.counters[name] = &CounterHandle{
 			value: new(atomic.Uint64),
@@ -600,11 +594,11 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 	return &GlobalSnapshot{
 		Total:          c.total.Load(),
 		Errors:         c.errors.Load(),
-		Latencies:      c.latencies.Snapshot(),
-		QueueWaits:     c.queueWaits.Snapshot(),
-		LatPercentiles: c.latPercentiles,
-		QWPercentiles:  c.qwPercentiles,
-		Exemplars:      c.exemplars.Snapshot(),
+		Latencies:      c.global.latencies.Snapshot(),
+		QueueWaits:     c.global.queueWaits.Snapshot(),
+		LatPercentiles: c.global.latPercentiles,
+		QWPercentiles:  c.global.qwPercentiles,
+		Exemplars:      c.global.exemplars.Snapshot(),
 		Codes:          codes,
 	}
 }

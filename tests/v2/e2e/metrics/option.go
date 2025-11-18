@@ -105,7 +105,7 @@ func WithLatencyHistogram(opts ...HistogramOption) Option {
 		if err != nil {
 			return err
 		}
-		c.latencies = h
+		c.global.latencies = h
 		return nil
 	}
 }
@@ -122,7 +122,7 @@ func WithQueueWaitHistogram(opts ...HistogramOption) Option {
 		if err != nil {
 			return err
 		}
-		c.queueWaits = h
+		c.global.queueWaits = h
 		return nil
 	}
 }
@@ -138,7 +138,7 @@ func WithLatencyTDigest(opts ...func(*tdigestConfig)) Option {
 		if err != nil {
 			return err
 		}
-		c.latPercentiles = t
+		c.global.latPercentiles = t
 		return nil
 	}
 }
@@ -154,7 +154,7 @@ func WithQueueWaitTDigest(opts ...func(*tdigestConfig)) Option {
 		if err != nil {
 			return err
 		}
-		c.qwPercentiles = t
+		c.global.qwPercentiles = t
 		return nil
 	}
 }
@@ -168,7 +168,7 @@ func WithExemplar(opts ...func(*exemplarConfig)) Option {
 		}
 		c.ecfg = ecfg
 		e := NewExemplar(ecfg.capacity)
-		c.exemplars = e
+		c.global.exemplars = e
 		return nil
 	}
 }
