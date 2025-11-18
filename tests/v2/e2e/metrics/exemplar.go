@@ -18,6 +18,7 @@ package metrics
 
 import (
 	"container/heap"
+	"sort"
 	"sync/atomic"
 	"time"
 )
@@ -86,6 +87,12 @@ func (e *exemplar) Snapshot() []*item {
 	pq := *pqPtr
 	items := make([]*item, len(pq))
 	copy(items, pq)
+
+	// Sort items by latency in descending order.
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].latency > items[j].latency
+	})
+
 	return items
 }
 

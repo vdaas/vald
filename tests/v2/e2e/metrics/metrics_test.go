@@ -122,6 +122,97 @@ func TestCollector(t *testing.T) {
 				}
 			},
 		},
+		{
+			name: "record multiple successful and errored requests",
+			collector: func() (Collector, error) {
+				return NewCollector()
+			},
+			records: []*RequestResult{
+				{
+					Latency:   100 * time.Millisecond,
+					QueueWait: 20 * time.Millisecond,
+				},
+				{
+					Latency:   200 * time.Millisecond,
+					QueueWait: 30 * time.Millisecond,
+					Err:       errors.New("test error"),
+				},
+				{
+					Latency:   300 * time.Millisecond,
+					QueueWait: 40 * time.Millisecond,
+				},
+			},
+			check: func(t *testing.T, c Collector) {
+				snap := c.GlobalSnapshot()
+				if snap.Total != 3 {
+					t.Errorf("expected total 3, got %d", snap.Total)
+				}
+				if snap.Errors != 1 {
+					t.Errorf("expected errors 1, got %d", snap.Errors)
+				}
+				if snap.Latencies.Total != 3 {
+					t.Errorf("expected latencies total 3, got %d", snap.Latencies.Total)
+				}
+				if snap.QueueWaits.Total != 3 {
+					t.Errorf("expected queue waits total 3, got %d", snap.QueueWaits.Total)
+				}
+			},
+		},
+		{
+			name: "merge with an empty collector",
+			collector: func() (Collector, error) {
+				return NewCollector()
+			},
+			records: []*RequestResult{
+				{
+					Latency: 100 * time.Millisecond,
+				},
+			},
+			merge: func() (Collector, error) {
+				return NewCollector()
+			},
+			check: func(t *testing.T, c Collector) {
+				snap := c.GlobalSnapshot()
+				if snap.Total != 1 {
+					t.Errorf("expected total 1, got %d", snap.Total)
+				}
+				if snap.Errors != 0 {
+					t.Errorf("expected errors 0, got %d", snap.Errors)
+				}
+			},
+		},
+		{
+			name: "global snapshot aggregates data correctly",
+			collector: func() (Collector, error) {
+				return NewCollector()
+			},
+			records: []*RequestResult{
+				{
+					Latency:   100 * time.Millisecond,
+					QueueWait: 10 * time.Millisecond,
+				},
+				{
+					Latency:   200 * time.Millisecond,
+					QueueWait: 20 * time.Millisecond,
+					Err:       errors.New("error"),
+				},
+			},
+			check: func(t *testing.T, c Collector) {
+				snap := c.GlobalSnapshot()
+				if snap.Total != 2 {
+					t.Errorf("expected total 2, got %d", snap.Total)
+				}
+				if snap.Errors != 1 {
+					t.Errorf("expected errors 1, got %d", snap.Errors)
+				}
+				if snap.Latencies.Mean != float64(150*time.Millisecond) {
+					t.Errorf("expected latency mean %v, got %v", 150*time.Millisecond, time.Duration(snap.Latencies.Mean))
+				}
+				if snap.QueueWaits.Mean != float64(15*time.Millisecond) {
+					t.Errorf("expected queue wait mean %v, got %v", 15*time.Millisecond, time.Duration(snap.QueueWaits.Mean))
+				}
+			},
+		},
 	}
 
 	for _, tt := range tests {

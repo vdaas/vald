@@ -16,7 +16,10 @@
 
 package metrics
 
-import "testing"
+import (
+	"sync"
+	"testing"
+)
 
 func TestHistogram(t *testing.T) {
 	t.Parallel()
@@ -76,6 +79,59 @@ func TestHistogram(t *testing.T) {
 				}
 			},
 		},
+		{
+			name: "empty histogram",
+			h1: func() (Histogram, error) {
+				return NewHistogram(WithHistogramNumBuckets(10))
+			},
+			check: func(t *testing.T, h Histogram) {
+				snap := h.Snapshot()
+				if snap.Total != 0 {
+					t.Errorf("expected total 0, got %d", snap.Total)
+				}
+				if snap.Mean != 0 {
+					t.Errorf("expected mean 0, got %f", snap.Mean)
+				}
+			},
+		},
+		{
+			name: "record a single value",
+			h1: func() (Histogram, error) {
+				return NewHistogram(WithHistogramNumBuckets(10))
+			},
+			records: []float64{10},
+			check: func(t *testing.T, h Histogram) {
+				snap := h.Snapshot()
+				if snap.Total != 1 {
+					t.Errorf("expected total 1, got %d", snap.Total)
+				}
+				if snap.Mean != 10 {
+					t.Errorf("expected mean 10, got %f", snap.Mean)
+				}
+			},
+		},
+		{
+			name: "concurrent record",
+			h1: func() (Histogram, error) {
+				return NewHistogram(WithHistogramNumBuckets(10))
+			},
+			check: func(t *testing.T, h Histogram) {
+				var wg sync.WaitGroup
+				for i := 0; i < 100; i++ {
+					wg.Add(1)
+					go func(v float64) {
+						defer wg.Done()
+						h.Record(v)
+					}(float64(i))
+				}
+				wg.Wait()
+
+				snap := h.Snapshot()
+				if snap.Total != 100 {
+					t.Errorf("expected total 100, got %d", snap.Total)
+				}
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -89,6 +145,7 @@ func TestHistogram(t *testing.T) {
 				h1.Record(r)
 			}
 
+			h_to_check := h1
 			if tt.h2 != nil {
 				h2, err := tt.h2()
 				if err != nil {
@@ -97,9 +154,10 @@ func TestHistogram(t *testing.T) {
 				if err := h1.Merge(h2); err != nil {
 					t.Fatalf("failed to merge histograms: %v", err)
 				}
+				h_to_check = h2
 			}
 
-			tt.check(t, h1)
+			tt.check(t, h_to_check)
 		})
 	}
 }
