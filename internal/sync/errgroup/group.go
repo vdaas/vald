@@ -61,7 +61,6 @@ type group struct {
 var (
 	instance Group
 	once     sync.Once
-	mu       sync.RWMutex
 )
 
 // New creates a new Group and returns it along with its derived Context.
@@ -85,9 +84,9 @@ func WithContext(ctx context.Context) (Group, context.Context) {
 func Init(ctx context.Context) (egctx context.Context) {
 	egctx = ctx
 	once.Do(func() {
-		mu.Lock()
-		defer mu.Unlock()
-		instance, egctx = New(ctx)
+		if instance == nil {
+			instance, egctx = New(ctx)
+		}
 	})
 	return egctx
 }
@@ -95,24 +94,18 @@ func Init(ctx context.Context) (egctx context.Context) {
 // Get returns the global errgroup instance, initializing it if necessary.
 func Get() Group {
 	Init(context.Background())
-	mu.RLock()
-	defer mu.RUnlock()
 	return instance
 }
 
 // Go is a package-level helper that calls the Go method on the global instance.
 func Go(f func() error) {
 	Init(context.Background())
-	mu.RLock()
-	defer mu.RUnlock()
 	instance.Go(f)
 }
 
 // TryGo is a package-level helper that calls the TryGo method on the global instance.
 func TryGo(f func() error) bool {
 	Init(context.Background())
-	mu.RLock()
-	defer mu.RUnlock()
 	return instance.TryGo(f)
 }
 
@@ -254,10 +247,6 @@ func (g *group) Wait() (err error) {
 
 // Wait is a package-level helper that calls the Wait method on the global instance.
 func Wait() error {
-	mu.RLock()
-	defer mu.RUnlock()
-	if instance == nil {
-		return nil
-	}
+	Init(context.Background())
 	return instance.Wait()
 }
