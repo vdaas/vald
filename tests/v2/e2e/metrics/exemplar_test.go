@@ -75,6 +75,62 @@ func TestExemplar(t *testing.T) {
 				}
 			},
 		},
+		{
+			name: "offer requests with same latency",
+			exemplar: func() Exemplar {
+				return NewExemplar(3)
+			},
+			offers: []struct {
+				latency time.Duration
+				id      string
+			}{
+				{100 * time.Millisecond, "req-1"},
+				{200 * time.Millisecond, "req-2"},
+				{100 * time.Millisecond, "req-3"},
+				{300 * time.Millisecond, "req-4"},
+			},
+			check: func(t *testing.T, e Exemplar) {
+				snap := e.Snapshot()
+				if len(snap) != 3 {
+					t.Fatalf("expected snapshot length 3, got %d", len(snap))
+				}
+			},
+		},
+		{
+			name: "empty exemplar",
+			exemplar: func() Exemplar {
+				return NewExemplar(3)
+			},
+			check: func(t *testing.T, e Exemplar) {
+				snap := e.Snapshot()
+				if len(snap) != 0 {
+					t.Errorf("expected snapshot length 0, got %d", len(snap))
+				}
+			},
+		},
+		{
+			name: "snapshot is sorted by latency",
+			exemplar: func() Exemplar {
+				return NewExemplar(3)
+			},
+			offers: []struct {
+				latency time.Duration
+				id      string
+			}{
+				{200 * time.Millisecond, "req-2"},
+				{100 * time.Millisecond, "req-1"},
+				{300 * time.Millisecond, "req-3"},
+			},
+			check: func(t *testing.T, e Exemplar) {
+				snap := e.Snapshot()
+				if len(snap) != 3 {
+					t.Fatalf("expected snapshot length 3, got %d", len(snap))
+				}
+				if snap[0].requestID != "req-3" || snap[1].requestID != "req-2" || snap[2].requestID != "req-1" {
+					t.Errorf("expected snapshot to be sorted by latency in descending order")
+				}
+			},
+		},
 	}
 
 	for _, tt := range tests {
