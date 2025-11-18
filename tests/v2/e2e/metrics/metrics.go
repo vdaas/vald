@@ -762,12 +762,12 @@ func (s *GlobalSnapshot) String() string {
 
 	// --- Summary ---
 	fmt.Fprint(&sb, "\n--- Summary ---\n")
-	fmt.Fprintf(&sb, "Total Requests: %d\n", total)
-	fmt.Fprintf(&sb, "Total Duration: %s\n", totalDuration)
+	fmt.Fprintf(&sb, "Total Requests:\t%d\n", total)
+	fmt.Fprintf(&sb, "Total Duration:\t%s\n", totalDuration)
 	if totalDuration.Seconds() > 0 {
-		fmt.Fprintf(&sb, "Requests/sec:   %.2f\n", float64(total)/totalDuration.Seconds())
+		fmt.Fprintf(&sb, "Requests/sec:\t%.2f\n", float64(total)/totalDuration.Seconds())
 	}
-	fmt.Fprintf(&sb, "Errors:         %d (%.2f%%)\n", errs, float64(errs)/float64(total)*100)
+	fmt.Fprintf(&sb, "Errors:\t%d (%.2f%%)\n", errs, float64(errs)/float64(total)*100)
 
 	// --- Latency ---
 	fmt.Fprint(&sb, "\n--- Latency ---\n")
@@ -801,7 +801,7 @@ func (s *GlobalSnapshot) String() string {
 			} else {
 				upperBound = fmt.Sprintf("%.3f", float64(time.Duration(s.Latencies.Bounds[i])))
 			}
-			fmt.Fprintf(&sb, "    %s - %s [%d]\t|%s\n", lowerBound, upperBound, count, bar)
+			fmt.Fprintf(&sb, "\t%s - %s [%d]\t|%s\n", lowerBound, upperBound, count, bar)
 		}
 	}
 
@@ -837,7 +837,7 @@ func (s *GlobalSnapshot) String() string {
 			} else {
 				upperBound = fmt.Sprintf("%.3f", float64(time.Duration(s.QueueWaits.Bounds[i])))
 			}
-			fmt.Fprintf(&sb, "    %s - %s [%d]\t|%s\n", lowerBound, upperBound, count, bar)
+			fmt.Fprintf(&sb, "\t%s - %s [%d]\t|%s\n", lowerBound, upperBound, count, bar)
 		}
 	}
 
@@ -845,14 +845,14 @@ func (s *GlobalSnapshot) String() string {
 	fmt.Fprint(&sb, "\n--- Status Codes ---\n")
 	if s.Codes != nil {
 		for code, count := range s.Codes {
-			fmt.Fprintf(&sb, "  - %s: %d (%.2f%%)\n", code.String(), count, float64(count)/float64(total)*100)
+			fmt.Fprintf(&sb, "\t- %s:\t%d (%.2f%%)\n", code.String(), count, float64(count)/float64(total)*100)
 		}
 	}
 
 	// --- Exemplars ---
 	fmt.Fprintf(&sb, "\n--- Exemplars (Top %d slowest requests) ---\n", len(s.Exemplars))
 	for _, ex := range s.Exemplars {
-		fmt.Fprintf(&sb, "  - RequestID: %s, Latency: %s\n", ex.requestID, ex.latency)
+		fmt.Fprintf(&sb, "\t- RequestID:\t%s,\tLatency:\t%s\n", ex.requestID, ex.latency)
 	}
 
 	return sb.String()
@@ -919,9 +919,9 @@ func (s *SlotSnapshot) String() string {
 	}
 
 	var sb strings.Builder
-	fmt.Fprintf(&sb, "Total Requests: %d\n", s.Total)
-	fmt.Fprintf(&sb, "Errors:         %d (%.2f%%)\n", s.Errors, float64(s.Errors)/float64(s.Total)*100)
-	fmt.Fprintf(&sb, "Last Updated:   %s\n", time.Unix(0, s.LastUpdated))
+	fmt.Fprintf(&sb, "Total Requests:\t%d\n", s.Total)
+	fmt.Fprintf(&sb, "Errors:\t%d (%.2f%%)\n", s.Errors, float64(s.Errors)/float64(s.Total)*100)
+	fmt.Fprintf(&sb, "Last Updated:\t%s\n", time.Unix(0, s.LastUpdated))
 
 	fmt.Fprint(&sb, "\nLatency:\n")
 	if s.Latencies != nil {
@@ -935,7 +935,7 @@ func (s *SlotSnapshot) String() string {
 
 	fmt.Fprintf(&sb, "\nExemplars (Top %d slowest requests):\n", len(s.Exemplars))
 	for _, ex := range s.Exemplars {
-		fmt.Fprintf(&sb, "  - RequestID: %s, Latency: %s\n", ex.requestID, ex.latency)
+		fmt.Fprintf(&sb, "\t- RequestID:\t%s,\tLatency:\t%s\n", ex.requestID, ex.latency)
 	}
 
 	return sb.String()

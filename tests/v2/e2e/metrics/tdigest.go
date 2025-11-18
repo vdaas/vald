@@ -22,7 +22,6 @@ import (
 	"math"
 	"slices"
 	"sort"
-	"strings"
 	"sync"
 	"unsafe"
 
@@ -52,16 +51,13 @@ func (t *TDigest) String() string {
 	if t == nil {
 		return "No data collected for percentiles.\n"
 	}
-	var sb strings.Builder
-	fmt.Fprintf(
-		&sb,
-		"  p50: %-15.2f p90: %-15.2f p95: %-15.2f p99: %-15.2f\n",
+	return fmt.Sprintf(
+		"\tp50:\t%.2f\tp90:\t%.2f\tp95:\t%.2f\tp99:\t%.2f\n",
 		t.Quantile(0.5),
 		t.Quantile(0.9),
 		t.Quantile(0.95),
 		t.Quantile(0.99),
 	)
-	return sb.String()
 }
 
 // NewTDigest creates a new TDigest.
