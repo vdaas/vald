@@ -38,9 +38,11 @@ func init() {
 
 func internalInit() {
 	once.Do(func() {
-		if v, err := strconv.Atoi(os.Getenv("GRPC_GO_LOG_VERBOSITY_LEVEL")); err == nil {
-			glog.SetLoggerV2(&logger{v: v})
+		var v int
+		if vl, err := strconv.Atoi(os.Getenv("GRPC_GO_LOG_VERBOSITY_LEVEL")); err == nil {
+			v = vl
 		}
+		glog.SetLoggerV2(&logger{v: v})
 	})
 }
 
