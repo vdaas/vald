@@ -213,6 +213,22 @@ func TestCollector(t *testing.T) {
 				}
 			},
 		},
+		{
+			name: "NewCollector with WithTimeScale does not panic",
+			collector: func() (Collector, error) {
+				return NewCollector(WithTimeScale("test", 1, 10))
+			},
+			records: []*RequestResult{},
+			check: func(t *testing.T, c Collector) {
+				if c == nil {
+					t.Fatal("collector should not be nil")
+				}
+				coll := c.(*collector)
+				if len(coll.scales) != 1 {
+					t.Errorf("expected 1 scale, got %d", len(coll.scales))
+				}
+			},
+		},
 	}
 
 	for _, tt := range tests {

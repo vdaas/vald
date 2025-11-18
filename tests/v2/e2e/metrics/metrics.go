@@ -55,10 +55,16 @@ var requestResultPool = sync.Pool{
 	},
 }
 
-func newHistogramPool(opts ...HistogramOption) *sync.Pool {
+func newHistogramPool(hcfg *histogramConfig) *sync.Pool {
 	return &sync.Pool{
 		New: func() any {
-			h, _ := NewHistogram(opts...)
+			h, _ := NewHistogram(
+				WithHistogramMin(hcfg.min),
+				WithHistogramMax(hcfg.max),
+				WithHistogramGrowth(hcfg.growth),
+				WithHistogramNumBuckets(hcfg.numBuckets),
+				WithHistogramNumShards(hcfg.numShards),
+			)
 			return h
 		},
 	}
@@ -378,19 +384,14 @@ func NewCollector(opts ...Option) (Collector, error) {
 		codes:    make(map[codes.Code]*atomic.Uint64),
 	}
 
+	// Initialize the histogram pool before applying options
+	c.histogramPool = newHistogramPool(&c.hcfg)
+
 	for _, opt := range opts {
 		if err := opt(c); err != nil {
 			return nil, err
 		}
 	}
-
-	c.histogramPool = newHistogramPool(
-		WithHistogramMin(c.hcfg.min),
-		WithHistogramMax(c.hcfg.max),
-		WithHistogramGrowth(c.hcfg.growth),
-		WithHistogramNumBuckets(c.hcfg.numBuckets),
-		WithHistogramNumShards(c.hcfg.numShards),
-	)
 
 	var err error
 	if c.global.latencies == nil {
