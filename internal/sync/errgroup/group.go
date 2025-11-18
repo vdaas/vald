@@ -99,14 +99,12 @@ func Get() Group {
 
 // Go is a package-level helper that calls the Go method on the global instance.
 func Go(f func() error) {
-	Init(context.Background())
-	instance.Go(f)
+	Get().Go(f)
 }
 
 // TryGo is a package-level helper that calls the TryGo method on the global instance.
 func TryGo(f func() error) bool {
-	Init(context.Background())
-	return instance.TryGo(f)
+	return Get().TryGo(f)
 }
 
 // SetLimit sets the maximum number of active goroutines in the group.
@@ -247,6 +245,5 @@ func (g *group) Wait() (err error) {
 
 // Wait is a package-level helper that calls the Wait method on the global instance.
 func Wait() error {
-	Init(context.Background())
-	return instance.Wait()
+	return Get().Wait()
 }
