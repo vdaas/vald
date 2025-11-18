@@ -60,6 +60,7 @@ type group struct {
 
 var (
 	instance Group
+	once     sync.Once
 	mu       sync.RWMutex
 )
 
@@ -82,14 +83,13 @@ func WithContext(ctx context.Context) (Group, context.Context) {
 
 // Init initializes the global errgroup instance.
 func Init(ctx context.Context) (egctx context.Context) {
-	mu.Lock()
-	defer mu.Unlock()
-	if instance != nil {
-		return ctx
-	}
-	egctx = ctx
-	instance, egctx = New(ctx)
-	return egctx
+	once.Do(func() {
+		mu.Lock()
+		defer mu.Unlock()
+		egctx = ctx
+		instance, egctx = New(ctx)
+	})
+	return ctx
 }
 
 // Get returns the global errgroup instance, initializing it if necessary.
