@@ -761,24 +761,24 @@ func (s *GlobalSnapshot) String() string {
 	totalDuration := time.Duration(s.Latencies.Sum)
 
 	// --- Summary ---
-	sb.WriteString("\n--- Summary ---\n")
-	sb.WriteString(fmt.Sprintf("Total Requests: %d\n", total))
-	sb.WriteString(fmt.Sprintf("Total Duration: %s\n", totalDuration))
+	fmt.Fprint(&sb, "\n--- Summary ---\n")
+	fmt.Fprintf(&sb, "Total Requests: %d\n", total)
+	fmt.Fprintf(&sb, "Total Duration: %s\n", totalDuration)
 	if totalDuration.Seconds() > 0 {
-		sb.WriteString(fmt.Sprintf("Requests/sec:   %.2f\n", float64(total)/totalDuration.Seconds()))
+		fmt.Fprintf(&sb, "Requests/sec:   %.2f\n", float64(total)/totalDuration.Seconds())
 	}
-	sb.WriteString(fmt.Sprintf("Errors:         %d (%.2f%%)\n", errs, float64(errs)/float64(total)*100))
+	fmt.Fprintf(&sb, "Errors:         %d (%.2f%%)\n", errs, float64(errs)/float64(total)*100)
 
 	// --- Latency ---
-	sb.WriteString("\n--- Latency ---\n")
+	fmt.Fprint(&sb, "\n--- Latency ---\n")
 	if s.Latencies != nil {
-		sb.WriteString(s.Latencies.String())
+		fmt.Fprint(&sb, s.Latencies.String())
 	}
 	if s.LatPercentiles != nil {
-		sb.WriteString(s.LatPercentiles.String())
+		fmt.Fprint(&sb, s.LatPercentiles.String())
 	}
 	if s.Latencies != nil && len(s.Latencies.Counts) > 0 {
-		sb.WriteString("Histogram:\n")
+		fmt.Fprint(&sb, "Histogram:\n")
 		maxCount := uint64(0)
 		for _, count := range s.Latencies.Counts {
 			if count > maxCount {
@@ -801,20 +801,20 @@ func (s *GlobalSnapshot) String() string {
 			} else {
 				upperBound = fmt.Sprintf("%.3f", float64(time.Duration(s.Latencies.Bounds[i])))
 			}
-			sb.WriteString(fmt.Sprintf("    %s - %s [%d]\t|%s\n", lowerBound, upperBound, count, bar))
+			fmt.Fprintf(&sb, "    %s - %s [%d]\t|%s\n", lowerBound, upperBound, count, bar)
 		}
 	}
 
 	// --- Queue Wait ---
-	sb.WriteString("\n--- Queue Wait ---\n")
+	fmt.Fprint(&sb, "\n--- Queue Wait ---\n")
 	if s.QueueWaits != nil {
-		sb.WriteString(s.QueueWaits.String())
+		fmt.Fprint(&sb, s.QueueWaits.String())
 	}
 	if s.QWPercentiles != nil {
-		sb.WriteString(s.QWPercentiles.String())
+		fmt.Fprint(&sb, s.QWPercentiles.String())
 	}
 	if s.QueueWaits != nil && len(s.QueueWaits.Counts) > 0 {
-		sb.WriteString("Histogram:\n")
+		fmt.Fprint(&sb, "Histogram:\n")
 		maxCount := uint64(0)
 		for _, count := range s.QueueWaits.Counts {
 			if count > maxCount {
@@ -837,22 +837,22 @@ func (s *GlobalSnapshot) String() string {
 			} else {
 				upperBound = fmt.Sprintf("%.3f", float64(time.Duration(s.QueueWaits.Bounds[i])))
 			}
-			sb.WriteString(fmt.Sprintf("    %s - %s [%d]\t|%s\n", lowerBound, upperBound, count, bar))
+			fmt.Fprintf(&sb, "    %s - %s [%d]\t|%s\n", lowerBound, upperBound, count, bar)
 		}
 	}
 
 	// --- Status Codes ---
-	sb.WriteString("\n--- Status Codes ---\n")
+	fmt.Fprint(&sb, "\n--- Status Codes ---\n")
 	if s.Codes != nil {
 		for code, count := range s.Codes {
-			sb.WriteString(fmt.Sprintf("  - %s: %d (%.2f%%)\n", code.String(), count, float64(count)/float64(total)*100))
+			fmt.Fprintf(&sb, "  - %s: %d (%.2f%%)\n", code.String(), count, float64(count)/float64(total)*100)
 		}
 	}
 
 	// --- Exemplars ---
-	sb.WriteString(fmt.Sprintf("\n--- Exemplars (Top %d slowest requests) ---\n", len(s.Exemplars)))
+	fmt.Fprintf(&sb, "\n--- Exemplars (Top %d slowest requests) ---\n", len(s.Exemplars))
 	for _, ex := range s.Exemplars {
-		sb.WriteString(fmt.Sprintf("  - RequestID: %s, Latency: %s\n", ex.requestID, ex.latency))
+		fmt.Fprintf(&sb, "  - RequestID: %s, Latency: %s\n", ex.requestID, ex.latency)
 	}
 
 	return sb.String()
@@ -878,7 +878,7 @@ func (s *ScaleSnapshot) String() string {
 	}
 
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("\n--- Scale: %s (Width: %d, Capacity: %d) ---\n", s.Name, s.Width, s.Capacity))
+	fmt.Fprintf(&sb, "\n--- Scale: %s (Width: %d, Capacity: %d) ---\n", s.Name, s.Width, s.Capacity)
 
 	totalRequests := uint64(0)
 	totalErrors := uint64(0)
@@ -888,14 +888,14 @@ func (s *ScaleSnapshot) String() string {
 	}
 
 	if totalRequests == 0 {
-		sb.WriteString("No data collected in this scale.\n")
+		fmt.Fprint(&sb, "No data collected in this scale.\n")
 		return sb.String()
 	}
 
 	for i, slot := range s.Slots {
 		if slot.Total > 0 {
-			sb.WriteString(fmt.Sprintf("\n--- Slot %d ---\n", i))
-			sb.WriteString(slot.String())
+			fmt.Fprintf(&sb, "\n--- Slot %d ---\n", i)
+			fmt.Fprint(&sb, slot.String())
 		}
 	}
 	return sb.String()
@@ -919,23 +919,23 @@ func (s *SlotSnapshot) String() string {
 	}
 
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("Total Requests: %d\n", s.Total))
-	sb.WriteString(fmt.Sprintf("Errors:         %d (%.2f%%)\n", s.Errors, float64(s.Errors)/float64(s.Total)*100))
-	sb.WriteString(fmt.Sprintf("Last Updated:   %s\n", time.Unix(0, s.LastUpdated)))
+	fmt.Fprintf(&sb, "Total Requests: %d\n", s.Total)
+	fmt.Fprintf(&sb, "Errors:         %d (%.2f%%)\n", s.Errors, float64(s.Errors)/float64(s.Total)*100)
+	fmt.Fprintf(&sb, "Last Updated:   %s\n", time.Unix(0, s.LastUpdated))
 
-	sb.WriteString("\nLatency:\n")
+	fmt.Fprint(&sb, "\nLatency:\n")
 	if s.Latencies != nil {
-		sb.WriteString(s.Latencies.String())
+		fmt.Fprint(&sb, s.Latencies.String())
 	}
 
-	sb.WriteString("\nQueue Wait:\n")
+	fmt.Fprint(&sb, "\nQueue Wait:\n")
 	if s.QueueWaits != nil {
-		sb.WriteString(s.QueueWaits.String())
+		fmt.Fprint(&sb, s.QueueWaits.String())
 	}
 
-	sb.WriteString(fmt.Sprintf("\nExemplars (Top %d slowest requests):\n", len(s.Exemplars)))
+	fmt.Fprintf(&sb, "\nExemplars (Top %d slowest requests):\n", len(s.Exemplars))
 	for _, ex := range s.Exemplars {
-		sb.WriteString(fmt.Sprintf("  - RequestID: %s, Latency: %s\n", ex.requestID, ex.latency))
+		fmt.Fprintf(&sb, "  - RequestID: %s, Latency: %s\n", ex.requestID, ex.latency)
 	}
 
 	return sb.String()
