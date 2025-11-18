@@ -76,7 +76,7 @@ func WithCustomCounters(names ...string) Option {
 // WithTimeScale adds a time-based scale to the collector.
 func WithTimeScale(name string, width, capacity uint64) Option {
 	return func(c *collector) error {
-		s, err := newScale(name, width, capacity, len(c.counters), c.hcfg, c.ecfg, timeScale)
+		s, err := newScale(name, width, capacity, len(c.counters), c.hcfg, c.ecfg, timeScale, c.histogramPool)
 		if err != nil {
 			return err
 		}
@@ -88,7 +88,7 @@ func WithTimeScale(name string, width, capacity uint64) Option {
 // WithRangeScale adds a range-based scale to the collector.
 func WithRangeScale(name string, width, capacity uint64) Option {
 	return func(c *collector) error {
-		s, err := newScale(name, width, capacity, len(c.counters), c.hcfg, c.ecfg, rangeScale)
+		s, err := newScale(name, width, capacity, len(c.counters), c.hcfg, c.ecfg, rangeScale, c.histogramPool)
 		if err != nil {
 			return err
 		}

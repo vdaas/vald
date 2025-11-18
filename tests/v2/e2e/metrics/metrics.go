@@ -55,11 +55,13 @@ var requestResultPool = sync.Pool{
 	},
 }
 
-var histogramPool = sync.Pool{
-	New: func() any {
-		h, _ := NewHistogram()
-		return h
-	},
+func newHistogramPool(opts ...HistogramOption) *sync.Pool {
+	return &sync.Pool{
+		New: func() any {
+			h, _ := NewHistogram(opts...)
+			return h
+		},
+	}
 }
 
 var exemplarPool = sync.Pool{
@@ -222,6 +224,7 @@ func newScale(
 	hcfg histogramConfig,
 	ecfg exemplarConfig,
 	st scaleType,
+	hpool *sync.Pool,
 ) (*Scale, error) {
 	if width == 0 {
 		return nil, errors.New("scale width must be > 0")
@@ -231,8 +234,8 @@ func newScale(
 	}
 	slots := make([]*Slot, capacity)
 	for i := range slots {
-		h := histogramPool.Get().(Histogram)
-		q := histogramPool.Get().(Histogram)
+		h := hpool.Get().(Histogram)
+		q := hpool.Get().(Histogram)
 		e := exemplarPool.Get().(Exemplar)
 		slots[i] = newSlot(
 			numCounters,
@@ -362,6 +365,8 @@ type collector struct {
 	// Configuration for histograms and exemplars.
 	hcfg histogramConfig
 	ecfg exemplarConfig
+
+	histogramPool *sync.Pool
 }
 
 // NewCollector creates and initializes a new Collector with the provided options.
@@ -378,6 +383,14 @@ func NewCollector(opts ...Option) (Collector, error) {
 			return nil, err
 		}
 	}
+
+	c.histogramPool = newHistogramPool(
+		WithHistogramMin(c.hcfg.min),
+		WithHistogramMax(c.hcfg.max),
+		WithHistogramGrowth(c.hcfg.growth),
+		WithHistogramNumBuckets(c.hcfg.numBuckets),
+		WithHistogramNumShards(c.hcfg.numShards),
+	)
 
 	var err error
 	if c.global.latencies == nil {
