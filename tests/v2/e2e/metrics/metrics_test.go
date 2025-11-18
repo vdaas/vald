@@ -229,13 +229,25 @@ func TestCollector(t *testing.T) {
 				}
 			},
 		},
+		{
+			name: "newScale returns error when hpool is nil",
+			collector: func() (Collector, error) {
+				c := &collector{}
+				err := WithTimeScale("test", 1, 10)(c)
+				return nil, err
+			},
+			check: func(t *testing.T, c Collector) {},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c, err := tt.collector()
 			if err != nil {
-				t.Fatalf("failed to create collector: %v", err)
+				if tt.name != "newScale returns error when hpool is nil" {
+					t.Fatalf("failed to create collector: %v", err)
+				}
+				return
 			}
 
 			for _, r := range tt.records {

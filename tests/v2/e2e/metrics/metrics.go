@@ -232,6 +232,9 @@ func newScale(
 	st scaleType,
 	hpool *sync.Pool,
 ) (*Scale, error) {
+	if hpool == nil {
+		return nil, errors.New("histogram pool must not be nil")
+	}
 	if width == 0 {
 		return nil, errors.New("scale width must be > 0")
 	}
