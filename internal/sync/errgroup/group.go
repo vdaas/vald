@@ -84,33 +84,27 @@ func WithContext(ctx context.Context) (Group, context.Context) {
 func Init(ctx context.Context) (egctx context.Context) {
 	egctx = ctx
 	once.Do(func() {
-		instance, egctx = New(ctx)
+		if instance == nil {
+			instance, egctx = New(ctx)
+		}
 	})
 	return egctx
 }
 
 // Get returns the global errgroup instance, initializing it if necessary.
 func Get() Group {
-	if instance == nil {
-		Init(context.Background())
-	}
+	Init(context.Background())
 	return instance
 }
 
 // Go is a package-level helper that calls the Go method on the global instance.
 func Go(f func() error) {
-	if instance == nil {
-		Init(context.Background())
-	}
-	instance.Go(f)
+	Get().Go(f)
 }
 
 // TryGo is a package-level helper that calls the TryGo method on the global instance.
 func TryGo(f func() error) bool {
-	if instance == nil {
-		Init(context.Background())
-	}
-	return instance.TryGo(f)
+	return Get().TryGo(f)
 }
 
 // SetLimit sets the maximum number of active goroutines in the group.
@@ -251,8 +245,5 @@ func (g *group) Wait() (err error) {
 
 // Wait is a package-level helper that calls the Wait method on the global instance.
 func Wait() error {
-	if instance == nil {
-		return nil
-	}
-	return instance.Wait()
+	return Get().Wait()
 }
