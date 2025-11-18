@@ -20,7 +20,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/io"
-	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 func (o *operation) Remove(ctx context.Context, b *testing.B, maxIdNum int) {
@@ -49,15 +49,14 @@ func (o *operation) Remove(ctx context.Context, b *testing.B, maxIdNum int) {
 }
 
 func (o *operation) StreamRemove(ctx context.Context, b *testing.B, maxIdNum int) {
+	eg, ctx := errgroup.New(ctx)
+
 	b.ResetTimer()
 	b.Run("StreamRemove", func(b *testing.B) {
 		sc, err := o.client.StreamRemove(ctx)
 		if err != nil {
 			b.Fatal(err)
 		}
-
-		wg := sync.WaitGroup{}
-		wg.Add(1)
 
 		req := &payload.Remove_Request{
 			Id: &payload.Object_ID{},
@@ -67,13 +66,11 @@ func (o *operation) StreamRemove(ctx context.Context, b *testing.B, maxIdNum int
 		}
 		b.ResetTimer()
 
-		go func() {
-			defer wg.Done()
-
+		eg.Go(func() error {
 			for {
 				res, err := sc.Recv()
 				if err == io.EOF {
-					return
+					return nil
 				}
 
 				if err != nil {
@@ -93,7 +90,7 @@ func (o *operation) StreamRemove(ctx context.Context, b *testing.B, maxIdNum int
 					continue
 				}
 			}
-		}()
+		})
 
 		for i := 0; i < b.N; i++ {
 			req.Id.Id = strconv.Itoa(i % maxIdNum)
@@ -106,6 +103,6 @@ func (o *operation) StreamRemove(ctx context.Context, b *testing.B, maxIdNum int
 		if err := sc.CloseSend(); err != nil {
 			b.Fatal(err)
 		}
-		wg.Wait()
+		eg.Wait()
 	})
 }

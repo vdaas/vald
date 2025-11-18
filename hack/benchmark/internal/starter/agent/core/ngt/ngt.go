@@ -26,7 +26,6 @@ import (
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/runner"
-	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/usecase"
@@ -48,6 +47,7 @@ func New(opts ...Option) starter.Starter {
 }
 
 func (s *server) Run(ctx context.Context, tb testing.TB) func() {
+	eg, ctx := errgroup.New(ctx)
 	tb.Helper()
 
 	info.Init(name)
@@ -59,11 +59,7 @@ func (s *server) Run(ctx context.Context, tb testing.TB) func() {
 
 	ctx, cancel := context.WithCancel(ctx)
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	errgroup.Go(func() error {
-		defer wg.Done()
+	eg.Go(func() error {
 		err := runner.Run(ctx, daemon, name)
 		if err != nil {
 			tb.Fatalf("agent runner returned error %s", err.Error())
@@ -78,10 +74,7 @@ func (s *server) Run(ctx context.Context, tb testing.TB) func() {
 		tb.Fatal(err)
 	}
 
-	wg.Add(1)
-	errgroup.Go(func() error {
-		defer wg.Done()
-
+	eg.Go(func() error {
 		for {
 			select {
 			case <-ctx.Done():
@@ -96,6 +89,6 @@ func (s *server) Run(ctx context.Context, tb testing.TB) func() {
 	return func() {
 		cancel()
 		s.client.Stop(ctx)
-		wg.Wait()
+		eg.Wait()
 	}
 }

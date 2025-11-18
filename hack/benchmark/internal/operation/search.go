@@ -22,7 +22,6 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/internal/io"
-	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -54,15 +53,14 @@ func (o *operation) Search(ctx context.Context, b *testing.B, ds assets.Dataset)
 }
 
 func (o *operation) StreamSearch(ctx context.Context, b *testing.B, ds assets.Dataset) {
+	eg, ctx := errgroup.New(ctx)
+
 	b.ResetTimer()
 	b.Run("StreamSearch", func(b *testing.B) {
 		sc, err := o.client.StreamSearch(ctx)
 		if err != nil {
 			b.Fatal(err)
 		}
-
-		wg := sync.WaitGroup{}
-		wg.Add(1)
 
 		cfg := &payload.Search_Config{
 			Num:     10,
@@ -71,8 +69,7 @@ func (o *operation) StreamSearch(ctx context.Context, b *testing.B, ds assets.Da
 		}
 		b.ResetTimer()
 
-		errgroup.Go(func() error {
-			defer wg.Done()
+		eg.Go(func() error {
 			for {
 				res, err := sc.Recv()
 				if err == io.EOF {
@@ -108,7 +105,7 @@ func (o *operation) StreamSearch(ctx context.Context, b *testing.B, ds assets.Da
 		if err := sc.CloseSend(); err != nil {
 			b.Fatal(err)
 		}
-		wg.Wait()
+		eg.Wait()
 	})
 }
 
@@ -134,6 +131,8 @@ func (o *operation) SearchByID(ctx context.Context, b *testing.B, maxIdNum int) 
 }
 
 func (o *operation) StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum int) {
+	eg, ctx := errgroup.New(ctx)
+
 	b.ResetTimer()
 	b.Run("StreamSearchByID", func(b *testing.B) {
 		sc, err := o.client.StreamSearchByID(ctx)
@@ -143,9 +142,6 @@ func (o *operation) StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum
 		if sc == nil {
 			b.Fatal("stream channel is nil for StreamSearchByID")
 		}
-
-		wg := sync.WaitGroup{}
-		wg.Add(1)
 
 		cfg := &payload.Search_Config{
 			Num:     10,
@@ -157,8 +153,7 @@ func (o *operation) StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum
 		var finished atomic.Bool
 		finished.Store(false)
 
-		errgroup.Go(func() error {
-			defer wg.Done()
+		eg.Go(func() error {
 			for sc != nil {
 				res, err := sc.Recv()
 				if err == io.EOF {
@@ -191,6 +186,6 @@ func (o *operation) StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum
 				b.Fatal(err)
 			}
 		}
-		wg.Wait()
+		eg.Wait()
 	})
 }
