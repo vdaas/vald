@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -806,7 +806,7 @@ func (s *GlobalSnapshot) String() string {
 	// --- Latency distribution ---
 	sb.WriteString("Latency distribution:\n")
 	if s.LatPercentiles != nil {
-		quantiles := []float64{0.10, 0.30, 0.50, 0.75, 0.90, 0.95, 0.99}
+		quantiles := []float64{0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99}
 		for _, q := range quantiles {
 			val := time.Duration(s.LatPercentiles.Quantile(q))
 			sb.WriteString(fmt.Sprintf("  %d %% in %s\n", int(q*100), val))

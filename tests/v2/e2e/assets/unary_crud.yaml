@@ -265,6 +265,13 @@ strategies:
             search:
               timeout: 3s
               algorithm: cq
+            metrics:
+              latency_histogram:
+                min: 0.01
+                max: 5.0
+                growth: 1.5
+                num_buckets: 20
+                num_shards: 5
           - name: Search with SortSlice
             type: search
             mode: unary
