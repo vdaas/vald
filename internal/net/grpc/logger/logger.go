@@ -18,6 +18,7 @@ import (
 
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/os"
+	"github.com/vdaas/vald/internal/sync"
 	glog "google.golang.org/grpc/grpclog"
 )
 
@@ -25,20 +26,22 @@ type logger struct {
 	v int
 }
 
+var once sync.Once
+
 const (
 	tag = "[gRPC Log]"
 )
 
 func init() {
-	Init()
+	internal_init()
 }
 
-func Init() {
-	var v int
-	if vl, err := strconv.Atoi(os.Getenv("GRPC_GO_LOG_VERBOSITY_LEVEL")); err == nil {
-		v = vl
-	}
-	glog.SetLoggerV2(&logger{v: v})
+func internal_init() {
+	once.Do(func() {
+		if v, err := strconv.Atoi(os.Getenv("GRPC_GO_LOG_VERBOSITY_LEVEL")); err == nil {
+			glog.SetLoggerV2(&logger{v: v})
+		}
+	})
 }
 
 // Info prints the debug log to the logger.

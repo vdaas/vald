@@ -20,6 +20,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/os"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"google.golang.org/grpc/grpclog"
 )
@@ -49,6 +50,7 @@ func TestInit(t *testing.T) {
 			},
 			afterFunc: func(t *testing.T) {
 				t.Helper()
+				once = sync.Once{}
 			},
 		},
 		{
@@ -71,6 +73,7 @@ func TestInit(t *testing.T) {
 			},
 			afterFunc: func(t *testing.T) {
 				t.Helper()
+				once = sync.Once{}
 			},
 		},
 	}
@@ -88,7 +91,7 @@ func TestInit(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			Init()
+			internal_init()
 			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
