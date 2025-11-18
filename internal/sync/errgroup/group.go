@@ -83,13 +83,13 @@ func WithContext(ctx context.Context) (Group, context.Context) {
 
 // Init initializes the global errgroup instance.
 func Init(ctx context.Context) (egctx context.Context) {
+	egctx = ctx
 	once.Do(func() {
 		mu.Lock()
 		defer mu.Unlock()
-		egctx = ctx
 		instance, egctx = New(ctx)
 	})
-	return ctx
+	return egctx
 }
 
 // Get returns the global errgroup instance, initializing it if necessary.
