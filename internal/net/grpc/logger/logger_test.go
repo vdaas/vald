@@ -91,7 +91,7 @@ func TestInit(t *testing.T) {
 				test.checkFunc = defaultCheckFunc
 			}
 
-			Init()
+			internalInit()
 			if err := test.checkFunc(); err != nil {
 				tt.Errorf("error = %v", err)
 			}
