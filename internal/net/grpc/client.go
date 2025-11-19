@@ -30,7 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
-	"github.com/vdaas/vald/internal/net/grpc/logger"
+	_ "github.com/vdaas/vald/internal/net/grpc/logger"
 	"github.com/vdaas/vald/internal/net/grpc/pool"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -199,7 +199,6 @@ func New(name string, opts ...Option) (c Client) {
 // StartConnectionMonitor starts a background goroutine to monitor connections,
 // perform health checks, and handle reconnections.
 func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, error) {
-	logger.Init()
 	if g.monitorRunning.Load() {
 		return g.ech, nil
 	}
