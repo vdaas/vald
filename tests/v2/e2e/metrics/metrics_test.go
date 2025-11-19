@@ -33,6 +33,7 @@ func TestCollector(t *testing.T) {
 		records   []*RequestResult
 		merge     func() (Collector, error)
 		check     func(t *testing.T, c Collector)
+		wantErr   bool
 	}
 
 	tests := []testCase{
@@ -213,11 +214,51 @@ func TestCollector(t *testing.T) {
 				}
 			},
 		},
+		{
+			name: "WithTimeScale does not panic",
+			collector: func() (Collector, error) {
+				return NewCollector(WithTimeScale("test", 1, 1))
+			},
+			check: func(t *testing.T, c Collector) {
+				if c == nil {
+					t.Error("collector should not be nil")
+				}
+			},
+		},
+		{
+			name: "newScale does not panic with nil pool",
+			collector: func() (Collector, error) {
+				c, err := NewCollector()
+				if err != nil {
+					return nil, err
+				}
+				// Force the pool to be nil to test lazy regeneration
+				c.(*collector).histogramPool = nil
+				// This option will trigger newScale
+				err = WithTimeScale("test", 1, 1)(c.(*collector))
+				return c, err
+			},
+			check: func(t *testing.T, c Collector) {
+				if c == nil {
+					t.Error("collector should not be nil")
+				}
+				// Check that a scale was actually created
+				if len(c.(*collector).scales) != 1 {
+					t.Error("expected 1 scale, got", len(c.(*collector).scales))
+				}
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c, err := tt.collector()
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("expected an error but got none")
+				}
+				return // Test ends here for error cases
+			}
 			if err != nil {
 				t.Fatalf("failed to create collector: %v", err)
 			}

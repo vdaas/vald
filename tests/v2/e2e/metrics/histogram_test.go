@@ -36,7 +36,12 @@ func TestHistogram(t *testing.T) {
 		{
 			name: "record values and check snapshot",
 			h1: func() (Histogram, error) {
-				return NewHistogram(WithHistogramNumBuckets(10))
+				return NewHistogram(
+					WithHistogramMin(1),
+					WithHistogramGrowth(2),
+					WithHistogramNumBuckets(10),
+					WithHistogramNumShards(1),
+				)
 			},
 			records: []float64{10, 20, 30, 40, 50},
 			check: func(t *testing.T, h Histogram) {
@@ -52,7 +57,12 @@ func TestHistogram(t *testing.T) {
 		{
 			name: "merge two histograms",
 			h1: func() (Histogram, error) {
-				h, err := NewHistogram(WithHistogramNumBuckets(10))
+				h, err := NewHistogram(
+					WithHistogramMin(1),
+					WithHistogramGrowth(2),
+					WithHistogramNumBuckets(10),
+					WithHistogramNumShards(1),
+				)
 				if err != nil {
 					return nil, err
 				}
@@ -61,7 +71,12 @@ func TestHistogram(t *testing.T) {
 				return h, nil
 			},
 			h2: func() (Histogram, error) {
-				h, err := NewHistogram(WithHistogramNumBuckets(10))
+				h, err := NewHistogram(
+					WithHistogramMin(1),
+					WithHistogramGrowth(2),
+					WithHistogramNumBuckets(10),
+					WithHistogramNumShards(1),
+				)
 				if err != nil {
 					return nil, err
 				}
@@ -82,7 +97,12 @@ func TestHistogram(t *testing.T) {
 		{
 			name: "empty histogram",
 			h1: func() (Histogram, error) {
-				return NewHistogram(WithHistogramNumBuckets(10))
+				return NewHistogram(
+					WithHistogramMin(1),
+					WithHistogramGrowth(2),
+					WithHistogramNumBuckets(10),
+					WithHistogramNumShards(1),
+				)
 			},
 			check: func(t *testing.T, h Histogram) {
 				snap := h.Snapshot()
@@ -97,7 +117,12 @@ func TestHistogram(t *testing.T) {
 		{
 			name: "record a single value",
 			h1: func() (Histogram, error) {
-				return NewHistogram(WithHistogramNumBuckets(10))
+				return NewHistogram(
+					WithHistogramMin(1),
+					WithHistogramGrowth(2),
+					WithHistogramNumBuckets(10),
+					WithHistogramNumShards(1),
+				)
 			},
 			records: []float64{10},
 			check: func(t *testing.T, h Histogram) {
@@ -113,7 +138,12 @@ func TestHistogram(t *testing.T) {
 		{
 			name: "concurrent record",
 			h1: func() (Histogram, error) {
-				return NewHistogram(WithHistogramNumBuckets(10))
+				return NewHistogram(
+					WithHistogramMin(1),
+					WithHistogramGrowth(2),
+					WithHistogramNumBuckets(10),
+					WithHistogramNumShards(1),
+				)
 			},
 			check: func(t *testing.T, h Histogram) {
 				var wg sync.WaitGroup

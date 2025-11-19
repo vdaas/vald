@@ -76,6 +76,7 @@ func NewTDigest(
 	t := &TDigest{
 		compression:              compression,
 		compressionTriggerFactor: compressionTriggerFactor,
+		quantiles:                []float64{0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99},
 	}
 	for _, opt := range opts {
 		opt(t)
@@ -90,9 +91,6 @@ func (t *TDigest) String() string {
 	}
 
 	quantiles := t.quantiles
-	if len(quantiles) == 0 {
-		quantiles = defaultQuantiles
-	}
 
 	var sb strings.Builder
 	for _, q := range quantiles {

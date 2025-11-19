@@ -40,6 +40,35 @@ var defaultHistogramConfig = histogramConfig{
 	numShards:  16,
 }
 
+var defaultOptions = []Option{
+	WithLatencyHistogram(
+		WithHistogramMin(1),
+		WithHistogramMax(5000),
+		WithHistogramGrowth(1.2),
+		WithHistogramNumBuckets(50),
+		WithHistogramNumShards(16),
+	),
+	WithQueueWaitHistogram(
+		WithHistogramMin(1),
+		WithHistogramMax(5000),
+		WithHistogramGrowth(1.2),
+		WithHistogramNumBuckets(50),
+		WithHistogramNumShards(16),
+	),
+	WithExemplar(
+		WithExemplarCapacity(10),
+	),
+	WithLatencyTDigest(
+		WithTDigestCompression(100),
+		WithTDigestCompressionTriggerFactor(1.5),
+		WithTDigestQuantiles(0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99),
+	),
+	WithQueueWaitTDigest(
+		WithTDigestCompression(100),
+		WithTDigestCompressionTriggerFactor(1.5),
+		WithTDigestQuantiles(0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99),
+	),
+}
 type exemplarConfig struct {
 	capacity int
 }
@@ -48,18 +77,15 @@ var defaultExemplarConfig = exemplarConfig{
 	capacity: 10,
 }
 
+const (
+	defaultTDigestCompression              = 100
+	defaultTDigestCompressionTriggerFactor = 1.5
+)
+
 type tdigestConfig struct {
 	compression              float64
 	compressionTriggerFactor float64
 	quantiles                []float64
-}
-
-var defaultQuantiles = []float64{0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99}
-
-var defaultTDigestConfig = tdigestConfig{
-	compression:              100,
-	compressionTriggerFactor: 1.5,
-	quantiles:                defaultQuantiles,
 }
 
 // WithCustomCounters registers custom counters with the collector.
@@ -100,11 +126,9 @@ func WithRangeScale(name string, width, capacity uint64) Option {
 // WithLatencyHistogram sets the histogram for latency metrics.
 func WithLatencyHistogram(opts ...HistogramOption) Option {
 	return func(c *collector) error {
-		hcfg := defaultHistogramConfig
 		for _, opt := range opts {
-			opt(&hcfg)
+			opt(&c.hcfg)
 		}
-		c.hcfg = hcfg
 		h, err := NewHistogram(opts...)
 		if err != nil {
 			return err
@@ -117,11 +141,9 @@ func WithLatencyHistogram(opts ...HistogramOption) Option {
 // WithQueueWaitHistogram sets the histogram for queue wait metrics.
 func WithQueueWaitHistogram(opts ...HistogramOption) Option {
 	return func(c *collector) error {
-		hcfg := defaultHistogramConfig
 		for _, opt := range opts {
-			opt(&hcfg)
+			opt(&c.hcfg)
 		}
-		c.hcfg = hcfg
 		h, err := NewHistogram(opts...)
 		if err != nil {
 			return err
@@ -134,9 +156,9 @@ func WithQueueWaitHistogram(opts ...HistogramOption) Option {
 // WithLatencyTDigest sets the t-digest for latency metrics.
 func WithLatencyTDigest(opts ...func(*tdigestConfig)) Option {
 	return func(c *collector) error {
-		tcfg := defaultTDigestConfig
+		tcfg := &tdigestConfig{}
 		for _, opt := range opts {
-			opt(&tcfg)
+			opt(tcfg)
 		}
 		t, err := NewTDigest(tcfg.compression, tcfg.compressionTriggerFactor, WithQuantiles(tcfg.quantiles...))
 		if err != nil {
@@ -150,9 +172,9 @@ func WithLatencyTDigest(opts ...func(*tdigestConfig)) Option {
 // WithQueueWaitTDigest sets the t-digest for queue wait metrics.
 func WithQueueWaitTDigest(opts ...func(*tdigestConfig)) Option {
 	return func(c *collector) error {
-		tcfg := defaultTDigestConfig
+		tcfg := &tdigestConfig{}
 		for _, opt := range opts {
-			opt(&tcfg)
+			opt(tcfg)
 		}
 		t, err := NewTDigest(tcfg.compression, tcfg.compressionTriggerFactor, WithQuantiles(tcfg.quantiles...))
 		if err != nil {
@@ -166,12 +188,10 @@ func WithQueueWaitTDigest(opts ...func(*tdigestConfig)) Option {
 // WithExemplar sets the exemplar for the collector.
 func WithExemplar(opts ...func(*exemplarConfig)) Option {
 	return func(c *collector) error {
-		ecfg := defaultExemplarConfig
 		for _, opt := range opts {
-			opt(&ecfg)
+			opt(&c.ecfg)
 		}
-		c.ecfg = ecfg
-		e := NewExemplar(ecfg.capacity)
+		e := NewExemplar(c.ecfg.capacity)
 		c.global.exemplars = e
 		return nil
 	}

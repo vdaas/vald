@@ -55,10 +55,16 @@ var requestResultPool = sync.Pool{
 	},
 }
 
-func newHistogramPool(opts ...HistogramOption) *sync.Pool {
+func newHistogramPool(hcfg *histogramConfig) *sync.Pool {
 	return &sync.Pool{
 		New: func() any {
-			h, _ := NewHistogram(opts...)
+			h, _ := NewHistogram(
+				WithHistogramMin(hcfg.min),
+				WithHistogramMax(hcfg.max),
+				WithHistogramGrowth(hcfg.growth),
+				WithHistogramNumBuckets(hcfg.numBuckets),
+				WithHistogramNumShards(hcfg.numShards),
+			)
 			return h
 		},
 	}
@@ -232,6 +238,9 @@ func newScale(
 	if capacity == 0 {
 		return nil, errors.New("scale capacity must be > 0")
 	}
+	if hpool == nil {
+		hpool = newHistogramPool(&hcfg)
+	}
 	slots := make([]*Slot, capacity)
 	for i := range slots {
 		h := hpool.Get().(Histogram)
@@ -373,60 +382,20 @@ type collector struct {
 func NewCollector(opts ...Option) (Collector, error) {
 	c := &collector{
 		counters: make(map[string]*CounterHandle),
-		hcfg:     defaultHistogramConfig,
-		ecfg:     defaultExemplarConfig,
 		codes:    make(map[codes.Code]*atomic.Uint64),
 	}
 
+	// Initialize the histogram pool before applying options that may use it.
+	c.histogramPool = newHistogramPool(&c.hcfg)
+
+	// Prepend default options and apply all options.
+	opts = append(defaultOptions, opts...)
 	for _, opt := range opts {
 		if err := opt(c); err != nil {
 			return nil, err
 		}
 	}
 
-	c.histogramPool = newHistogramPool(
-		WithHistogramMin(c.hcfg.min),
-		WithHistogramMax(c.hcfg.max),
-		WithHistogramGrowth(c.hcfg.growth),
-		WithHistogramNumBuckets(c.hcfg.numBuckets),
-		WithHistogramNumShards(c.hcfg.numShards),
-	)
-
-	var err error
-	if c.global.latencies == nil {
-		c.global.latencies, err = NewHistogram(
-			WithHistogramMin(c.hcfg.min),
-			WithHistogramMax(c.hcfg.max),
-			WithHistogramGrowth(c.hcfg.growth),
-			WithHistogramNumBuckets(c.hcfg.numBuckets),
-			WithHistogramNumShards(c.hcfg.numShards),
-		)
-		if err != nil {
-			return nil, err
-		}
-	}
-	if c.global.queueWaits == nil {
-		c.global.queueWaits, err = NewHistogram(
-			WithHistogramMin(c.hcfg.min),
-			WithHistogramMax(c.hcfg.max),
-			WithHistogramGrowth(c.hcfg.growth),
-			WithHistogramNumBuckets(c.hcfg.numBuckets),
-			WithHistogramNumShards(c.hcfg.numShards),
-		)
-		if err != nil {
-			return nil, err
-		}
-	}
-	if c.global.exemplars == nil {
-		c.global.exemplars = NewExemplar(c.ecfg.capacity)
-	}
-
-	if c.global.latPercentiles == nil {
-		c.global.latPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
-	}
-	if c.global.qwPercentiles == nil {
-		c.global.qwPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
-	}
 	for name := range c.counters {
 		c.counters[name] = &CounterHandle{
 			value: new(atomic.Uint64),
@@ -584,8 +553,8 @@ func (c *collector) deepCopy() (Collector, error) {
 		return nil, err
 	}
 	nc.global.exemplars = NewExemplar(c.ecfg.capacity)
-	nc.global.latPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
-	nc.global.qwPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
+	nc.global.latPercentiles, _ = NewTDigest(defaultTDigestCompression, defaultTDigestCompressionTriggerFactor)
+	nc.global.qwPercentiles, _ = NewTDigest(defaultTDigestCompression, defaultTDigestCompressionTriggerFactor)
 	for name := range c.counters {
 		nc.counters[name] = &CounterHandle{
 			value: new(atomic.Uint64),
@@ -717,7 +686,7 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 		}
 		if s.LatPercentiles != nil {
 			if merged.LatPercentiles == nil {
-				merged.LatPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
+				merged.LatPercentiles, _ = NewTDigest(defaultTDigestCompression, defaultTDigestCompressionTriggerFactor)
 			}
 			if err := merged.LatPercentiles.Merge(s.LatPercentiles); err != nil {
 				return nil, err
@@ -725,7 +694,7 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 		}
 		if s.QWPercentiles != nil {
 			if merged.QWPercentiles == nil {
-				merged.QWPercentiles, _ = NewTDigest(defaultTDigestConfig.compression, defaultTDigestConfig.compressionTriggerFactor)
+				merged.QWPercentiles, _ = NewTDigest(defaultTDigestCompression, defaultTDigestCompressionTriggerFactor)
 			}
 			if err := merged.QWPercentiles.Merge(s.QWPercentiles); err != nil {
 				return nil, err
@@ -764,111 +733,7 @@ func (s *GlobalSnapshot) MarshalJSON() ([]byte, error) {
 
 // String implements the fmt.Stringer interface.
 func (s *GlobalSnapshot) String() string {
-	if s == nil || s.Total == 0 {
-		return "No data collected."
-	}
-
-	var sb strings.Builder
-	total := s.Total
-	errs := s.Errors
-	totalDuration := time.Duration(s.Latencies.Sum)
-
-	// --- Summary ---
-	fmt.Fprint(&sb, "\n--- Summary ---\n")
-	fmt.Fprintf(&sb, "Total Requests:\t%d\n", total)
-	fmt.Fprintf(&sb, "Total Duration:\t%s\n", totalDuration)
-	if totalDuration.Seconds() > 0 {
-		fmt.Fprintf(&sb, "Requests/sec:\t%.2f\n", float64(total)/totalDuration.Seconds())
-	}
-	fmt.Fprintf(&sb, "Errors:\t%d (%.2f%%)\n", errs, float64(errs)/float64(total)*100)
-
-	// --- Latency ---
-	fmt.Fprint(&sb, "\n--- Latency ---\n")
-	if s.Latencies != nil {
-		fmt.Fprint(&sb, s.Latencies.String())
-	}
-	if s.LatPercentiles != nil {
-		fmt.Fprint(&sb, s.LatPercentiles.String())
-	}
-	if s.Latencies != nil && len(s.Latencies.Counts) > 0 {
-		fmt.Fprint(&sb, "Histogram:\n")
-		maxCount := uint64(0)
-		for _, count := range s.Latencies.Counts {
-			if count > maxCount {
-				maxCount = count
-			}
-		}
-		for i, count := range s.Latencies.Counts {
-			var bar string
-			if maxCount > 0 {
-				bar = strings.Repeat("∎", int(float64(count)/float64(maxCount)*40))
-			}
-			var lowerBound, upperBound string
-			if i == 0 {
-				lowerBound = "0"
-			} else {
-				lowerBound = fmt.Sprintf("%.3f", float64(time.Duration(s.Latencies.Bounds[i-1])))
-			}
-			if i == len(s.Latencies.Bounds) {
-				upperBound = "inf"
-			} else {
-				upperBound = fmt.Sprintf("%.3f", float64(time.Duration(s.Latencies.Bounds[i])))
-			}
-			fmt.Fprintf(&sb, "\t%s - %s [%d]\t|%s\n", lowerBound, upperBound, count, bar)
-		}
-	}
-
-	// --- Queue Wait ---
-	fmt.Fprint(&sb, "\n--- Queue Wait ---\n")
-	if s.QueueWaits != nil {
-		fmt.Fprint(&sb, s.QueueWaits.String())
-	}
-	if s.QWPercentiles != nil {
-		fmt.Fprint(&sb, s.QWPercentiles.String())
-	}
-	if s.QueueWaits != nil && len(s.QueueWaits.Counts) > 0 {
-		fmt.Fprint(&sb, "Histogram:\n")
-		maxCount := uint64(0)
-		for _, count := range s.QueueWaits.Counts {
-			if count > maxCount {
-				maxCount = count
-			}
-		}
-		for i, count := range s.QueueWaits.Counts {
-			var bar string
-			if maxCount > 0 {
-				bar = strings.Repeat("∎", int(float64(count)/float64(maxCount)*40))
-			}
-			var lowerBound, upperBound string
-			if i == 0 {
-				lowerBound = "0"
-			} else {
-				lowerBound = fmt.Sprintf("%.3f", float64(time.Duration(s.QueueWaits.Bounds[i-1])))
-			}
-			if i == len(s.QueueWaits.Bounds) {
-				upperBound = "inf"
-			} else {
-				upperBound = fmt.Sprintf("%.3f", float64(time.Duration(s.QueueWaits.Bounds[i])))
-			}
-			fmt.Fprintf(&sb, "\t%s - %s [%d]\t|%s\n", lowerBound, upperBound, count, bar)
-		}
-	}
-
-	// --- Status Codes ---
-	fmt.Fprint(&sb, "\n--- Status Codes ---\n")
-	if s.Codes != nil {
-		for code, count := range s.Codes {
-			fmt.Fprintf(&sb, "\t- %s:\t%d (%.2f%%)\n", code.String(), count, float64(count)/float64(total)*100)
-		}
-	}
-
-	// --- Exemplars ---
-	fmt.Fprintf(&sb, "\n--- Exemplars (Top %d slowest requests) ---\n", len(s.Exemplars))
-	for _, ex := range s.Exemplars {
-		fmt.Fprintf(&sb, "\t- RequestID:\t%s,\tLatency:\t%s\n", ex.requestID, ex.latency)
-	}
-
-	return sb.String()
+	return NewSnapshotPresenter(s).AsString()
 }
 
 // ScaleSnapshot contains the aggregated metrics for a set of windows (slots).
