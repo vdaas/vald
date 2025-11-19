@@ -49,10 +49,10 @@ func (o *operation) Remove(ctx context.Context, b *testing.B, maxIdNum int) {
 }
 
 func (o *operation) StreamRemove(ctx context.Context, b *testing.B, maxIdNum int) {
-	eg, ctx := errgroup.New(ctx)
-
 	b.ResetTimer()
 	b.Run("StreamRemove", func(b *testing.B) {
+		ctx := b.Context()
+		eg, ctx := errgroup.New(ctx)
 		sc, err := o.client.StreamRemove(ctx)
 		if err != nil {
 			b.Fatal(err)

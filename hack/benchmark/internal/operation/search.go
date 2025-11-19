@@ -53,10 +53,10 @@ func (o *operation) Search(ctx context.Context, b *testing.B, ds assets.Dataset)
 }
 
 func (o *operation) StreamSearch(ctx context.Context, b *testing.B, ds assets.Dataset) {
-	eg, ctx := errgroup.New(ctx)
-
 	b.ResetTimer()
 	b.Run("StreamSearch", func(b *testing.B) {
+		ctx := b.Context()
+		eg, ctx := errgroup.New(ctx)
 		sc, err := o.client.StreamSearch(ctx)
 		if err != nil {
 			b.Fatal(err)
@@ -131,10 +131,10 @@ func (o *operation) SearchByID(ctx context.Context, b *testing.B, maxIdNum int) 
 }
 
 func (o *operation) StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum int) {
-	eg, ctx := errgroup.New(ctx)
-
 	b.ResetTimer()
 	b.Run("StreamSearchByID", func(b *testing.B) {
+		ctx := b.Context()
+		eg, ctx := errgroup.New(ctx)
 		sc, err := o.client.StreamSearchByID(ctx)
 		if err != nil {
 			b.Fatal(err)

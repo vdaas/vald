@@ -64,11 +64,11 @@ func (o *operation) Insert(ctx context.Context, b *testing.B, ds assets.Dataset)
 }
 
 func (o *operation) StreamInsert(ctx context.Context, b *testing.B, ds assets.Dataset) int {
-	eg, ctx := errgroup.New(ctx)
-
 	var insertedNum int64
 	b.ResetTimer()
 	b.Run("StreamInsert", func(b *testing.B) {
+		ctx := b.Context()
+		eg, ctx := errgroup.New(ctx)
 		sc, err := o.client.StreamInsert(ctx)
 		if err != nil {
 			b.Fatal(err)
