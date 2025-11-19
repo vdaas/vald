@@ -1,0 +1,21 @@
+
+--- Summary ---
+Total Requests:	100
+Total Duration:	100ms
+Requests/sec:	1000.00
+Errors:	10 (10.00%)
+
+--- Latency ---
+	Mean:	1000000.00	StdDev:	0.00	Min:	100000.00	Max:	10000000.00	Total:	100
+	p10:	0.00	p25:	0.00	p50:	0.00	p75:	0.00	p90:	0.00	p95:	0.00	p99:	0.00
+
+--- Queue Wait ---
+	Mean:	500000.00	StdDev:	0.00	Min:	50000.00	Max:	5000000.00	Total:	100
+	p10:	0.00	p25:	0.00	p50:	0.00	p75:	0.00	p90:	0.00	p95:	0.00	p99:	0.00
+
+--- Status Codes ---
+	- OK:	90 (90.00%)
+	- Aborted:	10 (10.00%)
+
+--- Exemplars (Top 1 slowest requests) ---
+	- RequestID:	req-1,	Latency:	10ms
