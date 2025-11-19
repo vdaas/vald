@@ -56,17 +56,17 @@ var defaultOptions = []Option{
 		WithHistogramNumShards(16),
 	),
 	WithExemplar(
-		WithExemplarCapacity(10),
+		WithCapacity(10),
 	),
 	WithLatencyTDigest(
 		WithTDigestCompression(100),
 		WithTDigestCompressionTriggerFactor(1.5),
-		WithTDigestQuantiles(0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99),
+		WithQuantiles(0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99),
 	),
 	WithQueueWaitTDigest(
 		WithTDigestCompression(100),
 		WithTDigestCompressionTriggerFactor(1.5),
-		WithTDigestQuantiles(0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99),
+		WithQuantiles(0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99),
 	),
 }
 type exemplarConfig struct {
@@ -86,6 +86,12 @@ type tdigestConfig struct {
 	compression              float64
 	compressionTriggerFactor float64
 	quantiles                []float64
+}
+
+var defaultTDigestConfig = tdigestConfig{
+	compression:              defaultTDigestCompression,
+	compressionTriggerFactor: defaultTDigestCompressionTriggerFactor,
+	quantiles:                []float64{0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99},
 }
 
 // WithCustomCounters registers custom counters with the collector.
@@ -154,13 +160,9 @@ func WithQueueWaitHistogram(opts ...HistogramOption) Option {
 }
 
 // WithLatencyTDigest sets the t-digest for latency metrics.
-func WithLatencyTDigest(opts ...func(*tdigestConfig)) Option {
+func WithLatencyTDigest(opts ...TDigestOption) Option {
 	return func(c *collector) error {
-		tcfg := &tdigestConfig{}
-		for _, opt := range opts {
-			opt(tcfg)
-		}
-		t, err := NewTDigest(tcfg.compression, tcfg.compressionTriggerFactor, WithQuantiles(tcfg.quantiles...))
+		t, err := NewTDigest(opts...)
 		if err != nil {
 			return err
 		}
@@ -170,13 +172,9 @@ func WithLatencyTDigest(opts ...func(*tdigestConfig)) Option {
 }
 
 // WithQueueWaitTDigest sets the t-digest for queue wait metrics.
-func WithQueueWaitTDigest(opts ...func(*tdigestConfig)) Option {
+func WithQueueWaitTDigest(opts ...TDigestOption) Option {
 	return func(c *collector) error {
-		tcfg := &tdigestConfig{}
-		for _, opt := range opts {
-			opt(tcfg)
-		}
-		t, err := NewTDigest(tcfg.compression, tcfg.compressionTriggerFactor, WithQuantiles(tcfg.quantiles...))
+		t, err := NewTDigest(opts...)
 		if err != nil {
 			return err
 		}
@@ -186,12 +184,9 @@ func WithQueueWaitTDigest(opts ...func(*tdigestConfig)) Option {
 }
 
 // WithExemplar sets the exemplar for the collector.
-func WithExemplar(opts ...func(*exemplarConfig)) Option {
+func WithExemplar(opts ...ExemplarOption) Option {
 	return func(c *collector) error {
-		for _, opt := range opts {
-			opt(&c.ecfg)
-		}
-		e := NewExemplar(c.ecfg.capacity)
+		e := NewExemplar(opts...)
 		c.global.exemplars = e
 		return nil
 	}
@@ -233,29 +228,29 @@ func WithHistogramNumShards(n int) HistogramOption {
 }
 
 // WithExemplarCapacity sets the capacity for the exemplar.
-func WithExemplarCapacity(k int) func(*exemplarConfig) {
-	return func(c *exemplarConfig) {
-		c.capacity = k
+func WithExemplarCapacity(k int) ExemplarOption {
+	return func(e *exemplar) {
+		e.k = k
 	}
 }
 
 // WithTDigestCompression sets the compression for the t-digest.
-func WithTDigestCompression(c float64) func(*tdigestConfig) {
-	return func(cfg *tdigestConfig) {
-		cfg.compression = c
+func WithTDigestCompression(c float64) TDigestOption {
+	return func(t *TDigest) {
+		t.compression = c
 	}
 }
 
 // WithTDigestCompressionTriggerFactor sets the compression trigger factor for the t-digest.
-func WithTDigestCompressionTriggerFactor(f float64) func(*tdigestConfig) {
-	return func(cfg *tdigestConfig) {
-		cfg.compressionTriggerFactor = f
+func WithTDigestCompressionTriggerFactor(f float64) TDigestOption {
+	return func(t *TDigest) {
+		t.compressionTriggerFactor = f
 	}
 }
 
 // WithTDigestQuantiles sets the quantiles for the t-digest.
-func WithTDigestQuantiles(q ...float64) func(*tdigestConfig) {
-	return func(cfg *tdigestConfig) {
-		cfg.quantiles = q
+func WithTDigestQuantiles(q ...float64) TDigestOption {
+	return func(t *TDigest) {
+		t.quantiles = q
 	}
 }

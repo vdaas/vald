@@ -24,7 +24,7 @@ import (
 )
 
 func TestTDigest_AddAndQuantile(t *testing.T) {
-	td, _ := NewTDigest(100, 10)
+	td, _ := NewTDigest(WithTDigestCompression(100), WithTDigestCompressionTriggerFactor(10))
 
 	// Add some values
 	values := []float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
@@ -50,8 +50,8 @@ func TestTDigest_AddAndQuantile(t *testing.T) {
 }
 
 func TestTDigest_Merge(t *testing.T) {
-	td1, _ := NewTDigest(100, 10)
-	td2, _ := NewTDigest(100, 10)
+	td1, _ := NewTDigest(WithTDigestCompression(100), WithTDigestCompressionTriggerFactor(10))
+	td2, _ := NewTDigest(WithTDigestCompression(100), WithTDigestCompressionTriggerFactor(10))
 
 	for i := 1; i <= 10; i++ {
 		td1.Add(float64(i))
@@ -74,7 +74,7 @@ func TestTDigest_Merge(t *testing.T) {
 }
 
 func TestTDigest_Compression(t *testing.T) {
-	td, _ := NewTDigest(20, 1.1) // Aggressive compression
+	td, _ := NewTDigest(WithTDigestCompression(20), WithTDigestCompressionTriggerFactor(1.1)) // Aggressive compression
 
 	for i := 0; i < 1000; i++ {
 		td.Add(float64(i))
@@ -91,14 +91,14 @@ func TestTDigest_Compression(t *testing.T) {
 }
 
 func TestTDigest_Empty(t *testing.T) {
-	td, _ := NewTDigest(100, 10)
+	td, _ := NewTDigest(WithTDigestCompression(100), WithTDigestCompressionTriggerFactor(10))
 	if q := td.Quantile(0.5); q != 0 {
 		t.Errorf("Quantile(0.5) on empty t-digest = %v, want 0", q)
 	}
 }
 
 func TestTDigest_Concurrency(t *testing.T) {
-	td, _ := NewTDigest(100, 10)
+	td, _ := NewTDigest(WithTDigestCompression(100), WithTDigestCompressionTriggerFactor(10))
 	var wg sync.WaitGroup
 
 	for i := 0; i < 100; i++ {

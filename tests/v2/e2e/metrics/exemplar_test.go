@@ -38,7 +38,7 @@ func TestExemplar(t *testing.T) {
 		{
 			name: "offer requests and check snapshot",
 			exemplar: func() Exemplar {
-				return NewExemplar(3)
+				return NewExemplar(WithCapacity(3))
 			},
 			offers: []struct {
 				latency time.Duration
@@ -78,7 +78,7 @@ func TestExemplar(t *testing.T) {
 		{
 			name: "offer requests with same latency",
 			exemplar: func() Exemplar {
-				return NewExemplar(3)
+				return NewExemplar(WithCapacity(3))
 			},
 			offers: []struct {
 				latency time.Duration
@@ -99,7 +99,7 @@ func TestExemplar(t *testing.T) {
 		{
 			name: "empty exemplar",
 			exemplar: func() Exemplar {
-				return NewExemplar(3)
+				return NewExemplar(WithCapacity(3))
 			},
 			check: func(t *testing.T, e Exemplar) {
 				snap := e.Snapshot()
@@ -111,7 +111,7 @@ func TestExemplar(t *testing.T) {
 		{
 			name: "snapshot is sorted by latency",
 			exemplar: func() Exemplar {
-				return NewExemplar(3)
+				return NewExemplar(WithCapacity(3))
 			},
 			offers: []struct {
 				latency time.Duration

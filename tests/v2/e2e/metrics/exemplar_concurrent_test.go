@@ -24,7 +24,7 @@ import (
 
 func TestExemplar_Concurrency(t *testing.T) {
 	t.Parallel()
-	e := NewExemplar(10)
+	e := NewExemplar(WithCapacity(10))
 	var wg sync.WaitGroup
 	for i := 0; i < 100; i++ {
 		wg.Add(1)
@@ -41,7 +41,7 @@ func TestExemplar_Concurrency(t *testing.T) {
 
 func TestExemplar_Race(t *testing.T) {
 	t.Parallel()
-	e := NewExemplar(10)
+	e := NewExemplar(WithCapacity(10))
 	var wg sync.WaitGroup
 	for i := 0; i < 10; i++ {
 		wg.Add(1)

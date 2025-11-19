@@ -32,14 +32,24 @@ type exemplar struct {
 	pq atomic.Pointer[priorityQueue]
 }
 
-// NewExemplar creates a new Exemplar with a capacity of k.
-// It initializes a lock-free priority queue to store the exemplars.
-func NewExemplar(k int) Exemplar {
-	k = max(k, 1)
-	initialPQ := make(priorityQueue, 0, k)
-	e := &exemplar{
-		k: k,
+// ExemplarOption represents a functional option for configuring an Exemplar.
+type ExemplarOption func(*exemplar)
+
+// WithCapacity sets the capacity of the exemplar.
+func WithCapacity(k int) ExemplarOption {
+	return func(e *exemplar) {
+		e.k = k
 	}
+}
+
+// NewExemplar creates a new Exemplar with the given options.
+func NewExemplar(opts ...ExemplarOption) Exemplar {
+	e := &exemplar{}
+	for _, opt := range opts {
+		opt(e)
+	}
+	e.k = max(e.k, 1)
+	initialPQ := make(priorityQueue, 0, e.k)
 	e.pq.Store(&initialPQ)
 	return e
 }

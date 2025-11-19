@@ -28,6 +28,8 @@ import (
 	"github.com/vdaas/vald/internal/sync"
 )
 
+var defaultQuantiles = []float64{0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99}
+
 // centroid represents a centroid in the t-digest.
 // It is unexported to encapsulate the implementation details of the TDigest.
 type centroid struct {
@@ -64,22 +66,20 @@ func WithQuantiles(quantiles ...float64) TDigestOption {
 }
 
 // NewTDigest creates a new TDigest.
-func NewTDigest(
-	compression, compressionTriggerFactor float64, opts ...TDigestOption,
-) (*TDigest, error) {
-	if compression <= 0 {
-		return nil, errors.New("tdigest compression must be > 0")
-	}
-	if compressionTriggerFactor <= 0 {
-		return nil, errors.New("tdigest compressionTriggerFactor must be > 0")
-	}
+func NewTDigest(opts ...TDigestOption) (*TDigest, error) {
 	t := &TDigest{
-		compression:              compression,
-		compressionTriggerFactor: compressionTriggerFactor,
-		quantiles:                []float64{0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99},
+		compression:              defaultTDigestCompression,
+		compressionTriggerFactor: defaultTDigestCompressionTriggerFactor,
+		quantiles:                defaultQuantiles,
 	}
 	for _, opt := range opts {
 		opt(t)
+	}
+	if t.compression <= 0 {
+		return nil, errors.New("tdigest compression must be > 0")
+	}
+	if t.compressionTriggerFactor <= 0 {
+		return nil, errors.New("tdigest compressionTriggerFactor must be > 0")
 	}
 	return t, nil
 }

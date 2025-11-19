@@ -72,7 +72,7 @@ func newHistogramPool(hcfg *histogramConfig) *sync.Pool {
 
 var exemplarPool = sync.Pool{
 	New: func() any {
-		return NewExemplar(defaultExemplarConfig.capacity)
+		return NewExemplar(WithCapacity(defaultExemplarConfig.capacity))
 	},
 }
 
@@ -552,9 +552,9 @@ func (c *collector) deepCopy() (Collector, error) {
 	if err != nil {
 		return nil, err
 	}
-	nc.global.exemplars = NewExemplar(c.ecfg.capacity)
-	nc.global.latPercentiles, _ = NewTDigest(defaultTDigestCompression, defaultTDigestCompressionTriggerFactor)
-	nc.global.qwPercentiles, _ = NewTDigest(defaultTDigestCompression, defaultTDigestCompressionTriggerFactor)
+	nc.global.exemplars = NewExemplar(WithCapacity(c.ecfg.capacity))
+	nc.global.latPercentiles, _ = NewTDigest(WithTDigestCompression(defaultTDigestCompression), WithTDigestCompressionTriggerFactor(defaultTDigestCompressionTriggerFactor))
+	nc.global.qwPercentiles, _ = NewTDigest(WithTDigestCompression(defaultTDigestCompression), WithTDigestCompressionTriggerFactor(defaultTDigestCompressionTriggerFactor))
 	for name := range c.counters {
 		nc.counters[name] = &CounterHandle{
 			value: new(atomic.Uint64),
@@ -686,7 +686,7 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 		}
 		if s.LatPercentiles != nil {
 			if merged.LatPercentiles == nil {
-				merged.LatPercentiles, _ = NewTDigest(defaultTDigestCompression, defaultTDigestCompressionTriggerFactor)
+				merged.LatPercentiles, _ = NewTDigest(WithTDigestCompression(defaultTDigestCompression), WithTDigestCompressionTriggerFactor(defaultTDigestCompressionTriggerFactor))
 			}
 			if err := merged.LatPercentiles.Merge(s.LatPercentiles); err != nil {
 				return nil, err
@@ -694,7 +694,7 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 		}
 		if s.QWPercentiles != nil {
 			if merged.QWPercentiles == nil {
-				merged.QWPercentiles, _ = NewTDigest(defaultTDigestCompression, defaultTDigestCompressionTriggerFactor)
+				merged.QWPercentiles, _ = NewTDigest(WithTDigestCompression(defaultTDigestCompression), WithTDigestCompressionTriggerFactor(defaultTDigestCompressionTriggerFactor))
 			}
 			if err := merged.QWPercentiles.Merge(s.QWPercentiles); err != nil {
 				return nil, err

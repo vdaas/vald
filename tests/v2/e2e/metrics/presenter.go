@@ -140,9 +140,17 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 	headers := []string{
 		"Total", "Errors", "TotalDurationSec", "RPS", "ErrorRate",
 		"LatencyMin", "LatencyMean", "LatencyMax",
-		"LatencyP50", "LatencyP90", "LatencyP99",
-		"QueueWaitMin", "QueueWaitMean", "QueueWaitMax",
-		"QueueWaitP50", "QueueWaitP90", "QueueWaitP99",
+	}
+	if t, ok := s.LatPercentiles.(*TDigest); ok {
+		for _, q := range t.quantiles {
+			headers = append(headers, fmt.Sprintf("LatencyP%d", int(q*100)))
+		}
+	}
+	headers = append(headers, "QueueWaitMin", "QueueWaitMean", "QueueWaitMax")
+	if t, ok := s.QWPercentiles.(*TDigest); ok {
+		for _, q := range t.quantiles {
+			headers = append(headers, fmt.Sprintf("QueueWaitP%d", int(q*100)))
+		}
 	}
 	writer.Write(headers)
 
@@ -161,16 +169,23 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 		fmt.Sprintf("%.4f", float64(s.Latencies.Min)/1e9),
 		fmt.Sprintf("%.4f", float64(s.Latencies.Mean)/1e9),
 		fmt.Sprintf("%.4f", float64(s.Latencies.Max)/1e9),
-		fmt.Sprintf("%.4f", s.LatPercentiles.Quantile(0.5)/1e9),
-		fmt.Sprintf("%.4f", s.LatPercentiles.Quantile(0.9)/1e9),
-		fmt.Sprintf("%.4f", s.LatPercentiles.Quantile(0.99)/1e9),
+	}
+	if t, ok := s.LatPercentiles.(*TDigest); ok {
+		for _, q := range t.quantiles {
+			row = append(row, fmt.Sprintf("%.4f", s.LatPercentiles.Quantile(q)/1e9))
+		}
+	}
+	row = append(row,
 		fmt.Sprintf("%.4f", float64(s.QueueWaits.Min)/1e9),
 		fmt.Sprintf("%.4f", float64(s.QueueWaits.Mean)/1e9),
 		fmt.Sprintf("%.4f", float64(s.QueueWaits.Max)/1e9),
-		fmt.Sprintf("%.4f", s.QWPercentiles.Quantile(0.5)/1e9),
-		fmt.Sprintf("%.4f", s.QWPercentiles.Quantile(0.9)/1e9),
-		fmt.Sprintf("%.4f", s.QWPercentiles.Quantile(0.99)/1e9),
+	)
+	if t, ok := s.QWPercentiles.(*TDigest); ok {
+		for _, q := range t.quantiles {
+			row = append(row, fmt.Sprintf("%.4f", s.QWPercentiles.Quantile(q)/1e9))
+		}
 	}
+
 	writer.Write(row)
 	writer.Flush()
 	return sb.String(), nil
