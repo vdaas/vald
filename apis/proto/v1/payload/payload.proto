@@ -640,6 +640,7 @@ message Info {
       float build_time_limit = 32;
       int32 outgoing_edge = 33;
       int32 incoming_edge = 34;
+      float epsilon_for_creation = 35;
     }
 
     // Represents index Properties for each Agents
