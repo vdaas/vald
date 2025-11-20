@@ -48,6 +48,8 @@ type tdigest struct {
 	mu                       sync.Mutex
 	centroids                []centroid
 	buffer                   []float64
+	scratch                  []centroid
+	swap                     []centroid
 	compression              float64
 	compressionTriggerFactor float64
 	count                    float64
@@ -143,20 +145,24 @@ func (t *tdigest) flush() {
 	slices.Sort(t.buffer)
 
 	// Convert buffer to centroids
-	incoming := make([]centroid, len(t.buffer))
+	if cap(t.scratch) < len(t.buffer) {
+		t.scratch = make([]centroid, len(t.buffer))
+	}
+	t.scratch = t.scratch[:len(t.buffer)]
+
 	for i, v := range t.buffer {
-		incoming[i] = centroid{Mean: v, Weight: 1}
+		t.scratch[i] = centroid{Mean: v, Weight: 1}
 	}
 	t.buffer = t.buffer[:0]
 
-	t.mergeCentroids(incoming)
+	t.mergeCentroids(t.scratch)
 }
 
 // mergeCentroids merges a sorted slice of centroids into t.centroids.
 // It assumes the caller holds t.mu.
 func (t *tdigest) mergeCentroids(incoming []centroid) {
 	if len(t.centroids) == 0 {
-		t.centroids = incoming
+		t.centroids = slices.Clone(incoming)
 		for _, c := range incoming {
 			t.count += c.Weight
 		}
@@ -167,28 +173,34 @@ func (t *tdigest) mergeCentroids(incoming []centroid) {
 	}
 
 	// Merge two sorted centroid slices in linear time.
-	// Using a new slice for the result.
+	// reuse t.swap as destination
 	n1, n2 := len(t.centroids), len(incoming)
-	merged := make([]centroid, 0, n1+n2)
+	needed := n1 + n2
+
+	if cap(t.swap) < needed {
+		t.swap = make([]centroid, needed)
+	}
+	t.swap = t.swap[:0]
 
 	i, j := 0, 0
 	for i < n1 && j < n2 {
 		if t.centroids[i].Mean <= incoming[j].Mean {
-			merged = append(merged, t.centroids[i])
+			t.swap = append(t.swap, t.centroids[i])
 			i++
 		} else {
-			merged = append(merged, incoming[j])
+			t.swap = append(t.swap, incoming[j])
 			j++
 		}
 	}
 	if i < n1 {
-		merged = append(merged, t.centroids[i:]...)
+		t.swap = append(t.swap, t.centroids[i:]...)
 	}
 	if j < n2 {
-		merged = append(merged, incoming[j:]...)
+		t.swap = append(t.swap, incoming[j:]...)
 	}
 
-	t.centroids = merged
+	// swap buffer and centroids
+	t.centroids, t.swap = t.swap, t.centroids
 	for _, c := range incoming {
 		t.count += c.Weight
 	}
