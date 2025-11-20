@@ -121,6 +121,48 @@ metadata:
   key2: sample metadata value2
   key3: sample metadata value3
 metadata_string: key4=value4,key5=value5
+metrics:
+  enabled: true
+  latency_histogram:
+    min: 0.001
+    max: 10.0
+    growth: 2.0
+    num_buckets: 10
+    num_shards: 10
+  queue_wait_histogram:
+    min: 0.0001
+    max: 1.0
+    growth: 2.0
+    num_buckets: 10
+    num_shards: 10
+  latency_tdigest:
+    compression: 100
+    compression_trigger_factor: 1.2
+    quantiles:
+      - 0.5
+      - 0.9
+      - 0.95
+      - 0.99
+  queue_wait_tdigest:
+    compression: 100
+    compression_trigger_factor: 1.2
+    quantiles:
+      - 0.5
+      - 0.9
+      - 0.95
+      - 0.99
+  exemplar:
+    capacity: 10
+  range_scales:
+    - name: "0-100"
+      width: 10
+      capacity: 10
+  time_scales:
+    - name: "0-10s"
+      width: 1
+      capacity: 10
+  custom_counters:
+    - "custom_counter_1"
 strategies:
   # - name: Schema
   #   concurrency: 1
@@ -233,6 +275,13 @@ strategies:
             search:
               timeout: 3s
               algorithm: cq
+            metrics:
+              latency_histogram:
+                min: 0.01
+                max: 5.0
+                growth: 1.5
+                num_buckets: 20
+                num_shards: 5
           - name: Search with SortSlice
             type: search
             mode: unary
