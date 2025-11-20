@@ -114,7 +114,7 @@ e2e/actions/run/stream/crud: \
 	kubectl wait -n kube-system --for=condition=Ready pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl wait -n kube-system --for=condition=ContainersReady pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	$(MAKE) k8s/vald/deploy \
-		HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-lb.yaml
+	HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-lb.yaml
 	sleep 3
 	kubectl wait --for=condition=Ready pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl wait --for=condition=ContainersReady pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
@@ -135,7 +135,7 @@ e2e/actions/run/job: \
 	kubectl wait -n kube-system --for=condition=Ready pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl wait -n kube-system --for=condition=ContainersReady pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	$(MAKE) k8s/vald/deploy \
-		HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-correction.yaml
+	HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-correction.yaml
 	sleep 3
 	kubectl wait --for=condition=Ready pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl wait --for=condition=ContainersReady pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
@@ -157,8 +157,8 @@ e2e/actions/run/readreplica: \
 	kubectl wait -n kube-system --for=condition=ContainersReady pod -l app.kubernetes.io/name=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 
 	$(MAKE) k8s/vald-readreplica/deploy \
-		VERSION=$(VERSION) \
-		HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-readreplica.yaml
+	VERSION=$(VERSION) \
+	HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-readreplica.yaml
 	sleep 3
 	kubectl wait --for=condition=Ready pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl wait --for=condition=ContainersReady pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
@@ -180,7 +180,7 @@ e2e/actions/run/stream/crud/skip: \
 	kubectl wait -n kube-system --for=condition=Ready pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl wait -n kube-system --for=condition=ContainersReady pod -l k8s-app=metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	$(MAKE) k8s/vald/deploy \
-		HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-lb.yaml
+	HELM_VALUES=$(ROOTDIR)/.github/helm/values/values-lb.yaml
 	sleep 3
 	kubectl wait --for=condition=Ready pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl wait --for=condition=ContainersReady pod -l "app=$(LB_GATEWAY_IMAGE)" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
@@ -190,5 +190,3 @@ e2e/actions/run/stream/crud/skip: \
 	$(MAKE) E2E_TARGET_POD_NAME=$$pod_name e2e/skip
 	$(MAKE) k8s/vald/delete
 	$(MAKE) k3d/delete
-
-
