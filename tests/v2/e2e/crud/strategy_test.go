@@ -190,7 +190,7 @@ func (r *runner) processStrategy(
 						if st.Metrics != nil && st.Metrics.Enabled && col != nil && c != nil {
 							st.Operations[i].Collector = c
 							if err := col.Merge(c); err != nil {
-								ttt.Errorf("failed to merge operation collector: %v", err)
+								ttt.Logf("failed to merge operation for collector: %v and %v error: %v", col, c, err)
 							}
 						}
 						return nil
