@@ -394,6 +394,18 @@ func Test_group_SetLimit(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "set disable when limit is -1 from 1",
+			args: args{
+				limit: -1,
+			},
+			fields: fields{
+				sem: semaphore.NewWeighted(1),
+			},
+			want: want{
+				want: &group{},
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -409,7 +421,9 @@ func Test_group_SetLimit(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			g := &group{}
+			g := &group{
+				sem: test.fields.sem,
+			}
 
 			g.SetLimit(test.args.limit)
 			if err := checkFunc(test.want, g); err != nil {
