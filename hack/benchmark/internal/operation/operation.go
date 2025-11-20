@@ -50,7 +50,7 @@ func New(opts ...Option) Operation {
 
 func (o *operation) CreateIndex(b *testing.B) {
 	req := &payload.Control_CreateIndexRequest{
-		PoolSize: 10000,
+		PoolSize: 16,
 	}
 	b.ResetTimer()
 	b.Run("CreateIndex", func(b *testing.B) {
