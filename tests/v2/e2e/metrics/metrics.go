@@ -67,6 +67,25 @@ func PutRequestResult(rr *RequestResult) {
 	requestResultPool.Put(rr)
 }
 
+// PutHistogram returns a Histogram to the pool.
+func PutHistogram(h Histogram) {
+	if hh, ok := h.(*histogram); ok {
+		// Reset the histogram to clear data before returning to pool.
+		// This ensures we don't leak sensitive data or merge old data unexpectedly,
+		// although Clone/Init should handle dirty objects correctly.
+		hh.Reset()
+		histogramPool.Put(hh)
+	}
+}
+
+// PutExemplar returns an Exemplar to the pool.
+func PutExemplar(e Exemplar) {
+	if ee, ok := e.(*exemplar); ok {
+		ee.Reset()
+		exemplarPool.Put(ee)
+	}
+}
+
 // RequestResult represents the result of a single request.
 type RequestResult struct {
 	RequestID string        // request ID
@@ -168,6 +187,29 @@ const (
 	timeScale
 )
 
+// Reset resets the scale and all its slots.
+func (s *Scale) Reset() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, slot := range s.slots {
+		slot.Total.Store(0)
+		slot.Errors.Store(0)
+		slot.updatedNS.Store(0)
+		if slot.Latency != nil {
+			slot.Latency.Reset()
+		}
+		if slot.QueueWait != nil {
+			slot.QueueWait.Reset()
+		}
+		if slot.Exemplars != nil {
+			slot.Exemplars.Reset()
+		}
+		for i := range slot.Counters {
+			slot.Counters[i].Store(0)
+		}
+	}
+}
+
 // record adds a request result to the appropriate slot in the scale.
 func (s *Scale) record(ctx context.Context, rr *RequestResult) {
 	var idx uint64
@@ -189,9 +231,15 @@ func (s *Scale) record(ctx context.Context, rr *RequestResult) {
 		slot.Errors.Add(1)
 	}
 	slot.updatedNS.Store(rr.EndedAt.UnixNano())
-	slot.Latency.Record(float64(rr.Latency.Nanoseconds()))
-	slot.QueueWait.Record(float64(rr.QueueWait.Nanoseconds()))
-	slot.Exemplars.Offer(rr.Latency, rr.RequestID)
+	if slot.Latency != nil {
+		slot.Latency.Record(float64(rr.Latency.Nanoseconds()))
+	}
+	if slot.QueueWait != nil {
+		slot.QueueWait.Record(float64(rr.QueueWait.Nanoseconds()))
+	}
+	if slot.Exemplars != nil {
+		slot.Exemplars.Offer(rr.Latency, rr.RequestID)
+	}
 }
 
 // newScale creates a new scale with the given configuration.
@@ -204,11 +252,25 @@ func newScale(name string, width, capacity uint64, numCounters int, st scaleType
 	}
 	slots := make([]*Slot, capacity)
 	for i := range slots {
+		// Use Clone to create new instances for each slot.
+		// Clone handles initialization via pool.
+		var l, q Histogram
+		var e Exemplar
+		if lat != nil {
+			l = lat.Clone()
+		}
+		if qw != nil {
+			q = qw.Clone()
+		}
+		if ex != nil {
+			e = ex.Clone()
+		}
+
 		slots[i] = newSlot(
 			numCounters,
-			lat.Clone(),
-			qw.Clone(),
-			ex.Clone(),
+			l,
+			q,
+			e,
 		)
 	}
 	s := &Scale{
@@ -255,14 +317,20 @@ func (s *Scale) Merge(other *Scale) error {
 		if os.updatedNS.Load() > ss.updatedNS.Load() {
 			ss.updatedNS.Store(os.updatedNS.Load())
 		}
-		if err := ss.Latency.Merge(os.Latency); err != nil {
-			return err
+		if ss.Latency != nil && os.Latency != nil {
+			if err := ss.Latency.Merge(os.Latency); err != nil {
+				return err
+			}
 		}
-		if err := ss.QueueWait.Merge(os.QueueWait); err != nil {
-			return err
+		if ss.QueueWait != nil && os.QueueWait != nil {
+			if err := ss.QueueWait.Merge(os.QueueWait); err != nil {
+				return err
+			}
 		}
-		for _, ex := range os.Exemplars.Snapshot() {
-			ss.Exemplars.Offer(ex.latency, ex.requestID)
+		if ss.Exemplars != nil && os.Exemplars != nil {
+			for _, ex := range os.Exemplars.Snapshot() {
+				ss.Exemplars.Offer(ex.latency, ex.requestID)
+			}
 		}
 	}
 	return nil
@@ -279,14 +347,25 @@ func (s *Scale) Snapshot() *ScaleSnapshot {
 		for j := range counters {
 			counters[j] = slot.Counters[j].Load()
 		}
+		var latSnap, qwSnap *HistogramSnapshot
+		var exSnap []*item
+		if slot.Latency != nil {
+			latSnap = slot.Latency.Snapshot()
+		}
+		if slot.QueueWait != nil {
+			qwSnap = slot.QueueWait.Snapshot()
+		}
+		if slot.Exemplars != nil {
+			exSnap = slot.Exemplars.Snapshot()
+		}
 		slots[i] = &SlotSnapshot{
 			Total:       slot.Total.Load(),
 			Errors:      slot.Errors.Load(),
 			LastUpdated: slot.updatedNS.Load(),
-			Latencies:   slot.Latency.Snapshot(),
-			QueueWaits:  slot.QueueWait.Snapshot(),
+			Latencies:   latSnap,
+			QueueWaits:  qwSnap,
 			Counters:    counters,
-			Exemplars:   slot.Exemplars.Snapshot(),
+			Exemplars:   exSnap,
 		}
 	}
 
@@ -348,6 +427,38 @@ func NewCollector(opts ...Option) (Collector, error) {
 	return c, nil
 }
 
+// Reset resets the collector and all its components.
+func (c *collector) Reset() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.total.Store(0)
+	c.errors.Store(0)
+	if c.latencies != nil {
+		c.latencies.Reset()
+	}
+	if c.queueWaits != nil {
+		c.queueWaits.Reset()
+	}
+	if c.latPercentiles != nil {
+		c.latPercentiles.Reset()
+	}
+	if c.qwPercentiles != nil {
+		c.qwPercentiles.Reset()
+	}
+	if c.exemplars != nil {
+		c.exemplars.Reset()
+	}
+	for _, h := range c.counters {
+		h.value.Store(0)
+	}
+	for _, h := range c.codes {
+		h.Store(0)
+	}
+	for _, s := range c.scales {
+		s.Reset()
+	}
+}
+
 // Merge merges the metrics from another collector into this one.
 func (c *collector) Merge(other Collector) error {
 	return other.merge(c)
@@ -372,20 +483,30 @@ func (c *collector) merge(other *collector) error {
 	other.total.Add(c.total.Load())
 	other.errors.Add(c.errors.Load())
 
-	if err := other.latencies.Merge(c.latencies); err != nil {
-		return err
+	if c.latencies != nil && other.latencies != nil {
+		if err := other.latencies.Merge(c.latencies); err != nil {
+			return err
+		}
 	}
-	if err := other.queueWaits.Merge(c.queueWaits); err != nil {
-		return err
+	if c.queueWaits != nil && other.queueWaits != nil {
+		if err := other.queueWaits.Merge(c.queueWaits); err != nil {
+			return err
+		}
 	}
-	if err := other.latPercentiles.Merge(c.latPercentiles); err != nil {
-		return err
+	if c.latPercentiles != nil && other.latPercentiles != nil {
+		if err := other.latPercentiles.Merge(c.latPercentiles); err != nil {
+			return err
+		}
 	}
-	if err := other.qwPercentiles.Merge(c.qwPercentiles); err != nil {
-		return err
+	if c.qwPercentiles != nil && other.qwPercentiles != nil {
+		if err := other.qwPercentiles.Merge(c.qwPercentiles); err != nil {
+			return err
+		}
 	}
-	for _, ex := range c.exemplars.Snapshot() {
-		other.exemplars.Offer(ex.latency, ex.requestID)
+	if c.exemplars != nil && other.exemplars != nil {
+		for _, ex := range c.exemplars.Snapshot() {
+			other.exemplars.Offer(ex.latency, ex.requestID)
+		}
 	}
 	for name, h := range c.counters {
 		if mh, ok := other.counters[name]; ok {
@@ -419,11 +540,21 @@ func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 		c.errors.Add(1)
 	}
 
-	c.latencies.Record(float64(rr.Latency.Nanoseconds()))
-	c.queueWaits.Record(float64(rr.QueueWait.Nanoseconds()))
-	c.latPercentiles.Add(float64(rr.Latency.Nanoseconds()))
-	c.qwPercentiles.Add(float64(rr.QueueWait.Nanoseconds()))
-	c.exemplars.Offer(rr.Latency, rr.RequestID)
+	if c.latencies != nil {
+		c.latencies.Record(float64(rr.Latency.Nanoseconds()))
+	}
+	if c.queueWaits != nil {
+		c.queueWaits.Record(float64(rr.QueueWait.Nanoseconds()))
+	}
+	if c.latPercentiles != nil {
+		c.latPercentiles.Add(float64(rr.Latency.Nanoseconds()))
+	}
+	if c.qwPercentiles != nil {
+		c.qwPercentiles.Add(float64(rr.QueueWait.Nanoseconds()))
+	}
+	if c.exemplars != nil {
+		c.exemplars.Offer(rr.Latency, rr.RequestID)
+	}
 	c.mu.RLock()
 	counter, ok := c.codes[rr.Status]
 	c.mu.RUnlock()
@@ -520,11 +651,22 @@ func (c *collector) Clone() (Collector, error) {
 				for k := range slot.Counters {
 					counters[k].Store(slot.Counters[k].Load())
 				}
+				var l, q Histogram
+				var e Exemplar
+				if slot.Latency != nil {
+					l = slot.Latency.Clone()
+				}
+				if slot.QueueWait != nil {
+					q = slot.QueueWait.Clone()
+				}
+				if slot.Exemplars != nil {
+					e = slot.Exemplars.Clone()
+				}
 				slots[j] = &Slot{
-					Latency:   slot.Latency.Clone(),
-					QueueWait: slot.QueueWait.Clone(),
+					Latency:   l,
+					QueueWait: q,
 					Counters:  counters,
-					Exemplars: slot.Exemplars.Clone(),
+					Exemplars: e,
 				}
 				slots[j].Total.Store(slot.Total.Load())
 				slots[j].Errors.Store(slot.Errors.Load())
@@ -557,14 +699,25 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 	for code, val := range c.codes {
 		codes[code] = val.Load()
 	}
+	var latSnap, qwSnap *HistogramSnapshot
+	var exSnap []*item
+	if c.latencies != nil {
+		latSnap = c.latencies.Snapshot()
+	}
+	if c.queueWaits != nil {
+		qwSnap = c.queueWaits.Snapshot()
+	}
+	if c.exemplars != nil {
+		exSnap = c.exemplars.Snapshot()
+	}
 	return &GlobalSnapshot{
 		Total:          c.total.Load(),
 		Errors:         c.errors.Load(),
-		Latencies:      c.latencies.Snapshot(),
-		QueueWaits:     c.queueWaits.Snapshot(),
+		Latencies:      latSnap,
+		QueueWaits:     qwSnap,
 		LatPercentiles: c.latPercentiles,
 		QWPercentiles:  c.qwPercentiles,
-		Exemplars:      c.exemplars.Snapshot(),
+		Exemplars:      exSnap,
 		Codes:          codes,
 	}
 }
@@ -804,4 +957,3 @@ func (s *SlotSnapshot) String() string {
 }
 
 // --- Interfaces and supporting types ---
-

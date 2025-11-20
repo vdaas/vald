@@ -34,6 +34,7 @@ type Collector interface {
 	Clone() (Collector, error)
 	deepCopy() (Collector, error)
 	merge(other *collector) error
+	Reset()
 }
 
 // Histogram is the interface for a histogram.
@@ -44,6 +45,7 @@ type Histogram interface {
 	BoundsCRC32() uint32
 	Clone() Histogram
 	merge(other *histogram) error
+	Reset()
 }
 
 // Exemplar is the interface for an exemplar.
@@ -51,6 +53,7 @@ type Exemplar interface {
 	Offer(latency time.Duration, requestID string)
 	Snapshot() []*item
 	Clone() Exemplar
+	Reset()
 }
 
 // TDigest is the interface for approximate percentile estimators like t-digest.
@@ -61,4 +64,5 @@ type TDigest interface {
 	Merge(other TDigest) error
 	Clone() TDigest
 	fmt.Stringer
+	Reset()
 }

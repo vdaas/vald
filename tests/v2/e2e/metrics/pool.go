@@ -42,12 +42,11 @@ func (p *poolProvider[V]) Get() (v *V) {
 	if pv == nil {
 		return nil
 	}
-	var ok bool
-	vp, ok := pv.(V)
+	vp, ok := pv.(*V)
 	if !ok {
 		return nil
 	}
-	return &vp
+	return vp
 }
 
 func (p *poolProvider[V]) Put(v *V) {
@@ -57,5 +56,11 @@ func (p *poolProvider[V]) Put(v *V) {
 var (
 	requestResultPool = newPoolProvider(func() *RequestResult {
 		return new(RequestResult)
+	})
+	histogramPool = newPoolProvider(func() *histogram {
+		return new(histogram)
+	})
+	exemplarPool = newPoolProvider(func() *exemplar {
+		return new(exemplar)
 	})
 )

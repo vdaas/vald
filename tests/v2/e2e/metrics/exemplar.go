@@ -17,80 +17,104 @@
 package metrics
 
 import (
+	"cmp"
 	"container/heap"
-	"sort"
+	"slices"
+	"sync"
 	"sync/atomic"
 	"time"
 )
 
 // exemplar holds a sample of high-latency requests.
-// It uses a lock-free priority queue (min-heap) to store the top k requests
-// with the highest latencies. This allows for efficient and concurrent updates
-// without blocking.
+// It uses a mutex-protected priority queue (min-heap) to store the top k requests
+// with the highest latencies.
 type exemplar struct {
-	k  int // The maximum number of exemplars to store.
-	pq atomic.Pointer[priorityQueue]
+	mu         sync.Mutex
+	k          int           // The maximum number of exemplars to store.
+	pq         priorityQueue // Min-heap of exemplars.
+	minLatency atomic.Int64  // Minimum latency in the heap, for lock-free check.
 }
 
-// NewExemplar creates a new Exemplar with the given options.
-func NewExemplar(opts ...ExemplarOption) Exemplar {
-	e := new(exemplar)
+// Init initializes the exemplar with the given options.
+func (e *exemplar) Init(opts ...ExemplarOption) {
 	for _, opt := range opts {
 		opt(e)
 	}
 	e.k = max(e.k, 1)
-	initialPQ := make(priorityQueue, 0, e.k)
-	e.pq.Store(&initialPQ)
+	e.mu.Lock()
+	if e.pq == nil {
+		e.pq = make(priorityQueue, 0, e.k)
+	} else {
+		e.pq = e.pq[:0]
+	}
+	e.minLatency.Store(0)
+	e.mu.Unlock()
+}
+
+// NewExemplar creates a new Exemplar with the given options.
+func NewExemplar(opts ...ExemplarOption) Exemplar {
+	e := exemplarPool.Get()
+	e.Init(opts...)
 	return e
 }
 
-// Offer adds a request to the exemplar using a lock-free compare-and-swap (CAS) loop.
-// This ensures that updates to the priority queue are atomic and thread-safe.
+// Reset resets the exemplar to its initial state, clearing all data but keeping capacity.
+func (e *exemplar) Reset() {
+	e.mu.Lock()
+	// Clear the slice but keep capacity
+	for i := range e.pq {
+		e.pq[i] = nil
+	}
+	e.pq = e.pq[:0]
+	e.minLatency.Store(0)
+	e.mu.Unlock()
+}
+
+// Offer adds a request to the exemplar.
 // If the priority queue is not full, the new item is added.
 // If the priority queue is full and the new item's latency is greater than the minimum latency in the queue,
 // the new item replaces the minimum latency item.
 func (e *exemplar) Offer(latency time.Duration, requestID string) {
+	// Fast-path: if the heap is full and the new latency is smaller than the current minimum,
+	// we can return immediately without locking.
+	minLat := e.minLatency.Load()
+	if minLat > 0 && int64(latency) <= minLat {
+		return
+	}
+
 	newItem := &item{
 		latency:   latency,
 		requestID: requestID,
 	}
 
-	for {
-		oldPQPtr := e.pq.Load()
-		oldPQ := *oldPQPtr
+	e.mu.Lock()
+	defer e.mu.Unlock()
 
-		if len(oldPQ) < e.k {
-			newPQ := make(priorityQueue, len(oldPQ), len(oldPQ)+1)
-			copy(newPQ, oldPQ)
-			heap.Push(&newPQ, newItem)
-			if e.pq.CompareAndSwap(oldPQPtr, &newPQ) {
-				return
-			}
-		} else if latency > oldPQ[0].latency {
-			newPQ := make(priorityQueue, len(oldPQ), e.k)
-			copy(newPQ, oldPQ)
-			newPQ[0] = newItem
-			heap.Fix(&newPQ, 0)
-			if e.pq.CompareAndSwap(oldPQPtr, &newPQ) {
-				return
-			}
-		} else {
-			// The new item is not larger than the smallest in a full queue.
-			return
+	if len(e.pq) < e.k {
+		heap.Push(&e.pq, newItem)
+		// If we reached capacity, set the minLatency
+		if len(e.pq) == e.k {
+			e.minLatency.Store(int64(e.pq[0].latency))
 		}
+	} else if latency > e.pq[0].latency {
+		// Replace the smallest item (at index 0) with the new item
+		// and fix the heap invariant.
+		e.pq[0] = newItem
+		heap.Fix(&e.pq, 0)
+		e.minLatency.Store(int64(e.pq[0].latency))
 	}
 }
 
-// Snapshot returns a snapshot of the exemplars. It is lock-free and returns a copy of the current exemplars.
+// Snapshot returns a snapshot of the exemplars.
 func (e *exemplar) Snapshot() []*item {
-	pqPtr := e.pq.Load()
-	pq := *pqPtr
-	items := make([]*item, len(pq))
-	copy(items, pq)
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	items := slices.Clone(e.pq)
 
 	// Sort items by latency in descending order.
-	sort.Slice(items, func(i, j int) bool {
-		return items[i].latency > items[j].latency
+	slices.SortFunc(items, func(a, b *item) int {
+		return cmp.Compare(b.latency, a.latency)
 	})
 
 	return items
@@ -98,28 +122,28 @@ func (e *exemplar) Snapshot() []*item {
 
 // Clone returns a deep copy of the exemplar.
 func (e *exemplar) Clone() Exemplar {
-	newE := &exemplar{
-		k: e.k,
-	}
-	// Load the current priority queue.
-	oldPQPtr := e.pq.Load()
-	if oldPQPtr != nil {
-		oldPQ := *oldPQPtr
-		// Create a copy of the priority queue.
-		newPQ := make(priorityQueue, len(oldPQ), cap(oldPQ))
-		// Deep copy items
-		for i, item := range oldPQ {
-			if item != nil {
-				val := *item
-				newPQ[i] = &val
-			}
-		}
-		newE.pq.Store(&newPQ)
+	newE := exemplarPool.Get()
+	newE.Reset()
+	newE.k = e.k
+
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	if cap(newE.pq) < len(e.pq) {
+		newE.pq = make(priorityQueue, len(e.pq), cap(e.pq))
 	} else {
-		// If nil, initialize empty
-		initialPQ := make(priorityQueue, 0, e.k)
-		newE.pq.Store(&initialPQ)
+		newE.pq = newE.pq[:len(e.pq)]
 	}
+
+	// Deep copy items
+	for i, item := range e.pq {
+		if item != nil {
+			val := *item
+			newE.pq[i] = &val
+		}
+	}
+	newE.minLatency.Store(e.minLatency.Load())
+
 	return newE
 }
 

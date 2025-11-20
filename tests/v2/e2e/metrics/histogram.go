@@ -21,7 +21,8 @@ import (
 	"fmt"
 	"hash/crc32"
 	"math"
-	"sync/atomic"
+	"slices"
+	"sync"
 
 	"github.com/vdaas/vald/internal/errors"
 )
@@ -40,40 +41,64 @@ type histogram struct {
 }
 
 // histogramShard is a single shard of the histogram.
-// It is unexported to encapsulate the internal implementation of the Histogram.
+// It uses a mutex to protect its state and implements Welford's algorithm
+// for numerically stable variance calculation.
 type histogramShard struct {
-	counts []atomic.Uint64 // number of values in each bucket
-	total  atomic.Uint64   // total number of values in this shard
-	sum    atomic.Uint64   // sum of values in this shard (stored as float64 bits)
-	sumSq  atomic.Uint64   // sum of squares of values in this shard (stored as float64 bits)
-	min    atomic.Uint64   // minimum value in this shard (stored as float64 bits)
-	max    atomic.Uint64   // maximum value in this shard (stored as float64 bits)
+	mu     sync.Mutex
+	counts []uint64 // number of values in each bucket
+	total  uint64   // total number of values in this shard
+	mean   float64  // mean of values in this shard
+	m2     float64  // sum of squares of differences from the mean
+	min    float64  // minimum value in this shard
+	max    float64  // maximum value in this shard
+	_      [128]byte // Padding to prevent false sharing
 }
 
-// NewHistogram creates a new sharded histogram with geometric bucketing.
-// It takes a variable number of HistogramOption functions to configure the histogram.
-func NewHistogram(opts ...HistogramOption) (Histogram, error) {
-	h := new(histogram)
-	for _, opt := range append(defaultHistogramOpts, opts...) {
-		err := opt(h)
-		if err != nil {
-			return nil, err
+// Init initializes the histogram with the provided options.
+func (h *histogram) Init(opts ...HistogramOption) error {
+	// Apply default options first
+	for _, opt := range defaultHistogramOpts {
+		if err := opt(h); err != nil {
+			return err
 		}
 	}
+	// Apply user options
+	for _, opt := range opts {
+		if err := opt(h); err != nil {
+			return err
+		}
+	}
+
 	if len(h.shards) < h.numShards {
 		h.shards = make([]histogramShard, h.numShards)
+	} else {
+		h.shards = h.shards[:h.numShards]
 	}
 
 	// Initialize shards.
 	for i := range h.shards {
-		// counts length must match numBuckets (buckets = boundaries+2 edges).
-		h.shards[i].counts = make([]atomic.Uint64, h.numBuckets)
-		h.shards[i].min.Store(math.Float64bits(math.Inf(1)))
-		h.shards[i].max.Store(math.Float64bits(math.Inf(-1)))
+		h.shards[i].mu.Lock()
+		if len(h.shards[i].counts) < h.numBuckets {
+			h.shards[i].counts = make([]uint64, h.numBuckets)
+		} else {
+			// Reset existing counts
+			for j := range h.shards[i].counts {
+				h.shards[i].counts[j] = 0
+			}
+			h.shards[i].counts = h.shards[i].counts[:h.numBuckets]
+		}
+		h.shards[i].total = 0
+		h.shards[i].mean = 0
+		h.shards[i].m2 = 0
+		h.shards[i].min = math.Inf(1)
+		h.shards[i].max = math.Inf(-1)
+		h.shards[i].mu.Unlock()
 	}
 
 	if len(h.bounds) < h.numBuckets-1 {
 		h.bounds = make([]float64, h.numBuckets-1)
+	} else {
+		h.bounds = h.bounds[:h.numBuckets-1]
 	}
 
 	// Build geometric bucket boundaries.
@@ -85,7 +110,35 @@ func NewHistogram(opts ...HistogramOption) (Histogram, error) {
 	// Precompute boundsCRC32 for compatibility checks on merge.
 	h.boundsCRC32 = computeBoundsCRC32(h.bounds)
 
+	return nil
+}
+
+// NewHistogram creates a new sharded histogram with geometric bucketing.
+// It takes a variable number of HistogramOption functions to configure the histogram.
+func NewHistogram(opts ...HistogramOption) (Histogram, error) {
+	h := histogramPool.Get()
+	if err := h.Init(opts...); err != nil {
+		histogramPool.Put(h)
+		return nil, err
+	}
 	return h, nil
+}
+
+// Reset resets the histogram to its initial state, clearing all data but keeping capacity.
+func (h *histogram) Reset() {
+	for i := range h.shards {
+		s := &h.shards[i]
+		s.mu.Lock()
+		s.total = 0
+		s.mean = 0
+		s.m2 = 0
+		s.min = math.Inf(1)
+		s.max = math.Inf(-1)
+		for j := range s.counts {
+			s.counts[j] = 0
+		}
+		s.mu.Unlock()
+	}
 }
 
 // computeBoundsCRC32 computes a CRC32 checksum for the given slice of
@@ -101,59 +154,12 @@ func computeBoundsCRC32(bounds []float64) uint32 {
 	return crc32.ChecksumIEEE(buf)
 }
 
-// atomicAddFloat64 adds delta to the float64 value stored in dst using a CAS loop.
-//
-// The value is stored as a float64 encoded in the Uint64, so this helper
-// centralizes the unsafe-but-necessary conversion logic.
-func atomicAddFloat64(dst *atomic.Uint64, delta float64) {
-	for {
-		oldBits := dst.Load()
-		oldVal := math.Float64frombits(oldBits)
-		newVal := oldVal + delta
-		if dst.CompareAndSwap(oldBits, math.Float64bits(newVal)) {
-			return
-		}
-	}
-}
-
-// atomicUpdateMinFloat64 updates dst with val if val is smaller than the
-// current value stored in dst. The value is stored as float64 bits.
-func atomicUpdateMinFloat64(dst *atomic.Uint64, val float64) {
-	valBits := math.Float64bits(val)
-	for {
-		oldBits := dst.Load()
-		oldVal := math.Float64frombits(oldBits)
-		if val >= oldVal {
-			return
-		}
-		if dst.CompareAndSwap(oldBits, valBits) {
-			return
-		}
-	}
-}
-
-// atomicUpdateMaxFloat64 updates dst with val if val is larger than the
-// current value stored in dst. The value is stored as float64 bits.
-func atomicUpdateMaxFloat64(dst *atomic.Uint64, val float64) {
-	valBits := math.Float64bits(val)
-	for {
-		oldBits := dst.Load()
-		oldVal := math.Float64frombits(oldBits)
-		if val <= oldVal {
-			return
-		}
-		if dst.CompareAndSwap(oldBits, valBits) {
-			return
-		}
-	}
-}
-
 // shardIndexForValue selects a shard index for the given value.
 //
 // It uses a lightweight hash derived from the float64 bits to distribute
 // values across shards without allocations or external hashers.
 func (h *histogram) shardIndexForValue(val float64) int {
-	if h.numShards == 1 {
+	if h.numShards <= 1 {
 		return 0
 	}
 	bits := math.Float64bits(val)
@@ -169,9 +175,8 @@ func (h *histogram) shardIndexForValue(val float64) int {
 
 // Record adds a value to the histogram. It is thread-safe.
 //
-// It hashes the value to select a shard, then atomically updates the shard's
-// bucket counts and summary statistics. This approach minimizes contention
-// and allows for high-throughput recording on multi-core systems.
+// It hashes the value to select a shard, then updates the shard's
+// bucket counts and summary statistics using Welford's algorithm.
 func (h *histogram) Record(val float64) {
 	// Select shard for this value.
 	shardIdx := h.shardIndexForValue(val)
@@ -180,17 +185,25 @@ func (h *histogram) Record(val float64) {
 	// Determine bucket index for this value.
 	bucketIdx := h.findBucket(val)
 
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	// Update bucket count and total count for this shard.
-	s.counts[bucketIdx].Add(1)
-	s.total.Add(1)
+	s.counts[bucketIdx]++
+	s.total++
 
-	// Atomically update sum and sum of squares.
-	atomicAddFloat64(&s.sum, val)
-	atomicAddFloat64(&s.sumSq, val*val)
+	// Update min and max.
+	if val < s.min {
+		s.min = val
+	}
+	if val > s.max {
+		s.max = val
+	}
 
-	// Atomically update min and max.
-	atomicUpdateMinFloat64(&s.min, val)
-	atomicUpdateMaxFloat64(&s.max, val)
+	// Update mean and m2 using Welford's algorithm.
+	delta := val - s.mean
+	s.mean = math.FMA(delta, 1.0/float64(s.total), s.mean)
+	s.m2 = math.FMA(delta, val-s.mean, s.m2)
 }
 
 // findBucket determines the correct bucket index for a given value using
@@ -203,62 +216,55 @@ func (h *histogram) Record(val float64) {
 //	bucket i (1..N-2):  (bounds[i-1], bounds[i]]
 //	bucket N-1:         (bounds[N-2], +inf)
 func (h *histogram) findBucket(val float64) int {
-	if val <= h.bounds[0] {
-		return 0
-	}
-	lastIdx := len(h.bounds) - 1
-	if val > h.bounds[lastIdx] {
-		return h.numBuckets - 1
-	}
-
-	// Standard binary search to find the first index where bounds[idx] >= val.
-	low, high := 0, lastIdx
-	for low <= high {
-		mid := (low + high) / 2
-		if h.bounds[mid] < val {
-			low = mid + 1
-		} else {
-			high = mid - 1
-		}
-	}
-	return low
+	idx, _ := slices.BinarySearch(h.bounds, val)
+	return idx
 }
 
 // Clone returns a deep copy of the histogram.
 func (h *histogram) Clone() Histogram {
-	newH := &histogram{
-		min:         h.min,
-		max:         h.max,
-		growth:      h.growth,
-		numBuckets:  h.numBuckets,
-		numShards:   h.numShards,
-		boundsCRC32: h.boundsCRC32,
-	}
+	newH := histogramPool.Get()
+	newH.Reset()
 
-	if len(h.bounds) > 0 {
+	newH.min = h.min
+	newH.max = h.max
+	newH.growth = h.growth
+	newH.numBuckets = h.numBuckets
+	newH.numShards = h.numShards
+	newH.boundsCRC32 = h.boundsCRC32
+
+	// Copy bounds
+	if cap(newH.bounds) < len(h.bounds) {
 		newH.bounds = make([]float64, len(h.bounds))
-		copy(newH.bounds, h.bounds)
 	}
+	newH.bounds = newH.bounds[:len(h.bounds)]
+	copy(newH.bounds, h.bounds)
 
-	if len(h.shards) > 0 {
+	// Copy shards
+	if cap(newH.shards) < len(h.shards) {
 		newH.shards = make([]histogramShard, len(h.shards))
-		for i := range h.shards {
-			src := &h.shards[i]
-			dst := &newH.shards[i]
-
-			if len(src.counts) > 0 {
-				dst.counts = make([]atomic.Uint64, len(src.counts))
-				for j := range src.counts {
-					dst.counts[j].Store(src.counts[j].Load())
-				}
-			}
-			dst.total.Store(src.total.Load())
-			dst.sum.Store(src.sum.Load())
-			dst.sumSq.Store(src.sumSq.Load())
-			dst.min.Store(src.min.Load())
-			dst.max.Store(src.max.Load())
-		}
 	}
+	newH.shards = newH.shards[:len(h.shards)]
+
+	for i := range h.shards {
+		src := &h.shards[i]
+		dst := &newH.shards[i]
+
+		// We must lock the source shard to get a consistent snapshot
+		src.mu.Lock()
+		dst.total = src.total
+		dst.mean = src.mean
+		dst.m2 = src.m2
+		dst.min = src.min
+		dst.max = src.max
+
+		if cap(dst.counts) < len(src.counts) {
+			dst.counts = make([]uint64, len(src.counts))
+		}
+		dst.counts = dst.counts[:len(src.counts)]
+		copy(dst.counts, src.counts)
+		src.mu.Unlock()
+	}
+
 	return newH
 }
 
@@ -293,29 +299,55 @@ func (dest *histogram) merge(src *histogram) error {
 		dstShard := &dest.shards[i]
 		srcShard := &src.shards[i]
 
-		srcTotal := srcShard.total.Load()
+		// Read source shard atomically
+		srcShard.mu.Lock()
+		srcTotal := srcShard.total
 		if srcTotal == 0 {
+			srcShard.mu.Unlock()
 			continue
 		}
+		srcMean := srcShard.mean
+		srcM2 := srcShard.m2
+		srcMin := srcShard.min
+		srcMax := srcShard.max
+		srcCounts := slices.Clone(srcShard.counts)
+		srcShard.mu.Unlock()
 
-		// Merge total count and bucket counts.
-		dstShard.total.Add(srcTotal)
+		// Merge into dest shard
+		dstShard.mu.Lock()
+
+		// Merge counts
 		for j := range dstShard.counts {
-			dstShard.counts[j].Add(srcShard.counts[j].Load())
+			if j < len(srcCounts) {
+				dstShard.counts[j] += srcCounts[j]
+			}
 		}
 
-		// Merge scalar statistics (sum, sumSq, min, max).
-		srcSum := math.Float64frombits(srcShard.sum.Load())
-		srcSumSq := math.Float64frombits(srcShard.sumSq.Load())
-		srcMin := math.Float64frombits(srcShard.min.Load())
-		srcMax := math.Float64frombits(srcShard.max.Load())
+		// Merge statistics using Welford's method
+		if dstShard.total == 0 {
+			dstShard.total = srcTotal
+			dstShard.mean = srcMean
+			dstShard.m2 = srcM2
+			dstShard.min = srcMin
+			dstShard.max = srcMax
+		} else {
+			n1 := float64(dstShard.total)
+			n2 := float64(srcTotal)
+			delta := srcMean - dstShard.mean
+			newTotal := n1 + n2
 
-		if srcTotal > 0 {
-			atomicAddFloat64(&dstShard.sum, srcSum)
-			atomicAddFloat64(&dstShard.sumSq, srcSumSq)
-			atomicUpdateMinFloat64(&dstShard.min, srcMin)
-			atomicUpdateMaxFloat64(&dstShard.max, srcMax)
+			dstShard.mean = dstShard.mean + delta*n2/newTotal
+			dstShard.m2 = dstShard.m2 + srcM2 + delta*delta*n1*n2/newTotal
+			dstShard.total += srcTotal
+
+			if srcMin < dstShard.min {
+				dstShard.min = srcMin
+			}
+			if srcMax > dstShard.max {
+				dstShard.max = srcMax
+			}
 		}
+		dstShard.mu.Unlock()
 	}
 	return nil
 }
@@ -323,9 +355,7 @@ func (dest *histogram) merge(src *histogram) error {
 // Snapshot returns a merged, consistent view of the histogram's data.
 //
 // It iterates through all shards and aggregates their statistics into a
-// single snapshot. This operation is read-only with respect to the histogram
-// abstraction and does not block new writes, but the snapshot is necessarily
-// approximate under concurrent updates.
+// single snapshot.
 func (h *histogram) Snapshot() *HistogramSnapshot {
 	snap := &HistogramSnapshot{
 		Counts: make([]uint64, h.numBuckets),
@@ -334,37 +364,67 @@ func (h *histogram) Snapshot() *HistogramSnapshot {
 		Max:    math.Inf(-1),
 	}
 
+	// Temporary variables for aggregating Welford stats
+	var totalCount uint64
+	var grandMean float64
+	var grandM2 float64
+
 	for i := range h.shards {
 		s := &h.shards[i]
-		total := s.total.Load()
+		s.mu.Lock()
+		total := s.total
 		if total == 0 {
+			s.mu.Unlock()
 			continue
 		}
 
+		// Aggregate counts
 		for j := range s.counts {
-			snap.Counts[j] += s.counts[j].Load()
+			snap.Counts[j] += s.counts[j]
 		}
-		snap.Total += total
-		snap.Sum += math.Float64frombits(s.sum.Load())
-		snap.SumSq += math.Float64frombits(s.sumSq.Load())
 
-		minVal := math.Float64frombits(s.min.Load())
-		if minVal < snap.Min {
-			snap.Min = minVal
+		// Aggregate Min/Max
+		if s.min < snap.Min {
+			snap.Min = s.min
 		}
-		maxVal := math.Float64frombits(s.max.Load())
-		if maxVal > snap.Max {
-			snap.Max = maxVal
+		if s.max > snap.Max {
+			snap.Max = s.max
 		}
+
+		// Aggregate Mean/M2
+		if totalCount == 0 {
+			grandMean = s.mean
+			grandM2 = s.m2
+			totalCount = total
+		} else {
+			n1 := float64(totalCount)
+			n2 := float64(total)
+			delta := s.mean - grandMean
+			newTotal := n1 + n2
+
+			grandMean = grandMean + delta*n2/newTotal
+			grandM2 = grandM2 + s.m2 + delta*delta*n1*n2/newTotal
+			totalCount += total
+		}
+		s.mu.Unlock()
 	}
 
-	if snap.Total > 0 {
-		snap.Mean = snap.Sum / float64(snap.Total)
-		variance := (snap.SumSq / float64(snap.Total)) - (snap.Mean * snap.Mean)
-		if variance > 0 {
-			snap.StdDev = math.Sqrt(variance)
-		}
+	snap.Total = totalCount
+	snap.Mean = grandMean
+	snap.Sum = grandMean * float64(totalCount) // Back-calculate sum if needed
+	snap.SumSq = grandM2 + snap.Sum*snap.Mean // Approx back-calculate sumSq if needed?
+	// Actually, Snapshot struct has Sum and SumSq.
+	// But with Welford, we track Mean and M2.
+	// Variance = M2 / Total (or Total-1).
+	// snap.StdDev = sqrt(Variance).
+	// We can set snap.SumSq if required by consumers, but Mean/StdDev are more important.
+	// M2 = SumSq - Sum^2/N => SumSq = M2 + Sum^2/N = M2 + Mean^2 * N.
+
+	if totalCount > 0 {
+		snap.SumSq = grandM2 + (grandMean*grandMean)*float64(totalCount)
+		snap.StdDev = math.Sqrt(grandM2 / float64(totalCount))
 	}
+
 	return snap
 }
 
@@ -424,9 +484,22 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 	}
 
 	// Merge scalar stats.
+	// Note: Snapshot merge is still using Sum/SumSq because Snapshot struct uses them.
+	// If we want Welford precision here, we'd need Mean/M2 in Snapshot.
+	// But Snapshot has Mean/StdDev.
+	// We can reconstruct M2 from StdDev: M2 = StdDev^2 * Total.
+	// Let's try to be more precise if possible.
+
+	otherM2 := other.StdDev * other.StdDev * float64(other.Total)
+	sM2 := s.StdDev * s.StdDev * float64(s.Total)
+
 	if s.Total == 0 {
 		s.Min = other.Min
 		s.Max = other.Max
+		s.Mean = other.Mean
+		s.StdDev = other.StdDev
+		s.Sum = other.Sum
+		s.SumSq = other.SumSq
 	} else {
 		if other.Min < s.Min {
 			s.Min = other.Min
@@ -434,18 +507,23 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 		if other.Max > s.Max {
 			s.Max = other.Max
 		}
+
+		n1 := float64(s.Total)
+		n2 := float64(other.Total)
+		delta := other.Mean - s.Mean
+		newTotal := n1 + n2
+
+		newMean := s.Mean + delta*n2/newTotal
+		newM2 := sM2 + otherM2 + delta*delta*n1*n2/newTotal
+
+		s.Mean = newMean
+		s.StdDev = math.Sqrt(newM2 / newTotal)
+		s.Sum += other.Sum
+		// Reconstruct SumSq
+		s.SumSq = newM2 + (newMean * newMean * newTotal)
 	}
 	s.Total += other.Total
-	s.Sum += other.Sum
-	s.SumSq += other.SumSq
 
-	if s.Total > 0 {
-		s.Mean = s.Sum / float64(s.Total)
-		variance := (s.SumSq / float64(s.Total)) - (s.Mean * s.Mean)
-		if variance > 0 {
-			s.StdDev = math.Sqrt(variance)
-		}
-	}
 	if len(s.Bounds) == 0 {
 		s.Bounds = other.Bounds
 	}

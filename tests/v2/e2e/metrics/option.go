@@ -248,3 +248,43 @@ func WithExemplarCapacity(k int) ExemplarOption {
 		}
 	}
 }
+
+// DisableLatencyHistogram disables the latency histogram.
+func DisableLatencyHistogram() Option {
+	return func(c *collector) error {
+		c.latencies = nil
+		return nil
+	}
+}
+
+// DisableQueueWaitHistogram disables the queue wait histogram.
+func DisableQueueWaitHistogram() Option {
+	return func(c *collector) error {
+		c.queueWaits = nil
+		return nil
+	}
+}
+
+// DisableLatencyTDigest disables the latency t-digest.
+func DisableLatencyTDigest() Option {
+	return func(c *collector) error {
+		c.latPercentiles = nil
+		return nil
+	}
+}
+
+// DisableQueueWaitTDigest disables the queue wait t-digest.
+func DisableQueueWaitTDigest() Option {
+	return func(c *collector) error {
+		c.qwPercentiles = nil
+		return nil
+	}
+}
+
+// DisableExemplar disables the exemplar.
+func DisableExemplar() Option {
+	return func(c *collector) error {
+		c.exemplars = nil
+		return nil
+	}
+}

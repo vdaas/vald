@@ -18,7 +18,7 @@ package metrics
 
 import (
 	"math"
-	"sort"
+	"slices"
 	"sync"
 	"testing"
 )
@@ -80,6 +80,9 @@ func TestTDigest_Compression(t *testing.T) {
 		td.Add(float64(i))
 	}
 
+	// Force flush
+	_ = td.Quantile(0)
+
 	if len(td.(*tdigest).centroids) > 25 { // Should be around 20
 		t.Errorf("len(td.centroids) = %v, want <= 25", len(td.(*tdigest).centroids))
 	}
@@ -111,6 +114,9 @@ func TestTDigest_Concurrency(t *testing.T) {
 
 	wg.Wait()
 
+	// Force flush
+	_ = td.Quantile(0)
+
 	if td.(*tdigest).count != 100 {
 		t.Errorf("td.count = %v, want 100", td.(*tdigest).count)
 	}
@@ -120,7 +126,7 @@ func TestTDigest_Concurrency(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		values[i] = float64(i)
 	}
-	sort.Float64s(values)
+	slices.Sort(values)
 
 	p50 := values[49] // Approximate
 	if q := td.Quantile(0.5); math.Abs(q-p50) > 5 {

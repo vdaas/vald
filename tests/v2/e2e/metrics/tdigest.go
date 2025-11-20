@@ -17,9 +17,7 @@
 package metrics
 
 import (
-	"cmp"
 	"fmt"
-	"math"
 	"slices"
 	"unsafe"
 
@@ -35,6 +33,8 @@ type centroid struct {
 	Weight float64
 }
 
+const defaultBufferCapacity = 128
+
 // tdigest is a custom implementation of the t-digest algorithm.
 //
 // It is designed for high-performance, concurrent metric recording by using a
@@ -47,6 +47,7 @@ type centroid struct {
 type tdigest struct {
 	mu                       sync.Mutex
 	centroids                []centroid
+	buffer                   []float64
 	compression              float64
 	compressionTriggerFactor float64
 	count                    float64
@@ -55,7 +56,9 @@ type tdigest struct {
 
 // NewTDigest creates a new TDigest.
 func NewTDigest(opts ...TDigestOption) (TDigest, error) {
-	t := new(tdigest)
+	t := &tdigest{
+		buffer: make([]float64, 0, defaultBufferCapacity),
+	}
 	for _, opt := range append(defaultTDigestOpts, opts...) {
 		err := opt(t)
 		if err != nil {
@@ -65,11 +68,25 @@ func NewTDigest(opts ...TDigestOption) (TDigest, error) {
 	return t, nil
 }
 
+// Reset resets the t-digest to its initial state.
+func (t *tdigest) Reset() {
+	t.mu.Lock()
+	t.centroids = t.centroids[:0]
+	t.buffer = t.buffer[:0]
+	t.count = 0
+	t.mu.Unlock()
+}
+
 // String implements the fmt.Stringer interface.
 func (t *tdigest) String() string {
 	if t == nil {
 		return "No data collected for percentiles.\n"
 	}
+	// Ensure buffer is flushed before calculating quantiles
+	// We can't modify t in String() usually if it's a value receiver, but here it is pointer.
+	// However, String() is often called for logging and shouldn't mutate state ideally.
+	// But to get accurate quantiles, we must flush.
+	// We call Quantile() which handles flushing.
 
 	quantiles := t.quantiles
 
@@ -115,121 +132,83 @@ func (t *tdigest) maxWeightForQuantile(q, total float64) float64 {
 	return quantileScaleMax * total * q * (1 - q) / t.compression
 }
 
-// tryMerge attempts to merge the given value into the centroid at index idx.
-//
-// Arguments:
-//   - value:  the new sample value to be merged.
-//   - idx:    index of the candidate centroid in t.centroids.
-//   - prefix: prefix sums of centroid weights where prefix[i] is the sum of
-//     t.centroids[0:i].Weight at the time this method is called.
-//   - total:  total weight (i.e. t.count) at the time this method is called.
-//
-// This method assumes the caller holds t.mu and that prefix/total are
-// consistent with the current centroids layout.
-func (t *tdigest) tryMerge(value float64, idx int, prefix []float64, total float64) bool {
-	if idx < 0 || idx >= len(t.centroids) {
-		return false
+// flush merges the buffered values into the centroids.
+// It assumes the caller holds t.mu.
+func (t *tdigest) flush() {
+	if len(t.buffer) == 0 {
+		return
 	}
 
-	c := &t.centroids[idx]
+	// Sort the buffer to enable linear merge
+	slices.Sort(t.buffer)
 
-	// Quantile of this centroid's center.
-	q := (c.Weight/2 + prefix[idx]) / total
-
-	// At extreme quantiles, allow merging more aggressively to avoid
-	// excessive number of centroids. This also gracefully handles q
-	// slightly outside [0,1] due to numerical error.
-	if q <= 0 || q >= 1 {
-		c.Mean = (c.Mean*c.Weight + value) / (c.Weight + 1)
-		c.Weight++
-		t.count++
-		return true
+	// Convert buffer to centroids
+	incoming := make([]centroid, len(t.buffer))
+	for i, v := range t.buffer {
+		incoming[i] = centroid{Mean: v, Weight: 1}
 	}
+	t.buffer = t.buffer[:0]
 
-	// Maximum allowed weight for this centroid based on compression.
-	k := t.maxWeightForQuantile(q, total)
-	if c.Weight+1 <= k {
-		// Merge new value into this centroid.
-		c.Mean = (c.Mean*c.Weight + value) / (c.Weight + 1)
-		c.Weight++
-		t.count++
-		return true
-	}
-	return false
+	t.mergeCentroids(incoming)
 }
 
-// Add adds a value to the t-digest.
-//
-// This implementation keeps the centroids slice always sorted by Mean and
-// avoids re-sorting on every insertion. It uses slices.BinarySearchFunc to
-// locate the insertion/merge position and slices.Insert to insert a new
-// centroid when necessary.
-func (t *tdigest) Add(value float64) {
-	t.mu.Lock()
-	defer t.mu.Unlock()
-
-	// Fast path for the first sample.
-	if t.count == 0 {
-		t.count = 1
-		cd := centroid{
-			Mean:   value,
-			Weight: 1,
+// mergeCentroids merges a sorted slice of centroids into t.centroids.
+// It assumes the caller holds t.mu.
+func (t *tdigest) mergeCentroids(incoming []centroid) {
+	if len(t.centroids) == 0 {
+		t.centroids = incoming
+		for _, c := range incoming {
+			t.count += c.Weight
 		}
-		if t.centroids == nil {
-			t.centroids = []centroid{cd}
-		} else {
-			t.centroids = append(t.centroids, cd)
+		if float64(len(t.centroids)) > t.compression*t.compressionTriggerFactor {
+			t.compress()
 		}
 		return
 	}
 
-	n := len(t.centroids)
+	// Merge two sorted centroid slices in linear time.
+	// Using a new slice for the result.
+	n1, n2 := len(t.centroids), len(incoming)
+	merged := make([]centroid, 0, n1+n2)
 
-	// Binary search the position where value should be inserted
-	// to keep centroids sorted by Mean.
-	idx, _ := slices.BinarySearchFunc(t.centroids, value,
-		func(c centroid, v float64) int {
-			return cmp.Compare(c.Mean, v)
-		},
-	)
-
-	// Choose the nearest centroid (by Mean) among the left neighbor and
-	// the element at the insertion index, then try merging into it.
-	candidate := -1
-	leftIdx := idx - 1
-	rightIdx := idx
-
-	if leftIdx >= 0 && rightIdx < n {
-		if math.Abs(value-t.centroids[leftIdx].Mean) <= math.Abs(t.centroids[rightIdx].Mean-value) {
-			candidate = leftIdx
+	i, j := 0, 0
+	for i < n1 && j < n2 {
+		if t.centroids[i].Mean <= incoming[j].Mean {
+			merged = append(merged, t.centroids[i])
+			i++
 		} else {
-			candidate = rightIdx
+			merged = append(merged, incoming[j])
+			j++
 		}
-	} else if leftIdx >= 0 {
-		candidate = leftIdx
-	} else if rightIdx < n {
-		candidate = rightIdx
+	}
+	if i < n1 {
+		merged = append(merged, t.centroids[i:]...)
+	}
+	if j < n2 {
+		merged = append(merged, incoming[j:]...)
 	}
 
-	if candidate >= 0 && t.tryMerge(value, candidate,
-		// Precompute prefix sums of weights:
-		// prefix[i] = sum of centroids[0:i].Weight.
-		buildPrefix(t.centroids), t.count) {
-		// Successfully merged into an existing centroid.
-		return
+	t.centroids = merged
+	for _, c := range incoming {
+		t.count += c.Weight
 	}
-
-	// Could not merge into a nearby centroid: create a new one and insert
-	// at the sorted position using slices.Insert.
-	t.centroids = slices.Insert(t.centroids, idx, centroid{
-		Mean:   value,
-		Weight: 1,
-	})
-	t.count++
 
 	// Compress if the number of centroids exceeds the configured trigger.
 	if float64(len(t.centroids)) > t.compression*t.compressionTriggerFactor {
 		t.compress()
+	}
+}
+
+// Add adds a value to the t-digest.
+//
+// It buffers incoming values and merges them in batches to improve performance.
+func (t *tdigest) Add(value float64) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	t.buffer = append(t.buffer, value)
+	if len(t.buffer) >= defaultBufferCapacity {
+		t.flush()
 	}
 }
 
@@ -240,6 +219,9 @@ func (t *tdigest) Add(value float64) {
 func (t *tdigest) Quantile(q float64) float64 {
 	t.mu.Lock()
 	defer t.mu.Unlock()
+
+	// Flush any pending updates to ensure accuracy
+	t.flush()
 
 	if t.count == 0 {
 		return 0
@@ -303,48 +285,16 @@ func (t *tdigest) Merge(other TDigest) error {
 	defer t.mu.Unlock()
 	defer o.mu.Unlock()
 
+	// Flush buffers before merging
+	t.flush()
+	o.flush()
+
 	if len(o.centroids) == 0 {
 		return nil
 	}
 
-	// Fast path: if this digest is empty, clone the other one.
-	if len(t.centroids) == 0 {
-		t.centroids = slices.Clone(o.centroids)
-		t.count = o.count
-		if float64(len(t.centroids)) > t.compression*t.compressionTriggerFactor {
-			t.compress()
-		}
-		return nil
-	}
-
-	// Merge two sorted centroid slices in linear time.
-	i, j := 0, 0
-	n1, n2 := len(t.centroids), len(o.centroids)
-	merged := make([]centroid, 0, n1+n2)
-
-	for i < n1 && j < n2 {
-		if t.centroids[i].Mean <= o.centroids[j].Mean {
-			merged = append(merged, t.centroids[i])
-			i++
-		} else {
-			merged = append(merged, o.centroids[j])
-			j++
-		}
-	}
-	if i < n1 {
-		merged = append(merged, t.centroids[i:]...)
-	}
-	if j < n2 {
-		merged = append(merged, o.centroids[j:]...)
-	}
-
-	t.centroids = merged
-	t.count += o.count
-
-	// Compress if the number of centroids exceeds the configured trigger.
-	if float64(len(t.centroids)) > t.compression*t.compressionTriggerFactor {
-		t.compress()
-	}
+	// Use helper to merge
+	t.mergeCentroids(o.centroids)
 	return nil
 }
 
@@ -418,12 +368,16 @@ func (t *tdigest) Clone() TDigest {
 		compression:              t.compression,
 		compressionTriggerFactor: t.compressionTriggerFactor,
 		count:                    t.count,
+		buffer:                   make([]float64, len(t.buffer), cap(t.buffer)),
 	}
 	if len(t.centroids) > 0 {
 		newT.centroids = slices.Clone(t.centroids)
 	}
 	if len(t.quantiles) > 0 {
 		newT.quantiles = slices.Clone(t.quantiles)
+	}
+	if len(t.buffer) > 0 {
+		copy(newT.buffer, t.buffer)
 	}
 	return newT
 }
