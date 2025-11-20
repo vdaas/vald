@@ -386,6 +386,7 @@ Represents index Property
 | build_time_limit                   | [float](#float)   |       |             |
 | outgoing_edge                      | [int32](#int32)   |       |             |
 | incoming_edge                      | [int32](#int32)   |       |             |
+| epsilon_for_creation               | [float](#float)   |       |             |
 
 <a name="payload-v1-Info-Index-PropertyDetail"></a>
 
