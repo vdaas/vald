@@ -188,6 +188,7 @@ func TestSlot_Concurrent_Record(t *testing.T) {
 				defer wg.Done()
 				for j := 0; j < args.loops; j++ {
 					// Switch window index every 10 iterations to force rapid resets
+					//nolint:gosec
 					win := uint64((id*args.loops + j) / 10)
 					s.Record(&RequestResult{
 						EndedAt: start,

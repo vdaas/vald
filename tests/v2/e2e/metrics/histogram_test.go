@@ -29,9 +29,6 @@ func TestNewHistogram(t *testing.T) {
 	type args struct {
 		opts []HistogramOption
 	}
-	type want struct {
-		err error
-	}
 
 	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Histogram, error) {
 		return NewHistogram(args.opts...)

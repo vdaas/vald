@@ -157,9 +157,9 @@ func WithExemplar(opts ...ExemplarOption) Option {
 }
 
 // WithHistogramMin sets the minimum value for the histogram.
-func WithHistogramMin(min float64) HistogramOption {
+func WithHistogramMin(minValue float64) HistogramOption {
 	return func(c *histogram) error {
-		c.min = min
+		c.min = minValue
 		if c.min <= 0 {
 			return errors.New("histogram min must be > 0 for geometric buckets")
 		}
@@ -168,9 +168,9 @@ func WithHistogramMin(min float64) HistogramOption {
 }
 
 // WithHistogramMax sets the maximum value for the histogram.
-func WithHistogramMax(max float64) HistogramOption {
+func WithHistogramMax(maxValue float64) HistogramOption {
 	return func(c *histogram) error {
-		c.max = max
+		c.max = maxValue
 		return nil
 	}
 }

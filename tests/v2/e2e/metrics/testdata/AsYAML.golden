@@ -1,5 +1,3 @@
-total: 100
-errors: 10
 latencies:
   counts: []
   bounds: []
@@ -28,6 +26,8 @@ codes:
   0: 90
   10: 10
 schemaversion: ""
-boundscrc32: 0
 sketchkind: ""
+total: 100
+errors: 10
+boundscrc32: 0
 invariantsok: false

@@ -45,15 +45,15 @@ const defaultBufferCapacity = 128
 //   - count is the sum of all centroid.Weight values.
 //   - count > 0 if and only if len(centroids) > 0.
 type tdigest struct {
-	mu                       sync.Mutex
 	centroids                []centroid
 	buffer                   []float64
 	scratch                  []centroid
 	swap                     []centroid
+	quantiles                []float64
+	mu                       sync.Mutex
 	compression              float64
 	compressionTriggerFactor float64
 	count                    float64
-	quantiles                []float64
 }
 
 // NewTDigest creates a new TDigest.
@@ -275,6 +275,7 @@ func (t *tdigest) Merge(other TDigest) error {
 	}
 
 	// To prevent deadlocks, always lock in a consistent order.
+	//nolint:gosec
 	if uintptr(unsafe.Pointer(t)) < uintptr(unsafe.Pointer(o)) {
 		t.mu.Lock()
 		o.mu.Lock()

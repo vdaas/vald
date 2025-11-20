@@ -20,19 +20,20 @@ import (
 	"cmp"
 	"container/heap"
 	"slices"
-	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/vdaas/vald/internal/sync"
 )
 
 // exemplar holds a sample of high-latency requests.
 // It uses a mutex-protected priority queue (min-heap) to store the top k requests
 // with the highest latencies.
 type exemplar struct {
-	mu         sync.Mutex
-	k          int           // The maximum number of exemplars to store.
 	pq         priorityQueue // Min-heap of exemplars.
 	minLatency atomic.Int64  // Minimum latency in the heap, for lock-free check.
+	mu         sync.Mutex
+	k          int // The maximum number of exemplars to store.
 }
 
 // Init initializes the exemplar with the given options.
@@ -150,8 +151,8 @@ func (e *exemplar) Clone() Exemplar {
 // item is an item in the priority queue, representing a single request exemplar.
 // It is unexported to encapsulate the implementation details of the priority queue.
 type item struct {
-	latency   time.Duration
 	requestID string
+	latency   time.Duration
 }
 
 // priorityQueue implements heap.Interface and is a min-heap of items.
@@ -171,7 +172,10 @@ func (pq priorityQueue) Swap(i, j int) {
 }
 
 func (pq *priorityQueue) Push(x any) {
-	item := x.(*item)
+	item, ok := x.(*item)
+	if !ok {
+		return
+	}
 	*pq = append(*pq, item)
 }
 

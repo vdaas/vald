@@ -29,9 +29,6 @@ func TestNewCollector(t *testing.T) {
 	type args struct {
 		opts []Option
 	}
-	type want struct {
-		err error
-	}
 
 	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Collector, error) {
 		return NewCollector(args.opts...)

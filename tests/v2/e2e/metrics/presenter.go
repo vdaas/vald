@@ -33,6 +33,12 @@ type SnapshotPresenter struct {
 	snapshot *GlobalSnapshot
 }
 
+const (
+	percentageFactor = 100
+	nanosPerSecond   = 1e9
+	barWidth         = 40
+)
+
 // NewSnapshotPresenter creates a new presenter for the given snapshot.
 func NewSnapshotPresenter(snapshot *GlobalSnapshot) *SnapshotPresenter {
 	return &SnapshotPresenter{
@@ -62,15 +68,17 @@ func (p *SnapshotPresenter) AsString() string {
 	if totalDuration.Seconds() > 0 {
 		fmt.Fprintf(&sb, "Requests/sec:\t%.2f\n", float64(total)/totalDuration.Seconds())
 	}
-	fmt.Fprintf(&sb, "Errors:\t%d (%.2f%%)\n", errs, float64(errs)/float64(total)*100)
+	fmt.Fprintf(&sb, "Errors:\t%d (%.2f%%)\n", errs, float64(errs)/float64(total)*percentageFactor)
 
 	// --- Latency ---
 	fmt.Fprint(&sb, "\n--- Latency ---\n")
-	sb.WriteString(p.renderHistogram("Latency", s.Latencies, s.LatPercentiles))
+	// G104: Errors unhandled
+	_, _ = sb.WriteString(p.renderHistogram(s.Latencies, s.LatPercentiles))
 
 	// --- Queue Wait ---
 	fmt.Fprint(&sb, "\n--- Queue Wait ---\n")
-	sb.WriteString(p.renderHistogram("Queue Wait", s.QueueWaits, s.QWPercentiles))
+	// G104: Errors unhandled
+	_, _ = sb.WriteString(p.renderHistogram(s.QueueWaits, s.QWPercentiles))
 
 	// --- Status Codes ---
 	fmt.Fprint(&sb, "\n--- Status Codes ---\n")
@@ -82,7 +90,7 @@ func (p *SnapshotPresenter) AsString() string {
 		slices.Sort(codes)
 		for _, code := range codes {
 			count := s.Codes[code]
-			fmt.Fprintf(&sb, "\t- %s:\t%d (%.2f%%)\n", code.String(), count, float64(count)/float64(total)*100)
+			fmt.Fprintf(&sb, "\t- %s:\t%d (%.2f%%)\n", code.String(), count, float64(count)/float64(total)*percentageFactor)
 		}
 	}
 
@@ -148,16 +156,17 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 	}
 	if s.LatPercentiles != nil {
 		for _, q := range s.LatPercentiles.Quantiles() {
-			headers = append(headers, fmt.Sprintf("LatencyP%d", int(q*100)))
+			headers = append(headers, fmt.Sprintf("LatencyP%d", int(q*percentageFactor)))
 		}
 	}
 	headers = append(headers, "QueueWaitMin", "QueueWaitMean", "QueueWaitMax")
 	if s.QWPercentiles != nil {
 		for _, q := range s.QWPercentiles.Quantiles() {
-			headers = append(headers, fmt.Sprintf("QueueWaitP%d", int(q*100)))
+			headers = append(headers, fmt.Sprintf("QueueWaitP%d", int(q*percentageFactor)))
 		}
 	}
-	writer.Write(headers)
+	// G104: Errors unhandled
+	_ = writer.Write(headers)
 
 	totalDuration := 0.0
 	if s.Latencies != nil {
@@ -175,9 +184,9 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 
 	latMin, latMean, latMax := 0.0, 0.0, 0.0
 	if s.Latencies != nil {
-		latMin = float64(s.Latencies.Min) / 1e9
-		latMean = float64(s.Latencies.Mean) / 1e9
-		latMax = float64(s.Latencies.Max) / 1e9
+		latMin = float64(s.Latencies.Min) / nanosPerSecond
+		latMean = float64(s.Latencies.Mean) / nanosPerSecond
+		latMax = float64(s.Latencies.Max) / nanosPerSecond
 	}
 
 	row := []string{
@@ -192,15 +201,15 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 	}
 	if s.LatPercentiles != nil {
 		for _, q := range s.LatPercentiles.Quantiles() {
-			row = append(row, fmt.Sprintf("%.4f", s.LatPercentiles.Quantile(q)/1e9))
+			row = append(row, fmt.Sprintf("%.4f", s.LatPercentiles.Quantile(q)/nanosPerSecond))
 		}
 	}
 
 	qwMin, qwMean, qwMax := 0.0, 0.0, 0.0
 	if s.QueueWaits != nil {
-		qwMin = float64(s.QueueWaits.Min) / 1e9
-		qwMean = float64(s.QueueWaits.Mean) / 1e9
-		qwMax = float64(s.QueueWaits.Max) / 1e9
+		qwMin = float64(s.QueueWaits.Min) / nanosPerSecond
+		qwMean = float64(s.QueueWaits.Mean) / nanosPerSecond
+		qwMax = float64(s.QueueWaits.Max) / nanosPerSecond
 	}
 
 	row = append(row,
@@ -210,17 +219,18 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 	)
 	if s.QWPercentiles != nil {
 		for _, q := range s.QWPercentiles.Quantiles() {
-			row = append(row, fmt.Sprintf("%.4f", s.QWPercentiles.Quantile(q)/1e9))
+			row = append(row, fmt.Sprintf("%.4f", s.QWPercentiles.Quantile(q)/nanosPerSecond))
 		}
 	}
 
-	writer.Write(row)
+	// G104: Errors unhandled
+	_ = writer.Write(row)
 	writer.Flush()
 	return sb.String(), nil
 }
 
 // renderHistogram is a helper to render the histogram part of the string output.
-func (p *SnapshotPresenter) renderHistogram(title string, h *HistogramSnapshot, q TDigest) string {
+func (p *SnapshotPresenter) renderHistogram(h *HistogramSnapshot, q TDigest) string {
 	var sb strings.Builder
 
 	if h != nil {
@@ -240,7 +250,7 @@ func (p *SnapshotPresenter) renderHistogram(title string, h *HistogramSnapshot, 
 		for i, count := range h.Counts {
 			var bar string
 			if maxCount > 0 {
-				bar = strings.Repeat("∎", int(float64(count)/float64(maxCount)*40))
+				bar = strings.Repeat("∎", int(float64(count)/float64(maxCount)*barWidth))
 			}
 			var lowerBound, upperBound string
 			if i == 0 {

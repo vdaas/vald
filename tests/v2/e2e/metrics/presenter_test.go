@@ -144,18 +144,19 @@ func TestSnapshotPresenter(t *testing.T) {
 
 func checkGoldenFile(t *testing.T, goldenFile string, actual string) {
 	t.Helper()
-	goldenPath := filepath.Join("testdata", goldenFile)
+	goldenPath := filepath.Clean(filepath.Join("testdata", goldenFile))
 	if *update {
-		err := os.MkdirAll(filepath.Dir(goldenPath), 0o755)
+		err := os.MkdirAll(filepath.Dir(goldenPath), 0o750)
 		if err != nil {
 			t.Fatalf("failed to create testdata dir: %v", err)
 		}
-		err = os.WriteFile(goldenPath, []byte(actual), 0o644)
+		err = os.WriteFile(goldenPath, []byte(actual), 0o600)
 		if err != nil {
 			t.Fatalf("failed to update golden file: %v", err)
 		}
 	}
 
+	//nolint:gosec
 	golden, err := os.ReadFile(goldenPath)
 	if err != nil {
 		// If file doesn't exist and not updating, fail

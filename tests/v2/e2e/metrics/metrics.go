@@ -24,13 +24,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"sync"
 	"sync/atomic"
 	"time"
 	"unsafe"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 // requestIDCtxKey is the key for storing the request ID in the context.
@@ -65,15 +65,15 @@ func PutRequestResult(rr *RequestResult) {
 
 // RequestResult represents the result of a single request.
 type RequestResult struct {
-	RequestID string        // request ID
-	Status    codes.Code    // gRPC status code
 	Err       error         // error content (Status!=OK时)
+	RequestID string        // request ID
 	Msg       string        // status message
 	QueuedAt  time.Time     // time when the request was queued
 	StartedAt time.Time     // time when the RPC started
 	EndedAt   time.Time     // time when the RPC ended
 	QueueWait time.Duration // StartedAt - QueuedAt
 	Latency   time.Duration // RPC execution time = EndedAt - StartedAt
+	Status    codes.Code    // gRPC status code
 }
 
 // Reset resets the RequestResult to its zero value.
@@ -142,27 +142,17 @@ func (h *CounterHandle) Add(val int64) {
 // collector is the main entry point for metrics aggregation. It is thread-safe.
 // It manages global metrics, per-window scales, and custom counters.
 type collector struct {
-	mu sync.RWMutex
-
-	// Atomic counters for total and errored requests.
-	total  atomic.Uint64
-	errors atomic.Uint64
-
-	// Global metrics.
 	latencies      Histogram
 	queueWaits     Histogram
 	latPercentiles TDigest
 	qwPercentiles  TDigest
 	exemplars      Exemplar
-
-	// Custom counters, stored in a map for thread-safe access.
-	counters map[string]*CounterHandle
-
-	// Thread-safe slice of Scale for metrics (ring buffers).
-	scales []Scale
-
-	// gRPC status code counts, stored in a map for thread-safe access.
-	codes map[codes.Code]*atomic.Uint64
+	counters       map[string]*CounterHandle
+	scales         []Scale
+	codes          map[codes.Code]*atomic.Uint64
+	mu             sync.RWMutex
+	total          atomic.Uint64
+	errors         atomic.Uint64
 }
 
 // NewCollector creates and initializes a new Collector with the provided options.
@@ -483,7 +473,7 @@ func (c *collector) TimeScalesSnapshot() map[string]*ScaleSnapshot {
 // It returns an error if the collectors have incompatible configurations.
 func MergeCollectors(collectors ...Collector) (Collector, error) {
 	if len(collectors) == 0 {
-		return nil, nil
+		return nil, errors.New("no collectors provided")
 	}
 	if len(collectors) == 1 {
 		return collectors[0], nil
@@ -508,7 +498,7 @@ func MergeCollectors(collectors ...Collector) (Collector, error) {
 // It returns an error if the snapshots are incompatible.
 func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 	if len(snapshots) == 0 {
-		return nil, nil
+		return nil, errors.New("no snapshots provided")
 	}
 	if len(snapshots) == 1 {
 		return snapshots[0], nil
@@ -578,8 +568,6 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 
 // GlobalSnapshot contains the aggregated metrics for all requests.
 type GlobalSnapshot struct {
-	Total          uint64                `json:"total"`
-	Errors         uint64                `json:"errors"`
 	Latencies      *HistogramSnapshot    `json:"latencies"`
 	QueueWaits     *HistogramSnapshot    `json:"queue_waits"`
 	LatPercentiles TDigest               `json:"lat_percentiles"`
@@ -587,8 +575,10 @@ type GlobalSnapshot struct {
 	Exemplars      []*item               `json:"exemplars"`
 	Codes          map[codes.Code]uint64 `json:"codes"`
 	SchemaVersion  string                `json:"schema_version"`
-	BoundsCRC32    uint32                `json:"bounds_crc32"`
 	SketchKind     string                `json:"sketch_kind"`
+	Total          uint64                `json:"total"`
+	Errors         uint64                `json:"errors"`
+	BoundsCRC32    uint32                `json:"bounds_crc32"`
 	InvariantsOK   bool                  `json:"invariants_ok"`
 }
 
@@ -605,9 +595,9 @@ func (s *GlobalSnapshot) String() string {
 // ScaleSnapshot contains the aggregated metrics for a set of windows (slots).
 type ScaleSnapshot struct {
 	Name     string          `json:"name"`
+	Slots    []*SlotSnapshot `json:"slots"`
 	Width    uint64          `json:"width"`
 	Capacity uint64          `json:"capacity"`
-	Slots    []*SlotSnapshot `json:"slots"`
 }
 
 // MarshalJSON implements the json.Marshaler interface.
@@ -647,13 +637,13 @@ func (s *ScaleSnapshot) String() string {
 
 // SlotSnapshot contains the aggregated metrics for a single window.
 type SlotSnapshot struct {
-	Total       uint64             `json:"total"`
-	Errors      uint64             `json:"errors"`
-	LastUpdated int64              `json:"last_updated"`
 	Latencies   *HistogramSnapshot `json:"latencies"`
 	QueueWaits  *HistogramSnapshot `json:"queue_waits"`
 	Counters    []uint64           `json:"counters"`
 	Exemplars   []*item            `json:"exemplars"`
+	Total       uint64             `json:"total"`
+	Errors      uint64             `json:"errors"`
+	LastUpdated int64              `json:"last_updated"`
 }
 
 // String implements the fmt.Stringer interface.
@@ -664,7 +654,8 @@ func (s *SlotSnapshot) String() string {
 
 	var sb strings.Builder
 	fmt.Fprintf(&sb, "Total Requests:\t%d\n", s.Total)
-	fmt.Fprintf(&sb, "Errors:\t%d (%.2f%%)\n", s.Errors, float64(s.Errors)/float64(s.Total)*100)
+	const percent = 100
+	fmt.Fprintf(&sb, "Errors:\t%d (%.2f%%)\n", s.Errors, float64(s.Errors)/float64(s.Total)*percent)
 	fmt.Fprintf(&sb, "Last Updated:\t%s\n", time.Unix(0, s.LastUpdated))
 
 	fmt.Fprint(&sb, "\nLatency:\n")

@@ -29,10 +29,10 @@ import (
 func TestScale_Record_And_Reset(t *testing.T) {
 	type args struct {
 		name     string
+		records  []*RequestResult
 		width    uint64
 		capacity uint64
 		st       ScaleType
-		records  []*RequestResult
 	}
 
 	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*ScaleSnapshot, error) {
@@ -83,10 +83,9 @@ func TestScale_Record_And_Reset(t *testing.T) {
 
 func TestScale_Concurrency(t *testing.T) {
 	type args struct {
-		workers     int
-		loops       int
-		capacity    uint64
-		startOffset int
+		workers  int
+		loops    int
+		capacity uint64
 	}
 
 	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*ScaleSnapshot, error) {
@@ -139,12 +138,12 @@ func TestScale_Concurrency(t *testing.T) {
 
 func TestScale_Merge(t *testing.T) {
 	type args struct {
+		s1Recs    []*RequestResult
+		s2Recs    []*RequestResult
 		width1    uint64
 		capacity1 uint64
 		width2    uint64
 		capacity2 uint64
-		s1Recs    []*RequestResult
-		s2Recs    []*RequestResult
 	}
 
 	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*ScaleSnapshot, error) {
@@ -258,9 +257,9 @@ func TestScale_Clone(t *testing.T) {
 
 func TestScale_RingBuffer_WrapAndReset(t *testing.T) {
 	type args struct {
+		records  []*RequestResult
 		width    uint64
 		capacity uint64
-		records  []*RequestResult
 	}
 	// This test verifies wrapping logic specifically
 	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*ScaleSnapshot, error) {
