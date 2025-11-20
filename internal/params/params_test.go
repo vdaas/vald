@@ -18,12 +18,12 @@ package params
 
 import (
 	"flag"
-	"os"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 

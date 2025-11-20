@@ -105,6 +105,9 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
+      {{- if $gateway.serviceAccountName }}
+      serviceAccountName: {{ $gateway.serviceAccountName }}
+      {{- end }}
       {{- if $gateway.podSecurityContext }}
       securityContext:
         {{- toYaml $gateway.podSecurityContext | nindent 8 }}

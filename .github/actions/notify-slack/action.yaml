@@ -32,10 +32,10 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: technote-space/workflow-conclusion-action@v3
+    - uses: technote-space/workflow-conclusion-action@45ce8e0eb155657ab8ccf346ade734257fd196a5 # v3.0.3
       with:
         GITHUB_TOKEN: ${{ inputs.token }}
-    - uses: 8398a7/action-slack@v3
+    - uses: 8398a7/action-slack@77eaa4f1c608a7d68b38af4e3f739dcd8cba273e # v3.19.0
       with:
         author_name: ${{ inputs.author_name }}
         status: ${{ inputs.status != '' && inputs.status || env.WORKFLOW_CONCLUSION }}

@@ -21,12 +21,20 @@ on:
       - "!internal/config/**/*_test.go"
 jobs:
   dump-contexts-to-log:
-    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/dump-context
   warning:
-    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    runs-on: ubuntu-slim
     steps:
       - name: Warn
         run: |
@@ -39,7 +47,7 @@ jobs:
             -H "Content-Type:application/json" \
             -H "Authorization: token ${GITHUB_TOKEN}" \
             --request POST \
-            --data "{\"body\": \"**[WARNING:INTCFG]** Changes in \`interal/config\` may require you to change Helm charts. Please check.\"}" \
+            --data "{\"body\": \"**[WARNING:INTCFG]** Changes in \`internal/config\` may require you to change Helm charts. Please check.\"}" \
             ${API_URL}
           fi
         env:

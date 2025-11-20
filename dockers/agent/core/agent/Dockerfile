@@ -48,8 +48,8 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
 RUN --mount=type=bind,target=.,rw \
     --mount=type=tmpfs,target=/tmp \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked,id=${APP_NAME} \
-    --mount=type=cache,target=/var/cache/apt,sharing=locked,id=${APP_NAME} \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked,id=lib-${APP_NAME}-${TARGETARCH} \
+    --mount=type=cache,target=/var/cache/apt,sharing=locked,id=cache-${APP_NAME}-${TARGETARCH} \
     set -ex \
     && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \

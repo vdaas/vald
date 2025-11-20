@@ -33,11 +33,14 @@ on:
       - "!**/*_mock.go"
       - "!**/*_test.go"
       - .github/actions/docker-build/action.yaml
+      - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-benchmark-operator-image.yaml
       - Makefile
       - Makefile.d/**
+      - apis/grpc/v1/payload/*.go
       - apis/grpc/v1/rpc/errdetails/*.go
+      - apis/grpc/v1/rpc/stats/*.go
       - apis/proto/**
       - cmd/tools/benchmark/operator/*.go
       - dockers/tools/benchmark/operator/Dockerfile
@@ -92,6 +95,7 @@ on:
       - internal/net/grpc/pool/*.go
       - internal/net/grpc/proto/*.go
       - internal/net/grpc/reflection/*.go
+      - internal/net/grpc/stats/*.go
       - internal/net/grpc/status/*.go
       - internal/net/grpc/types/*.go
       - internal/net/http/dump/*.go
@@ -148,11 +152,14 @@ on:
       - "!**/*_mock.go"
       - "!**/*_test.go"
       - .github/actions/docker-build/action.yaml
+      - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-benchmark-operator-image.yaml
       - Makefile
       - Makefile.d/**
+      - apis/grpc/v1/payload/*.go
       - apis/grpc/v1/rpc/errdetails/*.go
+      - apis/grpc/v1/rpc/stats/*.go
       - apis/proto/**
       - cmd/tools/benchmark/operator/*.go
       - dockers/tools/benchmark/operator/Dockerfile
@@ -207,6 +214,7 @@ on:
       - internal/net/grpc/pool/*.go
       - internal/net/grpc/proto/*.go
       - internal/net/grpc/reflection/*.go
+      - internal/net/grpc/stats/*.go
       - internal/net/grpc/status/*.go
       - internal/net/grpc/types/*.go
       - internal/net/http/dump/*.go
@@ -258,4 +266,11 @@ jobs:
     uses: ./.github/workflows/_docker-image.yaml
     with:
       target: benchmark-operator
-    secrets: inherit
+    secrets:
+      DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+      PACKAGE_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
+      PACKAGE_USER: ${{ secrets.PACKAGE_USER }}
+      SLACK_NOTIFY_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
+    permissions:
+      contents: read

@@ -294,6 +294,10 @@
         "incomingEdge": {
           "type": "integer",
           "format": "int32"
+        },
+        "epsilonForCreation": {
+          "type": "number",
+          "format": "float"
         }
       },
       "title": "Represents index Property"

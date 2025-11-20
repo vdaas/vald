@@ -14,5 +14,6 @@
 // limitations under the License.
 //
 
+// Delete this file after porting to Rust
 // Package usearch provides implementation of Go API for https://github.com/unum-cloud/usearch
 package usearch

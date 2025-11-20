@@ -20,13 +20,23 @@ on:
       - created
 jobs:
   dump-contexts-to-log:
-    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/dump-context
   detect-ci-container:
+    permissions:
+      contents: read
     uses: ./.github/workflows/_detect-ci-container.yaml
   build-linux:
+    timeout-minutes: 30
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     needs: [detect-ci-container]
     container:
@@ -35,8 +45,9 @@ jobs:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
+          persist-credentials: false
           fetch-depth: 10
       - name: Set Git config
         run: |
@@ -45,20 +56,24 @@ jobs:
         run: |
           make binary/build/zip
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: artifacts-linux
           path: ./artifacts/
   publish:
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: write
     runs-on: ubuntu-latest
     needs:
       - build-linux
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: artifacts-linux
           path: tmp/linux
-      - uses: shogo82148/actions-upload-release-asset@v1
+      - uses: shogo82148/actions-upload-release-asset@59cbc563d11314e48122193f8fe5cdda62ea6cf9 # v1.9.1
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: tmp/linux/vald-*.zip

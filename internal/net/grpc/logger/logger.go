@@ -14,10 +14,10 @@
 package logger
 
 import (
-	"os"
 	"strconv"
 
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/sync"
 	glog "google.golang.org/grpc/grpclog"
 )
@@ -32,8 +32,11 @@ const (
 	tag = "[gRPC Log]"
 )
 
-// Init initialize the logging level and the logger.
-func Init() {
+func init() {
+	internalInit()
+}
+
+func internalInit() {
 	once.Do(func() {
 		var v int
 		if vl, err := strconv.Atoi(os.Getenv("GRPC_GO_LOG_VERBOSITY_LEVEL")); err == nil {

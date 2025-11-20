@@ -18,11 +18,11 @@ package params
 
 import (
 	"flag"
-	"os"
 	"slices"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/os"
 )
 
 type ErrorHandling = flag.ErrorHandling

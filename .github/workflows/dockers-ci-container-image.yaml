@@ -31,14 +31,18 @@ on:
   pull_request:
     paths:
       - .github/actions/docker-build/action.yaml
+      - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-ci-container-image.yaml
       - Makefile
       - Makefile.d/**
       - apis/proto/**
       - dockers/ci/base/Dockerfile
+      - go.mod
+      - go.sum
       - hack/**
       - hack/docker/gen/main.go
+      - versions/GO_VERSION
   pull_request_target:
     types:
       - opened
@@ -47,18 +51,29 @@ on:
       - labeled
     paths:
       - .github/actions/docker-build/action.yaml
+      - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-ci-container-image.yaml
       - Makefile
       - Makefile.d/**
       - apis/proto/**
       - dockers/ci/base/Dockerfile
+      - go.mod
+      - go.sum
       - hack/**
       - hack/docker/gen/main.go
+      - versions/GO_VERSION
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml
     with:
       target: ci-container
       platforms: linux/amd64
-    secrets: inherit
+    secrets:
+      DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+      PACKAGE_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
+      PACKAGE_USER: ${{ secrets.PACKAGE_USER }}
+      SLACK_NOTIFY_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
+    permissions:
+      contents: read

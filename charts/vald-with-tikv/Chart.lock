@@ -1,0 +1,9 @@
+dependencies:
+- name: vald
+  repository: https://vald.vdaas.org/charts
+  version: v1.7.17
+- name: tidb-operator
+  repository: https://charts.pingcap.org
+  version: v1.6.3
+digest: sha256:f7e3b985ab5537c656d99c7e1a5a775161e1ee174a8d822dfb5eaf751f9b989c
+generated: "2025-10-02T14:29:13.761429666+09:00"

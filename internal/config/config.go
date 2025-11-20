@@ -20,7 +20,6 @@ package config
 import (
 	"fmt"
 	"io/fs"
-	"os"
 	"path/filepath"
 	"reflect"
 
@@ -30,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 	"sigs.k8s.io/yaml"
 )
@@ -107,7 +107,7 @@ func GetActualValue[T ~string](val T) (res T) {
 	if strings.HasPrefix(r, fileValuePrefix) {
 		body, err := file.ReadFile(strings.TrimPrefix(r, fileValuePrefix))
 		if err != nil || body == nil {
-			return
+			return res
 		}
 		r = conv.Btoa(body)
 	}

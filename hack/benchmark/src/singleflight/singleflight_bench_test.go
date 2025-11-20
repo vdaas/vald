@@ -18,13 +18,14 @@ import (
 	"fmt"
 	"io/fs"
 	"math"
-	"os"
 	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/sync/singleflight"
 	stdsingleflight "golang.org/x/sync/singleflight"
 )
@@ -76,11 +77,12 @@ func (h *helper) Do(parallel int, b *testing.B) {
 	doFn := h.initDoFn()
 
 	ch := make(chan struct{})
-	go func() {
+	errgroup.Go(func() error {
 		ch <- struct{}{}
 		atomic.AddInt64(&h.calledCnt, -1)
 		doFn(context.Background(), "key", fn)
-	}()
+		return nil
+	})
 	<-ch
 	close(ch)
 
@@ -95,10 +97,11 @@ func (h *helper) Do(parallel int, b *testing.B) {
 		for pb.Next() {
 			wg.Add(1)
 			atomic.AddInt64(&h.totalCnt, 1)
-			go func() {
+			errgroup.Go(func() error {
 				defer wg.Done()
 				doFn(context.Background(), "key", fn)
-			}()
+				return nil
+			})
 		}
 		wg.Wait()
 	})
@@ -117,7 +120,7 @@ func Benchmark_group_Do_with_sync_singleflight(b *testing.B) {
 				h := &helper{
 					initDoFn: func() func(ctx context.Context, key string, fn func(context.Context) (string, error)) {
 						g := new(stdsingleflight.Group)
-						return func(ctx context.Context, key string, fn func(context.Context) (string, error)) {
+						return func(_ context.Context, key string, fn func(context.Context) (string, error)) {
 							g.Do(key, func() (any, error) { return fn(context.Background()) })
 						}
 					},
@@ -180,7 +183,7 @@ func calcAverage(in []Result) (out Result) {
 	}
 	out.HitRate = sum / float64(len(in))
 
-	return
+	return out
 }
 
 func calcVariance(in []Result) (out Result) {
@@ -196,7 +199,7 @@ func calcVariance(in []Result) (out Result) {
 	}
 	out.HitRate = sum / float64(len(in))
 
-	return
+	return out
 }
 
 func Benchmark_group_Do_with_vald_internal_singleflight(b *testing.B) {

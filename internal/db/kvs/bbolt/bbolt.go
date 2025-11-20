@@ -16,10 +16,10 @@ package bbolt
 import (
 	"fmt"
 	"io/fs"
-	"os"
 	"reflect"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	bolt "go.etcd.io/bbolt"
 )

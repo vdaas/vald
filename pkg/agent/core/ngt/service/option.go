@@ -19,13 +19,13 @@ package service
 import (
 	"math"
 	"math/big"
-	"os"
 	"time"
 
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"

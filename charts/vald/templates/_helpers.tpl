@@ -480,7 +480,9 @@ tls:
   cert: {{ default .default.tls.cert .Values.tls.cert | quote }}
   key: {{ default .default.tls.key .Values.tls.key | quote }}
   ca: {{ default .default.tls.ca .Values.tls.ca | quote }}
+  crl: {{ default .default.tls.crl .Values.tls.crl | quote }}
   insecure_skip_verify: {{ default .default.tls.insecure_skip_verify .Values.tls.insecure_skip_verify }}
+  hot_reload: {{ default .default.tls.hot_reload .Values.tls.hot_reload }}
   {{- else }}
   {{- toYaml .default.tls | nindent 2 }}
   {{- end }}
@@ -595,7 +597,9 @@ dial_option:
       cert: {{ default .default.dial_option.net.tls.cert .Values.dial_option.net.tls.cert | quote }}
       key: {{ default .default.dial_option.net.tls.key .Values.dial_option.net.tls.key | quote }}
       ca: {{ default .default.dial_option.net.tls.ca .Values.dial_option.net.tls.ca | quote }}
+      crl: {{ default .default.dial_option.net.tls.crl .Values.dial_option.net.tls.crl | quote }}
       insecure_skip_verify: {{ default .default.dial_option.net.tls.insecure_skip_verify .Values.dial_option.net.tls.insecure_skip_verify }}
+      hot_reload: {{ default .default.dial_option.net.tls.hot_reload .Values.dial_option.net.tls.hot_reload }}
       {{- else }}
       {{- toYaml .default.dial_option.net.tls | nindent 6 }}
       {{- end }}
@@ -633,7 +637,9 @@ tls:
   cert: {{ default .default.tls.cert .Values.tls.cert | quote }}
   key: {{ default .default.tls.key .Values.tls.key | quote }}
   ca: {{ default .default.tls.ca .Values.tls.ca | quote }}
+  crl: {{ default .default.tls.crl .Values.tls.crl | quote }}
   insecure_skip_verify: {{ default .default.tls.insecure_skip_verify .Values.tls.insecure_skip_verify }}
+  hot_reload: {{ default .default.tls.hot_reload .Values.tls.hot_reload }}
   {{- else }}
   {{- toYaml .default.tls | nindent 2 }}
   {{- end }}
@@ -945,7 +951,7 @@ spec:
       tolerations:
         {{- toYaml .Job.tolerations | nindent 8 }}
       {{- end }}
-      {{- if .Job.serviceAccount }}
-      serviceAccountName: {{ .Job.serviceAccount.name }}
+      {{- if .Job.serviceAccountName }}
+      serviceAccountName: {{ .Job.serviceAccountName }}
       {{- end }}
 {{- end -}}

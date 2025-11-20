@@ -21,20 +21,31 @@ on:
       - "CHANGELOG.md"
 jobs:
   dump-contexts-to-log:
-    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/dump-context
   languagetool-apis-charts:
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
     name: runner / LanguageTool / apis & charts
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: LanguageTool
-        uses: reviewdog/action-languagetool@v1
+        uses: reviewdog/action-languagetool@afd06e9b0f782c9562c92efffb66a49c09b2b4f4 # v1.23.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -44,15 +55,21 @@ jobs:
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
           disabled_categories: "TYPOS,TYPOGRAPHY,STYLE,CASING"
   languagetool-docs:
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
     name: runner / LanguageTool / Docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: LanguageTool
-        uses: reviewdog/action-languagetool@v1
+        uses: reviewdog/action-languagetool@afd06e9b0f782c9562c92efffb66a49c09b2b4f4 # v1.23.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -62,24 +79,29 @@ jobs:
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
           disabled_categories: "TYPOS,TYPOGRAPHY,STYLE"
   textlint:
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
     name: runner / textlint
-    runs-on: ubuntu-latest
-    env:
-      REVIEWDOG_GITHUB_API_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+    runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Setup node/npm
-        uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@635640504f6d7197d3bb29876a652f671028dc97 # main
         with:
-          node-version: "latest"
+          bun-version: latest
       - name: Install textlint
         run: |
           make reviewdog/install
           make textlint/ci/install
       - name: Run lint for files && Report to GitHub
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         run: |
           make CSPELL_EXTRA_OPTIONS="--no-summary --no-progress" files/cspell | \
           reviewdog \
@@ -96,6 +118,8 @@ jobs:
             -reporter=github-pr-review \
             -level=error
       - name: Run lint for documents && Report to GitHub
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         run: |
           make CSPELL_EXTRA_OPTIONS="--no-summary --no-progress" docs/cspell | \
           reviewdog \

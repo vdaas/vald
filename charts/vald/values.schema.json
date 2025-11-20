@@ -385,6 +385,10 @@
               "type": "boolean",
               "description": "enable index statistics loading"
             },
+            "epsilon_for_creation": {
+              "type": "number",
+              "description": "the epsilon used for creation"
+            },
             "error_buffer_limit": {
               "type": "integer",
               "description": "maximum number of core ngt error buffer pool size limit",
@@ -1814,19 +1818,7 @@
             "labels": { "type": "object", "description": "service labels" }
           }
         },
-        "serviceAccount": {
-          "type": "object",
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "description": "creates service account"
-            },
-            "name": {
-              "type": "string",
-              "description": "name of service account"
-            }
-          }
-        },
+        "serviceAccountName": { "type": "string" },
         "serviceType": {
           "type": "string",
           "description": "service type: ClusterIP, LoadBalancer or NodePort",
@@ -6898,19 +6890,7 @@
             "labels": { "type": "object", "description": "service labels" }
           }
         },
-        "serviceAccount": {
-          "type": "object",
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "description": "creates service account"
-            },
-            "name": {
-              "type": "string",
-              "description": "name of service account"
-            }
-          }
-        },
+        "serviceAccountName": { "type": "string" },
         "serviceType": {
           "type": "string",
           "description": "service type: ClusterIP, LoadBalancer or NodePort",
@@ -8283,6 +8263,11 @@
                 "servicePort": {
                   "type": "string",
                   "description": "service port to be exposed by ingress"
+                },
+                "tls": {
+                  "type": "array",
+                  "description": "ingress tls config",
+                  "items": { "type": "object" }
                 }
               }
             },
@@ -9618,6 +9603,7 @@
                 "labels": { "type": "object", "description": "service labels" }
               }
             },
+            "serviceAccountName": { "type": "string" },
             "serviceType": {
               "type": "string",
               "description": "service type: ClusterIP, LoadBalancer or NodePort",
@@ -10965,6 +10951,11 @@
                 "servicePort": {
                   "type": "string",
                   "description": "service port to be exposed by ingress"
+                },
+                "tls": {
+                  "type": "array",
+                  "description": "ingress tls config",
+                  "items": { "type": "object" }
                 }
               }
             },
@@ -12300,6 +12291,7 @@
                 "labels": { "type": "object", "description": "service labels" }
               }
             },
+            "serviceAccountName": { "type": "string" },
             "serviceType": {
               "type": "string",
               "description": "service type: ClusterIP, LoadBalancer or NodePort",
@@ -13041,7 +13033,8 @@
                 "servicePort": {
                   "type": "string",
                   "description": "service port to be exposed by ingress"
-                }
+                },
+                "tls": { "type": "array", "items": { "type": "object" } }
               }
             },
             "initContainers": {
@@ -14376,19 +14369,7 @@
                 "labels": { "type": "object", "description": "service labels" }
               }
             },
-            "serviceAccount": {
-              "type": "object",
-              "properties": {
-                "enabled": {
-                  "type": "boolean",
-                  "description": "creates service account"
-                },
-                "name": {
-                  "type": "string",
-                  "description": "name of service account"
-                }
-              }
-            },
+            "serviceAccountName": { "type": "string" },
             "serviceType": {
               "type": "string",
               "description": "service type: ClusterIP, LoadBalancer or NodePort",
@@ -16985,6 +16966,7 @@
                     }
                   }
                 },
+                "serviceAccountName": { "type": "string" },
                 "startingDeadlineSeconds": {
                   "type": "integer",
                   "description": "startingDeadlineSeconds setting for K8s completed jobs"
@@ -19121,6 +19103,7 @@
                     }
                   }
                 },
+                "serviceAccountName": { "type": "string" },
                 "startingDeadlineSeconds": {
                   "type": "integer",
                   "description": "startingDeadlineSeconds setting for K8s completed jobs"
@@ -21257,6 +21240,7 @@
                     }
                   }
                 },
+                "serviceAccountName": { "type": "string" },
                 "startingDeadlineSeconds": {
                   "type": "integer",
                   "description": "startingDeadlineSeconds setting for K8s completed jobs"
@@ -22349,6 +22333,32 @@
                 "annotations": {
                   "type": "object",
                   "description": "deployment annotations"
+                },
+                "clusterRole": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean",
+                      "description": "creates clusterRole resource"
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "name of clusterRole"
+                    }
+                  }
+                },
+                "clusterRoleBinding": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean",
+                      "description": "creates clusterRoleBinding resource"
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "name of clusterRoleBinding"
+                    }
+                  }
                 },
                 "enabled": {
                   "type": "boolean",
@@ -23701,6 +23711,7 @@
                     }
                   }
                 },
+                "serviceAccountName": { "type": "string" },
                 "terminationGracePeriodSeconds": {
                   "type": "integer",
                   "description": "duration in seconds pod needs to terminate gracefully",
@@ -25052,19 +25063,7 @@
                         }
                       }
                     },
-                    "serviceAccount": {
-                      "type": "object",
-                      "properties": {
-                        "enabled": {
-                          "type": "boolean",
-                          "description": "creates service account"
-                        },
-                        "name": {
-                          "type": "string",
-                          "description": "name of service account"
-                        }
-                      }
-                    },
+                    "serviceAccountName": { "type": "string" },
                     "target_read_replica_id_annotations_key": {
                       "type": "string",
                       "description": "name of annotations key for target read replica id"
@@ -27216,6 +27215,7 @@
                     }
                   }
                 },
+                "serviceAccountName": { "type": "string" },
                 "startingDeadlineSeconds": {
                   "type": "integer",
                   "description": "startingDeadlineSeconds setting for K8s completed jobs"
@@ -28356,6 +28356,7 @@
                 "labels": { "type": "object", "description": "service labels" }
               }
             },
+            "serviceAccountName": { "type": "string" },
             "serviceType": {
               "type": "string",
               "description": "service type: ClusterIP, LoadBalancer or NodePort",

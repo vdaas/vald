@@ -25,20 +25,41 @@ on:
         type: string
         description: "The release tag"
         required: true
+    secrets:
+      PACKAGE_USER:
+        required: true
+      PACKAGE_TOKEN:
+        required: true
+      DISPATCH_TOKEN:
+        required: true
+      GPG_PRIVATE_KEY:
+        required: true
+      DISPATCH_USER:
+        required: true
 jobs:
   dump-contexts-to-log:
-    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/dump-context
   detect-ci-container:
+    permissions:
+      contents: read
     uses: ./.github/workflows/_detect-ci-container.yaml
-    secrets: inherit
   create:
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
     needs:
       - dump-contexts-to-log
       - detect-ci-container
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
       credentials:
@@ -49,14 +70,15 @@ jobs:
       PREPARE_RELEASE_BRANCH_NAME: prepare/${{ inputs.release_branch_name }}
       RELEASE_TAG: ${{ inputs.release_tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
+          persist-credentials: false
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - uses: crazy-max/ghaction-import-gpg@v6
+      - uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec # v6.3.0
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
@@ -65,6 +87,7 @@ jobs:
         id: update_for_new_release
         run: |
           git checkout ${RELEASE_BRANCH_NAME}
+          git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git checkout -b ${PREPARE_RELEASE_BRANCH_NAME} && git push origin ${PREPARE_RELEASE_BRANCH_NAME}
 
           LAST_COMMIT_MESSAGE=`git log --pretty=format:%s -1`

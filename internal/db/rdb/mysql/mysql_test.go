@@ -19,7 +19,6 @@ package mysql
 import (
 	"context"
 	"database/sql"
-	"os"
 	"reflect"
 	"sync/atomic"
 	"testing"
@@ -30,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/internal/tls"
 )
@@ -214,7 +214,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(false)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						OpenFunc: func(driver, dsn string, log EventReceiver) (dbr.Connection, error) {
@@ -275,7 +275,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(false)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						OpenFunc: func(driver, dsn string, log EventReceiver) (dbr.Connection, error) {
@@ -327,7 +327,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 					maxIdleConns:         10,
 					connected: func() (v atomic.Value) {
 						v.Store(false)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						OpenFunc: func(driver, dsn string, log EventReceiver) (dbr.Connection, error) {
@@ -376,7 +376,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(false)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						OpenFunc: func(driver, dsn string, log EventReceiver) (dbr.Connection, error) {
@@ -652,7 +652,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 				session: &dbr.MockSession{},
 				connected: func() (v atomic.Value) {
 					v.Store(false)
-					return
+					return v
 				}(),
 			},
 			want: want{},
@@ -670,7 +670,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 				},
 				connected: func() (v atomic.Value) {
 					v.Store(true)
-					return
+					return v
 				}(),
 			},
 			want: want{},
@@ -683,7 +683,7 @@ func Test_mySQLClient_Close(t *testing.T) {
 			fields: fields{
 				connected: func() (v atomic.Value) {
 					v.Store(true)
-					return
+					return v
 				}(),
 			},
 			want: want{
@@ -762,7 +762,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 				fields: fields{
 					connected: func() (v atomic.Value) {
 						v.Store(false)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -780,7 +780,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 				fields: fields{
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -816,7 +816,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -862,7 +862,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -918,7 +918,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -982,7 +982,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -1072,7 +1072,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 				fields: fields{
 					connected: func() (v atomic.Value) {
 						v.Store(false)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -1091,7 +1091,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 				fields: fields{
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -1133,7 +1133,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -1179,7 +1179,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -1241,7 +1241,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -1308,7 +1308,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -1461,7 +1461,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 				fields: fields{
 					connected: func() (v atomic.Value) {
 						v.Store(false)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -1480,7 +1480,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 				fields: fields{
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -1505,7 +1505,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -1534,7 +1534,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -1572,7 +1572,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -1626,7 +1626,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -1690,7 +1690,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -1772,7 +1772,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -1867,7 +1867,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -1965,7 +1965,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -2062,7 +2062,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -2143,7 +2143,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 				fields: fields{
 					connected: func() (v atomic.Value) {
 						v.Store(false)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -2162,7 +2162,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 				fields: fields{
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -2187,7 +2187,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -2217,7 +2217,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -2257,7 +2257,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -2313,7 +2313,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -2379,7 +2379,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -2464,7 +2464,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -2561,7 +2561,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -2661,7 +2661,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -2760,7 +2760,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -2883,7 +2883,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -2947,7 +2947,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -2969,7 +2969,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 				fields: fields{
 					connected: func() (v atomic.Value) {
 						v.Store(false)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -2987,7 +2987,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 				fields: fields{
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -3011,7 +3011,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -3035,7 +3035,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -3081,7 +3081,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -3133,7 +3133,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -3203,7 +3203,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -3273,7 +3273,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -3339,7 +3339,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -3462,7 +3462,7 @@ func Test_mySQLClient_DeleteVectors(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -3529,7 +3529,7 @@ func Test_mySQLClient_DeleteVectors(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -3615,7 +3615,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 				fields: fields{
 					connected: func() (v atomic.Value) {
 						v.Store(false)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -3637,7 +3637,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 				fields: fields{
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -3665,7 +3665,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -3720,7 +3720,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -3778,7 +3778,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -3851,7 +3851,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -3923,7 +3923,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -4007,7 +4007,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 				fields: fields{
 					connected: func() (v atomic.Value) {
 						v.Store(false)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -4028,7 +4028,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 				fields: fields{
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -4055,7 +4055,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 				},
 				want: want{
@@ -4097,7 +4097,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
@@ -4143,7 +4143,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 					},
 					connected: func() (v atomic.Value) {
 						v.Store(true)
-						return
+						return v
 					}(),
 					dbr: &dbr.MockDBR{
 						EqFunc: func(col string, val any) dbr.Builder {
