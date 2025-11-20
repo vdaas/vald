@@ -14,8 +14,8 @@
 package operation
 
 import (
-	"context"
 	"strconv"
+	"sync"
 	"sync/atomic"
 	"testing"
 
@@ -27,9 +27,10 @@ import (
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
-func (o *operation) Insert(ctx context.Context, b *testing.B, ds assets.Dataset) (insertedNum int) {
+func (o *operation) Insert(b *testing.B, ds assets.Dataset) (insertedNum int) {
 	b.ResetTimer()
 	b.Run("Insert", func(b *testing.B) {
+		ctx := b.Context()
 		req := &payload.Insert_Request{
 			Vector: &payload.Object_Vector{},
 			Config: &payload.Insert_Config{
@@ -63,12 +64,11 @@ func (o *operation) Insert(ctx context.Context, b *testing.B, ds assets.Dataset)
 	return insertedNum
 }
 
-func (o *operation) StreamInsert(ctx context.Context, b *testing.B, ds assets.Dataset) int {
+func (o *operation) StreamInsert(b *testing.B, ds assets.Dataset) int {
 	var insertedNum int64
 	b.ResetTimer()
 	b.Run("StreamInsert", func(b *testing.B) {
 		ctx := b.Context()
-		eg, ctx := errgroup.New(ctx)
 		sc, err := o.client.StreamInsert(ctx)
 		if err != nil {
 			b.Fatal(err)
@@ -80,9 +80,13 @@ func (o *operation) StreamInsert(ctx context.Context, b *testing.B, ds assets.Da
 				SkipStrictExistCheck: false,
 			},
 		}
+
+		wg := sync.WaitGroup{}
+		wg.Add(1)
 		b.ResetTimer()
 
-		eg.Go(func() error {
+		errgroup.Go(func() error {
+			defer wg.Done()
 			for {
 				res, err := sc.Recv()
 				if err == io.EOF {
@@ -128,7 +132,8 @@ func (o *operation) StreamInsert(ctx context.Context, b *testing.B, ds assets.Da
 		if err := sc.CloseSend(); err != nil {
 			b.Fatal(err)
 		}
-		eg.Wait()
+
+		wg.Wait()
 	})
 
 	return int(insertedNum)

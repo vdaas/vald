@@ -14,7 +14,6 @@
 package ngt
 
 import (
-	"context"
 	"flag"
 	"testing"
 
@@ -49,8 +48,6 @@ func init() {
 func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 	for _, dname := range datasets {
 		b.Run(dname, func(b *testing.B) {
-			ctx := context.Background()
-
 			dataset := assets.LoadData(dname)(b)
 
 			c, err := core.New(
@@ -72,18 +69,18 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 				ngt.WithDistanceType(dataset.DistanceType()),
 				ngt.WithObjectType(dataset.ObjectType()),
 				ngt.WithClient(c),
-			).Run(ctx, b)()
+			).Run(b)()
 
 			op := operation.New(
 				operation.WithClient(c),
 				operation.WithIndexer(c),
 			)
 
-			insertedNum := op.Insert(ctx, b, dataset)
-			op.CreateIndex(ctx, b)
-			op.Search(ctx, b, dataset)
-			op.SearchByID(ctx, b, insertedNum)
-			op.Remove(ctx, b, insertedNum)
+			insertedNum := op.Insert(b, dataset)
+			op.CreateIndex(b)
+			op.Search(b, dataset)
+			op.SearchByID(b, insertedNum)
+			op.Remove(b, insertedNum)
 		})
 	}
 }
@@ -91,8 +88,6 @@ func BenchmarkAgentNGT_gRPC_Sequential(b *testing.B) {
 func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 	for _, dname := range datasets {
 		b.Run(dname, func(b *testing.B) {
-			ctx := context.Background()
-
 			dataset := assets.LoadData(dname)(b)
 
 			c, err := core.New(
@@ -114,18 +109,18 @@ func BenchmarkAgentNGT_gRPC_Stream(b *testing.B) {
 				ngt.WithDistanceType(dataset.DistanceType()),
 				ngt.WithObjectType(dataset.ObjectType()),
 				ngt.WithClient(c),
-			).Run(ctx, b)()
+			).Run(b)()
 
 			op := operation.New(
 				operation.WithClient(c),
 				operation.WithIndexer(c),
 			)
 
-			insertedNum := op.StreamInsert(ctx, b, dataset)
-			op.CreateIndex(ctx, b)
-			op.StreamSearch(ctx, b, dataset)
-			op.StreamSearchByID(ctx, b, insertedNum)
-			op.StreamRemove(ctx, b, insertedNum)
+			insertedNum := op.StreamInsert(b, dataset)
+			op.CreateIndex(b)
+			op.StreamSearch(b, dataset)
+			op.StreamSearchByID(b, insertedNum)
+			op.StreamRemove(b, insertedNum)
 		})
 	}
 }

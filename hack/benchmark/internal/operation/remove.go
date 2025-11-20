@@ -14,8 +14,8 @@
 package operation
 
 import (
-	"context"
 	"strconv"
+	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -23,9 +23,10 @@ import (
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
-func (o *operation) Remove(ctx context.Context, b *testing.B, maxIdNum int) {
+func (o *operation) Remove(b *testing.B, maxIdNum int) {
 	b.ResetTimer()
 	b.Run("Remove", func(b *testing.B) {
+		ctx := b.Context()
 		req := &payload.Remove_Request{
 			Id: &payload.Object_ID{},
 			Config: &payload.Remove_Config{
@@ -48,11 +49,10 @@ func (o *operation) Remove(ctx context.Context, b *testing.B, maxIdNum int) {
 	})
 }
 
-func (o *operation) StreamRemove(ctx context.Context, b *testing.B, maxIdNum int) {
+func (o *operation) StreamRemove(b *testing.B, maxIdNum int) {
 	b.ResetTimer()
 	b.Run("StreamRemove", func(b *testing.B) {
 		ctx := b.Context()
-		eg, ctx := errgroup.New(ctx)
 		sc, err := o.client.StreamRemove(ctx)
 		if err != nil {
 			b.Fatal(err)
@@ -64,9 +64,14 @@ func (o *operation) StreamRemove(ctx context.Context, b *testing.B, maxIdNum int
 				SkipStrictExistCheck: false,
 			},
 		}
+
+		wg := sync.WaitGroup{}
+		wg.Add(1)
 		b.ResetTimer()
 
-		eg.Go(func() error {
+		errgroup.Go(func() error {
+			defer wg.Done()
+
 			for {
 				res, err := sc.Recv()
 				if err == io.EOF {
@@ -103,6 +108,7 @@ func (o *operation) StreamRemove(ctx context.Context, b *testing.B, maxIdNum int
 		if err := sc.CloseSend(); err != nil {
 			b.Fatal(err)
 		}
-		eg.Wait()
+
+		wg.Wait()
 	})
 }

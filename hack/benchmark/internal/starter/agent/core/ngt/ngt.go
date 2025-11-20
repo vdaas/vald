@@ -46,8 +46,7 @@ func New(opts ...Option) starter.Starter {
 	return srv
 }
 
-func (s *server) Run(ctx context.Context, tb testing.TB) func() {
-	eg, ctx := errgroup.New(ctx)
+func (s *server) Run(tb testing.TB) func() {
 	tb.Helper()
 
 	info.Init(name)
@@ -57,6 +56,8 @@ func (s *server) Run(ctx context.Context, tb testing.TB) func() {
 		tb.Fatal(err)
 	}
 
+	ctx := tb.Context()
+	eg, ctx := errgroup.New(ctx)
 	ctx, cancel := context.WithCancel(ctx)
 
 	eg.Go(func() error {
@@ -74,7 +75,7 @@ func (s *server) Run(ctx context.Context, tb testing.TB) func() {
 		tb.Fatal(err)
 	}
 
-	eg.Go(func() error {
+	errgroup.Go(func() error {
 		for {
 			select {
 			case <-ctx.Done():
@@ -83,7 +84,6 @@ func (s *server) Run(ctx context.Context, tb testing.TB) func() {
 				tb.Error(err)
 			}
 		}
-		return nil
 	})
 
 	return func() {
