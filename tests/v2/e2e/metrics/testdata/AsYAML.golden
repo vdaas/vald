@@ -1,0 +1,33 @@
+latencies:
+  counts: []
+  bounds: []
+  total: 100
+  sum: 1e+08
+  sumsq: 0
+  mean: 1e+06
+  stddev: 0
+  min: 100000
+  max: 1e+07
+queuewaits:
+  counts: []
+  bounds: []
+  total: 100
+  sum: 5e+07
+  sumsq: 0
+  mean: 500000
+  stddev: 0
+  min: 50000
+  max: 5e+06
+latpercentiles: {}
+qwpercentiles: {}
+exemplars:
+- {}
+codes:
+  0: 90
+  10: 10
+schemaversion: ""
+sketchkind: ""
+total: 100
+errors: 10
+boundscrc32: 0
+invariantsok: false
