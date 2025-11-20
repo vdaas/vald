@@ -195,7 +195,7 @@ func (s *Scale) record(ctx context.Context, rr *RequestResult) {
 }
 
 // newScale creates a new scale with the given configuration.
-func newScale(name string, width, capacity uint64, numCounters int, st scaleType) (*Scale, error) {
+func newScale(name string, width, capacity uint64, numCounters int, st scaleType, lat, qw Histogram, ex Exemplar) (*Scale, error) {
 	if width == 0 {
 		return nil, errors.New("scale width must be > 0")
 	}
@@ -206,9 +206,9 @@ func newScale(name string, width, capacity uint64, numCounters int, st scaleType
 	for i := range slots {
 		slots[i] = newSlot(
 			numCounters,
-			histogramPool.Get(),
-			histogramPool.Get(),
-			exemplarPool.Get(),
+			lat.Clone(),
+			qw.Clone(),
+			ex.Clone(),
 		)
 	}
 	s := &Scale{
@@ -311,8 +311,8 @@ type collector struct {
 	// Global metrics.
 	latencies      Histogram
 	queueWaits     Histogram
-	latPercentiles QuantileSketch
-	qwPercentiles  QuantileSketch
+	latPercentiles TDigest
+	qwPercentiles  TDigest
 	exemplars      Exemplar
 
 	// Custom counters, stored in a map for thread-safe access.
@@ -464,8 +464,87 @@ func (c *collector) IncCounter(name string, val int64) {
 	}
 }
 
+// Clone returns a deep copy of the collector.
+func (c *collector) Clone() (Collector, error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	newC := &collector{
+		counters: make(map[string]*CounterHandle),
+		codes:    make(map[codes.Code]*atomic.Uint64),
+	}
+
+	// Copy atomics
+	newC.total.Store(c.total.Load())
+	newC.errors.Store(c.errors.Load())
+
+	// Copy global metrics using Clone
+	if c.latencies != nil {
+		newC.latencies = c.latencies.Clone()
+	}
+	if c.queueWaits != nil {
+		newC.queueWaits = c.queueWaits.Clone()
+	}
+	if c.latPercentiles != nil {
+		newC.latPercentiles = c.latPercentiles.Clone()
+	}
+	if c.qwPercentiles != nil {
+		newC.qwPercentiles = c.qwPercentiles.Clone()
+	}
+	if c.exemplars != nil {
+		newC.exemplars = c.exemplars.Clone()
+	}
+
+	// Copy counters
+	for name, h := range c.counters {
+		newC.counters[name] = &CounterHandle{
+			value: new(atomic.Uint64),
+		}
+		newC.counters[name].value.Store(h.value.Load())
+	}
+
+	// Copy codes
+	for code, val := range c.codes {
+		newC.codes[code] = new(atomic.Uint64)
+		newC.codes[code].Store(val.Load())
+	}
+
+	// Copy scales
+	if len(c.scales) > 0 {
+		newC.scales = make([]*Scale, len(c.scales))
+		for i, s := range c.scales {
+			slots := make([]*Slot, len(s.slots))
+			for j, slot := range s.slots {
+				// Clone Slot
+				counters := make([]atomic.Uint64, len(slot.Counters))
+				for k := range slot.Counters {
+					counters[k].Store(slot.Counters[k].Load())
+				}
+				slots[j] = &Slot{
+					Latency:   slot.Latency.Clone(),
+					QueueWait: slot.QueueWait.Clone(),
+					Counters:  counters,
+					Exemplars: slot.Exemplars.Clone(),
+				}
+				slots[j].Total.Store(slot.Total.Load())
+				slots[j].Errors.Store(slot.Errors.Load())
+				slots[j].updatedNS.Store(slot.updatedNS.Load())
+			}
+			newC.scales[i] = &Scale{
+				name:      s.name,
+				width:     s.width,
+				capacity:  s.capacity,
+				scaleType: s.scaleType,
+				slots:     slots,
+			}
+		}
+	}
+
+	return newC, nil
+}
+
 func (c *collector) deepCopy() (Collector, error) {
-	return NewCollector(defaultOptions...)
+	return c.Clone()
 }
 
 // --- Snapshots ---
@@ -621,8 +700,8 @@ type GlobalSnapshot struct {
 	Errors         uint64                `json:"errors"`
 	Latencies      *HistogramSnapshot    `json:"latencies"`
 	QueueWaits     *HistogramSnapshot    `json:"queue_waits"`
-	LatPercentiles QuantileSketch        `json:"lat_percentiles"`
-	QWPercentiles  QuantileSketch        `json:"qw_percentiles"`
+	LatPercentiles TDigest               `json:"lat_percentiles"`
+	QWPercentiles  TDigest               `json:"qw_percentiles"`
 	Exemplars      []*item               `json:"exemplars"`
 	Codes          map[codes.Code]uint64 `json:"codes"`
 	SchemaVersion  string                `json:"schema_version"`
@@ -726,10 +805,3 @@ func (s *SlotSnapshot) String() string {
 
 // --- Interfaces and supporting types ---
 
-// QuantileSketch defines the interface for approximate percentile estimators like t-digest.
-type QuantileSketch interface {
-	Add(value float64)
-	Quantile(q float64) float64
-	Merge(other QuantileSketch) error
-	fmt.Stringer
-}

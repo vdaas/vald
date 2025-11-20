@@ -35,7 +35,7 @@ type centroid struct {
 	Weight float64
 }
 
-// TDigest is a custom implementation of the t-digest algorithm.
+// tdigest is a custom implementation of the t-digest algorithm.
 //
 // It is designed for high-performance, concurrent metric recording by using a
 // mutex to protect the internal state.
@@ -44,7 +44,7 @@ type centroid struct {
 //   - centroids is always sorted by Mean in ascending order.
 //   - count is the sum of all centroid.Weight values.
 //   - count > 0 if and only if len(centroids) > 0.
-type TDigest struct {
+type tdigest struct {
 	mu                       sync.Mutex
 	centroids                []centroid
 	compression              float64
@@ -54,10 +54,10 @@ type TDigest struct {
 }
 
 // NewTDigest creates a new TDigest.
-func NewTDigest(opts ...TDigestOption) (t *TDigest, err error) {
-	t = new(TDigest)
+func NewTDigest(opts ...TDigestOption) (TDigest, error) {
+	t := new(tdigest)
 	for _, opt := range append(defaultTDigestOpts, opts...) {
-		err = opt(t)
+		err := opt(t)
 		if err != nil {
 			return nil, err
 		}
@@ -66,7 +66,7 @@ func NewTDigest(opts ...TDigestOption) (t *TDigest, err error) {
 }
 
 // String implements the fmt.Stringer interface.
-func (t *TDigest) String() string {
+func (t *tdigest) String() string {
 	if t == nil {
 		return "No data collected for percentiles.\n"
 	}
@@ -106,7 +106,7 @@ const (
 //	k = 4 * total * q * (1-q) / compression
 //
 // The caller is responsible for clamping q into [0,1] if needed.
-func (t *TDigest) maxWeightForQuantile(q, total float64) float64 {
+func (t *tdigest) maxWeightForQuantile(q, total float64) float64 {
 	if total <= 0 || t.compression <= 0 {
 		// Degenerate case: no meaningful constraint, treat as "no limit".
 		return total
@@ -126,7 +126,7 @@ func (t *TDigest) maxWeightForQuantile(q, total float64) float64 {
 //
 // This method assumes the caller holds t.mu and that prefix/total are
 // consistent with the current centroids layout.
-func (t *TDigest) tryMerge(value float64, idx int, prefix []float64, total float64) bool {
+func (t *tdigest) tryMerge(value float64, idx int, prefix []float64, total float64) bool {
 	if idx < 0 || idx >= len(t.centroids) {
 		return false
 	}
@@ -164,7 +164,7 @@ func (t *TDigest) tryMerge(value float64, idx int, prefix []float64, total float
 // avoids re-sorting on every insertion. It uses slices.BinarySearchFunc to
 // locate the insertion/merge position and slices.Insert to insert a new
 // centroid when necessary.
-func (t *TDigest) Add(value float64) {
+func (t *tdigest) Add(value float64) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -237,7 +237,7 @@ func (t *TDigest) Add(value float64) {
 //
 // It performs a single pass over the centroids (O(#centroids)), which is
 // efficient because the centroids slice is bounded by the compression factor.
-func (t *TDigest) Quantile(q float64) float64 {
+func (t *tdigest) Quantile(q float64) float64 {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -282,8 +282,8 @@ func (t *TDigest) Quantile(q float64) float64 {
 // This implementation assumes that both digests maintain their centroids
 // sorted by Mean. It merges the two sorted slices in linear time and then
 // optionally triggers compression based on the configured threshold.
-func (t *TDigest) Merge(other QuantileSketch) error {
-	o, ok := other.(*TDigest)
+func (t *tdigest) Merge(other TDigest) error {
+	o, ok := other.(*tdigest)
 	if !ok {
 		return errors.New("incompatible sketch type for merging")
 	}
@@ -358,7 +358,7 @@ func (t *TDigest) Merge(other QuantileSketch) error {
 //
 // It also reuses the underlying slice of t.centroids to minimize allocations
 // and applies slices.Clip at the end to trim any excess capacity.
-func (t *TDigest) compress() {
+func (t *tdigest) compress() {
 	n := len(t.centroids)
 	if n <= 1 {
 		return
@@ -407,4 +407,31 @@ func (t *TDigest) compress() {
 	// Replace centroids with the compressed list and clip capacity.
 	t.centroids = slices.Clip(append(out, current))
 	// Note: t.count remains unchanged because we only redistributed weights.
+}
+
+// Clone returns a deep copy of the t-digest.
+func (t *tdigest) Clone() TDigest {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	newT := &tdigest{
+		compression:              t.compression,
+		compressionTriggerFactor: t.compressionTriggerFactor,
+		count:                    t.count,
+	}
+	if len(t.centroids) > 0 {
+		newT.centroids = slices.Clone(t.centroids)
+	}
+	if len(t.quantiles) > 0 {
+		newT.quantiles = slices.Clone(t.quantiles)
+	}
+	return newT
+}
+
+// Quantiles returns the configured quantiles.
+func (t *tdigest) Quantiles() []float64 {
+	if t == nil || len(t.quantiles) == 0 {
+		return nil
+	}
+	return slices.Clone(t.quantiles)
 }

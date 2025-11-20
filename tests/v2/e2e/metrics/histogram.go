@@ -224,6 +224,44 @@ func (h *histogram) findBucket(val float64) int {
 	return low
 }
 
+// Clone returns a deep copy of the histogram.
+func (h *histogram) Clone() Histogram {
+	newH := &histogram{
+		min:         h.min,
+		max:         h.max,
+		growth:      h.growth,
+		numBuckets:  h.numBuckets,
+		numShards:   h.numShards,
+		boundsCRC32: h.boundsCRC32,
+	}
+
+	if len(h.bounds) > 0 {
+		newH.bounds = make([]float64, len(h.bounds))
+		copy(newH.bounds, h.bounds)
+	}
+
+	if len(h.shards) > 0 {
+		newH.shards = make([]histogramShard, len(h.shards))
+		for i := range h.shards {
+			src := &h.shards[i]
+			dst := &newH.shards[i]
+
+			if len(src.counts) > 0 {
+				dst.counts = make([]atomic.Uint64, len(src.counts))
+				for j := range src.counts {
+					dst.counts[j].Store(src.counts[j].Load())
+				}
+			}
+			dst.total.Store(src.total.Load())
+			dst.sum.Store(src.sum.Load())
+			dst.sumSq.Store(src.sumSq.Load())
+			dst.min.Store(src.min.Load())
+			dst.max.Store(src.max.Load())
+		}
+	}
+	return newH
+}
+
 // Merge merges this histogram into the provided Histogram.
 //
 // Semantics:

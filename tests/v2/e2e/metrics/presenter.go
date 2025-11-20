@@ -141,14 +141,14 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 		"Total", "Errors", "TotalDurationSec", "RPS", "ErrorRate",
 		"LatencyMin", "LatencyMean", "LatencyMax",
 	}
-	if t, ok := s.LatPercentiles.(*TDigest); ok {
-		for _, q := range t.quantiles {
+	if s.LatPercentiles != nil {
+		for _, q := range s.LatPercentiles.Quantiles() {
 			headers = append(headers, fmt.Sprintf("LatencyP%d", int(q*100)))
 		}
 	}
 	headers = append(headers, "QueueWaitMin", "QueueWaitMean", "QueueWaitMax")
-	if t, ok := s.QWPercentiles.(*TDigest); ok {
-		for _, q := range t.quantiles {
+	if s.QWPercentiles != nil {
+		for _, q := range s.QWPercentiles.Quantiles() {
 			headers = append(headers, fmt.Sprintf("QueueWaitP%d", int(q*100)))
 		}
 	}
@@ -170,8 +170,8 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 		fmt.Sprintf("%.4f", float64(s.Latencies.Mean)/1e9),
 		fmt.Sprintf("%.4f", float64(s.Latencies.Max)/1e9),
 	}
-	if t, ok := s.LatPercentiles.(*TDigest); ok {
-		for _, q := range t.quantiles {
+	if s.LatPercentiles != nil {
+		for _, q := range s.LatPercentiles.Quantiles() {
 			row = append(row, fmt.Sprintf("%.4f", s.LatPercentiles.Quantile(q)/1e9))
 		}
 	}
@@ -180,8 +180,8 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 		fmt.Sprintf("%.4f", float64(s.QueueWaits.Mean)/1e9),
 		fmt.Sprintf("%.4f", float64(s.QueueWaits.Max)/1e9),
 	)
-	if t, ok := s.QWPercentiles.(*TDigest); ok {
-		for _, q := range t.quantiles {
+	if s.QWPercentiles != nil {
+		for _, q := range s.QWPercentiles.Quantiles() {
 			row = append(row, fmt.Sprintf("%.4f", s.QWPercentiles.Quantile(q)/1e9))
 		}
 	}
@@ -193,7 +193,7 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 
 // renderHistogram is a helper to render the histogram part of the string output.
 func (p *SnapshotPresenter) renderHistogram(
-	title string, h *HistogramSnapshot, q QuantileSketch,
+	title string, h *HistogramSnapshot, q TDigest,
 ) string {
 	var sb strings.Builder
 

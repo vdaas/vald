@@ -18,6 +18,7 @@ package metrics
 
 import (
 	"context"
+	"fmt"
 	"time"
 )
 
@@ -30,6 +31,7 @@ type Collector interface {
 	TimeScalesSnapshot() map[string]*ScaleSnapshot
 	CounterHandle(name string) (*CounterHandle, error)
 	IncCounter(name string, val int64)
+	Clone() (Collector, error)
 	deepCopy() (Collector, error)
 	merge(other *collector) error
 }
@@ -40,6 +42,7 @@ type Histogram interface {
 	Merge(other Histogram) error
 	Snapshot() *HistogramSnapshot
 	BoundsCRC32() uint32
+	Clone() Histogram
 	merge(other *histogram) error
 }
 
@@ -47,4 +50,15 @@ type Histogram interface {
 type Exemplar interface {
 	Offer(latency time.Duration, requestID string)
 	Snapshot() []*item
+	Clone() Exemplar
+}
+
+// TDigest is the interface for approximate percentile estimators like t-digest.
+type TDigest interface {
+	Add(value float64)
+	Quantile(q float64) float64
+	Quantiles() []float64
+	Merge(other TDigest) error
+	Clone() TDigest
+	fmt.Stringer
 }

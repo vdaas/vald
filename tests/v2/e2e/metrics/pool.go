@@ -58,12 +58,4 @@ var (
 	requestResultPool = newPoolProvider(func() *RequestResult {
 		return new(RequestResult)
 	})
-
-	histogramPool = newPoolProvider(func() *histogram {
-		return new(histogram)
-	})
-
-	exemplarPool = newPoolProvider(func() *exemplar {
-		return new(exemplar)
-	})
 )

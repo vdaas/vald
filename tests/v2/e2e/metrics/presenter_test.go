@@ -49,14 +49,14 @@ func TestSnapshotPresenter(t *testing.T) {
 			Min:   float64(50 * time.Microsecond),
 			Max:   float64(5 * time.Millisecond),
 		},
-		LatPercentiles: func() QuantileSketch {
+		LatPercentiles: func() TDigest {
 			t, _ := NewTDigest(WithTDigestCompression(100))
-			t.centroids = []centroid{{Mean: 1e6, Weight: 1}}
+			t.Add(1e6)
 			return t
 		}(),
-		QWPercentiles: func() QuantileSketch {
+		QWPercentiles: func() TDigest {
 			t, _ := NewTDigest(WithTDigestCompression(100))
-			t.centroids = []centroid{{Mean: 5e5, Weight: 1}}
+			t.Add(5e5)
 			return t
 		}(),
 		Codes: map[codes.Code]uint64{

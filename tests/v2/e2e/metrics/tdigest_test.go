@@ -64,8 +64,8 @@ func TestTDigest_Merge(t *testing.T) {
 		t.Fatalf("Merge() error = %v", err)
 	}
 
-	if td1.count != 20 {
-		t.Errorf("td1.count = %v, want 20", td1.count)
+	if td1.(*tdigest).count != 20 {
+		t.Errorf("td1.count = %v, want 20", td1.(*tdigest).count)
 	}
 
 	if q := td1.Quantile(0.5); q < 10 || q > 11 {
@@ -80,8 +80,8 @@ func TestTDigest_Compression(t *testing.T) {
 		td.Add(float64(i))
 	}
 
-	if len(td.centroids) > 25 { // Should be around 20
-		t.Errorf("len(td.centroids) = %v, want <= 25", len(td.centroids))
+	if len(td.(*tdigest).centroids) > 25 { // Should be around 20
+		t.Errorf("len(td.centroids) = %v, want <= 25", len(td.(*tdigest).centroids))
 	}
 
 	// Check if quantiles are still reasonable
@@ -111,8 +111,8 @@ func TestTDigest_Concurrency(t *testing.T) {
 
 	wg.Wait()
 
-	if td.count != 100 {
-		t.Errorf("td.count = %v, want 100", td.count)
+	if td.(*tdigest).count != 100 {
+		t.Errorf("td.count = %v, want 100", td.(*tdigest).count)
 	}
 
 	// Check quantiles after concurrent adds

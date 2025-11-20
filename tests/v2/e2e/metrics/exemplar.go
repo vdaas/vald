@@ -96,6 +96,33 @@ func (e *exemplar) Snapshot() []*item {
 	return items
 }
 
+// Clone returns a deep copy of the exemplar.
+func (e *exemplar) Clone() Exemplar {
+	newE := &exemplar{
+		k: e.k,
+	}
+	// Load the current priority queue.
+	oldPQPtr := e.pq.Load()
+	if oldPQPtr != nil {
+		oldPQ := *oldPQPtr
+		// Create a copy of the priority queue.
+		newPQ := make(priorityQueue, len(oldPQ), cap(oldPQ))
+		// Deep copy items
+		for i, item := range oldPQ {
+			if item != nil {
+				val := *item
+				newPQ[i] = &val
+			}
+		}
+		newE.pq.Store(&newPQ)
+	} else {
+		// If nil, initialize empty
+		initialPQ := make(priorityQueue, 0, e.k)
+		newE.pq.Store(&initialPQ)
+	}
+	return newE
+}
+
 // item is an item in the priority queue, representing a single request exemplar.
 // It is unexported to encapsulate the implementation details of the priority queue.
 type item struct {

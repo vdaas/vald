@@ -30,7 +30,7 @@ type (
 	HistogramOption func(*histogram) error
 
 	// TDigestOption configures a TDigest.
-	TDigestOption func(*TDigest) error
+	TDigestOption func(*tdigest) error
 
 	// ExemplarOption represents a functional option for configuring an Exemplar.
 	ExemplarOption func(*exemplar)
@@ -78,7 +78,7 @@ func WithCustomCounters(names ...string) Option {
 // WithTimeScale adds a time-based scale to the collector.
 func WithTimeScale(name string, width, capacity uint64) Option {
 	return func(c *collector) error {
-		s, err := newScale(name, width, capacity, len(c.counters), timeScale)
+		s, err := newScale(name, width, capacity, len(c.counters), timeScale, c.latencies, c.queueWaits, c.exemplars)
 		if err != nil {
 			return err
 		}
@@ -90,7 +90,7 @@ func WithTimeScale(name string, width, capacity uint64) Option {
 // WithRangeScale adds a range-based scale to the collector.
 func WithRangeScale(name string, width, capacity uint64) Option {
 	return func(c *collector) error {
-		s, err := newScale(name, width, capacity, len(c.counters), timeScale)
+		s, err := newScale(name, width, capacity, len(c.counters), rangeScale, c.latencies, c.queueWaits, c.exemplars)
 		if err != nil {
 			return err
 		}
@@ -210,7 +210,7 @@ func WithHistogramNumShards(n int) HistogramOption {
 
 // WithTDigestCompression sets the compression for the t-digest.
 func WithTDigestCompression(c float64) TDigestOption {
-	return func(t *TDigest) error {
+	return func(t *tdigest) error {
 		t.compression = c
 		if t.compression <= 0 {
 			return errors.New("tdigest compression must be > 0")
@@ -221,7 +221,7 @@ func WithTDigestCompression(c float64) TDigestOption {
 
 // WithTDigestCompressionTriggerFactor sets the compression trigger factor for the t-digest.
 func WithTDigestCompressionTriggerFactor(f float64) TDigestOption {
-	return func(t *TDigest) error {
+	return func(t *tdigest) error {
 		t.compressionTriggerFactor = f
 		if t.compressionTriggerFactor <= 0 {
 			return errors.New("tdigest compressionTriggerFactor must be > 0")
@@ -232,7 +232,7 @@ func WithTDigestCompressionTriggerFactor(f float64) TDigestOption {
 
 // WithQuantiles sets the quantiles to be used in the String() method.
 func WithTDigestQuantiles(quantiles ...float64) TDigestOption {
-	return func(t *TDigest) error {
+	return func(t *tdigest) error {
 		if len(quantiles) > 0 {
 			t.quantiles = quantiles
 		}
