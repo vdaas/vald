@@ -65,3 +65,33 @@ type TDigest interface {
 	fmt.Stringer
 	Reset()
 }
+
+// Slot is the interface for a time/range slot in a Scale.
+type Slot interface {
+	Record(rr *RequestResult, windowIdx uint64)
+	Merge(other Slot) error
+	Snapshot() *SlotSnapshot
+	Reset()
+	Clone() Slot
+}
+
+// Scale is the interface for a metrics scale (ring buffer of slots).
+type Scale interface {
+	Record(ctx context.Context, rr *RequestResult)
+	Merge(other Scale) error
+	Snapshot() *ScaleSnapshot
+	Reset()
+	Clone() Scale
+	Type() ScaleType
+	Name() string
+}
+
+// ScaleType represents the type of scale (Range or Time).
+type ScaleType uint8
+
+const (
+	// RangeScale buckets metrics by request ID.
+	RangeScale ScaleType = iota
+	// TimeScale buckets metrics by time.
+	TimeScale
+)

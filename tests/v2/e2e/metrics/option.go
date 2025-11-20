@@ -78,7 +78,7 @@ func WithCustomCounters(names ...string) Option {
 // WithTimeScale adds a time-based scale to the collector.
 func WithTimeScale(name string, width, capacity uint64) Option {
 	return func(c *collector) error {
-		s, err := newScale(name, width, capacity, len(c.counters), timeScale, c.latencies, c.queueWaits, c.exemplars)
+		s, err := newScale(name, width, capacity, len(c.counters), TimeScale, c.latencies, c.queueWaits, c.exemplars)
 		if err != nil {
 			return err
 		}
@@ -90,7 +90,7 @@ func WithTimeScale(name string, width, capacity uint64) Option {
 // WithRangeScale adds a range-based scale to the collector.
 func WithRangeScale(name string, width, capacity uint64) Option {
 	return func(c *collector) error {
-		s, err := newScale(name, width, capacity, len(c.counters), rangeScale, c.latencies, c.queueWaits, c.exemplars)
+		s, err := newScale(name, width, capacity, len(c.counters), RangeScale, c.latencies, c.queueWaits, c.exemplars)
 		if err != nil {
 			return err
 		}

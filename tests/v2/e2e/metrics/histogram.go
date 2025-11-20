@@ -178,6 +178,10 @@ func (h *histogram) shardIndexForValue(val float64) int {
 // It hashes the value to select a shard, then updates the shard's
 // bucket counts and summary statistics using Welford's algorithm.
 func (h *histogram) Record(val float64) {
+	if math.IsNaN(val) || math.IsInf(val, 0) {
+		return
+	}
+
 	// Select shard for this value.
 	shardIdx := h.shardIndexForValue(val)
 	s := &h.shards[shardIdx]

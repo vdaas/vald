@@ -15,6 +15,8 @@
 //
 
 // Package metrics provides a metrics collection and aggregation system for E2E tests.
+// It supports recording latencies, queue waits, error counts, and custom counters,
+// aggregated both globally and in time/request-based windows (Scales).
 package metrics
 
 import (
@@ -49,11 +51,13 @@ func requestIDFromCtx(ctx context.Context) (uint64, bool) {
 }
 
 // GetRequestResult returns a RequestResult from the pool.
+// This helps reduce GC pressure by reusing objects.
 func GetRequestResult() *RequestResult {
 	return requestResultPool.Get()
 }
 
 // PutRequestResult returns a RequestResult to the pool.
+// It resets all fields to ensure no data leakage or contamination.
 func PutRequestResult(rr *RequestResult) {
 	rr.RequestID = ""
 	rr.Status = 0
@@ -100,6 +104,7 @@ type RequestResult struct {
 }
 
 // validate ensures the RequestResult has the necessary timing information.
+// It calculates Latency and QueueWait if they are zero but timestamps are present.
 func (rr *RequestResult) validate() {
 	if rr == nil {
 		return
@@ -122,6 +127,7 @@ func (rr *RequestResult) validate() {
 // --- Counter ---
 
 // CounterHandle provides a direct, efficient way to increment a registered counter.
+// It holds a pointer to an atomic value for thread-safe updates.
 type CounterHandle struct {
 	value *atomic.Uint64
 }
@@ -145,248 +151,10 @@ func (h *CounterHandle) Add(val int64) {
 	h.value.Add(uint64(val))
 }
 
-// --- Slot ---
-
-// Slot holds the metrics for a single window in a scale.
-type Slot struct {
-	Total     atomic.Uint64   // total number of requests in this slot
-	Errors    atomic.Uint64   // number of errored requests in this slot
-	updatedNS atomic.Int64    // UnixNano timestamp of the last update
-	Latency   Histogram       // latency histogram
-	QueueWait Histogram       // queue wait histogram
-	Counters  []atomic.Uint64 // custom counters
-	Exemplars Exemplar        // exemplar heap
-}
-
-// newSlot creates a new Slot.
-func newSlot(numCounters int, latencies, queueWaits Histogram, exemplars Exemplar) *Slot {
-	return &Slot{
-		Latency:   latencies,
-		QueueWait: queueWaits,
-		Counters:  make([]atomic.Uint64, numCounters),
-		Exemplars: exemplars,
-	}
-}
-
-// --- Scales ---
-
-// Scale is a ring buffer of slots for windowed metrics.
-type Scale struct {
-	mu        sync.RWMutex
-	slots     []*Slot // ring buffer of slots
-	width     uint64  // width of each slot
-	capacity  uint64  // number of slots in the ring buffer
-	name      string  // name of the scale
-	scaleType scaleType
-}
-
-type scaleType uint8
-
-const (
-	rangeScale scaleType = iota
-	timeScale
-)
-
-// Reset resets the scale and all its slots.
-func (s *Scale) Reset() {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	for _, slot := range s.slots {
-		slot.Total.Store(0)
-		slot.Errors.Store(0)
-		slot.updatedNS.Store(0)
-		if slot.Latency != nil {
-			slot.Latency.Reset()
-		}
-		if slot.QueueWait != nil {
-			slot.QueueWait.Reset()
-		}
-		if slot.Exemplars != nil {
-			slot.Exemplars.Reset()
-		}
-		for i := range slot.Counters {
-			slot.Counters[i].Store(0)
-		}
-	}
-}
-
-// record adds a request result to the appropriate slot in the scale.
-func (s *Scale) record(ctx context.Context, rr *RequestResult) {
-	var idx uint64
-	var ok bool
-
-	switch s.scaleType {
-	case rangeScale:
-		idx, ok = requestIDFromCtx(ctx)
-		if !ok {
-			return
-		}
-	case timeScale:
-		idx = uint64(rr.EndedAt.Unix())
-	}
-
-	slot := s.getSlot(idx)
-	slot.Total.Add(1)
-	if rr.Err != nil {
-		slot.Errors.Add(1)
-	}
-	slot.updatedNS.Store(rr.EndedAt.UnixNano())
-	if slot.Latency != nil {
-		slot.Latency.Record(float64(rr.Latency.Nanoseconds()))
-	}
-	if slot.QueueWait != nil {
-		slot.QueueWait.Record(float64(rr.QueueWait.Nanoseconds()))
-	}
-	if slot.Exemplars != nil {
-		slot.Exemplars.Offer(rr.Latency, rr.RequestID)
-	}
-}
-
-// newScale creates a new scale with the given configuration.
-func newScale(
-	name string,
-	width, capacity uint64,
-	numCounters int,
-	st scaleType,
-	lat, qw Histogram,
-	ex Exemplar,
-) (*Scale, error) {
-	if width == 0 {
-		return nil, errors.New("scale width must be > 0")
-	}
-	if capacity == 0 {
-		return nil, errors.New("scale capacity must be > 0")
-	}
-	slots := make([]*Slot, capacity)
-	for i := range slots {
-		// Use Clone to create new instances for each slot.
-		// Clone handles initialization via pool.
-		var l, q Histogram
-		var e Exemplar
-		if lat != nil {
-			l = lat.Clone()
-		}
-		if qw != nil {
-			q = qw.Clone()
-		}
-		if ex != nil {
-			e = ex.Clone()
-		}
-
-		slots[i] = newSlot(
-			numCounters,
-			l,
-			q,
-			e,
-		)
-	}
-	s := &Scale{
-		name:      name,
-		width:     width,
-		capacity:  capacity,
-		slots:     slots,
-		scaleType: st,
-	}
-
-	return s, nil
-}
-
-// getSlot returns the slot for the given index.
-func (s *Scale) getSlot(idx uint64) *Slot {
-	slotIdx := (idx / s.width) % s.capacity
-	return s.slots[slotIdx]
-}
-
-// Merge merges another scale into this one.
-func (s *Scale) Merge(other *Scale) error {
-	if s.width != other.width || s.capacity != other.capacity {
-		return errors.New("incompatible scales")
-	}
-	if s == other {
-		return nil
-	}
-	// To prevent deadlocks, always lock in a consistent order.
-	if uintptr(unsafe.Pointer(s)) < uintptr(unsafe.Pointer(other)) {
-		s.mu.Lock()
-		other.mu.Lock()
-	} else {
-		other.mu.Lock()
-		s.mu.Lock()
-	}
-	defer s.mu.Unlock()
-	defer other.mu.Unlock()
-
-	for i := range s.slots {
-		ss := s.slots[i]
-		os := other.slots[i]
-		ss.Total.Add(os.Total.Load())
-		ss.Errors.Add(os.Errors.Load())
-		if os.updatedNS.Load() > ss.updatedNS.Load() {
-			ss.updatedNS.Store(os.updatedNS.Load())
-		}
-		if ss.Latency != nil && os.Latency != nil {
-			if err := ss.Latency.Merge(os.Latency); err != nil {
-				return err
-			}
-		}
-		if ss.QueueWait != nil && os.QueueWait != nil {
-			if err := ss.QueueWait.Merge(os.QueueWait); err != nil {
-				return err
-			}
-		}
-		if ss.Exemplars != nil && os.Exemplars != nil {
-			for _, ex := range os.Exemplars.Snapshot() {
-				ss.Exemplars.Offer(ex.latency, ex.requestID)
-			}
-		}
-	}
-	return nil
-}
-
-// Snapshot returns a snapshot of the scale.
-func (s *Scale) Snapshot() *ScaleSnapshot {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	slots := make([]*SlotSnapshot, len(s.slots))
-	for i, slot := range s.slots {
-		counters := make([]uint64, len(slot.Counters))
-		for j := range counters {
-			counters[j] = slot.Counters[j].Load()
-		}
-		var latSnap, qwSnap *HistogramSnapshot
-		var exSnap []*item
-		if slot.Latency != nil {
-			latSnap = slot.Latency.Snapshot()
-		}
-		if slot.QueueWait != nil {
-			qwSnap = slot.QueueWait.Snapshot()
-		}
-		if slot.Exemplars != nil {
-			exSnap = slot.Exemplars.Snapshot()
-		}
-		slots[i] = &SlotSnapshot{
-			Total:       slot.Total.Load(),
-			Errors:      slot.Errors.Load(),
-			LastUpdated: slot.updatedNS.Load(),
-			Latencies:   latSnap,
-			QueueWaits:  qwSnap,
-			Counters:    counters,
-			Exemplars:   exSnap,
-		}
-	}
-
-	return &ScaleSnapshot{
-		Name:     s.name,
-		Width:    s.width,
-		Capacity: s.capacity,
-		Slots:    slots,
-	}
-}
-
 // --- Collector ---
 
 // collector is the main entry point for metrics aggregation. It is thread-safe.
+// It manages global metrics, per-window scales, and custom counters.
 type collector struct {
 	mu sync.RWMutex
 
@@ -404,8 +172,8 @@ type collector struct {
 	// Custom counters, stored in a map for thread-safe access.
 	counters map[string]*CounterHandle
 
-	// Thread-safe slice of Scale for metrics.
-	scales []*Scale
+	// Thread-safe slice of Scale for metrics (ring buffers).
+	scales []Scale
 
 	// gRPC status code counts, stored in a map for thread-safe access.
 	codes map[codes.Code]*atomic.Uint64
@@ -435,6 +203,7 @@ func NewCollector(opts ...Option) (Collector, error) {
 }
 
 // Reset resets the collector and all its components.
+// It clears all recorded data but maintains the configuration and capacity.
 func (c *collector) Reset() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -467,10 +236,13 @@ func (c *collector) Reset() {
 }
 
 // Merge merges the metrics from another collector into this one.
+// It delegates to the internal `merge` method for implementation.
 func (c *collector) Merge(other Collector) error {
 	return other.merge(c)
 }
 
+// merge performs the actual merging logic.
+// It acquires locks on both collectors (ordered by pointer address) to ensure safety.
 func (c *collector) merge(other *collector) error {
 	if c == other || other == nil {
 		return nil
@@ -540,6 +312,7 @@ func (c *collector) merge(other *collector) error {
 
 // Record processes a single RequestResult, updating all relevant metrics.
 // This method is optimized for high-throughput, low-latency execution.
+// It updates global histograms, t-digests, exemplars, and all configured scales.
 func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 	rr.validate()
 	c.total.Add(1)
@@ -578,7 +351,7 @@ func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 	counter.Add(1)
 
 	for _, s := range c.scales {
-		s.record(ctx, rr)
+		s.Record(ctx, rr)
 	}
 }
 
@@ -603,6 +376,7 @@ func (c *collector) IncCounter(name string, val int64) {
 }
 
 // Clone returns a deep copy of the collector.
+// It creates a new independent collector with copied data, suitable for snapshotting or isolation.
 func (c *collector) Clone() (Collector, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -649,43 +423,9 @@ func (c *collector) Clone() (Collector, error) {
 
 	// Copy scales
 	if len(c.scales) > 0 {
-		newC.scales = make([]*Scale, len(c.scales))
+		newC.scales = make([]Scale, len(c.scales))
 		for i, s := range c.scales {
-			slots := make([]*Slot, len(s.slots))
-			for j, slot := range s.slots {
-				// Clone Slot
-				counters := make([]atomic.Uint64, len(slot.Counters))
-				for k := range slot.Counters {
-					counters[k].Store(slot.Counters[k].Load())
-				}
-				var l, q Histogram
-				var e Exemplar
-				if slot.Latency != nil {
-					l = slot.Latency.Clone()
-				}
-				if slot.QueueWait != nil {
-					q = slot.QueueWait.Clone()
-				}
-				if slot.Exemplars != nil {
-					e = slot.Exemplars.Clone()
-				}
-				slots[j] = &Slot{
-					Latency:   l,
-					QueueWait: q,
-					Counters:  counters,
-					Exemplars: e,
-				}
-				slots[j].Total.Store(slot.Total.Load())
-				slots[j].Errors.Store(slot.Errors.Load())
-				slots[j].updatedNS.Store(slot.updatedNS.Load())
-			}
-			newC.scales[i] = &Scale{
-				name:      s.name,
-				width:     s.width,
-				capacity:  s.capacity,
-				scaleType: s.scaleType,
-				slots:     slots,
-			}
+			newC.scales[i] = s.Clone()
 		}
 	}
 
@@ -731,8 +471,8 @@ func (c *collector) RangeScalesSnapshot() map[string]*ScaleSnapshot {
 	defer c.mu.RUnlock()
 	snapshots := make(map[string]*ScaleSnapshot, len(c.scales))
 	for _, s := range c.scales {
-		if s.scaleType == rangeScale {
-			snapshots[s.name] = s.Snapshot()
+		if s.Type() == RangeScale {
+			snapshots[s.Name()] = s.Snapshot()
 		}
 	}
 	return snapshots
@@ -744,8 +484,8 @@ func (c *collector) TimeScalesSnapshot() map[string]*ScaleSnapshot {
 	defer c.mu.RUnlock()
 	snapshots := make(map[string]*ScaleSnapshot, len(c.scales))
 	for _, s := range c.scales {
-		if s.scaleType == timeScale {
-			snapshots[s.name] = s.Snapshot()
+		if s.Type() == TimeScale {
+			snapshots[s.Name()] = s.Snapshot()
 		}
 	}
 	return snapshots
