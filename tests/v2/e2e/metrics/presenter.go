@@ -50,7 +50,10 @@ func (p *SnapshotPresenter) AsString() string {
 	s := p.snapshot
 	total := s.Total
 	errs := s.Errors
-	totalDuration := time.Duration(s.Latencies.Sum)
+	var totalDuration time.Duration
+	if s.Latencies != nil {
+		totalDuration = time.Duration(s.Latencies.Sum)
+	}
 
 	// --- Summary ---
 	fmt.Fprint(&sb, "\n--- Summary ---\n")
@@ -84,9 +87,11 @@ func (p *SnapshotPresenter) AsString() string {
 	}
 
 	// --- Exemplars ---
-	fmt.Fprintf(&sb, "\n--- Exemplars (Top %d slowest requests) ---\n", len(s.Exemplars))
-	for _, ex := range s.Exemplars {
-		fmt.Fprintf(&sb, "\t- RequestID:\t%s,\tLatency:\t%s\n", ex.requestID, ex.latency)
+	if len(s.Exemplars) > 0 {
+		fmt.Fprintf(&sb, "\n--- Exemplars (Top %d slowest requests) ---\n", len(s.Exemplars))
+		for _, ex := range s.Exemplars {
+			fmt.Fprintf(&sb, "\t- RequestID:\t%s,\tLatency:\t%s\n", ex.requestID, ex.latency)
+		}
 	}
 
 	return sb.String()
@@ -154,10 +159,25 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 	}
 	writer.Write(headers)
 
-	totalDuration := time.Duration(s.Latencies.Sum).Seconds()
+	totalDuration := 0.0
+	if s.Latencies != nil {
+		totalDuration = time.Duration(s.Latencies.Sum).Seconds()
+	}
 	rps := 0.0
 	if totalDuration > 0 {
 		rps = float64(s.Total) / totalDuration
+	}
+
+	errorRate := 0.0
+	if s.Total > 0 {
+		errorRate = float64(s.Errors) / float64(s.Total)
+	}
+
+	latMin, latMean, latMax := 0.0, 0.0, 0.0
+	if s.Latencies != nil {
+		latMin = float64(s.Latencies.Min) / 1e9
+		latMean = float64(s.Latencies.Mean) / 1e9
+		latMax = float64(s.Latencies.Max) / 1e9
 	}
 
 	row := []string{
@@ -165,20 +185,28 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 		fmt.Sprintf("%d", s.Errors),
 		fmt.Sprintf("%.4f", totalDuration),
 		fmt.Sprintf("%.2f", rps),
-		fmt.Sprintf("%.4f", float64(s.Errors)/float64(s.Total)),
-		fmt.Sprintf("%.4f", float64(s.Latencies.Min)/1e9),
-		fmt.Sprintf("%.4f", float64(s.Latencies.Mean)/1e9),
-		fmt.Sprintf("%.4f", float64(s.Latencies.Max)/1e9),
+		fmt.Sprintf("%.4f", errorRate),
+		fmt.Sprintf("%.4f", latMin),
+		fmt.Sprintf("%.4f", latMean),
+		fmt.Sprintf("%.4f", latMax),
 	}
 	if s.LatPercentiles != nil {
 		for _, q := range s.LatPercentiles.Quantiles() {
 			row = append(row, fmt.Sprintf("%.4f", s.LatPercentiles.Quantile(q)/1e9))
 		}
 	}
+
+	qwMin, qwMean, qwMax := 0.0, 0.0, 0.0
+	if s.QueueWaits != nil {
+		qwMin = float64(s.QueueWaits.Min) / 1e9
+		qwMean = float64(s.QueueWaits.Mean) / 1e9
+		qwMax = float64(s.QueueWaits.Max) / 1e9
+	}
+
 	row = append(row,
-		fmt.Sprintf("%.4f", float64(s.QueueWaits.Min)/1e9),
-		fmt.Sprintf("%.4f", float64(s.QueueWaits.Mean)/1e9),
-		fmt.Sprintf("%.4f", float64(s.QueueWaits.Max)/1e9),
+		fmt.Sprintf("%.4f", qwMin),
+		fmt.Sprintf("%.4f", qwMean),
+		fmt.Sprintf("%.4f", qwMax),
 	)
 	if s.QWPercentiles != nil {
 		for _, q := range s.QWPercentiles.Quantiles() {
@@ -218,9 +246,14 @@ func (p *SnapshotPresenter) renderHistogram(title string, h *HistogramSnapshot, 
 			if i == 0 {
 				lowerBound = "0"
 			} else {
-				lowerBound = fmt.Sprintf("%.3f", float64(time.Duration(h.Bounds[i-1])))
+				// If bounds are not enough (e.g. empty bounds slice), handle gracefully.
+				if i-1 < len(h.Bounds) {
+					lowerBound = fmt.Sprintf("%.3f", float64(time.Duration(h.Bounds[i-1])))
+				} else {
+					lowerBound = "?"
+				}
 			}
-			if i == len(h.Bounds) {
+			if i >= len(h.Bounds) {
 				upperBound = "inf"
 			} else {
 				upperBound = fmt.Sprintf("%.3f", float64(time.Duration(h.Bounds[i])))
