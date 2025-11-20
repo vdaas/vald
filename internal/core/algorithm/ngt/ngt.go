@@ -181,6 +181,7 @@ type (
 		MaxMagnitude                  float32
 		NOfNeighborsForInsertionOrder int32
 		EpsilonForInsertionOrder      float32
+		EpsilonForCreation            float32
 		RefinementObjectType          objectType
 		TruncationThreshold           int32
 		EdgeSizeForCreation           int32
@@ -1229,7 +1230,8 @@ func (n *ngt) GetProperty() (prop *Property, err error) {
 		SearchType:                    C.GoString(cprop.search_type),
 		MaxMagnitude:                  float32(cprop.max_magnitude),
 		NOfNeighborsForInsertionOrder: int32(cprop.n_of_neighbors_for_insertion_order),
-		EpsilonForInsertionOrder:      float32(cprop.n_of_neighbors_for_insertion_order),
+		EpsilonForInsertionOrder:      float32(cprop.epsilon_for_insertion_order),
+		EpsilonForCreation:            float32(cprop.epsilon_for_creation),
 		RefinementObjectType:          objectType(cprop.refinement_object_type),
 		TruncationThreshold:           int32(cprop.truncation_threshold),
 		EdgeSizeForCreation:           int32(cprop.edge_size_for_creation),
