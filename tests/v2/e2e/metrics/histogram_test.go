@@ -17,177 +17,411 @@
 package metrics
 
 import (
+	"math"
 	"sync"
 	"testing"
+
+	"github.com/vdaas/vald/internal/errors"
+	testdata "github.com/vdaas/vald/internal/test"
 )
 
-func TestHistogram(t *testing.T) {
-	t.Parallel()
-
-	type testCase struct {
-		name    string
-		h1      func() (Histogram, error)
-		h2      func() (Histogram, error)
-		records []float64
-		check   func(t *testing.T, h Histogram)
+func TestNewHistogram(t *testing.T) {
+	type args struct {
+		opts []HistogramOption
+	}
+	type want struct {
+		err error
 	}
 
-	tests := []testCase{
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Histogram, error) {
+		return NewHistogram(args.opts...)
+	}, []testdata.Case[Histogram, args]{
 		{
-			name: "record values and check snapshot",
-			h1: func() (Histogram, error) {
-				return NewHistogram(
+			Name: "initialize with valid options",
+			Args: args{
+				opts: []HistogramOption{
 					WithHistogramMin(1),
 					WithHistogramGrowth(2),
 					WithHistogramNumBuckets(10),
 					WithHistogramNumShards(1),
-				)
+				},
 			},
-			records: []float64{10, 20, 30, 40, 50},
-			check: func(t *testing.T, h Histogram) {
-				snap := h.Snapshot()
+			CheckFunc: func(tt *testing.T, want testdata.Result[Histogram], got testdata.Result[Histogram]) error {
+				if got.Err != nil {
+					return errors.Errorf("unexpected error: %v", got.Err)
+				}
+				if got.Val == nil {
+					return errors.New("got nil histogram")
+				}
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestHistogram_Record_And_Snapshot(t *testing.T) {
+	type args struct {
+		opts    []HistogramOption
+		records []float64
+	}
+
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*HistogramSnapshot, error) {
+		h, err := NewHistogram(args.opts...)
+		if err != nil {
+			return nil, err
+		}
+		for _, r := range args.records {
+			h.Record(r)
+		}
+		return h.Snapshot(), nil
+	}, []testdata.Case[*HistogramSnapshot, args]{
+		{
+			Name: "record values and check snapshot",
+			Args: args{
+				opts: []HistogramOption{
+					WithHistogramMin(1),
+					WithHistogramGrowth(2),
+					WithHistogramNumBuckets(10),
+					WithHistogramNumShards(1),
+				},
+				records: []float64{10, 20, 30, 40, 50},
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[*HistogramSnapshot], got testdata.Result[*HistogramSnapshot]) error {
+				if got.Err != nil {
+					return got.Err
+				}
+				snap := got.Val
 				if snap.Total != 5 {
-					t.Errorf("expected total 5, got %d", snap.Total)
+					return errors.Errorf("expected total 5, got %d", snap.Total)
 				}
 				if snap.Mean != 30 {
-					t.Errorf("expected mean 30, got %f", snap.Mean)
+					return errors.Errorf("expected mean 30, got %f", snap.Mean)
 				}
+				return nil
 			},
 		},
 		{
-			name: "merge two histograms",
-			h1: func() (Histogram, error) {
-				h, err := NewHistogram(
+			Name: "empty histogram",
+			Args: args{
+				opts: []HistogramOption{
 					WithHistogramMin(1),
 					WithHistogramGrowth(2),
 					WithHistogramNumBuckets(10),
 					WithHistogramNumShards(1),
-				)
-				if err != nil {
-					return nil, err
-				}
-				h.Record(10)
-				h.Record(20)
-				return h, nil
+				},
 			},
-			h2: func() (Histogram, error) {
-				h, err := NewHistogram(
-					WithHistogramMin(1),
-					WithHistogramGrowth(2),
-					WithHistogramNumBuckets(10),
-					WithHistogramNumShards(1),
-				)
-				if err != nil {
-					return nil, err
+			CheckFunc: func(tt *testing.T, want testdata.Result[*HistogramSnapshot], got testdata.Result[*HistogramSnapshot]) error {
+				if got.Err != nil {
+					return got.Err
 				}
-				h.Record(30)
-				h.Record(40)
-				return h, nil
-			},
-			check: func(t *testing.T, h Histogram) {
-				snap := h.Snapshot()
-				if snap.Total != 4 {
-					t.Errorf("expected total 4, got %d", snap.Total)
-				}
-				if snap.Mean != 25 {
-					t.Errorf("expected mean 25, got %f", snap.Mean)
-				}
-			},
-		},
-		{
-			name: "empty histogram",
-			h1: func() (Histogram, error) {
-				return NewHistogram(
-					WithHistogramMin(1),
-					WithHistogramGrowth(2),
-					WithHistogramNumBuckets(10),
-					WithHistogramNumShards(1),
-				)
-			},
-			check: func(t *testing.T, h Histogram) {
-				snap := h.Snapshot()
+				snap := got.Val
 				if snap.Total != 0 {
-					t.Errorf("expected total 0, got %d", snap.Total)
+					return errors.Errorf("expected total 0, got %d", snap.Total)
 				}
 				if snap.Mean != 0 {
-					t.Errorf("expected mean 0, got %f", snap.Mean)
+					return errors.Errorf("expected mean 0, got %f", snap.Mean)
 				}
+				return nil
 			},
 		},
 		{
-			name: "record a single value",
-			h1: func() (Histogram, error) {
-				return NewHistogram(
+			Name: "record a single value",
+			Args: args{
+				opts: []HistogramOption{
 					WithHistogramMin(1),
 					WithHistogramGrowth(2),
 					WithHistogramNumBuckets(10),
 					WithHistogramNumShards(1),
-				)
+				},
+				records: []float64{10},
 			},
-			records: []float64{10},
-			check: func(t *testing.T, h Histogram) {
-				snap := h.Snapshot()
+			CheckFunc: func(tt *testing.T, want testdata.Result[*HistogramSnapshot], got testdata.Result[*HistogramSnapshot]) error {
+				if got.Err != nil {
+					return got.Err
+				}
+				snap := got.Val
 				if snap.Total != 1 {
-					t.Errorf("expected total 1, got %d", snap.Total)
+					return errors.Errorf("expected total 1, got %d", snap.Total)
 				}
 				if snap.Mean != 10 {
-					t.Errorf("expected mean 10, got %f", snap.Mean)
+					return errors.Errorf("expected mean 10, got %f", snap.Mean)
 				}
+				return nil
 			},
 		},
 		{
-			name: "concurrent record",
-			h1: func() (Histogram, error) {
-				return NewHistogram(
+			Name: "record NaN",
+			Args: args{
+				opts: []HistogramOption{
 					WithHistogramMin(1),
 					WithHistogramGrowth(2),
 					WithHistogramNumBuckets(10),
 					WithHistogramNumShards(1),
-				)
+				},
+				records: []float64{math.NaN(), 10},
 			},
-			check: func(t *testing.T, h Histogram) {
-				var wg sync.WaitGroup
-				for i := 0; i < 100; i++ {
-					wg.Add(1)
-					go func(v float64) {
-						defer wg.Done()
-						h.Record(v)
-					}(float64(i))
+			CheckFunc: func(tt *testing.T, want testdata.Result[*HistogramSnapshot], got testdata.Result[*HistogramSnapshot]) error {
+				if got.Err != nil {
+					return got.Err
 				}
-				wg.Wait()
-
-				snap := h.Snapshot()
-				if snap.Total != 100 {
-					t.Errorf("expected total 100, got %d", snap.Total)
+				snap := got.Val
+				if snap.Total != 1 { // NaN should be ignored
+					return errors.Errorf("expected total 1, got %d", snap.Total)
 				}
+				if snap.Mean != 10 {
+					return errors.Errorf("expected mean 10, got %f", snap.Mean)
+				}
+				return nil
 			},
 		},
+		{
+			Name: "record Inf",
+			Args: args{
+				opts: []HistogramOption{
+					WithHistogramMin(1),
+					WithHistogramGrowth(2),
+					WithHistogramNumBuckets(10),
+					WithHistogramNumShards(1),
+				},
+				records: []float64{math.Inf(1), math.Inf(-1), 10},
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[*HistogramSnapshot], got testdata.Result[*HistogramSnapshot]) error {
+				if got.Err != nil {
+					return got.Err
+				}
+				snap := got.Val
+				if snap.Total != 1 { // Inf should be ignored
+					return errors.Errorf("expected total 1, got %d", snap.Total)
+				}
+				if snap.Mean != 10 {
+					return errors.Errorf("expected mean 10, got %f", snap.Mean)
+				}
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestHistogram_Merge(t *testing.T) {
+	type args struct {
+		h1Opts    []HistogramOption
+		h1Records []float64
+		h2Opts    []HistogramOption
+		h2Records []float64
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h1, err := tt.h1()
-			if err != nil {
-				t.Fatalf("failed to create h1: %v", err)
-			}
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*HistogramSnapshot, error) {
+		h1, err := NewHistogram(args.h1Opts...)
+		if err != nil {
+			return nil, err
+		}
+		for _, r := range args.h1Records {
+			h1.Record(r)
+		}
 
-			for _, r := range tt.records {
-				h1.Record(r)
-			}
+		h2, err := NewHistogram(args.h2Opts...)
+		if err != nil {
+			return nil, err
+		}
+		for _, r := range args.h2Records {
+			h2.Record(r)
+		}
 
-			h_to_check := h1
-			if tt.h2 != nil {
-				h2, err := tt.h2()
-				if err != nil {
-					t.Fatalf("failed to create h2: %v", err)
+		if err := h1.Merge(h2); err != nil {
+			return nil, err
+		}
+		return h2.Snapshot(), nil
+	}, []testdata.Case[*HistogramSnapshot, args]{
+		{
+			Name: "merge two histograms",
+			Args: args{
+				h1Opts: []HistogramOption{
+					WithHistogramMin(1),
+					WithHistogramGrowth(2),
+					WithHistogramNumBuckets(10),
+					WithHistogramNumShards(1),
+				},
+				h1Records: []float64{10, 20},
+				h2Opts: []HistogramOption{
+					WithHistogramMin(1),
+					WithHistogramGrowth(2),
+					WithHistogramNumBuckets(10),
+					WithHistogramNumShards(1),
+				},
+				h2Records: []float64{30, 40},
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[*HistogramSnapshot], got testdata.Result[*HistogramSnapshot]) error {
+				if got.Err != nil {
+					return got.Err
 				}
-				if err := h1.Merge(h2); err != nil {
-					t.Fatalf("failed to merge histograms: %v", err)
+				snap := got.Val
+				if snap.Total != 4 {
+					return errors.Errorf("expected total 4, got %d", snap.Total)
 				}
-				h_to_check = h2
-			}
+				if snap.Mean != 25 {
+					return errors.Errorf("expected mean 25, got %f", snap.Mean)
+				}
+				return nil
+			},
+		},
+		{
+			Name: "merge incompatible histograms (shard count)",
+			Args: args{
+				h1Opts: []HistogramOption{
+					WithHistogramMin(1),
+					WithHistogramGrowth(2),
+					WithHistogramNumBuckets(10),
+					WithHistogramNumShards(1),
+				},
+				h1Records: []float64{10, 20},
+				h2Opts: []HistogramOption{
+					WithHistogramMin(1),
+					WithHistogramGrowth(2),
+					WithHistogramNumBuckets(10),
+					WithHistogramNumShards(2), // Different shard count
+				},
+				h2Records: []float64{30, 40},
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[*HistogramSnapshot], got testdata.Result[*HistogramSnapshot]) error {
+				if got.Err == nil {
+					return errors.New("expected error, got nil")
+				}
+				if got.Err.Error() != "incompatible histograms: shard count mismatch" {
+					return errors.Errorf("unexpected error message: %v", got.Err)
+				}
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
+	}
+}
 
-			tt.check(t, h_to_check)
-		})
+func TestHistogram_Concurrent(t *testing.T) {
+	type args struct {
+		count int
+	}
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*HistogramSnapshot, error) {
+		h, err := NewHistogram(
+			WithHistogramMin(1),
+			WithHistogramGrowth(2),
+			WithHistogramNumBuckets(10),
+			WithHistogramNumShards(4), // multiple shards for concurrency test
+		)
+		if err != nil {
+			return nil, err
+		}
+		var wg sync.WaitGroup
+		for i := 0; i < args.count; i++ {
+			wg.Add(1)
+			go func(v float64) {
+				defer wg.Done()
+				h.Record(v)
+			}(float64(i))
+		}
+		wg.Wait()
+		return h.Snapshot(), nil
+	}, []testdata.Case[*HistogramSnapshot, args]{
+		{
+			Name: "concurrent record",
+			Args: args{count: 100},
+			CheckFunc: func(tt *testing.T, want testdata.Result[*HistogramSnapshot], got testdata.Result[*HistogramSnapshot]) error {
+				if got.Err != nil {
+					return got.Err
+				}
+				snap := got.Val
+				if snap.Total != 100 {
+					return errors.Errorf("expected total 100, got %d", snap.Total)
+				}
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestHistogram_Clone(t *testing.T) {
+	// Test clone
+	type args struct {
+		opts    []HistogramOption
+		records []float64
+	}
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*HistogramSnapshot, error) {
+		h, err := NewHistogram(args.opts...)
+		if err != nil {
+			return nil, err
+		}
+		for _, r := range args.records {
+			h.Record(r)
+		}
+		cloned := h.Clone()
+		// Modify original to ensure deep copy
+		h.Record(1000)
+		return cloned.Snapshot(), nil
+	}, []testdata.Case[*HistogramSnapshot, args]{
+		{
+			Name: "clone deep copy",
+			Args: args{
+				opts: []HistogramOption{
+					WithHistogramMin(1),
+					WithHistogramGrowth(2),
+					WithHistogramNumBuckets(10),
+					WithHistogramNumShards(1),
+				},
+				records: []float64{10, 20},
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[*HistogramSnapshot], got testdata.Result[*HistogramSnapshot]) error {
+				if got.Err != nil {
+					return got.Err
+				}
+				snap := got.Val
+				if snap.Total != 2 {
+					return errors.Errorf("expected total 2, got %d", snap.Total)
+				}
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
+	}
+}
+
+func BenchmarkHistogram_Record(b *testing.B) {
+	h, _ := NewHistogram(
+		WithHistogramMin(1),
+		WithHistogramGrowth(1.1),
+		WithHistogramNumBuckets(100),
+		WithHistogramNumShards(16),
+	)
+	b.ResetTimer()
+	b.ReportAllocs()
+	b.RunParallel(func(pb *testing.PB) {
+		i := 0.0
+		for pb.Next() {
+			h.Record(i)
+			i += 1.0
+		}
+	})
+}
+
+func BenchmarkHistogram_Snapshot(b *testing.B) {
+	h, _ := NewHistogram(
+		WithHistogramMin(1),
+		WithHistogramGrowth(1.1),
+		WithHistogramNumBuckets(100),
+		WithHistogramNumShards(16),
+	)
+	for i := 0; i < 10000; i++ {
+		h.Record(float64(i))
+	}
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = h.Snapshot()
 	}
 }

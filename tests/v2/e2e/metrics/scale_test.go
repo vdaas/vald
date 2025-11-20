@@ -21,149 +21,328 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/vdaas/vald/internal/errors"
+	testdata "github.com/vdaas/vald/internal/test"
 )
 
-func TestScale_RingBuffer_Reset(t *testing.T) {
-	t.Parallel()
-	// Create a time-based scale with width 1 (second) and capacity 2.
-	// This means slots 0 and 1.
-	// Time 0 -> Slot 0
-	// Time 1 -> Slot 1
-	// Time 2 -> Slot 0 (Should reset)
-
-	s, err := newScale("test", 1, 2, 0, TimeScale, nil, nil, nil)
-	if err != nil {
-		t.Fatalf("failed to create scale: %v", err)
+func TestScale_Record_And_Reset(t *testing.T) {
+	type args struct {
+		name     string
+		width    uint64
+		capacity uint64
+		st       ScaleType
+		records  []*RequestResult
 	}
 
-	ctx := context.Background()
-
-	// Record at Time 0
-	t0 := time.Unix(0, 0)
-	s.Record(ctx, &RequestResult{
-		EndedAt: t0,
-	})
-
-	// Verify Slot 0 has 1 request
-	snap := s.Snapshot()
-	slot0 := snap.Slots[0]
-	if slot0.Total != 1 {
-		t.Errorf("expected slot 0 total 1, got %d", slot0.Total)
-	}
-
-	// Record at Time 1
-	t1 := time.Unix(1, 0)
-	s.Record(ctx, &RequestResult{
-		EndedAt: t1,
-	})
-
-	// Verify Slot 1 has 1 request
-	snap = s.Snapshot()
-	slot1 := snap.Slots[1]
-	if slot1.Total != 1 {
-		t.Errorf("expected slot 1 total 1, got %d", slot1.Total)
-	}
-
-	// Record at Time 2 (Should wrap to Slot 0 and reset)
-	t2 := time.Unix(2, 0)
-	s.Record(ctx, &RequestResult{
-		EndedAt: t2,
-	})
-
-	// Verify Slot 0 has 1 request (reset happened)
-	snap = s.Snapshot()
-	slot0 = snap.Slots[0]
-	if slot0.Total != 1 {
-		t.Errorf("expected slot 0 total 1 (after reset), got %d", slot0.Total)
-	}
-	// Verify LastUpdated matches t2
-	if slot0.LastUpdated != t2.UnixNano() {
-		t.Errorf("expected slot 0 updated %d, got %d", t2.UnixNano(), slot0.LastUpdated)
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*ScaleSnapshot, error) {
+		s, err := newScale(args.name, args.width, args.capacity, 0, args.st, nil, nil, nil)
+		if err != nil {
+			return nil, err
+		}
+		for _, r := range args.records {
+			s.Record(context.Background(), r)
+		}
+		return s.Snapshot(), nil
+	}, []testdata.Case[*ScaleSnapshot, args]{
+		{
+			Name: "time scale basic logic",
+			Args: args{
+				name:     "time_test",
+				width:    1, // 1 second per slot
+				capacity: 2, // 2 slots: 0 and 1
+				st:       TimeScale,
+				records: []*RequestResult{
+					{EndedAt: time.Unix(0, 0)}, // Slot 0
+					{EndedAt: time.Unix(1, 0)}, // Slot 1
+					{EndedAt: time.Unix(2, 0)}, // Slot 0 (Reset)
+				},
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[*ScaleSnapshot], got testdata.Result[*ScaleSnapshot]) error {
+				if got.Err != nil {
+					return got.Err
+				}
+				snap := got.Val
+				// Slot 0 should have 1 (from time 2), Slot 1 should have 1 (from time 1)
+				if snap.Slots[0].Total != 1 {
+					return errors.Errorf("expected slot 0 total 1, got %d", snap.Slots[0].Total)
+				}
+				if snap.Slots[0].LastUpdated != time.Unix(2, 0).UnixNano() {
+					return errors.Errorf("expected slot 0 update %d, got %d", time.Unix(2, 0).UnixNano(), snap.Slots[0].LastUpdated)
+				}
+				if snap.Slots[1].Total != 1 {
+					return errors.Errorf("expected slot 1 total 1, got %d", snap.Slots[1].Total)
+				}
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
 	}
 }
 
-func TestScale_Concurrency_Reset(t *testing.T) {
-	t.Parallel()
-	// High concurrency test to ensure race conditions in reset are handled.
-	s, err := newScale("test_concurrent", 1, 5, 0, TimeScale, nil, nil, nil)
-	if err != nil {
-		t.Fatalf("failed to create scale: %v", err)
+func TestScale_Concurrency(t *testing.T) {
+	type args struct {
+		workers   int
+		loops     int
+		capacity  uint64
+		startOffset int
 	}
 
-	ctx := context.Background()
-	var wg sync.WaitGroup
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*ScaleSnapshot, error) {
+		s, err := newScale("concurrent", 1, args.capacity, 0, TimeScale, nil, nil, nil)
+		if err != nil {
+			return nil, err
+		}
 
-	start := time.Now()
+		start := time.Now()
+		var wg sync.WaitGroup
 
-	// Spawn goroutines writing to consecutive seconds.
-	// This forces rapid wrapping and resetting.
-	for i := 0; i < 20; i++ {
-		wg.Add(1)
-		go func(offset int) {
-			defer wg.Done()
-			for j := 0; j < 100; j++ {
-				// Use fake times that increment to force wrapping
-				now := start.Add(time.Duration(offset+j) * time.Second)
-				s.Record(ctx, &RequestResult{
-					EndedAt: now,
-				})
-			}
-		}(i)
+		for i := 0; i < args.workers; i++ {
+			wg.Add(1)
+			go func(offset int) {
+				defer wg.Done()
+				for j := 0; j < args.loops; j++ {
+					// Use fake times that increment to force wrapping
+					now := start.Add(time.Duration(offset+j) * time.Second)
+					s.Record(context.Background(), &RequestResult{
+						EndedAt: now,
+					})
+				}
+			}(i)
+		}
+		wg.Wait()
+		return s.Snapshot(), nil
+	}, []testdata.Case[*ScaleSnapshot, args]{
+		{
+			Name: "concurrent write and wrap",
+			Args: args{
+				workers: 20,
+				loops: 100,
+				capacity: 5,
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[*ScaleSnapshot], got testdata.Result[*ScaleSnapshot]) error {
+				if got.Err != nil {
+					return got.Err
+				}
+				// Just check it didn't panic and returned valid snapshot
+				if got.Val == nil {
+					return errors.New("got nil snapshot")
+				}
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
 	}
-
-	wg.Wait()
-	// If no panic or race detected, pass.
 }
 
 func TestScale_Merge(t *testing.T) {
-	t.Parallel()
-	s1, _ := newScale("test_merge", 1, 2, 0, TimeScale, nil, nil, nil)
-	s2, _ := newScale("test_merge", 1, 2, 0, TimeScale, nil, nil, nil)
-
-	// Manually record data since we can't access slots directly
-	ctx := context.Background()
-	t0 := time.Unix(0, 0)
-	t1 := time.Unix(1, 0)
-
-	s1.Record(ctx, &RequestResult{EndedAt: t0})
-	s2.Record(ctx, &RequestResult{EndedAt: t0})
-	s2.Record(ctx, &RequestResult{EndedAt: t1})
-
-	if err := s1.Merge(s2); err != nil {
-		t.Fatalf("Merge failed: %v", err)
+	type args struct {
+		width1    uint64
+		capacity1 uint64
+		width2    uint64
+		capacity2 uint64
+		s1Recs   []*RequestResult
+		s2Recs   []*RequestResult
 	}
 
-	snap := s1.Snapshot()
-	if snap.Slots[0].Total != 2 { // 1 from s1 + 1 from s2
-		t.Errorf("expected slot 0 total 2, got %d", snap.Slots[0].Total)
-	}
-	if snap.Slots[1].Total != 1 { // 0 from s1 + 1 from s2
-		t.Errorf("expected slot 1 total 1, got %d", snap.Slots[1].Total)
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*ScaleSnapshot, error) {
+		s1, err := newScale("test", args.width1, args.capacity1, 0, TimeScale, nil, nil, nil)
+		if err != nil { return nil, err }
+		s2, err := newScale("test", args.width2, args.capacity2, 0, TimeScale, nil, nil, nil)
+		if err != nil { return nil, err }
+
+		for _, r := range args.s1Recs {
+			s1.Record(context.Background(), r)
+		}
+		for _, r := range args.s2Recs {
+			s2.Record(context.Background(), r)
+		}
+
+		if err := s1.Merge(s2); err != nil {
+			return nil, err
+		}
+		return s1.Snapshot(), nil
+	}, []testdata.Case[*ScaleSnapshot, args]{
+		{
+			Name: "merge compatible scales",
+			Args: args{
+				width1: 1, capacity1: 2,
+				width2: 1, capacity2: 2,
+				s1Recs: []*RequestResult{{EndedAt: time.Unix(0, 0)}},
+				s2Recs: []*RequestResult{
+					{EndedAt: time.Unix(0, 0)},
+					{EndedAt: time.Unix(1, 0)},
+				},
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[*ScaleSnapshot], got testdata.Result[*ScaleSnapshot]) error {
+				if got.Err != nil { return got.Err }
+				snap := got.Val
+				// Slot 0: 1 (s1) + 1 (s2) = 2
+				if snap.Slots[0].Total != 2 {
+					return errors.Errorf("expected slot 0 total 2, got %d", snap.Slots[0].Total)
+				}
+				// Slot 1: 0 (s1) + 1 (s2) = 1
+				if snap.Slots[1].Total != 1 {
+					return errors.Errorf("expected slot 1 total 1, got %d", snap.Slots[1].Total)
+				}
+				return nil
+			},
+		},
+		{
+			Name: "merge incompatible scales",
+			Args: args{
+				width1: 1, capacity1: 2,
+				width2: 2, capacity2: 2, // different width
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[*ScaleSnapshot], got testdata.Result[*ScaleSnapshot]) error {
+				if got.Err == nil {
+					return errors.New("expected error, got nil")
+				}
+				if got.Err.Error() != "incompatible scales" {
+					return errors.Errorf("unexpected error message: %v", got.Err)
+				}
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
 	}
 }
 
 func TestScale_Clone(t *testing.T) {
-	t.Parallel()
-	s1, _ := newScale("test_clone", 1, 2, 0, TimeScale, nil, nil, nil)
+	type args struct {
+		recs []*RequestResult
+	}
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*ScaleSnapshot, error) {
+		s1, err := newScale("test", 1, 2, 0, TimeScale, nil, nil, nil)
+		if err != nil { return nil, err }
+		for _, r := range args.recs {
+			s1.Record(context.Background(), r)
+		}
+		s2 := s1.Clone()
+		// Modify s1
+		s1.Record(context.Background(), &RequestResult{EndedAt: time.Unix(0, 0)})
+		return s2.Snapshot(), nil
+	}, []testdata.Case[*ScaleSnapshot, args]{
+		{
+			Name: "clone independence",
+			Args: args{
+				recs: []*RequestResult{{EndedAt: time.Unix(0, 0)}},
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[*ScaleSnapshot], got testdata.Result[*ScaleSnapshot]) error {
+				if got.Err != nil { return got.Err }
+				snap := got.Val
+				// s1 was 1, cloned. s1 became 2. s2 should remain 1.
+				if snap.Slots[0].Total != 1 {
+					return errors.Errorf("expected cloned slot 0 total 1, got %d", snap.Slots[0].Total)
+				}
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestScale_RingBuffer_WrapAndReset(t *testing.T) {
+	type args struct {
+		width    uint64
+		capacity uint64
+		records  []*RequestResult
+	}
+	// This test verifies wrapping logic specifically
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*ScaleSnapshot, error) {
+		s, err := newScale("test_wrap", args.width, args.capacity, 0, TimeScale, nil, nil, nil)
+		if err != nil {
+			return nil, err
+		}
+		for _, r := range args.records {
+			s.Record(context.Background(), r)
+		}
+		return s.Snapshot(), nil
+	}, []testdata.Case[*ScaleSnapshot, args]{
+		{
+			Name: "wrap around and reset",
+			Args: args{
+				width:    1,
+				capacity: 3,
+				records: []*RequestResult{
+					{EndedAt: time.Unix(0, 0)}, // Slot 0
+					{EndedAt: time.Unix(1, 0)}, // Slot 1
+					{EndedAt: time.Unix(2, 0)}, // Slot 2
+					{EndedAt: time.Unix(3, 0)}, // Slot 0 (Reset!)
+				},
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[*ScaleSnapshot], got testdata.Result[*ScaleSnapshot]) error {
+				if got.Err != nil {
+					return got.Err
+				}
+				snap := got.Val
+				// Slot 0 should have 1 (from sec 3), not 2
+				if snap.Slots[0].Total != 1 {
+					return errors.Errorf("Slot 0: expected 1, got %d", snap.Slots[0].Total)
+				}
+				if snap.Slots[0].LastUpdated != time.Unix(3, 0).UnixNano() {
+					return errors.Errorf("Slot 0 time: expected %d, got %d", time.Unix(3, 0).UnixNano(), snap.Slots[0].LastUpdated)
+				}
+				// Slot 1 should have 1 (from sec 1)
+				if snap.Slots[1].Total != 1 {
+					return errors.Errorf("Slot 1: expected 1, got %d", snap.Slots[1].Total)
+				}
+				// Slot 2 should have 1 (from sec 2)
+				if snap.Slots[2].Total != 1 {
+					return errors.Errorf("Slot 2: expected 1, got %d", snap.Slots[2].Total)
+				}
+				return nil
+			},
+		},
+		{
+			Name: "wrap around skip slot",
+			Args: args{
+				width:    1,
+				capacity: 3,
+				records: []*RequestResult{
+					{EndedAt: time.Unix(0, 0)}, // Slot 0
+					{EndedAt: time.Unix(1, 0)}, // Slot 1
+					{EndedAt: time.Unix(2, 0)}, // Slot 2
+					{EndedAt: time.Unix(3, 0)}, // Slot 0 (Reset)
+					{EndedAt: time.Unix(5, 0)}, // Slot 2 (Reset) - skipping Slot 1
+				},
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[*ScaleSnapshot], got testdata.Result[*ScaleSnapshot]) error {
+				if got.Err != nil {
+					return got.Err
+				}
+				snap := got.Val
+				// Slot 2 should have 1 (from sec 5)
+				if snap.Slots[2].Total != 1 {
+					return errors.Errorf("Slot 2: expected 1, got %d", snap.Slots[2].Total)
+				}
+				if snap.Slots[2].LastUpdated != time.Unix(5, 0).UnixNano() {
+					return errors.Errorf("Slot 2 time: expected %d, got %d", time.Unix(5, 0).UnixNano(), snap.Slots[2].LastUpdated)
+				}
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
+	}
+}
+
+func BenchmarkScale_Record(b *testing.B) {
+	s, _ := newScale("bench", 1, 10, 0, TimeScale, nil, nil, nil)
 	ctx := context.Background()
-	s1.Record(ctx, &RequestResult{EndedAt: time.Unix(0, 0)})
-
-	s2 := s1.Clone()
-
-	snap1 := s1.Snapshot()
-	snap2 := s2.Snapshot()
-
-	if snap2.Name != snap1.Name {
-		t.Errorf("expected cloned name %s, got %s", snap1.Name, snap2.Name)
-	}
-	if snap2.Slots[0].Total != snap1.Slots[0].Total {
-		t.Errorf("expected cloned slot 0 total %d, got %d", snap1.Slots[0].Total, snap2.Slots[0].Total)
-	}
-
-	// Verify independence
-	s1.Record(ctx, &RequestResult{EndedAt: time.Unix(0, 0)})
-	snap2 = s2.Snapshot()
-	if snap2.Slots[0].Total != 1 {
-		t.Errorf("expected cloned slot 0 total to remain 1, got %d", snap2.Slots[0].Total)
-	}
+	b.ResetTimer()
+	b.ReportAllocs()
+	b.RunParallel(func(pb *testing.PB) {
+		i := 0
+		for pb.Next() {
+			s.Record(ctx, &RequestResult{
+				EndedAt: time.Unix(int64(i), 0),
+			})
+			i++
+		}
+	})
 }

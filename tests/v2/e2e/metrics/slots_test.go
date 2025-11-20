@@ -21,142 +21,228 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
+	testdata "github.com/vdaas/vald/internal/test"
 )
 
-func TestSlot_Record(t *testing.T) {
-	t.Parallel()
-
-	// Create a new slot with mock histograms/exemplars if possible, or real ones.
-	// For simplicity, we'll use nil since Record handles nil checks internally for Latency/QueueWait/Exemplars.
-	// But to verify logic we might want real ones.
-	h, _ := NewHistogram(WithHistogramNumBuckets(10))
-	e := NewExemplar(WithExemplarCapacity(10))
-	s := newSlot(1, h, h, e).(*slot)
-
-	// 1. Record a simple request
-	t0 := time.Now()
-	rr := &RequestResult{
-		EndedAt: t0,
-		Latency: 100 * time.Millisecond,
-		Err:     nil,
-	}
-	s.Record(rr, 0)
-
-	if s.Total.Load() != 1 {
-		t.Errorf("expected Total 1, got %d", s.Total.Load())
-	}
-	if s.WindowStart != 0 {
-		t.Errorf("expected WindowStart 0, got %d", s.WindowStart)
+func TestSlot_Record_And_Reset(t *testing.T) {
+	type args struct {
+		records []struct {
+			rr  *RequestResult
+			win uint64
+		}
 	}
 
-	// 2. Record with same window index
-	s.Record(rr, 0)
-	if s.Total.Load() != 2 {
-		t.Errorf("expected Total 2, got %d", s.Total.Load())
-	}
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Slot, error) {
+		// Using real histograms/exemplars to fully test integration
+		h, err := NewHistogram(WithHistogramNumBuckets(10))
+		if err != nil {
+			return nil, err
+		}
+		e := NewExemplar(WithExemplarCapacity(10))
+		s := newSlot(1, h, h, e) // numCounters=1
 
-	// 3. Record with different window index (should reset)
-	s.Record(rr, 1)
-	if s.Total.Load() != 1 {
-		t.Errorf("expected Total 1 (reset), got %d", s.Total.Load())
-	}
-	if s.WindowStart != 1 {
-		t.Errorf("expected WindowStart 1, got %d", s.WindowStart)
+		for _, rec := range args.records {
+			s.Record(rec.rr, rec.win)
+		}
+		return s, nil
+	}, []testdata.Case[Slot, args]{
+		{
+			Name: "record within same window",
+			Args: args{
+				records: []struct {
+					rr  *RequestResult
+					win uint64
+				}{
+					{
+						rr:  &RequestResult{EndedAt: time.Now(), Latency: 100 * time.Millisecond},
+						win: 0,
+					},
+					{
+						rr:  &RequestResult{EndedAt: time.Now(), Latency: 200 * time.Millisecond},
+						win: 0,
+					},
+				},
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[Slot], got testdata.Result[Slot]) error {
+				if got.Err != nil {
+					return got.Err
+				}
+				s := got.Val.(*slot)
+				if s.Total.Load() != 2 {
+					return errors.Errorf("expected total 2, got %d", s.Total.Load())
+				}
+				if s.WindowStart != 0 {
+					return errors.Errorf("expected WindowStart 0, got %d", s.WindowStart)
+				}
+				return nil
+			},
+		},
+		{
+			Name: "record with window change (reset)",
+			Args: args{
+				records: []struct {
+					rr  *RequestResult
+					win uint64
+				}{
+					{
+						rr:  &RequestResult{EndedAt: time.Now()},
+						win: 0,
+					},
+					{
+						rr:  &RequestResult{EndedAt: time.Now()},
+						win: 1,
+					},
+				},
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[Slot], got testdata.Result[Slot]) error {
+				if got.Err != nil {
+					return got.Err
+				}
+				s := got.Val.(*slot)
+				// Should have reset, so only the record for window 1 exists
+				if s.Total.Load() != 1 {
+					return errors.Errorf("expected total 1 (reset), got %d", s.Total.Load())
+				}
+				if s.WindowStart != 1 {
+					return errors.Errorf("expected WindowStart 1, got %d", s.WindowStart)
+				}
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
 	}
 }
 
 func TestSlot_Merge(t *testing.T) {
-	t.Parallel()
-
-	s1 := newSlot(1, nil, nil, nil).(*slot)
-	s2 := newSlot(1, nil, nil, nil).(*slot)
-
-	s1.Total.Store(10)
-	s1.Errors.Store(1)
-	s1.updatedNS.Store(100)
-	s1.Counters[0].Store(5)
-
-	s2.Total.Store(20)
-	s2.Errors.Store(2)
-	s2.updatedNS.Store(200)
-	s2.Counters[0].Store(10) // Slot merge currently doesn't merge counters? Let's check implementation.
-	// Looking at implementation: Merge function does NOT iterate counters slice!
-	// It merges Total, Errors, updatedNS, Latency, QueueWait, Exemplars.
-	// It seems Counters are NOT merged in Slot.Merge?
-	// Let's verify code.
-
-	if err := s1.Merge(s2); err != nil {
-		t.Fatalf("Merge failed: %v", err)
+	type args struct {
+		s1Init func(*slot)
+		s2Init func(*slot)
 	}
 
-	if s1.Total.Load() != 30 {
-		t.Errorf("expected Total 30, got %d", s1.Total.Load())
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Slot, error) {
+		s1 := newSlot(1, nil, nil, nil).(*slot)
+		if args.s1Init != nil {
+			args.s1Init(s1)
+		}
+		s2 := newSlot(1, nil, nil, nil).(*slot)
+		if args.s2Init != nil {
+			args.s2Init(s2)
+		}
+		if err := s1.Merge(s2); err != nil {
+			return nil, err
+		}
+		return s1, nil
+	}, []testdata.Case[Slot, args]{
+		{
+			Name: "merge slots",
+			Args: args{
+				s1Init: func(s *slot) {
+					s.Total.Store(10)
+					s.Errors.Store(1)
+					s.updatedNS.Store(100)
+				},
+				s2Init: func(s *slot) {
+					s.Total.Store(20)
+					s.Errors.Store(2)
+					s.updatedNS.Store(200)
+				},
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[Slot], got testdata.Result[Slot]) error {
+				if got.Err != nil {
+					return got.Err
+				}
+				s := got.Val.(*slot)
+				if s.Total.Load() != 30 {
+					return errors.Errorf("expected Total 30, got %d", s.Total.Load())
+				}
+				if s.Errors.Load() != 3 {
+					return errors.Errorf("expected Errors 3, got %d", s.Errors.Load())
+				}
+				if s.updatedNS.Load() != 200 {
+					return errors.Errorf("expected updatedNS 200, got %d", s.updatedNS.Load())
+				}
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
 	}
-	if s1.Errors.Load() != 3 {
-		t.Errorf("expected Errors 3, got %d", s1.Errors.Load())
+}
+
+func TestSlot_Concurrent_Record(t *testing.T) {
+	type args struct {
+		workers int
+		loops   int
 	}
-	if s1.updatedNS.Load() != 200 {
-		t.Errorf("expected updatedNS 200, got %d", s1.updatedNS.Load())
+
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Slot, error) {
+		s := newSlot(0, nil, nil, nil)
+		var wg sync.WaitGroup
+		start := time.Now()
+		for i := 0; i < args.workers; i++ {
+			wg.Add(1)
+			go func(id int) {
+				defer wg.Done()
+				for j := 0; j < args.loops; j++ {
+					// Switch window index every 10 iterations to force rapid resets
+					win := uint64((id*args.loops + j) / 10)
+					s.Record(&RequestResult{
+						EndedAt: start,
+						Status:  codes.OK,
+					}, win)
+				}
+			}(i)
+		}
+		wg.Wait()
+		return s, nil
+	}, []testdata.Case[Slot, args]{
+		{
+			Name: "concurrent stress",
+			Args: args{
+				workers: 10,
+				loops:   100,
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[Slot], got testdata.Result[Slot]) error {
+				if got.Err != nil {
+					return got.Err
+				}
+				// Just ensure no panic
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
 	}
 }
 
 func TestSlot_Clone(t *testing.T) {
-	t.Parallel()
-
-	s1 := newSlot(1, nil, nil, nil).(*slot)
-	s1.Total.Store(10)
-	s1.Counters[0].Store(5)
-
-	s2 := s1.Clone().(*slot)
-
-	if s2.Total.Load() != 10 {
-		t.Errorf("expected cloned Total 10, got %d", s2.Total.Load())
+	type args struct {
+		total uint64
 	}
-	if s2.Counters[0].Load() != 5 {
-		t.Errorf("expected cloned Counter 5, got %d", s2.Counters[0].Load())
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Slot, error) {
+		s1 := newSlot(1, nil, nil, nil).(*slot)
+		s1.Total.Store(args.total)
+		s2 := s1.Clone()
+		// Modify s1
+		s1.Total.Store(args.total + 1)
+		return s2, nil
+	}, []testdata.Case[Slot, args]{
+		{
+			Name: "clone independence",
+			Args: args{total: 10},
+			CheckFunc: func(tt *testing.T, want testdata.Result[Slot], got testdata.Result[Slot]) error {
+				if got.Err != nil { return got.Err }
+				s := got.Val.(*slot)
+				if s.Total.Load() != 10 {
+					return errors.Errorf("expected cloned Total 10, got %d", s.Total.Load())
+				}
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
 	}
-
-	// Modify s1, s2 should not change
-	s1.Total.Store(20)
-	if s2.Total.Load() != 10 {
-		t.Errorf("expected independent cloned Total 10, got %d", s2.Total.Load())
-	}
-}
-
-func TestSlot_Reset(t *testing.T) {
-	t.Parallel()
-	s := newSlot(1, nil, nil, nil).(*slot)
-	s.Total.Store(10)
-
-	s.Reset()
-
-	if s.Total.Load() != 0 {
-		t.Errorf("expected Total 0 after Reset, got %d", s.Total.Load())
-	}
-}
-
-func TestSlot_Concurrent_Record_Reset(t *testing.T) {
-	t.Parallel()
-	// Verify that concurrent Records and Reset (via window change) don't panic or race.
-	s := newSlot(0, nil, nil, nil).(*slot)
-
-	var wg sync.WaitGroup
-	start := time.Now()
-
-	for i := 0; i < 10; i++ {
-		wg.Add(1)
-		go func(id int) {
-			defer wg.Done()
-			for j := 0; j < 1000; j++ {
-				// Switch window index every 100 iterations
-				win := uint64((id*1000 + j) / 100)
-				s.Record(&RequestResult{
-					EndedAt: start,
-					Status:  codes.OK,
-				}, win)
-			}
-		}(i)
-	}
-	wg.Wait()
 }

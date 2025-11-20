@@ -18,118 +18,278 @@ package metrics
 
 import (
 	"math"
-	"slices"
 	"sync"
 	"testing"
+
+	"github.com/vdaas/vald/internal/errors"
+	testdata "github.com/vdaas/vald/internal/test"
 )
 
-func TestTDigest_AddAndQuantile(t *testing.T) {
-	td, _ := NewTDigest(WithTDigestCompression(100), WithTDigestCompressionTriggerFactor(10))
-
-	// Add some values
-	values := []float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-	for _, v := range values {
-		td.Add(v)
+func TestNewTDigest(t *testing.T) {
+	type args struct {
+		opts []TDigestOption
+	}
+	type want struct {
+		err error
 	}
 
-	// Simple quantile checks
-	if q := td.Quantile(0.5); q < 5 || q > 6 {
-		t.Errorf("Quantile(0.5) = %v, want ~5.5", q)
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (TDigest, error) {
+		return NewTDigest(args.opts...)
+	}, []testdata.Case[TDigest, args]{
+		{
+			Name: "initialize with valid options",
+			Args: args{
+				opts: []TDigestOption{
+					WithTDigestCompression(100),
+					WithTDigestCompressionTriggerFactor(10),
+				},
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[TDigest], got testdata.Result[TDigest]) error {
+				if got.Err != nil {
+					return got.Err
+				}
+				if got.Val == nil {
+					return errors.New("got nil TDigest")
+				}
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
 	}
-	if q := td.Quantile(0.9); q < 9 || q > 10 {
-		t.Errorf("Quantile(0.9) = %v, want ~9.5", q)
+}
+
+func TestTDigest_Add_And_Quantile(t *testing.T) {
+	type args struct {
+		opts   []TDigestOption
+		values []float64
+		q      float64
 	}
 
-	// Edge cases
-	if q := td.Quantile(0); q != 1 {
-		t.Errorf("Quantile(0) = %v, want 1", q)
-	}
-	if q := td.Quantile(1); q != 10 {
-		t.Errorf("Quantile(1) = %v, want 10", q)
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (float64, error) {
+		td, err := NewTDigest(args.opts...)
+		if err != nil {
+			return 0, err
+		}
+		for _, v := range args.values {
+			td.Add(v)
+		}
+		return td.Quantile(args.q), nil
+	}, []testdata.Case[float64, args]{
+		{
+			Name: "quantile 0.5 check",
+			Args: args{
+				opts:   []TDigestOption{WithTDigestCompression(100)},
+				values: []float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				q:      0.5,
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[float64], got testdata.Result[float64]) error {
+				if got.Val < 5 || got.Val > 6 {
+					return errors.Errorf("Quantile(0.5) = %v, want ~5.5", got.Val)
+				}
+				return nil
+			},
+		},
+		{
+			Name: "quantile 0.9 check",
+			Args: args{
+				opts:   []TDigestOption{WithTDigestCompression(100)},
+				values: []float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				q:      0.9,
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[float64], got testdata.Result[float64]) error {
+				if got.Val < 9 || got.Val > 10 {
+					return errors.Errorf("Quantile(0.9) = %v, want ~9.5", got.Val)
+				}
+				return nil
+			},
+		},
+		{
+			Name: "quantile 0 (min)",
+			Args: args{
+				opts:   []TDigestOption{WithTDigestCompression(100)},
+				values: []float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				q:      0,
+			},
+			Want: testdata.Result[float64]{
+				Val: 1.0,
+			},
+		},
+		{
+			Name: "quantile 1 (max)",
+			Args: args{
+				opts:   []TDigestOption{WithTDigestCompression(100)},
+				values: []float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				q:      1,
+			},
+			Want: testdata.Result[float64]{
+				Val: 10.0,
+			},
+		},
+		{
+			Name: "empty tdigest",
+			Args: args{
+				opts:   []TDigestOption{WithTDigestCompression(100)},
+				values: []float64{},
+				q:      0.5,
+			},
+			Want: testdata.Result[float64]{
+				Val: 0,
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
 	}
 }
 
 func TestTDigest_Merge(t *testing.T) {
-	td1, _ := NewTDigest(WithTDigestCompression(100), WithTDigestCompressionTriggerFactor(10))
-	td2, _ := NewTDigest(WithTDigestCompression(100), WithTDigestCompressionTriggerFactor(10))
-
-	for i := 1; i <= 10; i++ {
-		td1.Add(float64(i))
-	}
-	for i := 11; i <= 20; i++ {
-		td2.Add(float64(i))
+	type args struct {
+		vals1 []float64
+		vals2 []float64
 	}
 
-	if err := td1.Merge(td2); err != nil {
-		t.Fatalf("Merge() error = %v", err)
-	}
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (TDigest, error) {
+		td1, err := NewTDigest(WithTDigestCompression(100), WithTDigestCompressionTriggerFactor(10))
+		if err != nil {
+			return nil, err
+		}
+		for _, v := range args.vals1 {
+			td1.Add(v)
+		}
 
-	if td1.(*tdigest).count != 20 {
-		t.Errorf("td1.count = %v, want 20", td1.(*tdigest).count)
-	}
+		td2, err := NewTDigest(WithTDigestCompression(100), WithTDigestCompressionTriggerFactor(10))
+		if err != nil {
+			return nil, err
+		}
+		for _, v := range args.vals2 {
+			td2.Add(v)
+		}
 
-	if q := td1.Quantile(0.5); q < 10 || q > 11 {
-		t.Errorf("Quantile(0.5) after merge = %v, want ~10.5", q)
+		if err := td1.Merge(td2); err != nil {
+			return nil, err
+		}
+		return td1, nil
+	}, []testdata.Case[TDigest, args]{
+		{
+			Name: "merge disjoint sets",
+			Args: args{
+				vals1: []float64{1, 2, 3, 4, 5},
+				vals2: []float64{6, 7, 8, 9, 10},
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[TDigest], got testdata.Result[TDigest]) error {
+				if got.Err != nil {
+					return got.Err
+				}
+				td := got.Val.(*tdigest)
+				if td.count != 10 {
+					return errors.Errorf("td1.count = %v, want 10", td.count)
+				}
+				q := td.Quantile(0.5)
+				if q < 5 || q > 6 {
+					return errors.Errorf("Quantile(0.5) after merge = %v, want ~5.5", q)
+				}
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
 	}
 }
 
 func TestTDigest_Compression(t *testing.T) {
-	td, _ := NewTDigest(WithTDigestCompression(20), WithTDigestCompressionTriggerFactor(1.1)) // Aggressive compression
-
-	for i := 0; i < 1000; i++ {
-		td.Add(float64(i))
+	type args struct {
+		count       int
+		compression float64
 	}
 
-	// Force flush
-	_ = td.Quantile(0)
-
-	if len(td.(*tdigest).centroids) > 25 { // Should be around 20
-		t.Errorf("len(td.centroids) = %v, want <= 25", len(td.(*tdigest).centroids))
-	}
-
-	// Check if quantiles are still reasonable
-	if q := td.Quantile(0.5); math.Abs(q-500) > 50 {
-		t.Errorf("Quantile(0.5) after compression = %v, want ~500", q)
-	}
-}
-
-func TestTDigest_Empty(t *testing.T) {
-	td, _ := NewTDigest(WithTDigestCompression(100), WithTDigestCompressionTriggerFactor(10))
-	if q := td.Quantile(0.5); q != 0 {
-		t.Errorf("Quantile(0.5) on empty t-digest = %v, want 0", q)
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*tdigest, error) {
+		td, err := NewTDigest(WithTDigestCompression(args.compression), WithTDigestCompressionTriggerFactor(1.1))
+		if err != nil {
+			return nil, err
+		}
+		for i := 0; i < args.count; i++ {
+			td.Add(float64(i))
+		}
+		// Force flush by calling Quantile
+		td.Quantile(0)
+		return td.(*tdigest), nil
+	}, []testdata.Case[*tdigest, args]{
+		{
+			Name: "aggressive compression",
+			Args: args{
+				count:       1000,
+				compression: 20,
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[*tdigest], got testdata.Result[*tdigest]) error {
+				td := got.Val
+				if len(td.centroids) > 25 {
+					// Should be roughly compression/2 to compression size, 25 is reasonable check for 20
+					// Wait, K centroids. If compression is delta.
+					// The number of centroids is roughly proportional to delta.
+					// Just keep the check loose but verifying compression happened.
+					// Without compression, it would be 1000 centroids.
+					return errors.Errorf("len(td.centroids) = %v, want <= 25", len(td.centroids))
+				}
+				q := td.Quantile(0.5)
+				if math.Abs(q-500) > 50 {
+					return errors.Errorf("Quantile(0.5) after compression = %v, want ~500", q)
+				}
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
 	}
 }
 
 func TestTDigest_Concurrency(t *testing.T) {
-	td, _ := NewTDigest(WithTDigestCompression(100), WithTDigestCompressionTriggerFactor(10))
-	var wg sync.WaitGroup
-
-	for i := 0; i < 100; i++ {
-		wg.Add(1)
-		go func(v float64) {
-			defer wg.Done()
-			td.Add(v)
-		}(float64(i))
+	type args struct {
+		count int
 	}
 
-	wg.Wait()
-
-	// Force flush
-	_ = td.Quantile(0)
-
-	if td.(*tdigest).count != 100 {
-		t.Errorf("td.count = %v, want 100", td.(*tdigest).count)
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*tdigest, error) {
+		td, err := NewTDigest(WithTDigestCompression(100), WithTDigestCompressionTriggerFactor(10))
+		if err != nil {
+			return nil, err
+		}
+		var wg sync.WaitGroup
+		for i := 0; i < args.count; i++ {
+			wg.Add(1)
+			go func(v float64) {
+				defer wg.Done()
+				td.Add(v)
+			}(float64(i))
+		}
+		wg.Wait()
+		td.Quantile(0) // Flush
+		return td.(*tdigest), nil
+	}, []testdata.Case[*tdigest, args]{
+		{
+			Name: "concurrent adds",
+			Args: args{count: 100},
+			CheckFunc: func(tt *testing.T, want testdata.Result[*tdigest], got testdata.Result[*tdigest]) error {
+				td := got.Val
+				if td.count != 100 {
+					return errors.Errorf("td.count = %v, want 100", td.count)
+				}
+				q := td.Quantile(0.5)
+				if math.Abs(q-49.5) > 5 { // 0..99, mean ~49.5
+					return errors.Errorf("Quantile(0.5) after concurrent adds = %v, want ~49.5", q)
+				}
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
 	}
+}
 
-	// Check quantiles after concurrent adds
-	values := make([]float64, 100)
-	for i := 0; i < 100; i++ {
-		values[i] = float64(i)
-	}
-	slices.Sort(values)
-
-	p50 := values[49] // Approximate
-	if q := td.Quantile(0.5); math.Abs(q-p50) > 5 {
-		t.Errorf("Quantile(0.5) after concurrent adds = %v, want ~%v", q, p50)
+// Benchmark for memory allocation.
+// Can be run with -bench=.
+func BenchmarkTDigest_Add(b *testing.B) {
+	td, _ := NewTDigest()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		td.Add(float64(i))
 	}
 }
