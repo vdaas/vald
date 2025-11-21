@@ -6,12 +6,26 @@ Requests/sec:	1000.00
 Errors:	10 (10.00%)
 
 --- Latency ---
-	Mean:	1000000.00	StdDev:	0.00	Min:	100000.00	Max:	10000000.00	Total:	100
-	p10:	1000000.00	p25:	1000000.00	p50:	1000000.00	p75:	1000000.00	p90:	1000000.00	p95:	1000000.00	p99:	1000000.00
+	Mean:	1ms	StdDev:	0s	Min:	100µs	Max:	10ms	Total:	100
+Percentiles:
+	P10:	1ms
+	P25:	1ms
+	P50:	1ms
+	P75:	1ms
+	P90:	1ms
+	P95:	1ms
+	P99:	1ms
 
 --- Queue Wait ---
-	Mean:	500000.00	StdDev:	0.00	Min:	50000.00	Max:	5000000.00	Total:	100
-	p10:	500000.00	p25:	500000.00	p50:	500000.00	p75:	500000.00	p90:	500000.00	p95:	500000.00	p99:	500000.00
+	Mean:	500µs	StdDev:	0s	Min:	50µs	Max:	5ms	Total:	100
+Percentiles:
+	P10:	500µs
+	P25:	500µs
+	P50:	500µs
+	P75:	500µs
+	P90:	500µs
+	P95:	500µs
+	P99:	500µs
 
 --- Status Codes ---
 	- OK:	90 (90.00%)

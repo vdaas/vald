@@ -510,6 +510,10 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 		newM2 := sM2 + otherM2 + delta*delta*n1*n2/newTotal
 
 		s.Mean = newMean
+		// Ensure M2 is non-negative to prevent NaN in Sqrt due to floating point errors
+		if newM2 < 0 {
+			newM2 = 0
+		}
 		s.StdDev = math.Sqrt(newM2 / newTotal)
 		s.Sum += other.Sum
 		// Reconstruct SumSq

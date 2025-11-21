@@ -118,7 +118,7 @@ func (s *slot) Record(rr *RequestResult, windowIdx uint64) {
 		s.QueueWait.Record(float64(rr.QueueWait.Nanoseconds()))
 	}
 	if s.Exemplars != nil {
-		s.Exemplars.Offer(rr.Latency, rr.RequestID)
+		s.Exemplars.Offer(rr.Latency, rr.RequestID, rr.Err != nil)
 	}
 }
 
@@ -198,8 +198,8 @@ func (s *slot) Merge(other Slot) error {
 		}
 	}
 	if s.Exemplars != nil && os.Exemplars != nil {
-		for _, ex := range os.Exemplars.Snapshot() {
-			s.Exemplars.Offer(ex.latency, ex.requestID)
+		if err := s.Exemplars.Merge(os.Exemplars); err != nil {
+			return err
 		}
 	}
 	return nil

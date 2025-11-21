@@ -44,10 +44,10 @@ var (
 	}
 
 	defaultHistogramOpts = []HistogramOption{
-		WithHistogramMin(1),
-		WithHistogramMax(5000),
+		WithHistogramMin(1000),          // 1us
+		WithHistogramMax(60000000000),   // 60s (soft limit)
 		WithHistogramGrowth(1.2),
-		WithHistogramNumBuckets(50),
+		WithHistogramNumBuckets(100),    // Covers range from us to min
 		WithHistogramNumShards(16),
 	}
 

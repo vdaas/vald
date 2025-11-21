@@ -24,6 +24,7 @@ latpercentiles: {}
 qwpercentiles: {}
 exemplars:
 - {}
+exemplardetails: null
 codes:
   0: 90
   10: 10

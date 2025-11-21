@@ -52,6 +52,7 @@ func (p *SnapshotPresenter) AsString() string {
 	errs := s.Errors
 	var totalDuration time.Duration
 	if s.Latencies != nil {
+		// Sum is in nanoseconds
 		totalDuration = time.Duration(s.Latencies.Sum)
 	}
 
@@ -87,7 +88,24 @@ func (p *SnapshotPresenter) AsString() string {
 	}
 
 	// --- Exemplars ---
-	if len(s.Exemplars) > 0 {
+	if s.ExemplarDetails != nil {
+		renderExemplars := func(title string, items []*item) {
+			if len(items) > 0 {
+				fmt.Fprintf(&sb, "\n--- Exemplars (%s) ---\n", title)
+				for _, ex := range items {
+					status := ""
+					if ex.isError {
+						status = " (Failed)"
+					}
+					fmt.Fprintf(&sb, "\t- RequestID:\t%s,\tLatency:\t%s%s\n", ex.requestID, ex.latency, status)
+				}
+			}
+		}
+		renderExemplars("Slowest", s.ExemplarDetails.Slowest)
+		renderExemplars("Fastest", s.ExemplarDetails.Fastest)
+		renderExemplars("Average (Sampled)", s.ExemplarDetails.Average)
+		renderExemplars("Failures", s.ExemplarDetails.Failures)
+	} else if len(s.Exemplars) > 0 {
 		fmt.Fprintf(&sb, "\n--- Exemplars (Top %d slowest requests) ---\n", len(s.Exemplars))
 		for _, ex := range s.Exemplars {
 			fmt.Fprintf(&sb, "\t- RequestID:\t%s,\tLatency:\t%s\n", ex.requestID, ex.latency)
@@ -223,11 +241,42 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 func (p *SnapshotPresenter) renderHistogram(title string, h *HistogramSnapshot, q TDigest) string {
 	var sb strings.Builder
 
+	// Helper to convert nanoseconds to duration string
+	fmtDur := func(ns float64) string {
+		return time.Duration(ns).String()
+	}
+
 	if h != nil {
-		fmt.Fprint(&sb, h.String())
+		// Manually format HistogramSnapshot to handle units correctly
+		if h.Total == 0 {
+			fmt.Fprint(&sb, "No data collected.\n")
+		} else {
+			fmt.Fprintf(
+				&sb,
+				"\tMean:\t%s\tStdDev:\t%s\tMin:\t%s\tMax:\t%s\tTotal:\t%d\n",
+				fmtDur(h.Mean),
+				fmtDur(h.StdDev),
+				fmtDur(h.Min),
+				fmtDur(h.Max),
+				h.Total,
+			)
+		}
 	}
 	if q != nil {
-		fmt.Fprint(&sb, q.String())
+		// TDigest stores raw values (nanoseconds). Its String() method might print raw floats.
+		// We should probably implement a better stringer for TDigest or handle it here.
+		// Since TDigest interface has String(), let's assume it might not be time-aware.
+		// Let's check TDigest implementation or just use Quantiles().
+		// The TDigest implementation in this package (tdigest.go) likely implements String().
+		// If we can't change TDigest easily, we can iterate quantiles here.
+		qs := q.Quantiles()
+		if len(qs) > 0 {
+			fmt.Fprint(&sb, "Percentiles:\n")
+			for _, quantile := range qs {
+				val := q.Quantile(quantile)
+				fmt.Fprintf(&sb, "\tP%g:\t%s\n", quantile*100, fmtDur(val))
+			}
+		}
 	}
 	if h != nil && len(h.Counts) > 0 {
 		fmt.Fprint(&sb, "Histogram:\n")
@@ -238,6 +287,11 @@ func (p *SnapshotPresenter) renderHistogram(title string, h *HistogramSnapshot, 
 			}
 		}
 		for i, count := range h.Counts {
+			if count == 0 {
+				continue // Skip empty buckets for cleaner output? Or keep them?
+				// Keeping them helps visualize distribution, but if we have 100 buckets and most empty...
+				// Let's keep all buckets for now as per original code.
+			}
 			var bar string
 			if maxCount > 0 {
 				bar = strings.Repeat("∎", int(float64(count)/float64(maxCount)*40))
@@ -246,9 +300,8 @@ func (p *SnapshotPresenter) renderHistogram(title string, h *HistogramSnapshot, 
 			if i == 0 {
 				lowerBound = "0"
 			} else {
-				// If bounds are not enough (e.g. empty bounds slice), handle gracefully.
 				if i-1 < len(h.Bounds) {
-					lowerBound = fmt.Sprintf("%.3f", float64(time.Duration(h.Bounds[i-1])))
+					lowerBound = fmtDur(h.Bounds[i-1])
 				} else {
 					lowerBound = "?"
 				}
@@ -256,7 +309,7 @@ func (p *SnapshotPresenter) renderHistogram(title string, h *HistogramSnapshot, 
 			if i >= len(h.Bounds) {
 				upperBound = "inf"
 			} else {
-				upperBound = fmt.Sprintf("%.3f", float64(time.Duration(h.Bounds[i])))
+				upperBound = fmtDur(h.Bounds[i])
 			}
 			fmt.Fprintf(&sb, "\t%s - %s [%d]\t|%s\n", lowerBound, upperBound, count, bar)
 		}

@@ -166,7 +166,7 @@ func TestCollector_Record_And_Snapshot(t *testing.T) {
 					return errors.Errorf("expected latencies total 3, got %d", snap.Latencies.Total)
 				}
 				if snap.Latencies.Mean != float64(200*time.Millisecond) {
-					return errors.Errorf("expected latency mean %v, got %v", 200*time.Millisecond, time.Duration(snap.Latencies.Mean))
+					return errors.Errorf("expected latency mean %v, got %v", float64(200*time.Millisecond), snap.Latencies.Mean)
 				}
 				return nil
 			},

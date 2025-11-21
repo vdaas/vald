@@ -20,9 +20,12 @@
 package metrics
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -31,6 +34,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 )
 
 // requestIDCtxKey is the key for storing the request ID in the context.
@@ -269,8 +273,8 @@ func (c *collector) merge(other *collector) error {
 		}
 	}
 	if c.exemplars != nil && other.exemplars != nil {
-		for _, ex := range c.exemplars.Snapshot() {
-			other.exemplars.Offer(ex.latency, ex.requestID)
+		if err := other.exemplars.Merge(c.exemplars); err != nil {
+			return err
 		}
 	}
 	for name, h := range c.counters {
@@ -319,18 +323,21 @@ func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 		c.qwPercentiles.Add(float64(rr.QueueWait.Nanoseconds()))
 	}
 	if c.exemplars != nil {
-		c.exemplars.Offer(rr.Latency, rr.RequestID)
+		c.exemplars.Offer(rr.Latency, rr.RequestID, rr.Err != nil)
 	}
+
+	code := resolveStatusCode(rr.Status, rr.Err)
+
 	c.mu.RLock()
-	counter, ok := c.codes[rr.Status]
+	counter, ok := c.codes[code]
 	c.mu.RUnlock()
 	if !ok {
 		c.mu.Lock()
 		// re-check if another goroutine already inserted the key
-		counter, ok = c.codes[rr.Status]
+		counter, ok = c.codes[code]
 		if !ok {
 			counter = new(atomic.Uint64)
-			c.codes[rr.Status] = counter
+			c.codes[code] = counter
 		}
 		c.mu.Unlock()
 	}
@@ -430,6 +437,7 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 	}
 	var latSnap, qwSnap *HistogramSnapshot
 	var exSnap []*item
+	var exDetails *ExemplarDetails
 	if c.latencies != nil {
 		latSnap = c.latencies.Snapshot()
 	}
@@ -438,16 +446,27 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 	}
 	if c.exemplars != nil {
 		exSnap = c.exemplars.Snapshot()
+		exDetails, _ = c.exemplars.DetailedSnapshot()
+		// Sort Average exemplars by distance to mean latency
+		if exDetails != nil && len(exDetails.Average) > 0 && latSnap != nil && latSnap.Total > 0 {
+			mean := latSnap.Mean
+			slices.SortFunc(exDetails.Average, func(a, b *item) int {
+				distA := math.Abs(float64(a.latency) - mean)
+				distB := math.Abs(float64(b.latency) - mean)
+				return cmp.Compare(distA, distB)
+			})
+		}
 	}
 	return &GlobalSnapshot{
-		Total:          c.total.Load(),
-		Errors:         c.errors.Load(),
-		Latencies:      latSnap,
-		QueueWaits:     qwSnap,
-		LatPercentiles: c.latPercentiles,
-		QWPercentiles:  c.qwPercentiles,
-		Exemplars:      exSnap,
-		Codes:          codes,
+		Total:           c.total.Load(),
+		Errors:          c.errors.Load(),
+		Latencies:       latSnap,
+		QueueWaits:      qwSnap,
+		LatPercentiles:  c.latPercentiles,
+		QWPercentiles:   c.qwPercentiles,
+		Exemplars:       exSnap,
+		ExemplarDetails: exDetails,
+		Codes:           codes,
 	}
 }
 
@@ -578,18 +597,19 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 
 // GlobalSnapshot contains the aggregated metrics for all requests.
 type GlobalSnapshot struct {
-	Total          uint64                `json:"total"`
-	Errors         uint64                `json:"errors"`
-	Latencies      *HistogramSnapshot    `json:"latencies"`
-	QueueWaits     *HistogramSnapshot    `json:"queue_waits"`
-	LatPercentiles TDigest               `json:"lat_percentiles"`
-	QWPercentiles  TDigest               `json:"qw_percentiles"`
-	Exemplars      []*item               `json:"exemplars"`
-	Codes          map[codes.Code]uint64 `json:"codes"`
-	SchemaVersion  string                `json:"schema_version"`
-	BoundsCRC32    uint32                `json:"bounds_crc32"`
-	SketchKind     string                `json:"sketch_kind"`
-	InvariantsOK   bool                  `json:"invariants_ok"`
+	Total           uint64                `json:"total"`
+	Errors          uint64                `json:"errors"`
+	Latencies       *HistogramSnapshot    `json:"latencies"`
+	QueueWaits      *HistogramSnapshot    `json:"queue_waits"`
+	LatPercentiles  TDigest               `json:"lat_percentiles"`
+	QWPercentiles   TDigest               `json:"qw_percentiles"`
+	Exemplars       []*item               `json:"exemplars"`
+	ExemplarDetails *ExemplarDetails      `json:"exemplar_details,omitempty"`
+	Codes           map[codes.Code]uint64 `json:"codes"`
+	SchemaVersion   string                `json:"schema_version"`
+	BoundsCRC32     uint32                `json:"bounds_crc32"`
+	SketchKind      string                `json:"sketch_kind"`
+	InvariantsOK    bool                  `json:"invariants_ok"`
 }
 
 // MarshalJSON implements the json.Marshaler interface.
@@ -654,6 +674,22 @@ type SlotSnapshot struct {
 	QueueWaits  *HistogramSnapshot `json:"queue_waits"`
 	Counters    []uint64           `json:"counters"`
 	Exemplars   []*item            `json:"exemplars"`
+}
+
+// String implements the fmt.Stringer interface.
+func resolveStatusCode(code codes.Code, err error) codes.Code {
+	if code == codes.OK && err != nil {
+		if st, ok := status.FromError(err); ok {
+			return st.Code()
+		} else if errors.Is(err, context.Canceled) {
+			return codes.Canceled
+		} else if errors.Is(err, context.DeadlineExceeded) {
+			return codes.DeadlineExceeded
+		} else {
+			return codes.Unknown
+		}
+	}
+	return code
 }
 
 // String implements the fmt.Stringer interface.
