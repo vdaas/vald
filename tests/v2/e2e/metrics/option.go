@@ -44,10 +44,10 @@ var (
 	}
 
 	defaultHistogramOpts = []HistogramOption{
-		WithHistogramMin(1),
-		WithHistogramMax(5000),
+		WithHistogramMin(1000),          // 1us
+		WithHistogramMax(60000000000),   // 60s (soft limit)
 		WithHistogramGrowth(1.2),
-		WithHistogramNumBuckets(50),
+		WithHistogramNumBuckets(100),    // Covers range from us to min
 		WithHistogramNumShards(16),
 	}
 
@@ -157,9 +157,9 @@ func WithExemplar(opts ...ExemplarOption) Option {
 }
 
 // WithHistogramMin sets the minimum value for the histogram.
-func WithHistogramMin(minValue float64) HistogramOption {
+func WithHistogramMin(min float64) HistogramOption {
 	return func(c *histogram) error {
-		c.min = minValue
+		c.min = min
 		if c.min <= 0 {
 			return errors.New("histogram min must be > 0 for geometric buckets")
 		}
@@ -168,9 +168,9 @@ func WithHistogramMin(minValue float64) HistogramOption {
 }
 
 // WithHistogramMax sets the maximum value for the histogram.
-func WithHistogramMax(maxValue float64) HistogramOption {
+func WithHistogramMax(max float64) HistogramOption {
 	return func(c *histogram) error {
-		c.max = maxValue
+		c.max = max
 		return nil
 	}
 }

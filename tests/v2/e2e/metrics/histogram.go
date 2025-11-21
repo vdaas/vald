@@ -22,9 +22,9 @@ import (
 	"hash/crc32"
 	"math"
 	"slices"
+	"sync"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/sync"
 )
 
 // histogram is a thread-safe, sharded histogram that uses geometric bucketing.
@@ -44,14 +44,14 @@ type histogram struct {
 // It uses a mutex to protect its state and implements Welford's algorithm
 // for numerically stable variance calculation.
 type histogramShard struct {
-	counts []uint64  // number of values in each bucket
-	_      [128]byte // Padding to prevent false sharing
 	mu     sync.Mutex
-	mean   float64 // mean of values in this shard
-	m2     float64 // sum of squares of differences from the mean
-	min    float64 // minimum value in this shard
-	max    float64 // maximum value in this shard
-	total  uint64  // total number of values in this shard
+	counts []uint64  // number of values in each bucket
+	total  uint64    // total number of values in this shard
+	mean   float64   // mean of values in this shard
+	m2     float64   // sum of squares of differences from the mean
+	min    float64   // minimum value in this shard
+	max    float64   // maximum value in this shard
+	_      [128]byte // Padding to prevent false sharing
 }
 
 // Init initializes the histogram with the provided options.
@@ -143,20 +143,13 @@ func (h *histogram) Reset() {
 
 // computeBoundsCRC32 computes a CRC32 checksum for the given slice of
 // float64 bounds. It is used to validate histogram compatibility on merge.
-const (
-	bitShift     = 33
-	float64Bytes = 8
-)
-
-// computeBoundsCRC32 computes a CRC32 checksum for the given slice of
-// float64 bounds. It is used to validate histogram compatibility on merge.
 func computeBoundsCRC32(bounds []float64) uint32 {
 	if len(bounds) == 0 {
 		return 0
 	}
-	buf := make([]byte, float64Bytes*len(bounds))
+	buf := make([]byte, 8*len(bounds))
 	for i, b := range bounds {
-		binary.LittleEndian.PutUint64(buf[i*float64Bytes:], math.Float64bits(b))
+		binary.LittleEndian.PutUint64(buf[i*8:], math.Float64bits(b))
 	}
 	return crc32.ChecksumIEEE(buf)
 }
@@ -172,12 +165,11 @@ func (h *histogram) shardIndexForValue(val float64) int {
 	bits := math.Float64bits(val)
 	// Simple bit-mixing to avoid pathological patterns.
 	// This is not cryptographically strong, just enough to spread values.
-	x := bits ^ (bits >> bitShift)
+	x := bits ^ (bits >> 33)
 	x *= 0xff51afd7ed558ccd
-	x ^= x >> bitShift
+	x ^= x >> 33
 	x *= 0xc4ceb9fe1a85ec53
-	x ^= x >> bitShift
-	//nolint:gosec
+	x ^= x >> 33
 	return int(x % uint64(h.numShards))
 }
 
@@ -518,6 +510,10 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 		newM2 := sM2 + otherM2 + delta*delta*n1*n2/newTotal
 
 		s.Mean = newMean
+		// Ensure M2 is non-negative to prevent NaN in Sqrt due to floating point errors
+		if newM2 < 0 {
+			newM2 = 0
+		}
 		s.StdDev = math.Sqrt(newM2 / newTotal)
 		s.Sum += other.Sum
 		// Reconstruct SumSq

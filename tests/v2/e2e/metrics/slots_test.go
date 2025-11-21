@@ -23,7 +23,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
-	"github.com/vdaas/vald/internal/test"
+	testdata "github.com/vdaas/vald/internal/test"
 )
 
 func TestSlot_Record_And_Reset(t *testing.T) {
@@ -34,7 +34,7 @@ func TestSlot_Record_And_Reset(t *testing.T) {
 		}
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (Slot, error) {
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Slot, error) {
 		// Using real histograms/exemplars to fully test integration
 		h, err := NewHistogram(WithHistogramNumBuckets(10))
 		if err != nil {
@@ -47,7 +47,7 @@ func TestSlot_Record_And_Reset(t *testing.T) {
 			s.Record(rec.rr, rec.win)
 		}
 		return s, nil
-	}, []test.Case[Slot, args]{
+	}, []testdata.Case[Slot, args]{
 		{
 			Name: "record within same window",
 			Args: args{
@@ -65,7 +65,7 @@ func TestSlot_Record_And_Reset(t *testing.T) {
 					},
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Slot], got test.Result[Slot]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[Slot], got testdata.Result[Slot]) error {
 				if got.Err != nil {
 					return got.Err
 				}
@@ -96,7 +96,7 @@ func TestSlot_Record_And_Reset(t *testing.T) {
 					},
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Slot], got test.Result[Slot]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[Slot], got testdata.Result[Slot]) error {
 				if got.Err != nil {
 					return got.Err
 				}
@@ -122,7 +122,7 @@ func TestSlot_Merge(t *testing.T) {
 		s2Init func(*slot)
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (Slot, error) {
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Slot, error) {
 		s1 := newSlot(1, nil, nil, nil).(*slot)
 		if args.s1Init != nil {
 			args.s1Init(s1)
@@ -135,7 +135,7 @@ func TestSlot_Merge(t *testing.T) {
 			return nil, err
 		}
 		return s1, nil
-	}, []test.Case[Slot, args]{
+	}, []testdata.Case[Slot, args]{
 		{
 			Name: "merge slots",
 			Args: args{
@@ -150,7 +150,7 @@ func TestSlot_Merge(t *testing.T) {
 					s.updatedNS.Store(200)
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Slot], got test.Result[Slot]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[Slot], got testdata.Result[Slot]) error {
 				if got.Err != nil {
 					return got.Err
 				}
@@ -178,7 +178,7 @@ func TestSlot_Concurrent_Record(t *testing.T) {
 		loops   int
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (Slot, error) {
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Slot, error) {
 		s := newSlot(0, nil, nil, nil)
 		var wg sync.WaitGroup
 		start := time.Now()
@@ -188,7 +188,6 @@ func TestSlot_Concurrent_Record(t *testing.T) {
 				defer wg.Done()
 				for j := 0; j < args.loops; j++ {
 					// Switch window index every 10 iterations to force rapid resets
-					//nolint:gosec
 					win := uint64((id*args.loops + j) / 10)
 					s.Record(&RequestResult{
 						EndedAt: start,
@@ -199,14 +198,14 @@ func TestSlot_Concurrent_Record(t *testing.T) {
 		}
 		wg.Wait()
 		return s, nil
-	}, []test.Case[Slot, args]{
+	}, []testdata.Case[Slot, args]{
 		{
 			Name: "concurrent stress",
 			Args: args{
 				workers: 10,
 				loops:   100,
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Slot], got test.Result[Slot]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[Slot], got testdata.Result[Slot]) error {
 				if got.Err != nil {
 					return got.Err
 				}
@@ -223,18 +222,18 @@ func TestSlot_Clone(t *testing.T) {
 	type args struct {
 		total uint64
 	}
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (Slot, error) {
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Slot, error) {
 		s1 := newSlot(1, nil, nil, nil).(*slot)
 		s1.Total.Store(args.total)
 		s2 := s1.Clone()
 		// Modify s1
 		s1.Total.Store(args.total + 1)
 		return s2, nil
-	}, []test.Case[Slot, args]{
+	}, []testdata.Case[Slot, args]{
 		{
 			Name: "clone independence",
 			Args: args{total: 10},
-			CheckFunc: func(tt *testing.T, want test.Result[Slot], got test.Result[Slot]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[Slot], got testdata.Result[Slot]) error {
 				if got.Err != nil {
 					return got.Err
 				}

@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/net/grpc/codes"
-	"github.com/vdaas/vald/internal/test"
+	testdata "github.com/vdaas/vald/internal/test"
 )
 
 var update = flag.Bool("update", false, "update golden files")
@@ -80,19 +80,19 @@ func TestSnapshotPresenter(t *testing.T) {
 	// Define checks for each format
 	runCheck := func(name, goldenFile string, convert func(*SnapshotPresenter) (string, error)) {
 		t.Run(name, func(t *testing.T) {
-			if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (string, error) {
+			if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (string, error) {
 				p := NewSnapshotPresenter(args.snapshot)
 				return convert(p)
-			}, []test.Case[string, args]{
+			}, []testdata.Case[string, args]{
 				{
 					Name: "valid snapshot",
 					Args: args{
 						snapshot: createSampleSnapshot(),
 					},
-					Want: test.Result[string]{
+					Want: testdata.Result[string]{
 						// We don't populate Val here because we check against golden file
 					},
-					CheckFunc: func(tt *testing.T, want test.Result[string], got test.Result[string]) error {
+					CheckFunc: func(tt *testing.T, want testdata.Result[string], got testdata.Result[string]) error {
 						if got.Err != nil {
 							return got.Err
 						}
@@ -105,7 +105,7 @@ func TestSnapshotPresenter(t *testing.T) {
 					Args: args{
 						snapshot: &GlobalSnapshot{},
 					},
-					CheckFunc: func(tt *testing.T, want test.Result[string], got test.Result[string]) error {
+					CheckFunc: func(tt *testing.T, want testdata.Result[string], got testdata.Result[string]) error {
 						if got.Err != nil {
 							return got.Err
 						}
@@ -144,19 +144,18 @@ func TestSnapshotPresenter(t *testing.T) {
 
 func checkGoldenFile(t *testing.T, goldenFile string, actual string) {
 	t.Helper()
-	goldenPath := filepath.Clean(filepath.Join("testdata", goldenFile))
+	goldenPath := filepath.Join("testdata", goldenFile)
 	if *update {
-		err := os.MkdirAll(filepath.Dir(goldenPath), 0o750)
+		err := os.MkdirAll(filepath.Dir(goldenPath), 0o755)
 		if err != nil {
 			t.Fatalf("failed to create testdata dir: %v", err)
 		}
-		err = os.WriteFile(goldenPath, []byte(actual), 0o600)
+		err = os.WriteFile(goldenPath, []byte(actual), 0o644)
 		if err != nil {
 			t.Fatalf("failed to update golden file: %v", err)
 		}
 	}
 
-	//nolint:gosec
 	golden, err := os.ReadFile(goldenPath)
 	if err != nil {
 		// If file doesn't exist and not updating, fail

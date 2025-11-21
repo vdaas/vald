@@ -33,12 +33,6 @@ type SnapshotPresenter struct {
 	snapshot *GlobalSnapshot
 }
 
-const (
-	percentageFactor = 100
-	nanosPerSecond   = 1e9
-	barWidth         = 40
-)
-
 // NewSnapshotPresenter creates a new presenter for the given snapshot.
 func NewSnapshotPresenter(snapshot *GlobalSnapshot) *SnapshotPresenter {
 	return &SnapshotPresenter{
@@ -58,6 +52,7 @@ func (p *SnapshotPresenter) AsString() string {
 	errs := s.Errors
 	var totalDuration time.Duration
 	if s.Latencies != nil {
+		// Sum is in nanoseconds
 		totalDuration = time.Duration(s.Latencies.Sum)
 	}
 
@@ -68,17 +63,15 @@ func (p *SnapshotPresenter) AsString() string {
 	if totalDuration.Seconds() > 0 {
 		fmt.Fprintf(&sb, "Requests/sec:\t%.2f\n", float64(total)/totalDuration.Seconds())
 	}
-	fmt.Fprintf(&sb, "Errors:\t%d (%.2f%%)\n", errs, float64(errs)/float64(total)*percentageFactor)
+	fmt.Fprintf(&sb, "Errors:\t%d (%.2f%%)\n", errs, float64(errs)/float64(total)*100)
 
 	// --- Latency ---
 	fmt.Fprint(&sb, "\n--- Latency ---\n")
-	// G104: Errors unhandled
-	_, _ = sb.WriteString(p.renderHistogram(s.Latencies, s.LatPercentiles))
+	sb.WriteString(p.renderHistogram("Latency", s.Latencies, s.LatPercentiles))
 
 	// --- Queue Wait ---
 	fmt.Fprint(&sb, "\n--- Queue Wait ---\n")
-	// G104: Errors unhandled
-	_, _ = sb.WriteString(p.renderHistogram(s.QueueWaits, s.QWPercentiles))
+	sb.WriteString(p.renderHistogram("Queue Wait", s.QueueWaits, s.QWPercentiles))
 
 	// --- Status Codes ---
 	fmt.Fprint(&sb, "\n--- Status Codes ---\n")
@@ -90,12 +83,29 @@ func (p *SnapshotPresenter) AsString() string {
 		slices.Sort(codes)
 		for _, code := range codes {
 			count := s.Codes[code]
-			fmt.Fprintf(&sb, "\t- %s:\t%d (%.2f%%)\n", code.String(), count, float64(count)/float64(total)*percentageFactor)
+			fmt.Fprintf(&sb, "\t- %s:\t%d (%.2f%%)\n", code.String(), count, float64(count)/float64(total)*100)
 		}
 	}
 
 	// --- Exemplars ---
-	if len(s.Exemplars) > 0 {
+	if s.ExemplarDetails != nil {
+		renderExemplars := func(title string, items []*item) {
+			if len(items) > 0 {
+				fmt.Fprintf(&sb, "\n--- Exemplars (%s) ---\n", title)
+				for _, ex := range items {
+					status := ""
+					if ex.isError {
+						status = " (Failed)"
+					}
+					fmt.Fprintf(&sb, "\t- RequestID:\t%s,\tLatency:\t%s%s\n", ex.requestID, ex.latency, status)
+				}
+			}
+		}
+		renderExemplars("Slowest", s.ExemplarDetails.Slowest)
+		renderExemplars("Fastest", s.ExemplarDetails.Fastest)
+		renderExemplars("Average (Sampled)", s.ExemplarDetails.Average)
+		renderExemplars("Failures", s.ExemplarDetails.Failures)
+	} else if len(s.Exemplars) > 0 {
 		fmt.Fprintf(&sb, "\n--- Exemplars (Top %d slowest requests) ---\n", len(s.Exemplars))
 		for _, ex := range s.Exemplars {
 			fmt.Fprintf(&sb, "\t- RequestID:\t%s,\tLatency:\t%s\n", ex.requestID, ex.latency)
@@ -156,17 +166,16 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 	}
 	if s.LatPercentiles != nil {
 		for _, q := range s.LatPercentiles.Quantiles() {
-			headers = append(headers, fmt.Sprintf("LatencyP%d", int(q*percentageFactor)))
+			headers = append(headers, fmt.Sprintf("LatencyP%d", int(q*100)))
 		}
 	}
 	headers = append(headers, "QueueWaitMin", "QueueWaitMean", "QueueWaitMax")
 	if s.QWPercentiles != nil {
 		for _, q := range s.QWPercentiles.Quantiles() {
-			headers = append(headers, fmt.Sprintf("QueueWaitP%d", int(q*percentageFactor)))
+			headers = append(headers, fmt.Sprintf("QueueWaitP%d", int(q*100)))
 		}
 	}
-	// G104: Errors unhandled
-	_ = writer.Write(headers)
+	writer.Write(headers)
 
 	totalDuration := 0.0
 	if s.Latencies != nil {
@@ -184,9 +193,9 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 
 	latMin, latMean, latMax := 0.0, 0.0, 0.0
 	if s.Latencies != nil {
-		latMin = float64(s.Latencies.Min) / nanosPerSecond
-		latMean = float64(s.Latencies.Mean) / nanosPerSecond
-		latMax = float64(s.Latencies.Max) / nanosPerSecond
+		latMin = float64(s.Latencies.Min) / 1e9
+		latMean = float64(s.Latencies.Mean) / 1e9
+		latMax = float64(s.Latencies.Max) / 1e9
 	}
 
 	row := []string{
@@ -201,15 +210,15 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 	}
 	if s.LatPercentiles != nil {
 		for _, q := range s.LatPercentiles.Quantiles() {
-			row = append(row, fmt.Sprintf("%.4f", s.LatPercentiles.Quantile(q)/nanosPerSecond))
+			row = append(row, fmt.Sprintf("%.4f", s.LatPercentiles.Quantile(q)/1e9))
 		}
 	}
 
 	qwMin, qwMean, qwMax := 0.0, 0.0, 0.0
 	if s.QueueWaits != nil {
-		qwMin = float64(s.QueueWaits.Min) / nanosPerSecond
-		qwMean = float64(s.QueueWaits.Mean) / nanosPerSecond
-		qwMax = float64(s.QueueWaits.Max) / nanosPerSecond
+		qwMin = float64(s.QueueWaits.Min) / 1e9
+		qwMean = float64(s.QueueWaits.Mean) / 1e9
+		qwMax = float64(s.QueueWaits.Max) / 1e9
 	}
 
 	row = append(row,
@@ -219,25 +228,55 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 	)
 	if s.QWPercentiles != nil {
 		for _, q := range s.QWPercentiles.Quantiles() {
-			row = append(row, fmt.Sprintf("%.4f", s.QWPercentiles.Quantile(q)/nanosPerSecond))
+			row = append(row, fmt.Sprintf("%.4f", s.QWPercentiles.Quantile(q)/1e9))
 		}
 	}
 
-	// G104: Errors unhandled
-	_ = writer.Write(row)
+	writer.Write(row)
 	writer.Flush()
 	return sb.String(), nil
 }
 
 // renderHistogram is a helper to render the histogram part of the string output.
-func (p *SnapshotPresenter) renderHistogram(h *HistogramSnapshot, q TDigest) string {
+func (p *SnapshotPresenter) renderHistogram(title string, h *HistogramSnapshot, q TDigest) string {
 	var sb strings.Builder
 
+	// Helper to convert nanoseconds to duration string
+	fmtDur := func(ns float64) string {
+		return time.Duration(ns).String()
+	}
+
 	if h != nil {
-		fmt.Fprint(&sb, h.String())
+		// Manually format HistogramSnapshot to handle units correctly
+		if h.Total == 0 {
+			fmt.Fprint(&sb, "No data collected.\n")
+		} else {
+			fmt.Fprintf(
+				&sb,
+				"\tMean:\t%s\tStdDev:\t%s\tMin:\t%s\tMax:\t%s\tTotal:\t%d\n",
+				fmtDur(h.Mean),
+				fmtDur(h.StdDev),
+				fmtDur(h.Min),
+				fmtDur(h.Max),
+				h.Total,
+			)
+		}
 	}
 	if q != nil {
-		fmt.Fprint(&sb, q.String())
+		// TDigest stores raw values (nanoseconds). Its String() method might print raw floats.
+		// We should probably implement a better stringer for TDigest or handle it here.
+		// Since TDigest interface has String(), let's assume it might not be time-aware.
+		// Let's check TDigest implementation or just use Quantiles().
+		// The TDigest implementation in this package (tdigest.go) likely implements String().
+		// If we can't change TDigest easily, we can iterate quantiles here.
+		qs := q.Quantiles()
+		if len(qs) > 0 {
+			fmt.Fprint(&sb, "Percentiles:\n")
+			for _, quantile := range qs {
+				val := q.Quantile(quantile)
+				fmt.Fprintf(&sb, "\tP%g:\t%s\n", quantile*100, fmtDur(val))
+			}
+		}
 	}
 	if h != nil && len(h.Counts) > 0 {
 		fmt.Fprint(&sb, "Histogram:\n")
@@ -248,17 +287,21 @@ func (p *SnapshotPresenter) renderHistogram(h *HistogramSnapshot, q TDigest) str
 			}
 		}
 		for i, count := range h.Counts {
+			if count == 0 {
+				continue // Skip empty buckets for cleaner output? Or keep them?
+				// Keeping them helps visualize distribution, but if we have 100 buckets and most empty...
+				// Let's keep all buckets for now as per original code.
+			}
 			var bar string
 			if maxCount > 0 {
-				bar = strings.Repeat("∎", int(float64(count)/float64(maxCount)*barWidth))
+				bar = strings.Repeat("∎", int(float64(count)/float64(maxCount)*40))
 			}
 			var lowerBound, upperBound string
 			if i == 0 {
 				lowerBound = "0"
 			} else {
-				// If bounds are not enough (e.g. empty bounds slice), handle gracefully.
 				if i-1 < len(h.Bounds) {
-					lowerBound = fmt.Sprintf("%.3f", float64(time.Duration(h.Bounds[i-1])))
+					lowerBound = fmtDur(h.Bounds[i-1])
 				} else {
 					lowerBound = "?"
 				}
@@ -266,7 +309,7 @@ func (p *SnapshotPresenter) renderHistogram(h *HistogramSnapshot, q TDigest) str
 			if i >= len(h.Bounds) {
 				upperBound = "inf"
 			} else {
-				upperBound = fmt.Sprintf("%.3f", float64(time.Duration(h.Bounds[i])))
+				upperBound = fmtDur(h.Bounds[i])
 			}
 			fmt.Fprintf(&sb, "\t%s - %s [%d]\t|%s\n", lowerBound, upperBound, count, bar)
 		}

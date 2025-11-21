@@ -18,21 +18,20 @@ package metrics
 
 import (
 	"context"
-	"math"
+	"sync"
 	"unsafe"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/sync"
 )
 
 // scale is a ring buffer of slots for windowed metrics.
 // It implements the Scale interface and manages a collection of slots based on time or request ID.
 type scale struct {
-	slots     []Slot // ring buffer of slots
-	name      string // name of the scale
 	mu        sync.RWMutex
+	slots     []Slot // ring buffer of slots
 	width     uint64 // width of each slot (e.g., seconds for TimeScale)
 	capacity  uint64 // number of slots in the ring buffer
+	name      string // name of the scale
 	scaleType ScaleType
 }
 
@@ -51,9 +50,6 @@ func newScale(
 	}
 	if capacity == 0 {
 		return nil, errors.New("scale capacity must be > 0")
-	}
-	if capacity > uint64(math.MaxInt) {
-		return nil, errors.New("scale capacity too large")
 	}
 	slots := make([]Slot, capacity)
 	for i := range slots {
@@ -103,7 +99,6 @@ func (s *scale) Reset() {
 // It calculates the ring buffer index based on the scale's width and capacity.
 func (s *scale) getSlot(idx uint64) Slot {
 	slotIdx := (idx / s.width) % s.capacity
-	//nolint:gosec
 	return s.slots[int(slotIdx)]
 }
 
@@ -120,7 +115,6 @@ func (s *scale) Record(ctx context.Context, rr *RequestResult) {
 			return
 		}
 	case TimeScale:
-		//nolint:gosec
 		idx = uint64(rr.EndedAt.Unix())
 	}
 
@@ -144,7 +138,6 @@ func (s *scale) Merge(other Scale) error {
 	}
 
 	// To prevent deadlocks, always lock in a consistent order.
-	//nolint:gosec
 	if uintptr(unsafe.Pointer(s)) < uintptr(unsafe.Pointer(os)) {
 		s.mu.Lock()
 		os.mu.Lock()

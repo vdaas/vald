@@ -22,23 +22,26 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/test"
+	testdata "github.com/vdaas/vald/internal/test"
 )
 
 func TestNewCollector(t *testing.T) {
 	type args struct {
 		opts []Option
 	}
+	type want struct {
+		err error
+	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (Collector, error) {
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Collector, error) {
 		return NewCollector(args.opts...)
-	}, []test.Case[Collector, args]{
+	}, []testdata.Case[Collector, args]{
 		{
 			Name: "initialize with default options",
 			Args: args{
 				opts: nil,
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Collector], got test.Result[Collector]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[Collector], got testdata.Result[Collector]) error {
 				if got.Err != nil {
 					return got.Err
 				}
@@ -55,7 +58,7 @@ func TestNewCollector(t *testing.T) {
 					WithTimeScale("test_scale", uint64(time.Second), 10),
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Collector], got test.Result[Collector]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[Collector], got testdata.Result[Collector]) error {
 				if got.Err != nil {
 					return got.Err
 				}
@@ -77,7 +80,7 @@ func TestCollector_Record_And_Snapshot(t *testing.T) {
 		records []*RequestResult
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (*GlobalSnapshot, error) {
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*GlobalSnapshot, error) {
 		c, err := NewCollector(args.opts...)
 		if err != nil {
 			return nil, err
@@ -86,7 +89,7 @@ func TestCollector_Record_And_Snapshot(t *testing.T) {
 			c.Record(context.Background(), r)
 		}
 		return c.GlobalSnapshot(), nil
-	}, []test.Case[*GlobalSnapshot, args]{
+	}, []testdata.Case[*GlobalSnapshot, args]{
 		{
 			Name: "record single success",
 			Args: args{
@@ -97,7 +100,7 @@ func TestCollector_Record_And_Snapshot(t *testing.T) {
 					},
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*GlobalSnapshot], got test.Result[*GlobalSnapshot]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[*GlobalSnapshot], got testdata.Result[*GlobalSnapshot]) error {
 				if got.Err != nil {
 					return got.Err
 				}
@@ -125,7 +128,7 @@ func TestCollector_Record_And_Snapshot(t *testing.T) {
 					},
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*GlobalSnapshot], got test.Result[*GlobalSnapshot]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[*GlobalSnapshot], got testdata.Result[*GlobalSnapshot]) error {
 				if got.Err != nil {
 					return got.Err
 				}
@@ -148,7 +151,7 @@ func TestCollector_Record_And_Snapshot(t *testing.T) {
 					{Latency: 300 * time.Millisecond, QueueWait: 40 * time.Millisecond},
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*GlobalSnapshot], got test.Result[*GlobalSnapshot]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[*GlobalSnapshot], got testdata.Result[*GlobalSnapshot]) error {
 				if got.Err != nil {
 					return got.Err
 				}
@@ -163,7 +166,7 @@ func TestCollector_Record_And_Snapshot(t *testing.T) {
 					return errors.Errorf("expected latencies total 3, got %d", snap.Latencies.Total)
 				}
 				if snap.Latencies.Mean != float64(200*time.Millisecond) {
-					return errors.Errorf("expected latency mean %v, got %v", 200*time.Millisecond, time.Duration(snap.Latencies.Mean))
+					return errors.Errorf("expected latency mean %v, got %v", float64(200*time.Millisecond), snap.Latencies.Mean)
 				}
 				return nil
 			},
@@ -181,7 +184,7 @@ func TestCollector_Merge(t *testing.T) {
 		c2Records []*RequestResult
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (Collector, error) {
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Collector, error) {
 		c1, err := NewCollector(args.c1Opts...)
 		if err != nil {
 			return nil, err
@@ -205,7 +208,7 @@ func TestCollector_Merge(t *testing.T) {
 		h1, _ := c1.CounterHandle("c1")
 		h1.Inc()
 		return c1, nil
-	}, []test.Case[Collector, args]{
+	}, []testdata.Case[Collector, args]{
 		{
 			Name: "merge two collectors",
 			Args: args{
@@ -218,7 +221,7 @@ func TestCollector_Merge(t *testing.T) {
 					{Latency: 200 * time.Millisecond, Err: errors.New("err")},
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Collector], got test.Result[Collector]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[Collector], got testdata.Result[Collector]) error {
 				if got.Err != nil {
 					return got.Err
 				}

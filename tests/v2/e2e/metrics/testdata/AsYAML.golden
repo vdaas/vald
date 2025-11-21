@@ -1,3 +1,5 @@
+total: 100
+errors: 10
 latencies:
   counts: []
   bounds: []
@@ -22,12 +24,11 @@ latpercentiles: {}
 qwpercentiles: {}
 exemplars:
 - {}
+exemplardetails: null
 codes:
   0: 90
   10: 10
 schemaversion: ""
-sketchkind: ""
-total: 100
-errors: 10
 boundscrc32: 0
+sketchkind: ""
 invariantsok: false

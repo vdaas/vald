@@ -17,25 +17,25 @@
 package metrics
 
 import (
+	"sync"
 	"sync/atomic"
 	"unsafe"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/sync"
 )
 
 // slot holds the metrics for a single window in a scale.
 // It is an implementation of the Slot interface.
 type slot struct {
-	Latency     Histogram       // latency histogram
-	QueueWait   Histogram       // queue wait histogram
-	Exemplars   Exemplar        // exemplar heap
-	Counters    []atomic.Uint64 // custom counters
 	mu          sync.RWMutex    // protects WindowStart and coordinates Reset
+	WindowStart uint64          // The window index (idx / width) this slot represents
 	Total       atomic.Uint64   // total number of requests in this slot
 	Errors      atomic.Uint64   // number of errored requests in this slot
 	updatedNS   atomic.Int64    // UnixNano timestamp of the last update
-	WindowStart uint64          // The window index (idx / width) this slot represents
+	Latency     Histogram       // latency histogram
+	QueueWait   Histogram       // queue wait histogram
+	Counters    []atomic.Uint64 // custom counters
+	Exemplars   Exemplar        // exemplar heap
 }
 
 // newSlot creates a new Slot with the given configuration.
@@ -118,7 +118,7 @@ func (s *slot) Record(rr *RequestResult, windowIdx uint64) {
 		s.QueueWait.Record(float64(rr.QueueWait.Nanoseconds()))
 	}
 	if s.Exemplars != nil {
-		s.Exemplars.Offer(rr.Latency, rr.RequestID)
+		s.Exemplars.Offer(rr.Latency, rr.RequestID, rr.Err != nil)
 	}
 }
 
@@ -172,7 +172,6 @@ func (s *slot) Merge(other Slot) error {
 	}
 
 	// To prevent deadlocks, always lock in a consistent order.
-	//nolint:gosec
 	if uintptr(unsafe.Pointer(s)) < uintptr(unsafe.Pointer(os)) {
 		s.mu.Lock()
 		os.mu.Lock()
@@ -199,8 +198,8 @@ func (s *slot) Merge(other Slot) error {
 		}
 	}
 	if s.Exemplars != nil && os.Exemplars != nil {
-		for _, ex := range os.Exemplars.Snapshot() {
-			s.Exemplars.Offer(ex.latency, ex.requestID)
+		if err := s.Exemplars.Merge(os.Exemplars); err != nil {
+			return err
 		}
 	}
 	return nil

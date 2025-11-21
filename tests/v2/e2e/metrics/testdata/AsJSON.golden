@@ -1,4 +1,6 @@
 {
+  "total": 100,
+  "errors": 10,
   "latencies": {
     "counts": null,
     "bounds": null,
@@ -31,9 +33,7 @@
     "10": 10
   },
   "schema_version": "",
-  "sketch_kind": "",
-  "total": 100,
-  "errors": 10,
   "bounds_crc32": 0,
+  "sketch_kind": "",
   "invariants_ok": false
 }

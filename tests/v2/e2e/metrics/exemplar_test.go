@@ -23,23 +23,34 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/test"
+	testdata "github.com/vdaas/vald/internal/test"
 )
 
 func TestNewExemplar(t *testing.T) {
 	type args struct {
 		opts []ExemplarOption
 	}
+	type want struct {
+		k int
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, Exemplar) error
+		beforeFunc func(*testing.T, args) args
+		afterFunc  func(*testing.T, args)
+	}
 
-	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (Exemplar, error) {
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Exemplar, error) {
 		return NewExemplar(args.opts...), nil
-	}, []test.Case[Exemplar, args]{
+	}, []testdata.Case[Exemplar, args]{
 		{
 			Name: "initialized with default options",
 			Args: args{
 				opts: nil,
 			},
-			CheckFunc: func(t *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[Exemplar], got testdata.Result[Exemplar]) error {
 				if got.Val == nil {
 					return errors.New("got nil exemplar")
 				}
@@ -57,7 +68,7 @@ func TestNewExemplar(t *testing.T) {
 					WithExemplarCapacity(10),
 				},
 			},
-			CheckFunc: func(t *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[Exemplar], got testdata.Result[Exemplar]) error {
 				if got.Val == nil {
 					return errors.New("got nil exemplar")
 				}
@@ -75,33 +86,33 @@ func TestNewExemplar(t *testing.T) {
 
 func TestExemplar_Offer(t *testing.T) {
 	type offer struct {
-		id      string
 		latency time.Duration
+		id      string
 	}
 	type args struct {
 		opts   []ExemplarOption
 		offers []offer
 	}
 
-	if err := test.Run(t.Context(), t, func(t *testing.T, args args) ([]*item, error) {
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) ([]*item, error) {
 		e := NewExemplar(args.opts...)
 		for _, o := range args.offers {
-			e.Offer(o.latency, o.id)
+			e.Offer(o.latency, o.id, false)
 		}
 		return e.Snapshot(), nil
-	}, []test.Case[[]*item, args]{
+	}, []testdata.Case[[]*item, args]{
 		{
 			Name: "offer requests and check snapshot",
 			Args: args{
 				opts: []ExemplarOption{WithExemplarCapacity(3)},
 				offers: []offer{
-					{id: "req-1", latency: 100 * time.Millisecond},
-					{id: "req-2", latency: 200 * time.Millisecond},
-					{id: "req-3", latency: 50 * time.Millisecond},
-					{id: "req-4", latency: 300 * time.Millisecond},
+					{100 * time.Millisecond, "req-1"},
+					{200 * time.Millisecond, "req-2"},
+					{50 * time.Millisecond, "req-3"},
+					{300 * time.Millisecond, "req-4"},
 				},
 			},
-			CheckFunc: func(t *testing.T, want test.Result[[]*item], got test.Result[[]*item]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[[]*item], got testdata.Result[[]*item]) error {
 				snap := got.Val
 				if len(snap) != 3 {
 					return errors.Errorf("expected snapshot length 3, got %d", len(snap))
@@ -120,13 +131,13 @@ func TestExemplar_Offer(t *testing.T) {
 			Args: args{
 				opts: []ExemplarOption{WithExemplarCapacity(3)},
 				offers: []offer{
-					{id: "req-1", latency: 100 * time.Millisecond},
-					{id: "req-2", latency: 200 * time.Millisecond},
-					{id: "req-3", latency: 100 * time.Millisecond},
-					{id: "req-4", latency: 300 * time.Millisecond},
+					{100 * time.Millisecond, "req-1"},
+					{200 * time.Millisecond, "req-2"},
+					{100 * time.Millisecond, "req-3"},
+					{300 * time.Millisecond, "req-4"},
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[[]*item], got test.Result[[]*item]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[[]*item], got testdata.Result[[]*item]) error {
 				snap := got.Val
 				if len(snap) != 3 {
 					return errors.Errorf("expected snapshot length 3, got %d", len(snap))
@@ -139,7 +150,7 @@ func TestExemplar_Offer(t *testing.T) {
 			Args: args{
 				opts: []ExemplarOption{WithExemplarCapacity(3)},
 			},
-			CheckFunc: func(t *testing.T, want test.Result[[]*item], got test.Result[[]*item]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[[]*item], got testdata.Result[[]*item]) error {
 				snap := got.Val
 				if len(snap) != 0 {
 					return errors.Errorf("expected snapshot length 0, got %d", len(snap))
@@ -152,12 +163,12 @@ func TestExemplar_Offer(t *testing.T) {
 			Args: args{
 				opts: []ExemplarOption{WithExemplarCapacity(3)},
 				offers: []offer{
-					{id: "req-2", latency: 200 * time.Millisecond},
-					{id: "req-1", latency: 100 * time.Millisecond},
-					{id: "req-3", latency: 300 * time.Millisecond},
+					{200 * time.Millisecond, "req-2"},
+					{100 * time.Millisecond, "req-1"},
+					{300 * time.Millisecond, "req-3"},
 				},
 			},
-			CheckFunc: func(t *testing.T, want test.Result[[]*item], got test.Result[[]*item]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[[]*item], got testdata.Result[[]*item]) error {
 				snap := got.Val
 				if len(snap) != 3 {
 					return errors.Errorf("expected snapshot length 3, got %d", len(snap))
@@ -185,14 +196,14 @@ func TestExemplar_Reset(t *testing.T) {
 		}
 	}
 
-	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (Exemplar, error) {
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Exemplar, error) {
 		e := NewExemplar(args.opts...)
 		for _, o := range args.offers {
-			e.Offer(o.latency, o.id)
+			e.Offer(o.latency, o.id, false)
 		}
 		e.Reset()
 		return e, nil
-	}, []test.Case[Exemplar, args]{
+	}, []testdata.Case[Exemplar, args]{
 		{
 			Name: "reset clears all data",
 			Args: args{
@@ -205,7 +216,7 @@ func TestExemplar_Reset(t *testing.T) {
 					{200 * time.Millisecond, "req-2"},
 				},
 			},
-			CheckFunc: func(t *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[Exemplar], got testdata.Result[Exemplar]) error {
 				if got.Val == nil {
 					return errors.New("got nil exemplar")
 				}
@@ -230,13 +241,13 @@ func TestExemplar_Clone(t *testing.T) {
 		}
 	}
 
-	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (Exemplar, error) {
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Exemplar, error) {
 		e := NewExemplar(args.opts...)
 		for _, o := range args.offers {
-			e.Offer(o.latency, o.id)
+			e.Offer(o.latency, o.id, false)
 		}
 		return e.Clone(), nil
-	}, []test.Case[Exemplar, args]{
+	}, []testdata.Case[Exemplar, args]{
 		{
 			Name: "clone copies data",
 			Args: args{
@@ -249,7 +260,7 @@ func TestExemplar_Clone(t *testing.T) {
 					{200 * time.Millisecond, "req-2"},
 				},
 			},
-			CheckFunc: func(t *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[Exemplar], got testdata.Result[Exemplar]) error {
 				if got.Val == nil {
 					return errors.New("got nil exemplar")
 				}
@@ -286,7 +297,7 @@ func TestExemplar_Concurrent(t *testing.T) {
 		requestsPerWorker int
 	}
 
-	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (Exemplar, error) {
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Exemplar, error) {
 		e := NewExemplar(WithExemplarCapacity(args.capacity))
 		var wg sync.WaitGroup
 		for i := 0; i < args.workers; i++ {
@@ -294,13 +305,13 @@ func TestExemplar_Concurrent(t *testing.T) {
 			go func(i int) {
 				defer wg.Done()
 				for j := 0; j < args.requestsPerWorker; j++ {
-					e.Offer(time.Duration(j)*time.Millisecond, fmt.Sprintf("req-%d-%d", i, j))
+					e.Offer(time.Duration(j)*time.Millisecond, fmt.Sprintf("req-%d-%d", i, j), false)
 				}
 			}(i)
 		}
 		wg.Wait()
 		return e, nil
-	}, []test.Case[Exemplar, args]{
+	}, []testdata.Case[Exemplar, args]{
 		{
 			Name: "concurrent offers fill capacity",
 			Args: args{
@@ -308,7 +319,7 @@ func TestExemplar_Concurrent(t *testing.T) {
 				workers:           10,
 				requestsPerWorker: 100,
 			},
-			CheckFunc: func(t *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[Exemplar], got testdata.Result[Exemplar]) error {
 				snap := got.Val.Snapshot()
 				if len(snap) != 10 {
 					return errors.Errorf("expected 10 exemplars, got %d", len(snap))
@@ -328,7 +339,7 @@ func TestExemplar_Race(t *testing.T) {
 		requestsPerWorker int
 	}
 	// This test verifies no race conditions when Offer and Snapshot are called concurrently.
-	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (Exemplar, error) {
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Exemplar, error) {
 		e := NewExemplar(WithExemplarCapacity(args.capacity))
 		var wg sync.WaitGroup
 		for i := 0; i < args.workers; i++ {
@@ -336,14 +347,14 @@ func TestExemplar_Race(t *testing.T) {
 			go func() {
 				defer wg.Done()
 				for j := 0; j < args.requestsPerWorker; j++ {
-					e.Offer(time.Duration(j)*time.Millisecond, "req")
+					e.Offer(time.Duration(j)*time.Millisecond, "req", false)
 					e.Snapshot()
 				}
 			}()
 		}
 		wg.Wait()
 		return e, nil
-	}, []test.Case[Exemplar, args]{
+	}, []testdata.Case[Exemplar, args]{
 		{
 			Name: "race detection",
 			Args: args{
@@ -351,7 +362,7 @@ func TestExemplar_Race(t *testing.T) {
 				workers:           10,
 				requestsPerWorker: 100,
 			},
-			CheckFunc: func(t *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
+			CheckFunc: func(tt *testing.T, want testdata.Result[Exemplar], got testdata.Result[Exemplar]) error {
 				// Just completion is enough to prove no panic/race (race detector needed).
 				return nil
 			},
@@ -368,8 +379,76 @@ func BenchmarkExemplar_Offer(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		i := 0
 		for pb.Next() {
-			e.Offer(time.Duration(i)*time.Millisecond, "req")
+			e.Offer(time.Duration(i)*time.Millisecond, "req", false)
 			i++
 		}
 	})
+}
+
+func TestExemplar_Categories(t *testing.T) {
+	type args struct {
+		opts []ExemplarOption
+	}
+	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*ExemplarDetails, error) {
+		e := NewExemplar(args.opts...)
+
+		// Offer 5 items with varying latencies
+		// 10ms, 50ms, 30ms, 90ms, 20ms
+		e.Offer(10*time.Millisecond, "req-10", false)
+		e.Offer(50*time.Millisecond, "req-50", false)
+		e.Offer(30*time.Millisecond, "req-30", false)
+		e.Offer(90*time.Millisecond, "req-90", false)
+		e.Offer(20*time.Millisecond, "req-20", false)
+
+		// Offer failures
+		e.Offer(100*time.Millisecond, "fail-100", true)
+		e.Offer(40*time.Millisecond, "fail-40", true)
+
+		return e.DetailedSnapshot()
+	}, []testdata.Case[*ExemplarDetails, args]{
+		{
+			Name: "check categories with k=3",
+			Args: args{
+				opts: []ExemplarOption{WithExemplarCapacity(3)},
+			},
+			CheckFunc: func(tt *testing.T, want testdata.Result[*ExemplarDetails], got testdata.Result[*ExemplarDetails]) error {
+				d := got.Val
+
+				// Slowest (Top 3 Max): 100 (fail), 90, 50
+				if len(d.Slowest) != 3 {
+					return errors.Errorf("expected 3 slowest, got %d", len(d.Slowest))
+				}
+				if d.Slowest[0].latency != 100*time.Millisecond {
+					return errors.Errorf("expected slowest[0] 100ms, got %v", d.Slowest[0].latency)
+				}
+				if d.Slowest[2].latency != 50*time.Millisecond {
+					return errors.Errorf("expected slowest[2] 50ms, got %v", d.Slowest[2].latency)
+				}
+
+				// Fastest (Top 3 Min): 10, 20, 30
+				if len(d.Fastest) != 3 {
+					return errors.Errorf("expected 3 fastest, got %d", len(d.Fastest))
+				}
+				if d.Fastest[0].latency != 10*time.Millisecond {
+					return errors.Errorf("expected fastest[0] 10ms, got %v", d.Fastest[0].latency)
+				}
+				if d.Fastest[2].latency != 30*time.Millisecond {
+					return errors.Errorf("expected fastest[2] 30ms, got %v", d.Fastest[2].latency)
+				}
+
+				// Failures: fail-100, fail-40
+				if len(d.Failures) != 2 {
+					return errors.Errorf("expected 2 failures, got %d", len(d.Failures))
+				}
+				// Sorted desc
+				if d.Failures[0].latency != 100*time.Millisecond {
+					return errors.Errorf("expected failure[0] 100ms, got %v", d.Failures[0].latency)
+				}
+
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
+	}
 }
