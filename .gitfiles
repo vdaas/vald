@@ -2379,6 +2379,7 @@ tests/v2/e2e/metrics/option.go
 tests/v2/e2e/metrics/pool.go
 tests/v2/e2e/metrics/presenter.go
 tests/v2/e2e/metrics/presenter_test.go
+tests/v2/e2e/metrics/reproduction_test.go
 tests/v2/e2e/metrics/scale.go
 tests/v2/e2e/metrics/scale_test.go
 tests/v2/e2e/metrics/slots.go

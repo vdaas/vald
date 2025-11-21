@@ -282,25 +282,25 @@ func (h *histogram) Merge(other Histogram) error {
 	return other.merge(h)
 }
 
-// merge merges src into the receiver histogram (dest).
+// merge merges src into the receiver histogram (h).
 //
 // Precondition:
-//   - dest.boundsCRC32 == src.boundsCRC32
-//   - len(dest.shards) == len(src.shards)
+//   - h.boundsCRC32 == src.boundsCRC32
+//   - len(h.shards) == len(src.shards)
 //
 // This method aggregates all shards of src into the corresponding shards
-// of dest using atomic operations. It assumes that concurrent writes may
-// still happen on src and dest, but the merge itself is safe.
-func (dest *histogram) merge(src *histogram) error {
-	if dest.boundsCRC32 != src.boundsCRC32 {
+// of h using atomic operations. It assumes that concurrent writes may
+// still happen on src and h, but the merge itself is safe.
+func (h *histogram) merge(src *histogram) error {
+	if h.boundsCRC32 != src.boundsCRC32 {
 		return errors.New("incompatible histograms: bounds checksum mismatch")
 	}
-	if len(dest.shards) != len(src.shards) {
+	if len(h.shards) != len(src.shards) {
 		return errors.New("incompatible histograms: shard count mismatch")
 	}
 
-	for i := range dest.shards {
-		dstShard := &dest.shards[i]
+	for i := range h.shards {
+		dstShard := &h.shards[i]
 		srcShard := &src.shards[i]
 
 		// Read source shard atomically

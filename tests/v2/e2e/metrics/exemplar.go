@@ -356,13 +356,16 @@ func (pq priorityQueue) Len() int { return len(pq) }
 func (pq priorityQueue) Less(i, j int) bool {
 	return pq[i].latency < pq[j].latency
 }
+
 func (pq priorityQueue) Swap(i, j int) {
 	pq[i], pq[j] = pq[j], pq[i]
 }
+
 func (pq *priorityQueue) Push(x any) {
 	item := x.(*item)
 	*pq = append(*pq, item)
 }
+
 func (pq *priorityQueue) Pop() any {
 	old := *pq
 	n := len(old)
@@ -391,13 +394,16 @@ func (pq maxPriorityQueue) Less(i, j int) bool {
 	// Yes.
 	// So Less should be >.
 }
+
 func (pq maxPriorityQueue) Swap(i, j int) {
 	pq[i], pq[j] = pq[j], pq[i]
 }
+
 func (pq *maxPriorityQueue) Push(x any) {
 	item := x.(*item)
 	*pq = append(*pq, item)
 }
+
 func (pq *maxPriorityQueue) Pop() any {
 	old := *pq
 	n := len(old)
