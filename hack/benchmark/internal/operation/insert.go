@@ -74,15 +74,15 @@ func (o *operation) StreamInsert(b *testing.B, ds assets.Dataset) int {
 			b.Fatal(err)
 		}
 
+		wg := sync.WaitGroup{}
+		wg.Add(1)
+
 		req := &payload.Insert_Request{
 			Vector: &payload.Object_Vector{},
 			Config: &payload.Insert_Config{
 				SkipStrictExistCheck: false,
 			},
 		}
-
-		wg := sync.WaitGroup{}
-		wg.Add(1)
 		b.ResetTimer()
 
 		errgroup.Go(func() error {

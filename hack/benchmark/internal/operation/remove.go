@@ -58,15 +58,15 @@ func (o *operation) StreamRemove(b *testing.B, maxIdNum int) {
 			b.Fatal(err)
 		}
 
+		wg := sync.WaitGroup{}
+		wg.Add(1)
+
 		req := &payload.Remove_Request{
 			Id: &payload.Object_ID{},
 			Config: &payload.Remove_Config{
 				SkipStrictExistCheck: false,
 			},
 		}
-
-		wg := sync.WaitGroup{}
-		wg.Add(1)
 		b.ResetTimer()
 
 		errgroup.Go(func() error {

@@ -62,15 +62,14 @@ func (o *operation) StreamSearch(b *testing.B, ds assets.Dataset) {
 			b.Fatal(err)
 		}
 
+		wg := sync.WaitGroup{}
+		wg.Add(1)
+
 		cfg := &payload.Search_Config{
 			Num:     10,
 			Radius:  -1,
 			Epsilon: 0.1,
 		}
-
-		wg := sync.WaitGroup{}
-		wg.Add(1)
-
 		b.ResetTimer()
 
 		errgroup.Go(func() error {
@@ -149,14 +148,14 @@ func (o *operation) StreamSearchByID(b *testing.B, maxIdNum int) {
 			b.Fatal("stream channel is nil for StreamSearchByID")
 		}
 
+		wg := sync.WaitGroup{}
+		wg.Add(1)
+
 		cfg := &payload.Search_Config{
 			Num:     10,
 			Radius:  -1,
 			Epsilon: 0.1,
 		}
-
-		wg := sync.WaitGroup{}
-		wg.Add(1)
 
 		var finished atomic.Bool
 		finished.Store(false)
