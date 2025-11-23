@@ -17,9 +17,7 @@
 // Package starter provides starter  interfaces
 package starter
 
-import (
-	"testing"
-)
+import "testing"
 
 type Starter interface {
 	Run(testing.TB) func()
