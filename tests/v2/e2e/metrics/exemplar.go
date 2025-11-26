@@ -112,7 +112,7 @@ func (e *exemplar) Reset() {
 }
 
 // Offer adds a request to the exemplar categories.
-func (e *exemplar) Offer(latency time.Duration, requestID string, err error) {
+func (e *exemplar) Offer(latency time.Duration, requestID string, err error, msg string) {
 	latInt := int64(latency)
 	isError := err != nil
 
@@ -129,6 +129,7 @@ func (e *exemplar) Offer(latency time.Duration, requestID string, err error) {
 			latency:   latency,
 			requestID: requestID,
 			err:       err,
+			msg:       msg,
 		})
 		e.mu.Unlock()
 		return
@@ -138,6 +139,7 @@ func (e *exemplar) Offer(latency time.Duration, requestID string, err error) {
 		latency:   latency,
 		requestID: requestID,
 		err:       err,
+		msg:       msg,
 	}
 
 	e.mu.Lock()
@@ -302,16 +304,16 @@ func (e *exemplar) Merge(other Exemplar) error {
 			return nil
 		}
 		for _, ex := range details.Slowest {
-			e.Offer(ex.latency, ex.requestID, ex.err)
+			e.Offer(ex.latency, ex.requestID, ex.err, ex.msg)
 		}
 		for _, ex := range details.Fastest {
-			e.Offer(ex.latency, ex.requestID, ex.err)
+			e.Offer(ex.latency, ex.requestID, ex.err, ex.msg)
 		}
 		for _, ex := range details.Average {
-			e.Offer(ex.latency, ex.requestID, ex.err)
+			e.Offer(ex.latency, ex.requestID, ex.err, ex.msg)
 		}
 		for _, ex := range details.Failures {
-			e.Offer(ex.latency, ex.requestID, ex.err)
+			e.Offer(ex.latency, ex.requestID, ex.err, ex.msg)
 		}
 		return nil
 	}
@@ -437,6 +439,7 @@ type item struct {
 	latency   time.Duration
 	requestID string
 	err       error
+	msg       string
 }
 
 // priorityQueue implements min-heap.

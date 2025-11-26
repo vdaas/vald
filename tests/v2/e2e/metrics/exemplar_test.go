@@ -97,7 +97,7 @@ func TestExemplar_Offer(t *testing.T) {
 	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) ([]*item, error) {
 		e := NewExemplar(args.opts...)
 		for _, o := range args.offers {
-			e.Offer(o.latency, o.id, nil)
+			e.Offer(o.latency, o.id, nil, "")
 		}
 		return e.Snapshot(), nil
 	}, []testdata.Case[[]*item, args]{
@@ -199,7 +199,7 @@ func TestExemplar_Reset(t *testing.T) {
 	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Exemplar, error) {
 		e := NewExemplar(args.opts...)
 		for _, o := range args.offers {
-			e.Offer(o.latency, o.id, nil)
+			e.Offer(o.latency, o.id, nil, "")
 		}
 		e.Reset()
 		return e, nil
@@ -244,7 +244,7 @@ func TestExemplar_Clone(t *testing.T) {
 	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (Exemplar, error) {
 		e := NewExemplar(args.opts...)
 		for _, o := range args.offers {
-			e.Offer(o.latency, o.id, nil)
+			e.Offer(o.latency, o.id, nil, "")
 		}
 		return e.Clone(), nil
 	}, []testdata.Case[Exemplar, args]{
@@ -305,7 +305,7 @@ func TestExemplar_Concurrent(t *testing.T) {
 			go func(i int) {
 				defer wg.Done()
 				for j := 0; j < args.requestsPerWorker; j++ {
-					e.Offer(time.Duration(j)*time.Millisecond, fmt.Sprintf("req-%d-%d", i, j), nil)
+					e.Offer(time.Duration(j)*time.Millisecond, fmt.Sprintf("req-%d-%d", i, j), nil, "")
 				}
 			}(i)
 		}
@@ -347,7 +347,7 @@ func TestExemplar_Race(t *testing.T) {
 			go func() {
 				defer wg.Done()
 				for j := 0; j < args.requestsPerWorker; j++ {
-					e.Offer(time.Duration(j)*time.Millisecond, "req", nil)
+					e.Offer(time.Duration(j)*time.Millisecond, "req", nil, "")
 					e.Snapshot()
 				}
 			}()
@@ -379,7 +379,7 @@ func BenchmarkExemplar_Offer(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		i := 0
 		for pb.Next() {
-			e.Offer(time.Duration(i)*time.Millisecond, "req", nil)
+			e.Offer(time.Duration(i)*time.Millisecond, "req", nil, "")
 			i++
 		}
 	})
@@ -394,15 +394,15 @@ func TestExemplar_Categories(t *testing.T) {
 
 		// Offer 5 items with varying latencies
 		// 10ms, 50ms, 30ms, 90ms, 20ms
-		e.Offer(10*time.Millisecond, "req-10", nil)
-		e.Offer(50*time.Millisecond, "req-50", nil)
-		e.Offer(30*time.Millisecond, "req-30", nil)
-		e.Offer(90*time.Millisecond, "req-90", nil)
-		e.Offer(20*time.Millisecond, "req-20", nil)
+		e.Offer(10*time.Millisecond, "req-10", nil, "")
+		e.Offer(50*time.Millisecond, "req-50", nil, "")
+		e.Offer(30*time.Millisecond, "req-30", nil, "")
+		e.Offer(90*time.Millisecond, "req-90", nil, "")
+		e.Offer(20*time.Millisecond, "req-20", nil, "")
 
 		// Offer failures
-		e.Offer(100*time.Millisecond, "fail-100", errors.New("failed"))
-		e.Offer(40*time.Millisecond, "fail-40", errors.New("failed"))
+		e.Offer(100*time.Millisecond, "fail-100", errors.New("failed"), "failed")
+		e.Offer(40*time.Millisecond, "fail-40", errors.New("failed"), "failed")
 
 		return e.DetailedSnapshot()
 	}, []testdata.Case[*ExemplarDetails, args]{

@@ -78,6 +78,7 @@ type RequestResult struct {
 	RequestID string        // request ID
 	Status    codes.Code    // gRPC status code
 	Err       error         // error content (Status!=OK时)
+	Msg       string        // error message
 	QueuedAt  time.Time     // time when the request was queued
 	StartedAt time.Time     // time when the RPC started
 	EndedAt   time.Time     // time when the RPC ended
@@ -90,6 +91,7 @@ func (rr *RequestResult) Reset() {
 	rr.RequestID = ""
 	rr.Status = 0
 	rr.Err = nil
+	rr.Msg = ""
 	rr.QueuedAt = time.Time{}
 	rr.StartedAt = time.Time{}
 	rr.EndedAt = time.Time{}
@@ -326,7 +328,7 @@ func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 		c.qwPercentiles.Add(float64(rr.QueueWait.Nanoseconds()))
 	}
 	if c.exemplars != nil {
-		c.exemplars.Offer(rr.Latency, rr.RequestID, rr.Err)
+		c.exemplars.Offer(rr.Latency, rr.RequestID, rr.Err, rr.Msg)
 	}
 
 	code := resolveStatusCode(rr.Status, rr.Err)

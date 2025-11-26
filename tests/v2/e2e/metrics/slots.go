@@ -118,7 +118,7 @@ func (s *slot) Record(rr *RequestResult, windowIdx uint64) {
 		s.QueueWait.Record(float64(rr.QueueWait.Nanoseconds()))
 	}
 	if s.Exemplars != nil {
-		s.Exemplars.Offer(rr.Latency, rr.RequestID, rr.Err)
+		s.Exemplars.Offer(rr.Latency, rr.RequestID, rr.Err, rr.Msg)
 	}
 }
 
