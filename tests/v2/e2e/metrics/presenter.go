@@ -47,34 +47,48 @@ func (p *SnapshotPresenter) AsString() string {
 	}
 
 	var sb strings.Builder
+
+	p.renderSummary(&sb)
+	p.renderLatency(&sb)
+	p.renderQueueWait(&sb)
+	p.renderStatusCodes(&sb)
+	p.renderExemplars(&sb)
+
+	return sb.String()
+}
+
+func (p *SnapshotPresenter) renderSummary(sb *strings.Builder) {
 	s := p.snapshot
 	total := s.Total
 	errs := s.Errors
 	var totalDuration time.Duration
 	if s.Latencies != nil {
-		// Sum is in nanoseconds
 		totalDuration = time.Duration(s.Latencies.Sum)
 	}
 
-	// --- Summary ---
-	fmt.Fprint(&sb, "\n--- Summary ---\n")
-	fmt.Fprintf(&sb, "Total Requests:\t%d\n", total)
-	fmt.Fprintf(&sb, "Total Duration:\t%s\n", totalDuration)
+	fmt.Fprint(sb, "\n--- Summary ---\n")
+	fmt.Fprintf(sb, "Total Requests:\t%d\n", total)
+	fmt.Fprintf(sb, "Total Duration:\t%s\n", totalDuration)
 	if totalDuration.Seconds() > 0 {
-		fmt.Fprintf(&sb, "Requests/sec:\t%.2f\n", float64(total)/totalDuration.Seconds())
+		fmt.Fprintf(sb, "Requests/sec:\t%.2f\n", float64(total)/totalDuration.Seconds())
 	}
-	fmt.Fprintf(&sb, "Errors:\t%d (%.2f%%)\n", errs, float64(errs)/float64(total)*100)
+	fmt.Fprintf(sb, "Errors:\t%d (%.2f%%)\n", errs, float64(errs)/float64(total)*100)
+}
 
-	// --- Latency ---
-	fmt.Fprint(&sb, "\n--- Latency ---\n")
-	sb.WriteString(p.renderHistogram("Latency", s.Latencies, s.LatPercentiles))
+func (p *SnapshotPresenter) renderLatency(sb *strings.Builder) {
+	fmt.Fprint(sb, "\n--- Latency ---\n")
+	sb.WriteString(p.renderHistogram("Latency", p.snapshot.Latencies, p.snapshot.LatPercentiles))
+}
 
-	// --- Queue Wait ---
-	fmt.Fprint(&sb, "\n--- Queue Wait ---\n")
-	sb.WriteString(p.renderHistogram("Queue Wait", s.QueueWaits, s.QWPercentiles))
+func (p *SnapshotPresenter) renderQueueWait(sb *strings.Builder) {
+	fmt.Fprint(sb, "\n--- Queue Wait ---\n")
+	sb.WriteString(p.renderHistogram("Queue Wait", p.snapshot.QueueWaits, p.snapshot.QWPercentiles))
+}
 
-	// --- Status Codes ---
-	fmt.Fprint(&sb, "\n--- Status Codes ---\n")
+func (p *SnapshotPresenter) renderStatusCodes(sb *strings.Builder) {
+	s := p.snapshot
+	total := s.Total
+	fmt.Fprint(sb, "\n--- Status Codes ---\n")
 	if s.Codes != nil {
 		codes := make([]codes.Code, 0, len(s.Codes))
 		for code := range s.Codes {
@@ -83,21 +97,23 @@ func (p *SnapshotPresenter) AsString() string {
 		slices.Sort(codes)
 		for _, code := range codes {
 			count := s.Codes[code]
-			fmt.Fprintf(&sb, "\t- %s:\t%d (%.2f%%)\n", code.String(), count, float64(count)/float64(total)*100)
+			fmt.Fprintf(sb, "\t- %s:\t%d (%.2f%%)\n", code.String(), count, float64(count)/float64(total)*100)
 		}
 	}
+}
 
-	// --- Exemplars ---
+func (p *SnapshotPresenter) renderExemplars(sb *strings.Builder) {
+	s := p.snapshot
 	if s.ExemplarDetails != nil {
 		renderExemplars := func(title string, items []*item) {
 			if len(items) > 0 {
-				fmt.Fprintf(&sb, "\n--- Exemplars (%s) ---\n", title)
+				fmt.Fprintf(sb, "\n--- Exemplars (%s) ---\n", title)
 				for _, ex := range items {
 					status := ""
 					if ex.err != nil {
 						status = " (Failed)"
 					}
-					fmt.Fprintf(&sb, "\t- RequestID:\t%s,\tLatency:\t%s%s\n", ex.requestID, ex.latency, status)
+					fmt.Fprintf(sb, "\t- RequestID:\t%s,\tLatency:\t%s%s\n", ex.requestID, ex.latency, status)
 				}
 			}
 		}
@@ -106,13 +122,11 @@ func (p *SnapshotPresenter) AsString() string {
 		renderExemplars("Average (Sampled)", s.ExemplarDetails.Average)
 		renderExemplars("Failures", s.ExemplarDetails.Failures)
 	} else if len(s.Exemplars) > 0 {
-		fmt.Fprintf(&sb, "\n--- Exemplars (Top %d slowest requests) ---\n", len(s.Exemplars))
+		fmt.Fprintf(sb, "\n--- Exemplars (Top %d slowest requests) ---\n", len(s.Exemplars))
 		for _, ex := range s.Exemplars {
-			fmt.Fprintf(&sb, "\t- RequestID:\t%s,\tLatency:\t%s\n", ex.requestID, ex.latency)
+			fmt.Fprintf(sb, "\t- RequestID:\t%s,\tLatency:\t%s\n", ex.requestID, ex.latency)
 		}
 	}
-
-	return sb.String()
 }
 
 // AsJSON returns a JSON representation of the snapshot.
