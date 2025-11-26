@@ -57,7 +57,7 @@ func requestIDFromCtx(ctx context.Context) (uint64, bool) {
 // GetRequestResult returns a RequestResult from the pool.
 // This helps reduce GC pressure by reusing objects.
 func GetRequestResult() *RequestResult {
-	return requestResultPool.Get()
+	return requestResultPool.Get().(*RequestResult)
 }
 
 // PutRequestResult returns a RequestResult to the pool.
@@ -67,12 +67,17 @@ func PutRequestResult(rr *RequestResult) {
 	requestResultPool.Put(rr)
 }
 
+var requestResultPool = sync.Pool{
+	New: func() any {
+		return new(RequestResult)
+	},
+}
+
 // RequestResult represents the result of a single request.
 type RequestResult struct {
 	RequestID string        // request ID
 	Status    codes.Code    // gRPC status code
 	Err       error         // error content (Status!=OK时)
-	Msg       string        // status message
 	QueuedAt  time.Time     // time when the request was queued
 	StartedAt time.Time     // time when the RPC started
 	EndedAt   time.Time     // time when the RPC ended
@@ -85,7 +90,6 @@ func (rr *RequestResult) Reset() {
 	rr.RequestID = ""
 	rr.Status = 0
 	rr.Err = nil
-	rr.Msg = ""
 	rr.QueuedAt = time.Time{}
 	rr.StartedAt = time.Time{}
 	rr.EndedAt = time.Time{}
@@ -104,13 +108,6 @@ func (rr *RequestResult) validate() {
 	}
 	if rr.QueueWait == 0 && !rr.QueuedAt.IsZero() && !rr.StartedAt.IsZero() {
 		rr.QueueWait = rr.StartedAt.Sub(rr.QueuedAt)
-	}
-	if rr.Msg == "" {
-		if rr.Err != nil {
-			rr.Msg = fmt.Sprintf("status code: %s, error: %s", rr.Status.String(), rr.Err.Error())
-		} else {
-			rr.Msg = rr.Status.String()
-		}
 	}
 }
 
@@ -165,15 +162,16 @@ type collector struct {
 	// Thread-safe slice of Scale for metrics (ring buffers).
 	scales []Scale
 
-	// gRPC status code counts, stored in a map for thread-safe access.
-	codes map[codes.Code]*atomic.Uint64
+	// gRPC status code counts, using a lock-free array for performance.
+	// Array indices correspond to gRPC status codes (0-16).
+	// Index 17 is for unknown codes, 18 for non-gRPC errors.
+	codes [20]atomic.Uint64
 }
 
 // NewCollector creates and initializes a new Collector with the provided options.
 func NewCollector(opts ...Option) (Collector, error) {
 	c := &collector{
 		counters: make(map[string]*CounterHandle),
-		codes:    make(map[codes.Code]*atomic.Uint64),
 	}
 
 	// Prepend default options and apply all options.
@@ -217,8 +215,8 @@ func (c *collector) Reset() {
 	for _, h := range c.counters {
 		h.value.Store(0)
 	}
-	for _, h := range c.codes {
-		h.Store(0)
+	for i := range c.codes {
+		c.codes[i].Store(0)
 	}
 	for _, s := range c.scales {
 		s.Reset()
@@ -297,6 +295,11 @@ func (c *collector) merge(other *collector) error {
 		}
 	}
 
+	// Merge codes
+	for i := range c.codes {
+		other.codes[i].Add(c.codes[i].Load())
+	}
+
 	return nil
 }
 
@@ -323,25 +326,15 @@ func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 		c.qwPercentiles.Add(float64(rr.QueueWait.Nanoseconds()))
 	}
 	if c.exemplars != nil {
-		c.exemplars.Offer(rr.Latency, rr.RequestID, rr.Err != nil)
+		c.exemplars.Offer(rr.Latency, rr.RequestID, rr.Err)
 	}
 
 	code := resolveStatusCode(rr.Status, rr.Err)
-
-	c.mu.RLock()
-	counter, ok := c.codes[code]
-	c.mu.RUnlock()
-	if !ok {
-		c.mu.Lock()
-		// re-check if another goroutine already inserted the key
-		counter, ok = c.codes[code]
-		if !ok {
-			counter = new(atomic.Uint64)
-			c.codes[code] = counter
-		}
-		c.mu.Unlock()
+	if int(code) < len(c.codes) {
+		c.codes[code].Add(1)
+	} else {
+		c.codes[codes.Unknown].Add(1) // Fallback for out-of-range codes
 	}
-	counter.Add(1)
 
 	for _, s := range c.scales {
 		s.Record(ctx, rr)
@@ -376,7 +369,6 @@ func (c *collector) Clone() (Collector, error) {
 
 	newC := &collector{
 		counters: make(map[string]*CounterHandle),
-		codes:    make(map[codes.Code]*atomic.Uint64),
 	}
 
 	// Copy atomics
@@ -409,9 +401,8 @@ func (c *collector) Clone() (Collector, error) {
 	}
 
 	// Copy codes
-	for code, val := range c.codes {
-		newC.codes[code] = new(atomic.Uint64)
-		newC.codes[code].Store(val.Load())
+	for i := range c.codes {
+		newC.codes[i].Store(c.codes[i].Load())
 	}
 
 	// Copy scales
@@ -431,9 +422,11 @@ func (c *collector) Clone() (Collector, error) {
 func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	codes := make(map[codes.Code]uint64, len(c.codes))
-	for code, val := range c.codes {
-		codes[code] = val.Load()
+	codesMap := make(map[codes.Code]uint64)
+	for i, val := range c.codes {
+		if v := val.Load(); v > 0 {
+			codesMap[codes.Code(i)] = v
+		}
 	}
 	var latSnap, qwSnap *HistogramSnapshot
 	var exSnap []*item
@@ -466,7 +459,7 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 		QWPercentiles:   c.qwPercentiles,
 		Exemplars:       exSnap,
 		ExemplarDetails: exDetails,
-		Codes:           codes,
+		Codes:           codesMap,
 	}
 }
 
@@ -544,7 +537,7 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 
 	// Validate compatibility
 	for _, s := range snapshots[1:] {
-		if s.BoundsCRC32 != base.BoundsCRC32 || s.SketchKind != base.SketchKind {
+		if s.BoundsHash != base.BoundsHash || s.SketchKind != base.SketchKind {
 			return nil, errors.New("incompatible snapshots")
 		}
 	}
@@ -607,7 +600,7 @@ type GlobalSnapshot struct {
 	ExemplarDetails *ExemplarDetails      `json:"exemplar_details,omitempty"`
 	Codes           map[codes.Code]uint64 `json:"codes"`
 	SchemaVersion   string                `json:"schema_version"`
-	BoundsCRC32     uint32                `json:"bounds_crc32"`
+	BoundsHash      uint64                `json:"bounds_hash"`
 	SketchKind      string                `json:"sketch_kind"`
 	InvariantsOK    bool                  `json:"invariants_ok"`
 }

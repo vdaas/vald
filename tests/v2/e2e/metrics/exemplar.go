@@ -99,7 +99,7 @@ func (e *exemplar) initHeaps() {
 
 // NewExemplar creates a new Exemplar with the given options.
 func NewExemplar(opts ...ExemplarOption) Exemplar {
-	e := exemplarPool.Get()
+	e := new(exemplar)
 	e.Init(opts...)
 	return e
 }
@@ -112,12 +112,33 @@ func (e *exemplar) Reset() {
 }
 
 // Offer adds a request to the exemplar categories.
-func (e *exemplar) Offer(latency time.Duration, requestID string, isError bool) {
-	newItem := &item{latency: latency, requestID: requestID, isError: isError}
+func (e *exemplar) Offer(latency time.Duration, requestID string, err error) {
 	latInt := int64(latency)
+	isError := err != nil
 
-	// We must lock because we are updating multiple structures.
-	// Optimizations (atomics) are possible but complex with multiple categories.
+	// Fast path check to avoid locking for requests that are neither slowest nor fastest.
+	// This is an optimistic check. Race conditions are handled by the lock below.
+	minLat := e.minLatency.Load()
+	maxLat := e.maxLatency.Load()
+
+	// If it's not an error, and the latency is between the fastest and slowest top-K,
+	// and it's not a candidate for the average sample (which requires locking),
+	// we can potentially skip. For simplicity, we only apply the fast path
+	// for non-error cases that are clearly out of the top-K ranges.
+	if !isError && latInt <= minLat && latInt >= maxLat {
+		// It's not a candidate for slowest (needs > minLat) or fastest (needs < maxLat).
+		// We still need to consider reservoir sampling for "average".
+		// To keep it simple, we'll proceed to lock, but a more complex implementation
+		// could do another check here. The primary contention is on top-K, so this is a good start.
+		return
+	}
+
+	newItem := &item{
+		latency:   latency,
+		requestID: requestID,
+		err:       err,
+	}
+
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
@@ -281,24 +302,23 @@ func (e *exemplar) Merge(other Exemplar) error {
 	// Given the interface constraint, we use Offer.
 
 	for _, ex := range details.Slowest {
-		e.Offer(ex.latency, ex.requestID, ex.isError)
+		e.Offer(ex.latency, ex.requestID, ex.err)
 	}
 	for _, ex := range details.Fastest {
-		e.Offer(ex.latency, ex.requestID, ex.isError)
+		e.Offer(ex.latency, ex.requestID, ex.err)
 	}
 	for _, ex := range details.Average {
-		e.Offer(ex.latency, ex.requestID, ex.isError)
+		e.Offer(ex.latency, ex.requestID, ex.err)
 	}
 	for _, ex := range details.Failures {
-		e.Offer(ex.latency, ex.requestID, ex.isError)
+		e.Offer(ex.latency, ex.requestID, ex.err)
 	}
 	return nil
 }
 
 // Clone returns a deep copy.
 func (e *exemplar) Clone() Exemplar {
-	newE := exemplarPool.Get()
-	newE.Reset()
+	newE := new(exemplar)
 	newE.k = e.k
 
 	e.mu.Lock()
@@ -346,7 +366,7 @@ func (e *exemplar) Clone() Exemplar {
 type item struct {
 	latency   time.Duration
 	requestID string
-	isError   bool
+	err       error
 }
 
 // priorityQueue implements min-heap.

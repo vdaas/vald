@@ -108,9 +108,23 @@ const (
 // centroid located at quantile q, given the total weight and compression
 // parameter.
 //
-// This encapsulates the core t-digest formula:
+// This encapsulates the core t-digest formula, which limits the size of a
+// centroid based on its quantile `q`. Centroids near the tails (q=0 or q=1)
+// must be smaller, while centroids near the median (q=0.5) can be larger.
+// This ensures higher accuracy at the tails.
 //
-//	k = 4 * total * q * (1-q) / compression
+// The formula is:
+//
+//	k = (4 * total * q * (1-q)) / compression
+//
+// where:
+//   - `total` is the total weight of all points in the digest.
+//   - `q` is the quantile, calculated as `(cumulative_weight + new_weight/2) / total`.
+//   - `compression` is the compression parameter (δ), controlling the trade-off
+//     between accuracy and size. Higher compression means more centroids and
+//     higher accuracy.
+//   - The term `4 * q * (1-q)` is a scaling factor that is maximal at `q=0.5` (the median)
+//     and approaches zero at the tails, enforcing the accuracy constraint.
 //
 // The caller is responsible for clamping q into [0,1] if needed.
 func (t *tdigest) maxWeightForQuantile(q, total float64) float64 {
@@ -299,15 +313,27 @@ func (t *tdigest) Merge(other TDigest) error {
 }
 
 // compress merges centroids to reduce their number while preserving the
-// t-digest shape.
+// t-digest's quantile estimation accuracy. This is the core of the t-digest
+// algorithm, where it enforces the size constraints on centroids.
 //
-// This implementation performs a single linear pass over the sorted centroids
-// and greedily merges adjacent centroids as long as the merged centroid does
-// not exceed the quantile-based weight limit. This reduces the complexity
-// from O(n^2) to O(n) per compression.
+// The process works as follows:
+//  1. Iterate through the sorted centroids from left to right.
+//  2. For each centroid, evaluate whether it can be merged with the *next*
+//     centroid in the list.
+//  3. The merge is "valid" if the combined weight of the new, merged centroid
+//     does not exceed the maximum weight allowed for its new quantile position
+//     (as determined by `maxWeightForQuantile`).
+//  4. This implementation greedily merges adjacent centroids whenever the
+//     condition in step 3 is met. It performs a single linear pass over the
+//     sorted centroids.
 //
-// It also reuses the underlying slice of t.centroids to minimize allocations
-// and applies slices.Clip at the end to trim any excess capacity.
+// This single-pass greedy approach significantly improves performance compared
+// to repeatedly finding the smallest pair to merge, reducing complexity from
+// O(n^2) or O(n log n) to O(n).
+//
+// To minimize allocations, this function reuses the underlying slice of
+// `t.centroids` for the output and applies `slices.Clip` at the end to
+// release any unused capacity.
 func (t *tdigest) compress() {
 	n := len(t.centroids)
 	if n <= 1 {

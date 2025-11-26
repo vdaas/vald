@@ -17,14 +17,14 @@
 package metrics
 
 import (
-	"encoding/binary"
 	"fmt"
-	"hash/crc32"
 	"math"
 	"slices"
 	"sync"
+	"unsafe"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/zeebo/xxh3"
 )
 
 // histogram is a thread-safe, sharded histogram that uses geometric bucketing.
@@ -37,7 +37,7 @@ type histogram struct {
 	growth      float64          // geometric growth factor for bucket widths
 	numBuckets  int              // number of buckets
 	numShards   int              // number of shards
-	boundsCRC32 uint32           // checksum of bounds for merge validation
+	boundsHash uint64           // checksum of bounds for merge validation
 }
 
 // histogramShard is a single shard of the histogram.
@@ -107,8 +107,8 @@ func (h *histogram) Init(opts ...HistogramOption) error {
 		h.bounds[i] = h.min * math.Pow(h.growth, float64(i))
 	}
 
-	// Precompute boundsCRC32 for compatibility checks on merge.
-	h.boundsCRC32 = computeBoundsCRC32(h.bounds)
+	// Precompute boundsHash for compatibility checks on merge.
+	h.boundsHash = computeBoundsHash(h.bounds)
 
 	return nil
 }
@@ -116,9 +116,8 @@ func (h *histogram) Init(opts ...HistogramOption) error {
 // NewHistogram creates a new sharded histogram with geometric bucketing.
 // It takes a variable number of HistogramOption functions to configure the histogram.
 func NewHistogram(opts ...HistogramOption) (Histogram, error) {
-	h := histogramPool.Get()
+	h := new(histogram)
 	if err := h.Init(opts...); err != nil {
-		histogramPool.Put(h)
 		return nil, err
 	}
 	return h, nil
@@ -141,17 +140,26 @@ func (h *histogram) Reset() {
 	}
 }
 
-// computeBoundsCRC32 computes a CRC32 checksum for the given slice of
+// computeBoundsHash computes a xxh3 checksum for the given slice of
 // float64 bounds. It is used to validate histogram compatibility on merge.
-func computeBoundsCRC32(bounds []float64) uint32 {
+func computeBoundsHash(bounds []float64) uint64 {
 	if len(bounds) == 0 {
 		return 0
 	}
-	buf := make([]byte, 8*len(bounds))
-	for i, b := range bounds {
-		binary.LittleEndian.PutUint64(buf[i*8:], math.Float64bits(b))
-	}
-	return crc32.ChecksumIEEE(buf)
+	// Reinterpret the float64 slice as a byte slice to avoid allocation.
+	// This is safe because both slices point to the same underlying data.
+	header := (*sliceHeader)(unsafe.Pointer(&bounds))
+	header.Len *= 8
+	header.Cap *= 8
+	byteSlice := *(*[]byte)(unsafe.Pointer(header))
+	return xxh3.Hash(byteSlice)
+}
+
+// sliceHeader is a stripped-down version of reflect.SliceHeader used for unsafe pointer conversions.
+type sliceHeader struct {
+	Data unsafe.Pointer
+	Len  int
+	Cap  int
 }
 
 // shardIndexForValue selects a shard index for the given value.
@@ -204,7 +212,18 @@ func (h *histogram) Record(val float64) {
 		s.max = val
 	}
 
-	// Update mean and m2 using Welford's algorithm.
+	// Update mean and m2 using Welford's online algorithm for variance.
+	// This method is numerically stable and avoids catastrophic cancellation.
+	//
+	// Let M_n be the sum of squares of differences from the current mean:
+	//   M_n = Σ_{i=1 to n} (x_i - mean_n)^2
+	//
+	// The recurrence relations are:
+	//   mean_n = mean_{n-1} + (x_n - mean_{n-1}) / n
+	//   M_n = M_{n-1} + (x_n - mean_{n-1}) * (x_n - mean_n)
+	//
+	// Here, `s.mean` is mean_n, `s.m2` is M_n, and `val` is x_n.
+	// We use FMA (Fused Multiply-Add) for better precision.
 	delta := val - s.mean
 	s.mean = math.FMA(delta, 1.0/float64(s.total), s.mean)
 	s.m2 = math.FMA(delta, val-s.mean, s.m2)
@@ -226,15 +245,13 @@ func (h *histogram) findBucket(val float64) int {
 
 // Clone returns a deep copy of the histogram.
 func (h *histogram) Clone() Histogram {
-	newH := histogramPool.Get()
-	newH.Reset()
-
+	newH := new(histogram)
 	newH.min = h.min
 	newH.max = h.max
 	newH.growth = h.growth
 	newH.numBuckets = h.numBuckets
 	newH.numShards = h.numShards
-	newH.boundsCRC32 = h.boundsCRC32
+	newH.boundsHash = h.boundsHash
 
 	// Copy bounds
 	if cap(newH.bounds) < len(h.bounds) {
@@ -292,7 +309,7 @@ func (h *histogram) Merge(other Histogram) error {
 // of h using atomic operations. It assumes that concurrent writes may
 // still happen on src and h, but the merge itself is safe.
 func (h *histogram) merge(src *histogram) error {
-	if h.boundsCRC32 != src.boundsCRC32 {
+	if h.boundsHash != src.boundsHash {
 		return errors.New("incompatible histograms: bounds checksum mismatch")
 	}
 	if len(h.shards) != len(src.shards) {
@@ -426,10 +443,10 @@ func (h *histogram) Snapshot() *HistogramSnapshot {
 	return snap
 }
 
-// BoundsCRC32 returns the precomputed CRC32 checksum of the histogram bounds.
+// BoundsHash returns the precomputed hash of the histogram bounds.
 // It can be used to cheaply check compatibility before attempting a merge.
-func (h *histogram) BoundsCRC32() uint32 {
-	return h.boundsCRC32
+func (h *histogram) BoundsHash() uint64 {
+	return h.boundsHash
 }
 
 // HistogramSnapshot represents a consistent point-in-time view of a Histogram.

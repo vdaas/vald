@@ -29,6 +29,6 @@ codes:
   0: 90
   10: 10
 schemaversion: ""
-boundscrc32: 0
+boundshash: 0
 sketchkind: ""
 invariantsok: false

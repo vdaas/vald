@@ -94,7 +94,7 @@ func (p *SnapshotPresenter) AsString() string {
 				fmt.Fprintf(&sb, "\n--- Exemplars (%s) ---\n", title)
 				for _, ex := range items {
 					status := ""
-					if ex.isError {
+					if ex.err != nil {
 						status = " (Failed)"
 					}
 					fmt.Fprintf(&sb, "\t- RequestID:\t%s,\tLatency:\t%s%s\n", ex.requestID, ex.latency, status)
