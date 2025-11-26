@@ -99,7 +99,7 @@ func (e *exemplar) initHeaps() {
 
 // NewExemplar creates a new Exemplar with the given options.
 func NewExemplar(opts ...ExemplarOption) Exemplar {
-	e := exemplarPool.Get()
+	e := new(exemplar)
 	e.Init(opts...)
 	return e
 }
@@ -112,65 +112,93 @@ func (e *exemplar) Reset() {
 }
 
 // Offer adds a request to the exemplar categories.
-func (e *exemplar) Offer(latency time.Duration, requestID string, isError bool) {
-	newItem := &item{latency: latency, requestID: requestID, isError: isError}
+func (e *exemplar) Offer(latency time.Duration, requestID string, err error) {
 	latInt := int64(latency)
+	isError := err != nil
 
-	// We must lock because we are updating multiple structures.
-	// Optimizations (atomics) are possible but complex with multiple categories.
+	// Fast path check to avoid locking for requests that are neither slowest nor fastest.
+	// This is an optimistic check. Race conditions are handled by the lock below.
+	minLat := e.minLatency.Load()
+	maxLat := e.maxLatency.Load()
+
+	// If it's not an error, and the latency is between the fastest and slowest top-K,
+	// we can skip the heap updates. However, we must still consider it for reservoir sampling.
+	if !isError && latInt <= minLat && latInt >= maxLat {
+		e.mu.Lock()
+		e.updateAverageSample(&item{
+			latency:   latency,
+			requestID: requestID,
+			err:       err,
+		})
+		e.mu.Unlock()
+		return
+	}
+
+	newItem := &item{
+		latency:   latency,
+		requestID: requestID,
+		err:       err,
+	}
+
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
-	// 1. Slowest (Top K Max)
-	// Min-Heap stores K largest. Root is the smallest of the largest.
-	// If new > Root, replace Root.
+	e.updateSlowest(newItem)
+	e.updateFastest(newItem)
+	e.updateAverageSample(newItem)
+	if isError {
+		e.updateFailureSample(newItem)
+	}
+}
+
+func (e *exemplar) updateSlowest(item *item) {
+	latInt := int64(item.latency)
 	if len(e.slowest) < e.k {
-		heap.Push(&e.slowest, newItem)
+		heap.Push(&e.slowest, item)
 		if len(e.slowest) == e.k {
 			e.minLatency.Store(int64(e.slowest[0].latency))
 		}
 	} else if latInt > int64(e.slowest[0].latency) {
-		e.slowest[0] = newItem
+		e.slowest[0] = item
 		heap.Fix(&e.slowest, 0)
 		e.minLatency.Store(int64(e.slowest[0].latency))
 	}
+}
 
-	// 2. Fastest (Top K Min)
-	// Max-Heap stores K smallest. Root is the largest of the smallest.
-	// If new < Root, replace Root.
+func (e *exemplar) updateFastest(item *item) {
+	latInt := int64(item.latency)
 	if len(e.fastest) < e.k {
-		heap.Push(&e.fastest, newItem)
+		heap.Push(&e.fastest, item)
 		if len(e.fastest) == e.k {
 			e.maxLatency.Store(int64(e.fastest[0].latency))
 		}
 	} else if latInt < int64(e.fastest[0].latency) {
-		e.fastest[0] = newItem
+		e.fastest[0] = item
 		heap.Fix(&e.fastest, 0)
 		e.maxLatency.Store(int64(e.fastest[0].latency))
 	}
+}
 
-	// 3. Average (Representative Sample)
+func (e *exemplar) updateAverageSample(item *item) {
 	e.avgCount++
 	if len(e.avgSamples) < e.k {
-		e.avgSamples = append(e.avgSamples, newItem)
+		e.avgSamples = append(e.avgSamples, item)
 	} else {
-		// Reservoir sampling: replace with probability k/count
 		j := rand.Uint64N(e.avgCount)
 		if j < uint64(e.k) {
-			e.avgSamples[j] = newItem
+			e.avgSamples[j] = item
 		}
 	}
+}
 
-	// 4. Failures (Representative Sample of Failures)
-	if isError {
-		e.failureCount++
-		if len(e.failureSamples) < e.k {
-			e.failureSamples = append(e.failureSamples, newItem)
-		} else {
-			j := rand.Uint64N(e.failureCount)
-			if j < uint64(e.k) {
-				e.failureSamples[j] = newItem
-			}
+func (e *exemplar) updateFailureSample(item *item) {
+	e.failureCount++
+	if len(e.failureSamples) < e.k {
+		e.failureSamples = append(e.failureSamples, item)
+	} else {
+		j := rand.Uint64N(e.failureCount)
+		if j < uint64(e.k) {
+			e.failureSamples[j] = item
 		}
 	}
 }
@@ -266,39 +294,101 @@ func (e *exemplar) Merge(other Exemplar) error {
 	if other == nil {
 		return nil
 	}
-	details, _ := other.DetailedSnapshot()
-	if details == nil {
+	o, ok := other.(*exemplar)
+	if !ok {
+		// Fallback to offering items one by one if the type is not the same.
+		details, _ := other.DetailedSnapshot()
+		if details == nil {
+			return nil
+		}
+		for _, ex := range details.Slowest {
+			e.Offer(ex.latency, ex.requestID, ex.err)
+		}
+		for _, ex := range details.Fastest {
+			e.Offer(ex.latency, ex.requestID, ex.err)
+		}
+		for _, ex := range details.Average {
+			e.Offer(ex.latency, ex.requestID, ex.err)
+		}
+		for _, ex := range details.Failures {
+			e.Offer(ex.latency, ex.requestID, ex.err)
+		}
 		return nil
 	}
 
-	// We iterate over the snapshots and offer them to this exemplar.
-	// This is a simplified merge strategy that works reasonably well for top-K heaps.
-	// For reservoirs (Average, Failures), re-offering samples is not statistically
-	// perfect (it biases towards the later merges if counts are not tracked),
-	// but it preserves "representativeness" for E2E testing purposes.
-	// A better approach would be to merge reservoirs properly using counts,
-	// but that requires exposing internal state (counts) via interface or type assertion.
-	// Given the interface constraint, we use Offer.
+	e.mu.Lock()
+	o.mu.Lock()
+	defer e.mu.Unlock()
+	defer o.mu.Unlock()
 
-	for _, ex := range details.Slowest {
-		e.Offer(ex.latency, ex.requestID, ex.isError)
+	// Merge heaps by offering all items from the other heap.
+	for _, item := range o.slowest {
+		e.updateSlowest(item)
 	}
-	for _, ex := range details.Fastest {
-		e.Offer(ex.latency, ex.requestID, ex.isError)
+	for _, item := range o.fastest {
+		e.updateFastest(item)
 	}
-	for _, ex := range details.Average {
-		e.Offer(ex.latency, ex.requestID, ex.isError)
-	}
-	for _, ex := range details.Failures {
-		e.Offer(ex.latency, ex.requestID, ex.isError)
-	}
+
+	// Merge reservoirs using a weighted algorithm.
+	e.avgSamples = e.mergeReservoir(e.avgSamples, o.avgSamples, e.avgCount, o.avgCount)
+	e.failureSamples = e.mergeReservoir(e.failureSamples, o.failureSamples, e.failureCount, o.failureCount)
+
+	e.avgCount += o.avgCount
+	e.failureCount += o.failureCount
+
 	return nil
+}
+
+// mergeReservoir merges two reservoir samples (dst and src) into a new reservoir.
+// It uses a weighted selection algorithm to ensure that the merged reservoir is a
+// statistically valid sample of the combined population.
+func (e *exemplar) mergeReservoir(dst, src []*item, n1, n2 uint64) []*item {
+	if n1 == 0 {
+		return src
+	}
+	if n2 == 0 {
+		return dst
+	}
+
+	n := n1 + n2
+	k := e.k
+
+	// If the combined size is less than or equal to k, just return the combined slice.
+	if len(dst)+len(src) <= k {
+		return append(dst, src...)
+	}
+
+	// Create a new reservoir by probabilistically selecting items from both reservoirs.
+	newReservoir := make([]*item, 0, k)
+	for i := 0; i < k; i++ {
+		// Decide which reservoir to draw from based on their relative weights.
+		if rand.Uint64N(n) < n1 {
+			// Draw from the first reservoir.
+			if len(dst) > 0 {
+				idx := rand.IntN(len(dst))
+				newReservoir = append(newReservoir, dst[idx])
+				// Remove the selected item to avoid picking it again.
+				dst = append(dst[:idx], dst[idx+1:]...)
+				n1--
+			}
+		} else {
+			// Draw from the second reservoir.
+			if len(src) > 0 {
+				idx := rand.IntN(len(src))
+				newReservoir = append(newReservoir, src[idx])
+				// Remove the selected item.
+				src = append(src[:idx], src[idx+1:]...)
+				n2--
+			}
+		}
+		n--
+	}
+	return newReservoir
 }
 
 // Clone returns a deep copy.
 func (e *exemplar) Clone() Exemplar {
-	newE := exemplarPool.Get()
-	newE.Reset()
+	newE := new(exemplar)
 	newE.k = e.k
 
 	e.mu.Lock()
@@ -346,7 +436,7 @@ func (e *exemplar) Clone() Exemplar {
 type item struct {
 	latency   time.Duration
 	requestID string
-	isError   bool
+	err       error
 }
 
 // priorityQueue implements min-heap.
