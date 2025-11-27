@@ -66,11 +66,11 @@ type shardedTDigest struct {
 
 // NewTDigest creates a new TDigest.
 func NewTDigest(opts ...TDigestOption) (TDigest, error) {
-	cfg := TDigestConfig{}
+	cfg := tDigestConfig{}
 	// Apply defaults via option functions first?
 	// The default options in option.go are applied in NewTDigest usually by appending.
 	// We need to apply defaults to cfg.
-	// But `defaultTDigestOpts` are `func(*TDigestConfig) error`.
+	// But `defaultTDigestOpts` are `func(*tDigestConfig) error`.
 
 	// Apply defaults
 	for _, opt := range defaultTDigestOpts {

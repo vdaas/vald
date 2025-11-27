@@ -31,14 +31,14 @@ type (
 	HistogramOption func(*histogram) error
 
 	// TDigestOption configures a TDigest.
-	TDigestOption func(*TDigestConfig) error
+	TDigestOption func(*tDigestConfig) error
 
 	// ExemplarOption represents a functional option for configuring an Exemplar.
 	ExemplarOption func(*exemplar)
 )
 
-// TDigestConfig holds configuration for TDigest.
-type TDigestConfig struct {
+// tDigestConfig holds configuration for TDigest.
+type tDigestConfig struct {
 	Compression              float64
 	CompressionTriggerFactor float64
 	Quantiles                []float64
@@ -222,7 +222,7 @@ func WithHistogramNumShards(n int) HistogramOption {
 
 // WithTDigestCompression sets the compression for the t-digest.
 func WithTDigestCompression(c float64) TDigestOption {
-	return func(cfg *TDigestConfig) error {
+	return func(cfg *tDigestConfig) error {
 		cfg.Compression = c
 		if cfg.Compression <= 0 {
 			return errors.New("tdigest compression must be > 0")
@@ -233,7 +233,7 @@ func WithTDigestCompression(c float64) TDigestOption {
 
 // WithTDigestCompressionTriggerFactor sets the compression trigger factor for the t-digest.
 func WithTDigestCompressionTriggerFactor(f float64) TDigestOption {
-	return func(cfg *TDigestConfig) error {
+	return func(cfg *tDigestConfig) error {
 		cfg.CompressionTriggerFactor = f
 		if cfg.CompressionTriggerFactor <= 0 {
 			return errors.New("tdigest compressionTriggerFactor must be > 0")
@@ -244,7 +244,7 @@ func WithTDigestCompressionTriggerFactor(f float64) TDigestOption {
 
 // WithTDigestQuantiles sets the quantiles to be used in the String() method.
 func WithTDigestQuantiles(quantiles ...float64) TDigestOption {
-	return func(cfg *TDigestConfig) error {
+	return func(cfg *tDigestConfig) error {
 		if len(quantiles) > 0 {
 			cfg.Quantiles = quantiles
 		}
@@ -254,7 +254,7 @@ func WithTDigestQuantiles(quantiles ...float64) TDigestOption {
 
 // WithTDigestNumShards sets the number of shards for the t-digest.
 func WithTDigestNumShards(n int) TDigestOption {
-	return func(cfg *TDigestConfig) error {
+	return func(cfg *tDigestConfig) error {
 		if n < 1 {
 			return errors.New("tdigest num shards must be >= 1")
 		}
