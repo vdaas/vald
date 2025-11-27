@@ -18,7 +18,6 @@ package metrics
 
 import (
 	"sync/atomic"
-	"unsafe"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
@@ -28,6 +27,7 @@ import (
 // It is an implementation of the Slot interface.
 type slot struct {
 	mu          sync.RWMutex    // protects WindowStart and coordinates Reset
+	id          uint64          // Unique ID for lock ordering
 	WindowStart uint64          // The window index (idx / width) this slot represents
 	Total       atomic.Uint64   // total number of requests in this slot
 	Errors      atomic.Uint64   // number of errored requests in this slot
@@ -42,6 +42,7 @@ type slot struct {
 // It initializes a new slot with histograms, exemplars, and custom counters.
 func newSlot(numCounters int, latencies, queueWaits Histogram, exemplars Exemplar) Slot {
 	return &slot{
+		id:        collectorIDCounter.Add(1),
 		Latency:   latencies,
 		QueueWait: queueWaits,
 		Counters:  make([]atomic.Uint64, numCounters),
@@ -83,11 +84,22 @@ func (s *slot) reset() {
 func (s *slot) Record(rr *RequestResult, windowIdx uint64) {
 	// Optimistic read lock to check if the slot is valid for the current window.
 	s.mu.RLock()
+
+	// Ignore late arrivals for older windows to preserve data integrity.
+	if windowIdx < s.WindowStart {
+		s.mu.RUnlock()
+		return
+	}
+
 	if s.WindowStart != windowIdx {
 		s.mu.RUnlock()
 		// Slot is stale or uninitialized. Upgrade to write lock to reset.
 		s.mu.Lock()
 		// Double-check under write lock.
+		if windowIdx < s.WindowStart {
+			s.mu.Unlock()
+			return
+		}
 		if s.WindowStart != windowIdx {
 			s.reset()
 			s.WindowStart = windowIdx
@@ -145,6 +157,7 @@ func (s *slot) Clone() Slot {
 	}
 
 	newS := &slot{
+		id:          collectorIDCounter.Add(1),
 		Latency:     l,
 		QueueWait:   q,
 		Counters:    counters,
@@ -172,7 +185,7 @@ func (s *slot) Merge(other Slot) error {
 	}
 
 	// To prevent deadlocks, always lock in a consistent order.
-	if uintptr(unsafe.Pointer(s)) < uintptr(unsafe.Pointer(os)) {
+	if s.id < os.id {
 		s.mu.Lock()
 		os.mu.Lock()
 	} else {

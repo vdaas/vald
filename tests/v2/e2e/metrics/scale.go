@@ -18,7 +18,6 @@ package metrics
 
 import (
 	"context"
-	"unsafe"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
@@ -28,6 +27,7 @@ import (
 // It implements the Scale interface and manages a collection of slots based on time or request ID.
 type scale struct {
 	mu        sync.RWMutex
+	id        uint64
 	slots     []Slot // ring buffer of slots
 	width     uint64 // width of each slot (e.g., seconds for TimeScale)
 	capacity  uint64 // number of slots in the ring buffer
@@ -75,6 +75,7 @@ func newScale(
 		)
 	}
 	return &scale{
+		id:        collectorIDCounter.Add(1),
 		name:      name,
 		width:     width,
 		capacity:  capacity,
@@ -135,7 +136,7 @@ func (s *scale) Merge(other Scale) error {
 	}
 
 	// To prevent deadlocks, always lock in a consistent order.
-	if uintptr(unsafe.Pointer(s)) < uintptr(unsafe.Pointer(os)) {
+	if s.id < os.id {
 		s.mu.Lock()
 		os.mu.Lock()
 	} else {
@@ -187,6 +188,7 @@ func (s *scale) Clone() Scale {
 	}
 
 	return &scale{
+		id:        collectorIDCounter.Add(1),
 		name:      s.name,
 		width:     s.width,
 		capacity:  s.capacity,

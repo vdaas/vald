@@ -19,7 +19,6 @@ package metrics
 import (
 	"fmt"
 	"slices"
-	"unsafe"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/strings"
@@ -46,6 +45,7 @@ const defaultBufferCapacity = 128
 //   - count > 0 if and only if len(centroids) > 0.
 type tdigest struct {
 	mu                       sync.Mutex
+	id                       uint64
 	centroids                []centroid
 	buffer                   []float64
 	scratch                  []centroid
@@ -59,6 +59,7 @@ type tdigest struct {
 // NewTDigest creates a new TDigest.
 func NewTDigest(opts ...TDigestOption) (TDigest, error) {
 	t := &tdigest{
+		id:     collectorIDCounter.Add(1),
 		buffer: make([]float64, 0, defaultBufferCapacity),
 	}
 	for _, opt := range append(defaultTDigestOpts, opts...) {
@@ -264,7 +265,18 @@ func (t *tdigest) Quantile(q float64) float64 {
 				// Degenerate case; just return current mean.
 				return c.Mean
 			}
-			return prev.Mean + (c.Mean-prev.Mean)*max(min((target-sum)/c.Weight, 0), 1)
+			// Calculate fraction of the weight contribution
+			fraction := (target - sum) / c.Weight
+
+			// Clamp fraction to [0, 1]
+			if fraction < 0 {
+				fraction = 0
+			} else if fraction > 1 {
+				fraction = 1
+			}
+
+			// Linear interpolation
+			return prev.Mean + (c.Mean-prev.Mean)*fraction
 		}
 		sum = nextSum
 	}
@@ -289,7 +301,7 @@ func (t *tdigest) Merge(other TDigest) error {
 	}
 
 	// To prevent deadlocks, always lock in a consistent order.
-	if uintptr(unsafe.Pointer(t)) < uintptr(unsafe.Pointer(o)) {
+	if t.id < o.id {
 		t.mu.Lock()
 		o.mu.Lock()
 	} else {
@@ -391,6 +403,7 @@ func (t *tdigest) Clone() TDigest {
 	defer t.mu.Unlock()
 
 	newT := &tdigest{
+		id:                       collectorIDCounter.Add(1),
 		compression:              t.compression,
 		compressionTriggerFactor: t.compressionTriggerFactor,
 		count:                    t.count,

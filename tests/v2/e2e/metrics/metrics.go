@@ -28,7 +28,6 @@ import (
 	"slices"
 	"sync/atomic"
 	"time"
-	"unsafe"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
@@ -146,6 +145,7 @@ func (h *CounterHandle) Add(val int64) {
 // It manages global metrics, per-window scales, and custom counters.
 type collector struct {
 	mu sync.RWMutex
+	id uint64 // Unique ID for lock ordering
 
 	// Atomic counters for total and errored requests.
 	total  atomic.Uint64
@@ -174,9 +174,12 @@ type collector struct {
 	codes [20]atomic.Uint64
 }
 
+var collectorIDCounter atomic.Uint64
+
 // NewCollector creates and initializes a new Collector with the provided options.
 func NewCollector(opts ...Option) (Collector, error) {
 	c := &collector{
+		id:       collectorIDCounter.Add(1),
 		counters: make(map[string]*CounterHandle),
 	}
 
@@ -236,19 +239,19 @@ func (c *collector) MergeInto(dest Collector) error {
 }
 
 // merge performs the actual merging logic.
-// It acquires locks on both collectors (ordered by pointer address) to ensure safety.
+// It acquires locks on both collectors (ordered by unique ID) to ensure safety.
 func (c *collector) merge(other *collector) error {
 	if c == other || other == nil {
 		return nil
 	}
 
 	// To prevent deadlocks, always lock in a consistent order.
-	if uintptr(unsafe.Pointer(c)) < uintptr(unsafe.Pointer(other)) {
-		other.mu.Lock()
+	if c.id < other.id {
 		c.mu.Lock()
+		other.mu.Lock()
 	} else {
-		c.mu.Lock()
 		other.mu.Lock()
+		c.mu.Lock()
 	}
 	defer c.mu.Unlock()
 	defer other.mu.Unlock()
@@ -421,6 +424,7 @@ func (c *collector) Clone() (Collector, error) {
 	defer c.mu.RUnlock()
 
 	newC := &collector{
+		id:       collectorIDCounter.Add(1),
 		counters: make(map[string]*CounterHandle),
 	}
 
