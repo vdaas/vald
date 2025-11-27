@@ -1,0 +1,48 @@
+{
+	"total": 100,
+	"errors": 10,
+	"start_time": "0001-01-01T00:00:00Z",
+	"last_updated": "0001-01-01T00:00:00Z",
+	"latencies": {
+		"counts": null,
+		"bounds": null,
+		"total": 100,
+		"sum": 100000000,
+		"sum_sq": 0,
+		"m2": 0,
+		"mean": 1000000,
+		"std_dev": 0,
+		"min": 100000,
+		"max": 10000000
+	},
+	"queue_waits": {
+		"counts": null,
+		"bounds": null,
+		"total": 100,
+		"sum": 50000000,
+		"sum_sq": 0,
+		"m2": 0,
+		"mean": 500000,
+		"std_dev": 0,
+		"min": 50000,
+		"max": 5000000
+	},
+	"lat_percentiles": {},
+	"qw_percentiles": {},
+	"exemplars": [
+		{
+			"Latency": 10000000,
+			"RequestID": "req-1",
+			"Err": null,
+			"Msg": ""
+		}
+	],
+	"codes": {
+		"0": 90,
+		"10": 10
+	},
+	"schema_version": "",
+	"bounds_hash": 0,
+	"sketch_kind": "",
+	"invariants_ok": false
+}
