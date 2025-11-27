@@ -42,6 +42,7 @@ type histogram struct {
 	invLogGrowth float64
 	numBuckets   int
 	boundsHash   uint64
+	bucketFinder func(float64) int
 	mu           sync.Mutex
 	_            [128]byte
 }
@@ -115,7 +116,20 @@ func (h *histogram) Init(opts ...HistogramOption) error {
 	// Precompute boundsHash for compatibility checks on merge.
 	h.boundsHash = computeHash(h.bounds...)
 
+	// Select optimal bucket finding strategy
+	h.setBucketFinder()
+
 	return nil
+}
+
+func (h *histogram) setBucketFinder() {
+	if h.growth == 2.0 {
+		h.bucketFinder = h.findBucketGrowth2
+	} else if h.numBuckets < 100 {
+		h.bucketFinder = h.findBucketBinarySearch
+	} else {
+		h.bucketFinder = h.findBucketLog
+	}
 }
 
 // NewHistogram creates a new sharded histogram with geometric bucketing.
@@ -229,19 +243,18 @@ func (h *histogram) Record(val float64) {
 	h.m2 = math.FMA(delta, val-h.mean, h.m2)
 }
 
-// findBucket determines the correct bucket index for a given value using
-// a logarithmic formula for geometric buckets. This is O(1) instead of O(log N).
+// findBucket delegates to the selected strategy.
+func (h *histogram) findBucket(val float64) int {
+	return h.bucketFinder(val)
+}
+
+// findBucketLog determines the correct bucket index for a given value using
+// a logarithmic formula for geometric buckets.
 //
 // Formula: index = log_{growth}(val / min) + 1
 //
 //	index = ln(val/min) / ln(growth) + 1
-//
-// Buckets are interpreted as:
-//
-//	bucket 0:           (-inf, bounds[0]]  (where bounds[0] == min)
-//	bucket i (1..N-2):  (bounds[i-1], bounds[i]]
-//	bucket N-1:         (bounds[N-2], +inf)
-func (h *histogram) findBucket(val float64) int {
+func (h *histogram) findBucketLog(val float64) int {
 	if val <= h.minVal {
 		return 0
 	}
@@ -249,6 +262,53 @@ func (h *histogram) findBucket(val float64) int {
 	// Use precomputed inverse log growth to avoid division
 	idx := int(math.Ceil(math.Log(val/h.minVal) * h.invLogGrowth))
 
+	if idx < 0 {
+		return 0
+	}
+	if idx >= h.numBuckets {
+		return h.numBuckets - 1
+	}
+	return idx
+}
+
+// findBucketBinarySearch uses binary search on bounds.
+func (h *histogram) findBucketBinarySearch(val float64) int {
+	if val <= h.minVal {
+		return 0
+	}
+	if val > h.bounds[len(h.bounds)-1] {
+		return h.numBuckets - 1
+	}
+
+	// slices.BinarySearch finds the smallest index i such that bounds[i] >= val
+	idx, _ := slices.BinarySearch(h.bounds, val)
+	// The buckets are:
+	// 0: <= bounds[0] (which is minVal, covered by check above)
+	// 1: (bounds[0], bounds[1]]
+	// ...
+	// i: (bounds[i-1], bounds[i]]
+	//
+	// If val is in bucket i, then bounds[i-1] < val <= bounds[i].
+	// BinarySearch returns i such that bounds[i] >= val.
+	// So the index returned matches the bucket index, except for the 0th bucket check.
+	// But wait, bounds[0] == minVal.
+	// if val <= minVal, returned 0.
+	// if val > minVal:
+	//   if val <= bounds[1], idx will be 1. Correct.
+	//   if val > bounds[1] and val <= bounds[2], idx will be 2. Correct.
+	return idx
+}
+
+// findBucketGrowth2 uses math.Log2 which is potentially faster than math.Log.
+func (h *histogram) findBucketGrowth2(val float64) int {
+	if val <= h.minVal {
+		return 0
+	}
+
+	// index = log2(val / min) + 1
+	idx := int(math.Ceil(math.Log2(val/h.minVal)))
+
+	// Check bounds
 	if idx < 0 {
 		return 0
 	}
@@ -278,6 +338,7 @@ func (h *histogram) Clone() Histogram {
 	newH.invLogGrowth = h.invLogGrowth
 	newH.numBuckets = h.numBuckets
 	newH.boundsHash = h.boundsHash
+	newH.setBucketFinder()
 
 	// Copy bounds
 	// Bounds are immutable after initialization, so we can share the underlying array.

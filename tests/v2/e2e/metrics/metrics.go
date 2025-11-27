@@ -37,8 +37,7 @@ import (
 )
 
 const (
-	MaxGRPCCodes    = 20
-	UnknownGRPCCode = 17
+	MaxGRPCCodes = 20
 )
 
 // requestIDCtxKey is the key for storing the request ID in the context.
@@ -381,7 +380,7 @@ func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 		c.exemplars.Offer(rr.Latency, rr.RequestID, rr.Err, rr.Msg)
 	}
 
-	code := resolveStatusCode(rr.Status, rr.Err)
+	code := status.ToCode(rr.Status, rr.Err)
 	if int(code) < len(c.codes) {
 		c.codes[code].Add(1)
 	} else {
@@ -773,24 +772,4 @@ func (s *SlotSnapshot) String() string {
 	}
 
 	return sb.String()
-}
-
-// resolveStatusCode determines the final gRPC status code for a request.
-// It prioritizes specific error types (e.g., Canceled, DeadlineExceeded)
-// when the status code is initially OK but an error is present.
-func resolveStatusCode(code codes.Code, err error) codes.Code {
-	if code == codes.OK && err != nil {
-		if st, ok := status.FromError(err); ok {
-			return st.Code()
-		} else if errors.Is(err, context.Canceled) {
-			return codes.Canceled
-		} else if errors.Is(err, context.DeadlineExceeded) {
-			return codes.DeadlineExceeded
-		} else {
-			return codes.Unknown
-		}
-	} else if code >= UnknownGRPCCode {
-		return codes.Unknown
-	}
-	return code
 }

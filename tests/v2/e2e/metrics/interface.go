@@ -24,15 +24,30 @@ import (
 	"github.com/zeebo/xxh3"
 )
 
-// Collector is the interface for the metrics collector.
-type Collector interface {
+// Recorder is the interface for recording metrics.
+type Recorder interface {
 	Record(ctx context.Context, rr *RequestResult)
-	MergeInto(dest Collector) error
+}
+
+// Reporter is the interface for reporting and exporting data.
+type Reporter interface {
 	GlobalSnapshot() *GlobalSnapshot
 	RangeScalesSnapshot() map[string]*ScaleSnapshot
 	TimeScalesSnapshot() map[string]*ScaleSnapshot
+}
+
+// CounterManager is the interface for managing custom counters.
+type CounterManager interface {
 	CounterHandle(name string) (*CounterHandle, error)
 	IncCounter(name string, val int64)
+}
+
+// Collector is the interface for the metrics collector.
+type Collector interface {
+	Recorder
+	Reporter
+	CounterManager
+	MergeInto(dest Collector) error
 	Clone() (Collector, error)
 	merge(other *collector) error
 	Reset()
