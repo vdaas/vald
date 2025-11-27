@@ -375,13 +375,21 @@ func (t *shardedTDigest) Merge(other TDigest) error {
 			single.mu.Lock()
 			defer single.mu.Unlock()
 			single.flush()
+
+			// Batch centroids per shard to minimize lock contention
+			batches := make([][]centroid, len(t.shards))
 			for _, c := range single.centroids {
-				// We need to Add weighted value? TDigest doesn't support adding weighted value easily via Add.
-				// But we can merge centroids into specific shards based on Mean.
 				idx := t.shardIndexForValue(c.Mean)
-				t.shards[idx].mu.Lock()
-				t.shards[idx].mergeCentroids([]centroid{c})
-				t.shards[idx].mu.Unlock()
+				batches[idx] = append(batches[idx], c)
+			}
+
+			// Apply batches to shards
+			for idx, batch := range batches {
+				if len(batch) > 0 {
+					t.shards[idx].mu.Lock()
+					t.shards[idx].mergeCentroids(batch)
+					t.shards[idx].mu.Unlock()
+				}
 			}
 			return nil
 		}

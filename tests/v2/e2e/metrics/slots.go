@@ -103,6 +103,12 @@ func (s *slot) Record(rr *RequestResult, windowIdx uint64) {
 		if s.WindowStart != windowIdx {
 			s.reset()
 			s.WindowStart = windowIdx
+			// Record the first data point for the new window immediately under the write lock.
+			// This prevents the data loss race condition where another goroutine resets
+			// the window again before we can re-acquire the read lock.
+			s.recordInternal(rr)
+			s.mu.Unlock()
+			return
 		}
 		s.mu.Unlock()
 		// Re-acquire read lock to proceed with recording.
@@ -117,7 +123,12 @@ func (s *slot) Record(rr *RequestResult, windowIdx uint64) {
 	}
 
 	defer s.mu.RUnlock()
+	s.recordInternal(rr)
+}
 
+// recordInternal updates the metrics in the slot.
+// It assumes the caller holds either a read or write lock on s.mu.
+func (s *slot) recordInternal(rr *RequestResult) {
 	s.Total.Add(1)
 	if rr.Err != nil {
 		s.Errors.Add(1)

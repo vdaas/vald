@@ -14,6 +14,7 @@ lat_percentiles: {}
 latencies:
   bounds: null
   counts: null
+  m2: 0
   max: 10000000
   mean: 1000000
   min: 100000
@@ -24,6 +25,7 @@ latencies:
 queue_waits:
   bounds: null
   counts: null
+  m2: 0
   max: 5000000
   mean: 500000
   min: 50000
