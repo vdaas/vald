@@ -211,15 +211,19 @@ func TestTDigest_Compression(t *testing.T) {
 				compression: 20,
 			},
 			CheckFunc: func(tt *testing.T, want test.Result[TDigest], got test.Result[TDigest]) error {
-				td := got.Val.(*shardedTDigest)
-				totalCentroids := 0
-				for _, shard := range td.shards {
-					shard.mu.Lock()
-					totalCentroids += len(shard.centroids)
-					shard.mu.Unlock()
+				var totalCentroids int
+				if td, ok := got.Val.(*shardedTDigest); ok {
+					for _, shard := range td.shards {
+						shard.mu.Lock()
+						totalCentroids += len(shard.centroids)
+						shard.mu.Unlock()
+					}
+				} else {
+					td := got.Val.(*tdigest)
+					totalCentroids = len(td.centroids)
 				}
 
-				// Since we have multiple shards, each shard is compressed independently.
+				// Since we have multiple shards (or not), each shard is compressed independently.
 				// Each shard should be small. But total number might be large if many shards.
 				// 16 shards. 1000 items. Each shard gets ~62 items.
 				// Compression 20 means each shard should have ~20 centroids or less.
@@ -228,7 +232,7 @@ func TestTDigest_Compression(t *testing.T) {
 				if totalCentroids > 500 {
 					return errors.Errorf("total centroids = %v, want <= 500 (approx)", totalCentroids)
 				}
-				q := td.Quantile(0.5)
+				q := got.Val.Quantile(0.5)
 				if math.Abs(q-500) > 50 {
 					return errors.Errorf("Quantile(0.5) after compression = %v, want ~500", q)
 				}

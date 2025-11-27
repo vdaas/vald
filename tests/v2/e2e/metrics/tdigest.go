@@ -66,13 +66,11 @@ type shardedTDigest struct {
 
 // NewTDigest creates a new TDigest.
 func NewTDigest(opts ...TDigestOption) (TDigest, error) {
-	cfg := TDigestConfig{
-		NumShards: 16,
-	}
+	cfg := tDigestConfig{}
 	// Apply defaults via option functions first?
 	// The default options in option.go are applied in NewTDigest usually by appending.
 	// We need to apply defaults to cfg.
-	// But `defaultTDigestOpts` are `func(*TDigestConfig) error`.
+	// But `defaultTDigestOpts` are `func(*tDigestConfig) error`.
 
 	// Apply defaults
 	for _, opt := range defaultTDigestOpts {
@@ -289,8 +287,11 @@ func (t *shardedTDigest) shardIndexForValue(val float64) int {
 	if len(t.shards) <= 1 {
 		return 0
 	}
-	// Use xxh3 for hashing the float64 value.
-	// We interpret the float64 as a byte slice without allocation.
+	// Use xxh3 for hashing the float64 value to ensure good distribution across shards.
+	// We interpret the float64 as a byte slice without allocation using unsafe.
+	// This avoids allocating a new byte slice for every Record call.
+	// The sliceHeader struct is defined in histogram.go (shared in package metrics).
+	//nolint:gosec
 	h := xxh3.Hash(*(*[]byte)(unsafe.Pointer(&sliceHeader{
 		Data: unsafe.Pointer(&val),
 		Len:  8,
@@ -462,7 +463,11 @@ func (t *tdigest) compress() {
 		next := t.centroids[i]
 		mergedWeight := current.Weight + next.Weight
 		mergedMean := (current.Mean*current.Weight + next.Mean*next.Weight) / mergedWeight
-		q := max(min((cumulative+mergedWeight/2)/total, 0.0), 1.0)
+		// Quantile of the merged centroid center.
+		// We use the cumulative weight to estimate the quantile `q` of the centroid.
+		// The value `q` is clamped to the range [0, 1] to ensure validity.
+		q := max(min((cumulative+mergedWeight/2)/total, 1.0), 0.0)
+		// Maximum allowed weight for this quantile (shared with Add.tryMerge).
 		k := t.maxWeightForQuantile(q, total)
 
 		if mergedWeight <= k || len(out) == 0 {

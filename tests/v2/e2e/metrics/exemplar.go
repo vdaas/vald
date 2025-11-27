@@ -34,7 +34,7 @@ type exemplar struct {
 
 	// Categories
 	slowest  priorityQueue       // Min-heap (Top-K Max Latency)
-	fastest  SmallestLatencyHeap // Max-heap (Top-K Min Latency) to evict largest, keeping smallest.
+	fastest  smallestLatencyHeap // Max-heap (Top-K Min Latency) to evict largest, keeping smallest.
 	failures priorityQueue       // Min-heap (Top-K Slowest Failures) - "Top Failures" usually implies notable ones (slow).
 	// If we wanted "Representative Failures", we'd use reservoir sampling.
 	// Given "Top XX Failures", and usually failures are bad if slow (or fast fail?),
@@ -78,7 +78,7 @@ func (e *exemplar) initHeaps() {
 		e.slowest = e.slowest[:0]
 	}
 	if e.fastest == nil {
-		e.fastest = make(SmallestLatencyHeap, 0, e.k)
+		e.fastest = make(smallestLatencyHeap, 0, e.k)
 	} else {
 		e.fastest = e.fastest[:0]
 	}
@@ -383,7 +383,7 @@ func (e *exemplar) Clone() Exemplar {
 		v := *it
 		newE.slowest[i] = &v
 	}
-	newE.fastest = make(SmallestLatencyHeap, len(e.fastest), cap(e.fastest))
+	newE.fastest = make(smallestLatencyHeap, len(e.fastest), cap(e.fastest))
 	for i, it := range e.fastest {
 		v := *it
 		newE.fastest[i] = &v
@@ -435,30 +435,30 @@ func (pq *priorityQueue) Pop() any {
 	return item
 }
 
-// SmallestLatencyHeap implements a Max-Heap to store the K smallest latencies.
+// smallestLatencyHeap implements a Max-Heap to store the K smallest latencies.
 // The root of the heap is the largest value among the smallest K.
 // When a new value arrives that is smaller than the root, we pop the root (largest)
 // and push the new value, thus maintaining the K smallest values.
-type SmallestLatencyHeap []*ExemplarItem
+type smallestLatencyHeap []*ExemplarItem
 
-func (pq SmallestLatencyHeap) Len() int { return len(pq) }
+func (pq smallestLatencyHeap) Len() int { return len(pq) }
 
 // Less returns true if element i is "smaller" than j.
 // Since this is a Max-Heap (to evict the largest), "smaller" means "greater latency".
-func (pq SmallestLatencyHeap) Less(i, j int) bool {
+func (pq smallestLatencyHeap) Less(i, j int) bool {
 	return pq[i].Latency > pq[j].Latency
 }
 
-func (pq SmallestLatencyHeap) Swap(i, j int) {
+func (pq smallestLatencyHeap) Swap(i, j int) {
 	pq[i], pq[j] = pq[j], pq[i]
 }
 
-func (pq *SmallestLatencyHeap) Push(x any) {
+func (pq *smallestLatencyHeap) Push(x any) {
 	item := x.(*ExemplarItem)
 	*pq = append(*pq, item)
 }
 
-func (pq *SmallestLatencyHeap) Pop() any {
+func (pq *smallestLatencyHeap) Pop() any {
 	old := *pq
 	n := len(old)
 	item := old[n-1]
