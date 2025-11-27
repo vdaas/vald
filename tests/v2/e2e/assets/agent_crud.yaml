@@ -18,6 +18,31 @@ logging:
   format: raw
   level: debug
   logger: glg
+metrics:
+  histogram:
+    min: 0
+    max: 1000000000
+    growth: 1.6
+    num_buckets: 30
+    num_shards: 16
+  tdigest:
+    compression: 100
+    compression_trigger_factor: 10
+    num_shards: 16
+  exemplar:
+    capacity: 10
+  range_scales:
+    - name: request_id_10
+      width: 10
+      capacity: 100
+  time_scales:
+    - name: time_1s
+      width: 1
+      capacity: 60
+  custom_counters:
+    - retries
+    - throttled
+    - circuit_open
 dataset:
   name: _E2E_DATASET_PATH_
 kubernetes:
