@@ -19,6 +19,7 @@ package metrics
 import (
 	"cmp"
 	"container/heap"
+	"fmt"
 	"math/rand/v2"
 	"slices"
 	"sync/atomic"
@@ -144,13 +145,13 @@ func (e *exemplar) Reset() {
 }
 
 // Offer adds a request to the sharded exemplar.
-func (se *shardedExemplar) Offer(latency time.Duration, requestID string, err error, msg string) {
-	shardIdx := shardIndex(xxh3.HashString(requestID), len(se.shards))
+func (se *shardedExemplar) Offer(latency time.Duration, requestID any, err error, msg string) {
+	shardIdx := shardIndex(hashID(requestID), len(se.shards))
 	se.shards[shardIdx].Offer(latency, requestID, err, msg)
 }
 
 // Offer adds a request to the exemplar.
-func (e *exemplar) Offer(latency time.Duration, requestID string, err error, msg string) {
+func (e *exemplar) Offer(latency time.Duration, requestID any, err error, msg string) {
 	latInt := int64(latency)
 	isError := err != nil
 
@@ -163,83 +164,135 @@ func (e *exemplar) Offer(latency time.Duration, requestID string, err error, msg
 	// we can skip the heap updates. However, we must still consider it for reservoir sampling.
 	if !isError && latInt <= minLat && latInt >= maxLat {
 		e.mu.Lock()
-		e.updateAverageSample(&ExemplarItem{
-			Latency:   latency,
-			RequestID: requestID,
-			Err:       err,
-			Msg:       msg,
-		})
+		e.updateAverageSample(latency, requestID, err, msg)
 		e.mu.Unlock()
 		return
-	}
-
-	newItem := &ExemplarItem{
-		Latency:   latency,
-		RequestID: requestID,
-		Err:       err,
-		Msg:       msg,
 	}
 
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
-	e.updateSlowest(newItem)
-	e.updateFastest(newItem)
-	e.updateAverageSample(newItem)
+	e.updateSlowest(latency, requestID, err, msg)
+	e.updateFastest(latency, requestID, err, msg)
+	e.updateAverageSample(latency, requestID, err, msg)
 	if isError {
-		e.updateFailureSample(newItem)
+		e.updateFailureSample(latency, requestID, err, msg)
 	}
 }
 
-func (e *exemplar) updateSlowest(item *ExemplarItem) {
-	latInt := int64(item.Latency)
+func (e *exemplar) updateSlowest(latency time.Duration, requestID any, err error, msg string) {
+	latInt := int64(latency)
 	if len(e.slowest) < e.k {
-		heap.Push(&e.slowest, item)
+		heap.Push(&e.slowest, &ExemplarItem{
+			Latency:   latency,
+			RequestID: convertToString(requestID),
+			Err:       err,
+			Msg:       msg,
+		})
 		if len(e.slowest) == e.k {
 			e.minLatency.Store(int64(e.slowest[0].Latency))
 		}
 	} else if latInt > int64(e.slowest[0].Latency) {
-		e.slowest[0] = item
+		e.slowest[0] = &ExemplarItem{
+			Latency:   latency,
+			RequestID: convertToString(requestID),
+			Err:       err,
+			Msg:       msg,
+		}
 		heap.Fix(&e.slowest, 0)
 		e.minLatency.Store(int64(e.slowest[0].Latency))
 	}
 }
 
-func (e *exemplar) updateFastest(item *ExemplarItem) {
-	latInt := int64(item.Latency)
+func (e *exemplar) updateFastest(latency time.Duration, requestID any, err error, msg string) {
+	latInt := int64(latency)
 	if len(e.fastest) < e.k {
-		heap.Push(&e.fastest, item)
+		heap.Push(&e.fastest, &ExemplarItem{
+			Latency:   latency,
+			RequestID: convertToString(requestID),
+			Err:       err,
+			Msg:       msg,
+		})
 		if len(e.fastest) == e.k {
 			e.maxLatency.Store(int64(e.fastest[0].Latency))
 		}
 	} else if latInt < int64(e.fastest[0].Latency) {
-		e.fastest[0] = item
+		e.fastest[0] = &ExemplarItem{
+			Latency:   latency,
+			RequestID: convertToString(requestID),
+			Err:       err,
+			Msg:       msg,
+		}
 		heap.Fix(&e.fastest, 0)
 		e.maxLatency.Store(int64(e.fastest[0].Latency))
 	}
 }
 
-func (e *exemplar) updateAverageSample(item *ExemplarItem) {
+func (e *exemplar) updateAverageSample(latency time.Duration, requestID any, err error, msg string) {
 	e.avgCount++
 	if len(e.avgSamples) < e.k {
-		e.avgSamples = append(e.avgSamples, item)
+		e.avgSamples = append(e.avgSamples, &ExemplarItem{
+			Latency:   latency,
+			RequestID: convertToString(requestID),
+			Err:       err,
+			Msg:       msg,
+		})
 	} else {
 		j := rand.Uint64N(e.avgCount)
 		if j < uint64(e.k) {
-			e.avgSamples[j] = item
+			e.avgSamples[j] = &ExemplarItem{
+				Latency:   latency,
+				RequestID: convertToString(requestID),
+				Err:       err,
+				Msg:       msg,
+			}
 		}
 	}
 }
 
-func (e *exemplar) updateFailureSample(item *ExemplarItem) {
+func (e *exemplar) updateFailureSample(latency time.Duration, requestID any, err error, msg string) {
 	e.failureCount++
 	if len(e.failureSamples) < e.k {
-		e.failureSamples = append(e.failureSamples, item)
+		e.failureSamples = append(e.failureSamples, &ExemplarItem{
+			Latency:   latency,
+			RequestID: convertToString(requestID),
+			Err:       err,
+			Msg:       msg,
+		})
 	} else {
 		j := rand.Uint64N(e.failureCount)
 		if j < uint64(e.k) {
-			e.failureSamples[j] = item
+			e.failureSamples[j] = &ExemplarItem{
+				Latency:   latency,
+				RequestID: convertToString(requestID),
+				Err:       err,
+				Msg:       msg,
+			}
 		}
+	}
+}
+
+func convertToString(v any) string {
+	switch v := v.(type) {
+	case string:
+		return v
+	case []byte:
+		return string(v)
+	case fmt.Stringer:
+		return v.String()
+	default:
+		return fmt.Sprintf("%v", v)
+	}
+}
+
+func hashID(id any) uint64 {
+	switch v := id.(type) {
+	case string:
+		return xxh3.HashString(v)
+	case []byte:
+		return xxh3.Hash(v)
+	default:
+		return xxh3.HashString(convertToString(v))
 	}
 }
 
@@ -285,10 +338,14 @@ func (se *shardedExemplar) DetailedSnapshot() (*ExemplarDetails, error) {
 		shard.mu.Unlock()
 
 		for _, item := range slowest {
-			merged.updateSlowest(item)
+			if item != nil {
+				merged.updateSlowest(item.Latency, item.RequestID, item.Err, item.Msg)
+			}
 		}
 		for _, item := range fastest {
-			merged.updateFastest(item)
+			if item != nil {
+				merged.updateFastest(item.Latency, item.RequestID, item.Err, item.Msg)
+			}
 		}
 
 		merged.avgSamples = mergeReservoir(merged.avgSamples, avg, merged.avgCount, avgCount, k)
@@ -378,10 +435,14 @@ func (e *exemplar) mergeExemplar(src *exemplar) error {
 	defer e.mu.Unlock()
 
 	for _, item := range slowest {
-		e.updateSlowest(item)
+		if item != nil {
+			e.updateSlowest(item.Latency, item.RequestID, item.Err, item.Msg)
+		}
 	}
 	for _, item := range fastest {
-		e.updateFastest(item)
+		if item != nil {
+			e.updateFastest(item.Latency, item.RequestID, item.Err, item.Msg)
+		}
 	}
 
 	e.avgSamples = mergeReservoir(e.avgSamples, avg, e.avgCount, avgCount, e.k)

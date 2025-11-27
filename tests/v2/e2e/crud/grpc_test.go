@@ -252,7 +252,7 @@ func single[Q, R proto.Message](
 	if plan.Metrics != nil && plan.Metrics.Enabled && plan.Collector != nil {
 		rr := metrics.GetRequestResult()
 		defer metrics.PutRequestResult(rr)
-		rr.RequestID = strconv.FormatUint(idx, 10)
+		rr.RequestID = strconv.AppendUint(rr.RequestID[:0], idx, 10)
 		rr.Status = st
 		rr.Err = err
 		rr.Msg = msg
@@ -385,7 +385,7 @@ func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](
 			return query, false
 		}
 		rr := metrics.GetRequestResult()
-		rr.RequestID = strconv.FormatUint(id, 10)
+		rr.RequestID = strconv.AppendUint(rr.RequestID[:0], id, 10)
 
 		// Build the modify configuration and return the request.
 		query = newReq(t, id, strconv.FormatUint(id, 10), data.At(id), plan)
@@ -422,7 +422,7 @@ func stream[Q, R proto.Message, S grpc.TypedClientStream[Q, R]](
 			return false
 		}
 
-		id, err := strconv.ParseUint(rr.RequestID, 10, 0)
+		id, err := strconv.ParseUint(string(rr.RequestID), 10, 0)
 		if err != nil {
 			id = 0
 		}

@@ -83,7 +83,7 @@ type RequestResult struct {
 	StartedAt time.Time
 	EndedAt   time.Time
 	Err       error
-	RequestID string
+	RequestID []byte
 	Msg       string
 	QueueWait time.Duration
 	Latency   time.Duration
@@ -92,7 +92,7 @@ type RequestResult struct {
 
 // Reset resets the RequestResult to its zero value.
 func (rr *RequestResult) Reset() {
-	rr.RequestID = ""
+	rr.RequestID = rr.RequestID[:0]
 	rr.Status = 0
 	rr.Err = nil
 	rr.Msg = ""
