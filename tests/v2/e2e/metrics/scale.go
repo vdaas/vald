@@ -115,7 +115,7 @@ func (s *scale) Record(ctx context.Context, rr *RequestResult) {
 			return
 		}
 	case TimeScale:
-		idx = uint64(rr.EndedAt.Unix())
+		idx = uint64(rr.EndedAt.UnixNano())
 	}
 
 	s.getSlot(idx).Record(rr, idx/s.width)

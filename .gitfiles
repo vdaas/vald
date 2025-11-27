@@ -2376,7 +2376,6 @@ tests/v2/e2e/metrics/interface.go
 tests/v2/e2e/metrics/metrics.go
 tests/v2/e2e/metrics/metrics_test.go
 tests/v2/e2e/metrics/option.go
-tests/v2/e2e/metrics/pool.go
 tests/v2/e2e/metrics/presenter.go
 tests/v2/e2e/metrics/presenter_test.go
 tests/v2/e2e/metrics/reproduction_test.go

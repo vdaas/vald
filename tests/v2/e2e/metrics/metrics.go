@@ -672,22 +672,6 @@ type SlotSnapshot struct {
 }
 
 // String implements the fmt.Stringer interface.
-func resolveStatusCode(code codes.Code, err error) codes.Code {
-	if code == codes.OK && err != nil {
-		if st, ok := status.FromError(err); ok {
-			return st.Code()
-		} else if errors.Is(err, context.Canceled) {
-			return codes.Canceled
-		} else if errors.Is(err, context.DeadlineExceeded) {
-			return codes.DeadlineExceeded
-		} else {
-			return codes.Unknown
-		}
-	}
-	return code
-}
-
-// String implements the fmt.Stringer interface.
 func (s *SlotSnapshot) String() string {
 	if s == nil || s.Total == 0 {
 		return "No data collected in this slot.\n"
@@ -714,4 +698,22 @@ func (s *SlotSnapshot) String() string {
 	}
 
 	return sb.String()
+}
+
+// resolveStatusCode determines the final gRPC status code for a request.
+// It prioritizes specific error types (e.g., Canceled, DeadlineExceeded)
+// when the status code is initially OK but an error is present.
+func resolveStatusCode(code codes.Code, err error) codes.Code {
+	if code == codes.OK && err != nil {
+		if st, ok := status.FromError(err); ok {
+			return st.Code()
+		} else if errors.Is(err, context.Canceled) {
+			return codes.Canceled
+		} else if errors.Is(err, context.DeadlineExceeded) {
+			return codes.DeadlineExceeded
+		} else {
+			return codes.Unknown
+		}
+	}
+	return code
 }
