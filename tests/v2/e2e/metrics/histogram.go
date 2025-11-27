@@ -254,11 +254,8 @@ func (h *histogram) Clone() Histogram {
 	newH.boundsHash = h.boundsHash
 
 	// Copy bounds
-	if cap(newH.bounds) < len(h.bounds) {
-		newH.bounds = make([]float64, len(h.bounds))
-	}
-	newH.bounds = newH.bounds[:len(h.bounds)]
-	copy(newH.bounds, h.bounds)
+	// Bounds are immutable, so we can share the backing array.
+	newH.bounds = h.bounds
 
 	// Copy shards
 	if cap(newH.shards) < len(h.shards) {
@@ -500,9 +497,6 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 
 	// Merge scalar stats.
 
-	otherM2 := other.StdDev * other.StdDev * float64(other.Total)
-	sM2 := s.StdDev * s.StdDev * float64(s.Total)
-
 	if s.Total == 0 {
 		s.Min = other.Min
 		s.Max = other.Max
@@ -510,7 +504,9 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 		s.StdDev = other.StdDev
 		s.Sum = other.Sum
 		s.SumSq = other.SumSq
+		s.Total = other.Total
 	} else {
+		// Update Min/Max
 		if other.Min < s.Min {
 			s.Min = other.Min
 		}
@@ -518,25 +514,28 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 			s.Max = other.Max
 		}
 
-		n1 := float64(s.Total)
-		n2 := float64(other.Total)
-		delta := other.Mean - s.Mean
-		newTotal := n1 + n2
-
-		newMean := s.Mean + delta*n2/newTotal
-		newM2 := sM2 + otherM2 + delta*delta*n1*n2/newTotal
-
-		s.Mean = newMean
-		// Ensure M2 is non-negative to prevent NaN in Sqrt due to floating point errors
-		if newM2 < 0 {
-			newM2 = 0
-		}
-		s.StdDev = math.Sqrt(newM2 / newTotal)
+		// Simple addition of Sum, SumSq, and Total
 		s.Sum += other.Sum
-		// Reconstruct SumSq
-		s.SumSq = newM2 + (newMean * newMean * newTotal)
+		s.SumSq += other.SumSq
+		s.Total += other.Total
+
+		// Recalculate Mean and StdDev
+		if s.Total > 0 {
+			total := float64(s.Total)
+			s.Mean = s.Sum / total
+
+			// Calculate variance (M2) from SumSq and Sum
+			// M2 = SumSq - (Sum^2 / N)
+			m2 := s.SumSq - (s.Sum*s.Sum)/total
+			if m2 < 0 {
+				m2 = 0 // Guard against floating point errors
+			}
+			s.StdDev = math.Sqrt(m2 / total)
+		} else {
+			s.Mean = 0
+			s.StdDev = 0
+		}
 	}
-	s.Total += other.Total
 
 	if len(s.Bounds) == 0 {
 		s.Bounds = other.Bounds
