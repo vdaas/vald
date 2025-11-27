@@ -78,6 +78,7 @@ type RequestResult struct {
 	RequestID string        // request ID
 	Status    codes.Code    // gRPC status code
 	Err       error         // error content (Status!=OK时)
+	Msg       string        // error message
 	QueuedAt  time.Time     // time when the request was queued
 	StartedAt time.Time     // time when the RPC started
 	EndedAt   time.Time     // time when the RPC ended
@@ -90,6 +91,7 @@ func (rr *RequestResult) Reset() {
 	rr.RequestID = ""
 	rr.Status = 0
 	rr.Err = nil
+	rr.Msg = ""
 	rr.QueuedAt = time.Time{}
 	rr.StartedAt = time.Time{}
 	rr.EndedAt = time.Time{}
@@ -326,7 +328,7 @@ func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 		c.qwPercentiles.Add(float64(rr.QueueWait.Nanoseconds()))
 	}
 	if c.exemplars != nil {
-		c.exemplars.Offer(rr.Latency, rr.RequestID, rr.Err)
+		c.exemplars.Offer(rr.Latency, rr.RequestID, rr.Err, rr.Msg)
 	}
 
 	code := resolveStatusCode(rr.Status, rr.Err)
@@ -429,7 +431,7 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 		}
 	}
 	var latSnap, qwSnap *HistogramSnapshot
-	var exSnap []*item
+	var exSnap []*ExemplarItem
 	var exDetails *ExemplarDetails
 	if c.latencies != nil {
 		latSnap = c.latencies.Snapshot()
@@ -443,9 +445,9 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 		// Sort Average exemplars by distance to mean latency
 		if exDetails != nil && len(exDetails.Average) > 0 && latSnap != nil && latSnap.Total > 0 {
 			mean := latSnap.Mean
-			slices.SortFunc(exDetails.Average, func(a, b *item) int {
-				distA := math.Abs(float64(a.latency) - mean)
-				distB := math.Abs(float64(b.latency) - mean)
+			slices.SortFunc(exDetails.Average, func(a, b *ExemplarItem) int {
+				distA := math.Abs(float64(a.Latency) - mean)
+				distB := math.Abs(float64(b.Latency) - mean)
 				return cmp.Compare(distA, distB)
 			})
 		}
@@ -596,7 +598,7 @@ type GlobalSnapshot struct {
 	QueueWaits      *HistogramSnapshot    `json:"queue_waits"`
 	LatPercentiles  TDigest               `json:"lat_percentiles"`
 	QWPercentiles   TDigest               `json:"qw_percentiles"`
-	Exemplars       []*item               `json:"exemplars"`
+	Exemplars       []*ExemplarItem       `json:"exemplars"`
 	ExemplarDetails *ExemplarDetails      `json:"exemplar_details,omitempty"`
 	Codes           map[codes.Code]uint64 `json:"codes"`
 	SchemaVersion   string                `json:"schema_version"`
@@ -666,7 +668,7 @@ type SlotSnapshot struct {
 	Latencies   *HistogramSnapshot `json:"latencies"`
 	QueueWaits  *HistogramSnapshot `json:"queue_waits"`
 	Counters    []uint64           `json:"counters"`
-	Exemplars   []*item            `json:"exemplars"`
+	Exemplars   []*ExemplarItem    `json:"exemplars"`
 }
 
 // String implements the fmt.Stringer interface.
@@ -708,7 +710,7 @@ func (s *SlotSnapshot) String() string {
 
 	fmt.Fprintf(&sb, "\nExemplars (Top %d slowest requests):\n", len(s.Exemplars))
 	for _, ex := range s.Exemplars {
-		fmt.Fprintf(&sb, "\t- RequestID:\t%s,\tLatency:\t%s\n", ex.requestID, ex.latency)
+		fmt.Fprintf(&sb, "\t- RequestID:\t%s,\tLatency:\t%s\n", ex.RequestID, ex.Latency)
 	}
 
 	return sb.String()

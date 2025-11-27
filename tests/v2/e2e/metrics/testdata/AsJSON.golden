@@ -26,7 +26,12 @@
   "lat_percentiles": {},
   "qw_percentiles": {},
   "exemplars": [
-    {}
+    {
+      "Latency": 10000000,
+      "RequestID": "req-1",
+      "Err": null,
+      "Msg": ""
+    }
   ],
   "codes": {
     "0": 90,
