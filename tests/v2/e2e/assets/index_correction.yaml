@@ -132,9 +132,11 @@ metrics:
   latency_tdigest:
     compression: 100
     compression_trigger_factor: 1.2
+    num_shards: 16
   queue_wait_tdigest:
     compression: 100
     compression_trigger_factor: 1.2
+    num_shards: 16
   exemplar:
     capacity: 10
   range_scales:

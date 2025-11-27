@@ -18,6 +18,7 @@ package metrics
 
 import (
 	"sync/atomic"
+	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 )
@@ -30,11 +31,19 @@ type (
 	HistogramOption func(*histogram) error
 
 	// TDigestOption configures a TDigest.
-	TDigestOption func(*tdigest) error
+	TDigestOption func(*tDigestConfig) error
 
 	// ExemplarOption represents a functional option for configuring an Exemplar.
 	ExemplarOption func(*exemplar)
 )
+
+// tDigestConfig holds configuration for TDigest.
+type tDigestConfig struct {
+	Compression              float64
+	CompressionTriggerFactor float64
+	Quantiles                []float64
+	NumShards                int
+}
 
 var (
 	defaultTDigestOpts = []TDigestOption{
@@ -76,9 +85,12 @@ func WithCustomCounters(names ...string) Option {
 }
 
 // WithTimeScale adds a time-based scale to the collector.
-func WithTimeScale(name string, width, capacity uint64) Option {
+func WithTimeScale(name string, width time.Duration, capacity uint64) Option {
 	return func(c *collector) error {
-		s, err := newScale(name, width, capacity, len(c.counters), TimeScale, c.latencies, c.queueWaits, c.exemplars)
+		if width <= 0 {
+			return errors.New("time scale width must be positive")
+		}
+		s, err := newScale(name, uint64(width), capacity, len(c.counters), TimeScale, c.latencies, c.queueWaits, c.exemplars)
 		if err != nil {
 			return err
 		}
@@ -210,9 +222,9 @@ func WithHistogramNumShards(n int) HistogramOption {
 
 // WithTDigestCompression sets the compression for the t-digest.
 func WithTDigestCompression(c float64) TDigestOption {
-	return func(t *tdigest) error {
-		t.compression = c
-		if t.compression <= 0 {
+	return func(cfg *tDigestConfig) error {
+		cfg.Compression = c
+		if cfg.Compression <= 0 {
 			return errors.New("tdigest compression must be > 0")
 		}
 		return nil
@@ -221,9 +233,9 @@ func WithTDigestCompression(c float64) TDigestOption {
 
 // WithTDigestCompressionTriggerFactor sets the compression trigger factor for the t-digest.
 func WithTDigestCompressionTriggerFactor(f float64) TDigestOption {
-	return func(t *tdigest) error {
-		t.compressionTriggerFactor = f
-		if t.compressionTriggerFactor <= 0 {
+	return func(cfg *tDigestConfig) error {
+		cfg.CompressionTriggerFactor = f
+		if cfg.CompressionTriggerFactor <= 0 {
 			return errors.New("tdigest compressionTriggerFactor must be > 0")
 		}
 		return nil
@@ -232,10 +244,21 @@ func WithTDigestCompressionTriggerFactor(f float64) TDigestOption {
 
 // WithTDigestQuantiles sets the quantiles to be used in the String() method.
 func WithTDigestQuantiles(quantiles ...float64) TDigestOption {
-	return func(t *tdigest) error {
+	return func(cfg *tDigestConfig) error {
 		if len(quantiles) > 0 {
-			t.quantiles = quantiles
+			cfg.Quantiles = quantiles
 		}
+		return nil
+	}
+}
+
+// WithTDigestNumShards sets the number of shards for the t-digest.
+func WithTDigestNumShards(n int) TDigestOption {
+	return func(cfg *tDigestConfig) error {
+		if n < 1 {
+			return errors.New("tdigest num shards must be >= 1")
+		}
+		cfg.NumShards = n
 		return nil
 	}
 }

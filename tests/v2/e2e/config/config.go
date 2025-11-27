@@ -106,6 +106,7 @@ type TDigest struct {
 	Compression              float64   `json:"compression,omitempty"                yaml:"compression,omitempty"`
 	CompressionTriggerFactor float64   `json:"compression_trigger_factor,omitempty" yaml:"compression_trigger_factor,omitempty"`
 	Quantiles                []float64 `json:"quantiles,omitempty"                  yaml:"quantiles,omitempty"`
+	NumShards                int       `json:"num_shards,omitempty"                 yaml:"num_shards,omitempty"`
 }
 
 // Exemplar represents the configuration for an exemplar.
@@ -989,6 +990,7 @@ func (m *Metrics) Opts() (opts []metrics.Option) {
 			metrics.WithTDigestCompression(m.LatencyTDigest.Compression),
 			metrics.WithTDigestCompressionTriggerFactor(m.LatencyTDigest.CompressionTriggerFactor),
 			metrics.WithTDigestQuantiles(m.LatencyTDigest.Quantiles...),
+			metrics.WithTDigestNumShards(m.LatencyTDigest.NumShards),
 		))
 	}
 	if m.QueueWaitTDigest != nil {
@@ -996,6 +998,7 @@ func (m *Metrics) Opts() (opts []metrics.Option) {
 			metrics.WithTDigestCompression(m.QueueWaitTDigest.Compression),
 			metrics.WithTDigestCompressionTriggerFactor(m.QueueWaitTDigest.CompressionTriggerFactor),
 			metrics.WithTDigestQuantiles(m.QueueWaitTDigest.Quantiles...),
+			metrics.WithTDigestNumShards(m.QueueWaitTDigest.NumShards),
 		))
 	}
 	if m.Exemplar != nil {
@@ -1010,7 +1013,7 @@ func (m *Metrics) Opts() (opts []metrics.Option) {
 	}
 	if m.TimeScales != nil {
 		for _, ts := range m.TimeScales {
-			opts = append(opts, metrics.WithTimeScale(ts.Name, ts.Width, ts.Capacity))
+			opts = append(opts, metrics.WithTimeScale(ts.Name, time.Duration(ts.Width), ts.Capacity))
 		}
 	}
 	return opts

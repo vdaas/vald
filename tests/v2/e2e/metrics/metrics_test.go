@@ -45,7 +45,7 @@ func TestNewCollector(t *testing.T) {
 		{
 			Name: "initialize with time scale",
 			Args: []Option{
-				WithTimeScale("test_scale", uint64(time.Second), 10),
+				WithTimeScale("test_scale", time.Second, 10),
 			},
 			CheckFunc: func(tt *testing.T, want test.Result[Collector], got test.Result[Collector]) error {
 				if got.Err != nil {
