@@ -54,6 +54,7 @@ var (
 
 	defaultExemplarOpts = []ExemplarOption{
 		WithExemplarCapacity(10),
+		WithExemplarNumShards(8),
 	}
 
 	defaultOptions = []Option{
@@ -260,6 +261,15 @@ func WithExemplarCapacity(k int) ExemplarOption {
 	return func(e *exemplar) {
 		if k >= 1 {
 			e.k = k
+		}
+	}
+}
+
+// WithExemplarNumShards sets the number of shards for the exemplar.
+func WithExemplarNumShards(n int) ExemplarOption {
+	return func(e *exemplar) {
+		if n >= 1 {
+			e.numShards = n
 		}
 	}
 }

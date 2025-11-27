@@ -74,42 +74,25 @@ func (s *slot) reset() {
 }
 
 // Record processes a single RequestResult for the slot.
-// Refactored to optimize locking:
-// 1. Fast Path: Acquires Read Lock. If window matches, records and returns.
-// 2. Slow Path: Acquires Write Lock. Resets window if needed, records immediately, and returns.
+// Simplified locking: Uses standard Lock to ensure safety and simplicity.
 func (s *slot) Record(rr *RequestResult, windowIdx uint64) {
 	if rr == nil {
 		return
 	}
 
-	// --- 1. Fast Path (Optimistic Read) ---
-	s.mu.RLock()
-	if s.WindowStart == windowIdx {
-		s.recordInternal(rr)
-		s.mu.RUnlock()
-		return
-	}
-	s.mu.RUnlock()
-
-	// --- 2. Slow Path (Write Lock for Transition) ---
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	// Double-check: Another goroutine might have reset the window while we waited for the lock.
-	if windowIdx < s.WindowStart {
-		// Data is for an old window that has already passed. Drop it to preserve integrity.
-		return
-	}
-
 	// If the window is still mismatched (implied s.WindowStart < windowIdx), reset to the new window.
 	if s.WindowStart != windowIdx {
+		if windowIdx < s.WindowStart {
+			// Data is for an old window that has already passed. Drop it to preserve integrity.
+			return
+		}
 		s.reset()
 		s.WindowStart = windowIdx
 	}
 
-	// Optimization: Record immediately under the Write Lock.
-	// This prevents the data loss race condition where unlocking and re-acquiring
-	// a Read Lock would allow another thread to reset the window again before we record.
 	s.recordInternal(rr)
 }
 

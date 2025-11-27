@@ -29,13 +29,14 @@ import (
 // It is designed for high-performance, concurrent metric recording by distributing
 // updates across multiple shards, reducing false-sharing and contention.
 type histogram struct {
-	shards     []histogramShard // array of shards
-	bounds     []float64        // bucket boundaries (length = numBuckets-1)
-	min, max   float64          // expected lower and upper bounds (configuration hint)
-	growth     float64          // geometric growth factor for bucket widths
-	numBuckets int              // number of buckets
-	numShards  int              // number of shards
-	boundsHash uint64           // checksum of bounds for merge validation
+	shards      []histogramShard // array of shards
+	bounds      []float64        // bucket boundaries (length = numBuckets-1)
+	min, max    float64          // expected lower and upper bounds (configuration hint)
+	growth      float64          // geometric growth factor for bucket widths
+	invLogGrowth float64          // Precomputed 1.0 / log(growth) for fast bucket lookup
+	numBuckets  int              // number of buckets
+	numShards   int              // number of shards
+	boundsHash  uint64           // checksum of bounds for merge validation
 }
 
 // histogramShard is a single shard of the histogram.
@@ -66,6 +67,8 @@ func (h *histogram) Init(opts ...HistogramOption) error {
 			return err
 		}
 	}
+
+	h.invLogGrowth = 1.0 / math.Log(h.growth)
 
 	if len(h.shards) < h.numShards {
 		h.shards = make([]histogramShard, h.numShards)
@@ -197,16 +200,42 @@ func (h *histogram) Record(val float64) {
 }
 
 // findBucket determines the correct bucket index for a given value using
-// binary search over the precomputed bounds. This is efficient for a large
-// number of buckets.
+// a logarithmic formula for geometric buckets. This is O(1) instead of O(log N).
+//
+// Formula: index = log_{growth}(val / min) + 1
+//          index = ln(val/min) / ln(growth) + 1
 //
 // Buckets are interpreted as:
-//
-//	bucket 0:           (-inf, bounds[0]]
+//	bucket 0:           (-inf, bounds[0]]  (where bounds[0] == min)
 //	bucket i (1..N-2):  (bounds[i-1], bounds[i]]
 //	bucket N-1:         (bounds[N-2], +inf)
 func (h *histogram) findBucket(val float64) int {
-	idx, _ := slices.BinarySearch(h.bounds, val)
+	if val <= h.min {
+		return 0
+	}
+	if val <= 0 { // Should be covered by val <= h.min (min > 0)
+		return 0
+	}
+
+	// Calculate index
+	// We use Ceil because bounds[i] = min * growth^i
+	// If val = min * growth^k, then log(val/min)/log(growth) = k.
+	// We want index k for range (bounds[k-1], bounds[k]].
+	// Wait, bounds[i] is the *upper* bound of bucket i (for i < N-1).
+	// bucket 0: <= bounds[0] (min)
+	// bucket 1: (bounds[0], bounds[1]] -> (min, min*growth]
+	// If val = min*growth, log(val/min) / log(growth) = 1.
+	// Ceil(1) = 1. Index 1. Correct.
+	// If val = min*growth + epsilon, log > 1. Ceil = 2. Index 2. Correct.
+
+	idx := int(math.Ceil(math.Log(val/h.min) * h.invLogGrowth))
+
+	if idx < 0 {
+		return 0
+	}
+	if idx >= h.numBuckets {
+		return h.numBuckets - 1
+	}
 	return idx
 }
 
@@ -216,6 +245,7 @@ func (h *histogram) Clone() Histogram {
 	newH.min = h.min
 	newH.max = h.max
 	newH.growth = h.growth
+	newH.invLogGrowth = h.invLogGrowth
 	newH.numBuckets = h.numBuckets
 	newH.numShards = h.numShards
 	newH.boundsHash = h.boundsHash

@@ -17,11 +17,9 @@
 package metrics
 
 import (
-	"fmt"
 	"slices"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 )
 
@@ -128,41 +126,6 @@ func (t *tdigest) Reset() {
 	t.buffer = t.buffer[:0]
 	t.count = 0
 	t.mu.Unlock()
-}
-
-// String implements the fmt.Stringer interface.
-func (t *shardedTDigest) String() string {
-	if t == nil {
-		return "No data collected for percentiles.\n"
-	}
-	quantiles := t.quantiles
-	if len(quantiles) == 0 {
-		return ""
-	}
-
-	merged := t.mergeAllShards()
-
-	var sb strings.Builder
-	for _, q := range quantiles {
-		fmt.Fprintf(&sb, "\tp%d:\t%.2f", uint(q*100), merged.Quantile(q))
-	}
-	fmt.Fprint(&sb, "\n")
-	return sb.String()
-}
-
-// String implements the fmt.Stringer interface for tdigest (shard).
-func (t *tdigest) String() string {
-	if t == nil {
-		return "No data collected for percentiles.\n"
-	}
-	quantiles := t.quantiles
-
-	var sb strings.Builder
-	for _, q := range quantiles {
-		fmt.Fprintf(&sb, "\tp%d:\t%.2f", uint(q*100), t.Quantile(q))
-	}
-	fmt.Fprint(&sb, "\n")
-	return sb.String()
 }
 
 // Quantile returns the estimated quantile.
