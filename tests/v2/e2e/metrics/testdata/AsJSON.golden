@@ -1,8 +1,8 @@
 {
-	"total": 100,
-	"errors": 10,
 	"start_time": "0001-01-01T00:00:00Z",
 	"last_updated": "0001-01-01T00:00:00Z",
+	"lat_percentiles": {},
+	"qw_percentiles": {},
 	"latencies": {
 		"counts": null,
 		"bounds": null,
@@ -27,22 +27,22 @@
 		"min": 50000,
 		"max": 5000000
 	},
-	"lat_percentiles": {},
-	"qw_percentiles": {},
-	"exemplars": [
-		{
-			"Latency": 10000000,
-			"RequestID": "req-1",
-			"Err": null,
-			"Msg": ""
-		}
-	],
 	"codes": {
 		"0": 90,
 		"10": 10
 	},
 	"schema_version": "",
-	"bounds_hash": 0,
 	"sketch_kind": "",
+	"exemplars": [
+		{
+			"Err": null,
+			"RequestID": "req-1",
+			"Msg": "",
+			"Latency": 10000000
+		}
+	],
+	"errors": 10,
+	"total": 100,
+	"bounds_hash": 0,
 	"invariants_ok": false
 }
