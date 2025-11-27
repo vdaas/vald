@@ -181,6 +181,7 @@ func dirwalk(dir string) []string {
 			".gitignore",
 			".gitkeep",
 			".gitmodules",
+			".golden",
 			".gotmpl",
 			".hdf5",
 			".helmignore",
@@ -202,13 +203,12 @@ func dirwalk(dir string) []string {
 			".tpl",
 			".txt",
 			".webp",
-			".whitesource",
-			"LICENSE",
-			"Pipefile":
+			".whitesource":
 		default:
 			switch f.Name() {
 			case
 				"AUTHORS",
+				"LICENSE",
 				"CONTRIBUTORS",
 				"FAISS_VERSION",
 				"GO_VERSION",
