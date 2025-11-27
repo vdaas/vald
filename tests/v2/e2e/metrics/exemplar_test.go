@@ -78,8 +78,8 @@ func TestNewExemplar(t *testing.T) {
 
 func TestExemplar_Offer(t *testing.T) {
 	type offer struct {
-		id      string
 		latency time.Duration
+		id      string
 	}
 	type args struct {
 		opts   []ExemplarOption
@@ -99,10 +99,10 @@ func TestExemplar_Offer(t *testing.T) {
 				// Use 1 shard to ensure deterministic "Top K" behavior when counts match capacity exactly
 				opts: []ExemplarOption{WithExemplarCapacity(3), WithExemplarNumShards(1)},
 				offers: []offer{
-				{"req-1", 100 * time.Millisecond},
-				{"req-2", 200 * time.Millisecond},
-				{"req-3", 50 * time.Millisecond},
-				{"req-4", 300 * time.Millisecond},
+					{"req-1", 100 * time.Millisecond},
+					{"req-2", 200 * time.Millisecond},
+					{"req-3", 50 * time.Millisecond},
+					{"req-4", 300 * time.Millisecond},
 				},
 			},
 			CheckFunc: func(tt *testing.T, want test.Result[[]*ExemplarItem], got test.Result[[]*ExemplarItem]) error {
@@ -124,10 +124,10 @@ func TestExemplar_Offer(t *testing.T) {
 			Args: args{
 				opts: []ExemplarOption{WithExemplarCapacity(3)},
 				offers: []offer{
-				{"req-1", 100 * time.Millisecond},
-				{"req-2", 200 * time.Millisecond},
-				{"req-3", 100 * time.Millisecond},
-				{"req-4", 300 * time.Millisecond},
+					{"req-1", 100 * time.Millisecond},
+					{"req-2", 200 * time.Millisecond},
+					{"req-3", 100 * time.Millisecond},
+					{"req-4", 300 * time.Millisecond},
 				},
 			},
 			CheckFunc: func(tt *testing.T, want test.Result[[]*ExemplarItem], got test.Result[[]*ExemplarItem]) error {
@@ -156,9 +156,9 @@ func TestExemplar_Offer(t *testing.T) {
 			Args: args{
 				opts: []ExemplarOption{WithExemplarCapacity(3), WithExemplarNumShards(1)},
 				offers: []offer{
-				{"req-2", 200 * time.Millisecond},
-				{"req-1", 100 * time.Millisecond},
-				{"req-3", 300 * time.Millisecond},
+					{"req-2", 200 * time.Millisecond},
+					{"req-1", 100 * time.Millisecond},
+					{"req-3", 300 * time.Millisecond},
 				},
 			},
 			CheckFunc: func(tt *testing.T, want test.Result[[]*ExemplarItem], got test.Result[[]*ExemplarItem]) error {
@@ -184,8 +184,8 @@ func TestExemplar_Reset(t *testing.T) {
 	type args struct {
 		opts   []ExemplarOption
 		offers []struct {
-			id      string
 			latency time.Duration
+			id      string
 		}
 	}
 
@@ -202,8 +202,8 @@ func TestExemplar_Reset(t *testing.T) {
 			Args: args{
 				opts: []ExemplarOption{WithExemplarCapacity(3)},
 				offers: []struct {
-					id      string
 					latency time.Duration
+					id      string
 				}{
 					{"req-1", 100 * time.Millisecond},
 					{"req-2", 200 * time.Millisecond},
@@ -229,8 +229,8 @@ func TestExemplar_Clone(t *testing.T) {
 	type args struct {
 		opts   []ExemplarOption
 		offers []struct {
-			id      string
 			latency time.Duration
+			id      string
 		}
 	}
 
@@ -246,8 +246,8 @@ func TestExemplar_Clone(t *testing.T) {
 			Args: args{
 				opts: []ExemplarOption{WithExemplarCapacity(3)},
 				offers: []struct {
-					id      string
 					latency time.Duration
+					id      string
 				}{
 					{"req-1", 100 * time.Millisecond},
 					{"req-2", 200 * time.Millisecond},
