@@ -1,0 +1,38 @@
+bounds_hash: 0
+codes:
+  "0": 90
+  "10": 10
+errors: 10
+exemplars:
+- Err: null
+  Latency: 10000000
+  Msg: ""
+  RequestID: req-1
+invariants_ok: false
+last_updated: "0001-01-01T00:00:00Z"
+lat_percentiles: {}
+latencies:
+  bounds: null
+  counts: null
+  max: 10000000
+  mean: 1000000
+  min: 100000
+  std_dev: 0
+  sum: 100000000
+  sum_sq: 0
+  total: 100
+queue_waits:
+  bounds: null
+  counts: null
+  max: 5000000
+  mean: 500000
+  min: 50000
+  std_dev: 0
+  sum: 50000000
+  sum_sq: 0
+  total: 100
+qw_percentiles: {}
+schema_version: ""
+sketch_kind: ""
+start_time: "0001-01-01T00:00:00Z"
+total: 100
