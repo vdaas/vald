@@ -78,8 +78,8 @@ func TestNewExemplar(t *testing.T) {
 
 func TestExemplar_Offer(t *testing.T) {
 	type offer struct {
-		id      string
 		latency time.Duration
+		id      string
 	}
 	type args struct {
 		opts   []ExemplarOption
@@ -184,8 +184,8 @@ func TestExemplar_Reset(t *testing.T) {
 	type args struct {
 		opts   []ExemplarOption
 		offers []struct {
-			id      string
 			latency time.Duration
+			id      string
 		}
 	}
 
@@ -202,8 +202,8 @@ func TestExemplar_Reset(t *testing.T) {
 			Args: args{
 				opts: []ExemplarOption{WithExemplarCapacity(3)},
 				offers: []struct {
-					id      string
 					latency time.Duration
+					id      string
 				}{
 					{id: "req-1", latency: 100 * time.Millisecond},
 					{id: "req-2", latency: 200 * time.Millisecond},
@@ -229,8 +229,8 @@ func TestExemplar_Clone(t *testing.T) {
 	type args struct {
 		opts   []ExemplarOption
 		offers []struct {
-			id      string
 			latency time.Duration
+			id      string
 		}
 	}
 
@@ -246,8 +246,8 @@ func TestExemplar_Clone(t *testing.T) {
 			Args: args{
 				opts: []ExemplarOption{WithExemplarCapacity(3)},
 				offers: []struct {
-					id      string
 					latency time.Duration
+					id      string
 				}{
 					{id: "req-1", latency: 100 * time.Millisecond},
 					{id: "req-2", latency: 200 * time.Millisecond},
