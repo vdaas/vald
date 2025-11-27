@@ -23,7 +23,10 @@ queuewaits:
 latpercentiles: {}
 qwpercentiles: {}
 exemplars:
-- {}
+- latency: 10ms
+  requestid: req-1
+  err: null
+  msg: ""
 exemplardetails: null
 codes:
   0: 90

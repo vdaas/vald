@@ -105,15 +105,18 @@ func (p *SnapshotPresenter) renderStatusCodes(sb *strings.Builder) {
 func (p *SnapshotPresenter) renderExemplars(sb *strings.Builder) {
 	s := p.snapshot
 	if s.ExemplarDetails != nil {
-		renderExemplars := func(title string, items []*item) {
+		renderExemplars := func(title string, items []*ExemplarItem) {
 			if len(items) > 0 {
 				fmt.Fprintf(sb, "\n--- Exemplars (%s) ---\n", title)
 				for _, ex := range items {
 					status := ""
-					if ex.err != nil {
+					if ex.Err != nil {
 						status = " (Failed)"
 					}
-					fmt.Fprintf(sb, "\t- RequestID:\t%s,\tLatency:\t%s%s\n", ex.requestID, ex.latency, status)
+					fmt.Fprintf(sb, "\t- RequestID:\t%s,\tLatency:\t%s%s\n", ex.RequestID, ex.Latency, status)
+					if ex.Msg != "" {
+						fmt.Fprintf(sb, "\t  Message:\t%s\n", ex.Msg)
+					}
 				}
 			}
 		}
@@ -124,7 +127,10 @@ func (p *SnapshotPresenter) renderExemplars(sb *strings.Builder) {
 	} else if len(s.Exemplars) > 0 {
 		fmt.Fprintf(sb, "\n--- Exemplars (Top %d slowest requests) ---\n", len(s.Exemplars))
 		for _, ex := range s.Exemplars {
-			fmt.Fprintf(sb, "\t- RequestID:\t%s,\tLatency:\t%s\n", ex.requestID, ex.latency)
+			fmt.Fprintf(sb, "\t- RequestID:\t%s,\tLatency:\t%s\n", ex.RequestID, ex.Latency)
+			if ex.Msg != "" {
+				fmt.Fprintf(sb, "\t  Message:\t%s\n", ex.Msg)
+			}
 		}
 	}
 }

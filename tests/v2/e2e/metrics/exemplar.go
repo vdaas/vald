@@ -48,10 +48,10 @@ type exemplar struct {
 	// 3. Average (Reservoir Sampling - Representative)
 	// 4. Failures (Reservoir Sampling - Representative of failures)
 
-	avgSamples     []*item // Reservoir for representative samples
-	failureSamples []*item // Reservoir for failure samples
-	avgCount       uint64  // Total count seen for average reservoir
-	failureCount   uint64  // Total count seen for failure reservoir
+	avgSamples     []*ExemplarItem // Reservoir for representative samples
+	failureSamples []*ExemplarItem // Reservoir for failure samples
+	avgCount       uint64          // Total count seen for average reservoir
+	failureCount   uint64          // Total count seen for failure reservoir
 
 	minLatency atomic.Int64 // Minimum latency in the 'slowest' heap (fast path)
 	maxLatency atomic.Int64 // Maximum latency in the 'fastest' heap (fast path for rejection?)
@@ -82,12 +82,12 @@ func (e *exemplar) initHeaps() {
 		e.fastest = e.fastest[:0]
 	}
 	if e.avgSamples == nil {
-		e.avgSamples = make([]*item, 0, e.k)
+		e.avgSamples = make([]*ExemplarItem, 0, e.k)
 	} else {
 		e.avgSamples = e.avgSamples[:0]
 	}
 	if e.failureSamples == nil {
-		e.failureSamples = make([]*item, 0, e.k)
+		e.failureSamples = make([]*ExemplarItem, 0, e.k)
 	} else {
 		e.failureSamples = e.failureSamples[:0]
 	}
@@ -112,7 +112,7 @@ func (e *exemplar) Reset() {
 }
 
 // Offer adds a request to the exemplar categories.
-func (e *exemplar) Offer(latency time.Duration, requestID string, err error) {
+func (e *exemplar) Offer(latency time.Duration, requestID string, err error, msg string) {
 	latInt := int64(latency)
 	isError := err != nil
 
@@ -125,19 +125,21 @@ func (e *exemplar) Offer(latency time.Duration, requestID string, err error) {
 	// we can skip the heap updates. However, we must still consider it for reservoir sampling.
 	if !isError && latInt <= minLat && latInt >= maxLat {
 		e.mu.Lock()
-		e.updateAverageSample(&item{
-			latency:   latency,
-			requestID: requestID,
-			err:       err,
+		e.updateAverageSample(&ExemplarItem{
+			Latency:   latency,
+			RequestID: requestID,
+			Err:       err,
+			Msg:       msg,
 		})
 		e.mu.Unlock()
 		return
 	}
 
-	newItem := &item{
-		latency:   latency,
-		requestID: requestID,
-		err:       err,
+	newItem := &ExemplarItem{
+		Latency:   latency,
+		RequestID: requestID,
+		Err:       err,
+		Msg:       msg,
 	}
 
 	e.mu.Lock()
@@ -151,35 +153,35 @@ func (e *exemplar) Offer(latency time.Duration, requestID string, err error) {
 	}
 }
 
-func (e *exemplar) updateSlowest(item *item) {
-	latInt := int64(item.latency)
+func (e *exemplar) updateSlowest(item *ExemplarItem) {
+	latInt := int64(item.Latency)
 	if len(e.slowest) < e.k {
 		heap.Push(&e.slowest, item)
 		if len(e.slowest) == e.k {
-			e.minLatency.Store(int64(e.slowest[0].latency))
+			e.minLatency.Store(int64(e.slowest[0].Latency))
 		}
-	} else if latInt > int64(e.slowest[0].latency) {
+	} else if latInt > int64(e.slowest[0].Latency) {
 		e.slowest[0] = item
 		heap.Fix(&e.slowest, 0)
-		e.minLatency.Store(int64(e.slowest[0].latency))
+		e.minLatency.Store(int64(e.slowest[0].Latency))
 	}
 }
 
-func (e *exemplar) updateFastest(item *item) {
-	latInt := int64(item.latency)
+func (e *exemplar) updateFastest(item *ExemplarItem) {
+	latInt := int64(item.Latency)
 	if len(e.fastest) < e.k {
 		heap.Push(&e.fastest, item)
 		if len(e.fastest) == e.k {
-			e.maxLatency.Store(int64(e.fastest[0].latency))
+			e.maxLatency.Store(int64(e.fastest[0].Latency))
 		}
-	} else if latInt < int64(e.fastest[0].latency) {
+	} else if latInt < int64(e.fastest[0].Latency) {
 		e.fastest[0] = item
 		heap.Fix(&e.fastest, 0)
-		e.maxLatency.Store(int64(e.fastest[0].latency))
+		e.maxLatency.Store(int64(e.fastest[0].Latency))
 	}
 }
 
-func (e *exemplar) updateAverageSample(item *item) {
+func (e *exemplar) updateAverageSample(item *ExemplarItem) {
 	e.avgCount++
 	if len(e.avgSamples) < e.k {
 		e.avgSamples = append(e.avgSamples, item)
@@ -191,7 +193,7 @@ func (e *exemplar) updateAverageSample(item *item) {
 	}
 }
 
-func (e *exemplar) updateFailureSample(item *item) {
+func (e *exemplar) updateFailureSample(item *ExemplarItem) {
 	e.failureCount++
 	if len(e.failureSamples) < e.k {
 		e.failureSamples = append(e.failureSamples, item)
@@ -206,17 +208,17 @@ func (e *exemplar) updateFailureSample(item *item) {
 // Snapshot returns a snapshot of the exemplars.
 // It returns a flat list. The user might want distinct lists.
 // For backward compatibility, we might return all?
-// Or we should change the return type? The interface `Exemplar` returns `[]*item`.
-// `GlobalSnapshot` has `Exemplar []*item`.
+// Or we should change the return type? The interface `Exemplar` returns `[]*ExemplarItem`.
+// `GlobalSnapshot` has `Exemplar []*ExemplarItem`.
 // I should probably return "Slowest" as the primary for backward compat, or mix them?
 // Given the request "Expand Exemplar Categories", likely the output format should change.
 // However, changing the return type breaks the interface and `GlobalSnapshot`.
 // I will flatten them into one list for now, or return just Slowest?
 // The prompt said "Refactor this to support multiple distinct exemplar categories".
 // This implies the output should distinguish them.
-// But `GlobalSnapshot` struct has `Exemplar []*item`.
+// But `GlobalSnapshot` struct has `Exemplar []*ExemplarItem`.
 // I can't easily change `GlobalSnapshot` struct without breaking consumers (unless I add fields).
-// I will add fields to `GlobalSnapshot`? No, `GlobalSnapshot` is defined in `metrics.go` which uses `[]*item`.
+// I will add fields to `GlobalSnapshot`? No, `GlobalSnapshot` is defined in `metrics.go` which uses `[]*ExemplarItem`.
 // I will update `GlobalSnapshot` in `metrics.go` later if needed.
 // For now `Snapshot()` will return the "Slowest" ones to satisfy the interface,
 // but I should probably add a new method `SnapshotDetails()`?
@@ -228,11 +230,11 @@ func (e *exemplar) updateFailureSample(item *item) {
 //
 // If I modify `metrics.go`'s `GlobalSnapshot` struct, I can add `Fastest`, `Average`, `Failures`.
 // Let's check `metrics.go` again.
-// `Exemplars []*item`.
+// `Exemplars []*ExemplarItem`.
 //
 // I will update `metrics.go` to include new fields.
 // But first, let's implement `Snapshot` here to return a map or struct?
-// Since `metrics.go` expects `[]*item`, I'll return a combined list or I need to change `metrics.go`.
+// Since `metrics.go` expects `[]*ExemplarItem`, I'll return a combined list or I need to change `metrics.go`.
 //
 // I will stick to returning "Slowest" in `Snapshot()` for backward compatibility if forced,
 // BUT I will add `DetailedSnapshot` method.
@@ -243,13 +245,13 @@ func (e *exemplar) updateFailureSample(item *item) {
 // So, I will change `Snapshot` to return a struct `ExemplarSnapshot`.
 // But `Exemplar` is an interface. I need to check `interface.go`.
 
-func (e *exemplar) Snapshot() []*item {
+func (e *exemplar) Snapshot() []*ExemplarItem {
 	// For backward compatibility, return Slowest.
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	items := slices.Clone(e.slowest)
-	slices.SortFunc(items, func(a, b *item) int {
-		return cmp.Compare(b.latency, a.latency)
+	slices.SortFunc(items, func(a, b *ExemplarItem) int {
+		return cmp.Compare(b.Latency, a.Latency)
 	})
 	return items
 }
@@ -260,30 +262,30 @@ func (e *exemplar) DetailedSnapshot() (*ExemplarDetails, error) {
 	defer e.mu.Unlock()
 
 	snap := &ExemplarDetails{
-		Slowest:  make([]*item, len(e.slowest)),
-		Fastest:  make([]*item, len(e.fastest)),
-		Average:  make([]*item, len(e.avgSamples)),
-		Failures: make([]*item, len(e.failureSamples)),
+		Slowest:  make([]*ExemplarItem, len(e.slowest)),
+		Fastest:  make([]*ExemplarItem, len(e.fastest)),
+		Average:  make([]*ExemplarItem, len(e.avgSamples)),
+		Failures: make([]*ExemplarItem, len(e.failureSamples)),
 	}
 
 	copy(snap.Slowest, e.slowest)
-	slices.SortFunc(snap.Slowest, func(a, b *item) int {
-		return cmp.Compare(b.latency, a.latency) // Descending
+	slices.SortFunc(snap.Slowest, func(a, b *ExemplarItem) int {
+		return cmp.Compare(b.Latency, a.Latency) // Descending
 	})
 
 	copy(snap.Fastest, e.fastest)
-	slices.SortFunc(snap.Fastest, func(a, b *item) int {
-		return cmp.Compare(a.latency, b.latency) // Ascending
+	slices.SortFunc(snap.Fastest, func(a, b *ExemplarItem) int {
+		return cmp.Compare(a.Latency, b.Latency) // Ascending
 	})
 
 	copy(snap.Average, e.avgSamples)
-	slices.SortFunc(snap.Average, func(a, b *item) int {
-		return cmp.Compare(b.latency, a.latency) // Descending
+	slices.SortFunc(snap.Average, func(a, b *ExemplarItem) int {
+		return cmp.Compare(b.Latency, a.Latency) // Descending
 	})
 
 	copy(snap.Failures, e.failureSamples)
-	slices.SortFunc(snap.Failures, func(a, b *item) int {
-		return cmp.Compare(b.latency, a.latency) // Descending
+	slices.SortFunc(snap.Failures, func(a, b *ExemplarItem) int {
+		return cmp.Compare(b.Latency, a.Latency) // Descending
 	})
 
 	return snap, nil
@@ -302,16 +304,16 @@ func (e *exemplar) Merge(other Exemplar) error {
 			return nil
 		}
 		for _, ex := range details.Slowest {
-			e.Offer(ex.latency, ex.requestID, ex.err)
+			e.Offer(ex.Latency, ex.RequestID, ex.Err, ex.Msg)
 		}
 		for _, ex := range details.Fastest {
-			e.Offer(ex.latency, ex.requestID, ex.err)
+			e.Offer(ex.Latency, ex.RequestID, ex.Err, ex.Msg)
 		}
 		for _, ex := range details.Average {
-			e.Offer(ex.latency, ex.requestID, ex.err)
+			e.Offer(ex.Latency, ex.RequestID, ex.Err, ex.Msg)
 		}
 		for _, ex := range details.Failures {
-			e.Offer(ex.latency, ex.requestID, ex.err)
+			e.Offer(ex.Latency, ex.RequestID, ex.Err, ex.Msg)
 		}
 		return nil
 	}
@@ -342,7 +344,7 @@ func (e *exemplar) Merge(other Exemplar) error {
 // mergeReservoir merges two reservoir samples (dst and src) into a new reservoir.
 // It uses a weighted selection algorithm to ensure that the merged reservoir is a
 // statistically valid sample of the combined population.
-func (e *exemplar) mergeReservoir(dst, src []*item, n1, n2 uint64) []*item {
+func (e *exemplar) mergeReservoir(dst, src []*ExemplarItem, n1, n2 uint64) []*ExemplarItem {
 	if n1 == 0 {
 		return src
 	}
@@ -359,7 +361,7 @@ func (e *exemplar) mergeReservoir(dst, src []*item, n1, n2 uint64) []*item {
 	}
 
 	// Create a new reservoir by probabilistically selecting items from both reservoirs.
-	newReservoir := make([]*item, 0, k)
+	newReservoir := make([]*ExemplarItem, 0, k)
 	for i := 0; i < k; i++ {
 		// Decide which reservoir to draw from based on their relative weights.
 		if rand.Uint64N(n) < n1 {
@@ -394,9 +396,9 @@ func (e *exemplar) Clone() Exemplar {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
-	copyTo := func(dst *[]*item, src []*item) {
+	copyTo := func(dst *[]*ExemplarItem, src []*ExemplarItem) {
 		if cap(*dst) < len(src) {
-			*dst = make([]*item, len(src), cap(src))
+			*dst = make([]*ExemplarItem, len(src), cap(src))
 		} else {
 			*dst = (*dst)[:len(src)]
 		}
@@ -432,19 +434,20 @@ func (e *exemplar) Clone() Exemplar {
 	return newE
 }
 
-// item is an item in the priority queue.
-type item struct {
-	latency   time.Duration
-	requestID string
-	err       error
+// ExemplarItem is an item in the priority queue.
+type ExemplarItem struct {
+	Latency   time.Duration
+	RequestID string
+	Err       error
+	Msg       string
 }
 
 // priorityQueue implements min-heap.
-type priorityQueue []*item
+type priorityQueue []*ExemplarItem
 
 func (pq priorityQueue) Len() int { return len(pq) }
 func (pq priorityQueue) Less(i, j int) bool {
-	return pq[i].latency < pq[j].latency
+	return pq[i].Latency < pq[j].Latency
 }
 
 func (pq priorityQueue) Swap(i, j int) {
@@ -452,7 +455,7 @@ func (pq priorityQueue) Swap(i, j int) {
 }
 
 func (pq *priorityQueue) Push(x any) {
-	item := x.(*item)
+	item := x.(*ExemplarItem)
 	*pq = append(*pq, item)
 }
 
@@ -466,16 +469,16 @@ func (pq *priorityQueue) Pop() any {
 }
 
 // maxPriorityQueue implements max-heap (for Fastest).
-type maxPriorityQueue []*item
+type maxPriorityQueue []*ExemplarItem
 
 func (pq maxPriorityQueue) Len() int { return len(pq) }
 func (pq maxPriorityQueue) Less(i, j int) bool {
-	return pq[i].latency > pq[j].latency // Largest comes first? No, heap.Pop returns smallest?
+	return pq[i].Latency > pq[j].Latency // Largest comes first? No, heap.Pop returns smallest?
 	// heap.Pop returns the element at index 0 (the root).
 	// heap.Fix/Push/Pop maintains the heap invariant: pq[i] <= pq[2*i+1] etc.
 	// Less(i, j) returns true if i should appear before j (i is "smaller" in heap terms).
 	// For Max-Heap, we want the root to be the Largest. So Less means "Greater".
-	// pq[i].latency > pq[j].latency.
+	// pq[i].Latency > pq[j].Latency.
 	// Wait, for "Fastest", we want to keep K *smallest* latencies.
 	// A standard Min-Heap keeps the *smallest* at the root. If full, we replace root?
 	// If full, we want to discard the *Largest* of the K smallest to make room for a smaller one.
@@ -490,7 +493,7 @@ func (pq maxPriorityQueue) Swap(i, j int) {
 }
 
 func (pq *maxPriorityQueue) Push(x any) {
-	item := x.(*item)
+	item := x.(*ExemplarItem)
 	*pq = append(*pq, item)
 }
 
@@ -504,8 +507,8 @@ func (pq *maxPriorityQueue) Pop() any {
 }
 
 type ExemplarDetails struct {
-	Slowest  []*item
-	Fastest  []*item
-	Average  []*item
-	Failures []*item
+	Slowest  []*ExemplarItem
+	Fastest  []*ExemplarItem
+	Average  []*ExemplarItem
+	Failures []*ExemplarItem
 }

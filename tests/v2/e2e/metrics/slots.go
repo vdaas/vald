@@ -118,7 +118,7 @@ func (s *slot) Record(rr *RequestResult, windowIdx uint64) {
 		s.QueueWait.Record(float64(rr.QueueWait.Nanoseconds()))
 	}
 	if s.Exemplars != nil {
-		s.Exemplars.Offer(rr.Latency, rr.RequestID, rr.Err)
+		s.Exemplars.Offer(rr.Latency, rr.RequestID, rr.Err, rr.Msg)
 	}
 }
 
@@ -216,7 +216,7 @@ func (s *slot) Snapshot() *SlotSnapshot {
 		counters[j] = s.Counters[j].Load()
 	}
 	var latSnap, qwSnap *HistogramSnapshot
-	var exSnap []*item
+	var exSnap []*ExemplarItem
 	if s.Latency != nil {
 		latSnap = s.Latency.Snapshot()
 	}

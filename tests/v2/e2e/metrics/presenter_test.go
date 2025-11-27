@@ -70,8 +70,8 @@ func TestSnapshotPresenter(t *testing.T) {
 				codes.OK:      90,
 				codes.Aborted: 10,
 			},
-			Exemplars: []*item{
-				{latency: 10 * time.Millisecond, requestID: "req-1"},
+			Exemplars: []*ExemplarItem{
+				{Latency: 10 * time.Millisecond, RequestID: "req-1"},
 			},
 		}
 		return snap

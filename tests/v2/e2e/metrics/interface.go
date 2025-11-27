@@ -49,8 +49,8 @@ type Histogram interface {
 
 // Exemplar is the interface for an exemplar.
 type Exemplar interface {
-	Offer(latency time.Duration, requestID string, err error)
-	Snapshot() []*item
+	Offer(latency time.Duration, requestID string, err error, msg string)
+	Snapshot() []*ExemplarItem
 	DetailedSnapshot() (*ExemplarDetails, error)
 	Merge(other Exemplar) error
 	Clone() Exemplar
