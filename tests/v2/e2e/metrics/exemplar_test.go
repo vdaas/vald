@@ -99,10 +99,10 @@ func TestExemplar_Offer(t *testing.T) {
 				// Use 1 shard to ensure deterministic "Top K" behavior when counts match capacity exactly
 				opts: []ExemplarOption{WithExemplarCapacity(3), WithExemplarNumShards(1)},
 				offers: []offer{
-					{100 * time.Millisecond, "req-1"},
-					{200 * time.Millisecond, "req-2"},
-					{50 * time.Millisecond, "req-3"},
-					{300 * time.Millisecond, "req-4"},
+					{id: "req-1", latency: 100 * time.Millisecond},
+					{id: "req-2", latency: 200 * time.Millisecond},
+					{id: "req-3", latency: 50 * time.Millisecond},
+					{id: "req-4", latency: 300 * time.Millisecond},
 				},
 			},
 			CheckFunc: func(tt *testing.T, want test.Result[[]*ExemplarItem], got test.Result[[]*ExemplarItem]) error {
@@ -124,10 +124,10 @@ func TestExemplar_Offer(t *testing.T) {
 			Args: args{
 				opts: []ExemplarOption{WithExemplarCapacity(3)},
 				offers: []offer{
-					{100 * time.Millisecond, "req-1"},
-					{200 * time.Millisecond, "req-2"},
-					{100 * time.Millisecond, "req-3"},
-					{300 * time.Millisecond, "req-4"},
+					{id: "req-1", latency: 100 * time.Millisecond},
+					{id: "req-2", latency: 200 * time.Millisecond},
+					{id: "req-3", latency: 100 * time.Millisecond},
+					{id: "req-4", latency: 300 * time.Millisecond},
 				},
 			},
 			CheckFunc: func(tt *testing.T, want test.Result[[]*ExemplarItem], got test.Result[[]*ExemplarItem]) error {
@@ -156,9 +156,9 @@ func TestExemplar_Offer(t *testing.T) {
 			Args: args{
 				opts: []ExemplarOption{WithExemplarCapacity(3), WithExemplarNumShards(1)},
 				offers: []offer{
-					{200 * time.Millisecond, "req-2"},
-					{100 * time.Millisecond, "req-1"},
-					{300 * time.Millisecond, "req-3"},
+					{id: "req-2", latency: 200 * time.Millisecond},
+					{id: "req-1", latency: 100 * time.Millisecond},
+					{id: "req-3", latency: 300 * time.Millisecond},
 				},
 			},
 			CheckFunc: func(tt *testing.T, want test.Result[[]*ExemplarItem], got test.Result[[]*ExemplarItem]) error {
@@ -205,8 +205,8 @@ func TestExemplar_Reset(t *testing.T) {
 					id      string
 					latency time.Duration
 				}{
-					{100 * time.Millisecond, "req-1"},
-					{200 * time.Millisecond, "req-2"},
+					{id: "req-1", latency: 100 * time.Millisecond},
+					{id: "req-2", latency: 200 * time.Millisecond},
 				},
 			},
 			CheckFunc: func(tt *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
@@ -249,8 +249,8 @@ func TestExemplar_Clone(t *testing.T) {
 					id      string
 					latency time.Duration
 				}{
-					{100 * time.Millisecond, "req-1"},
-					{200 * time.Millisecond, "req-2"},
+					{id: "req-1", latency: 100 * time.Millisecond},
+					{id: "req-2", latency: 200 * time.Millisecond},
 				},
 			},
 			CheckFunc: func(tt *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
