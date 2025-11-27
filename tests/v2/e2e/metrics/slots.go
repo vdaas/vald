@@ -1,19 +1,3 @@
-//
-// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// You may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    https://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-
 package metrics
 
 import (
@@ -39,7 +23,6 @@ type slot struct {
 }
 
 // newSlot creates a new Slot with the given configuration.
-// It initializes a new slot with histograms, exemplars, and custom counters.
 func newSlot(numCounters int, latencies, queueWaits Histogram, exemplars Exemplar) Slot {
 	return &slot{
 		id:        collectorIDCounter.Add(1),
@@ -51,7 +34,6 @@ func newSlot(numCounters int, latencies, queueWaits Histogram, exemplars Exempla
 }
 
 // Reset resets the slot data to its initial state.
-// It acquires the write lock to ensure exclusive access during reset.
 func (s *slot) Reset() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -79,45 +61,48 @@ func (s *slot) reset() {
 }
 
 // Record processes a single RequestResult for the slot.
-// It implements a ring buffer logic: if the given windowIdx is different from the slot's current WindowStart,
-// it resets the slot to start a new window. This check is done using double-checked locking for performance and safety.
+// Refactored to optimize locking:
+// 1. Fast Path: Acquires Read Lock. If window matches, records and returns.
+// 2. Slow Path: Acquires Write Lock. Resets window if needed, records immediately, and returns.
 func (s *slot) Record(rr *RequestResult, windowIdx uint64) {
-	// Optimistic read lock to check if the slot is valid for the current window.
-	s.mu.RLock()
-
-	// Ignore late arrivals for older windows to preserve data integrity.
-	if windowIdx < s.WindowStart {
-		s.mu.RUnlock()
+	if rr == nil {
 		return
 	}
 
-	if s.WindowStart != windowIdx {
+	// --- 1. Fast Path (Optimistic Read) ---
+	s.mu.RLock()
+	if s.WindowStart == windowIdx {
+		s.recordInternal(rr)
 		s.mu.RUnlock()
-		// Slot is stale or uninitialized. Upgrade to write lock to reset.
-		s.mu.Lock()
-		// Double-check under write lock.
-		if windowIdx < s.WindowStart {
-			s.mu.Unlock()
-			return
-		}
-		if s.WindowStart != windowIdx {
-			s.reset()
-			s.WindowStart = windowIdx
-		}
-		s.mu.Unlock()
-		// Re-acquire read lock to proceed with recording.
-		s.mu.RLock()
+		return
+	}
+	s.mu.RUnlock()
+
+	// --- 2. Slow Path (Write Lock for Transition) ---
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	// Double-check: Another goroutine might have reset the window while we waited for the lock.
+	if windowIdx < s.WindowStart {
+		// Data is for an old window that has already passed. Drop it to preserve integrity.
+		return
 	}
 
-	// Verify again that the window matches (it could have changed if we lost the race
-	// after unlocking and before re-locking, though unlikely for typical usage).
+	// If the window is still mismatched (implied s.WindowStart < windowIdx), reset to the new window.
 	if s.WindowStart != windowIdx {
-		s.mu.RUnlock()
-		return // Slot changed again, ignore this metric (or retry)
+		s.reset()
+		s.WindowStart = windowIdx
 	}
 
-	defer s.mu.RUnlock()
+	// Optimization: Record immediately under the Write Lock.
+	// This prevents the data loss race condition where unlocking and re-acquiring
+	// a Read Lock would allow another thread to reset the window again before we record.
+	s.recordInternal(rr)
+}
 
+// recordInternal updates the metrics in the slot.
+// It must be called while holding s.mu (Read or Write).
+func (s *slot) recordInternal(rr *RequestResult) {
 	s.Total.Add(1)
 	if rr.Err != nil {
 		s.Errors.Add(1)
@@ -135,7 +120,6 @@ func (s *slot) Record(rr *RequestResult, windowIdx uint64) {
 }
 
 // Clone returns a deep copy of the slot.
-// It creates a new independent slot with copied data.
 func (s *slot) Clone() Slot {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -172,8 +156,6 @@ func (s *slot) Clone() Slot {
 }
 
 // Merge merges another slot into this one.
-// It aggregates metrics from the other slot into the current slot.
-// It uses ordered locking based on pointer addresses to prevent deadlocks.
 func (s *slot) Merge(other Slot) error {
 	if s == other {
 		return nil
@@ -219,7 +201,6 @@ func (s *slot) Merge(other Slot) error {
 }
 
 // Snapshot returns a snapshot of the slot's current state.
-// The returned snapshot is a static view and safe for concurrent access.
 func (s *slot) Snapshot() *SlotSnapshot {
 	s.mu.RLock()
 	defer s.mu.RUnlock()

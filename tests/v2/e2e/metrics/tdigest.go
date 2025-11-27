@@ -19,12 +19,10 @@ package metrics
 import (
 	"fmt"
 	"slices"
-	"unsafe"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
-	"github.com/zeebo/xxh3"
 )
 
 // centroid represents a centroid in the t-digest.
@@ -289,17 +287,7 @@ func (t *shardedTDigest) shardIndexForValue(val float64) int {
 	if len(t.shards) <= 1 {
 		return 0
 	}
-	// Use xxh3 for hashing the float64 value to ensure good distribution across shards.
-	// We interpret the float64 as a byte slice without allocation using unsafe.
-	// This avoids allocating a new byte slice for every Record call.
-	// The sliceHeader struct is defined in histogram.go (shared in package metrics).
-	//nolint:gosec
-	h := xxh3.Hash(*(*[]byte)(unsafe.Pointer(&sliceHeader{
-		Data: unsafe.Pointer(&val),
-		Len:  8,
-		Cap:  8,
-	})))
-	return int(h % uint64(len(t.shards)))
+	return int(computeValueHash(val) % uint64(len(t.shards)))
 }
 
 // Add adds a value to the t-digest.
@@ -375,13 +363,21 @@ func (t *shardedTDigest) Merge(other TDigest) error {
 			single.mu.Lock()
 			defer single.mu.Unlock()
 			single.flush()
+
+			// Batch centroids per shard to minimize lock contention
+			batches := make([][]centroid, len(t.shards))
 			for _, c := range single.centroids {
-				// We need to Add weighted value? TDigest doesn't support adding weighted value easily via Add.
-				// But we can merge centroids into specific shards based on Mean.
 				idx := t.shardIndexForValue(c.Mean)
-				t.shards[idx].mu.Lock()
-				t.shards[idx].mergeCentroids([]centroid{c})
-				t.shards[idx].mu.Unlock()
+				batches[idx] = append(batches[idx], c)
+			}
+
+			// Apply batches to shards
+			for idx, batch := range batches {
+				if len(batch) > 0 {
+					t.shards[idx].mu.Lock()
+					t.shards[idx].mergeCentroids(batch)
+					t.shards[idx].mu.Unlock()
+				}
 			}
 			return nil
 		}

@@ -155,6 +155,17 @@ func computeBoundsHash(bounds []float64) uint64 {
 	return xxh3.Hash(byteSlice)
 }
 
+// computeValueHash computes a xxh3 checksum for the given float64 value.
+// It is used to distribute values across shards.
+func computeValueHash(val float64) uint64 {
+	//nolint:gosec
+	return xxh3.Hash(*(*[]byte)(unsafe.Pointer(&sliceHeader{
+		Data: unsafe.Pointer(&val),
+		Len:  8,
+		Cap:  8,
+	})))
+}
+
 // sliceHeader is a stripped-down version of reflect.SliceHeader used for unsafe pointer conversions.
 type sliceHeader struct {
 	Data unsafe.Pointer
@@ -170,15 +181,7 @@ func (h *histogram) shardIndexForValue(val float64) int {
 	if h.numShards <= 1 {
 		return 0
 	}
-	bits := math.Float64bits(val)
-	// Simple bit-mixing to avoid pathological patterns.
-	// This is not cryptographically strong, just enough to spread values.
-	x := bits ^ (bits >> 33)
-	x *= 0xff51afd7ed558ccd
-	x ^= x >> 33
-	x *= 0xc4ceb9fe1a85ec53
-	x ^= x >> 33
-	return int(x % uint64(h.numShards))
+	return int(computeValueHash(val) % uint64(h.numShards))
 }
 
 // Record adds a value to the histogram. It is thread-safe.
@@ -429,6 +432,7 @@ func (h *histogram) Snapshot() *HistogramSnapshot {
 
 	snap.Total = totalCount
 	snap.Mean = grandMean
+	snap.M2 = grandM2
 	snap.Sum = grandMean * float64(totalCount) // Back-calculate sum if needed
 
 	if totalCount > 0 {
@@ -452,6 +456,7 @@ type HistogramSnapshot struct {
 	Total  uint64    `json:"total"`
 	Sum    float64   `json:"sum"`
 	SumSq  float64   `json:"sum_sq"`
+	M2     float64   `json:"m2"`
 	Mean   float64   `json:"mean"`
 	StdDev float64   `json:"std_dev"`
 	Min    float64   `json:"min"`
@@ -501,6 +506,7 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 		s.Total = other.Total
 		s.Sum = other.Sum
 		s.SumSq = other.SumSq
+		s.M2 = other.M2
 		s.Mean = other.Mean
 		s.StdDev = other.StdDev
 	} else {
@@ -512,27 +518,20 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 			s.Max = other.Max
 		}
 
-		// Simple addition of Sum, SumSq, and Total
+		// Welford's algorithm for combining mean and variance (M2)
+		n1 := float64(s.Total)
+		n2 := float64(other.Total)
+		delta := other.Mean - s.Mean
+		newTotal := n1 + n2
+
+		s.Mean = s.Mean + delta*n2/newTotal
+		s.M2 = s.M2 + other.M2 + delta*delta*n1*n2/newTotal
+		s.StdDev = math.Sqrt(s.M2 / newTotal)
+
+		// Legacy field updates (simple addition)
 		s.Sum += other.Sum
 		s.SumSq += other.SumSq
 		s.Total += other.Total
-
-		// Recalculate Mean and StdDev
-		if s.Total > 0 {
-			total := float64(s.Total)
-			s.Mean = s.Sum / total
-
-			// Calculate variance (M2) from SumSq and Sum
-			// M2 = SumSq - (Sum^2 / N)
-			m2 := s.SumSq - (s.Sum*s.Sum)/total
-			if m2 < 0 {
-				m2 = 0 // Guard against floating point errors
-			}
-			s.StdDev = math.Sqrt(m2 / total)
-		} else {
-			s.Mean = 0
-			s.StdDev = 0
-		}
 	}
 
 	if len(s.Bounds) == 0 {
