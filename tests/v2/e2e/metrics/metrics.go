@@ -775,8 +775,9 @@ func (s *SlotSnapshot) String() string {
 	return sb.String()
 }
 
-// resolveStatusCode determines the final gRPC status code from a given code and error.
-// It handles unwrapping of errors and mapping context errors to status codes.
+// resolveStatusCode determines the final gRPC status code for a request.
+// It prioritizes specific error types (e.g., Canceled, DeadlineExceeded)
+// when the status code is initially OK but an error is present.
 func resolveStatusCode(code codes.Code, err error) codes.Code {
 	if code == codes.OK && err != nil {
 		if st, ok := status.FromError(err); ok {

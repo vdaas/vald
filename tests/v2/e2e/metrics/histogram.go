@@ -31,12 +31,12 @@ import (
 // It is designed for high-performance, concurrent metric recording by distributing
 // updates across multiple shards, reducing false-sharing and contention.
 type histogram struct {
-	shards      []histogramShard // array of shards
-	bounds      []float64        // bucket boundaries (length = numBuckets-1)
-	min, max    float64          // expected lower and upper bounds (configuration hint)
-	growth      float64          // geometric growth factor for bucket widths
-	numBuckets  int              // number of buckets
-	numShards   int              // number of shards
+	shards     []histogramShard // array of shards
+	bounds     []float64        // bucket boundaries (length = numBuckets-1)
+	min, max   float64          // expected lower and upper bounds (configuration hint)
+	growth     float64          // geometric growth factor for bucket widths
+	numBuckets int              // number of buckets
+	numShards  int              // number of shards
 	boundsHash uint64           // checksum of bounds for merge validation
 }
 
@@ -504,6 +504,7 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 		s.Mean = other.Mean
 		s.StdDev = other.StdDev
 	} else {
+		// Update Min/Max
 		if other.Min < s.Min {
 			s.Min = other.Min
 		}
@@ -511,18 +512,27 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 			s.Max = other.Max
 		}
 
-		s.Total += other.Total
+		// Simple addition of Sum, SumSq, and Total
 		s.Sum += other.Sum
 		s.SumSq += other.SumSq
+		s.Total += other.Total
 
-		s.Mean = s.Sum / float64(s.Total)
-		// Var = (SumSq - Sum*Sum/Total) / Total
-		// StdDev = Sqrt(Var)
-		variance := (s.SumSq - (s.Sum*s.Sum)/float64(s.Total)) / float64(s.Total)
-		if variance < 0 {
-			variance = 0
+		// Recalculate Mean and StdDev
+		if s.Total > 0 {
+			total := float64(s.Total)
+			s.Mean = s.Sum / total
+
+			// Calculate variance (M2) from SumSq and Sum
+			// M2 = SumSq - (Sum^2 / N)
+			m2 := s.SumSq - (s.Sum*s.Sum)/total
+			if m2 < 0 {
+				m2 = 0 // Guard against floating point errors
+			}
+			s.StdDev = math.Sqrt(m2 / total)
+		} else {
+			s.Mean = 0
+			s.StdDev = 0
 		}
-		s.StdDev = math.Sqrt(variance)
 	}
 
 	if len(s.Bounds) == 0 {
