@@ -28,6 +28,7 @@ metrics:
   tdigest:
     compression: 100
     compression_trigger_factor: 10
+    num_shards: 16
   exemplar:
     capacity: 10
   range_scales:

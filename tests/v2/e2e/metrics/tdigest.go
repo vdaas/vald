@@ -19,10 +19,12 @@ package metrics
 import (
 	"fmt"
 	"slices"
+	"unsafe"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/zeebo/xxh3"
 )
 
 // centroid represents a centroid in the t-digest.
@@ -34,7 +36,7 @@ type centroid struct {
 
 const defaultBufferCapacity = 128
 
-// tdigest is a custom implementation of the t-digest algorithm.
+// tdigest is a custom implementation of the t-digest algorithm (used as a shard).
 //
 // It is designed for high-performance, concurrent metric recording by using a
 // mutex to protect the internal state.
@@ -56,22 +58,70 @@ type tdigest struct {
 	quantiles                []float64
 }
 
+// shardedTDigest is a sharded wrapper around tdigest.
+type shardedTDigest struct {
+	shards    []*tdigest
+	quantiles []float64
+}
+
 // NewTDigest creates a new TDigest.
 func NewTDigest(opts ...TDigestOption) (TDigest, error) {
-	t := &tdigest{
-		id:     collectorIDCounter.Add(1),
-		buffer: make([]float64, 0, defaultBufferCapacity),
-	}
-	for _, opt := range append(defaultTDigestOpts, opts...) {
-		err := opt(t)
-		if err != nil {
+	cfg := TDigestConfig{}
+	// Apply defaults via option functions first?
+	// The default options in option.go are applied in NewTDigest usually by appending.
+	// We need to apply defaults to cfg.
+	// But `defaultTDigestOpts` are `func(*TDigestConfig) error`.
+
+	// Apply defaults
+	for _, opt := range defaultTDigestOpts {
+		if err := opt(&cfg); err != nil {
 			return nil, err
+		}
+	}
+	// Apply user options
+	for _, opt := range opts {
+		if err := opt(&cfg); err != nil {
+			return nil, err
+		}
+	}
+
+	if cfg.NumShards <= 1 {
+		t := &tdigest{
+			id:                       collectorIDCounter.Add(1),
+			buffer:                   make([]float64, 0, defaultBufferCapacity),
+			compression:              cfg.Compression,
+			compressionTriggerFactor: cfg.CompressionTriggerFactor,
+			quantiles:                cfg.Quantiles,
+		}
+		return t, nil
+	}
+
+	t := &shardedTDigest{
+		shards:    make([]*tdigest, cfg.NumShards),
+		quantiles: cfg.Quantiles,
+	}
+	for i := range t.shards {
+		t.shards[i] = &tdigest{
+			id:                       collectorIDCounter.Add(1),
+			buffer:                   make([]float64, 0, defaultBufferCapacity),
+			compression:              cfg.Compression,
+			compressionTriggerFactor: cfg.CompressionTriggerFactor,
+			// Shards don't need quantiles, only the wrapper or main TDigest does,
+			// but we keep it for consistency if accessed directly.
+			quantiles:                cfg.Quantiles,
 		}
 	}
 	return t, nil
 }
 
 // Reset resets the t-digest to its initial state.
+func (t *shardedTDigest) Reset() {
+	for _, shard := range t.shards {
+		shard.Reset()
+	}
+}
+
+// Reset resets the t-digest shard to its initial state.
 func (t *tdigest) Reset() {
 	t.mu.Lock()
 	t.centroids = t.centroids[:0]
@@ -81,16 +131,30 @@ func (t *tdigest) Reset() {
 }
 
 // String implements the fmt.Stringer interface.
+func (t *shardedTDigest) String() string {
+	if t == nil {
+		return "No data collected for percentiles.\n"
+	}
+	quantiles := t.quantiles
+	if len(quantiles) == 0 {
+		return ""
+	}
+
+	merged := t.mergeAllShards()
+
+	var sb strings.Builder
+	for _, q := range quantiles {
+		fmt.Fprintf(&sb, "\tp%d:\t%.2f", uint(q*100), merged.Quantile(q))
+	}
+	fmt.Fprint(&sb, "\n")
+	return sb.String()
+}
+
+// String implements the fmt.Stringer interface for tdigest (shard).
 func (t *tdigest) String() string {
 	if t == nil {
 		return "No data collected for percentiles.\n"
 	}
-	// Ensure buffer is flushed before calculating quantiles
-	// We can't modify t in String() usually if it's a value receiver, but here it is pointer.
-	// However, String() is often called for logging and shouldn't mutate state ideally.
-	// But to get accurate quantiles, we must flush.
-	// We call Quantile() which handles flushing.
-
 	quantiles := t.quantiles
 
 	var sb strings.Builder
@@ -101,6 +165,32 @@ func (t *tdigest) String() string {
 	return sb.String()
 }
 
+// Quantile returns the estimated quantile.
+func (t *shardedTDigest) Quantile(q float64) float64 {
+	merged := t.mergeAllShards()
+	return merged.Quantile(q)
+}
+
+// mergeAllShards merges all shards into a single tdigest for querying.
+func (t *shardedTDigest) mergeAllShards() *tdigest {
+	// Create a new temporary shard
+	merged := &tdigest{
+		compression:              t.shards[0].compression,
+		compressionTriggerFactor: t.shards[0].compressionTriggerFactor,
+	}
+
+	// Lock all shards and collect centroids
+	for _, shard := range t.shards {
+		shard.mu.Lock()
+		shard.flush() // flush buffer before reading centroids
+		if len(shard.centroids) > 0 {
+			merged.mergeCentroids(shard.centroids)
+		}
+		shard.mu.Unlock()
+	}
+	return merged
+}
+
 const (
 	quantileScaleMax = 4.0 // so that max of q*(1-q) becomes 1 at q=0.5
 )
@@ -108,32 +198,10 @@ const (
 // maxWeightForQuantile returns the maximum allowed combined weight for a
 // centroid located at quantile q, given the total weight and compression
 // parameter.
-//
-// This encapsulates the core t-digest formula, which limits the size of a
-// centroid based on its quantile `q`. Centroids near the tails (q=0 or q=1)
-// must be smaller, while centroids near the median (q=0.5) can be larger.
-// This ensures higher accuracy at the tails.
-//
-// The formula is:
-//
-//	k = (4 * total * q * (1-q)) / compression
-//
-// where:
-//   - `total` is the total weight of all points in the digest.
-//   - `q` is the quantile, calculated as `(cumulative_weight + new_weight/2) / total`.
-//   - `compression` is the compression parameter (δ), controlling the trade-off
-//     between accuracy and size. Higher compression means more centroids and
-//     higher accuracy.
-//   - The term `4 * q * (1-q)` is a scaling factor that is maximal at `q=0.5` (the median)
-//     and approaches zero at the tails, enforcing the accuracy constraint.
-//
-// The caller is responsible for clamping q into [0,1] if needed.
 func (t *tdigest) maxWeightForQuantile(q, total float64) float64 {
 	if total <= 0 || t.compression <= 0 {
-		// Degenerate case: no meaningful constraint, treat as "no limit".
 		return total
 	}
-	// Scale factor quantileScaleMax normalizes q*(1-q) to [0,1].
 	return quantileScaleMax * total * q * (1 - q) / t.compression
 }
 
@@ -214,9 +282,31 @@ func (t *tdigest) mergeCentroids(incoming []centroid) {
 	}
 }
 
+// shardIndexForValue returns a shard index for the given value.
+func (t *shardedTDigest) shardIndexForValue(val float64) int {
+	if len(t.shards) <= 1 {
+		return 0
+	}
+	// Use xxh3 for hashing the float64 value to ensure good distribution across shards.
+	// We interpret the float64 as a byte slice without allocation using unsafe.
+	// This avoids allocating a new byte slice for every Record call.
+	// The sliceHeader struct is defined in histogram.go (shared in package metrics).
+	//nolint:gosec
+	h := xxh3.Hash(*(*[]byte)(unsafe.Pointer(&sliceHeader{
+		Data: unsafe.Pointer(&val),
+		Len:  8,
+		Cap:  8,
+	})))
+	return int(h % uint64(len(t.shards)))
+}
+
 // Add adds a value to the t-digest.
-//
-// It buffers incoming values and merges them in batches to improve performance.
+func (t *shardedTDigest) Add(value float64) {
+	idx := t.shardIndexForValue(value)
+	t.shards[idx].Add(value)
+}
+
+// Add adds a value to the t-digest shard.
 func (t *tdigest) Add(value float64) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -227,10 +317,7 @@ func (t *tdigest) Add(value float64) {
 	}
 }
 
-// Quantile returns the estimated quantile.
-//
-// It performs a single pass over the centroids (O(#centroids)), which is
-// efficient because the centroids slice is bounded by the compression factor.
+// Quantile returns the estimated quantile from a single shard (or merged digest).
 func (t *tdigest) Quantile(q float64) float64 {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -256,47 +343,80 @@ func (t *tdigest) Quantile(q float64) float64 {
 		nextSum := sum + c.Weight
 		if target <= nextSum {
 			if i == 0 {
-				// The target is in the first centroid.
 				return c.Mean
 			}
-			// Linear interpolation between the previous and current centroid.
 			prev := t.centroids[i-1]
 			if c.Weight <= 0 {
-				// Degenerate case; just return current mean.
 				return c.Mean
 			}
-			// Calculate fraction of the weight contribution
 			fraction := (target - sum) / c.Weight
-
-			// Clamp fraction to [0, 1]
 			if fraction < 0 {
 				fraction = 0
 			} else if fraction > 1 {
 				fraction = 1
 			}
-
-			// Linear interpolation
 			return prev.Mean + (c.Mean-prev.Mean)*fraction
 		}
 		sum = nextSum
 	}
-
-	// Fallback: return the maximum.
 	return t.centroids[len(t.centroids)-1].Mean
 }
 
 // Merge merges another t-digest into this one.
-//
-// This implementation assumes that both digests maintain their centroids
-// sorted by Mean. It merges the two sorted slices in linear time and then
-// optionally triggers compression based on the configured threshold.
-func (t *tdigest) Merge(other TDigest) error {
-	o, ok := other.(*tdigest)
+func (t *shardedTDigest) Merge(other TDigest) error {
+	o, ok := other.(*shardedTDigest)
 	if !ok {
+		// Try to merge if other is *tdigest (shards=1)?
+		if single, ok := other.(*tdigest); ok {
+			// Merge single into all shards? Or distribute?
+			// Distribute centroids.
+			single.mu.Lock()
+			defer single.mu.Unlock()
+			single.flush()
+			for _, c := range single.centroids {
+				// We need to Add weighted value? TDigest doesn't support adding weighted value easily via Add.
+				// But we can merge centroids into specific shards based on Mean.
+				idx := t.shardIndexForValue(c.Mean)
+				t.shards[idx].mu.Lock()
+				t.shards[idx].mergeCentroids([]centroid{c})
+				t.shards[idx].mu.Unlock()
+			}
+			return nil
+		}
 		return errors.New("incompatible sketch type for merging")
 	}
 	if t == o {
-		// Merging the same instance is a no-op.
+		return nil
+	}
+	if len(t.shards) != len(o.shards) {
+		return errors.New("incompatible shard count for merging")
+	}
+
+	// Merge shard by shard
+	for i := range t.shards {
+		if err := t.shards[i].Merge(o.shards[i]); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Merge merges another t-digest shard into this one.
+func (t *tdigest) Merge(other TDigest) error {
+	o, ok := other.(*tdigest)
+	if !ok {
+		// If other is sharded, we can merge all its shards into this one.
+		if sharded, ok := other.(*shardedTDigest); ok {
+			for _, shard := range sharded.shards {
+				if err := t.Merge(shard); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+		return errors.New("incompatible sketch type for merging")
+	}
+	if t == o {
 		return nil
 	}
 
@@ -324,28 +444,7 @@ func (t *tdigest) Merge(other TDigest) error {
 	return nil
 }
 
-// compress merges centroids to reduce their number while preserving the
-// t-digest's quantile estimation accuracy. This is the core of the t-digest
-// algorithm, where it enforces the size constraints on centroids.
-//
-// The process works as follows:
-//  1. Iterate through the sorted centroids from left to right.
-//  2. For each centroid, evaluate whether it can be merged with the *next*
-//     centroid in the list.
-//  3. The merge is "valid" if the combined weight of the new, merged centroid
-//     does not exceed the maximum weight allowed for its new quantile position
-//     (as determined by `maxWeightForQuantile`).
-//  4. This implementation greedily merges adjacent centroids whenever the
-//     condition in step 3 is met. It performs a single linear pass over the
-//     sorted centroids.
-//
-// This single-pass greedy approach significantly improves performance compared
-// to repeatedly finding the smallest pair to merge, reducing complexity from
-// O(n^2) or O(n log n) to O(n).
-//
-// To minimize allocations, this function reuses the underlying slice of
-// `t.centroids` for the output and applies `slices.Clip` at the end to
-// release any unused capacity.
+// compress merges centroids to reduce their number while preserving accuracy.
 func (t *tdigest) compress() {
 	n := len(t.centroids)
 	if n <= 1 {
@@ -356,48 +455,47 @@ func (t *tdigest) compress() {
 	}
 
 	total := t.count
-
-	// Reuse the existing slice backing array to avoid extra allocations.
 	out := t.centroids[:0]
-
-	// cumulative is the sum of weights of centroids already flushed into out.
 	var cumulative float64
-
-	// We assume centroids are already sorted by Mean.
 	current := t.centroids[0]
 
 	for i := 1; i < n; i++ {
 		next := t.centroids[i]
-
-		// Candidate merged centroid.
 		mergedWeight := current.Weight + next.Weight
 		mergedMean := (current.Mean*current.Weight + next.Mean*next.Weight) / mergedWeight
-
 		// Quantile of the merged centroid center.
-		q := max(min((cumulative+mergedWeight/2)/total, 0.0), 1.0)
-
+		// We use the cumulative weight to estimate the quantile `q` of the centroid.
+		// The value `q` is clamped to the range [0, 1] to ensure validity.
+		q := max(min((cumulative+mergedWeight/2)/total, 1.0), 0.0)
 		// Maximum allowed weight for this quantile (shared with Add.tryMerge).
 		k := t.maxWeightForQuantile(q, total)
 
 		if mergedWeight <= k || len(out) == 0 {
-			// Safe to merge next into current.
 			current.Mean = mergedMean
 			current.Weight = mergedWeight
 		} else {
-			// Flush current and start a new centroid with next.
 			out = append(out, current)
 			cumulative += current.Weight
 			current = next
 		}
 	}
 
-	// append the last centroid.
-	// Replace centroids with the compressed list and clip capacity.
 	t.centroids = slices.Clip(append(out, current))
-	// Note: t.count remains unchanged because we only redistributed weights.
 }
 
 // Clone returns a deep copy of the t-digest.
+func (t *shardedTDigest) Clone() TDigest {
+	newT := &shardedTDigest{
+		shards:    make([]*tdigest, len(t.shards)),
+		quantiles: slices.Clone(t.quantiles),
+	}
+	for i, shard := range t.shards {
+		newT.shards[i] = shard.Clone().(*tdigest)
+	}
+	return newT
+}
+
+// Clone returns a deep copy of the t-digest shard.
 func (t *tdigest) Clone() TDigest {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -422,9 +520,11 @@ func (t *tdigest) Clone() TDigest {
 }
 
 // Quantiles returns the configured quantiles.
+func (t *shardedTDigest) Quantiles() []float64 {
+	return slices.Clone(t.quantiles)
+}
+
+// Quantiles returns the configured quantiles.
 func (t *tdigest) Quantiles() []float64 {
-	if t == nil || len(t.quantiles) == 0 {
-		return nil
-	}
 	return slices.Clone(t.quantiles)
 }

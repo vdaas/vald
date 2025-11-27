@@ -328,7 +328,13 @@ func (e *exemplar) mergeReservoir(dst, src []*ExemplarItem, n1, n2 uint64) []*Ex
 				idx := rand.IntN(len(dst))
 				newReservoir = append(newReservoir, dst[idx])
 				// Remove the selected item to avoid picking it again.
-				dst = append(dst[:idx], dst[idx+1:]...)
+				// Use "Swap and Remove" pattern for O(1) performance.
+				// 1. Swap the selected item with the last item.
+				dst[idx] = dst[len(dst)-1]
+				// 2. Zero out the last item to prevent memory leaks (pointers).
+				dst[len(dst)-1] = nil
+				// 3. Truncate the slice.
+				dst = slices.Delete(dst, len(dst)-1, len(dst))
 				n1--
 			}
 		} else {
@@ -337,7 +343,10 @@ func (e *exemplar) mergeReservoir(dst, src []*ExemplarItem, n1, n2 uint64) []*Ex
 				idx := rand.IntN(len(src))
 				newReservoir = append(newReservoir, src[idx])
 				// Remove the selected item.
-				src = append(src[:idx], src[idx+1:]...)
+				// Use "Swap and Remove" pattern for O(1) performance.
+				src[idx] = src[len(src)-1]
+				src[len(src)-1] = nil
+				src = slices.Delete(src, len(src)-1, len(src))
 				n2--
 			}
 		}
