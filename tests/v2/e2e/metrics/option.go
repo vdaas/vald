@@ -28,13 +28,13 @@ type (
 	Option func(*collector) error
 
 	// HistogramOption represents a functional option for configuring a histogram.
-	HistogramOption func(*histogram) error
+	HistogramOption func(*histogramConfig) error
 
 	// TDigestOption configures a TDigest.
 	TDigestOption func(*tdigestConfig) error
 
 	// ExemplarOption represents a functional option for configuring an Exemplar.
-	ExemplarOption func(*exemplar)
+	ExemplarOption func(*exemplarConfig)
 )
 
 var (
@@ -54,6 +54,7 @@ var (
 
 	defaultExemplarOpts = []ExemplarOption{
 		WithExemplarCapacity(10),
+		WithExemplarNumShards(8),
 	}
 
 	defaultOptions = []Option{
@@ -162,9 +163,9 @@ func WithExemplar(opts ...ExemplarOption) Option {
 
 // WithHistogramMin sets the minimum value for the histogram.
 func WithHistogramMin(min float64) HistogramOption {
-	return func(c *histogram) error {
-		c.min = min
-		if c.min <= 0 {
+	return func(cfg *histogramConfig) error {
+		cfg.Min = min
+		if cfg.Min <= 0 {
 			return errors.New("histogram min must be > 0 for geometric buckets")
 		}
 		return nil
@@ -173,17 +174,17 @@ func WithHistogramMin(min float64) HistogramOption {
 
 // WithHistogramMax sets the maximum value for the histogram.
 func WithHistogramMax(max float64) HistogramOption {
-	return func(c *histogram) error {
-		c.max = max
+	return func(cfg *histogramConfig) error {
+		cfg.Max = max
 		return nil
 	}
 }
 
 // WithHistogramGrowth sets the growth factor for the histogram.
 func WithHistogramGrowth(growth float64) HistogramOption {
-	return func(c *histogram) error {
-		c.growth = growth
-		if c.growth <= 1 {
+	return func(cfg *histogramConfig) error {
+		cfg.Growth = growth
+		if cfg.Growth <= 1 {
 			return errors.New("histogram growth must be > 1 for geometric buckets")
 		}
 		return nil
@@ -192,9 +193,9 @@ func WithHistogramGrowth(growth float64) HistogramOption {
 
 // WithHistogramNumBuckets sets the number of buckets for the histogram.
 func WithHistogramNumBuckets(n int) HistogramOption {
-	return func(c *histogram) error {
-		c.numBuckets = n
-		if c.numBuckets < 2 {
+	return func(cfg *histogramConfig) error {
+		cfg.NumBuckets = n
+		if cfg.NumBuckets < 2 {
 			return errors.New("numBuckets must be at least 2")
 		}
 		return nil
@@ -203,9 +204,9 @@ func WithHistogramNumBuckets(n int) HistogramOption {
 
 // WithHistogramNumShards sets the number of shards for the histogram.
 func WithHistogramNumShards(n int) HistogramOption {
-	return func(c *histogram) error {
-		c.numShards = n
-		if c.numShards <= 0 {
+	return func(cfg *histogramConfig) error {
+		cfg.NumShards = n
+		if cfg.NumShards <= 0 {
 			return errors.New("numShards must be positive")
 		}
 		return nil
@@ -257,9 +258,18 @@ func WithTDigestNumShards(n int) TDigestOption {
 
 // WithExemplarCapacity sets the capacity for the exemplar.
 func WithExemplarCapacity(k int) ExemplarOption {
-	return func(e *exemplar) {
+	return func(cfg *exemplarConfig) {
 		if k >= 1 {
-			e.k = k
+			cfg.Capacity = k
+		}
+	}
+}
+
+// WithExemplarNumShards sets the number of shards for the exemplar.
+func WithExemplarNumShards(n int) ExemplarOption {
+	return func(cfg *exemplarConfig) {
+		if n >= 1 {
+			cfg.NumShards = n
 		}
 	}
 }

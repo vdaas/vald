@@ -18,7 +18,6 @@ package metrics
 
 import (
 	"context"
-	"fmt"
 	"time"
 	"unsafe"
 
@@ -46,7 +45,6 @@ type Histogram interface {
 	Snapshot() *HistogramSnapshot
 	BoundsHash() uint64
 	Clone() Histogram
-	merge(other *histogram) error
 	Reset()
 }
 
@@ -67,7 +65,6 @@ type TDigest interface {
 	Quantiles() []float64
 	Merge(other TDigest) error
 	Clone() TDigest
-	fmt.Stringer
 	Reset()
 }
 
@@ -101,22 +98,21 @@ const (
 	TimeScale
 )
 
-// sliceHeader is a stripped-down version of reflect.SliceHeader used for unsafe pointer conversions.
-type sliceHeader struct {
-	Data unsafe.Pointer
-	Len  int
-	Cap  int
-}
-
 // computeHash computes a xxh3 checksum for the given slice of float64 value.
 func computeHash(vals ...float64) uint64 {
 	if len(vals) == 0 {
 		return 0
 	}
-	// Reinterpret the float64 slice as a byte slice to avoid allocation.
+	// Reinterpret the float64 slice as a byte slice to avoid allocation using unsafe.Slice.
 	// This is safe because both slices point to the same underlying data.
-	header := (*sliceHeader)(unsafe.Pointer(&vals)) //nolint:gosec
-	header.Len *= 8
-	header.Cap *= 8
-	return xxh3.Hash(*(*[]byte)(unsafe.Pointer(header))) //nolint:gosec
+	data := unsafe.Slice((*byte)(unsafe.Pointer(&vals[0])), len(vals)*8) //nolint:gosec
+	return xxh3.Hash(data)
+}
+
+// shardIndex calculates the shard index for a given hash and number of shards.
+func shardIndex(hash uint64, n int) int {
+	if n <= 1 {
+		return 0
+	}
+	return int(hash % uint64(n))
 }

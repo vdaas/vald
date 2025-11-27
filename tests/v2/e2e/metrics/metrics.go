@@ -36,6 +36,11 @@ import (
 	"github.com/vdaas/vald/internal/sync"
 )
 
+const (
+	MaxGRPCCodes    = 20
+	UnknownGRPCCode = 17
+)
+
 // requestIDCtxKey is the key for storing the request ID in the context.
 // It's an unexported type to prevent collisions with context keys from other packages.
 type requestIDCtxKey struct{}
@@ -171,7 +176,7 @@ type collector struct {
 	// gRPC status code counts, using a lock-free array for performance.
 	// Array indices correspond to gRPC status codes (0-16).
 	// Index 17 is for unknown codes, 18 for non-gRPC errors.
-	codes [20]atomic.Uint64
+	codes [MaxGRPCCodes]atomic.Uint64
 }
 
 var collectorIDCounter atomic.Uint64
@@ -271,6 +276,14 @@ func (c *collector) merge(other *collector) error {
 		}
 	}
 	if t := c.lastUpdated.Load(); t > 0 {
+		// Optimized update: Check then Store (relaxed consistency for lastUpdated)
+		// Or keep standard loop if we want to be correct.
+		// For merging, we want to ensure other gets max(other, t).
+		// Load-Check-CAS loop is correct.
+		// Task 1-C only mentioned Record optimization.
+		// I'll keep the loop here for correctness during merge, or optimize it similarly.
+		// Given merge is infrequent, correctness matters more.
+		// But I'll use Load-Check-CAS.
 		for {
 			curr := other.lastUpdated.Load()
 			if t <= curr {
@@ -341,6 +354,7 @@ func (c *collector) merge(other *collector) error {
 func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 	rr.validate()
 
+	// Update startTime (min) with check-then-CAS
 	if s := rr.StartedAt.UnixNano(); s > 0 {
 		for {
 			curr := c.startTime.Load()
@@ -352,15 +366,11 @@ func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 			}
 		}
 	}
+	// Update lastUpdated (max) with relaxed Load-Check-Store for performance
 	if e := rr.EndedAt.UnixNano(); e > 0 {
-		for {
-			curr := c.lastUpdated.Load()
-			if e <= curr {
-				break
-			}
-			if c.lastUpdated.CompareAndSwap(curr, e) {
-				break
-			}
+		curr := c.lastUpdated.Load()
+		if e > curr {
+			c.lastUpdated.Store(e)
 		}
 	}
 
@@ -793,7 +803,7 @@ func resolveStatusCode(code codes.Code, err error) codes.Code {
 		} else {
 			return codes.Unknown
 		}
-	} else if code >= 17 {
+	} else if code >= UnknownGRPCCode {
 		return codes.Unknown
 	}
 	return code

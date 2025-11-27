@@ -74,9 +74,7 @@ func (s *slot) reset() {
 }
 
 // Record processes a single RequestResult for the slot.
-// Refactored to optimize locking:
-// 1. Fast Path: Acquires Read Lock. If window matches, records and returns.
-// 2. Slow Path: Acquires Write Lock. Resets window if needed, records immediately, and returns.
+// Uses RLock for high concurrency in the hot path, upgrading to Lock only for window rotation.
 func (s *slot) Record(rr *RequestResult, windowIdx uint64) {
 	if rr == nil {
 		return
@@ -107,9 +105,6 @@ func (s *slot) Record(rr *RequestResult, windowIdx uint64) {
 		s.WindowStart = windowIdx
 	}
 
-	// Optimization: Record immediately under the Write Lock.
-	// This prevents the data loss race condition where unlocking and re-acquiring
-	// a Read Lock would allow another thread to reset the window again before we record.
 	s.recordInternal(rr)
 }
 

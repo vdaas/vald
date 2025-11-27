@@ -29,69 +29,74 @@ import (
 // It is designed for high-performance, concurrent metric recording by distributing
 // updates across multiple shards, reducing false-sharing and contention.
 type histogram struct {
-	shards     []histogramShard // array of shards
-	bounds     []float64        // bucket boundaries (length = numBuckets-1)
-	min, max   float64          // expected lower and upper bounds (configuration hint)
-	growth     float64          // geometric growth factor for bucket widths
-	numBuckets int              // number of buckets
-	numShards  int              // number of shards
-	boundsHash uint64           // checksum of bounds for merge validation
+	mu           sync.Mutex
+	counts       []uint64  // number of values in each bucket
+	total        uint64    // total number of values in this shard
+	mean         float64   // mean of values in this shard
+	m2           float64   // sum of squares of differences from the mean
+	min          float64   // minimum value in this shard
+	max          float64   // maximum value in this shard
+	bounds       []float64 // bucket boundaries (length = numBuckets-1)
+	minVal       float64   // expected lower bound (configuration hint)
+	maxVal       float64   // expected upper bound (configuration hint)
+	growth       float64   // geometric growth factor for bucket widths
+	invLogGrowth float64   // Precomputed 1.0 / log(growth) for fast bucket lookup
+	numBuckets   int       // number of buckets
+	boundsHash   uint64    // checksum of bounds for merge validation
+	_            [128]byte // Padding to prevent false sharing
 }
 
-// histogramShard is a single shard of the histogram.
-// It uses a mutex to protect its state and implements Welford's algorithm
-// for numerically stable variance calculation.
-type histogramShard struct {
-	mu     sync.Mutex
-	counts []uint64  // number of values in each bucket
-	total  uint64    // total number of values in this shard
-	mean   float64   // mean of values in this shard
-	m2     float64   // sum of squares of differences from the mean
-	min    float64   // minimum value in this shard
-	max    float64   // maximum value in this shard
-	_      [128]byte // Padding to prevent false sharing
+// shardedHistogram is a sharded wrapper around histogram.
+type shardedHistogram struct {
+	shards []*histogram
+}
+
+// histogramConfig holds configuration for Histogram.
+type histogramConfig struct {
+	Min        float64 `json:"min" yaml:"min"`
+	Max        float64 `json:"max" yaml:"max"`
+	Growth     float64 `json:"growth" yaml:"growth"`
+	NumBuckets int     `json:"num_buckets" yaml:"num_buckets"`
+	NumShards  int     `json:"num_shards" yaml:"num_shards"`
 }
 
 // Init initializes the histogram with the provided options.
 func (h *histogram) Init(opts ...HistogramOption) error {
+	cfg := histogramConfig{}
 	// Apply default options first
 	for _, opt := range defaultHistogramOpts {
-		if err := opt(h); err != nil {
+		if err := opt(&cfg); err != nil {
 			return err
 		}
 	}
 	// Apply user options
 	for _, opt := range opts {
-		if err := opt(h); err != nil {
+		if err := opt(&cfg); err != nil {
 			return err
 		}
 	}
 
-	if len(h.shards) < h.numShards {
-		h.shards = make([]histogramShard, h.numShards)
-	} else {
-		h.shards = h.shards[:h.numShards]
-	}
+	h.minVal = cfg.Min
+	h.maxVal = cfg.Max
+	h.growth = cfg.Growth
+	h.numBuckets = cfg.NumBuckets
+	h.invLogGrowth = 1.0 / math.Log(h.growth)
 
-	// Initialize shards.
-	for i := range h.shards {
-		h.shards[i].mu.Lock()
-		if len(h.shards[i].counts) < h.numBuckets {
-			h.shards[i].counts = make([]uint64, h.numBuckets)
-		} else {
-			// Reset existing counts
-			for j := range h.shards[i].counts {
-				h.shards[i].counts[j] = 0
-			}
-			h.shards[i].counts = h.shards[i].counts[:h.numBuckets]
+	h.mu.Lock()
+	if len(h.counts) < h.numBuckets {
+		h.counts = make([]uint64, h.numBuckets)
+	} else {
+		for j := range h.counts {
+			h.counts[j] = 0
 		}
-		h.shards[i].total = 0
-		h.shards[i].mean = 0
-		h.shards[i].m2 = 0
-		h.shards[i].min = math.Inf(1)
-		h.shards[i].max = math.Inf(-1)
-		h.shards[i].mu.Unlock()
+		h.counts = h.counts[:h.numBuckets]
 	}
+	h.total = 0
+	h.mean = 0
+	h.m2 = 0
+	h.min = math.Inf(1)
+	h.max = math.Inf(-1)
+	h.mu.Unlock()
 
 	if len(h.bounds) < h.numBuckets-1 {
 		h.bounds = make([]float64, h.numBuckets-1)
@@ -100,9 +105,11 @@ func (h *histogram) Init(opts ...HistogramOption) error {
 	}
 
 	// Build geometric bucket boundaries.
-	h.bounds[0] = h.min
+	// Geometric buckets grow exponentially based on the growth factor.
+	// bounds[i] = min * growth^i
+	h.bounds[0] = h.minVal
 	for i := 1; i < h.numBuckets-1; i++ {
-		h.bounds[i] = h.min * math.Pow(h.growth, float64(i))
+		h.bounds[i] = h.minVal * math.Pow(h.growth, float64(i))
 	}
 
 	// Precompute boundsHash for compatibility checks on merge.
@@ -114,38 +121,68 @@ func (h *histogram) Init(opts ...HistogramOption) error {
 // NewHistogram creates a new sharded histogram with geometric bucketing.
 // It takes a variable number of HistogramOption functions to configure the histogram.
 func NewHistogram(opts ...HistogramOption) (Histogram, error) {
-	h := new(histogram)
-	if err := h.Init(opts...); err != nil {
-		return nil, err
+	cfg := histogramConfig{}
+	for _, opt := range append(defaultHistogramOpts, opts...) {
+		if err := opt(&cfg); err != nil {
+			return nil, err
+		}
 	}
-	return h, nil
+
+	if cfg.NumShards <= 1 {
+		h := new(histogram)
+		if err := h.Init(opts...); err != nil {
+			return nil, err
+		}
+		return h, nil
+	}
+
+	sh := &shardedHistogram{
+		shards: make([]*histogram, cfg.NumShards),
+	}
+	for i := range sh.shards {
+		h := new(histogram)
+		if err := h.Init(opts...); err != nil {
+			return nil, err
+		}
+		sh.shards[i] = h
+	}
+	return sh, nil
 }
 
-// Reset resets the histogram to its initial state, clearing all data but keeping capacity.
-func (h *histogram) Reset() {
-	for i := range h.shards {
-		s := &h.shards[i]
-		s.mu.Lock()
-		s.total = 0
-		s.mean = 0
-		s.m2 = 0
-		s.min = math.Inf(1)
-		s.max = math.Inf(-1)
-		for j := range s.counts {
-			s.counts[j] = 0
-		}
-		s.mu.Unlock()
+// Reset resets the sharded histogram.
+func (sh *shardedHistogram) Reset() {
+	for _, h := range sh.shards {
+		h.Reset()
 	}
+}
+
+// Reset resets the histogram to its initial state.
+func (h *histogram) Reset() {
+	h.mu.Lock()
+	h.total = 0
+	h.mean = 0
+	h.m2 = 0
+	h.min = math.Inf(1)
+	h.max = math.Inf(-1)
+	for j := range h.counts {
+		h.counts[j] = 0
+	}
+	h.mu.Unlock()
 }
 
 // shardIndexForValue selects a shard index for the given value.
-// It uses a lightweight hash derived from the float64 bits to distribute
-// values across shards without allocations or external hashers.
-func (h *histogram) shardIndexForValue(val float64) int {
-	if h.numShards <= 1 {
+func (sh *shardedHistogram) shardIndexForValue(val float64) int {
+	if len(sh.shards) <= 1 {
 		return 0
 	}
-	return int(computeHash(val) % uint64(h.numShards))
+	return int(computeHash(val) % uint64(len(sh.shards)))
+}
+
+// Record adds a value to the sharded histogram.
+// It distributes values across shards to reduce lock contention.
+func (sh *shardedHistogram) Record(val float64) {
+	idx := sh.shardIndexForValue(val)
+	sh.shards[idx].Record(val)
 }
 
 // Record adds a value to the histogram. It is thread-safe.
@@ -157,26 +194,22 @@ func (h *histogram) Record(val float64) {
 		return
 	}
 
-	// Select shard for this value.
-	shardIdx := h.shardIndexForValue(val)
-	s := &h.shards[shardIdx]
-
 	// Determine bucket index for this value.
 	bucketIdx := h.findBucket(val)
 
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	h.mu.Lock()
+	defer h.mu.Unlock()
 
-	// Update bucket count and total count for this shard.
-	s.counts[bucketIdx]++
-	s.total++
+	// Update bucket count and total count.
+	h.counts[bucketIdx]++
+	h.total++
 
 	// Update min and max.
-	if val < s.min {
-		s.min = val
+	if val < h.min {
+		h.min = val
 	}
-	if val > s.max {
-		s.max = val
+	if val > h.max {
+		h.max = val
 	}
 
 	// Update mean and m2 using Welford's online algorithm for variance.
@@ -191,213 +224,231 @@ func (h *histogram) Record(val float64) {
 	//
 	// Here, `s.mean` is mean_n, `s.m2` is M_n, and `val` is x_n.
 	// We use FMA (Fused Multiply-Add) for better precision.
-	delta := val - s.mean
-	s.mean = math.FMA(delta, 1.0/float64(s.total), s.mean)
-	s.m2 = math.FMA(delta, val-s.mean, s.m2)
+	delta := val - h.mean
+	h.mean = math.FMA(delta, 1.0/float64(h.total), h.mean)
+	h.m2 = math.FMA(delta, val-h.mean, h.m2)
 }
 
 // findBucket determines the correct bucket index for a given value using
-// binary search over the precomputed bounds. This is efficient for a large
-// number of buckets.
+// a logarithmic formula for geometric buckets. This is O(1) instead of O(log N).
+//
+// Formula: index = log_{growth}(val / min) + 1
+//          index = ln(val/min) / ln(growth) + 1
 //
 // Buckets are interpreted as:
-//
-//	bucket 0:           (-inf, bounds[0]]
+//	bucket 0:           (-inf, bounds[0]]  (where bounds[0] == min)
 //	bucket i (1..N-2):  (bounds[i-1], bounds[i]]
 //	bucket N-1:         (bounds[N-2], +inf)
 func (h *histogram) findBucket(val float64) int {
-	idx, _ := slices.BinarySearch(h.bounds, val)
+	if val <= h.minVal {
+		return 0
+	}
+
+	// Use precomputed inverse log growth to avoid division
+	idx := int(math.Ceil(math.Log(val/h.minVal) * h.invLogGrowth))
+
+	if idx < 0 {
+		return 0
+	}
+	if idx >= h.numBuckets {
+		return h.numBuckets - 1
+	}
 	return idx
+}
+
+// Clone returns a deep copy of the sharded histogram.
+func (sh *shardedHistogram) Clone() Histogram {
+	newSH := &shardedHistogram{
+		shards: make([]*histogram, len(sh.shards)),
+	}
+	for i, h := range sh.shards {
+		newSH.shards[i] = h.Clone().(*histogram)
+	}
+	return newSH
 }
 
 // Clone returns a deep copy of the histogram.
 func (h *histogram) Clone() Histogram {
 	newH := new(histogram)
-	newH.min = h.min
-	newH.max = h.max
+	newH.minVal = h.minVal
+	newH.maxVal = h.maxVal
 	newH.growth = h.growth
+	newH.invLogGrowth = h.invLogGrowth
 	newH.numBuckets = h.numBuckets
-	newH.numShards = h.numShards
 	newH.boundsHash = h.boundsHash
 
 	// Copy bounds
 	// Bounds are immutable after initialization, so we can share the underlying array.
 	newH.bounds = h.bounds
 
-	// Copy shards
-	if cap(newH.shards) < len(h.shards) {
-		newH.shards = make([]histogramShard, len(h.shards))
+	h.mu.Lock()
+	newH.total = h.total
+	newH.mean = h.mean
+	newH.m2 = h.m2
+	newH.min = h.min
+	newH.max = h.max
+
+	if cap(newH.counts) < len(h.counts) {
+		newH.counts = make([]uint64, len(h.counts))
 	}
-	newH.shards = newH.shards[:len(h.shards)]
-
-	for i := range h.shards {
-		src := &h.shards[i]
-		dst := &newH.shards[i]
-
-		// We must lock the source shard to get a consistent snapshot
-		src.mu.Lock()
-		dst.total = src.total
-		dst.mean = src.mean
-		dst.m2 = src.m2
-		dst.min = src.min
-		dst.max = src.max
-
-		if cap(dst.counts) < len(src.counts) {
-			dst.counts = make([]uint64, len(src.counts))
-		}
-		dst.counts = dst.counts[:len(src.counts)]
-		copy(dst.counts, src.counts)
-		src.mu.Unlock()
-	}
+	newH.counts = newH.counts[:len(h.counts)]
+	copy(newH.counts, h.counts)
+	h.mu.Unlock()
 
 	return newH
 }
 
 // Merge merges this histogram into the provided Histogram.
-//
-// Semantics:
-//
-//	h.Merge(other) merges the data from h into other.
-//	Internally, this is implemented as other.merge(h).
-func (h *histogram) Merge(other Histogram) error {
-	return other.merge(h)
+func (sh *shardedHistogram) Merge(other Histogram) error {
+	if other == nil {
+		return nil
+	}
+	if o, ok := other.(*shardedHistogram); ok {
+		if len(sh.shards) != len(o.shards) {
+			return errors.New("incompatible histograms: shard count mismatch")
+		}
+		for i := range sh.shards {
+			if err := sh.shards[i].Merge(o.shards[i]); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	if _, ok := other.(*histogram); ok {
+		return errors.New("cannot merge single histogram into sharded histogram")
+	}
+	return errors.New("unknown histogram type")
 }
 
-// merge merges src into the receiver histogram (h).
-//
-// Precondition:
-//   - h.boundsCRC32 == src.boundsCRC32
-//   - len(h.shards) == len(src.shards)
-//
-// This method aggregates all shards of src into the corresponding shards
-// of h using atomic operations. It assumes that concurrent writes may
-// still happen on src and h, but the merge itself is safe.
-func (h *histogram) merge(src *histogram) error {
+// Merge merges this histogram into the provided Histogram.
+func (h *histogram) Merge(other Histogram) error {
+	if other == nil {
+		return nil
+	}
+	if o, ok := other.(*histogram); ok {
+		return h.mergeHistogram(o)
+	}
+	if _, ok := other.(*shardedHistogram); ok {
+		return errors.New("cannot merge sharded histogram into single histogram")
+	}
+	return errors.New("unknown histogram type")
+}
+
+// mergeHistogram merges data from src into h.
+func (h *histogram) mergeHistogram(src *histogram) error {
 	if h.boundsHash != src.boundsHash {
 		return errors.New("incompatible histograms: bounds checksum mismatch")
 	}
-	if len(h.shards) != len(src.shards) {
-		return errors.New("incompatible histograms: shard count mismatch")
+
+	src.mu.Lock()
+	srcTotal := src.total
+	if srcTotal == 0 {
+		src.mu.Unlock()
+		return nil
+	}
+	srcMean := src.mean
+	srcM2 := src.m2
+	srcMin := src.min
+	srcMax := src.max
+	srcCounts := slices.Clone(src.counts)
+	src.mu.Unlock()
+
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	for j := range h.counts {
+		if j < len(srcCounts) {
+			h.counts[j] += srcCounts[j]
+		}
 	}
 
-	for i := range h.shards {
-		dstShard := &h.shards[i]
-		srcShard := &src.shards[i]
+	// Merge statistics using Welford's method for combined variance
+	if h.total == 0 {
+		h.total = srcTotal
+		h.mean = srcMean
+		h.m2 = srcM2
+		h.min = srcMin
+		h.max = srcMax
+	} else {
+		n1 := float64(h.total)
+		n2 := float64(srcTotal)
+		delta := srcMean - h.mean
+		newTotal := n1 + n2
 
-		// Read source shard atomically
-		srcShard.mu.Lock()
-		srcTotal := srcShard.total
-		if srcTotal == 0 {
-			srcShard.mu.Unlock()
-			continue
+		h.mean = h.mean + delta*n2/newTotal
+		h.m2 = h.m2 + srcM2 + delta*delta*n1*n2/newTotal
+		h.total += srcTotal
+
+		if srcMin < h.min {
+			h.min = srcMin
 		}
-		srcMean := srcShard.mean
-		srcM2 := srcShard.m2
-		srcMin := srcShard.min
-		srcMax := srcShard.max
-		srcCounts := slices.Clone(srcShard.counts)
-		srcShard.mu.Unlock()
-
-		// Merge into dest shard
-		dstShard.mu.Lock()
-
-		// Merge counts
-		for j := range dstShard.counts {
-			if j < len(srcCounts) {
-				dstShard.counts[j] += srcCounts[j]
-			}
+		if srcMax > h.max {
+			h.max = srcMax
 		}
-
-		// Merge statistics using Welford's method
-		if dstShard.total == 0 {
-			dstShard.total = srcTotal
-			dstShard.mean = srcMean
-			dstShard.m2 = srcM2
-			dstShard.min = srcMin
-			dstShard.max = srcMax
-		} else {
-			n1 := float64(dstShard.total)
-			n2 := float64(srcTotal)
-			delta := srcMean - dstShard.mean
-			newTotal := n1 + n2
-
-			dstShard.mean = dstShard.mean + delta*n2/newTotal
-			dstShard.m2 = dstShard.m2 + srcM2 + delta*delta*n1*n2/newTotal
-			dstShard.total += srcTotal
-
-			if srcMin < dstShard.min {
-				dstShard.min = srcMin
-			}
-			if srcMax > dstShard.max {
-				dstShard.max = srcMax
-			}
-		}
-		dstShard.mu.Unlock()
 	}
 	return nil
 }
 
 // Snapshot returns a merged, consistent view of the histogram's data.
-//
-// It iterates through all shards and aggregates their statistics into a
-// single snapshot.
-func (h *histogram) Snapshot() *HistogramSnapshot {
+func (sh *shardedHistogram) Snapshot() *HistogramSnapshot {
 	snap := &HistogramSnapshot{
-		Counts: make([]uint64, h.numBuckets),
-		Bounds: h.bounds,
-		Min:    math.Inf(1),
-		Max:    math.Inf(-1),
+		Min: math.Inf(1),
+		Max: math.Inf(-1),
 	}
 
-	// Temporary variables for aggregating Welford stats
+	if len(sh.shards) == 0 {
+		return snap
+	}
+
+	first := sh.shards[0]
+	snap.Bounds = first.bounds
+	snap.Counts = make([]uint64, first.numBuckets)
+
 	var totalCount uint64
 	var grandMean float64
 	var grandM2 float64
 
-	for i := range h.shards {
-		s := &h.shards[i]
-		s.mu.Lock()
-		total := s.total
+	for _, h := range sh.shards {
+		h.mu.Lock()
+		total := h.total
 		if total == 0 {
-			s.mu.Unlock()
+			h.mu.Unlock()
 			continue
 		}
 
-		// Aggregate counts
-		for j := range s.counts {
-			snap.Counts[j] += s.counts[j]
+		for j := range h.counts {
+			snap.Counts[j] += h.counts[j]
 		}
 
-		// Aggregate Min/Max
-		if s.min < snap.Min {
-			snap.Min = s.min
+		if h.min < snap.Min {
+			snap.Min = h.min
 		}
-		if s.max > snap.Max {
-			snap.Max = s.max
+		if h.max > snap.Max {
+			snap.Max = h.max
 		}
 
-		// Aggregate Mean/M2
+		// Aggregate Mean/M2 using Welford's algorithm
 		if totalCount == 0 {
-			grandMean = s.mean
-			grandM2 = s.m2
+			grandMean = h.mean
+			grandM2 = h.m2
 			totalCount = total
 		} else {
 			n1 := float64(totalCount)
 			n2 := float64(total)
-			delta := s.mean - grandMean
+			delta := h.mean - grandMean
 			newTotal := n1 + n2
 
 			grandMean = grandMean + delta*n2/newTotal
-			grandM2 = grandM2 + s.m2 + delta*delta*n1*n2/newTotal
+			grandM2 = grandM2 + h.m2 + delta*delta*n1*n2/newTotal
 			totalCount += total
 		}
-		s.mu.Unlock()
+		h.mu.Unlock()
 	}
 
 	snap.Total = totalCount
 	snap.Mean = grandMean
 	snap.M2 = grandM2
-	snap.Sum = grandMean * float64(totalCount) // Back-calculate sum if needed
+	snap.Sum = grandMean * float64(totalCount)
 
 	if totalCount > 0 {
 		snap.SumSq = grandM2 + (grandMean*grandMean)*float64(totalCount)
@@ -407,8 +458,38 @@ func (h *histogram) Snapshot() *HistogramSnapshot {
 	return snap
 }
 
-// BoundsHash returns the precomputed hash of the histogram bounds.
-// It can be used to cheaply check compatibility before attempting a merge.
+func (h *histogram) Snapshot() *HistogramSnapshot {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	snap := &HistogramSnapshot{
+		Counts: slices.Clone(h.counts),
+		Bounds: h.bounds,
+		Total:  h.total,
+		Mean:   h.mean,
+		M2:     h.m2,
+		Min:    h.min,
+		Max:    h.max,
+	}
+
+	snap.Sum = h.mean * float64(h.total)
+	if h.total > 0 {
+		snap.SumSq = h.m2 + (h.mean*h.mean)*float64(h.total)
+		snap.StdDev = math.Sqrt(h.m2 / float64(h.total))
+	} else {
+		snap.Min = math.Inf(1)
+		snap.Max = math.Inf(-1)
+	}
+	return snap
+}
+
+func (sh *shardedHistogram) BoundsHash() uint64 {
+	if len(sh.shards) > 0 {
+		return sh.shards[0].BoundsHash()
+	}
+	return 0
+}
+
 func (h *histogram) BoundsHash() uint64 {
 	return h.boundsHash
 }
@@ -443,15 +524,11 @@ func (s *HistogramSnapshot) String() string {
 }
 
 // Merge merges another snapshot into this one.
-//
-// The bucket structure (Counts length and Bounds) must be compatible.
-// If the current snapshot is empty, it adopts the other's structure.
 func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 	if other == nil || other.Total == 0 {
 		return nil
 	}
 
-	// Initialize or validate bucket structure.
 	if len(other.Counts) > 0 {
 		if len(s.Counts) == 0 {
 			s.Counts = make([]uint64, len(other.Counts))
@@ -463,7 +540,6 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 		}
 	}
 
-	// Merge scalar stats.
 	if s.Total == 0 {
 		s.Min = other.Min
 		s.Max = other.Max
@@ -474,7 +550,6 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 		s.Mean = other.Mean
 		s.StdDev = other.StdDev
 	} else {
-		// Update Min/Max
 		if other.Min < s.Min {
 			s.Min = other.Min
 		}
@@ -482,7 +557,6 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 			s.Max = other.Max
 		}
 
-		// Welford's algorithm for combining mean and variance (M2)
 		n1 := float64(s.Total)
 		n2 := float64(other.Total)
 		delta := other.Mean - s.Mean
@@ -492,7 +566,6 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 		s.M2 = s.M2 + other.M2 + delta*delta*n1*n2/newTotal
 		s.StdDev = math.Sqrt(s.M2 / newTotal)
 
-		// Legacy field updates (simple addition)
 		s.Sum += other.Sum
 		s.SumSq += other.SumSq
 		s.Total += other.Total

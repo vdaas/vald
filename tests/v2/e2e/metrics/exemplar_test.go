@@ -38,9 +38,15 @@ func TestNewExemplar(t *testing.T) {
 				if got.Val == nil {
 					return errors.New("got nil exemplar")
 				}
-				e := got.Val.(*exemplar)
-				if e.k != 1 {
-					return errors.Errorf("expected k=1, got %d", e.k)
+				// Check interface implementation indirectly via Snapshot
+				snap := got.Val.Snapshot()
+				if snap == nil {
+					return errors.New("got nil snapshot")
+				}
+
+				// Optional: Check type if we care about it being sharded by default
+				if _, ok := got.Val.(*shardedExemplar); !ok {
+					return errors.New("expected default exemplar to be sharded")
 				}
 				return nil
 			},
@@ -49,12 +55,16 @@ func TestNewExemplar(t *testing.T) {
 			Name: "initialized with capacity",
 			Args: []ExemplarOption{
 				WithExemplarCapacity(10),
+				WithExemplarNumShards(1), // Force single shard for capacity check simplicity
 			},
 			CheckFunc: func(tt *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
 				if got.Val == nil {
 					return errors.New("got nil exemplar")
 				}
-				e := got.Val.(*exemplar)
+				e, ok := got.Val.(*exemplar)
+				if !ok {
+					return errors.New("expected single exemplar with shards=1")
+				}
 				if e.k != 10 {
 					return errors.Errorf("expected k=10, got %d", e.k)
 				}
@@ -86,7 +96,8 @@ func TestExemplar_Offer(t *testing.T) {
 		{
 			Name: "offer requests and check snapshot",
 			Args: args{
-				opts: []ExemplarOption{WithExemplarCapacity(3)},
+				// Use 1 shard to ensure deterministic "Top K" behavior when counts match capacity exactly
+				opts: []ExemplarOption{WithExemplarCapacity(3), WithExemplarNumShards(1)},
 				offers: []offer{
 					{100 * time.Millisecond, "req-1"},
 					{200 * time.Millisecond, "req-2"},
@@ -143,7 +154,7 @@ func TestExemplar_Offer(t *testing.T) {
 		{
 			Name: "snapshot is sorted by latency",
 			Args: args{
-				opts: []ExemplarOption{WithExemplarCapacity(3)},
+				opts: []ExemplarOption{WithExemplarCapacity(3), WithExemplarNumShards(1)},
 				offers: []offer{
 					{200 * time.Millisecond, "req-2"},
 					{100 * time.Millisecond, "req-1"},
@@ -389,7 +400,8 @@ func TestExemplar_Categories(t *testing.T) {
 		{
 			Name: "check categories with k=3",
 			Args: args{
-				opts: []ExemplarOption{WithExemplarCapacity(3)},
+				// Use 1 shard to simplify verification of Exact K behavior
+				opts: []ExemplarOption{WithExemplarCapacity(3), WithExemplarNumShards(1)},
 			},
 			CheckFunc: func(tt *testing.T, want test.Result[*ExemplarDetails], got test.Result[*ExemplarDetails]) error {
 				d := got.Val

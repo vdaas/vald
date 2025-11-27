@@ -31,6 +31,7 @@ metrics:
     num_shards: 16
   exemplar:
     capacity: 10
+    num_shards: 16
   range_scales:
     - name: request_id_10
       width: 10

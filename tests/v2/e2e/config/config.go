@@ -112,7 +112,8 @@ type TDigest struct {
 
 // Exemplar represents the configuration for an exemplar.
 type Exemplar struct {
-	Capacity int `json:"capacity,omitempty" yaml:"capacity,omitempty"`
+	Capacity  int `json:"capacity,omitempty" yaml:"capacity,omitempty"`
+	NumShards int `json:"num_shards,omitempty" yaml:"num_shards,omitempty"`
 }
 
 // Strategy represents a test strategy.
@@ -1005,6 +1006,7 @@ func (m *Metrics) Opts() (opts []metrics.Option) {
 	if m.Exemplar != nil {
 		opts = append(opts, metrics.WithExemplar(
 			metrics.WithExemplarCapacity(m.Exemplar.Capacity),
+			metrics.WithExemplarNumShards(m.Exemplar.NumShards),
 		))
 	}
 	if m.RangeScales != nil {

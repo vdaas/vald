@@ -17,11 +17,9 @@
 package metrics
 
 import (
-	"fmt"
 	"slices"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 )
 
@@ -64,20 +62,15 @@ type shardedTDigest struct {
 
 // tdigestConfig holds configuration for TDigest.
 type tdigestConfig struct {
-	Compression              float64
-	CompressionTriggerFactor float64
-	Quantiles                []float64
-	NumShards                int
+	Compression              float64   `json:"compression" yaml:"compression"`
+	CompressionTriggerFactor float64   `json:"compression_trigger_factor" yaml:"compression_trigger_factor"`
+	Quantiles                []float64 `json:"quantiles" yaml:"quantiles"`
+	NumShards                int       `json:"num_shards" yaml:"num_shards"`
 }
 
 // NewTDigest creates a new TDigest.
 func NewTDigest(opts ...TDigestOption) (TDigest, error) {
 	cfg := tdigestConfig{}
-	// Apply defaults via option functions first?
-	// The default options in option.go are applied in NewTDigest usually by appending.
-	// We need to apply defaults to cfg.
-	// But `defaultTDigestOpts` are `func(*tdigestConfig) error`.
-
 	// Apply options
 	for _, opt := range append(defaultTDigestOpts, opts...) {
 		if err := opt(&cfg); err != nil {
@@ -128,41 +121,6 @@ func (t *tdigest) Reset() {
 	t.buffer = t.buffer[:0]
 	t.count = 0
 	t.mu.Unlock()
-}
-
-// String implements the fmt.Stringer interface.
-func (t *shardedTDigest) String() string {
-	if t == nil {
-		return "No data collected for percentiles.\n"
-	}
-	quantiles := t.quantiles
-	if len(quantiles) == 0 {
-		return ""
-	}
-
-	merged := t.mergeAllShards()
-
-	var sb strings.Builder
-	for _, q := range quantiles {
-		fmt.Fprintf(&sb, "\tp%d:\t%.2f", uint(q*100), merged.Quantile(q))
-	}
-	fmt.Fprint(&sb, "\n")
-	return sb.String()
-}
-
-// String implements the fmt.Stringer interface for tdigest (shard).
-func (t *tdigest) String() string {
-	if t == nil {
-		return "No data collected for percentiles.\n"
-	}
-	quantiles := t.quantiles
-
-	var sb strings.Builder
-	for _, q := range quantiles {
-		fmt.Fprintf(&sb, "\tp%d:\t%.2f", uint(q*100), t.Quantile(q))
-	}
-	fmt.Fprint(&sb, "\n")
-	return sb.String()
 }
 
 // Quantile returns the estimated quantile.
@@ -284,10 +242,7 @@ func (t *tdigest) mergeCentroids(incoming []centroid) {
 
 // shardIndexForValue returns a shard index for the given value.
 func (t *shardedTDigest) shardIndexForValue(val float64) int {
-	if len(t.shards) <= 1 {
-		return 0
-	}
-	return int(computeHash(val) % uint64(len(t.shards)))
+	return shardIndex(computeHash(val), len(t.shards))
 }
 
 // Add adds a value to the t-digest.

@@ -24,30 +24,21 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/zeebo/xxh3"
 )
 
-// exemplar holds samples of requests in different categories.
+// exemplar is a thread-safe exemplar storage.
+// It implements the Exemplar interface.
 type exemplar struct {
 	mu sync.Mutex
-	k  int // The maximum number of exemplars to store per category.
+	k  int // Capacity
 
 	// Categories
 	slowest  priorityQueue       // Min-heap (Top-K Max Latency)
-	fastest  smallestLatencyHeap // Max-heap (Top-K Min Latency) to evict largest, keeping smallest.
-	failures priorityQueue       // Min-heap (Top-K Slowest Failures) - "Top Failures" usually implies notable ones (slow).
-	// If we wanted "Representative Failures", we'd use reservoir sampling.
-	// Given "Top XX Failures", and usually failures are bad if slow (or fast fail?),
-	// I'll implement "Slowest Failures".
-	// Wait, user said "Top XX Failures (sampling of failed requests)". "Sampling" suggests random.
-	// But "Top" suggests ordering.
-	// I'll use Reservoir Sampling for "Avg" (Representative) and "Failures" (Sampling).
-	// Actually, for Failures, maybe just latest?
-	// Let's stick to:
-	// 1. Slowest (Top K Latency)
-	// 2. Fastest (Bottom K Latency)
-	// 3. Average (Reservoir Sampling - Representative)
-	// 4. Failures (Reservoir Sampling - Representative of failures)
+	fastest  smallestLatencyHeap // Max-heap (Top-K Min Latency)
+	failures priorityQueue       // Min-heap (Top-K Slowest Failures)
 
 	avgSamples     []*ExemplarItem // Reservoir for representative samples
 	failureSamples []*ExemplarItem // Reservoir for failure samples
@@ -55,23 +46,36 @@ type exemplar struct {
 	failureCount   uint64          // Total count seen for failure reservoir
 
 	minLatency atomic.Int64 // Minimum latency in the 'slowest' heap (fast path)
-	maxLatency atomic.Int64 // Maximum latency in the 'fastest' heap (fast path for rejection?)
-	// Actually maxLatency helps reject large values for 'fastest' heap (which stores smallest).
-	// If val > maxLatency and heap full, reject.
+	maxLatency atomic.Int64 // Maximum latency in the 'fastest' heap (fast path)
+}
+
+// shardedExemplar is a sharded wrapper around exemplar.
+type shardedExemplar struct {
+	shards []*exemplar
+}
+
+// exemplarConfig holds configuration for Exemplar.
+type exemplarConfig struct {
+	Capacity  int `json:"capacity" yaml:"capacity"`
+	NumShards int `json:"num_shards" yaml:"num_shards"`
 }
 
 // Init initializes the exemplar with the given options.
 func (e *exemplar) Init(opts ...ExemplarOption) {
-	for _, opt := range opts {
-		opt(e)
+	cfg := exemplarConfig{
+		Capacity: 10,
 	}
-	e.k = max(e.k, 1)
-	e.mu.Lock()
+	// Apply user options
+	for _, opt := range opts {
+		opt(&cfg)
+	}
+	e.k = max(cfg.Capacity, 1)
 	e.initHeaps()
-	e.mu.Unlock()
 }
 
 func (e *exemplar) initHeaps() {
+	e.mu.Lock()
+	defer e.mu.Unlock()
 	if e.slowest == nil {
 		e.slowest = make(priorityQueue, 0, e.k)
 	} else {
@@ -100,19 +104,56 @@ func (e *exemplar) initHeaps() {
 
 // NewExemplar creates a new Exemplar with the given options.
 func NewExemplar(opts ...ExemplarOption) Exemplar {
-	e := new(exemplar)
-	e.Init(opts...)
-	return e
+	cfg := exemplarConfig{
+		Capacity: 10,
+	}
+	for _, opt := range append(defaultExemplarOpts, opts...) {
+		opt(&cfg)
+	}
+
+	if cfg.NumShards <= 1 {
+		e := new(exemplar)
+		// We need to pass capacity via options to Init, but options now take *exemplarConfig.
+		applyConfig := func(c *exemplarConfig) {
+			*c = cfg
+		}
+		e.Init(applyConfig)
+		return e
+	}
+
+	se := &shardedExemplar{
+		shards: make([]*exemplar, cfg.NumShards),
+	}
+	applyConfig := func(c *exemplarConfig) {
+		*c = cfg
+	}
+	for i := range se.shards {
+		e := new(exemplar)
+		e.Init(applyConfig)
+		se.shards[i] = e
+	}
+	return se
+}
+
+// Reset resets the sharded exemplar.
+func (se *shardedExemplar) Reset() {
+	for _, e := range se.shards {
+		e.Reset()
+	}
 }
 
 // Reset resets the exemplar to its initial state.
 func (e *exemplar) Reset() {
-	e.mu.Lock()
-	e.initHeaps() // Reset slices and counts
-	e.mu.Unlock()
+	e.initHeaps()
 }
 
-// Offer adds a request to the exemplar categories.
+// Offer adds a request to the sharded exemplar.
+func (se *shardedExemplar) Offer(latency time.Duration, requestID string, err error, msg string) {
+	shardIdx := shardIndex(xxh3.HashString(requestID), len(se.shards))
+	se.shards[shardIdx].Offer(latency, requestID, err, msg)
+}
+
+// Offer adds a request to the exemplar.
 func (e *exemplar) Offer(latency time.Duration, requestID string, err error, msg string) {
 	latInt := int64(latency)
 	isError := err != nil
@@ -206,17 +247,62 @@ func (e *exemplar) updateFailureSample(item *ExemplarItem) {
 	}
 }
 
-// Snapshot returns a snapshot of the exemplars.
-func (e *exemplar) Snapshot() []*ExemplarItem {
-	// For backward compatibility, return Slowest.
-	e.mu.Lock()
-	items := slices.Clone(e.slowest)
-	e.mu.Unlock()
+// Snapshot returns a snapshot of the exemplars (Slowest only for backward compatibility).
+func (se *shardedExemplar) Snapshot() []*ExemplarItem {
+	details, _ := se.DetailedSnapshot()
+	if details == nil {
+		return nil
+	}
+	return details.Slowest
+}
 
-	slices.SortFunc(items, func(a, b *ExemplarItem) int {
-		return cmp.Compare(b.Latency, a.Latency)
-	})
-	return items
+// Snapshot returns a snapshot of the exemplars (Slowest only for backward compatibility).
+func (e *exemplar) Snapshot() []*ExemplarItem {
+	details, _ := e.DetailedSnapshot()
+	if details == nil {
+		return nil
+	}
+	return details.Slowest
+}
+
+// DetailedSnapshot returns all categories.
+func (se *shardedExemplar) DetailedSnapshot() (*ExemplarDetails, error) {
+	if len(se.shards) == 0 {
+		return nil, nil
+	}
+
+	// Create a temporary exemplar to merge all shards
+	k := se.shards[0].k
+	merged := new(exemplar)
+	merged.Init(WithExemplarCapacity(k)) // Single shard
+
+	for _, shard := range se.shards {
+		shard.mu.Lock()
+
+		slowest := slices.Clone(shard.slowest)
+		fastest := slices.Clone(shard.fastest)
+		avg := slices.Clone(shard.avgSamples)
+		failures := slices.Clone(shard.failureSamples)
+		avgCount := shard.avgCount
+		failCount := shard.failureCount
+
+		shard.mu.Unlock()
+
+		for _, item := range slowest {
+			merged.updateSlowest(item)
+		}
+		for _, item := range fastest {
+			merged.updateFastest(item)
+		}
+
+		merged.avgSamples = mergeReservoir(merged.avgSamples, avg, merged.avgCount, avgCount, k)
+		merged.avgCount += merged.avgCount
+
+		merged.failureSamples = mergeReservoir(merged.failureSamples, failures, merged.failureCount, failCount, k)
+		merged.failureCount += failCount
+	}
+
+	return merged.DetailedSnapshot()
 }
 
 // DetailedSnapshot returns all categories.
@@ -231,22 +317,41 @@ func (e *exemplar) DetailedSnapshot() (*ExemplarDetails, error) {
 	e.mu.Unlock()
 
 	slices.SortFunc(snap.Slowest, func(a, b *ExemplarItem) int {
-		return cmp.Compare(b.Latency, a.Latency) // Descending
+		return cmp.Compare(b.Latency, a.Latency)
 	})
-
 	slices.SortFunc(snap.Fastest, func(a, b *ExemplarItem) int {
-		return cmp.Compare(a.Latency, b.Latency) // Ascending
+		return cmp.Compare(a.Latency, b.Latency)
 	})
-
 	slices.SortFunc(snap.Average, func(a, b *ExemplarItem) int {
-		return cmp.Compare(b.Latency, a.Latency) // Descending
+		return cmp.Compare(b.Latency, a.Latency)
 	})
-
 	slices.SortFunc(snap.Failures, func(a, b *ExemplarItem) int {
-		return cmp.Compare(b.Latency, a.Latency) // Descending
+		return cmp.Compare(b.Latency, a.Latency)
 	})
 
 	return snap, nil
+}
+
+// Merge merges another exemplar into this one.
+func (se *shardedExemplar) Merge(other Exemplar) error {
+	if other == nil {
+		return nil
+	}
+	if o, ok := other.(*shardedExemplar); ok {
+		if len(se.shards) != len(o.shards) {
+			return errors.New("incompatible exemplars: shard count mismatch")
+		}
+		for i := range se.shards {
+			if err := se.shards[i].Merge(o.shards[i]); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	if _, ok := other.(*exemplar); ok {
+		return errors.New("cannot merge single exemplar into sharded exemplar")
+	}
+	return errors.New("unknown exemplar type")
 }
 
 // Merge merges another exemplar into this one.
@@ -254,47 +359,40 @@ func (e *exemplar) Merge(other Exemplar) error {
 	if other == nil {
 		return nil
 	}
-	o, ok := other.(*exemplar)
-	if !ok {
-		// Fallback to offering items one by one if the type is not the same.
-		details, _ := other.DetailedSnapshot()
-		if details == nil {
-			return nil
-		}
-		for _, ex := range details.Slowest {
-			e.Offer(ex.Latency, ex.RequestID, ex.Err, ex.Msg)
-		}
-		for _, ex := range details.Fastest {
-			e.Offer(ex.Latency, ex.RequestID, ex.Err, ex.Msg)
-		}
-		for _, ex := range details.Average {
-			e.Offer(ex.Latency, ex.RequestID, ex.Err, ex.Msg)
-		}
-		for _, ex := range details.Failures {
-			e.Offer(ex.Latency, ex.RequestID, ex.Err, ex.Msg)
-		}
-		return nil
+	if o, ok := other.(*exemplar); ok {
+		return e.mergeExemplar(o)
 	}
+	if _, ok := other.(*shardedExemplar); ok {
+		return errors.New("cannot merge sharded exemplar into single exemplar")
+	}
+	return errors.New("unknown exemplar type")
+}
+
+func (e *exemplar) mergeExemplar(src *exemplar) error {
+	src.mu.Lock()
+	slowest := slices.Clone(src.slowest)
+	fastest := slices.Clone(src.fastest)
+	avg := slices.Clone(src.avgSamples)
+	failures := slices.Clone(src.failureSamples)
+	avgCount := src.avgCount
+	failCount := src.failureCount
+	src.mu.Unlock()
 
 	e.mu.Lock()
-	o.mu.Lock()
 	defer e.mu.Unlock()
-	defer o.mu.Unlock()
 
-	// Merge heaps by offering all items from the other heap.
-	for _, item := range o.slowest {
+	for _, item := range slowest {
 		e.updateSlowest(item)
 	}
-	for _, item := range o.fastest {
+	for _, item := range fastest {
 		e.updateFastest(item)
 	}
 
-	// Merge reservoirs using a weighted algorithm.
-	e.avgSamples = e.mergeReservoir(e.avgSamples, o.avgSamples, e.avgCount, o.avgCount)
-	e.failureSamples = e.mergeReservoir(e.failureSamples, o.failureSamples, e.failureCount, o.failureCount)
+	e.avgSamples = mergeReservoir(e.avgSamples, avg, e.avgCount, avgCount, e.k)
+	e.avgCount += avgCount
 
-	e.avgCount += o.avgCount
-	e.failureCount += o.failureCount
+	e.failureSamples = mergeReservoir(e.failureSamples, failures, e.failureCount, failCount, e.k)
+	e.failureCount += failCount
 
 	return nil
 }
@@ -302,16 +400,13 @@ func (e *exemplar) Merge(other Exemplar) error {
 // mergeReservoir merges two reservoir samples (dst and src) into a new reservoir.
 // It uses a weighted selection algorithm to ensure that the merged reservoir is a
 // statistically valid sample of the combined population.
-func (e *exemplar) mergeReservoir(dst, src []*ExemplarItem, n1, n2 uint64) []*ExemplarItem {
+func mergeReservoir(dst, src []*ExemplarItem, n1, n2 uint64, k int) []*ExemplarItem {
 	if n1 == 0 {
 		return src
 	}
 	if n2 == 0 {
 		return dst
 	}
-
-	n := n1 + n2
-	k := e.k
 
 	// If the combined size is less than or equal to k, just return the combined slice.
 	if len(dst)+len(src) <= k {
@@ -320,39 +415,59 @@ func (e *exemplar) mergeReservoir(dst, src []*ExemplarItem, n1, n2 uint64) []*Ex
 
 	// Create a new reservoir by probabilistically selecting items from both reservoirs.
 	newReservoir := make([]*ExemplarItem, 0, k)
+
+	// Weighted reservoir sampling merge
+	// Algorithm:
+	// We want to select k items from the union of two reservoirs representing populations of size n1 and n2.
+	// Total population N = n1 + n2.
+	// We iterate k times. In each step, we pick an item from reservoir 1 with probability n1/N, and from reservoir 2 with probability n2/N.
+	// Once an item is picked, we remove it from the source reservoir and decrement the corresponding population count (n1 or n2) and N.
+
+	n := n1 + n2
+	currN1 := n1
+	currN2 := n2
+
+	d := slices.Clone(dst)
+	s := slices.Clone(src)
+
 	for range k {
-		// Decide which reservoir to draw from based on their relative weights.
-		if rand.Uint64N(n) < n1 {
+		if rand.Uint64N(n) < currN1 {
 			// Draw from the first reservoir.
-			if len(dst) > 0 {
-				idx := rand.IntN(len(dst))
-				newReservoir = append(newReservoir, dst[idx])
-				// Remove the selected item to avoid picking it again.
+			if len(d) > 0 {
+				idx := rand.IntN(len(d))
+				newReservoir = append(newReservoir, d[idx])
+				// Remove the selected item.
 				// Use "Swap and Remove" pattern for O(1) performance.
-				// 1. Swap the selected item with the last item.
-				dst[idx] = dst[len(dst)-1]
-				// 2. Zero out the last item to prevent memory leaks (pointers).
-				dst[len(dst)-1] = nil
-				// 3. Truncate the slice.
-				dst = slices.Delete(dst, len(dst)-1, len(dst))
-				n1--
+				d[idx] = d[len(d)-1]
+				d = d[:len(d)-1]
+				currN1--
 			}
 		} else {
 			// Draw from the second reservoir.
-			if len(src) > 0 {
-				idx := rand.IntN(len(src))
-				newReservoir = append(newReservoir, src[idx])
+			if len(s) > 0 {
+				idx := rand.IntN(len(s))
+				newReservoir = append(newReservoir, s[idx])
 				// Remove the selected item.
 				// Use "Swap and Remove" pattern for O(1) performance.
-				src[idx] = src[len(src)-1]
-				src[len(src)-1] = nil
-				src = slices.Delete(src, len(src)-1, len(src))
-				n2--
+				s[idx] = s[len(s)-1]
+				s = s[:len(s)-1]
+				currN2--
 			}
 		}
 		n--
 	}
 	return newReservoir
+}
+
+// Clone returns a deep copy.
+func (se *shardedExemplar) Clone() Exemplar {
+	newSE := &shardedExemplar{
+		shards: make([]*exemplar, len(se.shards)),
+	}
+	for i, e := range se.shards {
+		newSE.shards[i] = e.Clone().(*exemplar)
+	}
+	return newSE
 }
 
 // Clone returns a deep copy.
@@ -436,15 +551,10 @@ func (pq *priorityQueue) Pop() any {
 }
 
 // smallestLatencyHeap implements a Max-Heap to store the K smallest latencies.
-// The root of the heap is the largest value among the smallest K.
-// When a new value arrives that is smaller than the root, we pop the root (largest)
-// and push the new value, thus maintaining the K smallest values.
 type smallestLatencyHeap []*ExemplarItem
 
 func (pq smallestLatencyHeap) Len() int { return len(pq) }
 
-// Less returns true if element i is "smaller" than j.
-// Since this is a Max-Heap (to evict the largest), "smaller" means "greater latency".
 func (pq smallestLatencyHeap) Less(i, j int) bool {
 	return pq[i].Latency > pq[j].Latency
 }

@@ -231,7 +231,8 @@ func TestHistogram_Merge(t *testing.T) {
 			h2.Record(r)
 		}
 
-		if err := h1.Merge(h2); err != nil {
+		// Merge h1 INTO h2.
+		if err := h2.Merge(h1); err != nil {
 			return nil, err
 		}
 		return h2.Snapshot(), nil
@@ -275,14 +276,14 @@ func TestHistogram_Merge(t *testing.T) {
 					WithHistogramMin(1),
 					WithHistogramGrowth(2),
 					WithHistogramNumBuckets(10),
-					WithHistogramNumShards(1),
+					WithHistogramNumShards(2),
 				},
 				h1Records: []float64{10, 20},
 				h2Opts: []HistogramOption{
 					WithHistogramMin(1),
 					WithHistogramGrowth(2),
 					WithHistogramNumBuckets(10),
-					WithHistogramNumShards(2), // Different shard count
+					WithHistogramNumShards(3), // Different shard count
 				},
 				h2Records: []float64{30, 40},
 			},
