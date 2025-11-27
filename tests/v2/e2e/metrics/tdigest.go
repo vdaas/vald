@@ -191,7 +191,19 @@ func (t *tdigest) flush() {
 // It assumes the caller holds t.mu.
 func (t *tdigest) mergeCentroids(incoming []centroid) {
 	if len(t.centroids) == 0 {
-		t.centroids = slices.Clone(incoming)
+		needed := len(incoming)
+		// Reuse t.centroids buffer if possible
+		if cap(t.centroids) < needed {
+			// Or reuse t.swap if it's large enough
+			if cap(t.swap) >= needed {
+				t.centroids, t.swap = t.swap, t.centroids
+			} else {
+				t.centroids = make([]centroid, needed)
+			}
+		}
+		t.centroids = t.centroids[:needed]
+		copy(t.centroids, incoming)
+
 		for _, c := range incoming {
 			t.count += c.Weight
 		}
@@ -433,7 +445,7 @@ func (t *tdigest) compress() {
 		}
 	}
 
-	t.centroids = slices.Clip(append(out, current))
+	t.centroids = append(out, current)
 }
 
 // Clone returns a deep copy of the t-digest.
