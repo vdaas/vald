@@ -264,7 +264,18 @@ func (t *tdigest) Quantile(q float64) float64 {
 				// Degenerate case; just return current mean.
 				return c.Mean
 			}
-			return prev.Mean + (c.Mean-prev.Mean)*max(min((target-sum)/c.Weight, 0), 1)
+			// Calculate fraction of the weight contribution
+			fraction := (target - sum) / c.Weight
+
+			// Clamp fraction to [0, 1]
+			if fraction < 0 {
+				fraction = 0
+			} else if fraction > 1 {
+				fraction = 1
+			}
+
+			// Linear interpolation
+			return prev.Mean + (c.Mean-prev.Mean)*fraction
 		}
 		sum = nextSum
 	}

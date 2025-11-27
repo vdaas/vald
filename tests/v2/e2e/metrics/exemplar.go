@@ -33,9 +33,9 @@ type exemplar struct {
 	k  int // The maximum number of exemplars to store per category.
 
 	// Categories
-	slowest  priorityQueue    // Min-heap (Top-K Max Latency)
-	fastest  maxPriorityQueue // Max-heap (Top-K Min Latency)
-	failures priorityQueue    // Min-heap (Top-K Slowest Failures) - "Top Failures" usually implies notable ones (slow).
+	slowest  priorityQueue       // Min-heap (Top-K Max Latency)
+	fastest  SmallestLatencyHeap // Max-heap (Top-K Min Latency) to evict largest, keeping smallest.
+	failures priorityQueue       // Min-heap (Top-K Slowest Failures) - "Top Failures" usually implies notable ones (slow).
 	// If we wanted "Representative Failures", we'd use reservoir sampling.
 	// Given "Top XX Failures", and usually failures are bad if slow (or fast fail?),
 	// I'll implement "Slowest Failures".
@@ -78,7 +78,7 @@ func (e *exemplar) initHeaps() {
 		e.slowest = e.slowest[:0]
 	}
 	if e.fastest == nil {
-		e.fastest = make(maxPriorityQueue, 0, e.k)
+		e.fastest = make(SmallestLatencyHeap, 0, e.k)
 	} else {
 		e.fastest = e.fastest[:0]
 	}
@@ -207,50 +207,12 @@ func (e *exemplar) updateFailureSample(item *ExemplarItem) {
 }
 
 // Snapshot returns a snapshot of the exemplars.
-// It returns a flat list. The user might want distinct lists.
-// For backward compatibility, we might return all?
-// Or we should change the return type? The interface `Exemplar` returns `[]*ExemplarItem`.
-// `GlobalSnapshot` has `Exemplar []*ExemplarItem`.
-// I should probably return "Slowest" as the primary for backward compat, or mix them?
-// Given the request "Expand Exemplar Categories", likely the output format should change.
-// However, changing the return type breaks the interface and `GlobalSnapshot`.
-// I will flatten them into one list for now, or return just Slowest?
-// The prompt said "Refactor this to support multiple distinct exemplar categories".
-// This implies the output should distinguish them.
-// But `GlobalSnapshot` struct has `Exemplar []*ExemplarItem`.
-// I can't easily change `GlobalSnapshot` struct without breaking consumers (unless I add fields).
-// I will add fields to `GlobalSnapshot`? No, `GlobalSnapshot` is defined in `metrics.go` which uses `[]*ExemplarItem`.
-// I will update `GlobalSnapshot` in `metrics.go` later if needed.
-// For now `Snapshot()` will return the "Slowest" ones to satisfy the interface,
-// but I should probably add a new method `SnapshotDetails()`?
-// Or return all combined?
-// If I return all combined, they are just a list.
-//
-// I will modify the `Exemplar` interface in `interface.go` (which I haven't read but assume exists)
-// or just modify `Snapshot` to return all?
-//
-// If I modify `metrics.go`'s `GlobalSnapshot` struct, I can add `Fastest`, `Average`, `Failures`.
-// Let's check `metrics.go` again.
-// `Exemplars []*ExemplarItem`.
-//
-// I will update `metrics.go` to include new fields.
-// But first, let's implement `Snapshot` here to return a map or struct?
-// Since `metrics.go` expects `[]*ExemplarItem`, I'll return a combined list or I need to change `metrics.go`.
-//
-// I will stick to returning "Slowest" in `Snapshot()` for backward compatibility if forced,
-// BUT I will add `DetailedSnapshot` method.
-//
-// Actually, `metrics.go` calls `c.exemplars.Snapshot()`.
-// I should update `metrics.go` to use the new categories.
-//
-// So, I will change `Snapshot` to return a struct `ExemplarSnapshot`.
-// But `Exemplar` is an interface. I need to check `interface.go`.
-
 func (e *exemplar) Snapshot() []*ExemplarItem {
 	// For backward compatibility, return Slowest.
 	e.mu.Lock()
-	defer e.mu.Unlock()
 	items := slices.Clone(e.slowest)
+	e.mu.Unlock()
+
 	slices.SortFunc(items, func(a, b *ExemplarItem) int {
 		return cmp.Compare(b.Latency, a.Latency)
 	})
@@ -417,7 +379,7 @@ func (e *exemplar) Clone() Exemplar {
 		v := *it
 		newE.slowest[i] = &v
 	}
-	newE.fastest = make(maxPriorityQueue, len(e.fastest), cap(e.fastest))
+	newE.fastest = make(SmallestLatencyHeap, len(e.fastest), cap(e.fastest))
 	for i, it := range e.fastest {
 		v := *it
 		newE.fastest[i] = &v
@@ -469,36 +431,30 @@ func (pq *priorityQueue) Pop() any {
 	return item
 }
 
-// maxPriorityQueue implements max-heap (for Fastest).
-type maxPriorityQueue []*ExemplarItem
+// SmallestLatencyHeap implements a Max-Heap to store the K smallest latencies.
+// The root of the heap is the largest value among the smallest K.
+// When a new value arrives that is smaller than the root, we pop the root (largest)
+// and push the new value, thus maintaining the K smallest values.
+type SmallestLatencyHeap []*ExemplarItem
 
-func (pq maxPriorityQueue) Len() int { return len(pq) }
-func (pq maxPriorityQueue) Less(i, j int) bool {
-	return pq[i].Latency > pq[j].Latency // Largest comes first? No, heap.Pop returns smallest?
-	// heap.Pop returns the element at index 0 (the root).
-	// heap.Fix/Push/Pop maintains the heap invariant: pq[i] <= pq[2*i+1] etc.
-	// Less(i, j) returns true if i should appear before j (i is "smaller" in heap terms).
-	// For Max-Heap, we want the root to be the Largest. So Less means "Greater".
-	// pq[i].Latency > pq[j].Latency.
-	// Wait, for "Fastest", we want to keep K *smallest* latencies.
-	// A standard Min-Heap keeps the *smallest* at the root. If full, we replace root?
-	// If full, we want to discard the *Largest* of the K smallest to make room for a smaller one.
-	// So we need a Max-Heap of size K. The root is the Largest of the set.
-	// If new < Root, replace Root.
-	// Yes.
-	// So Less should be >.
+func (pq SmallestLatencyHeap) Len() int { return len(pq) }
+
+// Less returns true if element i is "smaller" than j.
+// Since this is a Max-Heap (to evict the largest), "smaller" means "greater latency".
+func (pq SmallestLatencyHeap) Less(i, j int) bool {
+	return pq[i].Latency > pq[j].Latency
 }
 
-func (pq maxPriorityQueue) Swap(i, j int) {
+func (pq SmallestLatencyHeap) Swap(i, j int) {
 	pq[i], pq[j] = pq[j], pq[i]
 }
 
-func (pq *maxPriorityQueue) Push(x any) {
+func (pq *SmallestLatencyHeap) Push(x any) {
 	item := x.(*ExemplarItem)
 	*pq = append(*pq, item)
 }
 
-func (pq *maxPriorityQueue) Pop() any {
+func (pq *SmallestLatencyHeap) Pop() any {
 	old := *pq
 	n := len(old)
 	item := old[n-1]

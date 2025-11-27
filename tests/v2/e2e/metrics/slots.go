@@ -83,11 +83,22 @@ func (s *slot) reset() {
 func (s *slot) Record(rr *RequestResult, windowIdx uint64) {
 	// Optimistic read lock to check if the slot is valid for the current window.
 	s.mu.RLock()
+
+	// Ignore late arrivals for older windows to preserve data integrity.
+	if windowIdx < s.WindowStart {
+		s.mu.RUnlock()
+		return
+	}
+
 	if s.WindowStart != windowIdx {
 		s.mu.RUnlock()
 		// Slot is stale or uninitialized. Upgrade to write lock to reset.
 		s.mu.Lock()
 		// Double-check under write lock.
+		if windowIdx < s.WindowStart {
+			s.mu.Unlock()
+			return
+		}
 		if s.WindowStart != windowIdx {
 			s.reset()
 			s.WindowStart = windowIdx
