@@ -30,7 +30,12 @@ type centroid struct {
 	Weight float64
 }
 
-const defaultBufferCapacity = 128
+const (
+	defaultBufferCapacity = 128
+	// maxBufferCapacity defines a threshold to shrink buffers if they grow too large.
+	// 4096 * 8 bytes (float64) = 32KB.
+	maxBufferCapacity = 4096
+)
 
 // tdigest is a custom implementation of the t-digest algorithm (used as a shard).
 //
@@ -117,10 +122,38 @@ func (t *shardedTDigest) Reset() {
 // Reset resets the t-digest shard to its initial state.
 func (t *tdigest) Reset() {
 	t.mu.Lock()
-	t.centroids = t.centroids[:0]
-	t.buffer = t.buffer[:0]
+	defer t.mu.Unlock()
+
+	// Release memory if buffers are excessively large
+	if cap(t.buffer) > maxBufferCapacity {
+		t.buffer = make([]float64, 0, defaultBufferCapacity)
+	} else {
+		t.buffer = t.buffer[:0]
+	}
+
+	// For centroids, scratch, and swap, we use a similar heuristic
+	// assuming typical usage won't require massive centroid lists if compressed.
+	// But if they grew large (e.g. before compression or during heavy merge), shrink them.
+	// Using maxBufferCapacity as a proxy for acceptable size.
+	if cap(t.centroids) > maxBufferCapacity {
+		t.centroids = make([]centroid, 0, defaultBufferCapacity)
+	} else {
+		t.centroids = t.centroids[:0]
+	}
+
+	if cap(t.scratch) > maxBufferCapacity {
+		t.scratch = nil // Lazy re-allocation on next use
+	} else {
+		t.scratch = t.scratch[:0]
+	}
+
+	if cap(t.swap) > maxBufferCapacity {
+		t.swap = nil // Lazy re-allocation on next use
+	} else {
+		t.swap = t.swap[:0]
+	}
+
 	t.count = 0
-	t.mu.Unlock()
 }
 
 // Quantile returns the estimated quantile.

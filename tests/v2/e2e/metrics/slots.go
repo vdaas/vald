@@ -115,7 +115,21 @@ func (s *slot) recordInternal(rr *RequestResult) {
 	if rr.Err != nil {
 		s.Errors.Add(1)
 	}
-	s.updatedNS.Store(rr.EndedAt.UnixNano())
+
+	// Update updatedNS (max) with CAS loop for correctness,
+	// because multiple readers (fast path) can execute this concurrently.
+	if e := rr.EndedAt.UnixNano(); e > 0 {
+		for {
+			curr := s.updatedNS.Load()
+			if e <= curr {
+				break
+			}
+			if s.updatedNS.CompareAndSwap(curr, e) {
+				break
+			}
+		}
+	}
+
 	if s.Latency != nil {
 		s.Latency.Record(float64(rr.Latency.Nanoseconds()))
 	}
@@ -187,9 +201,14 @@ func (s *slot) Merge(other Slot) error {
 
 	s.Total.Add(os.Total.Load())
 	s.Errors.Add(os.Errors.Load())
-	if os.updatedNS.Load() > s.updatedNS.Load() {
-		s.updatedNS.Store(os.updatedNS.Load())
+
+	// Merge updatedNS using CAS loop or simple check-and-set if locked
+	// But since we hold lock, check-and-set is safe against other writers to `s`.
+	// But `os` is also locked.
+	if t := os.updatedNS.Load(); t > s.updatedNS.Load() {
+		s.updatedNS.Store(t)
 	}
+
 	if s.Latency != nil && os.Latency != nil {
 		if err := s.Latency.Merge(os.Latency); err != nil {
 			return err

@@ -25,6 +25,10 @@ import (
 	"github.com/vdaas/vald/internal/sync"
 )
 
+// paddingSize is the size of the padding used to prevent false sharing.
+// It is set to 128 bytes, which covers two cache lines on most architectures (64 bytes each).
+const paddingSize = 128
+
 // histogram is a thread-safe, sharded histogram that uses geometric bucketing.
 // It is designed for high-performance, concurrent metric recording by distributing
 // updates across multiple shards, reducing false-sharing and contention.
@@ -44,7 +48,7 @@ type histogram struct {
 	boundsHash   uint64
 	bucketFinder func(float64) int
 	mu           sync.Mutex
-	_            [128]byte
+	_            [paddingSize]byte
 }
 
 // shardedHistogram is a sharded wrapper around histogram.

@@ -396,6 +396,8 @@ func (e *exemplar) mergeExemplar(src *exemplar) error {
 // mergeReservoir merges two reservoir samples (dst and src) into a new reservoir.
 // It uses a weighted selection algorithm to ensure that the merged reservoir is a
 // statistically valid sample of the combined population.
+//
+// NOTE: dst and src slices may be modified in-place to avoid allocations.
 func mergeReservoir(dst, src []*ExemplarItem, n1, n2 uint64, k int) []*ExemplarItem {
 	if n1 == 0 {
 		return src
@@ -406,6 +408,8 @@ func mergeReservoir(dst, src []*ExemplarItem, n1, n2 uint64, k int) []*ExemplarI
 
 	// If the combined size is less than or equal to k, just return the combined slice.
 	if len(dst)+len(src) <= k {
+		// Ensure result fits in k if possible, but here we just append.
+		// If capacity allows, append is allocation-free.
 		return append(dst, src...)
 	}
 
@@ -423,8 +427,11 @@ func mergeReservoir(dst, src []*ExemplarItem, n1, n2 uint64, k int) []*ExemplarI
 	currN1 := n1
 	currN2 := n2
 
-	d := slices.Clone(dst)
-	s := slices.Clone(src)
+	// We use dst and src directly, modifying them (Swap and Remove).
+	// This avoids allocating clones.
+	// Callers must pass copies or disposable slices.
+	d := dst
+	s := src
 
 	for range k {
 		if rand.Uint64N(n) < currN1 {

@@ -249,6 +249,28 @@ func (c *collector) merge(other *collector) error {
 	other.total.Add(c.total.Load())
 	other.errors.Add(c.errors.Load())
 
+	c.mergeTimestamps(other)
+
+	if err := c.mergeHistograms(other); err != nil {
+		return err
+	}
+	if err := c.mergeTDigests(other); err != nil {
+		return err
+	}
+	if err := c.mergeExemplars(other); err != nil {
+		return err
+	}
+
+	c.mergeCounters(other)
+	if err := c.mergeScales(other); err != nil {
+		return err
+	}
+	c.mergeCodes(other)
+
+	return nil
+}
+
+func (c *collector) mergeTimestamps(other *collector) {
 	if t := c.startTime.Load(); t > 0 {
 		for {
 			curr := other.startTime.Load()
@@ -261,14 +283,6 @@ func (c *collector) merge(other *collector) error {
 		}
 	}
 	if t := c.lastUpdated.Load(); t > 0 {
-		// Optimized update: Check then Store (relaxed consistency for lastUpdated)
-		// Or keep standard loop if we want to be correct.
-		// For merging, we want to ensure other gets max(other, t).
-		// Load-Check-CAS loop is correct.
-		// Task 1-C only mentioned Record optimization.
-		// I'll keep the loop here for correctness during merge, or optimize it similarly.
-		// Given merge is infrequent, correctness matters more.
-		// But I'll use Load-Check-CAS.
 		for {
 			curr := other.lastUpdated.Load()
 			if t <= curr {
@@ -279,7 +293,9 @@ func (c *collector) merge(other *collector) error {
 			}
 		}
 	}
+}
 
+func (c *collector) mergeHistograms(other *collector) error {
 	if c.latencies != nil && other.latencies != nil {
 		if err := other.latencies.Merge(c.latencies); err != nil {
 			return err
@@ -290,6 +306,10 @@ func (c *collector) merge(other *collector) error {
 			return err
 		}
 	}
+	return nil
+}
+
+func (c *collector) mergeTDigests(other *collector) error {
 	if c.latPercentiles != nil && other.latPercentiles != nil {
 		if err := other.latPercentiles.Merge(c.latPercentiles); err != nil {
 			return err
@@ -300,11 +320,19 @@ func (c *collector) merge(other *collector) error {
 			return err
 		}
 	}
+	return nil
+}
+
+func (c *collector) mergeExemplars(other *collector) error {
 	if c.exemplars != nil && other.exemplars != nil {
 		if err := other.exemplars.Merge(c.exemplars); err != nil {
 			return err
 		}
 	}
+	return nil
+}
+
+func (c *collector) mergeCounters(other *collector) {
 	for name, h := range c.counters {
 		if mh, ok := other.counters[name]; ok {
 			mh.value.Add(h.value.Load())
@@ -315,6 +343,9 @@ func (c *collector) merge(other *collector) error {
 			other.counters[name].value.Store(h.value.Load())
 		}
 	}
+}
+
+func (c *collector) mergeScales(other *collector) error {
 	for i, s := range c.scales {
 		if i < len(other.scales) {
 			if err := other.scales[i].Merge(s); err != nil {
@@ -324,13 +355,13 @@ func (c *collector) merge(other *collector) error {
 			other.scales = append(other.scales, s)
 		}
 	}
+	return nil
+}
 
-	// Merge codes
+func (c *collector) mergeCodes(other *collector) {
 	for i := range c.codes {
 		other.codes[i].Add(c.codes[i].Load())
 	}
-
-	return nil
 }
 
 // Record processes a single RequestResult, updating all relevant metrics.
@@ -351,11 +382,16 @@ func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 			}
 		}
 	}
-	// Update lastUpdated (max) with relaxed Load-Check-Store for performance
+	// Update lastUpdated (max) with CAS loop for correctness
 	if e := rr.EndedAt.UnixNano(); e > 0 {
-		curr := c.lastUpdated.Load()
-		if e > curr {
-			c.lastUpdated.Store(e)
+		for {
+			curr := c.lastUpdated.Load()
+			if e <= curr {
+				break
+			}
+			if c.lastUpdated.CompareAndSwap(curr, e) {
+				break
+			}
 		}
 	}
 
