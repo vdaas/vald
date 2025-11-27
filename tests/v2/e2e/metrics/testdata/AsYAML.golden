@@ -1,5 +1,7 @@
 total: 100
 errors: 10
+starttime: 0001-01-01T00:00:00Z
+lastupdated: 0001-01-01T00:00:00Z
 latencies:
   counts: []
   bounds: []

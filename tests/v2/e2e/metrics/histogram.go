@@ -254,11 +254,8 @@ func (h *histogram) Clone() Histogram {
 	newH.boundsHash = h.boundsHash
 
 	// Copy bounds
-	if cap(newH.bounds) < len(h.bounds) {
-		newH.bounds = make([]float64, len(h.bounds))
-	}
-	newH.bounds = newH.bounds[:len(h.bounds)]
-	copy(newH.bounds, h.bounds)
+	// Bounds are immutable after initialization, so we can share the underlying array.
+	newH.bounds = h.bounds
 
 	// Copy shards
 	if cap(newH.shards) < len(h.shards) {
@@ -433,7 +430,6 @@ func (h *histogram) Snapshot() *HistogramSnapshot {
 	snap.Total = totalCount
 	snap.Mean = grandMean
 	snap.Sum = grandMean * float64(totalCount) // Back-calculate sum if needed
-	snap.SumSq = grandM2 + snap.Sum*snap.Mean  // Approx back-calculate sumSq if needed?
 
 	if totalCount > 0 {
 		snap.SumSq = grandM2 + (grandMean*grandMean)*float64(totalCount)
@@ -499,17 +495,14 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 	}
 
 	// Merge scalar stats.
-
-	otherM2 := other.StdDev * other.StdDev * float64(other.Total)
-	sM2 := s.StdDev * s.StdDev * float64(s.Total)
-
 	if s.Total == 0 {
 		s.Min = other.Min
 		s.Max = other.Max
-		s.Mean = other.Mean
-		s.StdDev = other.StdDev
+		s.Total = other.Total
 		s.Sum = other.Sum
 		s.SumSq = other.SumSq
+		s.Mean = other.Mean
+		s.StdDev = other.StdDev
 	} else {
 		if other.Min < s.Min {
 			s.Min = other.Min
@@ -518,25 +511,19 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 			s.Max = other.Max
 		}
 
-		n1 := float64(s.Total)
-		n2 := float64(other.Total)
-		delta := other.Mean - s.Mean
-		newTotal := n1 + n2
-
-		newMean := s.Mean + delta*n2/newTotal
-		newM2 := sM2 + otherM2 + delta*delta*n1*n2/newTotal
-
-		s.Mean = newMean
-		// Ensure M2 is non-negative to prevent NaN in Sqrt due to floating point errors
-		if newM2 < 0 {
-			newM2 = 0
-		}
-		s.StdDev = math.Sqrt(newM2 / newTotal)
+		s.Total += other.Total
 		s.Sum += other.Sum
-		// Reconstruct SumSq
-		s.SumSq = newM2 + (newMean * newMean * newTotal)
+		s.SumSq += other.SumSq
+
+		s.Mean = s.Sum / float64(s.Total)
+		// Var = (SumSq - Sum*Sum/Total) / Total
+		// StdDev = Sqrt(Var)
+		variance := (s.SumSq - (s.Sum*s.Sum)/float64(s.Total)) / float64(s.Total)
+		if variance < 0 {
+			variance = 0
+		}
+		s.StdDev = math.Sqrt(variance)
 	}
-	s.Total += other.Total
 
 	if len(s.Bounds) == 0 {
 		s.Bounds = other.Bounds

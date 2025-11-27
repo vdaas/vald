@@ -61,10 +61,8 @@ func (p *SnapshotPresenter) renderSummary(sb *strings.Builder) {
 	s := p.snapshot
 	total := s.Total
 	errs := s.Errors
-	var totalDuration time.Duration
-	if s.Latencies != nil {
-		totalDuration = time.Duration(s.Latencies.Sum)
-	}
+
+	totalDuration := s.LastUpdated.Sub(s.StartTime)
 
 	fmt.Fprint(sb, "\n--- Summary ---\n")
 	fmt.Fprintf(sb, "Total Requests:\t%d\n", total)
@@ -197,10 +195,7 @@ func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
 	}
 	writer.Write(headers)
 
-	totalDuration := 0.0
-	if s.Latencies != nil {
-		totalDuration = time.Duration(s.Latencies.Sum).Seconds()
-	}
+	totalDuration := s.LastUpdated.Sub(s.StartTime).Seconds()
 	rps := 0.0
 	if totalDuration > 0 {
 		rps = float64(s.Total) / totalDuration

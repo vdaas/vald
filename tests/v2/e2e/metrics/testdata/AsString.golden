@@ -1,8 +1,7 @@
 
 --- Summary ---
 Total Requests:	100
-Total Duration:	100ms
-Requests/sec:	1000.00
+Total Duration:	0s
 Errors:	10 (10.00%)
 
 --- Latency ---

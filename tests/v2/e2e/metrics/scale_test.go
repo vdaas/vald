@@ -49,8 +49,8 @@ func TestScale_Record_And_Reset(t *testing.T) {
 			Name: "time scale basic logic",
 			Args: args{
 				name:     "time_test",
-				width:    1, // 1 second per slot
-				capacity: 2, // 2 slots: 0 and 1
+				width:    uint64(time.Second), // 1 second per slot
+				capacity: 2,                   // 2 slots: 0 and 1
 				st:       TimeScale,
 				records: []*RequestResult{
 					{EndedAt: time.Unix(0, 0)}, // Slot 0
@@ -90,7 +90,7 @@ func TestScale_Concurrency(t *testing.T) {
 	}
 
 	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*ScaleSnapshot, error) {
-		s, err := newScale("concurrent", 1, args.capacity, 0, TimeScale, nil, nil, nil)
+		s, err := newScale("concurrent", uint64(time.Second), args.capacity, 0, TimeScale, nil, nil, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -172,8 +172,8 @@ func TestScale_Merge(t *testing.T) {
 		{
 			Name: "merge compatible scales",
 			Args: args{
-				width1: 1, capacity1: 2,
-				width2: 1, capacity2: 2,
+				width1: uint64(time.Second), capacity1: 2,
+				width2: uint64(time.Second), capacity2: 2,
 				s1Recs: []*RequestResult{{EndedAt: time.Unix(0, 0)}},
 				s2Recs: []*RequestResult{
 					{EndedAt: time.Unix(0, 0)},
@@ -199,8 +199,8 @@ func TestScale_Merge(t *testing.T) {
 		{
 			Name: "merge incompatible scales",
 			Args: args{
-				width1: 1, capacity1: 2,
-				width2: 2, capacity2: 2, // different width
+				width1: uint64(time.Second), capacity1: 2,
+				width2: uint64(time.Second * 2), capacity2: 2, // different width
 			},
 			CheckFunc: func(tt *testing.T, want testdata.Result[*ScaleSnapshot], got testdata.Result[*ScaleSnapshot]) error {
 				if got.Err == nil {
@@ -222,7 +222,7 @@ func TestScale_Clone(t *testing.T) {
 		recs []*RequestResult
 	}
 	if err := testdata.Run(t.Context(), t, func(tt *testing.T, args args) (*ScaleSnapshot, error) {
-		s1, err := newScale("test", 1, 2, 0, TimeScale, nil, nil, nil)
+		s1, err := newScale("test", uint64(time.Second), 2, 0, TimeScale, nil, nil, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -276,7 +276,7 @@ func TestScale_RingBuffer_WrapAndReset(t *testing.T) {
 		{
 			Name: "wrap around and reset",
 			Args: args{
-				width:    1,
+				width:    uint64(time.Second),
 				capacity: 3,
 				records: []*RequestResult{
 					{EndedAt: time.Unix(0, 0)}, // Slot 0
@@ -311,7 +311,7 @@ func TestScale_RingBuffer_WrapAndReset(t *testing.T) {
 		{
 			Name: "wrap around skip slot",
 			Args: args{
-				width:    1,
+				width:    uint64(time.Second),
 				capacity: 3,
 				records: []*RequestResult{
 					{EndedAt: time.Unix(0, 0)}, // Slot 0
@@ -342,7 +342,7 @@ func TestScale_RingBuffer_WrapAndReset(t *testing.T) {
 }
 
 func BenchmarkScale_Record(b *testing.B) {
-	s, _ := newScale("bench", 1, 10, 0, TimeScale, nil, nil, nil)
+	s, _ := newScale("bench", uint64(time.Second), 10, 0, TimeScale, nil, nil, nil)
 	ctx := context.Background()
 	b.ResetTimer()
 	b.ReportAllocs()

@@ -201,7 +201,7 @@ func TestCollector_Merge(t *testing.T) {
 			c2.Record(context.Background(), r)
 		}
 
-		if err := c1.Merge(c2); err != nil {
+		if err := c2.MergeInto(c1); err != nil {
 			return nil, err
 		}
 		// c1 is modified

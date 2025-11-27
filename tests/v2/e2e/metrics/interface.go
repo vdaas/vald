@@ -25,7 +25,7 @@ import (
 // Collector is the interface for the metrics collector.
 type Collector interface {
 	Record(ctx context.Context, rr *RequestResult)
-	Merge(other Collector) error
+	MergeInto(dest Collector) error
 	GlobalSnapshot() *GlobalSnapshot
 	RangeScalesSnapshot() map[string]*ScaleSnapshot
 	TimeScalesSnapshot() map[string]*ScaleSnapshot

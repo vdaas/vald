@@ -151,6 +151,10 @@ type collector struct {
 	total  atomic.Uint64
 	errors atomic.Uint64
 
+	// Time range of the collection.
+	startTime   atomic.Int64
+	lastUpdated atomic.Int64
+
 	// Global metrics.
 	latencies      Histogram
 	queueWaits     Histogram
@@ -225,10 +229,10 @@ func (c *collector) Reset() {
 	}
 }
 
-// Merge merges the metrics from another collector into this one.
-// It delegates to the internal `merge` method for implementation.
-func (c *collector) Merge(other Collector) error {
-	return other.merge(c)
+// MergeInto merges this collector's metrics into the destination collector.
+// It uses the internal `merge` method where the receiver is the source and the argument is the destination.
+func (c *collector) MergeInto(dest Collector) error {
+	return c.merge(dest.(*collector))
 }
 
 // merge performs the actual merging logic.
@@ -251,6 +255,29 @@ func (c *collector) merge(other *collector) error {
 
 	other.total.Add(c.total.Load())
 	other.errors.Add(c.errors.Load())
+
+	if t := c.startTime.Load(); t > 0 {
+		for {
+			curr := other.startTime.Load()
+			if curr != 0 && t >= curr {
+				break
+			}
+			if other.startTime.CompareAndSwap(curr, t) {
+				break
+			}
+		}
+	}
+	if t := c.lastUpdated.Load(); t > 0 {
+		for {
+			curr := other.lastUpdated.Load()
+			if t <= curr {
+				break
+			}
+			if other.lastUpdated.CompareAndSwap(curr, t) {
+				break
+			}
+		}
+	}
 
 	if c.latencies != nil && other.latencies != nil {
 		if err := other.latencies.Merge(c.latencies); err != nil {
@@ -310,6 +337,30 @@ func (c *collector) merge(other *collector) error {
 // It updates global histograms, t-digests, exemplars, and all configured scales.
 func (c *collector) Record(ctx context.Context, rr *RequestResult) {
 	rr.validate()
+
+	if s := rr.StartedAt.UnixNano(); s > 0 {
+		for {
+			curr := c.startTime.Load()
+			if curr != 0 && s >= curr {
+				break
+			}
+			if c.startTime.CompareAndSwap(curr, s) {
+				break
+			}
+		}
+	}
+	if e := rr.EndedAt.UnixNano(); e > 0 {
+		for {
+			curr := c.lastUpdated.Load()
+			if e <= curr {
+				break
+			}
+			if c.lastUpdated.CompareAndSwap(curr, e) {
+				break
+			}
+		}
+	}
+
 	c.total.Add(1)
 	if rr.Err != nil {
 		c.errors.Add(1)
@@ -376,6 +427,8 @@ func (c *collector) Clone() (Collector, error) {
 	// Copy atomics
 	newC.total.Store(c.total.Load())
 	newC.errors.Store(c.errors.Load())
+	newC.startTime.Store(c.startTime.Load())
+	newC.lastUpdated.Store(c.lastUpdated.Load())
 
 	// Copy global metrics using Clone
 	if c.latencies != nil {
@@ -452,9 +505,19 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 			})
 		}
 	}
+	var startTime, lastUpdated time.Time
+	if t := c.startTime.Load(); t > 0 {
+		startTime = time.Unix(0, t)
+	}
+	if t := c.lastUpdated.Load(); t > 0 {
+		lastUpdated = time.Unix(0, t)
+	}
+
 	return &GlobalSnapshot{
 		Total:           c.total.Load(),
 		Errors:          c.errors.Load(),
+		StartTime:       startTime,
+		LastUpdated:     lastUpdated,
 		Latencies:       latSnap,
 		QueueWaits:      qwSnap,
 		LatPercentiles:  c.latPercentiles,
@@ -510,7 +573,7 @@ func MergeCollectors(collectors ...Collector) (Collector, error) {
 	}
 
 	for _, c := range collectors[1:] {
-		if err := merged.Merge(c); err != nil {
+		if err := c.MergeInto(merged); err != nil {
 			return nil, err
 		}
 	}
@@ -536,6 +599,8 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 		Codes:          make(map[codes.Code]uint64),
 	}
 	base := snapshots[0]
+	merged.StartTime = base.StartTime
+	merged.LastUpdated = base.LastUpdated
 
 	// Validate compatibility
 	for _, s := range snapshots[1:] {
@@ -548,6 +613,14 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 	for _, s := range snapshots {
 		merged.Total += s.Total
 		merged.Errors += s.Errors
+
+		if !s.StartTime.IsZero() && (merged.StartTime.IsZero() || s.StartTime.Before(merged.StartTime)) {
+			merged.StartTime = s.StartTime
+		}
+		if !s.LastUpdated.IsZero() && s.LastUpdated.After(merged.LastUpdated) {
+			merged.LastUpdated = s.LastUpdated
+		}
+
 		if s.Latencies != nil {
 			if merged.Latencies == nil {
 				merged.Latencies = &HistogramSnapshot{}
@@ -594,6 +667,8 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 type GlobalSnapshot struct {
 	Total           uint64                `json:"total"`
 	Errors          uint64                `json:"errors"`
+	StartTime       time.Time             `json:"start_time"`
+	LastUpdated     time.Time             `json:"last_updated"`
 	Latencies       *HistogramSnapshot    `json:"latencies"`
 	QueueWaits      *HistogramSnapshot    `json:"queue_waits"`
 	LatPercentiles  TDigest               `json:"lat_percentiles"`
@@ -672,22 +747,6 @@ type SlotSnapshot struct {
 }
 
 // String implements the fmt.Stringer interface.
-func resolveStatusCode(code codes.Code, err error) codes.Code {
-	if code == codes.OK && err != nil {
-		if st, ok := status.FromError(err); ok {
-			return st.Code()
-		} else if errors.Is(err, context.Canceled) {
-			return codes.Canceled
-		} else if errors.Is(err, context.DeadlineExceeded) {
-			return codes.DeadlineExceeded
-		} else {
-			return codes.Unknown
-		}
-	}
-	return code
-}
-
-// String implements the fmt.Stringer interface.
 func (s *SlotSnapshot) String() string {
 	if s == nil || s.Total == 0 {
 		return "No data collected in this slot.\n"
@@ -714,4 +773,21 @@ func (s *SlotSnapshot) String() string {
 	}
 
 	return sb.String()
+}
+
+// resolveStatusCode determines the final gRPC status code from a given code and error.
+// It handles unwrapping of errors and mapping context errors to status codes.
+func resolveStatusCode(code codes.Code, err error) codes.Code {
+	if code == codes.OK && err != nil {
+		if st, ok := status.FromError(err); ok {
+			return st.Code()
+		} else if errors.Is(err, context.Canceled) {
+			return codes.Canceled
+		} else if errors.Is(err, context.DeadlineExceeded) {
+			return codes.DeadlineExceeded
+		} else {
+			return codes.Unknown
+		}
+	}
+	return code
 }

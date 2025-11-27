@@ -130,7 +130,7 @@ func TestE2EStrategy(t *testing.T) {
 				col := r.processStrategy(ttt, ctx, i, st)
 				if cfg.Metrics != nil && cfg.Metrics.Enabled && cfg.Collector != nil && col != nil {
 					cfg.Strategies[i].Collector = col
-					if err := cfg.Collector.Merge(col); err != nil {
+					if err := col.MergeInto(cfg.Collector); err != nil {
 						ttt.Errorf("failed to merge strategy collector: %v", err)
 					}
 				}
@@ -189,7 +189,7 @@ func (r *runner) processStrategy(
 						c := r.processOperation(ttt, egctx, i, op)
 						if st.Metrics != nil && st.Metrics.Enabled && col != nil && c != nil {
 							st.Operations[i].Collector = c
-							if err := col.Merge(c); err != nil {
+							if err := c.MergeInto(col); err != nil {
 								ttt.Logf("failed to merge operation for collector: %v and %v error: %v", col, c, err)
 							}
 						}
@@ -220,7 +220,7 @@ func (r *runner) processOperation(
 				c := r.processExecution(ttt, ctx, i, e)
 				if op.Metrics != nil && op.Metrics.Enabled && col != nil && c != nil {
 					op.Executions[i].Collector = c
-					if err := col.Merge(c); err != nil {
+					if err := c.MergeInto(col); err != nil {
 						ttt.Errorf("failed to merge execution collector: %v", err)
 					}
 				}

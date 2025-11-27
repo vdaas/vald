@@ -1,6 +1,8 @@
 {
   "total": 100,
   "errors": 10,
+  "start_time": "0001-01-01T00:00:00Z",
+  "last_updated": "0001-01-01T00:00:00Z",
   "latencies": {
     "counts": null,
     "bounds": null,
