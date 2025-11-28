@@ -17,6 +17,7 @@
 package rand
 
 import (
+	"math/bits"
 	"sync/atomic"
 
 	"github.com/kpango/fastime"
@@ -70,6 +71,60 @@ func (r *rand) init() *rand {
 		seed := uint32((fastime.UnixNanoNow() >> 32) ^ fastime.UnixNanoNow())
 		if seed != 0 {
 			atomic.StoreUint32(r.x, seed)
+			break
+		}
+	}
+	return r
+}
+
+type rand64 struct {
+	x *uint64
+}
+
+var pool64 = sync.Pool{
+	New: func() any {
+		return (&rand64{
+			x: new(uint64),
+		}).init()
+	},
+}
+
+func Uint64() (x uint64) {
+	r := pool64.Get().(*rand64)
+	x = r.Uint64()
+	pool64.Put(r)
+	return x
+}
+
+func LimitedUint64(max uint64) uint64 {
+	hi, _ := bits.Mul64(Uint64(), max)
+	return hi
+}
+
+func Float64() float64 {
+	return float64(Uint64()>>11) / (1 << 53)
+}
+
+func (r *rand64) Uint64() (x uint64) {
+	if *r.x == 0 {
+		r.init()
+	}
+	x = *r.x
+	x ^= x << 13
+	x ^= x >> 7
+	x ^= x << 17
+	*r.x = x
+	return x
+}
+
+func (r *rand64) init() *rand64 {
+	if r.x == nil {
+		r.x = new(uint64)
+	}
+	for {
+		seed := uint64(fastime.UnixNanoNow())
+		if seed != 0 {
+			atomic.StoreUint64(r.x, seed)
 			break
 		}
 	}
