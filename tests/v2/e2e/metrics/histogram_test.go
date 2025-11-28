@@ -291,7 +291,7 @@ func TestHistogram_Merge(t *testing.T) {
 				if got.Err == nil {
 					return errors.New("expected error, got nil")
 				}
-				if got.Err.Error() != "incompatible histograms: shard count mismatch" {
+				if got.Err.Error() != "incompatible shards: count mismatch" {
 					return errors.Errorf("unexpected error message: %v", got.Err)
 				}
 				return nil

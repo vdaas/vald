@@ -334,15 +334,7 @@ func (se *shardedExemplar) Merge(other Exemplar) error {
 		return nil
 	}
 	if o, ok := other.(*shardedExemplar); ok {
-		if len(se.shards) != len(o.shards) {
-			return errors.New("incompatible exemplars: shard count mismatch")
-		}
-		for i := range se.shards {
-			if err := se.shards[i].Merge(o.shards[i]); err != nil {
-				return err
-			}
-		}
-		return nil
+		return mergeShards[Exemplar](se.shards, o.shards)
 	}
 	if _, ok := other.(*exemplar); ok {
 		return errors.New("cannot merge single exemplar into sharded exemplar")

@@ -386,17 +386,7 @@ func (t *shardedTDigest) Merge(other TDigest) error {
 	if t == o {
 		return nil
 	}
-	if len(t.shards) != len(o.shards) {
-		return errors.New("incompatible shard count for merging")
-	}
-
-	// Merge shard by shard
-	for i := range t.shards {
-		if err := t.shards[i].Merge(o.shards[i]); err != nil {
-			return err
-		}
-	}
-	return nil
+	return mergeShards[TDigest](t.shards, o.shards)
 }
 
 // Merge merges another t-digest shard into this one.

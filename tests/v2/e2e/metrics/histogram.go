@@ -371,15 +371,7 @@ func (sh *shardedHistogram) Merge(other Histogram) error {
 		return nil
 	}
 	if o, ok := other.(*shardedHistogram); ok {
-		if len(sh.shards) != len(o.shards) {
-			return errors.New("incompatible histograms: shard count mismatch")
-		}
-		for i := range sh.shards {
-			if err := sh.shards[i].Merge(o.shards[i]); err != nil {
-				return err
-			}
-		}
-		return nil
+		return mergeShards[Histogram](sh.shards, o.shards)
 	}
 	if _, ok := other.(*histogram); ok {
 		return errors.New("cannot merge single histogram into sharded histogram")
