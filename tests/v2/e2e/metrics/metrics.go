@@ -639,8 +639,11 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 
 	// Validate compatibility
 	for _, s := range snapshots[1:] {
-		if s.BoundsHash != base.BoundsHash || s.SketchKind != base.SketchKind {
-			return nil, errors.New("incompatible snapshots")
+		if s.BoundsHash != base.BoundsHash {
+			return nil, fmt.Errorf("incompatible snapshots: BoundsHash mismatch (expected %d, got %d)", base.BoundsHash, s.BoundsHash)
+		}
+		if s.SketchKind != base.SketchKind {
+			return nil, fmt.Errorf("incompatible snapshots: SketchKind mismatch (expected %s, got %s)", base.SketchKind, s.SketchKind)
 		}
 	}
 
