@@ -49,6 +49,7 @@ const (
 type tdigest struct {
 	centroids                []centroid
 	buffer                   []float64
+	backBuffer               []float64
 	scratch                  []centroid
 	swap                     []centroid
 	quantiles                []float64
@@ -131,6 +132,12 @@ func (t *tdigest) Reset() {
 		t.buffer = t.buffer[:0]
 	}
 
+	if cap(t.backBuffer) > maxBufferCapacity {
+		t.backBuffer = make([]float64, 0, defaultBufferCapacity)
+	} else {
+		t.backBuffer = t.backBuffer[:0]
+	}
+
 	// For centroids, scratch, and swap, we use a similar heuristic
 	// assuming typical usage won't require massive centroid lists if compressed.
 	// But if they grew large (e.g. before compression or during heavy merge), shrink them.
@@ -198,7 +205,53 @@ func (t *tdigest) maxWeightForQuantile(q, total float64) float64 {
 
 // flush merges the buffered values into the centroids.
 // It assumes the caller holds t.mu.
+// CAUTION: It unlocks t.mu during sorting and relocks it before merging.
+// Use flushLocked if you need to hold the lock throughout (e.g., to prevent deadlock in Merge).
 func (t *tdigest) flush() {
+	if len(t.buffer) == 0 {
+		return
+	}
+
+	// Double buffering: swap buffer with backBuffer to sort outside the lock
+	processing := t.buffer
+	if cap(t.backBuffer) >= defaultBufferCapacity {
+		t.buffer = t.backBuffer[:0]
+	} else {
+		t.buffer = make([]float64, 0, defaultBufferCapacity)
+	}
+	// Mark backBuffer as in-use (or empty)
+	t.backBuffer = nil
+
+	// Unlock to perform expensive sort
+	t.mu.Unlock()
+
+	// Sort the buffer
+	slices.Sort(processing)
+
+	// Re-lock to merge
+	t.mu.Lock()
+
+	// Convert buffer to centroids using scratch
+	if cap(t.scratch) < len(processing) {
+		t.scratch = make([]centroid, len(processing))
+	}
+	t.scratch = t.scratch[:len(processing)]
+
+	for i, v := range processing {
+		t.scratch[i] = centroid{Mean: v, Weight: 1}
+	}
+
+	// Recycle processing buffer to backBuffer if needed
+	if cap(t.backBuffer) < cap(processing) {
+		t.backBuffer = processing[:0]
+	}
+
+	t.mergeCentroids(t.scratch)
+}
+
+// flushLocked merges the buffered values into the centroids without releasing the lock.
+// It assumes the caller holds t.mu.
+func (t *tdigest) flushLocked() {
 	if len(t.buffer) == 0 {
 		return
 	}
@@ -430,8 +483,8 @@ func (t *tdigest) Merge(other TDigest) error {
 	defer o.mu.Unlock()
 
 	// Flush buffers before merging
-	t.flush()
-	o.flush()
+	t.flushLocked()
+	o.flushLocked()
 
 	if len(o.centroids) == 0 {
 		return nil
