@@ -15,7 +15,6 @@ package rand
 
 import (
 	"fmt"
-	"sync/atomic"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -24,9 +23,9 @@ import (
 )
 
 func clearPool() {
-	pool = sync.Pool{
+	pool32 = sync.Pool{
 		New: func() any {
-			return new(rand).init()
+			return (&rng[uint32]{}).init()
 		},
 	}
 }
@@ -55,7 +54,7 @@ func TestUint32(t *testing.T) {
 			}
 
 			_ = Uint32()
-			if atomic.LoadUint32(pool.Get().(*rand).x) == 0 {
+			if *pool32.Get().(*rng[uint32]).x == 0 {
 				t.Error("r.x is 0")
 			}
 		})
@@ -118,12 +117,12 @@ func Test_rand_Uint32(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &rand{
+			r := &rng[uint32]{
 				x: tt.x,
 			}
 
-			_ = r.Uint32()
-			if atomic.LoadUint32(r.x) == 0 {
+			_ = r.Value()
+			if *r.x == 0 {
 				t.Error("r.x is 0")
 			}
 		})
@@ -133,13 +132,13 @@ func Test_rand_Uint32(t *testing.T) {
 func Test_rand_init(t *testing.T) {
 	type test struct {
 		name      string
-		checkFunc func(*rand) error
+		checkFunc func(*rng[uint32]) error
 	}
 
 	tests := []test{
 		{
 			name: "returns rand instance",
-			checkFunc: func(r *rand) error {
+			checkFunc: func(r *rng[uint32]) error {
 				if r == nil {
 					return errors.New("rand is nil")
 				}
@@ -154,7 +153,7 @@ func Test_rand_init(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := new(rand)
+			r := new(rng[uint32])
 			if err := tt.checkFunc(r.init()); err != nil {
 				t.Error(err)
 			}
