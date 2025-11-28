@@ -30,10 +30,11 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s/client"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
+	"math/rand/v2"
+
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/os"
-	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/data/hdf5"
@@ -331,7 +332,11 @@ func calcRecall(linearRes, searchRes *payload.Search_Response) (recall float64) 
 func addNoiseToVec(oVec []float32) []float32 {
 	noise := rand.Float32()
 	vec := oVec
-	idx := rand.LimitedUint32(uint64(len(oVec) - 1))
-	vec[idx] += noise
+	if len(oVec) > 1 {
+		idx := rand.N(uint32(len(oVec) - 1))
+		vec[idx] += noise
+	} else if len(oVec) == 1 {
+		vec[0] += noise
+	}
 	return vec
 }

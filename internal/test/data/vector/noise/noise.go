@@ -23,8 +23,9 @@ import (
 	"slices"
 	"time"
 
+	"math/rand/v2"
+
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/rand"
 )
 
 type Func func(i uint64, vec []float32) (res []float32)
