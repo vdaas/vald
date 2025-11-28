@@ -444,3 +444,95 @@ func TestExemplar_Categories(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestExemplar_ProbabilisticSampling(t *testing.T) {
+	// This test verifies that even with probabilistic sampling, we eventually collect average samples,
+	// and that edge cases (Slowest/Fastest) are always recorded accurately.
+	type args struct {
+		opts []ExemplarOption
+	}
+	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (*ExemplarDetails, error) {
+		e := NewExemplar(args.opts...)
+
+		// 1. Offer distinct Slowest/Fastest candidates.
+		// Fastest: 1ms
+		e.Offer(1*time.Millisecond, "fastest", nil, "")
+		// Slowest: 10s
+		e.Offer(10*time.Second, "slowest", nil, "")
+		// Error: should always be recorded
+		e.Offer(500*time.Millisecond, "error-req", errors.New("some error"), "err msg")
+
+		// 2. Offer many "average" requests.
+		// These should be filtered by the sampling (1/16).
+		// Latencies between 10ms and 1s.
+		// We offer enough to statistically guarantee hitting the reservoir at least once.
+		for i := 0; i < 1000; i++ {
+			e.Offer(100*time.Millisecond, fmt.Sprintf("avg-%d", i), nil, "")
+		}
+
+		return e.DetailedSnapshot()
+	}, []test.Case[*ExemplarDetails, args]{
+		{
+			Name: "ensures probabilistic sampling retains critical samples and some average samples",
+			Args: args{
+				opts: []ExemplarOption{WithExemplarCapacity(10), WithExemplarNumShards(1)},
+			},
+			CheckFunc: func(tt *testing.T, want test.Result[*ExemplarDetails], got test.Result[*ExemplarDetails]) error {
+				d := got.Val
+				if d == nil {
+					return errors.New("got nil details")
+				}
+
+				// Check Fastest
+				if len(d.Fastest) == 0 {
+					return errors.New("fastest sample missing")
+				}
+				if d.Fastest[0].Latency != 1 * time.Millisecond {
+					return errors.Errorf("expected fastest 1ms, got %v", d.Fastest[0].Latency)
+				}
+
+				// Check Slowest
+				if len(d.Slowest) == 0 {
+					return errors.New("slowest sample missing")
+				}
+				if d.Slowest[0].Latency != 10 * time.Second {
+					return errors.Errorf("expected slowest 10s, got %v", d.Slowest[0].Latency)
+				}
+
+				// Check Failures
+				if len(d.Failures) == 0 {
+					return errors.New("failure sample missing")
+				}
+				if d.Failures[0].RequestID != "error-req" {
+					return errors.Errorf("expected failure req-id 'error-req', got %s", d.Failures[0].RequestID)
+				}
+
+				// Check Average
+				// With 1000 samples and 1/16 rate, we expect ~62 samples.
+				// Capacity is 10. So reservoir should be full (10 items).
+				if len(d.Average) == 0 {
+					return errors.New("average samples missing (probabilistic failure?)")
+				}
+
+				// Verify that we captured at least some "average" samples (IDs starting with "avg-")
+				foundAvg := false
+				for _, item := range d.Average {
+					// The Average reservoir may contain Fastest/Slowest samples too because
+					// they fall through the fast-path check and update all categories.
+					// We just want to ensure we didn't miss the bulk of "avg-*" requests.
+					if len(item.RequestID) >= 4 && item.RequestID[:4] == "avg-" {
+						foundAvg = true
+						break
+					}
+				}
+				if !foundAvg {
+					return errors.New("no 'avg-*' samples found in average reservoir")
+				}
+
+				return nil
+			},
+		},
+	}...); err != nil {
+		t.Error(err)
+	}
+}

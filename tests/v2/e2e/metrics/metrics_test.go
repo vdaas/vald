@@ -240,3 +240,70 @@ func TestCollector_Merge(t *testing.T) {
 		t.Error(err)
 	}
 }
+func TestRequestResult_validate(t *testing.T) {
+	type fields struct {
+		QueuedAt  time.Time
+		StartedAt time.Time
+		EndedAt   time.Time
+		QueueWait time.Duration
+		Latency   time.Duration
+	}
+
+	now := time.Now()
+
+	test.Run(t.Context(), t, func(tt *testing.T, f fields) (*RequestResult, error) {
+		rr := &RequestResult{
+			QueuedAt:  f.QueuedAt,
+			StartedAt: f.StartedAt,
+			EndedAt:   f.EndedAt,
+			QueueWait: f.QueueWait,
+			Latency:   f.Latency,
+		}
+		rr.validate()
+		return rr, nil
+	}, []test.Case[*RequestResult, fields]{
+		{
+			Name: "calculate latency and queue wait correctly",
+			Args: fields{
+				QueuedAt:  now,
+				StartedAt: now.Add(time.Second),
+				EndedAt:   now.Add(2 * time.Second),
+			},
+			CheckFunc: func(tt *testing.T, want test.Result[*RequestResult], got test.Result[*RequestResult]) error {
+				if got.Val.Latency != time.Second {
+					return errors.Errorf("expected latency %v, got %v", time.Second, got.Val.Latency)
+				}
+				if got.Val.QueueWait != time.Second {
+					return errors.Errorf("expected queue wait %v, got %v", time.Second, got.Val.QueueWait)
+				}
+				return nil
+			},
+		},
+		{
+			Name: "handle clock skew for latency (EndedAt before StartedAt)",
+			Args: fields{
+				StartedAt: now.Add(time.Second),
+				EndedAt:   now,
+			},
+			CheckFunc: func(tt *testing.T, want test.Result[*RequestResult], got test.Result[*RequestResult]) error {
+				if got.Val.Latency != 0 {
+					return errors.Errorf("expected latency 0, got %v", got.Val.Latency)
+				}
+				return nil
+			},
+		},
+		{
+			Name: "handle clock skew for queue wait (StartedAt before QueuedAt)",
+			Args: fields{
+				QueuedAt:  now.Add(time.Second),
+				StartedAt: now,
+			},
+			CheckFunc: func(tt *testing.T, want test.Result[*RequestResult], got test.Result[*RequestResult]) error {
+				if got.Val.QueueWait != 0 {
+					return errors.Errorf("expected queue wait 0, got %v", got.Val.QueueWait)
+				}
+				return nil
+			},
+		},
+	}...)
+}

@@ -104,15 +104,24 @@ func (rr *RequestResult) Reset() {
 
 // validate ensures the RequestResult has the necessary timing information.
 // It calculates Latency and QueueWait if they are zero but timestamps are present.
+// It also handles clock skew by ensuring calculated durations are non-negative.
 func (rr *RequestResult) validate() {
 	if rr == nil {
 		return
 	}
 	if rr.Latency == 0 && !rr.StartedAt.IsZero() && !rr.EndedAt.IsZero() {
-		rr.Latency = rr.EndedAt.Sub(rr.StartedAt)
+		if rr.EndedAt.Before(rr.StartedAt) {
+			rr.Latency = 0
+		} else {
+			rr.Latency = rr.EndedAt.Sub(rr.StartedAt)
+		}
 	}
 	if rr.QueueWait == 0 && !rr.QueuedAt.IsZero() && !rr.StartedAt.IsZero() {
-		rr.QueueWait = rr.StartedAt.Sub(rr.QueuedAt)
+		if rr.StartedAt.Before(rr.QueuedAt) {
+			rr.QueueWait = 0
+		} else {
+			rr.QueueWait = rr.StartedAt.Sub(rr.QueuedAt)
+		}
 	}
 }
 
@@ -639,8 +648,11 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 
 	// Validate compatibility
 	for _, s := range snapshots[1:] {
-		if s.BoundsHash != base.BoundsHash || s.SketchKind != base.SketchKind {
-			return nil, errors.New("incompatible snapshots")
+		if s.BoundsHash != base.BoundsHash {
+			return nil, fmt.Errorf("incompatible snapshots: BoundsHash mismatch (expected %d, got %d)", base.BoundsHash, s.BoundsHash)
+		}
+		if s.SketchKind != base.SketchKind {
+			return nil, fmt.Errorf("incompatible snapshots: SketchKind mismatch (expected %s, got %s)", base.SketchKind, s.SketchKind)
 		}
 	}
 

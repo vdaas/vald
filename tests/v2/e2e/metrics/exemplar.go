@@ -29,6 +29,11 @@ import (
 	"github.com/zeebo/xxh3"
 )
 
+const (
+	// avgSamplingRate is the sampling rate for average exemplars (1/16).
+	avgSamplingRate = 16
+)
+
 // exemplar is a thread-safe exemplar storage.
 // It implements the Exemplar interface.
 type exemplar struct {
@@ -162,6 +167,12 @@ func (e *exemplar) Offer(latency time.Duration, requestID string, err error, msg
 	// If it's not an error, and the latency is between the fastest and slowest top-K,
 	// we can skip the heap updates. However, we must still consider it for reservoir sampling.
 	if !isError && latInt <= minLat && latInt >= maxLat {
+		// Probabilistic sampling: only record 1 out of avgSamplingRate samples.
+		// We use a fast bitwise check assuming avgSamplingRate is a power of 2.
+		if rand.Uint64()&(avgSamplingRate-1) != 0 {
+			return
+		}
+
 		e.mu.Lock()
 		e.updateAverageSample(&ExemplarItem{
 			Latency:   latency,
