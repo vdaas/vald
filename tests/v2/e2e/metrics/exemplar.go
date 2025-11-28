@@ -34,12 +34,36 @@ const (
 	avgSamplingRate = 16
 )
 
+type latencyHeap struct {
+	items []*ExemplarItem
+	less  func(a, b time.Duration) bool
+}
+
+func (h *latencyHeap) Len() int { return len(h.items) }
+func (h *latencyHeap) Less(i, j int) bool {
+	return h.less(h.items[i].Latency, h.items[j].Latency)
+}
+func (h *latencyHeap) Swap(i, j int) {
+	h.items[i], h.items[j] = h.items[j], h.items[i]
+}
+func (h *latencyHeap) Push(x any) {
+	item := x.(*ExemplarItem)
+	h.items = append(h.items, item)
+}
+func (h *latencyHeap) Pop() any {
+	old := h.items
+	n := len(old)
+	item := old[n-1]
+	old[n-1] = nil // avoid memory leak
+	h.items = old[0 : n-1]
+	return item
+}
+
 // exemplar is a thread-safe exemplar storage.
 // It implements the Exemplar interface.
 type exemplar struct {
-	slowest        priorityQueue
-	fastest        smallestLatencyHeap
-	failures       priorityQueue
+	slowest        *latencyHeap
+	fastest        *latencyHeap
 	avgSamples     []*ExemplarItem
 	failureSamples []*ExemplarItem
 	k              int
@@ -78,14 +102,20 @@ func (e *exemplar) initHeaps() {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	if e.slowest == nil {
-		e.slowest = make(priorityQueue, 0, e.k)
+		e.slowest = &latencyHeap{
+			items: make([]*ExemplarItem, 0, e.k),
+			less:  func(a, b time.Duration) bool { return a < b },
+		}
 	} else {
-		e.slowest = e.slowest[:0]
+		e.slowest.items = e.slowest.items[:0]
 	}
 	if e.fastest == nil {
-		e.fastest = make(smallestLatencyHeap, 0, e.k)
+		e.fastest = &latencyHeap{
+			items: make([]*ExemplarItem, 0, e.k),
+			less:  func(a, b time.Duration) bool { return a > b },
+		}
 	} else {
-		e.fastest = e.fastest[:0]
+		e.fastest.items = e.fastest.items[:0]
 	}
 	if e.avgSamples == nil {
 		e.avgSamples = make([]*ExemplarItem, 0, e.k)
@@ -204,29 +234,29 @@ func (e *exemplar) Offer(latency time.Duration, requestID string, err error, msg
 
 func (e *exemplar) updateSlowest(item *ExemplarItem) {
 	latInt := int64(item.Latency)
-	if len(e.slowest) < e.k {
-		heap.Push(&e.slowest, item)
-		if len(e.slowest) == e.k {
-			e.minLatency.Store(int64(e.slowest[0].Latency))
+	if e.slowest.Len() < e.k {
+		heap.Push(e.slowest, item)
+		if e.slowest.Len() == e.k {
+			e.minLatency.Store(int64(e.slowest.items[0].Latency))
 		}
-	} else if latInt > int64(e.slowest[0].Latency) {
-		e.slowest[0] = item
-		heap.Fix(&e.slowest, 0)
-		e.minLatency.Store(int64(e.slowest[0].Latency))
+	} else if latInt > int64(e.slowest.items[0].Latency) {
+		e.slowest.items[0] = item
+		heap.Fix(e.slowest, 0)
+		e.minLatency.Store(int64(e.slowest.items[0].Latency))
 	}
 }
 
 func (e *exemplar) updateFastest(item *ExemplarItem) {
 	latInt := int64(item.Latency)
-	if len(e.fastest) < e.k {
-		heap.Push(&e.fastest, item)
-		if len(e.fastest) == e.k {
-			e.maxLatency.Store(int64(e.fastest[0].Latency))
+	if e.fastest.Len() < e.k {
+		heap.Push(e.fastest, item)
+		if e.fastest.Len() == e.k {
+			e.maxLatency.Store(int64(e.fastest.items[0].Latency))
 		}
-	} else if latInt < int64(e.fastest[0].Latency) {
-		e.fastest[0] = item
-		heap.Fix(&e.fastest, 0)
-		e.maxLatency.Store(int64(e.fastest[0].Latency))
+	} else if latInt < int64(e.fastest.items[0].Latency) {
+		e.fastest.items[0] = item
+		heap.Fix(e.fastest, 0)
+		e.maxLatency.Store(int64(e.fastest.items[0].Latency))
 	}
 }
 
@@ -286,8 +316,8 @@ func (se *shardedExemplar) DetailedSnapshot() (*ExemplarDetails, error) {
 	for _, shard := range se.shards {
 		shard.mu.Lock()
 
-		slowest := slices.Clone(shard.slowest)
-		fastest := slices.Clone(shard.fastest)
+		slowest := slices.Clone(shard.slowest.items)
+		fastest := slices.Clone(shard.fastest.items)
 		avg := slices.Clone(shard.avgSamples)
 		failures := slices.Clone(shard.failureSamples)
 		avgCount := shard.avgCount
@@ -316,8 +346,8 @@ func (se *shardedExemplar) DetailedSnapshot() (*ExemplarDetails, error) {
 func (e *exemplar) DetailedSnapshot() (*ExemplarDetails, error) {
 	e.mu.Lock()
 	snap := &ExemplarDetails{
-		Slowest:  slices.Clone(e.slowest),
-		Fastest:  slices.Clone(e.fastest),
+		Slowest:  slices.Clone(e.slowest.items),
+		Fastest:  slices.Clone(e.fastest.items),
 		Average:  slices.Clone(e.avgSamples),
 		Failures: slices.Clone(e.failureSamples),
 	}
@@ -369,8 +399,8 @@ func (e *exemplar) Merge(other Exemplar) error {
 
 func (e *exemplar) mergeExemplar(src *exemplar) error {
 	src.mu.Lock()
-	slowest := slices.Clone(src.slowest)
-	fastest := slices.Clone(src.fastest)
+	slowest := slices.Clone(src.slowest.items)
+	fastest := slices.Clone(src.fastest.items)
 	avg := slices.Clone(src.avgSamples)
 	failures := slices.Clone(src.failureSamples)
 	avgCount := src.avgCount
@@ -499,15 +529,21 @@ func (e *exemplar) Clone() Exemplar {
 	}
 
 	// Heaps
-	newE.slowest = make(priorityQueue, len(e.slowest), cap(e.slowest))
-	for i, it := range e.slowest {
-		v := *it
-		newE.slowest[i] = &v
+	newE.slowest = &latencyHeap{
+		items: make([]*ExemplarItem, len(e.slowest.items), cap(e.slowest.items)),
+		less:  e.slowest.less,
 	}
-	newE.fastest = make(smallestLatencyHeap, len(e.fastest), cap(e.fastest))
-	for i, it := range e.fastest {
+	for i, it := range e.slowest.items {
 		v := *it
-		newE.fastest[i] = &v
+		newE.slowest.items[i] = &v
+	}
+	newE.fastest = &latencyHeap{
+		items: make([]*ExemplarItem, len(e.fastest.items), cap(e.fastest.items)),
+		less:  e.fastest.less,
+	}
+	for i, it := range e.fastest.items {
+		v := *it
+		newE.fastest.items[i] = &v
 	}
 
 	// Reservoirs
@@ -528,59 +564,6 @@ type ExemplarItem struct {
 	RequestID string
 	Msg       string
 	Latency   time.Duration
-}
-
-// priorityQueue implements min-heap.
-type priorityQueue []*ExemplarItem
-
-func (pq priorityQueue) Len() int { return len(pq) }
-func (pq priorityQueue) Less(i, j int) bool {
-	return pq[i].Latency < pq[j].Latency
-}
-
-func (pq priorityQueue) Swap(i, j int) {
-	pq[i], pq[j] = pq[j], pq[i]
-}
-
-func (pq *priorityQueue) Push(x any) {
-	item := x.(*ExemplarItem)
-	*pq = append(*pq, item)
-}
-
-func (pq *priorityQueue) Pop() any {
-	old := *pq
-	n := len(old)
-	item := old[n-1]
-	old[n-1] = nil
-	*pq = old[0 : n-1]
-	return item
-}
-
-// smallestLatencyHeap implements a Max-Heap to store the K smallest latencies.
-type smallestLatencyHeap []*ExemplarItem
-
-func (pq smallestLatencyHeap) Len() int { return len(pq) }
-
-func (pq smallestLatencyHeap) Less(i, j int) bool {
-	return pq[i].Latency > pq[j].Latency
-}
-
-func (pq smallestLatencyHeap) Swap(i, j int) {
-	pq[i], pq[j] = pq[j], pq[i]
-}
-
-func (pq *smallestLatencyHeap) Push(x any) {
-	item := x.(*ExemplarItem)
-	*pq = append(*pq, item)
-}
-
-func (pq *smallestLatencyHeap) Pop() any {
-	old := *pq
-	n := len(old)
-	item := old[n-1]
-	old[n-1] = nil
-	*pq = old[0 : n-1]
-	return item
 }
 
 type ExemplarDetails struct {
