@@ -1,0 +1,334 @@
+//
+// Copyright (C) 2019-2025 vdaas.org vald team <vald@vdaas.org>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// You may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+package metrics
+
+import (
+	"encoding/csv"
+	"fmt"
+	"slices"
+	"time"
+
+	"github.com/vdaas/vald/internal/conv"
+	"github.com/vdaas/vald/internal/encoding/json"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/strings"
+	"sigs.k8s.io/yaml"
+)
+
+// SnapshotPresenter handles the formatting of a GlobalSnapshot into various output formats.
+type SnapshotPresenter struct {
+	snapshot *GlobalSnapshot
+}
+
+// NewSnapshotPresenter creates a new presenter for the given snapshot.
+func NewSnapshotPresenter(snapshot *GlobalSnapshot) *SnapshotPresenter {
+	return &SnapshotPresenter{
+		snapshot: snapshot,
+	}
+}
+
+// AsString returns a human-readable string representation of the snapshot.
+func (p *SnapshotPresenter) AsString() string {
+	if p.snapshot == nil || p.snapshot.Total == 0 {
+		return "No data collected."
+	}
+
+	var sb strings.Builder
+
+	p.renderSummary(&sb)
+	p.renderLatency(&sb)
+	p.renderQueueWait(&sb)
+	p.renderStatusCodes(&sb)
+	p.renderExemplars(&sb)
+
+	return sb.String()
+}
+
+func (p *SnapshotPresenter) renderSummary(sb *strings.Builder) {
+	s := p.snapshot
+	total := s.Total
+	errs := s.Errors
+
+	totalDuration := s.LastUpdated.Sub(s.StartTime)
+
+	fmt.Fprint(sb, "\n--- Summary ---\n")
+	fmt.Fprintf(sb, "Total Requests:\t%d\n", total)
+	fmt.Fprintf(sb, "Total Duration:\t%s\n", totalDuration)
+	if totalDuration.Seconds() > 0 {
+		fmt.Fprintf(sb, "Requests/sec:\t%.2f\n", float64(total)/totalDuration.Seconds())
+	}
+	fmt.Fprintf(sb, "Errors:\t%d (%.2f%%)\n", errs, float64(errs)/float64(total)*100)
+}
+
+func (p *SnapshotPresenter) renderLatency(sb *strings.Builder) {
+	sb.WriteString(p.renderHistogram("Latency", p.snapshot.Latencies, p.snapshot.LatPercentiles))
+}
+
+func (p *SnapshotPresenter) renderQueueWait(sb *strings.Builder) {
+	sb.WriteString(p.renderHistogram("Queue Wait", p.snapshot.QueueWaits, p.snapshot.QWPercentiles))
+}
+
+func (p *SnapshotPresenter) renderStatusCodes(sb *strings.Builder) {
+	s := p.snapshot
+	total := s.Total
+	fmt.Fprint(sb, "\n--- Status Codes ---\n")
+	if s.Codes != nil {
+		codes := make([]codes.Code, 0, len(s.Codes))
+		for code := range s.Codes {
+			codes = append(codes, code)
+		}
+		slices.Sort(codes)
+		for _, code := range codes {
+			count := s.Codes[code]
+			fmt.Fprintf(sb, "\t- %s:\t%d (%.2f%%)\n", code.String(), count, float64(count)/float64(total)*100)
+		}
+	}
+}
+
+func (p *SnapshotPresenter) renderExemplars(sb *strings.Builder) {
+	s := p.snapshot
+	if s.ExemplarDetails != nil {
+		renderExemplars := func(title string, items []*ExemplarItem) {
+			if len(items) > 0 {
+				fmt.Fprintf(sb, "\n--- Exemplars (%s) ---\n", title)
+				for _, ex := range items {
+					status := ""
+					if ex.Err != nil {
+						status = " (Failed)"
+					}
+					fmt.Fprintf(sb, "\t- RequestID:\t%s,\tLatency:\t%s%s\n", ex.RequestID, ex.Latency, status)
+					if ex.Msg != "" {
+						fmt.Fprintf(sb, "\t  Message:\t%s\n", ex.Msg)
+					}
+				}
+			}
+		}
+		renderExemplars("Slowest", s.ExemplarDetails.Slowest)
+		renderExemplars("Fastest", s.ExemplarDetails.Fastest)
+		renderExemplars("Average (Sampled)", s.ExemplarDetails.Average)
+		renderExemplars("Failures", s.ExemplarDetails.Failures)
+	} else if len(s.Exemplars) > 0 {
+		fmt.Fprintf(sb, "\n--- Exemplars (Top %d slowest requests) ---\n", len(s.Exemplars))
+		for _, ex := range s.Exemplars {
+			fmt.Fprintf(sb, "\t- RequestID:\t%s,\tLatency:\t%s\n", ex.RequestID, ex.Latency)
+			if ex.Msg != "" {
+				fmt.Fprintf(sb, "\t  Message:\t%s\n", ex.Msg)
+			}
+		}
+	}
+}
+
+// AsJSON returns a JSON representation of the snapshot.
+func (p *SnapshotPresenter) AsJSON() (string, error) {
+	if p.snapshot == nil {
+		return "null", nil
+	}
+	b, err := json.MarshalIndent(p.snapshot, "", "\t")
+	if err != nil {
+		return "", err
+	}
+	return conv.Btoa(b), nil
+}
+
+// AsYAML returns a YAML representation of the snapshot.
+func (p *SnapshotPresenter) AsYAML() (string, error) {
+	if p.snapshot == nil {
+		return "null", nil
+	}
+	b, err := yaml.Marshal(p.snapshot)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+// AsCSV returns a CSV representation of the snapshot's summary and percentiles.
+func (p *SnapshotPresenter) AsCSV() (string, error) {
+	return p.asSeparatedValue(',')
+}
+
+// AsTSV returns a TSV representation of the snapshot's summary and percentiles.
+func (p *SnapshotPresenter) AsTSV() (string, error) {
+	return p.asSeparatedValue('\t')
+}
+
+func (p *SnapshotPresenter) asSeparatedValue(separator rune) (string, error) {
+	if p.snapshot == nil {
+		return "", nil
+	}
+
+	var sb strings.Builder
+	writer := csv.NewWriter(&sb)
+	writer.Comma = separator
+
+	s := p.snapshot
+
+	headers := []string{
+		"Total", "Errors", "TotalDurationSec", "RPS", "ErrorRate",
+		"LatencyMin", "LatencyMean", "LatencyMax",
+	}
+	if s.LatPercentiles != nil {
+		for _, q := range s.LatPercentiles.Quantiles() {
+			headers = append(headers, fmt.Sprintf("LatencyP%d", int(q*100)))
+		}
+	}
+	headers = append(headers, "QueueWaitMin", "QueueWaitMean", "QueueWaitMax")
+	if s.QWPercentiles != nil {
+		for _, q := range s.QWPercentiles.Quantiles() {
+			headers = append(headers, fmt.Sprintf("QueueWaitP%d", int(q*100)))
+		}
+	}
+	writer.Write(headers)
+
+	totalDuration := s.LastUpdated.Sub(s.StartTime).Seconds()
+	rps := 0.0
+	if totalDuration > 0 {
+		rps = float64(s.Total) / totalDuration
+	}
+
+	errorRate := 0.0
+	if s.Total > 0 {
+		errorRate = float64(s.Errors) / float64(s.Total)
+	}
+
+	latMin, latMean, latMax := 0.0, 0.0, 0.0
+	if s.Latencies != nil {
+		latMin = float64(s.Latencies.Min) / 1e9
+		latMean = float64(s.Latencies.Mean) / 1e9
+		latMax = float64(s.Latencies.Max) / 1e9
+	}
+
+	row := []string{
+		fmt.Sprintf("%d", s.Total),
+		fmt.Sprintf("%d", s.Errors),
+		fmt.Sprintf("%.4f", totalDuration),
+		fmt.Sprintf("%.2f", rps),
+		fmt.Sprintf("%.4f", errorRate),
+		fmt.Sprintf("%.4f", latMin),
+		fmt.Sprintf("%.4f", latMean),
+		fmt.Sprintf("%.4f", latMax),
+	}
+	if s.LatPercentiles != nil {
+		for _, q := range s.LatPercentiles.Quantiles() {
+			row = append(row, fmt.Sprintf("%.4f", s.LatPercentiles.Quantile(q)/1e9))
+		}
+	}
+
+	qwMin, qwMean, qwMax := 0.0, 0.0, 0.0
+	if s.QueueWaits != nil {
+		qwMin = float64(s.QueueWaits.Min) / 1e9
+		qwMean = float64(s.QueueWaits.Mean) / 1e9
+		qwMax = float64(s.QueueWaits.Max) / 1e9
+	}
+
+	row = append(row,
+		fmt.Sprintf("%.4f", qwMin),
+		fmt.Sprintf("%.4f", qwMean),
+		fmt.Sprintf("%.4f", qwMax),
+	)
+	if s.QWPercentiles != nil {
+		for _, q := range s.QWPercentiles.Quantiles() {
+			row = append(row, fmt.Sprintf("%.4f", s.QWPercentiles.Quantile(q)/1e9))
+		}
+	}
+
+	writer.Write(row)
+	writer.Flush()
+	return sb.String(), nil
+}
+
+// renderHistogram is a helper to render the histogram part of the string output.
+func (p *SnapshotPresenter) renderHistogram(title string, h *HistogramSnapshot, q TDigest) string {
+	var sb strings.Builder
+
+	fmt.Fprintf(&sb, "\n--- %s ---\n", title)
+
+	// Helper to convert nanoseconds to duration string
+	fmtDur := func(ns float64) string {
+		return time.Duration(ns).String()
+	}
+
+	if h != nil {
+		// Manually format HistogramSnapshot to handle units correctly
+		if h.Total == 0 {
+			fmt.Fprint(&sb, "No data collected.\n")
+		} else {
+			fmt.Fprintf(
+				&sb,
+				"\tMean:\t%s\tStdDev:\t%s\tMin:\t%s\tMax:\t%s\tTotal:\t%d\n",
+				fmtDur(h.Mean),
+				fmtDur(h.StdDev),
+				fmtDur(h.Min),
+				fmtDur(h.Max),
+				h.Total,
+			)
+		}
+	}
+	if q != nil {
+		// TDigest stores raw values (nanoseconds). Its String() method might print raw floats.
+		// We should probably implement a better stringer for TDigest or handle it here.
+		// Since TDigest interface has String(), let's assume it might not be time-aware.
+		// Let's check TDigest implementation or just use Quantiles().
+		// The TDigest implementation in this package (tdigest.go) likely implements String().
+		// If we can't change TDigest easily, we can iterate quantiles here.
+		qs := q.Quantiles()
+		if len(qs) > 0 {
+			fmt.Fprint(&sb, "Percentiles:\n")
+			for _, quantile := range qs {
+				val := q.Quantile(quantile)
+				fmt.Fprintf(&sb, "\tP%g:\t%s\n", quantile*100, fmtDur(val))
+			}
+		}
+	}
+	if h != nil && len(h.Counts) > 0 {
+		fmt.Fprint(&sb, "Histogram:\n")
+		maxCount := uint64(0)
+		for _, count := range h.Counts {
+			if count > maxCount {
+				maxCount = count
+			}
+		}
+		for i, count := range h.Counts {
+			if count == 0 {
+				continue // Skip empty buckets for cleaner output? Or keep them?
+				// Keeping them helps visualize distribution, but if we have 100 buckets and most empty...
+				// Let's keep all buckets for now as per original code.
+			}
+			var bar string
+			if maxCount > 0 {
+				bar = strings.Repeat("∎", int(float64(count)/float64(maxCount)*40))
+			}
+			var lowerBound, upperBound string
+			if i == 0 {
+				lowerBound = "0"
+			} else {
+				if i-1 < len(h.Bounds) {
+					lowerBound = fmtDur(h.Bounds[i-1])
+				} else {
+					lowerBound = "?"
+				}
+			}
+			if i >= len(h.Bounds) {
+				upperBound = "inf"
+			} else {
+				upperBound = fmtDur(h.Bounds[i])
+			}
+			fmt.Fprintf(&sb, "\t%s - %s [%d]\t|%s\n", lowerBound, upperBound, count, bar)
+		}
+	}
+	return sb.String()
+}
