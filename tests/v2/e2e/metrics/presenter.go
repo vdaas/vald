@@ -19,6 +19,7 @@ package metrics
 import (
 	"encoding/csv"
 	"fmt"
+	"math"
 	"slices"
 	"time"
 
@@ -259,7 +260,7 @@ func (p *SnapshotPresenter) renderHistogram(title string, h *HistogramSnapshot, 
 
 	// Helper to convert nanoseconds to duration string
 	fmtDur := func(ns float64) string {
-		return time.Duration(ns).String()
+		return time.Duration(math.Round(ns)).String()
 	}
 
 	if h != nil {

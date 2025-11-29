@@ -10,7 +10,21 @@ exemplars:
   RequestID: req-1
 invariants_ok: false
 last_updated: "0001-01-01T00:00:00Z"
-lat_percentiles: {}
+lat_percentiles:
+  centroids:
+  - Mean: 1000000
+    Weight: 1
+  compression: 100
+  compression_trigger_factor: 1.5
+  count: 1
+  quantiles:
+  - 0.1
+  - 0.25
+  - 0.5
+  - 0.75
+  - 0.9
+  - 0.95
+  - 0.99
 latencies:
   bounds: null
   counts: null
@@ -33,7 +47,21 @@ queue_waits:
   sum: 50000000
   sum_sq: 0
   total: 100
-qw_percentiles: {}
+qw_percentiles:
+  centroids:
+  - Mean: 500000
+    Weight: 1
+  compression: 100
+  compression_trigger_factor: 1.5
+  count: 1
+  quantiles:
+  - 0.1
+  - 0.25
+  - 0.5
+  - 0.75
+  - 0.9
+  - 0.95
+  - 0.99
 schema_version: ""
 sketch_kind: ""
 start_time: "0001-01-01T00:00:00Z"

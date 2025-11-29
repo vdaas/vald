@@ -17,6 +17,7 @@
 package metrics
 
 import (
+	"encoding/json"
 	"slices"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -366,7 +367,7 @@ func (t *tdigest) Quantile(q float64) float64 {
 	defer t.mu.Unlock()
 
 	// Flush any pending updates to ensure accuracy
-	t.flush()
+	t.flushLocked()
 
 	if t.count == 0 {
 		return 0
@@ -380,28 +381,38 @@ func (t *tdigest) Quantile(q float64) float64 {
 	}
 
 	target := q * t.count
-	var sum float64
+	var cumulative float64
 
-	for i, c := range t.centroids {
-		nextSum := sum + c.Weight
-		if target <= nextSum {
+	// Check if target is before the first centroid's center
+	if len(t.centroids) == 0 {
+		return 0
+	}
+
+	firstCenter := t.centroids[0].Weight / 2.0
+	if target < firstCenter {
+		return t.centroids[0].Mean
+	}
+
+	cumulative = 0
+	for i := 0; i < len(t.centroids); i++ {
+		c := t.centroids[i]
+		center := cumulative + c.Weight/2.0
+
+		if target < center {
 			if i == 0 {
 				return c.Mean
 			}
 			prev := t.centroids[i-1]
-			if c.Weight <= 0 {
-				return c.Mean
-			}
-			fraction := (target - sum) / c.Weight
-			if fraction < 0 {
-				fraction = 0
-			} else if fraction > 1 {
-				fraction = 1
-			}
-			return prev.Mean + (c.Mean-prev.Mean)*fraction
+			prevCenter := (cumulative - prev.Weight) + prev.Weight/2.0
+
+			// Interpolate
+			// fraction of the way from prevCenter to center
+			frac := (target - prevCenter) / (center - prevCenter)
+			return prev.Mean + frac*(c.Mean-prev.Mean)
 		}
-		sum = nextSum
+		cumulative += c.Weight
 	}
+
 	return t.centroids[len(t.centroids)-1].Mean
 }
 
@@ -415,7 +426,7 @@ func (t *shardedTDigest) Merge(other TDigest) error {
 			// Distribute centroids.
 			single.mu.Lock()
 			defer single.mu.Unlock()
-			single.flush()
+			single.flushLocked()
 
 			// Batch centroids per shard to minimize lock contention
 			batches := make([][]centroid, len(t.shards))
@@ -568,4 +579,81 @@ func (t *shardedTDigest) Quantiles() []float64 {
 // Quantiles returns the configured quantiles.
 func (t *tdigest) Quantiles() []float64 {
 	return slices.Clone(t.quantiles)
+}
+
+// tdigestJSON is a DTO for JSON serialization of tdigest.
+type tdigestJSON struct {
+	Centroids                []centroid `json:"centroids"`
+	Quantiles                []float64  `json:"quantiles"`
+	Compression              float64    `json:"compression"`
+	CompressionTriggerFactor float64    `json:"compression_trigger_factor"`
+	Count                    float64    `json:"count"`
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (t *tdigest) MarshalJSON() ([]byte, error) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	// Ensure everything is merged into centroids
+	t.flushLocked()
+
+	return json.Marshal(tdigestJSON{
+		Centroids:                t.centroids,
+		Quantiles:                t.quantiles,
+		Compression:              t.compression,
+		CompressionTriggerFactor: t.compressionTriggerFactor,
+		Count:                    t.count,
+	})
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+func (t *tdigest) UnmarshalJSON(data []byte) error {
+	var v tdigestJSON
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	t.centroids = v.Centroids
+	t.quantiles = v.Quantiles
+	t.compression = v.Compression
+	t.compressionTriggerFactor = v.CompressionTriggerFactor
+	t.count = v.Count
+
+	// Initialize buffers
+	if t.buffer == nil {
+		t.buffer = make([]float64, 0, defaultBufferCapacity)
+	}
+	if t.id == 0 {
+		t.id = collectorIDCounter.Add(1)
+	}
+	return nil
+}
+
+// shardedTDigestJSON is a DTO for JSON serialization of shardedTDigest.
+type shardedTDigestJSON struct {
+	Shards    []*tdigest `json:"shards"`
+	Quantiles []float64  `json:"quantiles"`
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (t *shardedTDigest) MarshalJSON() ([]byte, error) {
+	return json.Marshal(shardedTDigestJSON{
+		Shards:    t.shards,
+		Quantiles: t.quantiles,
+	})
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+func (t *shardedTDigest) UnmarshalJSON(data []byte) error {
+	var v shardedTDigestJSON
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	t.shards = v.Shards
+	t.quantiles = v.Quantiles
+	return nil
 }
