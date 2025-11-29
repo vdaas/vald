@@ -101,7 +101,7 @@ func (s *scale) getSlot(idx uint64) Slot {
 	// s.capacity is passed as uint64 but slices index takes int.
 	// capacity should fit in int.
 	// We can safely cast to int as we construct slices with this capacity.
-	return s.slots[int((idx/s.width)%s.capacity)]
+	return s.slots[int((idx/s.width)%s.capacity)] //nolint:gosec // modulo capacity ensures index is within bounds
 }
 
 // Record adds a request result to the appropriate slot in the scale.
@@ -122,7 +122,7 @@ func (s *scale) Record(ctx context.Context, rr *RequestResult) {
 		if t < 0 {
 			t = 0
 		}
-		idx = uint64(t)
+		idx = uint64(t) //nolint:gosec // timestamp is checked to be non-negative
 	}
 
 	s.getSlot(idx).Record(rr, idx/s.width)

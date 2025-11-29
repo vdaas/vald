@@ -84,7 +84,7 @@ func WithTimeScale(name string, width time.Duration, capacity uint64) Option {
 			return errors.New("time scale width must be positive")
 		}
 		// width is checked to be positive, so casting to uint64 is safe
-		s, err := newScale(name, uint64(width), capacity, len(c.counters), TimeScale, c.latencies, c.queueWaits, c.exemplars)
+		s, err := newScale(name, uint64(width), capacity, len(c.counters), TimeScale, c.latencies, c.queueWaits, c.exemplars) //nolint:gosec // width is checked to be positive
 		if err != nil {
 			return err
 		}

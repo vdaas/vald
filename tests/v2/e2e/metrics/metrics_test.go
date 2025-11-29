@@ -252,7 +252,7 @@ func TestRequestResult_validate(t *testing.T) {
 
 	now := time.Now()
 
-	test.Run(t.Context(), t, func(tt *testing.T, f fields) (*RequestResult, error) {
+	if err := test.Run(t.Context(), t, func(tt *testing.T, f fields) (*RequestResult, error) {
 		rr := &RequestResult{
 			QueuedAt:  f.QueuedAt,
 			StartedAt: f.StartedAt,
@@ -306,5 +306,7 @@ func TestRequestResult_validate(t *testing.T) {
 				return nil
 			},
 		},
-	}...)
+	}...); err != nil {
+		t.Error(err)
+	}
 }

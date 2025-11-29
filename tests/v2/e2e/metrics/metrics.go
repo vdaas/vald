@@ -538,7 +538,7 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 	for i := range c.codes {
 		if v := c.codes[i].Load(); v > 0 {
 			// Fix G115: i is index of array size MaxGRPCCodes (20), fits in uint32.
-			codesMap[codes.Code(i)] = v
+			codesMap[codes.Code(i)] = v //nolint:gosec // i is index of small array (size 20), fits in uint32
 		}
 	}
 	var latSnap, qwSnap *HistogramSnapshot

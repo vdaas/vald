@@ -35,6 +35,7 @@ func TestNewExemplar(t *testing.T) {
 			Name: "initialized with default options",
 			Args: nil,
 			CheckFunc: func(t *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
+				t.Helper()
 				if got.Val == nil {
 					return errors.New("got nil exemplar")
 				}
@@ -58,6 +59,7 @@ func TestNewExemplar(t *testing.T) {
 				WithExemplarNumShards(1), // Force single shard for capacity check simplicity
 			},
 			CheckFunc: func(t *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
+				t.Helper()
 				if got.Val == nil {
 					return errors.New("got nil exemplar")
 				}

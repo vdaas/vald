@@ -123,7 +123,7 @@ func computeHash(vals ...float64) uint64 {
 	}
 	// Reinterpret the float64 slice as a byte slice to avoid allocation using unsafe.Slice.
 	// This is safe because both slices point to the same underlying data.
-	data := unsafe.Slice((*byte)(unsafe.Pointer(&vals[0])), len(vals)*sizeOfFloat64)
+	data := unsafe.Slice((*byte)(unsafe.Pointer(&vals[0])), len(vals)*sizeOfFloat64) //nolint:gosec // using unsafe for zero-copy slice conversion for performance
 	return xxh3.Hash(data)
 }
 
@@ -133,5 +133,5 @@ func shardIndex(hash uint64, n int) int {
 		return 0
 	}
 	// Fix G115: hash % uint64(n) will be in [0, n-1]. Since n is int and n > 0, the result fits in int.
-	return int(hash % uint64(n))
+	return int(hash % uint64(n)) //nolint:gosec // hash modulo length is always within int bounds
 }
