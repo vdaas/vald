@@ -29,12 +29,14 @@ import (
 
 func TestNewExemplar(t *testing.T) {
 	if err := test.Run(t.Context(), t, func(t *testing.T, opts []ExemplarOption) (Exemplar, error) {
+		t.Helper()
 		return NewExemplar(opts...), nil
 	}, []test.Case[Exemplar, []ExemplarOption]{
 		{
 			Name: "initialized with default options",
 			Args: nil,
 			CheckFunc: func(t *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
+				t.Helper()
 				if got.Val == nil {
 					return errors.New("got nil exemplar")
 				}
@@ -58,6 +60,7 @@ func TestNewExemplar(t *testing.T) {
 				WithExemplarNumShards(1), // Force single shard for capacity check simplicity
 			},
 			CheckFunc: func(t *testing.T, want test.Result[Exemplar], got test.Result[Exemplar]) error {
+				t.Helper()
 				if got.Val == nil {
 					return errors.New("got nil exemplar")
 				}
@@ -87,6 +90,7 @@ func TestExemplar_Offer(t *testing.T) {
 	}
 
 	if err := test.Run(t.Context(), t, func(t *testing.T, args args) ([]*ExemplarItem, error) {
+		t.Helper()
 		e := NewExemplar(args.opts...)
 		for _, o := range args.offers {
 			e.Offer(o.latency, o.id, nil, "")
@@ -106,6 +110,7 @@ func TestExemplar_Offer(t *testing.T) {
 				},
 			},
 			CheckFunc: func(t *testing.T, want test.Result[[]*ExemplarItem], got test.Result[[]*ExemplarItem]) error {
+				t.Helper()
 				snap := got.Val
 				if len(snap) != 3 {
 					return errors.Errorf("expected snapshot length 3, got %d", len(snap))

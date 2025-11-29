@@ -30,7 +30,7 @@ func TestNewHistogram(t *testing.T) {
 		opts []HistogramOption
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (Histogram, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (Histogram, error) {
 		return NewHistogram(args.opts...)
 	}, []test.Case[Histogram, args]{
 		{
@@ -43,7 +43,8 @@ func TestNewHistogram(t *testing.T) {
 					WithHistogramNumShards(1),
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Histogram], got test.Result[Histogram]) error {
+			CheckFunc: func(t *testing.T, want test.Result[Histogram], got test.Result[Histogram]) error {
+				t.Helper()
 				if got.Err != nil {
 					return errors.Errorf("unexpected error: %v", got.Err)
 				}
@@ -64,7 +65,7 @@ func TestHistogram_Record_And_Snapshot(t *testing.T) {
 		records []float64
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (*HistogramSnapshot, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (*HistogramSnapshot, error) {
 		h, err := NewHistogram(args.opts...)
 		if err != nil {
 			return nil, err
@@ -85,7 +86,8 @@ func TestHistogram_Record_And_Snapshot(t *testing.T) {
 				},
 				records: []float64{10, 20, 30, 40, 50},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*HistogramSnapshot], got test.Result[*HistogramSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*HistogramSnapshot], got test.Result[*HistogramSnapshot]) error {
+				t.Helper()
 				if got.Err != nil {
 					return got.Err
 				}
@@ -109,7 +111,8 @@ func TestHistogram_Record_And_Snapshot(t *testing.T) {
 					WithHistogramNumShards(1),
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*HistogramSnapshot], got test.Result[*HistogramSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*HistogramSnapshot], got test.Result[*HistogramSnapshot]) error {
+				t.Helper()
 				if got.Err != nil {
 					return got.Err
 				}
@@ -134,7 +137,8 @@ func TestHistogram_Record_And_Snapshot(t *testing.T) {
 				},
 				records: []float64{10},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*HistogramSnapshot], got test.Result[*HistogramSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*HistogramSnapshot], got test.Result[*HistogramSnapshot]) error {
+				t.Helper()
 				if got.Err != nil {
 					return got.Err
 				}
@@ -159,7 +163,8 @@ func TestHistogram_Record_And_Snapshot(t *testing.T) {
 				},
 				records: []float64{math.NaN(), 10},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*HistogramSnapshot], got test.Result[*HistogramSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*HistogramSnapshot], got test.Result[*HistogramSnapshot]) error {
+				t.Helper()
 				if got.Err != nil {
 					return got.Err
 				}
@@ -184,7 +189,8 @@ func TestHistogram_Record_And_Snapshot(t *testing.T) {
 				},
 				records: []float64{math.Inf(1), math.Inf(-1), 10},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*HistogramSnapshot], got test.Result[*HistogramSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*HistogramSnapshot], got test.Result[*HistogramSnapshot]) error {
+				t.Helper()
 				if got.Err != nil {
 					return got.Err
 				}
@@ -211,7 +217,7 @@ func TestHistogram_Merge(t *testing.T) {
 		h2Records []float64
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (*HistogramSnapshot, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (*HistogramSnapshot, error) {
 		h1, err := NewHistogram(args.h1Opts...)
 		if err != nil {
 			return nil, err
@@ -252,7 +258,8 @@ func TestHistogram_Merge(t *testing.T) {
 				},
 				h2Records: []float64{30, 40},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*HistogramSnapshot], got test.Result[*HistogramSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*HistogramSnapshot], got test.Result[*HistogramSnapshot]) error {
+				t.Helper()
 				if got.Err != nil {
 					return got.Err
 				}
@@ -284,7 +291,8 @@ func TestHistogram_Merge(t *testing.T) {
 				},
 				h2Records: []float64{30, 40},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*HistogramSnapshot], got test.Result[*HistogramSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*HistogramSnapshot], got test.Result[*HistogramSnapshot]) error {
+				t.Helper()
 				if got.Err == nil {
 					return errors.New("expected error, got nil")
 				}
@@ -303,7 +311,7 @@ func TestHistogram_Concurrent(t *testing.T) {
 	type args struct {
 		count int
 	}
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (*HistogramSnapshot, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (*HistogramSnapshot, error) {
 		h, err := NewHistogram(
 			WithHistogramMin(1),
 			WithHistogramGrowth(2),
@@ -327,7 +335,8 @@ func TestHistogram_Concurrent(t *testing.T) {
 		{
 			Name: "concurrent record",
 			Args: args{count: 100},
-			CheckFunc: func(tt *testing.T, want test.Result[*HistogramSnapshot], got test.Result[*HistogramSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*HistogramSnapshot], got test.Result[*HistogramSnapshot]) error {
+				t.Helper()
 				if got.Err != nil {
 					return got.Err
 				}
@@ -349,7 +358,7 @@ func TestHistogram_Clone(t *testing.T) {
 		opts    []HistogramOption
 		records []float64
 	}
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (*HistogramSnapshot, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (*HistogramSnapshot, error) {
 		h, err := NewHistogram(args.opts...)
 		if err != nil {
 			return nil, err
@@ -373,7 +382,8 @@ func TestHistogram_Clone(t *testing.T) {
 				},
 				records: []float64{10, 20},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*HistogramSnapshot], got test.Result[*HistogramSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*HistogramSnapshot], got test.Result[*HistogramSnapshot]) error {
+				t.Helper()
 				if got.Err != nil {
 					return got.Err
 				}

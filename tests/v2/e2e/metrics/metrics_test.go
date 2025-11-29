@@ -26,13 +26,15 @@ import (
 )
 
 func TestNewCollector(t *testing.T) {
-	if err := test.Run(t.Context(), t, func(tt *testing.T, opts []Option) (Collector, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, opts []Option) (Collector, error) {
+		t.Helper()
 		return NewCollector(opts...)
 	}, []test.Case[Collector, []Option]{
 		{
 			Name: "initialize with default options",
 			Args: nil,
-			CheckFunc: func(tt *testing.T, want test.Result[Collector], got test.Result[Collector]) error {
+			CheckFunc: func(t *testing.T, want test.Result[Collector], got test.Result[Collector]) error {
+				t.Helper()
 				if got.Err != nil {
 					return got.Err
 				}
@@ -47,7 +49,8 @@ func TestNewCollector(t *testing.T) {
 			Args: []Option{
 				WithTimeScale("test_scale", time.Second, 10),
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Collector], got test.Result[Collector]) error {
+			CheckFunc: func(t *testing.T, want test.Result[Collector], got test.Result[Collector]) error {
+				t.Helper()
 				if got.Err != nil {
 					return got.Err
 				}
@@ -69,7 +72,8 @@ func TestCollector_Record_And_Snapshot(t *testing.T) {
 		records []*RequestResult
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (*GlobalSnapshot, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (*GlobalSnapshot, error) {
+		t.Helper()
 		c, err := NewCollector(args.opts...)
 		if err != nil {
 			return nil, err
@@ -89,7 +93,8 @@ func TestCollector_Record_And_Snapshot(t *testing.T) {
 					},
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*GlobalSnapshot], got test.Result[*GlobalSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*GlobalSnapshot], got test.Result[*GlobalSnapshot]) error {
+				t.Helper()
 				if got.Err != nil {
 					return got.Err
 				}
@@ -117,7 +122,8 @@ func TestCollector_Record_And_Snapshot(t *testing.T) {
 					},
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*GlobalSnapshot], got test.Result[*GlobalSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*GlobalSnapshot], got test.Result[*GlobalSnapshot]) error {
+				t.Helper()
 				if got.Err != nil {
 					return got.Err
 				}
@@ -140,7 +146,8 @@ func TestCollector_Record_And_Snapshot(t *testing.T) {
 					{Latency: 300 * time.Millisecond, QueueWait: 40 * time.Millisecond},
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*GlobalSnapshot], got test.Result[*GlobalSnapshot]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*GlobalSnapshot], got test.Result[*GlobalSnapshot]) error {
+				t.Helper()
 				if got.Err != nil {
 					return got.Err
 				}
@@ -173,7 +180,8 @@ func TestCollector_Merge(t *testing.T) {
 		c2Records []*RequestResult
 	}
 
-	if err := test.Run(t.Context(), t, func(tt *testing.T, args args) (Collector, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, args args) (Collector, error) {
+		t.Helper()
 		c1, err := NewCollector(args.c1Opts...)
 		if err != nil {
 			return nil, err
@@ -210,7 +218,8 @@ func TestCollector_Merge(t *testing.T) {
 					{Latency: 200 * time.Millisecond, Err: errors.New("err")},
 				},
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[Collector], got test.Result[Collector]) error {
+			CheckFunc: func(t *testing.T, want test.Result[Collector], got test.Result[Collector]) error {
+				t.Helper()
 				if got.Err != nil {
 					return got.Err
 				}
@@ -252,7 +261,8 @@ func TestRequestResult_validate(t *testing.T) {
 
 	now := time.Now()
 
-	test.Run(t.Context(), t, func(tt *testing.T, f fields) (*RequestResult, error) {
+	if err := test.Run(t.Context(), t, func(t *testing.T, f fields) (*RequestResult, error) {
+		t.Helper()
 		rr := &RequestResult{
 			QueuedAt:  f.QueuedAt,
 			StartedAt: f.StartedAt,
@@ -270,7 +280,8 @@ func TestRequestResult_validate(t *testing.T) {
 				StartedAt: now.Add(time.Second),
 				EndedAt:   now.Add(2 * time.Second),
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*RequestResult], got test.Result[*RequestResult]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*RequestResult], got test.Result[*RequestResult]) error {
+				t.Helper()
 				if got.Val.Latency != time.Second {
 					return errors.Errorf("expected latency %v, got %v", time.Second, got.Val.Latency)
 				}
@@ -286,7 +297,8 @@ func TestRequestResult_validate(t *testing.T) {
 				StartedAt: now.Add(time.Second),
 				EndedAt:   now,
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*RequestResult], got test.Result[*RequestResult]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*RequestResult], got test.Result[*RequestResult]) error {
+				t.Helper()
 				if got.Val.Latency != 0 {
 					return errors.Errorf("expected latency 0, got %v", got.Val.Latency)
 				}
@@ -299,12 +311,15 @@ func TestRequestResult_validate(t *testing.T) {
 				QueuedAt:  now.Add(time.Second),
 				StartedAt: now,
 			},
-			CheckFunc: func(tt *testing.T, want test.Result[*RequestResult], got test.Result[*RequestResult]) error {
+			CheckFunc: func(t *testing.T, want test.Result[*RequestResult], got test.Result[*RequestResult]) error {
+				t.Helper()
 				if got.Val.QueueWait != 0 {
 					return errors.Errorf("expected queue wait 0, got %v", got.Val.QueueWait)
 				}
 				return nil
 			},
 		},
-	}...)
+	}...); err != nil {
+		t.Error(err)
+	}
 }

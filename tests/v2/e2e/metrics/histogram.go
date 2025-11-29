@@ -199,7 +199,7 @@ func (sh *shardedHistogram) shardIndexForValue(val float64) int {
 	if len(sh.shards) <= 1 {
 		return 0
 	}
-	return int(computeHash(val) % uint64(len(sh.shards)))
+	return int(computeHash(val) % uint64(len(sh.shards))) //nolint:gosec // hash modulo length is always within int bounds
 }
 
 // Record adds a value to the sharded histogram.
