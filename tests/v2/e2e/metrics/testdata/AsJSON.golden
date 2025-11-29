@@ -4,8 +4,8 @@
 	"lat_percentiles": {
 		"centroids": [
 			{
-				"Mean": 1000000,
-				"Weight": 1
+				"mean": 1000000,
+				"weight": 1
 			}
 		],
 		"quantiles": [
@@ -24,8 +24,8 @@
 	"qw_percentiles": {
 		"centroids": [
 			{
-				"Mean": 500000,
-				"Weight": 1
+				"mean": 500000,
+				"weight": 1
 			}
 		],
 		"quantiles": [
@@ -73,10 +73,10 @@
 	"sketch_kind": "",
 	"exemplars": [
 		{
-			"Err": null,
-			"RequestID": "req-1",
-			"Msg": "",
-			"Latency": 10000000
+			"err": null,
+			"request_id": "req-1",
+			"msg": "",
+			"latency": 10000000
 		}
 	],
 	"errors": 10,

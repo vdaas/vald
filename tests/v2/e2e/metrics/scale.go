@@ -18,6 +18,7 @@ package metrics
 
 import (
 	"context"
+	"math"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
@@ -51,6 +52,9 @@ func newScale(
 	if capacity == 0 {
 		return nil, errors.New("scale capacity must be > 0")
 	}
+	if capacity > uint64(math.MaxInt) {
+		return nil, errors.New("scale capacity too large")
+	}
 	slots := make([]Slot, capacity)
 	for i := range slots {
 		// Use Clone to create new instances for each slot.
@@ -75,7 +79,7 @@ func newScale(
 		)
 	}
 	return &scale{
-		id:        collectorIDCounter.Add(1),
+		id:        secureUint64(), // use secure random ID
 		name:      name,
 		width:     width,
 		capacity:  capacity,
@@ -97,11 +101,13 @@ func (s *scale) Reset() {
 // getSlot returns the slot for the given index.
 // It calculates the ring buffer index based on the scale's width and capacity.
 func (s *scale) getSlot(idx uint64) Slot {
-	return s.slots[int((idx/s.width)%s.capacity)]
+	i := (idx / s.width) % s.capacity
+	// Safe cast because capacity is checked to fit in int during initialization
+	return s.slots[int(i)]
 }
 
 // Record adds a request result to the appropriate slot in the scale.
-// It determines the index based on the scale type (Time or Range) and delegates recording to the target slot.
+// It determines the index based on the scale's type (Time or Range) and delegates recording to the target slot.
 func (s *scale) Record(ctx context.Context, rr *RequestResult) {
 	var idx uint64
 	var ok bool
@@ -113,7 +119,11 @@ func (s *scale) Record(ctx context.Context, rr *RequestResult) {
 			return
 		}
 	case TimeScale:
-		idx = uint64(rr.EndedAt.UnixNano())
+		t := rr.EndedAt.UnixNano()
+		if t < 0 {
+			return
+		}
+		idx = uint64(t)
 	}
 
 	s.getSlot(idx).Record(rr, idx/s.width)
@@ -188,7 +198,7 @@ func (s *scale) Clone() Scale {
 	}
 
 	return &scale{
-		id:        collectorIDCounter.Add(1),
+		id:        secureUint64(), // use secure random ID
 		name:      s.name,
 		width:     s.width,
 		capacity:  s.capacity,

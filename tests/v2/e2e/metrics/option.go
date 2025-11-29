@@ -17,10 +17,10 @@
 package metrics
 
 import (
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
 type (
@@ -162,9 +162,9 @@ func WithExemplar(opts ...ExemplarOption) Option {
 }
 
 // WithHistogramMin sets the minimum value for the histogram.
-func WithHistogramMin(min float64) HistogramOption {
+func WithHistogramMin(minVal float64) HistogramOption {
 	return func(cfg *histogramConfig) error {
-		cfg.Min = min
+		cfg.Min = minVal
 		if cfg.Min <= 0 {
 			return errors.New("histogram min must be > 0 for geometric buckets")
 		}
@@ -173,9 +173,9 @@ func WithHistogramMin(min float64) HistogramOption {
 }
 
 // WithHistogramMax sets the maximum value for the histogram.
-func WithHistogramMax(max float64) HistogramOption {
+func WithHistogramMax(maxVal float64) HistogramOption {
 	return func(cfg *histogramConfig) error {
-		cfg.Max = max
+		cfg.Max = maxVal
 		return nil
 	}
 }

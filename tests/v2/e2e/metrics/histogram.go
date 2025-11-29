@@ -25,9 +25,13 @@ import (
 	"github.com/vdaas/vald/internal/sync"
 )
 
-// paddingSize is the size of the padding used to prevent false sharing.
-// It is set to 128 bytes, which covers two cache lines on most architectures (64 bytes each).
-const paddingSize = 128
+const (
+	// paddingSize is the size of the padding used to prevent false sharing.
+	// It is set to 128 bytes, which covers two cache lines on most architectures (64 bytes each).
+	paddingSize           = 128
+	optimizedGrowth       = 2.0
+	binarySearchThreshold = 100
+)
 
 // histogram is a thread-safe, sharded histogram that uses geometric bucketing.
 // It is designed for high-performance, concurrent metric recording by distributing
@@ -127,9 +131,9 @@ func (h *histogram) Init(opts ...HistogramOption) error {
 }
 
 func (h *histogram) setBucketFinder() {
-	if h.growth == 2.0 {
+	if h.growth == optimizedGrowth {
 		h.bucketFinder = h.findBucketGrowth2
-	} else if h.numBuckets < 100 {
+	} else if h.numBuckets < binarySearchThreshold {
 		h.bucketFinder = h.findBucketBinarySearch
 	} else {
 		h.bucketFinder = h.findBucketLog
@@ -193,7 +197,10 @@ func (sh *shardedHistogram) shardIndexForValue(val float64) int {
 	if len(sh.shards) <= 1 {
 		return 0
 	}
-	return int(computeHash(val) % uint64(len(sh.shards)))
+	hash := computeHash(val)
+	n := uint64(len(sh.shards))
+	idx := hash % n
+	return int(idx)
 }
 
 // Record adds a value to the sharded histogram.

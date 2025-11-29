@@ -37,7 +37,11 @@ func mergeShards[T any, S mergeableShard[T]](target []S, source []S) error {
 	}
 	for i := range target {
 		// Cast source[i] to T. This is safe as long as S implements T.
-		if err := target[i].Merge(any(source[i]).(T)); err != nil {
+		src, ok := any(source[i]).(T)
+		if !ok {
+			return errors.New("shard does not implement interface T")
+		}
+		if err := target[i].Merge(src); err != nil {
 			return err
 		}
 	}

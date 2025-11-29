@@ -17,7 +17,6 @@
 package metrics
 
 import (
-	"flag"
 	"os"
 	"path/filepath"
 	"testing"
@@ -27,14 +26,9 @@ import (
 	"github.com/vdaas/vald/internal/test"
 )
 
-var update = flag.Bool("update", false, "update golden files")
-
 func TestSnapshotPresenter(t *testing.T) {
 	type args struct {
 		snapshot *GlobalSnapshot
-	}
-	type want struct {
-		goldenFile string
 	}
 
 	// Helper to create a sample snapshot
@@ -145,12 +139,17 @@ func TestSnapshotPresenter(t *testing.T) {
 func checkGoldenFile(t *testing.T, goldenFile string, actual string) {
 	t.Helper()
 	goldenPath := filepath.Join("testdata", goldenFile)
-	if *update {
-		err := os.MkdirAll(filepath.Dir(goldenPath), 0o755)
+	// Clean the path to prevent directory traversal attacks (G304)
+	goldenPath = filepath.Clean(goldenPath)
+
+	update := os.Getenv("UPDATE_GOLDEN") == "true"
+
+	if update {
+		err := os.MkdirAll(filepath.Dir(goldenPath), 0o750)
 		if err != nil {
 			t.Fatalf("failed to create testdata dir: %v", err)
 		}
-		err = os.WriteFile(goldenPath, []byte(actual), 0o644)
+		err = os.WriteFile(goldenPath, []byte(actual), 0o600)
 		if err != nil {
 			t.Fatalf("failed to update golden file: %v", err)
 		}

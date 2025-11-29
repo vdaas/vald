@@ -14,10 +14,9 @@
 package metrics
 
 import (
-	"sync/atomic"
-
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
 // slot holds the metrics for a single window in a scale.
@@ -38,7 +37,7 @@ type slot struct {
 // newSlot creates a new Slot with the given configuration.
 func newSlot(numCounters int, latencies, queueWaits Histogram, exemplars Exemplar) Slot {
 	return &slot{
-		id:        collectorIDCounter.Add(1),
+		id:        secureUint64(),
 		Latency:   latencies,
 		QueueWait: queueWaits,
 		Counters:  make([]atomic.Uint64, numCounters),
@@ -163,7 +162,7 @@ func (s *slot) Clone() Slot {
 	}
 
 	newS := &slot{
-		id:          collectorIDCounter.Add(1),
+		id:          secureUint64(),
 		Latency:     l,
 		QueueWait:   q,
 		Counters:    counters,

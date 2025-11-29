@@ -19,19 +19,20 @@ package metrics
 import (
 	"cmp"
 	"container/heap"
-	"math/rand/v2"
 	"slices"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/zeebo/xxh3"
 )
 
 const (
 	// avgSamplingRate is the sampling rate for average exemplars (1/16).
 	avgSamplingRate = 16
+
+	defaultExemplarCapacity = 10
 )
 
 // exemplar is a thread-safe exemplar storage.
@@ -39,7 +40,6 @@ const (
 type exemplar struct {
 	slowest        priorityQueue
 	fastest        smallestLatencyHeap
-	failures       priorityQueue
 	avgSamples     []*ExemplarItem
 	failureSamples []*ExemplarItem
 	k              int
@@ -64,7 +64,7 @@ type exemplarConfig struct {
 // Init initializes the exemplar with the given options.
 func (e *exemplar) Init(opts ...ExemplarOption) {
 	cfg := exemplarConfig{
-		Capacity: 10,
+		Capacity: defaultExemplarCapacity,
 	}
 	// Apply user options
 	for _, opt := range opts {
@@ -106,7 +106,7 @@ func (e *exemplar) initHeaps() {
 // NewExemplar creates a new Exemplar with the given options.
 func NewExemplar(opts ...ExemplarOption) Exemplar {
 	cfg := exemplarConfig{
-		Capacity: 10,
+		Capacity: defaultExemplarCapacity,
 	}
 	for _, opt := range append(defaultExemplarOpts, opts...) {
 		opt(&cfg)
@@ -169,7 +169,7 @@ func (e *exemplar) Offer(latency time.Duration, requestID string, err error, msg
 	if !isError && latInt <= minLat && latInt >= maxLat {
 		// Probabilistic sampling: only record 1 out of avgSamplingRate samples.
 		// We use a fast bitwise check assuming avgSamplingRate is a power of 2.
-		if rand.Uint64()&(avgSamplingRate-1) != 0 {
+		if secureUint64()&(avgSamplingRate-1) != 0 {
 			return
 		}
 
@@ -235,8 +235,8 @@ func (e *exemplar) updateAverageSample(item *ExemplarItem) {
 	if len(e.avgSamples) < e.k {
 		e.avgSamples = append(e.avgSamples, item)
 	} else {
-		j := rand.Uint64N(e.avgCount)
-		if j < uint64(e.k) {
+		j := secureUint64N(e.avgCount)
+		if e.k > 0 && j < uint64(e.k) {
 			e.avgSamples[j] = item
 		}
 	}
@@ -247,8 +247,8 @@ func (e *exemplar) updateFailureSample(item *ExemplarItem) {
 	if len(e.failureSamples) < e.k {
 		e.failureSamples = append(e.failureSamples, item)
 	} else {
-		j := rand.Uint64N(e.failureCount)
-		if j < uint64(e.k) {
+		j := secureUint64N(e.failureCount)
+		if e.k > 0 && j < uint64(e.k) {
 			e.failureSamples[j] = item
 		}
 	}
@@ -275,7 +275,7 @@ func (e *exemplar) Snapshot() []*ExemplarItem {
 // DetailedSnapshot returns all categories.
 func (se *shardedExemplar) DetailedSnapshot() (*ExemplarDetails, error) {
 	if len(se.shards) == 0 {
-		return nil, nil
+		return nil, errors.New("no shards available")
 	}
 
 	// Create a temporary exemplar to merge all shards
@@ -437,10 +437,10 @@ func mergeReservoir(dst, src []*ExemplarItem, n1, n2 uint64, k int) []*ExemplarI
 	s := src
 
 	for range k {
-		if rand.Uint64N(n) < currN1 {
+		if secureUint64N(n) < currN1 {
 			// Draw from the first reservoir.
 			if len(d) > 0 {
-				idx := rand.IntN(len(d))
+				idx := secureIntN(len(d))
 				newReservoir = append(newReservoir, d[idx])
 				// Remove the selected item.
 				// Use "Swap and Remove" pattern for O(1) performance.
@@ -451,7 +451,7 @@ func mergeReservoir(dst, src []*ExemplarItem, n1, n2 uint64, k int) []*ExemplarI
 		} else {
 			// Draw from the second reservoir.
 			if len(s) > 0 {
-				idx := rand.IntN(len(s))
+				idx := secureIntN(len(s))
 				newReservoir = append(newReservoir, s[idx])
 				// Remove the selected item.
 				// Use "Swap and Remove" pattern for O(1) performance.
@@ -471,7 +471,11 @@ func (se *shardedExemplar) Clone() Exemplar {
 		shards: make([]*exemplar, len(se.shards)),
 	}
 	for i, e := range se.shards {
-		newSE.shards[i] = e.Clone().(*exemplar)
+		cloned, ok := e.Clone().(*exemplar)
+		if !ok {
+			panic("cloned exemplar is not of type *exemplar")
+		}
+		newSE.shards[i] = cloned
 	}
 	return newSE
 }
@@ -524,10 +528,10 @@ func (e *exemplar) Clone() Exemplar {
 
 // ExemplarItem is an item in the priority queue.
 type ExemplarItem struct {
-	Err       error
-	RequestID string
-	Msg       string
-	Latency   time.Duration
+	Err       error         `json:"err"`
+	RequestID string        `json:"request_id"`
+	Msg       string        `json:"msg"`
+	Latency   time.Duration `json:"latency"`
 }
 
 // priorityQueue implements min-heap.
@@ -543,7 +547,10 @@ func (pq priorityQueue) Swap(i, j int) {
 }
 
 func (pq *priorityQueue) Push(x any) {
-	item := x.(*ExemplarItem)
+	item, ok := x.(*ExemplarItem)
+	if !ok {
+		panic("priorityQueue: Push expects *ExemplarItem")
+	}
 	*pq = append(*pq, item)
 }
 
@@ -570,7 +577,10 @@ func (pq smallestLatencyHeap) Swap(i, j int) {
 }
 
 func (pq *smallestLatencyHeap) Push(x any) {
-	item := x.(*ExemplarItem)
+	item, ok := x.(*ExemplarItem)
+	if !ok {
+		panic("smallestLatencyHeap: Push expects *ExemplarItem")
+	}
 	*pq = append(*pq, item)
 }
 

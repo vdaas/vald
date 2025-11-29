@@ -27,8 +27,8 @@ import (
 // centroid represents a centroid in the t-digest.
 // It is unexported to encapsulate the implementation details of the TDigest.
 type centroid struct {
-	Mean   float64
-	Weight float64
+	Mean   float64 `json:"mean"`
+	Weight float64 `json:"weight"`
 }
 
 const (
@@ -36,6 +36,9 @@ const (
 	// maxBufferCapacity defines a threshold to shrink buffers if they grow too large.
 	// 4096 * 8 bytes (float64) = 32KB.
 	maxBufferCapacity = 4096
+
+	divisorTwo = 2.0
+	quantileScaleMax = 4.0
 )
 
 // tdigest is a custom implementation of the t-digest algorithm (used as a shard).
@@ -87,7 +90,7 @@ func NewTDigest(opts ...TDigestOption) (TDigest, error) {
 
 	if cfg.NumShards <= 1 {
 		t := &tdigest{
-			id:                       collectorIDCounter.Add(1),
+			id:                       secureUint64(),
 			buffer:                   make([]float64, 0, defaultBufferCapacity),
 			compression:              cfg.Compression,
 			compressionTriggerFactor: cfg.CompressionTriggerFactor,
@@ -102,7 +105,7 @@ func NewTDigest(opts ...TDigestOption) (TDigest, error) {
 	}
 	for i := range t.shards {
 		t.shards[i] = &tdigest{
-			id:                       collectorIDCounter.Add(1),
+			id:                       secureUint64(),
 			buffer:                   make([]float64, 0, defaultBufferCapacity),
 			compression:              cfg.Compression,
 			compressionTriggerFactor: cfg.CompressionTriggerFactor,
@@ -189,10 +192,6 @@ func (t *shardedTDigest) mergeAllShards() *tdigest {
 	}
 	return merged
 }
-
-const (
-	quantileScaleMax = 4.0 // so that max of q*(1-q) becomes 1 at q=0.5
-)
 
 // maxWeightForQuantile returns the maximum allowed combined weight for a
 // centroid located at quantile q, given the total weight and compression
@@ -388,7 +387,7 @@ func (t *tdigest) Quantile(q float64) float64 {
 		return 0
 	}
 
-	firstCenter := t.centroids[0].Weight / 2.0
+	firstCenter := t.centroids[0].Weight / divisorTwo
 	if target < firstCenter {
 		return t.centroids[0].Mean
 	}
@@ -396,14 +395,14 @@ func (t *tdigest) Quantile(q float64) float64 {
 	cumulative = 0
 	for i := 0; i < len(t.centroids); i++ {
 		c := t.centroids[i]
-		center := cumulative + c.Weight/2.0
+		center := cumulative + c.Weight/divisorTwo
 
 		if target < center {
 			if i == 0 {
 				return c.Mean
 			}
 			prev := t.centroids[i-1]
-			prevCenter := (cumulative - prev.Weight) + prev.Weight/2.0
+			prevCenter := (cumulative - prev.Weight) + prev.Weight/divisorTwo
 
 			// Interpolate
 			// fraction of the way from prevCenter to center
@@ -518,7 +517,7 @@ func (t *tdigest) compress() {
 		// Quantile of the merged centroid center.
 		// We use the cumulative weight to estimate the quantile `q` of the centroid.
 		// The value `q` is clamped to the range [0, 1] to ensure validity.
-		q := max(min((cumulative+mergedWeight/2)/total, 1.0), 0.0)
+		q := max(min((cumulative+mergedWeight/divisorTwo)/total, 1.0), 0.0)
 		// Maximum allowed weight for this quantile (shared with Add.tryMerge).
 		k := t.maxWeightForQuantile(q, total)
 
@@ -553,7 +552,7 @@ func (t *tdigest) Clone() TDigest {
 	defer t.mu.Unlock()
 
 	newT := &tdigest{
-		id:                       collectorIDCounter.Add(1),
+		id:                       secureUint64(),
 		compression:              t.compression,
 		compressionTriggerFactor: t.compressionTriggerFactor,
 		count:                    t.count,
@@ -628,7 +627,7 @@ func (t *tdigest) UnmarshalJSON(data []byte) error {
 		t.buffer = make([]float64, 0, defaultBufferCapacity)
 	}
 	if t.id == 0 {
-		t.id = collectorIDCounter.Add(1)
+		t.id = secureUint64()
 	}
 	return nil
 }

@@ -26,7 +26,6 @@ import (
 	"fmt"
 	"math"
 	"slices"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -34,10 +33,12 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
 const (
-	MaxGRPCCodes = 20
+	MaxGRPCCodes      = 20
+	percentMultiplier = 100
 )
 
 // requestIDCtxKey is the key for storing the request ID in the context.
@@ -60,20 +61,12 @@ func requestIDFromCtx(ctx context.Context) (uint64, bool) {
 // GetRequestResult returns a RequestResult from the pool.
 // This helps reduce GC pressure by reusing objects.
 func GetRequestResult() *RequestResult {
-	return requestResultPool.Get().(*RequestResult)
+	return new(RequestResult)
 }
 
 // PutRequestResult returns a RequestResult to the pool.
 // It resets all fields to ensure no data leakage or contamination.
 func PutRequestResult(rr *RequestResult) {
-	rr.Reset()
-	requestResultPool.Put(rr)
-}
-
-var requestResultPool = sync.Pool{
-	New: func() any {
-		return new(RequestResult)
-	},
 }
 
 // RequestResult represents the result of a single request.
@@ -173,12 +166,10 @@ type collector struct {
 	mu             sync.RWMutex
 }
 
-var collectorIDCounter atomic.Uint64
-
 // NewCollector creates and initializes a new Collector with the provided options.
 func NewCollector(opts ...Option) (Collector, error) {
 	c := &collector{
-		id:       collectorIDCounter.Add(1),
+		id:       secureUint64(),
 		counters: make(map[string]*CounterHandle),
 	}
 
@@ -464,7 +455,7 @@ func (c *collector) Clone() (Collector, error) {
 	defer c.mu.RUnlock()
 
 	newC := &collector{
-		id:       collectorIDCounter.Add(1),
+		id:       secureUint64(),
 		counters: make(map[string]*CounterHandle),
 	}
 
@@ -524,7 +515,7 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 	codesMap := make(map[codes.Code]uint64)
 	for i := range c.codes {
 		if v := c.codes[i].Load(); v > 0 {
-			codesMap[codes.Code(i)] = v
+			codesMap[codes.Code(uint32(i))] = v
 		}
 	}
 	var latSnap, qwSnap *HistogramSnapshot
@@ -621,7 +612,7 @@ func (c *collector) TimeScalesSnapshot() map[string]*ScaleSnapshot {
 // It returns an error if the collectors have incompatible configurations.
 func MergeCollectors(collectors ...Collector) (Collector, error) {
 	if len(collectors) == 0 {
-		return nil, nil
+		return nil, errors.New("no collectors provided")
 	}
 	if len(collectors) == 1 {
 		return collectors[0], nil
@@ -646,7 +637,7 @@ func MergeCollectors(collectors ...Collector) (Collector, error) {
 // It returns an error if the snapshots are incompatible.
 func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 	if len(snapshots) == 0 {
-		return nil, nil
+		return nil, errors.New("no snapshots provided")
 	}
 	if len(snapshots) == 1 {
 		return snapshots[0], nil
@@ -847,7 +838,7 @@ func (s *SlotSnapshot) String() string {
 
 	var sb strings.Builder
 	fmt.Fprintf(&sb, "Total Requests:\t%d\n", s.Total)
-	fmt.Fprintf(&sb, "Errors:\t%d (%.2f%%)\n", s.Errors, float64(s.Errors)/float64(s.Total)*100)
+	fmt.Fprintf(&sb, "Errors:\t%d (%.2f%%)\n", s.Errors, float64(s.Errors)/float64(s.Total)*percentMultiplier)
 	fmt.Fprintf(&sb, "Last Updated:\t%s\n", time.Unix(0, s.LastUpdated))
 
 	fmt.Fprint(&sb, "\nLatency:\n")
