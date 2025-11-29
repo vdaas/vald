@@ -557,6 +557,14 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 		lastUpdated = time.Unix(0, t)
 	}
 
+	var latPercentiles, qwPercentiles TDigest
+	if c.latPercentiles != nil {
+		latPercentiles = c.latPercentiles.Clone()
+	}
+	if c.qwPercentiles != nil {
+		qwPercentiles = c.qwPercentiles.Clone()
+	}
+
 	return &GlobalSnapshot{
 		Total:           c.total.Load(),
 		Errors:          c.errors.Load(),
@@ -564,8 +572,8 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 		LastUpdated:     lastUpdated,
 		Latencies:       latSnap,
 		QueueWaits:      qwSnap,
-		LatPercentiles:  c.latPercentiles,
-		QWPercentiles:   c.qwPercentiles,
+		LatPercentiles:  latPercentiles,
+		QWPercentiles:   qwPercentiles,
 		Exemplars:       exSnap,
 		ExemplarDetails: exDetails,
 		Codes:           codesMap,
