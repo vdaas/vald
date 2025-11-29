@@ -473,9 +473,11 @@ func (se *shardedExemplar) Clone() Exemplar {
 	for i, e := range se.shards {
 		cloned, ok := e.Clone().(*exemplar)
 		if !ok {
-			panic("cloned exemplar is not of type *exemplar")
+			newSE.shards[i] = new(exemplar)
+			newSE.shards[i].Init(WithExemplarCapacity(e.k))
+		} else {
+			newSE.shards[i] = cloned
 		}
-		newSE.shards[i] = cloned
 	}
 	return newSE
 }
@@ -549,7 +551,7 @@ func (pq priorityQueue) Swap(i, j int) {
 func (pq *priorityQueue) Push(x any) {
 	item, ok := x.(*ExemplarItem)
 	if !ok {
-		panic("priorityQueue: Push expects *ExemplarItem")
+		return
 	}
 	*pq = append(*pq, item)
 }
@@ -579,7 +581,7 @@ func (pq smallestLatencyHeap) Swap(i, j int) {
 func (pq *smallestLatencyHeap) Push(x any) {
 	item, ok := x.(*ExemplarItem)
 	if !ok {
-		panic("smallestLatencyHeap: Push expects *ExemplarItem")
+		return
 	}
 	*pq = append(*pq, item)
 }
